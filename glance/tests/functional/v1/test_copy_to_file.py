@@ -96,7 +96,7 @@ class TestCopyToFile(functional.FunctionalTest):
                 time.sleep(0.01)
                 http = httplib2.Http()
                 response, content = http.request(path, 'HEAD')
-                self.assertEqual(response.status, 200)
+                self.assertEqual(200, response.status)
                 if response['x-image-meta-status'] == expected_status:
                     return
             self.fail('unexpected image status %s' %
@@ -105,21 +105,21 @@ class TestCopyToFile(functional.FunctionalTest):
 
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['content-length'], str(FIVE_KB))
+        self.assertEqual(200, response.status)
+        self.assertEqual(str(FIVE_KB), response['content-length'])
 
-        self.assertEqual(content, "*" * FIVE_KB)
-        self.assertEqual(hashlib.md5(content).hexdigest(),
-                         hashlib.md5("*" * FIVE_KB).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "copied")
+        self.assertEqual("*" * FIVE_KB, content)
+        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                         hashlib.md5(content).hexdigest())
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("copied", data['image']['name'])
 
         # DELETE original image
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               original_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         # GET image again to make sure the existence of the original
         # image in from_store is not depended on
@@ -127,21 +127,21 @@ class TestCopyToFile(functional.FunctionalTest):
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['content-length'], str(FIVE_KB))
+        self.assertEqual(200, response.status)
+        self.assertEqual(str(FIVE_KB), response['content-length'])
 
-        self.assertEqual(content, "*" * FIVE_KB)
-        self.assertEqual(hashlib.md5(content).hexdigest(),
-                         hashlib.md5("*" * FIVE_KB).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "copied")
+        self.assertEqual("*" * FIVE_KB, content)
+        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                         hashlib.md5(content).hexdigest())
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("copied", data['image']['name'])
 
         # DELETE copied image
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         self.stop_servers()
 
@@ -191,7 +191,7 @@ class TestCopyToFile(functional.FunctionalTest):
                 time.sleep(0.01)
                 http = httplib2.Http()
                 response, content = http.request(path, 'HEAD')
-                self.assertEqual(response.status, 200)
+                self.assertEqual(200, response.status)
                 if response['x-image-meta-status'] == expected_status:
                     return
             self.fail('unexpected image status %s' %
@@ -205,15 +205,15 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(response.status, 200 if exists else 404)
 
         if exists:
-            self.assertEqual(response['content-length'], str(FIVE_KB))
-            self.assertEqual(content, "*" * FIVE_KB)
-            self.assertEqual(hashlib.md5(content).hexdigest(),
-                             hashlib.md5("*" * FIVE_KB).hexdigest())
+            self.assertEqual(str(FIVE_KB), response['content-length'])
+            self.assertEqual("*" * FIVE_KB, content)
+            self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                             hashlib.md5(content).hexdigest())
 
         # DELETE copied image
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         self.stop_servers()
 

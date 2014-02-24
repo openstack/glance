@@ -139,33 +139,33 @@ class TestImageNotifications(utils.BaseTestCase):
     def test_image_save_notification(self):
         self.image_repo_proxy.save(self.image_proxy)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.update')
-        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.update', output_log['event_type'])
+        self.assertEqual(self.image.image_id, output_log['payload']['id'])
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
 
     def test_image_add_notification(self):
         self.image_repo_proxy.add(self.image_proxy)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.create')
-        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.create', output_log['event_type'])
+        self.assertEqual(self.image.image_id, output_log['payload']['id'])
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
 
     def test_image_delete_notification(self):
         self.image_repo_proxy.remove(self.image_proxy)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.delete')
-        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.delete', output_log['event_type'])
+        self.assertEqual(self.image.image_id, output_log['payload']['id'])
         self.assertTrue(output_log['payload']['deleted'])
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
@@ -173,12 +173,12 @@ class TestImageNotifications(utils.BaseTestCase):
     def test_image_get(self):
         image = self.image_repo_proxy.get(UUID1)
         self.assertIsInstance(image, glance.notifier.ImageProxy)
-        self.assertEqual(image.image, 'image_from_get')
+        self.assertEqual('image_from_get', image.image)
 
     def test_image_list(self):
         images = self.image_repo_proxy.list()
         self.assertIsInstance(images[0], glance.notifier.ImageProxy)
-        self.assertEqual(images[0].image, 'images_from_list')
+        self.assertEqual('images_from_list', images[0].image)
 
     def test_image_get_data_should_call_next_image_get_data(self):
         with mock.patch.object(self.image, 'get_data') as get_data_mock:
@@ -189,40 +189,40 @@ class TestImageNotifications(utils.BaseTestCase):
     def test_image_get_data_notification(self):
         self.image_proxy.size = 10
         data = ''.join(self.image_proxy.get_data())
-        self.assertEqual(data, '0123456789')
+        self.assertEqual('0123456789', data)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.send')
-        self.assertEqual(output_log['payload']['image_id'],
-                         self.image.image_id)
-        self.assertEqual(output_log['payload']['receiver_tenant_id'], TENANT2)
-        self.assertEqual(output_log['payload']['receiver_user_id'], USER1)
-        self.assertEqual(output_log['payload']['bytes_sent'], 10)
-        self.assertEqual(output_log['payload']['owner_id'], TENANT1)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.send', output_log['event_type'])
+        self.assertEqual(self.image.image_id,
+                         output_log['payload']['image_id'])
+        self.assertEqual(TENANT2, output_log['payload']['receiver_tenant_id'])
+        self.assertEqual(USER1, output_log['payload']['receiver_user_id'])
+        self.assertEqual(10, output_log['payload']['bytes_sent'])
+        self.assertEqual(TENANT1, output_log['payload']['owner_id'])
 
     def test_image_get_data_size_mismatch(self):
         self.image_proxy.size = 11
         list(self.image_proxy.get_data())
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.send')
-        self.assertEqual(output_log['payload']['image_id'],
-                         self.image.image_id)
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.send', output_log['event_type'])
+        self.assertEqual(self.image.image_id,
+                         output_log['payload']['image_id'])
 
     def test_image_set_data_prepare_notification(self):
         insurance = {'called': False}
 
         def data_iterator():
             output_logs = self.notifier.get_logs()
-            self.assertEqual(len(output_logs), 1)
+            self.assertEqual(1, len(output_logs))
             output_log = output_logs[0]
-            self.assertEqual(output_log['notification_type'], 'INFO')
-            self.assertEqual(output_log['event_type'], 'image.prepare')
-            self.assertEqual(output_log['payload']['id'], self.image.image_id)
+            self.assertEqual('INFO', output_log['notification_type'])
+            self.assertEqual('image.prepare', output_log['event_type'])
+            self.assertEqual(self.image.image_id, output_log['payload']['id'])
             yield 'abcd'
             yield 'efgh'
             insurance['called'] = True
@@ -239,17 +239,17 @@ class TestImageNotifications(utils.BaseTestCase):
         self.image_proxy.set_data(data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 2)
+        self.assertEqual(2, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.upload')
-        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
+        self.assertEqual(self.image.image_id, output_log['payload']['id'])
 
         output_log = output_logs[1]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.activate')
-        self.assertEqual(output_log['payload']['id'], self.image.image_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.activate', output_log['event_type'])
+        self.assertEqual(self.image.image_id, output_log['payload']['id'])
 
     def test_image_set_data_storage_full(self):
         def data_iterator():
@@ -260,11 +260,11 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
                           self.image_proxy.set_data, data_iterator(), 10)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('Modern Major General', output_log['payload'])
 
     def test_image_set_data_value_error(self):
@@ -277,11 +277,11 @@ class TestImageNotifications(utils.BaseTestCase):
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('value wrong', output_log['payload'])
 
     def test_image_set_data_duplicate(self):
@@ -294,11 +294,11 @@ class TestImageNotifications(utils.BaseTestCase):
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('Cant have duplicates', output_log['payload'])
 
     def test_image_set_data_storage_write_denied(self):
@@ -311,11 +311,11 @@ class TestImageNotifications(utils.BaseTestCase):
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('The Very Model', output_log['payload'])
 
     def test_image_set_data_forbidden(self):
@@ -328,11 +328,11 @@ class TestImageNotifications(utils.BaseTestCase):
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('Not allowed', output_log['payload'])
 
     def test_image_set_data_not_found(self):
@@ -345,11 +345,11 @@ class TestImageNotifications(utils.BaseTestCase):
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('Not found', output_log['payload'])
 
     def test_image_set_data_HTTP_error(self):
@@ -362,11 +362,11 @@ class TestImageNotifications(utils.BaseTestCase):
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('Http issue', output_log['payload'])
 
     def test_image_set_data_error(self):
@@ -379,11 +379,11 @@ class TestImageNotifications(utils.BaseTestCase):
                           self.image_proxy.set_data, data_iterator(), 10)
 
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
 
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'ERROR')
-        self.assertEqual(output_log['event_type'], 'image.upload')
+        self.assertEqual('ERROR', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
         self.assertIn('Failed', output_log['payload'])
 
 
@@ -447,18 +447,18 @@ class TestTaskNotifications(utils.BaseTestCase):
     def test_task_create_notification(self):
         self.task_repo_proxy.add(self.task_stub_proxy)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'task.create')
-        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('task.create', output_log['event_type'])
+        self.assertEqual(self.task.task_id, output_log['payload']['id'])
         self.assertEqual(
-            output_log['payload']['updated_at'],
-            timeutils.isotime(self.task.updated_at)
+            timeutils.isotime(self.task.updated_at),
+            output_log['payload']['updated_at']
         )
         self.assertEqual(
-            output_log['payload']['created_at'],
-            timeutils.isotime(self.task.created_at)
+            timeutils.isotime(self.task.created_at),
+            output_log['payload']['created_at']
         )
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
@@ -467,22 +467,22 @@ class TestTaskNotifications(utils.BaseTestCase):
         now = timeutils.isotime()
         self.task_repo_proxy.remove(self.task_stub_proxy)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'task.delete')
-        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('task.delete', output_log['event_type'])
+        self.assertEqual(self.task.task_id, output_log['payload']['id'])
         self.assertEqual(
-            output_log['payload']['updated_at'],
-            timeutils.isotime(self.task.updated_at)
+            timeutils.isotime(self.task.updated_at),
+            output_log['payload']['updated_at']
         )
         self.assertEqual(
-            output_log['payload']['created_at'],
-            timeutils.isotime(self.task.created_at)
+            timeutils.isotime(self.task.created_at),
+            output_log['payload']['created_at']
         )
         self.assertEqual(
-            output_log['payload']['deleted_at'],
-            now
+            now,
+            output_log['payload']['deleted_at']
         )
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
@@ -493,36 +493,36 @@ class TestTaskNotifications(utils.BaseTestCase):
             executor._run.return_value = mock.Mock()
             self.task_proxy.run(executor=mock_executor)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'task.run')
-        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('task.run', output_log['event_type'])
+        self.assertEqual(self.task.task_id, output_log['payload']['id'])
 
     def test_task_processing_notification(self):
         self.task_proxy.begin_processing()
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'task.processing')
-        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('task.processing', output_log['event_type'])
+        self.assertEqual(self.task.task_id, output_log['payload']['id'])
 
     def test_task_success_notification(self):
         self.task_proxy.begin_processing()
         self.task_proxy.succeed(result=None)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 2)
+        self.assertEqual(2, len(output_logs))
         output_log = output_logs[1]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'task.success')
-        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('task.success', output_log['event_type'])
+        self.assertEqual(self.task.task_id, output_log['payload']['id'])
 
     def test_task_failure_notification(self):
         self.task_proxy.fail(message=None)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'task.failure')
-        self.assertEqual(output_log['payload']['id'], self.task.task_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('task.failure', output_log['event_type'])
+        self.assertEqual(self.task.task_id, output_log['payload']['id'])

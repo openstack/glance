@@ -492,7 +492,7 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
     def test_replace_image_tag(self):
         self.config(image_tag_quota=1)
         self.image.tags = ['foo']
-        self.assertEqual(len(self.image.tags), 1)
+        self.assertEqual(1, len(self.image.tags))
 
     def test_replace_too_many_image_tags(self):
         self.config(image_tag_quota=0)
@@ -500,17 +500,17 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
         exc = self.assertRaises(exception.ImageTagLimitExceeded,
                                 setattr, self.image, 'tags', ['foo', 'bar'])
         self.assertIn('Attempted: 2, Maximum: 0', six.text_type(exc))
-        self.assertEqual(len(self.image.tags), 0)
+        self.assertEqual(0, len(self.image.tags))
 
     def test_replace_unlimited_image_tags(self):
         self.config(image_tag_quota=-1)
         self.image.tags = ['foo']
-        self.assertEqual(len(self.image.tags), 1)
+        self.assertEqual(1, len(self.image.tags))
 
     def test_add_image_tag(self):
         self.config(image_tag_quota=1)
         self.image.tags.add('foo')
-        self.assertEqual(len(self.image.tags), 1)
+        self.assertEqual(1, len(self.image.tags))
 
     def test_add_too_many_image_tags(self):
         self.config(image_tag_quota=1)
@@ -522,15 +522,15 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
     def test_add_unlimited_image_tags(self):
         self.config(image_tag_quota=-1)
         self.image.tags.add('foo')
-        self.assertEqual(len(self.image.tags), 1)
+        self.assertEqual(1, len(self.image.tags))
 
     def test_remove_image_tag_while_over_quota(self):
         self.config(image_tag_quota=1)
         self.image.tags.add('foo')
-        self.assertEqual(len(self.image.tags), 1)
+        self.assertEqual(1, len(self.image.tags))
         self.config(image_tag_quota=0)
         self.image.tags.remove('foo')
-        self.assertEqual(len(self.image.tags), 0)
+        self.assertEqual(0, len(self.image.tags))
 
 
 class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
@@ -562,15 +562,15 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
                                                       'bar',
                                                       'baz',
                                                       'niz']))
-        self.assertEqual(len(proxy), 4)
+        self.assertEqual(4, len(proxy))
 
     def test_iter(self):
         items = set(['foo', 'bar', 'baz', 'niz'])
         proxy = glance.quota.QuotaImageTagsProxy(items.copy())
-        self.assertEqual(len(items), 4)
+        self.assertEqual(4, len(items))
         for item in proxy:
             items.remove(item)
-        self.assertEqual(len(items), 0)
+        self.assertEqual(0, len(items))
 
 
 class TestImageMemberQuotas(test_utils.BaseTestCase):
@@ -634,7 +634,7 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         self.image.locations = [{"url": "file:///fake.img.tar.gz",
                                  "metadata": {}
                                  }]
-        self.assertEqual(len(self.image.locations), 1)
+        self.assertEqual(1, len(self.image.locations))
 
     def test_replace_too_many_image_locations(self):
         self.config(image_location_quota=1)
@@ -649,20 +649,20 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         exc = self.assertRaises(exception.ImageLocationLimitExceeded,
                                 setattr, self.image, 'locations', locations)
         self.assertIn('Attempted: 3, Maximum: 1', six.text_type(exc))
-        self.assertEqual(len(self.image.locations), 1)
+        self.assertEqual(1, len(self.image.locations))
 
     def test_replace_unlimited_image_locations(self):
         self.config(image_location_quota=-1)
         self.image.locations = [{"url": "file:///fake.img.tar.gz",
                                  "metadata": {}}
                                 ]
-        self.assertEqual(len(self.image.locations), 1)
+        self.assertEqual(1, len(self.image.locations))
 
     def test_add_image_location(self):
         self.config(image_location_quota=1)
         location = {"url": "file:///fake.img.tar.gz", "metadata": {}}
         self.image.locations.append(location)
-        self.assertEqual(len(self.image.locations), 1)
+        self.assertEqual(1, len(self.image.locations))
 
     def test_add_too_many_image_locations(self):
         self.config(image_location_quota=1)
@@ -677,13 +677,13 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         self.config(image_location_quota=-1)
         location1 = {"url": "file:///fake1.img.tar.gz", "metadata": {}}
         self.image.locations.append(location1)
-        self.assertEqual(len(self.image.locations), 1)
+        self.assertEqual(1, len(self.image.locations))
 
     def test_remove_image_location_while_over_quota(self):
         self.config(image_location_quota=1)
         location1 = {"url": "file:///fake1.img.tar.gz", "metadata": {}}
         self.image.locations.append(location1)
-        self.assertEqual(len(self.image.locations), 1)
+        self.assertEqual(1, len(self.image.locations))
         self.config(image_location_quota=0)
         self.image.locations.remove(location1)
-        self.assertEqual(len(self.image.locations), 0)
+        self.assertEqual(0, len(self.image.locations))

@@ -27,23 +27,23 @@ class TestSchemasController(test_utils.BaseTestCase):
     def test_image(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.image(req)
-        self.assertEqual(output['name'], 'image')
+        self.assertEqual('image', output['name'])
         expected = set(['status', 'name', 'tags', 'checksum', 'created_at',
                         'disk_format', 'updated_at', 'visibility', 'self',
                         'file', 'container_format', 'schema', 'id', 'size',
                         'direct_url', 'min_ram', 'min_disk', 'protected',
                         'locations', 'owner', 'virtual_size'])
-        self.assertEqual(set(output['properties'].keys()), expected)
+        self.assertEqual(expected, set(output['properties'].keys()))
 
     def test_images(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.images(req)
-        self.assertEqual(output['name'], 'images')
+        self.assertEqual('images', output['name'])
         expected = set(['images', 'schema', 'first', 'next'])
-        self.assertEqual(set(output['properties'].keys()), expected)
+        self.assertEqual(expected, set(output['properties'].keys()))
         expected = set(['{schema}', '{first}', '{next}'])
         actual = set([link['href'] for link in output['links']])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_member(self):
         req = unit_test_utils.get_fake_request()

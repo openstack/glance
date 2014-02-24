@@ -92,7 +92,7 @@ class TestLogging(functional.FunctionalTest):
 
         path = "http://%s:%d/" % ("127.0.0.1", self.api_port)
         response, content = httplib2.Http().request(path, 'GET')
-        self.assertEqual(response.status, 300)
+        self.assertEqual(300, response.status)
 
         self.assertNotEmptyFile(self.api_server.log_file)
 

@@ -127,7 +127,7 @@ class TestRPCController(base.IsolatedUnitTest):
         res = req.get_response(api)
         returned = jsonutils.loads(res.body)
         self.assertIsInstance(returned, list)
-        self.assertEqual(returned[0], 1)
+        self.assertEqual(1, returned[0])
 
     def test_request_exc(self):
         api = create_api()
@@ -155,27 +155,27 @@ class TestRPCController(base.IsolatedUnitTest):
         # Body is not a list, it should fail
         req.body = jsonutils.dumps({})
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 400)
+        self.assertEqual(400, res.status_int)
 
         # cmd is not dict, it should fail.
         req.body = jsonutils.dumps([None])
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 400)
+        self.assertEqual(400, res.status_int)
 
         # No command key, it should fail.
         req.body = jsonutils.dumps([{}])
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 400)
+        self.assertEqual(400, res.status_int)
 
         # kwargs not dict, it should fail.
         req.body = jsonutils.dumps([{"command": "test", "kwargs": 200}])
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 400)
+        self.assertEqual(400, res.status_int)
 
         # Command does not exist, it should fail.
         req.body = jsonutils.dumps([{"command": "test"}])
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 404)
+        self.assertEqual(404, res.status_int)
 
     def test_rpc_exception_propagation(self):
         api = create_api()
@@ -185,18 +185,18 @@ class TestRPCController(base.IsolatedUnitTest):
 
         req.body = jsonutils.dumps([{"command": "raise_value_error"}])
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 200)
+        self.assertEqual(200, res.status_int)
 
         returned = jsonutils.loads(res.body)[0]
-        self.assertEqual(returned['_error']['cls'], 'exceptions.ValueError')
+        self.assertEqual('exceptions.ValueError', returned['_error']['cls'])
 
         req.body = jsonutils.dumps([{"command": "raise_weird_error"}])
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 200)
+        self.assertEqual(200, res.status_int)
 
         returned = jsonutils.loads(res.body)[0]
-        self.assertEqual(returned['_error']['cls'],
-                         'glance.common.exception.RPCError')
+        self.assertEqual('glance.common.exception.RPCError',
+                         returned['_error']['cls'])
 
 
 class TestRPCClient(base.IsolatedUnitTest):
@@ -226,7 +226,7 @@ class TestRPCClient(base.IsolatedUnitTest):
                     {"command": "get_all_images"}]
 
         res = self.client.bulk_request(commands)
-        self.assertEqual(len(res), 2)
+        self.assertEqual(2, len(res))
         self.assertTrue(res[0])
         self.assertFalse(res[1])
 
@@ -235,7 +235,7 @@ class TestRPCClient(base.IsolatedUnitTest):
             self.client.raise_value_error()
             self.fail("Exception not raised")
         except ValueError as exc:
-            self.assertEqual(str(exc), "Yep, Just like that!")
+            self.assertEqual("Yep, Just like that!", str(exc))
 
     def test_rpc_exception(self):
         try:
@@ -246,7 +246,7 @@ class TestRPCClient(base.IsolatedUnitTest):
 
     def test_non_str_or_dict_response(self):
         rst = self.client.count_images(images=[1, 2, 3, 4])
-        self.assertEqual(rst, 4)
+        self.assertEqual(4, rst)
         self.assertIsInstance(rst, int)
 
 
@@ -256,7 +256,7 @@ class TestRPCJSONSerializer(test_utils.BaseTestCase):
         fixture = {"key": "value"}
         expected = '{"key": "value"}'
         actual = rpc.RPCJSONSerializer().to_json(fixture)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_to_json_with_date_format_value(self):
         fixture = {"date": datetime.datetime(1900, 3, 8, 2)}
@@ -280,12 +280,12 @@ class TestRPCJSONSerializer(test_utils.BaseTestCase):
         fixture = {"key": "value"}
         response = webob.Response()
         rpc.RPCJSONSerializer().default(response, fixture)
-        self.assertEqual(response.status_int, 200)
+        self.assertEqual(200, response.status_int)
         content_types = filter(lambda h: h[0] == 'Content-Type',
                                response.headerlist)
-        self.assertEqual(len(content_types), 1)
-        self.assertEqual(response.content_type, 'application/json')
-        self.assertEqual(response.body, '{"key": "value"}')
+        self.assertEqual(1, len(content_types))
+        self.assertEqual('application/json', response.content_type)
+        self.assertEqual('{"key": "value"}', response.body)
 
 
 class TestRPCJSONDeserializer(test_utils.BaseTestCase):
@@ -319,7 +319,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
         fixture = '{"key": "value"}'
         expected = {"key": "value"}
         actual = rpc.RPCJSONDeserializer().from_json(fixture)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_from_json_malformed(self):
         fixture = 'kjasdklfjsklajf'
@@ -330,7 +330,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
         request = wsgi.Request.blank('/')
         actual = rpc.RPCJSONDeserializer().default(request)
         expected = {}
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_default_with_body(self):
         request = wsgi.Request.blank('/')
@@ -338,7 +338,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
         request.body = '{"key": "value"}'
         actual = rpc.RPCJSONDeserializer().default(request)
         expected = {"body": {"key": "value"}}
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_has_body_has_transfer_encoding(self):
         request = wsgi.Request.blank('/')
@@ -353,4 +353,4 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
                    '"_type": "datetime"}}')
         expected = {"date": datetime.datetime(1900, 3, 8, 2)}
         actual = rpc.RPCJSONDeserializer().from_json(fixture)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)

@@ -82,7 +82,7 @@ class TestClientExceptions(functional.FunctionalTest):
             self.fail('expected %s' % exc_type)
         except exc_type as e:
             if 'retry' in path:
-                self.assertEqual(e.retry_after, 10)
+                self.assertEqual(10, e.retry_after)
 
     def test_rate_limited(self):
         """
@@ -134,4 +134,4 @@ class TestClientExceptions(functional.FunctionalTest):
                 ('127.0.0.1', self.port))
         response, content = http.request(path, 'GET')
         self.assertTrue('ServerError' not in content)
-        self.assertEqual(response.status, 500)
+        self.assertEqual(500, response.status)

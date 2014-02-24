@@ -61,7 +61,7 @@ class TestScrubber(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
@@ -70,10 +70,10 @@ class TestScrubber(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         self.assertEqual('pending_delete', response['x-image-meta-status'])
 
         self.wait_for_scrub(path)
@@ -100,7 +100,7 @@ class TestScrubber(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
@@ -109,10 +109,10 @@ class TestScrubber(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         self.assertEqual('pending_delete', response['x-image-meta-status'])
 
         # wait for the scrub time on the image to pass
@@ -157,7 +157,7 @@ class TestScrubber(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
@@ -168,10 +168,10 @@ class TestScrubber(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         self.assertEqual('pending_delete', response['x-image-meta-status'])
 
         # ensure the marker file has encrypted the image location by decrypting
@@ -188,7 +188,7 @@ class TestScrubber(functional.FunctionalTest):
         loc = glance_store.location.StoreLocation({})
         loc.parse_uri(decrypted_uri)
 
-        self.assertEqual(loc.scheme, "file")
+        self.assertEqual("file", loc.scheme)
         self.assertEqual(image['id'], loc.obj)
 
         self.wait_for_scrub(path)
@@ -221,7 +221,7 @@ class TestScrubber(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', body='XXX',
                                          headers=headers)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         image = jsonutils.loads(content)['image']
         self.assertEqual('active', image['status'])
         image_id = image['id']
@@ -231,11 +231,11 @@ class TestScrubber(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         # ensure the image is marked pending delete
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         self.assertEqual('pending_delete', response['x-image-meta-status'])
 
         # Remove the file from the backend.

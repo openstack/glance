@@ -309,7 +309,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
             self.assertIsNone(plugin.authenticate())
-            self.assertEqual(plugin.management_url, "example.com")
+            self.assertEqual("example.com", plugin.management_url)
 
         # Assert it does not update management_url via auth response
         for creds in good_creds:
@@ -391,7 +391,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
         plugin = auth.KeystoneStrategy(no_region_creds)
         self.assertIsNone(plugin.authenticate())
-        self.assertEqual(plugin.management_url, 'http://localhost:9292')
+        self.assertEqual('http://localhost:9292', plugin.management_url)
 
         # Add another image service, with a different region
         mock_token.add_service('image', ['RegionTwo'])
@@ -487,7 +487,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
             self.assertIsNone(plugin.authenticate())
-            self.assertEqual(plugin.management_url, 'http://localhost:9292')
+            self.assertEqual('http://localhost:9292', plugin.management_url)
 
         ambiguous_region_creds = {
             'username': 'user1',
@@ -775,7 +775,7 @@ class TestImmutableImage(utils.BaseTestCase):
 
         image = glance.api.authorization.ImmutableImageProxy(
             FakeImage(), self.context)
-        self.assertEqual(image.get_data(), 'tiddlywinks')
+        self.assertEqual('tiddlywinks', image.get_data())
 
 
 class TestImageFactoryProxy(utils.BaseTestCase):
@@ -788,7 +788,7 @@ class TestImageFactoryProxy(utils.BaseTestCase):
 
     def test_default_owner_is_set(self):
         image = self.image_factory.new_image()
-        self.assertEqual(image.owner, TENANT1)
+        self.assertEqual(TENANT1, image.owner)
 
     def test_wrong_owner_cannot_be_set(self):
         self.assertRaises(exception.Forbidden,
@@ -801,7 +801,7 @@ class TestImageFactoryProxy(utils.BaseTestCase):
     def test_admin_can_set_any_owner(self):
         self.context.is_admin = True
         image = self.image_factory.new_image(owner=TENANT2)
-        self.assertEqual(image.owner, TENANT2)
+        self.assertEqual(TENANT2, image.owner)
 
     def test_admin_can_set_owner_to_none(self):
         self.context.is_admin = True
@@ -811,7 +811,7 @@ class TestImageFactoryProxy(utils.BaseTestCase):
     def test_admin_still_gets_default_tenant(self):
         self.context.is_admin = True
         image = self.image_factory.new_image()
-        self.assertEqual(image.owner, TENANT1)
+        self.assertEqual(TENANT1, image.owner)
 
 
 class TestImageRepoProxy(utils.BaseTestCase):
@@ -996,7 +996,7 @@ class TestTaskFactoryProxy(utils.BaseTestCase):
         owner = self.request1.context.owner
         task = self.task_factory.new_task(task_type=self.task_type,
                                           owner=owner)
-        self.assertEqual(task.owner, TENANT1)
+        self.assertEqual(TENANT1, task.owner)
 
     def test_task_create_wrong_owner(self):
         self.assertRaises(exception.Forbidden,

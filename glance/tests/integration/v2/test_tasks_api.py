@@ -101,7 +101,7 @@ class TestTasksApi(base.ApiTest):
                                               headers=headers,
                                               body=body_content)
 
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
 
         task = json.loads(content)
         task_id = task['id']
@@ -121,7 +121,7 @@ class TestTasksApi(base.ApiTest):
                                               headers=minimal_task_headers())
         content_dict = json.loads(content)
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         self.assertFalse(content_dict['tasks'])
 
         # 1. GET /tasks/{task_id}
@@ -131,7 +131,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 404)
+        self.assertEqual(404, response.status)
 
         # 2. POST /tasks
         # Create a new task
@@ -144,7 +144,7 @@ class TestTasksApi(base.ApiTest):
         path = "/v2/tasks/%s" % task_id
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         # 4. GET /tasks
         # Get all tasks (not deleted)
@@ -152,7 +152,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         self.assertIsNotNone(content)
 
         data = json.loads(content)
@@ -179,7 +179,7 @@ class TestTasksApi(base.ApiTest):
         path = "/v2/schemas/task"
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         schema = tasks.get_task_schema()
         expected_schema = schema.minimal()
@@ -192,7 +192,7 @@ class TestTasksApi(base.ApiTest):
         path = "/v2/schemas/tasks"
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         schema = tasks.get_collection_schema()
         expected_schema = schema.minimal()
@@ -215,7 +215,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(
             path, 'POST', headers=minimal_task_headers(task_owner),
             body=body_content)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
 
         data = json.loads(content)
         task_id = data['id']
@@ -236,7 +236,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(
             path, 'POST', headers=minimal_task_headers(task_owner),
             body=body_content)
-        self.assertEqual(response.status, 400)
+        self.assertEqual(400, response.status)
 
         # 1. POST /tasks
         # Create a new task with invalid input for type 'import'
@@ -249,7 +249,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(
             path, 'POST', headers=minimal_task_headers(task_owner),
             body=body_content)
-        self.assertEqual(response.status, 400)
+        self.assertEqual(400, response.status)
 
         # NOTE(nikhil): wait for all task executions to finish before exiting
         # else there is a risk of running into deadlock
@@ -263,7 +263,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         content_dict = json.loads(content)
         self.assertFalse(content_dict['tasks'])
@@ -285,7 +285,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         content_dict = json.loads(content)
         self.assertEqual(2, len(content_dict['tasks']))
@@ -298,7 +298,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         content_dict = json.loads(content)
         self.assertEqual(1, len(content_dict['tasks']))
@@ -311,7 +311,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         content_dict = json.loads(content)
         self.assertEqual(1, len(content_dict['tasks']))
@@ -324,7 +324,7 @@ class TestTasksApi(base.ApiTest):
 
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         content_dict = json.loads(content)
         self.assertEqual(2, len(content_dict['tasks']))
@@ -346,7 +346,7 @@ class TestTasksApi(base.ApiTest):
         path = "/v2/tasks"
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         tasks = json.loads(content)
         self.assertFalse(tasks['tasks'])
 
@@ -369,7 +369,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         tasks = json.loads(content)['tasks']
 
@@ -382,7 +382,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         actual_tasks = json.loads(content)['tasks']
 
@@ -397,7 +397,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         actual_tasks = json.loads(content)['tasks']
 
@@ -412,7 +412,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         actual_tasks = json.loads(content)['tasks']
 
@@ -429,7 +429,7 @@ class TestTasksApi(base.ApiTest):
         path = "/v2/tasks"
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         tasks = json.loads(content)
         self.assertFalse(tasks['tasks'])
 
@@ -453,7 +453,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         actual_tasks = json.loads(content)['tasks']
 
@@ -468,7 +468,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         expected_task_owners = [TENANT1, TENANT2, TENANT3]
         expected_task_owners.sort()
@@ -484,7 +484,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         actual_tasks = json.loads(content)['tasks']
         self.assertEqual(2, len(actual_tasks))
@@ -500,7 +500,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
 
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         actual_tasks = json.loads(content)['tasks']
 

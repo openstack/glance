@@ -63,8 +63,8 @@ class UtilsTestCase(test_utils.BaseTestCase):
         self.assertNotIn('x-image-meta-snafu', headers)
         self.assertNotIn('x-image-meta-property-arch', headers)
 
-        self.assertEqual(headers.get('x-image-meta-foo'), 'bar')
-        self.assertEqual(headers.get('x-image-meta-bells'), 'whistles')
-        self.assertEqual(headers.get('x-image-meta-empty'), '')
-        self.assertEqual(headers.get('x-image-meta-property-distro'), '')
-        self.assertEqual(headers.get('x-image-meta-property-user'), 'nobody')
+        self.assertEqual('bar', headers.get('x-image-meta-foo'))
+        self.assertEqual('whistles', headers.get('x-image-meta-bells'))
+        self.assertEqual('', headers.get('x-image-meta-empty'))
+        self.assertEqual('', headers.get('x-image-meta-property-distro'))
+        self.assertEqual('nobody', headers.get('x-image-meta-property-user'))

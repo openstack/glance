@@ -58,7 +58,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['checksum'],
                          hashlib.md5(image_data).hexdigest())
@@ -76,15 +76,15 @@ class TestMiscellaneous(functional.FunctionalTest):
                                               data['image']['id'])
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(200, response.status)
+        self.assertEqual("Image1", response['x-image-meta-name'])
 
         # 4. GET /images/1
         # Verify the api throws the appropriate 404 error
         path = "http://%s:%d/v1/images/1" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 404)
+        self.assertEqual(404, response.status)
 
         self.stop_servers()
 

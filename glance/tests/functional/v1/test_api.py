@@ -117,16 +117,16 @@ class TestApi(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, '{"images": []}')
+        self.assertEqual(200, response.status)
+        self.assertEqual('{"images": []}', content)
 
         # 1. GET /images/detail
         # Verify no public images
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, '{"images": []}')
+        self.assertEqual(200, response.status)
+        self.assertEqual('{"images": []}', content)
 
         # 2. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
@@ -136,7 +136,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image_id = data['image']['id']
         self.assertEqual(data['image']['checksum'],
@@ -151,8 +151,8 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(200, response.status)
+        self.assertEqual("Image1", response['x-image-meta-name'])
 
         # 4. GET image
         # Verify all information on image we just added is correct
@@ -160,7 +160,7 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         expected_image_headers = {
             'x-image-meta-id': image_id,
@@ -189,16 +189,16 @@ class TestApi(functional.FunctionalTest):
                                            expected_value,
                                            response[expected_key]))
 
-        self.assertEqual(content, "*" * FIVE_KB)
-        self.assertEqual(hashlib.md5(content).hexdigest(),
-                         hashlib.md5("*" * FIVE_KB).hexdigest())
+        self.assertEqual("*" * FIVE_KB, content)
+        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                         hashlib.md5(content).hexdigest())
 
         # 5. GET /images
         # Verify one public image
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         expected_result = {"images": [
             {"container_format": "ovf",
@@ -207,14 +207,14 @@ class TestApi(functional.FunctionalTest):
              "name": "Image1",
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
-        self.assertEqual(jsonutils.loads(content), expected_result)
+        self.assertEqual(expected_result, jsonutils.loads(content))
 
         # 6. GET /images/detail
         # Verify image and all its metadata
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         expected_image = {
             "status": "active",
@@ -245,10 +245,10 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['properties']['arch'], "x86_64")
-        self.assertEqual(data['image']['properties']['distro'], "Ubuntu")
+        self.assertEqual("x86_64", data['image']['properties']['arch'])
+        self.assertEqual("Ubuntu", data['image']['properties']['distro'])
 
         # 8. PUT image with too many custom properties
         # Verify 413 returned
@@ -259,14 +259,14 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
-        self.assertEqual(response.status, 413)
+        self.assertEqual(413, response.status)
 
         # 9. GET /images/detail
         # Verify image and all its metadata
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         expected_image = {
             "status": "active",
@@ -295,14 +295,14 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         data = jsonutils.loads(content)['images'][0]
-        self.assertEqual(len(data['properties']), 1)
-        self.assertEqual(data['properties']['arch'], "x86_64")
+        self.assertEqual(1, len(data['properties']))
+        self.assertEqual("x86_64", data['properties']['arch'])
 
         # 11. PUT image and add a previously deleted property.
         headers = {'X-Image-Meta-Property-Distro': 'Ubuntu',
@@ -311,16 +311,16 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT', headers=headers)
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
 
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         data = jsonutils.loads(content)['images'][0]
-        self.assertEqual(len(data['properties']), 2)
-        self.assertEqual(data['properties']['arch'], "x86_64")
-        self.assertEqual(data['properties']['distro'], "Ubuntu")
+        self.assertEqual(2, len(data['properties']))
+        self.assertEqual("x86_64", data['properties']['arch'])
+        self.assertEqual("Ubuntu", data['properties']['distro'])
         self.assertNotEqual(data['created_at'], data['updated_at'])
 
         # 12. Add member to image
@@ -328,32 +328,32 @@ class TestApi(functional.FunctionalTest):
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
-        self.assertEqual(response.status, 204)
+        self.assertEqual(204, response.status)
 
         # 13. Add member to image
         path = ("http://%s:%d/v1/images/%s/members/pattiewhite" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
-        self.assertEqual(response.status, 204)
+        self.assertEqual(204, response.status)
 
         # 14. List image members
         path = ("http://%s:%d/v1/images/%s/members" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(len(data['members']), 2)
-        self.assertEqual(data['members'][0]['member_id'], 'pattieblack')
-        self.assertEqual(data['members'][1]['member_id'], 'pattiewhite')
+        self.assertEqual(2, len(data['members']))
+        self.assertEqual('pattieblack', data['members'][0]['member_id'])
+        self.assertEqual('pattiewhite', data['members'][1]['member_id'])
 
         # 15. Delete image member
         path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 204)
+        self.assertEqual(204, response.status)
 
         # 16. Attempt to replace members with an overlimit amount
         # Adding 11 image members should fail since configured limit is 10
@@ -366,7 +366,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         body = jsonutils.dumps(dict(memberships=memberships))
         response, content = http.request(path, 'PUT', body=body)
-        self.assertEqual(response.status, 413)
+        self.assertEqual(413, response.status)
 
         # 17. Attempt to add a member while at limit
         # Adding an 11th member should fail since configured limit is 10
@@ -379,13 +379,13 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         body = jsonutils.dumps(dict(memberships=memberships))
         response, content = http.request(path, 'PUT', body=body)
-        self.assertEqual(response.status, 204)
+        self.assertEqual(204, response.status)
 
         path = ("http://%s:%d/v1/images/%s/members/fail_me" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
-        self.assertEqual(response.status, 413)
+        self.assertEqual(413, response.status)
 
         # 18. POST /images with another public image named Image2
         # attribute and three custom properties, "distro", "arch" & "foo".
@@ -399,7 +399,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image2_id = data['image']['id']
         self.assertEqual(data['image']['checksum'],
@@ -417,19 +417,19 @@ class TestApi(functional.FunctionalTest):
                                               image2_id)
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['x-image-meta-name'], "Image2")
+        self.assertEqual(200, response.status)
+        self.assertEqual("Image2", response['x-image-meta-name'])
 
         # 20. GET /images
         # Verify 2 public images
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 2)
-        self.assertEqual(images[0]['id'], image2_id)
-        self.assertEqual(images[1]['id'], image_id)
+        self.assertEqual(2, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
+        self.assertEqual(image_id, images[1]['id'])
 
         # 21. GET /images with filter on user-defined property 'distro'.
         # Verify both images are returned
@@ -437,11 +437,11 @@ class TestApi(functional.FunctionalTest):
             "127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 2)
-        self.assertEqual(images[0]['id'], image2_id)
-        self.assertEqual(images[1]['id'], image_id)
+        self.assertEqual(2, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
+        self.assertEqual(image_id, images[1]['id'])
 
         # 22. GET /images with filter on user-defined property 'distro' but
         # with non-existent value. Verify no images are returned
@@ -449,9 +449,9 @@ class TestApi(functional.FunctionalTest):
             "127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 0)
+        self.assertEqual(0, len(images))
 
         # 23. GET /images with filter on non-existent user-defined property
         # 'boo'. Verify no images are returned
@@ -459,9 +459,9 @@ class TestApi(functional.FunctionalTest):
                                                             self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 0)
+        self.assertEqual(0, len(images))
 
         # 24. GET /images with filter 'arch=i386'
         # Verify only image2 is returned
@@ -469,10 +469,10 @@ class TestApi(functional.FunctionalTest):
                                                               self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 1)
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(1, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
 
         # 25. GET /images with filter 'arch=x86_64'
         # Verify only image1 is returned
@@ -480,10 +480,10 @@ class TestApi(functional.FunctionalTest):
                                                                 self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 1)
-        self.assertEqual(images[0]['id'], image_id)
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
 
         # 26. GET /images with filter 'foo=bar'
         # Verify only image2 is returned
@@ -491,24 +491,24 @@ class TestApi(functional.FunctionalTest):
                                                             self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 1)
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(1, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
 
         # 27. DELETE image1
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         # 28. Try to list members of deleted image
         path = ("http://%s:%d/v1/images/%s/members" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 404)
+        self.assertEqual(404, response.status)
 
         # 29. Try to update member of deleted image
         path = ("http://%s:%d/v1/images/%s/members" %
@@ -517,37 +517,37 @@ class TestApi(functional.FunctionalTest):
         fixture = [{'member_id': 'pattieblack', 'can_share': 'false'}]
         body = jsonutils.dumps(dict(memberships=fixture))
         response, content = http.request(path, 'PUT', body=body)
-        self.assertEqual(response.status, 404)
+        self.assertEqual(404, response.status)
 
         # 30. Try to add member to deleted image
         path = ("http://%s:%d/v1/images/%s/members/chickenpattie" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
-        self.assertEqual(response.status, 404)
+        self.assertEqual(404, response.status)
 
         # 31. Try to delete member of deleted image
         path = ("http://%s:%d/v1/images/%s/members/pattieblack" %
                 ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 404)
+        self.assertEqual(404, response.status)
 
         # 32. DELETE image2
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image2_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         # 33. GET /images
         # Verify no images are listed
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         images = jsonutils.loads(content)['images']
-        self.assertEqual(len(images), 0)
+        self.assertEqual(0, len(images))
 
         # 34. HEAD /images/detail
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
@@ -584,7 +584,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image_id = data['image']['id']
         self.assertEqual(data['image']['checksum'],
@@ -599,15 +599,15 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(200, response.status)
+        self.assertEqual("Image1", response['x-image-meta-name'])
 
         # 2. GET /images
         # Verify one public image
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         expected_result = {"images": [
             {"container_format": "ovf",
@@ -616,14 +616,14 @@ class TestApi(functional.FunctionalTest):
              "name": "Image1",
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
-        self.assertEqual(jsonutils.loads(content), expected_result)
+        self.assertEqual(expected_result, jsonutils.loads(content))
 
         # 3. DELETE image1
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         # 4. GET image
         # Verify that 403 HTTPForbidden exception is raised prior to
@@ -634,7 +634,7 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 403)
+        self.assertEqual(403, response.status)
 
         self.stop_servers()
 
@@ -663,7 +663,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image_id = data['image']['id']
         self.assertEqual(data['image']['checksum'],
@@ -678,15 +678,15 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(response['x-image-meta-name'], "Image1")
+        self.assertEqual(200, response.status)
+        self.assertEqual("Image1", response['x-image-meta-name'])
 
         # 2. GET /images
         # Verify one public image
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         expected_result = {"images": [
             {"container_format": "ovf",
@@ -695,14 +695,14 @@ class TestApi(functional.FunctionalTest):
              "name": "Image1",
              "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
              "size": 5120}]}
-        self.assertEqual(jsonutils.loads(content), expected_result)
+        self.assertEqual(expected_result, jsonutils.loads(content))
 
         # 3. DELETE image1
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         # 4. GET image
         # Verify that 404 HTTPNotFound exception is raised
@@ -710,6 +710,6 @@ class TestApi(functional.FunctionalTest):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 404)
+        self.assertEqual(404, response.status)
 
         self.stop_servers()

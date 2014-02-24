@@ -44,13 +44,13 @@ class TestBasicSchema(test_utils.BaseTestCase):
         obj = {'ham': 'virginia', 'eggs': 'scrambled', 'bacon': 'crispy'}
         filtered = self.schema.filter(obj)
         expected = {'ham': 'virginia', 'eggs': 'scrambled'}
-        self.assertEqual(filtered, expected)
+        self.assertEqual(expected, filtered)
 
     def test_merge_properties(self):
         self.schema.merge_properties({'bacon': {'type': 'string'}})
         expected = set(['ham', 'eggs', 'bacon'])
         actual = set(self.schema.raw()['properties'].keys())
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_merge_conflicting_properties(self):
         conflicts = {'eggs': {'type': 'integer'}}
@@ -62,7 +62,7 @@ class TestBasicSchema(test_utils.BaseTestCase):
         self.schema.merge_properties(conflicts)  # no exception raised
         expected = set(['ham', 'eggs'])
         actual = set(self.schema.raw()['properties'].keys())
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_raw_json_schema(self):
         expected = {
@@ -73,7 +73,7 @@ class TestBasicSchema(test_utils.BaseTestCase):
             },
             'additionalProperties': False,
         }
-        self.assertEqual(self.schema.raw(), expected)
+        self.assertEqual(expected, self.schema.raw())
 
 
 class TestBasicSchemaLinks(test_utils.BaseTestCase):
@@ -101,7 +101,7 @@ class TestBasicSchemaLinks(test_utils.BaseTestCase):
             ],
             'additionalProperties': False,
         }
-        self.assertEqual(self.schema.raw(), expected)
+        self.assertEqual(expected, self.schema.raw())
 
 
 class TestPermissiveSchema(test_utils.BaseTestCase):
@@ -125,7 +125,7 @@ class TestPermissiveSchema(test_utils.BaseTestCase):
     def test_filter_passes_extra_properties(self):
         obj = {'ham': 'virginia', 'eggs': 'scrambled', 'bacon': 'crispy'}
         filtered = self.schema.filter(obj)
-        self.assertEqual(filtered, obj)
+        self.assertEqual(obj, filtered)
 
     def test_raw_json_schema(self):
         expected = {
@@ -136,7 +136,7 @@ class TestPermissiveSchema(test_utils.BaseTestCase):
             },
             'additionalProperties': {'type': 'string'},
         }
-        self.assertEqual(self.schema.raw(), expected)
+        self.assertEqual(expected, self.schema.raw())
 
 
 class TestCollectionSchema(test_utils.BaseTestCase):
@@ -162,4 +162,4 @@ class TestCollectionSchema(test_utils.BaseTestCase):
                 {'rel': 'describedby', 'href': '{schema}'},
             ],
         }
-        self.assertEqual(collection_schema.raw(), expected)
+        self.assertEqual(expected, collection_schema.raw())

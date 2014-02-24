@@ -321,7 +321,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(limit=2)
-        self.assertEqual(len(images), 2)
+        self.assertEqual(2, len(images))
 
     def test_get_image_index_marker_limit(self):
         """Test correct set of images returned with marker/limit params."""
@@ -352,7 +352,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(limit=None)
-        self.assertEqual(len(images), 3)
+        self.assertEqual(3, len(images))
 
     def test_get_image_index_by_name(self):
         """
@@ -364,7 +364,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images(filters={'name': 'new name! #123'})
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
 
         for image in images:
             self.assertEqual('new name! #123', image['name'])
@@ -376,7 +376,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         images = self.client.get_images_detailed()
 
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
         for k, v in fixture.items():
             self.assertEqual(v, images[0][k])
 
@@ -442,7 +442,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         filters = {'name': 'new name! #123'}
         images = self.client.get_images_detailed(filters=filters)
 
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
         for image in images:
             self.assertEqual('new name! #123', image['name'])
 
@@ -454,7 +454,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         images = self.client.get_images_detailed(filters={'status': 'saving'})
 
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
         for image in images:
             self.assertEqual('saving', image['status'])
 
@@ -467,7 +467,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         filters = {'container_format': 'ovf'}
         images = self.client.get_images_detailed(filters=filters)
 
-        self.assertEqual(len(images), 2)
+        self.assertEqual(2, len(images))
         for image in images:
             self.assertEqual('ovf', image['container_format'])
 
@@ -480,7 +480,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         filters = {'disk_format': 'vhd'}
         images = self.client.get_images_detailed(filters=filters)
 
-        self.assertEqual(len(images), 2)
+        self.assertEqual(2, len(images))
         for image in images:
             self.assertEqual('vhd', image['disk_format'])
 
@@ -493,7 +493,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         images = self.client.get_images_detailed(filters={'size_max': 20})
 
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
         for image in images:
             self.assertTrue(image['size'] <= 20)
 
@@ -505,7 +505,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         images = self.client.get_images_detailed(filters={'size_min': 20})
 
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
         for image in images:
             self.assertTrue(image['size'] >= 20)
 
@@ -560,7 +560,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.get_images_detailed(filters={'size_min': 20})
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
 
         for image in images:
             self.assertTrue(image['size'] >= 20)
@@ -574,7 +574,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         filters = {'property-p a': 'v a'}
         images = self.client.get_images_detailed(filters=filters)
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
 
         for image in images:
             self.assertEqual('v a', image['properties']['p a'])
@@ -589,7 +589,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         filters = {'property-is_public': 'avalue'}
         images = self.client.get_images_detailed(filters=filters)
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
 
         for image in images:
             self.assertEqual('avalue', image['properties']['is_public'])
@@ -683,9 +683,9 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         new_image = self.client.add_image(fixture)
 
-        self.assertEqual(new_image['location'], location)
-        self.assertEqual(new_image['location_data'][0]['url'], location)
-        self.assertEqual(new_image['location_data'][0]['metadata'], loc_meta)
+        self.assertEqual(location, new_image['location'])
+        self.assertEqual(location, new_image['location_data'][0]['url'])
+        self.assertEqual(loc_meta, new_image['location_data'][0]['metadata'])
 
     def test_add_image_with_location_data_with_encryption(self):
         """Tests that we can add image metadata with properties and
@@ -710,12 +710,12 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         new_image = self.client.add_image(fixture)
 
-        self.assertEqual(new_image['location'], location % 1)
-        self.assertEqual(len(new_image['location_data']), 2)
-        self.assertEqual(new_image['location_data'][0]['url'], location % 1)
-        self.assertEqual(new_image['location_data'][0]['metadata'], loc_meta)
-        self.assertEqual(new_image['location_data'][1]['url'], location % 2)
-        self.assertEqual(new_image['location_data'][1]['metadata'], {})
+        self.assertEqual(location % 1, new_image['location'])
+        self.assertEqual(2, len(new_image['location_data']))
+        self.assertEqual(location % 1, new_image['location_data'][0]['url'])
+        self.assertEqual(loc_meta, new_image['location_data'][0]['metadata'])
+        self.assertEqual(location % 2, new_image['location_data'][1]['url'])
+        self.assertEqual({}, new_image['location_data'][1]['metadata'])
 
         self.client.metadata_encryption_key = None
 
@@ -787,7 +787,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """Test getting image members."""
         memb_list = self.client.get_image_members(UUID2)
         num_members = len(memb_list)
-        self.assertEqual(num_members, 0)
+        self.assertEqual(0, num_members)
 
     def test_get_image_members_not_existing(self):
         """Test getting non-existent image members."""
@@ -799,7 +799,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """Test getting member images."""
         memb_list = self.client.get_member_images('pattieblack')
         num_members = len(memb_list)
-        self.assertEqual(num_members, 0)
+        self.assertEqual(0, num_members)
 
     def test_add_replace_members(self):
         """Test replacing image members."""
@@ -862,8 +862,8 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
             'X-Service-Catalog': 'null',
         }
         actual_client = rapi.get_registry_client(self.context)
-        self.assertEqual(actual_client.identity_headers,
-                         expected_identity_headers)
+        self.assertEqual(expected_identity_headers,
+                         actual_client.identity_headers)
 
     def test_configure_registry_client_not_using_use_user_token(self):
         self.config(use_user_token=False)
@@ -894,7 +894,7 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
 
         self.assertIsNone(rapi._CLIENT_CREDS)
         rapi.configure_registry_admin_creds()
-        self.assertEqual(rapi._CLIENT_CREDS, expected)
+        self.assertEqual(expected, rapi._CLIENT_CREDS)
 
     def test_configure_registry_admin_creds_with_auth_url(self):
         expected = self._get_fake_config_creds()
@@ -907,7 +907,7 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
 
         self.assertIsNone(rapi._CLIENT_CREDS)
         rapi.configure_registry_admin_creds()
-        self.assertEqual(rapi._CLIENT_CREDS, expected)
+        self.assertEqual(expected, rapi._CLIENT_CREDS)
 
 
 class FakeResponse():

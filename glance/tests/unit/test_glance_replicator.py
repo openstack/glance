@@ -152,8 +152,8 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                              200, jsonutils.dumps({'images': []}), {})
 
         imgs = list(c.get_images())
-        self.assertEqual(len(imgs), 2)
-        self.assertEqual(c.conn.count, 2)
+        self.assertEqual(2, len(imgs))
+        self.assertEqual(2, c.conn.count)
 
     def test_rest_get_image(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
@@ -165,7 +165,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                              200, image_contents, IMG_RESPONSE_ACTIVE)
 
         body = c.get_image(IMG_RESPONSE_ACTIVE['id'])
-        self.assertEqual(body.read(), image_contents)
+        self.assertEqual(image_contents, body.read())
 
     def test_rest_header_list_to_dict(self):
         i = [('x-image-meta-banana', 42),
@@ -223,8 +223,8 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                              200, '', IMG_RESPONSE_ACTIVE)
 
         headers, body = c.add_image(IMG_RESPONSE_ACTIVE, image_body)
-        self.assertEqual(headers, IMG_RESPONSE_ACTIVE)
-        self.assertEqual(c.conn.count, 1)
+        self.assertEqual(IMG_RESPONSE_ACTIVE, headers)
+        self.assertEqual(1, c.conn.count)
 
     def test_rest_add_image_meta(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
@@ -351,7 +351,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
             glance_replicator.get_image_service = orig_img_service
 
         output = output.rstrip()
-        self.assertEqual(output, 'Total size is 400 bytes across 2 images')
+        self.assertEqual('Total size is 400 bytes across 2 images', output)
 
     def test_replication_size_with_no_args(self):
         args = []
@@ -496,7 +496,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         finally:
             glance_replicator.get_image_service = orig_img_service
 
-        self.assertEqual(len(updated), 2)
+        self.assertEqual(2, len(updated))
 
     def test_replication_livecopy_with_no_args(self):
         args = []

@@ -30,7 +30,7 @@ class TestSchemas(functional.FunctionalTest):
         # Ensure the image link works and custom properties are loaded
         path = 'http://%s:%d/v2/schemas/image' % ('127.0.0.1', self.api_port)
         response = requests.get(path)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(200, response.status_code)
         image_schema = jsonutils.loads(response.text)
         expected = set([
             'id',
@@ -60,7 +60,7 @@ class TestSchemas(functional.FunctionalTest):
         # Ensure the images link works and agrees with the image schema
         path = 'http://%s:%d/v2/schemas/images' % ('127.0.0.1', self.api_port)
         response = requests.get(path)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(200, response.status_code)
         images_schema = jsonutils.loads(response.text)
         item_schema = images_schema['properties']['images']['items']
         self.assertEqual(item_schema, image_schema)

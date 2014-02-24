@@ -25,7 +25,7 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
             message = "default message"
 
         exc = FakeGlanceException()
-        self.assertEqual(utils.exception_to_str(exc), 'default message')
+        self.assertEqual('default message', utils.exception_to_str(exc))
 
     def test_specified_error_msg(self):
         msg = exception.GlanceException('test')
@@ -36,7 +36,7 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
             message = "default message: %(code)s"
 
         exc = FakeGlanceException(code=500)
-        self.assertEqual(utils.exception_to_str(exc), "default message: 500")
+        self.assertEqual("default message: 500", utils.exception_to_str(exc))
 
     def test_specified_error_msg_with_kwargs(self):
         msg = exception.GlanceException('test: %(code)s', code=500)

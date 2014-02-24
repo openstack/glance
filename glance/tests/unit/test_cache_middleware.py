@@ -48,12 +48,12 @@ class TestCacheMiddlewareURLMatching(testtools.TestCase):
     def test_v1_match_id_with_query_param(self):
         req = webob.Request.blank('/v1/images/asdf?ping=pong')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
-        self.assertEqual(out, ('v1', 'GET', 'asdf'))
+        self.assertEqual(('v1', 'GET', 'asdf'), out)
 
     def test_v2_match_id(self):
         req = webob.Request.blank('/v2/images/asdf/file')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
-        self.assertEqual(out, ('v2', 'GET', 'asdf'))
+        self.assertEqual(('v2', 'GET', 'asdf'), out)
 
     def test_v2_no_match_bad_path(self):
         req = webob.Request.blank('/v2/images/asdf')
@@ -575,7 +575,7 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         headers = {"x-image-meta-deleted": True}
         resp = webob.Response(request=request, headers=headers)
         actual = cache_filter._process_DELETE_response(resp, image_id)
-        self.assertEqual(actual, resp)
+        self.assertEqual(resp, actual)
 
     def test_get_status_code(self):
         headers = {"x-image-meta-deleted": True}
@@ -600,7 +600,7 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         headers = {"x-image-meta-deleted": True}
         resp = webob.Response(request=request, headers=headers)
         actual = cache_filter.process_response(resp)
-        self.assertEqual(actual, resp)
+        self.assertEqual(resp, actual)
 
     def test_process_response_without_download_image_policy(self):
         """

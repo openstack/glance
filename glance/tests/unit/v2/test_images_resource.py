@@ -175,7 +175,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(1, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_member_status_accepted(self):
         self.config(limit_param_default=5, api_limit_max=5)
@@ -185,14 +185,14 @@ class TestImagesController(base.IsolatedUnitTest):
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID1, UUID2, UUID3])
         # can see only the public image
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
         output = self.controller.index(request)
         self.assertEqual(4, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID1, UUID2, UUID3, UUID4])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
@@ -206,7 +206,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(3, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2, UUID3, UUID4])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_return_parameters(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -226,7 +226,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2, UUID1])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
         self.assertEqual(UUID1, output['next_marker'])
 
     def test_index_no_next_marker(self):
@@ -236,7 +236,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(0, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
         self.assertNotIn('next_marker', output)
 
     def test_index_with_id_filter(self):
@@ -245,7 +245,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(1, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID1])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_checksum_filter_single_image(self):
         req = unit_test_utils.get_fake_request('/images?checksum=%s' % CHKSUM)
@@ -253,7 +253,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(1, len(output['images']))
         actual = list([image.image_id for image in output['images']])
         expected = [UUID1]
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_checksum_filter_multiple_images(self):
         req = unit_test_utils.get_fake_request('/images?checksum=%s' % CHKSUM1)
@@ -261,7 +261,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output['images']))
         actual = list([image.image_id for image in output['images']])
         expected = [UUID3, UUID2]
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_non_existent_checksum(self):
         req = unit_test_utils.get_fake_request('/images?checksum=236231827')
@@ -274,7 +274,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(3, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID1, UUID2, UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_size_min_filter(self):
         request = unit_test_utils.get_fake_request('/images?size_min=512')
@@ -282,7 +282,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2, UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_size_range_filter(self):
         path = '/images?size_min=512&size_max=512'
@@ -293,7 +293,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2, UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_virtual_size_max_filter(self):
         ref = '/images?virtual_size_max=2048'
@@ -303,7 +303,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(3, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID1, UUID2, UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_virtual_size_min_filter(self):
         ref = '/images?virtual_size_min=2048'
@@ -313,7 +313,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2, UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_virtual_size_range_filter(self):
         path = '/images?virtual_size_min=512&virtual_size_max=2048'
@@ -324,7 +324,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2, UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_invalid_max_range_filter_value(self):
         request = unit_test_utils.get_fake_request('/images?size_max=blah')
@@ -340,7 +340,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(1, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_nonexistent_name_filter(self):
         request = unit_test_utils.get_fake_request('/images?name=%s' % 'blah')
@@ -370,7 +370,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(1, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID3])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_marker(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -513,7 +513,7 @@ class TestImagesController(base.IsolatedUnitTest):
         output = self.controller.index(request,
                                        filters={'abc': 'xyz',
                                                 'pudding': 'banana'})
-        self.assertEqual(len(output['images']), 0)
+        self.assertEqual(0, len(output['images']))
 
     def test_index_with_non_existent_tags(self):
         path = '/images?tag=fake'
@@ -545,7 +545,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
         request = unit_test_utils.get_fake_request()
         output = self.controller.show(request, image['id'])
-        self.assertEqual(output.extra_properties['yin'], 'yang')
+        self.assertEqual('yang', output.extra_properties['yin'])
 
     def test_show_non_existent(self):
         request = unit_test_utils.get_fake_request()
@@ -561,7 +561,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_show_not_allowed(self):
         request = unit_test_utils.get_fake_request()
-        self.assertEqual(request.context.tenant, TENANT1)
+        self.assertEqual(TENANT1, request.context.tenant)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, UUID4)
 
@@ -576,11 +576,11 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(set([]), output.tags)
         self.assertEqual('private', output.visibility)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.create')
-        self.assertEqual(output_log['payload']['name'], 'image-1')
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.create', output_log['event_type'])
+        self.assertEqual('image-1', output_log['payload']['name'])
 
     def test_create_with_properties(self):
         request = unit_test_utils.get_fake_request()
@@ -594,11 +594,11 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(set([]), output.tags)
         self.assertEqual('private', output.visibility)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.create')
-        self.assertEqual(output_log['payload']['name'], 'image-1')
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.create', output_log['event_type'])
+        self.assertEqual('image-1', output_log['payload']['name'])
 
     def test_create_with_too_many_properties(self):
         self.config(image_property_quota=1)
@@ -636,11 +636,11 @@ class TestImagesController(base.IsolatedUnitTest):
                                         extra_properties={}, tags=[])
         self.assertEqual('public', output.visibility)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.create')
-        self.assertEqual(output_log['payload']['id'], output.image_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.create', output_log['event_type'])
+        self.assertEqual(output.image_id, output_log['payload']['id'])
 
     def test_create_dup_id(self):
         request = unit_test_utils.get_fake_request()
@@ -660,11 +660,11 @@ class TestImagesController(base.IsolatedUnitTest):
                                         extra_properties={}, tags=tags)
         self.assertEqual(set(['ping']), output.tags)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.create')
-        self.assertEqual(output_log['payload']['id'], output.image_id)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.create', output_log['event_type'])
+        self.assertEqual(output.image_id, output_log['payload']['id'])
 
     def test_create_with_too_many_tags(self):
         self.config(image_tag_quota=1)
@@ -686,9 +686,9 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_update_no_changes(self):
         request = unit_test_utils.get_fake_request()
         output = self.controller.update(request, UUID1, changes=[])
-        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(UUID1, output.image_id)
         self.assertEqual(output.created_at, output.updated_at)
-        self.assertEqual(len(output.tags), 2)
+        self.assertEqual(2, len(output.tags))
         self.assertIn('ping', output.tags)
         self.assertIn('pong', output.tags)
         output_logs = self.notifier.get_logs()
@@ -733,9 +733,9 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['name'], 'value': 'fedora'}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.name, 'fedora')
-        self.assertEqual(output.extra_properties, {'foo': 'bar'})
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual('fedora', output.name)
+        self.assertEqual({'foo': 'bar'}, output.extra_properties)
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_replace_tags(self):
@@ -745,7 +745,7 @@ class TestImagesController(base.IsolatedUnitTest):
         ]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.tags), 2)
+        self.assertEqual(2, len(output.tags))
         self.assertIn('king', output.tags)
         self.assertIn('kong', output.tags)
         self.assertNotEqual(output.created_at, output.updated_at)
@@ -756,16 +756,16 @@ class TestImagesController(base.IsolatedUnitTest):
         self.db.image_update(None, UUID1, {'properties': properties})
 
         output = self.controller.show(request, UUID1)
-        self.assertEqual(output.extra_properties['foo'], 'bar')
-        self.assertEqual(output.extra_properties['snitch'], 'golden')
+        self.assertEqual('bar', output.extra_properties['foo'])
+        self.assertEqual('golden', output.extra_properties['snitch'])
 
         changes = [
             {'op': 'replace', 'path': ['foo'], 'value': 'baz'},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.extra_properties['foo'], 'baz')
-        self.assertEqual(output.extra_properties['snitch'], 'golden')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual('baz', output.extra_properties['foo'])
+        self.assertEqual('golden', output.extra_properties['snitch'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_add_too_many_properties(self):
@@ -809,7 +809,7 @@ class TestImagesController(base.IsolatedUnitTest):
                     'path': ['foo'],
                     'value': 'bar'}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(UUID1, output.image_id)
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_format_properties(self):
@@ -844,8 +844,8 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'replace', 'path': ['container_format'], 'value': 'bare'},
         ]
         resp = self.controller.update(request, image['id'], changes)
-        self.assertEqual(resp.disk_format, 'raw')
-        self.assertEqual(resp.container_format, 'bare')
+        self.assertEqual('raw', resp.disk_format)
+        self.assertEqual('bare', resp.container_format)
 
     def test_update_remove_property_while_over_limit(self):
         """Ensure that image properties can be removed.
@@ -872,9 +872,9 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'remove', 'path': ['snitch']},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.extra_properties), 1)
-        self.assertEqual(output.extra_properties['fizz'], 'buzz')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(1, len(output.extra_properties))
+        self.assertEqual('buzz', output.extra_properties['fizz'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_add_and_remove_property_under_limit(self):
@@ -902,9 +902,9 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'add', 'path': ['fizz'], 'value': 'buzz'},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.extra_properties), 1)
-        self.assertEqual(output.extra_properties['fizz'], 'buzz')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(1, len(output.extra_properties))
+        self.assertEqual('buzz', output.extra_properties['fizz'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_replace_missing_property(self):
@@ -934,7 +934,7 @@ class TestImagesController(base.IsolatedUnitTest):
         ]
         output = self.controller.update(another_request,
                                         created_image.image_id, changes)
-        self.assertEqual(output.extra_properties['x_owner_foo'], 'bar')
+        self.assertEqual('bar', output.extra_properties['x_owner_foo'])
 
     def test_prop_protection_with_update_and_permitted_policy(self):
         self.set_property_protections(use_policies=True)
@@ -949,8 +949,8 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        self.assertEqual(created_image.extra_properties['spl_creator_policy'],
-                         'bar')
+        self.assertEqual('bar',
+                         created_image.extra_properties['spl_creator_policy'])
 
         another_request = unit_test_utils.get_fake_request(roles=['spl_role'])
         changes = [
@@ -961,8 +961,8 @@ class TestImagesController(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(roles=['admin'])
         output = self.controller.update(another_request,
                                         created_image.image_id, changes)
-        self.assertEqual(output.extra_properties['spl_creator_policy'],
-                         'par')
+        self.assertEqual('par',
+                         output.extra_properties['spl_creator_policy'])
 
     def test_prop_protection_with_create_with_patch_and_policy(self):
         self.set_property_protections(use_policies=True)
@@ -987,8 +987,8 @@ class TestImagesController(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(roles=['spl_role'])
         output = self.controller.update(another_request,
                                         created_image.image_id, changes)
-        self.assertEqual(output.extra_properties['spl_creator_policy'],
-                         'bar')
+        self.assertEqual('bar',
+                         output.extra_properties['spl_creator_policy'])
 
     def test_prop_protection_with_create_and_unpermitted_role(self):
         enforcer = glance.api.policy.Enforcer()
@@ -1026,7 +1026,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                                tags=[])
         another_request = unit_test_utils.get_fake_request(roles=['member'])
         output = self.controller.show(another_request, created_image.image_id)
-        self.assertEqual(output.extra_properties['x_owner_foo'], 'bar')
+        self.assertEqual('bar', output.extra_properties['x_owner_foo'])
 
     def test_prop_protection_with_show_and_unpermitted_role(self):
         enforcer = glance.api.policy.Enforcer()
@@ -1065,7 +1065,7 @@ class TestImagesController(base.IsolatedUnitTest):
         ]
         output = self.controller.update(another_request,
                                         created_image.image_id, changes)
-        self.assertEqual(output.extra_properties['x_owner_foo'], 'baz')
+        self.assertEqual('baz', output.extra_properties['x_owner_foo'])
 
     def test_prop_protection_with_update_and_unpermitted_role(self):
         enforcer = glance.api.policy.Enforcer()
@@ -1138,15 +1138,15 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        self.assertEqual(created_image.extra_properties['x_all_permitted_1'],
-                         '1')
+        self.assertEqual('1',
+                         created_image.extra_properties['x_all_permitted_1'])
         another_request = unit_test_utils.get_fake_request(roles=['joe_soap'])
         extra_props = {'x_all_permitted_2': '2'}
         created_image = self.controller.create(another_request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        self.assertEqual(created_image.extra_properties['x_all_permitted_2'],
-                         '2')
+        self.assertEqual('2',
+                         created_image.extra_properties['x_all_permitted_2'])
 
     def test_read_non_protected_prop(self):
         """Property marked with special char @ readable by an unknown role"""
@@ -1159,7 +1159,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                                tags=[])
         another_request = unit_test_utils.get_fake_request(roles=['joe_soap'])
         output = self.controller.show(another_request, created_image.image_id)
-        self.assertEqual(output.extra_properties['x_all_permitted'], '1')
+        self.assertEqual('1', output.extra_properties['x_all_permitted'])
 
     def test_update_non_protected_prop(self):
         """Property marked with special char @ updatable by an unknown role"""
@@ -1176,7 +1176,7 @@ class TestImagesController(base.IsolatedUnitTest):
         ]
         output = self.controller.update(another_request,
                                         created_image.image_id, changes)
-        self.assertEqual(output.extra_properties['x_all_permitted'], 'baz')
+        self.assertEqual('baz', output.extra_properties['x_all_permitted'])
 
     def test_delete_non_protected_prop(self):
         """Property marked with special char @ deletable by an unknown role"""
@@ -1265,19 +1265,19 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 0)
-        self.assertEqual(output.status, 'queued')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(0, len(output.locations))
+        self.assertEqual('queued', output.status)
         self.assertIsNone(output.size)
 
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'replace', 'path': ['locations'],
                     'value': [new_location]}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 1)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(1, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
-        self.assertEqual(output.status, 'active')
+        self.assertEqual('active', output.status)
 
     def test_update_replace_locations_non_empty(self):
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
@@ -1291,9 +1291,9 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 0)
-        self.assertEqual(output.status, 'queued')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(0, len(output.locations))
+        self.assertEqual('queued', output.status)
 
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'],
@@ -1305,9 +1305,9 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID2, changes)
-        self.assertEqual(output.image_id, UUID2)
-        self.assertEqual(len(output.locations), 0)
-        self.assertEqual(output.status, 'queued')
+        self.assertEqual(UUID2, output.image_id)
+        self.assertEqual(0, len(output.locations))
+        self.assertEqual('queued', output.status)
 
         self.db.image_update(None, UUID2, {'disk_format': None})
 
@@ -1325,9 +1325,9 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.extra_properties['foo'], 'baz')
-        self.assertEqual(output.extra_properties['snitch'], 'golden')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual('baz', output.extra_properties['foo'])
+        self.assertEqual('golden', output.extra_properties['snitch'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_add_base_property_json_schema_version_4(self):
@@ -1376,7 +1376,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.db.image_update(None, UUID1, {'properties': properties})
 
         output = self.controller.show(request, UUID1)
-        self.assertEqual(output.extra_properties['foo'], 'bar')
+        self.assertEqual('bar', output.extra_properties['foo'])
 
         changes = [
             {'json_schema_version': 4, 'op': 'add',
@@ -1407,8 +1407,8 @@ class TestImagesController(base.IsolatedUnitTest):
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 2)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(2, len(output.locations))
         self.assertEqual(new_location, output.locations[1])
 
     def test_update_add_locations_insertion(self):
@@ -1417,8 +1417,8 @@ class TestImagesController(base.IsolatedUnitTest):
         changes = [{'op': 'add', 'path': ['locations', '0'],
                     'value': new_location}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 2)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(2, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
 
     def test_update_add_locations_list(self):
@@ -1444,9 +1444,9 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID2, changes)
-        self.assertEqual(output.image_id, UUID2)
-        self.assertEqual(len(output.locations), 0)
-        self.assertEqual(output.status, 'queued')
+        self.assertEqual(UUID2, output.image_id)
+        self.assertEqual(0, len(output.locations))
+        self.assertEqual('queued', output.status)
 
         self.db.image_update(None, UUID2, {'disk_format': None})
 
@@ -1462,8 +1462,8 @@ class TestImagesController(base.IsolatedUnitTest):
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 2)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(2, len(output.locations))
         self.assertEqual(new_location, output.locations[1])
 
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
@@ -1473,9 +1473,9 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 0)
-        self.assertEqual(output.status, 'queued')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(0, len(output.locations))
+        self.assertEqual('queued', output.status)
 
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'replace', 'path': ['locations'],
@@ -1533,7 +1533,7 @@ class TestImagesController(base.IsolatedUnitTest):
                        'metadata': {}}},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(UUID1, output.image_id)
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_remove_location_while_over_limit(self):
@@ -1563,8 +1563,8 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'remove', 'path': ['locations', '0']},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 1)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(1, len(output.locations))
         self.assertIn('fake_location_2', output.locations[0]['url'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
@@ -1598,8 +1598,8 @@ class TestImagesController(base.IsolatedUnitTest):
                        'metadata': {}}},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 1)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(1, len(output.locations))
         self.assertIn('fake_location_3', output.locations[0]['url'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
@@ -1616,15 +1616,15 @@ class TestImagesController(base.IsolatedUnitTest):
         self.db.image_update(None, UUID1, {'properties': properties})
 
         output = self.controller.show(request, UUID1)
-        self.assertEqual(output.extra_properties['foo'], 'bar')
-        self.assertEqual(output.extra_properties['snitch'], 'golden')
+        self.assertEqual('bar', output.extra_properties['foo'])
+        self.assertEqual('golden', output.extra_properties['snitch'])
 
         changes = [
             {'op': 'remove', 'path': ['snitch']},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.extra_properties, {'foo': 'bar'})
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual({'foo': 'bar'}, output.extra_properties)
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_remove_missing_property(self):
@@ -1644,18 +1644,18 @@ class TestImagesController(base.IsolatedUnitTest):
         changes = [{'op': 'remove', 'path': ['locations', '0']}]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 0)
-        self.assertEqual(output.status, 'queued')
+        self.assertEqual(0, len(output.locations))
+        self.assertEqual('queued', output.status)
         self.assertIsNone(output.size)
 
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(len(output.locations), 1)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(1, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
-        self.assertEqual(output.status, 'active')
+        self.assertEqual('active', output.status)
 
     def test_update_remove_location_invalid_pos(self):
         request = unit_test_utils.get_fake_request()
@@ -1696,14 +1696,14 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'add', 'path': ['kb'], 'value': 'dvorak'},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.min_ram, 128)
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual(128, output.min_ram)
         self.addDetail('extra_properties',
                        testtools.content.json_content(
                            jsonutils.dumps(output.extra_properties)))
-        self.assertEqual(len(output.extra_properties), 2)
-        self.assertEqual(output.extra_properties['foo'], 'baz')
-        self.assertEqual(output.extra_properties['kb'], 'dvorak')
+        self.assertEqual(2, len(output.extra_properties))
+        self.assertEqual('baz', output.extra_properties['foo'])
+        self.assertEqual('dvorak', output.extra_properties['kb'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_invalid_operation(self):
@@ -1722,14 +1722,14 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'replace', 'path': ['tags'], 'value': ['ping', 'ping']},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(len(output.tags), 1)
+        self.assertEqual(1, len(output.tags))
         self.assertIn('ping', output.tags)
         output_logs = self.notifier.get_logs()
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'image.update')
-        self.assertEqual(output_log['payload']['id'], UUID1)
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.update', output_log['event_type'])
+        self.assertEqual(UUID1, output_log['payload']['id'])
 
     def test_delete(self):
         request = unit_test_utils.get_fake_request()
@@ -1737,17 +1737,17 @@ class TestImagesController(base.IsolatedUnitTest):
         try:
             self.controller.delete(request, UUID1)
             output_logs = self.notifier.get_logs()
-            self.assertEqual(len(output_logs), 1)
+            self.assertEqual(1, len(output_logs))
             output_log = output_logs[0]
-            self.assertEqual(output_log['notification_type'], "INFO")
-            self.assertEqual(output_log['event_type'], "image.delete")
+            self.assertEqual('INFO', output_log['notification_type'])
+            self.assertEqual("image.delete", output_log['event_type'])
         except Exception as e:
             self.fail("Delete raised exception: %s" % e)
 
         deleted_img = self.db.image_get(request.context, UUID1,
                                         force_show_deleted=True)
         self.assertTrue(deleted_img['deleted'])
-        self.assertEqual(deleted_img['status'], 'deleted')
+        self.assertEqual('deleted', deleted_img['status'])
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 
     def test_delete_queued_updates_status(self):
@@ -1760,7 +1760,7 @@ class TestImagesController(base.IsolatedUnitTest):
         image = self.db.image_get(request.context, image_id,
                                   force_show_deleted=True)
         self.assertTrue(image['deleted'])
-        self.assertEqual(image['status'], 'deleted')
+        self.assertEqual('deleted', image['status'])
 
     def test_delete_queued_updates_status_delayed_delete(self):
         """Ensure status of queued image is updated (LP bug #1048851).
@@ -1778,7 +1778,7 @@ class TestImagesController(base.IsolatedUnitTest):
         image = self.db.image_get(request.context, image_id,
                                   force_show_deleted=True)
         self.assertTrue(image['deleted'])
-        self.assertEqual(image['status'], 'deleted')
+        self.assertEqual('deleted', image['status'])
 
     def test_delete_not_in_store(self):
         request = unit_test_utils.get_fake_request()
@@ -1792,7 +1792,7 @@ class TestImagesController(base.IsolatedUnitTest):
         deleted_img = self.db.image_get(request.context, UUID1,
                                         force_show_deleted=True)
         self.assertTrue(deleted_img['deleted'])
-        self.assertEqual(deleted_img['status'], 'deleted')
+        self.assertEqual('deleted', deleted_img['status'])
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 
     def test_delayed_delete(self):
@@ -1805,7 +1805,7 @@ class TestImagesController(base.IsolatedUnitTest):
         deleted_img = self.db.image_get(request.context, UUID1,
                                         force_show_deleted=True)
         self.assertTrue(deleted_img['deleted'])
-        self.assertEqual(deleted_img['status'], 'pending_delete')
+        self.assertEqual('pending_delete', deleted_img['status'])
         self.assertIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 
     def test_delete_non_existent(self):
@@ -1915,7 +1915,7 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         changes = [{'op': 'replace', 'path': ['visibility'],
                     'value': 'private'}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.visibility, 'private')
+        self.assertEqual('private', output.visibility)
 
     def test_update_get_image_location_unauthorized(self):
         rules = {"get_image_location": False}
@@ -2053,7 +2053,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = jsonutils.dumps([])
         output = self.deserializer.update(request)
         expected = {'changes': []}
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_update_unsupported_content_type(self):
         request = unit_test_utils.get_fake_request()
@@ -2066,7 +2066,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             accept_patch = ['application/openstack-images-v2.1-json-patch',
                             'application/openstack-images-v2.0-json-patch']
             expected = ', '.join(sorted(accept_patch))
-            self.assertEqual(e.headers['Accept-Patch'], expected)
+            self.assertEqual(expected, e.headers['Accept-Patch'])
         else:
             self.fail('Did not raise HTTPUnsupportedMediaType')
 
@@ -2146,7 +2146,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]}
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_update_v2_0_compatibility(self):
         request = self._get_fake_patch_request(content_type_minor_version=0)
@@ -2192,7 +2192,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]}
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_update_base_attributes(self):
         request = self._get_fake_patch_request()
@@ -2238,7 +2238,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]}
         ]}
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_update_disallowed_attributes(self):
         samples = {
@@ -2404,22 +2404,22 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                     'member_status': 'pending',
                     'filters': {}}
         output = self.deserializer.index(request)
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_index_with_filter(self):
         name = 'My Little Image'
         path = '/images?name=%s' % name
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output['filters']['name'], name)
+        self.assertEqual(name, output['filters']['name'])
 
     def test_index_strip_params_from_filters(self):
         name = 'My Little Image'
         path = '/images?name=%s' % name
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output['filters']['name'], name)
-        self.assertEqual(len(output['filters']), 1)
+        self.assertEqual(name, output['filters']['name'])
+        self.assertEqual(1, len(output['filters']))
 
     def test_index_with_many_filter(self):
         name = 'My Little Image'
@@ -2428,16 +2428,16 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                 {'name': name, 'instance_id': instance_id})
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output['filters']['name'], name)
-        self.assertEqual(output['filters']['id'], instance_id)
+        self.assertEqual(name, output['filters']['name'])
+        self.assertEqual(instance_id, output['filters']['id'])
 
     def test_index_with_filter_and_limit(self):
         name = 'My Little Image'
         path = '/images?name=%s&limit=1' % name
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output['filters']['name'], name)
-        self.assertEqual(output['limit'], 1)
+        self.assertEqual(name, output['filters']['name'])
+        self.assertEqual(1, output['limit'])
 
     def test_index_non_integer_limit(self):
         request = unit_test_utils.get_fake_request('/images?limit=blah')
@@ -2496,7 +2496,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'member_status': 'accepted',
             'filters': {}
         }
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_index_sort_dir_asc(self):
         request = unit_test_utils.get_fake_request('/images?sort_dir=asc')
@@ -2506,7 +2506,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'sort_dir': 'asc',
             'member_status': 'accepted',
             'filters': {}}
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_index_sort_dir_bad_value(self):
         request = unit_test_utils.get_fake_request('/images?sort_dir=blah')
@@ -2628,7 +2628,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
             'json_schema_version': 10, 'op': 'add',
             'path': ['foo'], 'value': 'bar'
         }
-        self.assertEqual(output, {'changes': [change]})
+        self.assertEqual({'changes': [change]}, output)
 
 
 class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
@@ -2765,12 +2765,12 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         request = webob.Request.blank(url)
         response = webob.Response(request=request)
         result = {'images': self.fixtures}
-        self.assertEqual(response.status_int, 200)
+        self.assertEqual(200, response.status_int)
 
         # The image index should work though the user is forbidden
         result['images'][0].locations = ImageLocations()
         self.serializer.index(response, result)
-        self.assertEqual(response.status_int, 200)
+        self.assertEqual(200, response.status_int)
 
     def test_show_full_fixture(self):
         expected = {
@@ -2847,7 +2847,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         actual['tags'] = sorted(actual['tags'])
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
-        self.assertEqual(response.location, '/v2/images/%s' % UUID1)
+        self.assertEqual('/v2/images/%s' % UUID1, response.location)
 
     def test_update(self):
         expected = {
@@ -3006,7 +3006,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         actual['tags'] = sorted(actual['tags'])
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
-        self.assertEqual(response.location, '/v2/images/%s' % UUID1)
+        self.assertEqual('/v2/images/%s' % UUID1, response.location)
 
     def test_update(self):
         expected = {
@@ -3245,10 +3245,10 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         images = self._do_index()
 
         # NOTE(markwash): ordering sanity check
-        self.assertEqual(images[0]['id'], UUID1)
-        self.assertEqual(images[1]['id'], UUID2)
+        self.assertEqual(UUID1, images[0]['id'])
+        self.assertEqual(UUID2, images[1]['id'])
 
-        self.assertEqual(images[0]['direct_url'], 'http://some/fake/location')
+        self.assertEqual('http://some/fake/location', images[0]['direct_url'])
         self.assertNotIn('direct_url', images[1])
 
     def test_index_store_multiple_location_enabled(self):
@@ -3271,7 +3271,7 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
     def test_show_location_enabled(self):
         self.config(show_image_direct_url=True)
         image = self._do_show(self.active_image)
-        self.assertEqual(image['direct_url'], 'http://some/fake/location')
+        self.assertEqual('http://some/fake/location', image['direct_url'])
 
     def test_show_location_enabled_but_not_set(self):
         self.config(show_image_direct_url=True)

@@ -94,8 +94,8 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         proxy_result = method(*args, **kwargs)
         self.assertIsInstance(proxy_result, FakeProxy)
         self.assertEqual(proxy_result.base, base_result)
-        self.assertEqual(len(proxy_result.args), 0)
-        self.assertEqual(proxy_result.kwargs, {'a': 1})
+        self.assertEqual(0, len(proxy_result.args))
+        self.assertEqual({'a': 1}, proxy_result.kwargs)
         self.assertEqual(self.fake_repo.args, args)
         self.assertEqual(self.fake_repo.kwargs, kwargs)
 
@@ -103,23 +103,23 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         self.fake_repo.result = 'snarf'
         result = self.proxy_repo.get('some-id')
         self.assertIsInstance(result, FakeProxy)
-        self.assertEqual(self.fake_repo.args, ('some-id',))
-        self.assertEqual(self.fake_repo.kwargs, {})
-        self.assertEqual(result.base, 'snarf')
-        self.assertEqual(result.args, tuple())
-        self.assertEqual(result.kwargs, {'a': 1})
+        self.assertEqual(('some-id',), self.fake_repo.args)
+        self.assertEqual({}, self.fake_repo.kwargs)
+        self.assertEqual('snarf', result.base)
+        self.assertEqual(tuple(), result.args)
+        self.assertEqual({'a': 1}, result.kwargs)
 
     def test_list(self):
         self.fake_repo.result = ['scratch', 'sniff']
         results = self.proxy_repo.list(2, prefix='s')
-        self.assertEqual(self.fake_repo.args, (2,))
-        self.assertEqual(self.fake_repo.kwargs, {'prefix': 's'})
-        self.assertEqual(len(results), 2)
+        self.assertEqual((2,), self.fake_repo.args)
+        self.assertEqual({'prefix': 's'}, self.fake_repo.kwargs)
+        self.assertEqual(2, len(results))
         for i in xrange(2):
             self.assertIsInstance(results[i], FakeProxy)
-            self.assertEqual(results[i].base, self.fake_repo.result[i])
-            self.assertEqual(results[i].args, tuple())
-            self.assertEqual(results[i].kwargs, {'a': 1})
+            self.assertEqual(self.fake_repo.result[i], results[i].base)
+            self.assertEqual(tuple(), results[i].args)
+            self.assertEqual({'a': 1}, results[i].kwargs)
 
     def _test_method_with_proxied_argument(self, name, result):
         self.fake_repo.result = result
@@ -127,16 +127,16 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         method = getattr(self.proxy_repo, name)
         proxy_result = method(item)
 
-        self.assertEqual(self.fake_repo.args, ('snoop',))
-        self.assertEqual(self.fake_repo.kwargs, {})
+        self.assertEqual(('snoop',), self.fake_repo.args)
+        self.assertEqual({}, self.fake_repo.kwargs)
 
         if result is None:
             self.assertIsNone(proxy_result)
         else:
             self.assertIsInstance(proxy_result, FakeProxy)
-            self.assertEqual(proxy_result.base, result)
-            self.assertEqual(proxy_result.args, tuple())
-            self.assertEqual(proxy_result.kwargs, {'a': 1})
+            self.assertEqual(result, proxy_result.base)
+            self.assertEqual(tuple(), proxy_result.args)
+            self.assertEqual({'a': 1}, proxy_result.kwargs)
 
     def test_add(self):
         self._test_method_with_proxied_argument('add', 'dog')
@@ -176,8 +176,8 @@ class TestImageFactory(test_utils.BaseTestCase):
         proxy_factory = proxy.ImageFactory(self.factory)
         self.factory.result = 'eddard'
         image = proxy_factory.new_image(a=1, b='two')
-        self.assertEqual(image, 'eddard')
-        self.assertEqual(self.factory.kwargs, {'a': 1, 'b': 'two'})
+        self.assertEqual('eddard', image)
+        self.assertEqual({'a': 1, 'b': 'two'}, self.factory.kwargs)
 
     def test_proxy_wrapping(self):
         proxy_factory = proxy.ImageFactory(self.factory,
@@ -186,8 +186,8 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.factory.result = 'stark'
         image = proxy_factory.new_image(a=1, b='two')
         self.assertIsInstance(image, FakeProxy)
-        self.assertEqual(image.base, 'stark')
-        self.assertEqual(self.factory.kwargs, {'a': 1, 'b': 'two'})
+        self.assertEqual('stark', image.base)
+        self.assertEqual({'a': 1, 'b': 'two'}, self.factory.kwargs)
 
 
 class FakeImageMembershipFactory(object):
@@ -211,9 +211,9 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
         proxy_factory = proxy.ImageMembershipFactory(self.factory)
         self.factory.result = 'tyrion'
         membership = proxy_factory.new_image_member('jaime', 'cersei')
-        self.assertEqual(membership, 'tyrion')
-        self.assertEqual(self.factory.image, 'jaime')
-        self.assertEqual(self.factory.member_id, 'cersei')
+        self.assertEqual('tyrion', membership)
+        self.assertEqual('jaime', self.factory.image)
+        self.assertEqual('cersei', self.factory.member_id)
 
     def test_proxy_wrapped_membership(self):
         proxy_factory = proxy.ImageMembershipFactory(
@@ -222,10 +222,10 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
         self.factory.result = 'tyrion'
         membership = proxy_factory.new_image_member('jaime', 'cersei')
         self.assertIsInstance(membership, FakeProxy)
-        self.assertEqual(membership.base, 'tyrion')
-        self.assertEqual(membership.kwargs, {'a': 1})
-        self.assertEqual(self.factory.image, 'jaime')
-        self.assertEqual(self.factory.member_id, 'cersei')
+        self.assertEqual('tyrion', membership.base)
+        self.assertEqual({'a': 1}, membership.kwargs)
+        self.assertEqual('jaime', self.factory.image)
+        self.assertEqual('cersei', self.factory.member_id)
 
     def test_proxy_wrapped_image(self):
         proxy_factory = proxy.ImageMembershipFactory(
@@ -233,9 +233,9 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
         self.factory.result = 'tyrion'
         image = FakeProxy('jaime')
         membership = proxy_factory.new_image_member(image, 'cersei')
-        self.assertEqual(membership, 'tyrion')
-        self.assertEqual(self.factory.image, 'jaime')
-        self.assertEqual(self.factory.member_id, 'cersei')
+        self.assertEqual('tyrion', membership)
+        self.assertEqual('jaime', self.factory.image)
+        self.assertEqual('cersei', self.factory.member_id)
 
     def test_proxy_both_wrapped(self):
         class FakeProxy2(FakeProxy):
@@ -251,10 +251,10 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
         image = FakeProxy2('jaime')
         membership = proxy_factory.new_image_member(image, 'cersei')
         self.assertIsInstance(membership, FakeProxy)
-        self.assertEqual(membership.base, 'tyrion')
-        self.assertEqual(membership.kwargs, {'b': 2})
-        self.assertEqual(self.factory.image, 'jaime')
-        self.assertEqual(self.factory.member_id, 'cersei')
+        self.assertEqual('tyrion', membership.base)
+        self.assertEqual({'b': 2}, membership.kwargs)
+        self.assertEqual('jaime', self.factory.image)
+        self.assertEqual('cersei', self.factory.member_id)
 
 
 class FakeImage(object):
@@ -273,7 +273,7 @@ class TestImage(test_utils.BaseTestCase):
     def test_normal_member_repo(self):
         proxy_image = proxy.Image(self.image)
         self.image.result = 'mormont'
-        self.assertEqual(proxy_image.get_member_repo(), 'mormont')
+        self.assertEqual('mormont', proxy_image.get_member_repo())
 
     def test_proxied_member_repo(self):
         proxy_image = proxy.Image(self.image,
@@ -282,7 +282,7 @@ class TestImage(test_utils.BaseTestCase):
         self.image.result = 'corn'
         member_repo = proxy_image.get_member_repo()
         self.assertIsInstance(member_repo, FakeProxy)
-        self.assertEqual(member_repo.base, 'corn')
+        self.assertEqual('corn', member_repo.base)
 
 
 class TestTaskFactory(test_utils.BaseTestCase):
@@ -323,4 +323,4 @@ class TestTaskFactory(test_utils.BaseTestCase):
             owner=self.fake_owner
         )
         self.assertIsInstance(task, FakeProxy)
-        self.assertEqual(task.base, 'fake_task')
+        self.assertEqual('fake_task', task.base)

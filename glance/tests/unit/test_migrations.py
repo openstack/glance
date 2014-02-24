@@ -166,7 +166,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         """Assure that checksum data is present on table"""
         images = db_utils.get_table(engine, 'images')
         self.assertIn('checksum', images.c)
-        self.assertEqual(images.c['checksum'].type.length, 32)
+        self.assertEqual(32, images.c['checksum'].type.length)
 
     def _pre_upgrade_005(self, engine):
         now = timeutils.utcnow()
@@ -267,7 +267,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                 self.assertEqual(row['updated_at'], updated_at)
 
         # No initial values should be remaining
-        self.assertEqual(len(values), 0)
+        self.assertEqual(0, len(values))
 
     def _pre_upgrade_012(self, engine):
         """Test rows in images have id changes from int to varchar(32) and
@@ -323,7 +323,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             rows = images.select().where(
                 images.c.name == image_name).execute().fetchall()
 
-            self.assertEqual(len(rows), 1)
+            self.assertEqual(1, len(rows))
 
             row = rows[0]
             self.assertTrue(utils.is_uuid_like(row['id']))
@@ -333,7 +333,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         # Find all image_members to ensure image_id has been updated
         results = image_members.select().where(
             image_members.c.image_id == uuids['normal']).execute().fetchall()
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
         # Find all image_properties to ensure image_id has been updated
         # as well as ensure kernel_id and ramdisk_id values have been
@@ -341,7 +341,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         results = image_properties.select().where(
             image_properties.c.image_id == uuids['normal']
         ).execute().fetchall()
-        self.assertEqual(len(results), 2)
+        self.assertEqual(2, len(results))
         for row in results:
             self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
 
@@ -362,7 +362,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             image_name = '%s migration 012 test' % name
             rows = images.select().where(
                 images.c.name == image_name).execute().fetchall()
-            self.assertEqual(len(rows), 1)
+            self.assertEqual(1, len(rows))
 
             row = rows[0]
             self.assertFalse(utils.is_uuid_like(row['id']))
@@ -372,14 +372,14 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         # Find all image_members to ensure image_id has been updated
         results = image_members.select().where(
             image_members.c.image_id == ids['normal']).execute().fetchall()
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
         # Find all image_properties to ensure image_id has been updated
         # as well as ensure kernel_id and ramdisk_id values have been
         # updated too
         results = image_properties.select().where(
             image_properties.c.image_id == ids['normal']).execute().fetchall()
-        self.assertEqual(len(results), 2)
+        self.assertEqual(2, len(results))
         for row in results:
             self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
 
@@ -627,8 +627,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         image_locations = db_utils.get_table(engine, 'image_locations')
         records = image_locations.select().execute().fetchall()
         locations = dict([(il.image_id, il.value) for il in records])
-        self.assertEqual(locations.get('fake-19-1'),
-                         'http://glance.example.com')
+        self.assertEqual('http://glance.example.com',
+                         locations.get('fake-19-1'))
 
     def _check_020(self, engine, data):
         images = db_utils.get_table(engine, 'images')
@@ -666,11 +666,11 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             image_locations.c.image_id == data).execute()
 
         r = list(results)
-        self.assertEqual(len(r), 1)
-        self.assertEqual(r[0]['value'], 'file:///some/place/onthe/fs')
+        self.assertEqual(1, len(r))
+        self.assertEqual('file:///some/place/onthe/fs', r[0]['value'])
         self.assertIn('meta_data', r[0])
         x = pickle.loads(r[0]['meta_data'])
-        self.assertEqual(x, {})
+        self.assertEqual({}, x)
 
     def _check_027(self, engine, data):
         table = "images"
@@ -896,7 +896,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         task_info_refs = task_info_table.select().execute().fetchall()
 
-        self.assertEqual(len(task_info_refs), 2)
+        self.assertEqual(2, len(task_info_refs))
 
         for x in range(len(task_info_refs)):
             self.assertEqual(task_info_refs[x].task_id, data[x]['id'])
@@ -915,13 +915,13 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         tasks_table = db_utils.get_table(engine, 'tasks')
         records = tasks_table.select().execute().fetchall()
-        self.assertEqual(len(records), 2)
+        self.assertEqual(2, len(records))
 
         tasks = dict([(t.id, t) for t in records])
 
         task_1 = tasks.get('task-1')
-        self.assertEqual(task_1.input, 'some input')
-        self.assertEqual(task_1.result, 'successful')
+        self.assertEqual('some input', task_1.input)
+        self.assertEqual('successful', task_1.result)
         self.assertIsNone(task_1.message)
 
         task_2 = tasks.get('task-2')
@@ -965,7 +965,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         image_locations = db_utils.get_table(engine, 'image_locations')
 
         self.assertIn('status', image_locations.c)
-        self.assertEqual(image_locations.c['status'].type.length, 30)
+        self.assertEqual(30, image_locations.c['status'].type.length)
 
         status_list = ['active', 'active', 'active',
                        'deleted', 'pending_delete', 'deleted']
@@ -974,7 +974,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             results = image_locations.select().where(
                 image_locations.c.image_id == image_id).execute()
             r = list(results)
-            self.assertEqual(len(r), 1)
+            self.assertEqual(1, len(r))
             self.assertIn('status', r[0])
             self.assertEqual(r[0]['status'], status_list[idx])
 

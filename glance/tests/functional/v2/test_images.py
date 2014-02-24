@@ -133,7 +133,7 @@ class TestImages(functional.FunctionalTest):
             u'container_format',
             u'owner',
         ])
-        self.assertEqual(set(image.keys()), checked_keys)
+        self.assertEqual(checked_keys, set(image.keys()))
         expected_image = {
             'status': 'queued',
             'name': 'image-1',
@@ -193,7 +193,7 @@ class TestImages(functional.FunctionalTest):
             u'container_format',
             u'owner',
         ])
-        self.assertEqual(set(image.keys()), checked_keys)
+        self.assertEqual(checked_keys, set(image.keys()))
         expected_image = {
             'status': 'queued',
             'name': 'image-2',
@@ -218,8 +218,8 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(2, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
-        self.assertEqual(images[1]['id'], image_id)
+        self.assertEqual(image2_id, images[0]['id'])
+        self.assertEqual(image_id, images[1]['id'])
 
         # Image list should list only image-2 as image-1 doesn't contain the
         # property 'bar'
@@ -228,7 +228,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(image2_id, images[0]['id'])
 
         # Image list should list only image-1 as image-2 doesn't contain the
         # property 'foo'
@@ -237,7 +237,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image_id)
+        self.assertEqual(image_id, images[0]['id'])
 
         # The "changes-since" filter shouldn't work on glance v2
         path = self._url('/v2/images?changes-since=20001007T10:10:10')
@@ -255,7 +255,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image_id)
+        self.assertEqual(image_id, images[0]['id'])
 
         # Image list should list only image-2 based on the filter
         # 'bar=foo&xyz=abc'
@@ -264,7 +264,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(image2_id, images[0]['id'])
 
         # Image list should not list anything as the filter 'foo=baz&abc=xyz'
         # is not satisfied by either images
@@ -416,7 +416,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected_checksum, response.headers['Content-MD5'])
-        self.assertEqual(response.text, 'ZZZZZ')
+        self.assertEqual('ZZZZZ', response.text)
 
         # Uploading duplicate data should be rejected with a 409. The
         # original data should remain untouched.
@@ -482,7 +482,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(image2_id, images[0]['id'])
 
         # Deleting image-2 should work
         path = self._url('/v2/images/%s' % image2_id)

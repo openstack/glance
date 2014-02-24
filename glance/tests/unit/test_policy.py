@@ -156,7 +156,7 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         enforcer = glance.api.policy.Enforcer()
 
         context = glance.context.RequestContext(roles=[])
-        self.assertEqual(enforcer.check(context, 'get_image', {}), False)
+        self.assertEqual(False, enforcer.check(context, 'get_image', {}))
 
 
 class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
@@ -206,26 +206,26 @@ class TestImagePolicy(test_utils.BaseTestCase):
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden,
                           setattr, image, 'visibility', 'public')
-        self.assertEqual(image.visibility, 'private')
+        self.assertEqual('private', image.visibility)
         self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
 
     def test_publicize_image_allowed(self):
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         image.visibility = 'public'
-        self.assertEqual(image.visibility, 'public')
+        self.assertEqual('public', image.visibility)
         self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
 
     def test_delete_image_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden, image.delete)
-        self.assertEqual(image.status, 'active')
+        self.assertEqual('active', image.status)
         self.policy.enforce.assert_called_once_with({}, "delete_image", {})
 
     def test_delete_image_allowed(self):
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         image.delete()
-        self.assertEqual(image.status, 'deleted')
+        self.assertEqual('deleted', image.status)
         self.policy.enforce.assert_called_once_with({}, "delete_image", {})
 
     def test_get_image_not_allowed(self):
@@ -240,7 +240,7 @@ class TestImagePolicy(test_utils.BaseTestCase):
                                                       {}, self.policy)
         output = image_repo.get(UUID1)
         self.assertIsInstance(output, glance.api.policy.ImageProxy)
-        self.assertEqual(output.image, 'image_from_get')
+        self.assertEqual('image_from_get', output.image)
         self.policy.enforce.assert_called_once_with({}, "get_image", {})
 
     def test_get_images_not_allowed(self):
@@ -256,7 +256,7 @@ class TestImagePolicy(test_utils.BaseTestCase):
         images = image_repo.list()
         for i, image in enumerate(images):
             self.assertIsInstance(image, glance.api.policy.ImageProxy)
-            self.assertEqual(image.image, 'image_from_list_%d' % i)
+            self.assertEqual('image_from_list_%d' % i, image.image)
             self.policy.enforce.assert_called_once_with({}, "get_images", {})
 
     def test_modify_image_not_allowed(self):
@@ -340,7 +340,7 @@ class TestMemberPolicy(test_utils.BaseTestCase):
     def test_add_member_allowed(self):
         image_member = ImageMembershipStub()
         self.member_repo.add(image_member)
-        self.assertEqual(image_member.output, 'member_repo_add')
+        self.assertEqual('member_repo_add', image_member.output)
         self.policy.enforce.assert_called_once_with({}, "add_member", {})
 
     def test_get_member_not_allowed(self):
@@ -350,7 +350,7 @@ class TestMemberPolicy(test_utils.BaseTestCase):
 
     def test_get_member_allowed(self):
         output = self.member_repo.get('')
-        self.assertEqual(output, 'member_repo_get')
+        self.assertEqual('member_repo_get', output)
         self.policy.enforce.assert_called_once_with({}, "get_member", {})
 
     def test_modify_member_not_allowed(self):
@@ -361,7 +361,7 @@ class TestMemberPolicy(test_utils.BaseTestCase):
     def test_modify_member_allowed(self):
         image_member = ImageMembershipStub()
         self.member_repo.save(image_member)
-        self.assertEqual(image_member.output, 'member_repo_save')
+        self.assertEqual('member_repo_save', image_member.output)
         self.policy.enforce.assert_called_once_with({}, "modify_member", {})
 
     def test_get_members_not_allowed(self):
@@ -371,7 +371,7 @@ class TestMemberPolicy(test_utils.BaseTestCase):
 
     def test_get_members_allowed(self):
         output = self.member_repo.list('')
-        self.assertEqual(output, 'member_repo_list')
+        self.assertEqual('member_repo_list', output)
         self.policy.enforce.assert_called_once_with({}, "get_members", {})
 
     def test_delete_member_not_allowed(self):
@@ -382,7 +382,7 @@ class TestMemberPolicy(test_utils.BaseTestCase):
     def test_delete_member_allowed(self):
         image_member = ImageMembershipStub()
         self.member_repo.remove(image_member)
-        self.assertEqual(image_member.output, 'member_repo_remove')
+        self.assertEqual('member_repo_remove', image_member.output)
         self.policy.enforce.assert_called_once_with({}, "delete_member", {})
 
 
@@ -416,7 +416,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
         )
         task = task_repo.get(UUID1)
         self.assertIsInstance(task, glance.api.policy.TaskProxy)
-        self.assertEqual(task.task, 'task_from_get')
+        self.assertEqual('task_from_get', task.task)
 
     def test_get_tasks_not_allowed(self):
         rules = {"get_tasks": False}
@@ -439,7 +439,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
         tasks = task_repo.list()
         for i, task in enumerate(tasks):
             self.assertIsInstance(task, glance.api.policy.TaskStubProxy)
-            self.assertEqual(task.task_stub, 'task_from_list_%d' % i)
+            self.assertEqual('task_from_list_%d' % i, task.task_stub)
 
     def test_add_task_not_allowed(self):
         rules = {"add_task": False}
@@ -480,7 +480,7 @@ class TestContextPolicyEnforcer(base.IsolatedUnitTest):
         context = glance.context.RequestContext(roles=[context_role],
                                                 is_admin=context_is_admin,
                                                 policy_enforcer=enforcer)
-        self.assertEqual(context.is_admin, admin_expected)
+        self.assertEqual(admin_expected, context.is_admin)
 
     def test_context_admin_policy_admin(self):
         self._do_test_policy_influence_context_admin('test_admin',

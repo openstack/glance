@@ -30,8 +30,8 @@ class VersionsTest(base.IsolatedUnitTest):
         req.accept = 'application/json'
         self.config(bind_host='127.0.0.1', bind_port=9292)
         res = versions.Controller().index(req)
-        self.assertEqual(res.status_int, 300)
-        self.assertEqual(res.content_type, 'application/json')
+        self.assertEqual(300, res.status_int)
+        self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
@@ -65,7 +65,7 @@ class VersionsTest(base.IsolatedUnitTest):
                            'href': 'http://127.0.0.1:9292/v1/'}],
             },
         ]
-        self.assertEqual(results, expected)
+        self.assertEqual(expected, results)
 
 
 class VersionNegotiationTest(base.IsolatedUnitTest):

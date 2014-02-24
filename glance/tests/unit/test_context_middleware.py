@@ -40,10 +40,10 @@ class TestContextMiddleware(base.IsolatedUnitTest):
     def test_header_parsing(self):
         req = self._build_request()
         self._build_middleware().process_request(req)
-        self.assertEqual(req.context.auth_tok, 'token1')
-        self.assertEqual(req.context.user, 'user1')
-        self.assertEqual(req.context.tenant, 'tenant1')
-        self.assertEqual(req.context.roles, ['role1', 'role2'])
+        self.assertEqual('token1', req.context.auth_tok)
+        self.assertEqual('user1', req.context.user)
+        self.assertEqual('tenant1', req.context.tenant)
+        self.assertEqual(['role1', 'role2'], req.context.roles)
 
     def test_is_admin_flag(self):
         # is_admin check should look for 'admin' role by default
@@ -95,7 +95,7 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         self.assertIsNone(req.context.auth_tok)
         self.assertIsNone(req.context.user)
         self.assertIsNone(req.context.tenant)
-        self.assertEqual(req.context.roles, [])
+        self.assertEqual([], req.context.roles)
         self.assertFalse(req.context.is_admin)
         self.assertTrue(req.context.read_only)
 
@@ -127,7 +127,7 @@ class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
         self.assertIsNone(req.context.auth_tok)
         self.assertIsNone(req.context.user)
         self.assertIsNone(req.context.tenant)
-        self.assertEqual(req.context.roles, [])
+        self.assertEqual([], req.context.roles)
         self.assertTrue(req.context.is_admin)
 
     def test_response(self):

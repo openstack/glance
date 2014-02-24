@@ -37,8 +37,8 @@ class TestMultiprocessing(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
-        self.assertEqual(content, '{"images": []}')
+        self.assertEqual(200, response.status)
+        self.assertEqual('{"images": []}', content)
         self.stop_servers()
 
     def _get_children(self):

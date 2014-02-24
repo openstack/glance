@@ -39,9 +39,9 @@ class TestLocationStrategy(base.IsolatedUnitTest):
     def test_load_strategy_modules(self):
         modules = location_strategy._load_strategies()
         # By default we have two built-in strategy modules.
-        self.assertEqual(len(modules), 2)
-        self.assertEqual(set(modules.keys()),
-                         set(['location_order', 'store_type']))
+        self.assertEqual(2, len(modules))
+        self.assertEqual(set(['location_order', 'store_type']),
+                         set(modules.keys()))
         self.assertEqual(location_strategy._available_strategies, modules)
 
     def test_load_strategy_module_with_deduplicating(self):
@@ -67,10 +67,10 @@ class TestLocationStrategy(base.IsolatedUnitTest):
                                    _fake_stevedore_driver_manager)
 
         loaded_modules = location_strategy._load_strategies()
-        self.assertEqual(len(loaded_modules), 1)
-        self.assertEqual(loaded_modules.keys()[0], 'module_name')
+        self.assertEqual(1, len(loaded_modules))
+        self.assertEqual('module_name', loaded_modules.keys()[0])
         # Skipped module #2, duplicated one.
-        self.assertEqual(loaded_modules['module_name'].__name__, 'module1')
+        self.assertEqual('module1', loaded_modules['module_name'].__name__)
 
     def test_load_strategy_module_with_init_exception(self):
         modules = ['module_init_exception', 'module_good']
@@ -97,10 +97,10 @@ class TestLocationStrategy(base.IsolatedUnitTest):
                                    _fake_stevedore_driver_manager)
 
         loaded_modules = location_strategy._load_strategies()
-        self.assertEqual(len(loaded_modules), 1)
-        self.assertEqual(loaded_modules.keys()[0], 'module_good')
+        self.assertEqual(1, len(loaded_modules))
+        self.assertEqual('module_good', loaded_modules.keys()[0])
         # Skipped module #1, initialize failed one.
-        self.assertEqual(loaded_modules['module_good'].__name__, 'module_good')
+        self.assertEqual('module_good', loaded_modules['module_good'].__name__)
 
     def test_verify_valid_location_strategy(self):
         for strategy_name in ['location_order', 'store_type']:
@@ -115,8 +115,8 @@ class TestLocationStrategy(base.IsolatedUnitTest):
                           strategy)
 
     def test_get_ordered_locations_with_none_or_empty_locations(self):
-        self.assertEqual(location_strategy.get_ordered_locations(None), [])
-        self.assertEqual(location_strategy.get_ordered_locations([]), [])
+        self.assertEqual([], location_strategy.get_ordered_locations(None))
+        self.assertEqual([], location_strategy.get_ordered_locations([]))
 
     def test_get_ordered_locations(self):
         self.config(location_strategy='location_order')

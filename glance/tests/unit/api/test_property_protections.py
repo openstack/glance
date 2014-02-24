@@ -72,27 +72,27 @@ class TestProtectedImageRepoProxy(utils.BaseTestCase):
         image_id = '1'
         result_image = self.image_repo.get(image_id)
         result_extra_props = result_image.extra_properties
-        self.assertEqual(result_extra_props['spl_create_prop'], 'c')
-        self.assertEqual(result_extra_props['spl_read_prop'], 'r')
-        self.assertEqual(result_extra_props['spl_update_prop'], 'u')
-        self.assertEqual(result_extra_props['spl_delete_prop'], 'd')
+        self.assertEqual('c', result_extra_props['spl_create_prop'])
+        self.assertEqual('r', result_extra_props['spl_read_prop'])
+        self.assertEqual('u', result_extra_props['spl_update_prop'])
+        self.assertEqual('d', result_extra_props['spl_delete_prop'])
         self.assertNotIn('forbidden', result_extra_props.keys())
 
     def test_list_image(self):
         result_images = self.image_repo.list()
-        self.assertEqual(len(result_images), 3)
+        self.assertEqual(3, len(result_images))
         result_extra_props = result_images[0].extra_properties
-        self.assertEqual(result_extra_props['spl_create_prop'], 'c')
-        self.assertEqual(result_extra_props['spl_read_prop'], 'r')
-        self.assertEqual(result_extra_props['spl_update_prop'], 'u')
-        self.assertEqual(result_extra_props['spl_delete_prop'], 'd')
+        self.assertEqual('c', result_extra_props['spl_create_prop'])
+        self.assertEqual('r', result_extra_props['spl_read_prop'])
+        self.assertEqual('u', result_extra_props['spl_update_prop'])
+        self.assertEqual('d', result_extra_props['spl_delete_prop'])
         self.assertNotIn('forbidden', result_extra_props.keys())
 
         result_extra_props = result_images[1].extra_properties
-        self.assertEqual(result_extra_props, {})
+        self.assertEqual({}, result_extra_props)
 
         result_extra_props = result_images[2].extra_properties
-        self.assertEqual(result_extra_props['spl_read_prop'], 'r')
+        self.assertEqual('r', result_extra_props['spl_read_prop'])
         self.assertNotIn('forbidden', result_extra_props.keys())
 
 
@@ -115,7 +115,7 @@ class TestProtectedImageProxy(utils.BaseTestCase):
         result_image = property_protections.ProtectedImageProxy(
             image, context, self.property_rules)
         result_extra_props = result_image.extra_properties
-        self.assertEqual(result_extra_props['spl_read_prop'], 'read')
+        self.assertEqual('read', result_extra_props['spl_read_prop'])
         self.assertNotIn('spl_fake_prop', result_extra_props.keys())
 
 
@@ -133,7 +133,7 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
             context, extra_properties, self.property_rules)
         test_result = extra_prop_proxy['foo']
-        self.assertEqual(test_result, 'bar')
+        self.assertEqual('bar', test_result)
 
     def test_read_extra_property_as_unpermitted_role(self):
         extra_properties = {'foo': 'bar', 'ping': 'pong'}
@@ -148,7 +148,7 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
             context, extra_properties, self.property_rules)
         extra_prop_proxy['foo'] = 'par'
-        self.assertEqual(extra_prop_proxy['foo'], 'par')
+        self.assertEqual('par', extra_prop_proxy['foo'])
 
     def test_update_extra_property_as_unpermitted_role_after_read(self):
         extra_properties = {'spl_read_prop': 'bar'}
@@ -182,7 +182,7 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
             context, extra_properties, self.property_rules)
         extra_prop_proxy['boo'] = 'doo'
-        self.assertEqual(extra_prop_proxy['boo'], 'doo')
+        self.assertEqual('doo', extra_prop_proxy['boo'])
 
     def test_create_reserved_extra_property(self):
         extra_properties = {}
@@ -214,7 +214,7 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
         extra_prop_proxy = property_protections.ExtraPropertiesProxy(
             context, extra_properties, self.property_rules)
         # Ensure property has been created and can be read
-        self.assertEqual(extra_prop_proxy['spl_read_prop'], 'r')
+        self.assertEqual('r', extra_prop_proxy['spl_read_prop'])
         self.assertRaises(exception.ReservedProperty,
                           extra_prop_proxy.__delitem__, 'spl_read_prop')
 
@@ -252,7 +252,7 @@ class TestProtectedImageFactoryProxy(utils.BaseTestCase):
         extra_props = {}
         image = self.image_factory.new_image(extra_properties=extra_props)
         expected_extra_props = {}
-        self.assertEqual(image.extra_properties, expected_extra_props)
+        self.assertEqual(expected_extra_props, image.extra_properties)
 
     def test_create_image_extra_prop(self):
         self.context = glance.context.RequestContext(tenant=TENANT1,
@@ -263,7 +263,7 @@ class TestProtectedImageFactoryProxy(utils.BaseTestCase):
         extra_props = {'spl_create_prop': 'c'}
         image = self.image_factory.new_image(extra_properties=extra_props)
         expected_extra_props = {'spl_create_prop': 'c'}
-        self.assertEqual(image.extra_properties, expected_extra_props)
+        self.assertEqual(expected_extra_props, image.extra_properties)
 
     def test_create_image_extra_prop_reserved_property(self):
         self.context = glance.context.RequestContext(tenant=TENANT1,
@@ -286,7 +286,7 @@ class TestProtectedImageFactoryProxy(utils.BaseTestCase):
         extra_props = {'foo': 'bar', 'spl_create_prop': 'c'}
         image = self.image_factory.new_image(extra_properties=extra_props)
         expected_extra_props = {'foo': 'bar', 'spl_create_prop': 'c'}
-        self.assertEqual(image.extra_properties, expected_extra_props)
+        self.assertEqual(expected_extra_props, image.extra_properties)
 
     def test_create_image_extra_prop_invalid_role(self):
         self.context = glance.context.RequestContext(tenant=TENANT1,

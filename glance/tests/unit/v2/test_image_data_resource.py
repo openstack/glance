@@ -108,7 +108,7 @@ class TestImagesController(base.StoreClearingUnitTest):
                                       'metadata': {}, 'status': 'active'}])
         self.image_repo.result = image
         image = self.controller.download(request, unit_test_utils.UUID1)
-        self.assertEqual(image.image_id, 'abcd')
+        self.assertEqual('abcd', image.image_id)
 
     def test_download_no_location(self):
         request = unit_test_utils.get_fake_request()
@@ -145,8 +145,8 @@ class TestImagesController(base.StoreClearingUnitTest):
         image = FakeImage('abcd')
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
-        self.assertEqual(image.data, 'YYYY')
-        self.assertEqual(image.size, 4)
+        self.assertEqual('YYYY', image.data)
+        self.assertEqual(4, image.size)
 
     def test_upload_status(self):
         request = unit_test_utils.get_fake_request()
@@ -156,21 +156,21 @@ class TestImagesController(base.StoreClearingUnitTest):
 
         def read_data():
             insurance['called'] = True
-            self.assertEqual(self.image_repo.saved_image.status, 'saving')
+            self.assertEqual('saving', self.image_repo.saved_image.status)
             yield 'YYYY'
 
         self.controller.upload(request, unit_test_utils.UUID2,
                                read_data(), None)
         self.assertTrue(insurance['called'])
-        self.assertEqual(self.image_repo.saved_image.status,
-                         'modified-by-fake')
+        self.assertEqual('modified-by-fake',
+                         self.image_repo.saved_image.status)
 
     def test_upload_no_size(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd')
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
-        self.assertEqual(image.data, 'YYYY')
+        self.assertEqual('YYYY', image.data)
         self.assertIsNone(image.size)
 
     def test_upload_invalid(self):
@@ -301,7 +301,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             'event_type': "image.prepare",
             'payload': prepare_payload,
         }
-        self.assertEqual(len(output_log), 3)
+        self.assertEqual(3, len(output_log))
         prepare_updated_at = output_log[0]['payload']['updated_at']
         del output_log[0]['payload']['updated_at']
         self.assertTrue(prepare_updated_at <= output['meta']['updated_at'])
@@ -318,7 +318,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             'event_type': "image.upload",
             'payload': upload_payload,
         }
-        self.assertEqual(len(output_log), 3)
+        self.assertEqual(3, len(output_log))
         self.assertEqual(output_log[1], upload_log)
 
     def _test_upload_download_activate_notification(self):
@@ -332,7 +332,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             'event_type': "image.activate",
             'payload': activate_payload,
         }
-        self.assertEqual(len(output_log), 3)
+        self.assertEqual(3, len(output_log))
         self.assertEqual(output_log[2], activate_log)
 
     def test_restore_image_when_upload_failed(self):
@@ -343,7 +343,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPServiceUnavailable,
                           self.controller.upload,
                           request, unit_test_utils.UUID2, 'ZZZ', 3)
-        self.assertEqual(self.image_repo.saved_image.status, 'queued')
+        self.assertEqual('queued', self.image_repo.saved_image.status)
 
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
@@ -359,7 +359,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Length'] = 3
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.read(), 'YYY')
+        self.assertEqual('YYY', data.read())
         expected = {'size': 3}
         self.assertEqual(expected, output)
 
@@ -371,7 +371,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.body_file = six.StringIO('YYY')
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.read(), 'YYY')
+        self.assertEqual('YYY', data.read())
         expected = {'size': None}
         self.assertEqual(expected, output)
 
@@ -384,7 +384,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Length'] = 3
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.read(), 'YYY')
+        self.assertEqual('YYY', data.read())
         expected = {'size': 3}
         self.assertEqual(expected, output)
 
@@ -398,7 +398,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Length'] = 4
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual(data.read(), 'YYY')
+        self.assertEqual('YYY', data.read())
         expected = {'size': 4}
         self.assertEqual(expected, output)
 

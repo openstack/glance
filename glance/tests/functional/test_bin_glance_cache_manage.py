@@ -60,7 +60,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['checksum'],
                          hashlib.md5(image_data).hexdigest())
@@ -143,7 +143,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
                                               ids[1])
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
 
         self.assertTrue(self.is_image_cached(ids[1]),
                         "%s is not cached." % ids[1])

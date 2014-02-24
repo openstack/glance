@@ -88,7 +88,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
     def test_image_get_index(self):
         """Test correct set of public image returned"""
         images = self.client.image_get_all()
-        self.assertEqual(len(images), 2)
+        self.assertEqual(2, len(images))
 
     def test_create_image_with_null_min_disk_min_ram(self):
         UUID3 = _gen_uuid()
@@ -306,7 +306,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(limit=2)
-        self.assertEqual(len(images), 2)
+        self.assertEqual(2, len(images))
 
     def test_image_get_index_marker_limit(self):
         """Test correct set of images returned with marker/limit params."""
@@ -346,7 +346,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(limit=None)
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
 
     def test_image_get_index_by_name(self):
         """Test correct set of public, name-filtered image returned.
@@ -359,7 +359,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(filters={'name': 'new name! #123'})
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
 
         for image in images:
             self.assertEqual('new name! #123', image['name'])
@@ -374,7 +374,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
         filters = {'is_public': 'avalue'}
         images = self.client.image_get_all(filters=filters)
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
 
         for image in images:
             self.assertEqual('avalue', image['properties'][0]['value'])
@@ -479,7 +479,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
         image = self.client.image_get(image_id=UUID2)
         current = image['status']
-        self.assertEqual(current, 'active')
+        self.assertEqual('active', current)
 
         # image is in 'active' state so this should cause a failure.
         from_state = 'saving'
@@ -537,7 +537,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         """Tests getting image members"""
         memb_list = self.client.image_member_find(image_id=UUID2)
         num_members = len(memb_list)
-        self.assertEqual(num_members, 0)
+        self.assertEqual(0, num_members)
 
     def test_image_get_members_not_existing(self):
         """Tests getting non-existent image members"""
@@ -549,7 +549,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         """Tests getting member images"""
         memb_list = self.client.image_member_find(member='pattieblack')
         num_members = len(memb_list)
-        self.assertEqual(num_members, 0)
+        self.assertEqual(0, num_members)
 
     def test_add_update_members(self):
         """Tests updating image members"""
@@ -568,7 +568,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
         self.client.image_member_delete(memb_id=member['id'])
         memb_list = self.client.image_member_find(member='pattieblack')
-        self.assertEqual(len(memb_list), 0)
+        self.assertEqual(0, len(memb_list))
 
 
 class TestRegistryV2ClientApi(base.IsolatedUnitTest):
@@ -616,7 +616,7 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
 
         self.assertIsNone(rapi._CLIENT_CREDS)
         rapi.configure_registry_admin_creds()
-        self.assertEqual(rapi._CLIENT_CREDS, expected)
+        self.assertEqual(expected, rapi._CLIENT_CREDS)
 
     def test_configure_registry_admin_creds_with_auth_url(self):
         expected = self._get_fake_config_creds()
@@ -629,4 +629,4 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
 
         self.assertIsNone(rapi._CLIENT_CREDS)
         rapi.configure_registry_admin_creds()
-        self.assertEqual(rapi._CLIENT_CREDS, expected)
+        self.assertEqual(expected, rapi._CLIENT_CREDS)

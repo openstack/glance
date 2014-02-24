@@ -119,7 +119,7 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEqual(1, len(output['tasks']))
         actual = set([task.task_id for task in output['tasks']])
         expected = set([UUID1])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
@@ -144,7 +144,7 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEqual(2, len(output['tasks']))
         actual = set([task.task_id for task in output['tasks']])
         expected = set([UUID2, UUID1])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
         self.assertEqual(UUID1, output['next_marker'])
 
     def test_index_no_next_marker(self):
@@ -154,7 +154,7 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEqual(0, len(output['tasks']))
         actual = set([task.task_id for task in output['tasks']])
         expected = set([])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
         self.assertNotIn('next_marker', output)
 
     def test_index_with_id_filter(self):
@@ -163,7 +163,7 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEqual(1, len(output['tasks']))
         actual = set([task.task_id for task in output['tasks']])
         expected = set([UUID1])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_filters_return_many(self):
         path = '/tasks?status=pending'
@@ -186,7 +186,7 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEqual(1, len(output['tasks']))
         actual = set([task.task_id for task in output['tasks']])
         expected = set([UUID1])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_index_with_marker(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -228,7 +228,7 @@ class TestTasksController(test_utils.BaseTestCase):
         output = self.controller.index(request, sort_dir='asc', limit=3)
         actual = [task.task_id for task in output['tasks']]
         self.assertEqual(3, len(actual))
-        self.assertEqual(actual, [UUID1, UUID2, UUID3])
+        self.assertEqual([UUID1, UUID2, UUID3], actual)
 
     def test_index_with_sort_key(self):
         path = '/tasks'
@@ -280,7 +280,7 @@ class TestTasksController(test_utils.BaseTestCase):
 
     def test_get_not_allowed(self):
         request = unit_test_utils.get_fake_request()
-        self.assertEqual(request.context.tenant, TENANT1)
+        self.assertEqual(TENANT1, request.context.tenant)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.get, request, UUID4)
 
@@ -327,10 +327,10 @@ class TestTasksController(test_utils.BaseTestCase):
             "image_from_format": "qcow2"}, task.task_input)
         output_logs = [nlog for nlog in self.notifier.get_logs()
                        if nlog['event_type'] == 'task.create']
-        self.assertEqual(len(output_logs), 1)
+        self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
-        self.assertEqual(output_log['notification_type'], 'INFO')
-        self.assertEqual(output_log['event_type'], 'task.create')
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('task.create', output_log['event_type'])
 
 
 class TestTasksControllerPolicies(base.IsolatedUnitTest):
@@ -414,14 +414,14 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
                     'sort_dir': 'desc',
                     'filters': {}}
         output = self.deserializer.index(request)
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_index_strip_params_from_filters(self):
         type = 'import'
         path = '/tasks?type=%s' % type
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output['filters']['type'], type)
+        self.assertEqual(type, output['filters']['type'])
 
     def test_index_with_many_filter(self):
         status = 'success'
@@ -430,16 +430,16 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
                                                            'type': type}
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output['filters']['status'], status)
-        self.assertEqual(output['filters']['type'], type)
+        self.assertEqual(status, output['filters']['status'])
+        self.assertEqual(type, output['filters']['type'])
 
     def test_index_with_filter_and_limit(self):
         status = 'success'
         path = '/tasks?status=%s&limit=1' % status
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output['filters']['status'], status)
-        self.assertEqual(output['limit'], 1)
+        self.assertEqual(status, output['filters']['status'])
+        self.assertEqual(1, output['limit'])
 
     def test_index_non_integer_limit(self):
         request = unit_test_utils.get_fake_request('/tasks?limit=blah')
@@ -477,7 +477,7 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
         path = '/tasks?marker=%s' % marker
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output.get('marker'), marker)
+        self.assertEqual(marker, output.get('marker'))
 
     def test_index_marker_not_specified(self):
         request = unit_test_utils.get_fake_request('/tasks')
@@ -497,7 +497,7 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
             'sort_dir': 'desc',
             'filters': {}
         }
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_index_sort_dir_asc(self):
         request = unit_test_utils.get_fake_request('/tasks?sort_dir=asc')
@@ -506,7 +506,7 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
             'sort_key': 'created_at',
             'sort_dir': 'asc',
             'filters': {}}
-        self.assertEqual(output, expected)
+        self.assertEqual(expected, output)
 
     def test_index_sort_dir_bad_value(self):
         request = unit_test_utils.get_fake_request('/tasks?sort_dir=invalid')
