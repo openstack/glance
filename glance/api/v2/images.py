@@ -508,7 +508,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return member_status
 
     def _get_filters(self, filters):
-        visibility = filters.get('visibility', None)
+        visibility = filters.get('visibility')
         if visibility:
             if visibility not in ['public', 'private', 'shared']:
                 msg = _('Invalid visibility value: %s') % visibility

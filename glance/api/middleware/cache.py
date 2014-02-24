@@ -240,11 +240,11 @@ class CacheFilter(wsgi.Middleware):
         return resp
 
     def _process_GET_response(self, resp, image_id):
-        image_checksum = resp.headers.get('Content-MD5', None)
+        image_checksum = resp.headers.get('Content-MD5')
 
         if not image_checksum:
             # API V1 stores the checksum in a different header:
-            image_checksum = resp.headers.get('x-image-meta-checksum', None)
+            image_checksum = resp.headers.get('x-image-meta-checksum')
 
         if not image_checksum:
             LOG.error(_("Checksum header is missing."))
