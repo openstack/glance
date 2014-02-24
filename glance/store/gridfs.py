@@ -212,4 +212,4 @@ class Store(glance.store.base.Store):
         """
         image = self._get_file(location)
         self.fs.delete(image._id)
-        LOG.debug("Deleted image %s from GridFS")
+        LOG.debug(_("Deleted image %s from GridFS"), image._id)

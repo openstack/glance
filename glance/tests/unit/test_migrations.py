@@ -38,6 +38,7 @@ from migrate.versioning.repository import Repository
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
 from six.moves import xrange
+from six import text_type
 import sqlalchemy
 
 from glance.common import crypt
@@ -139,7 +140,8 @@ class TestMigrations(test_utils.BaseTestCase):
 
         # Load test databases from the config file. Only do this
         # once. No need to re-run this on each test...
-        LOG.debug('config_path is %s' % TestMigrations.CONFIG_FILE_PATH)
+        LOG.debug(_('config_path is %s'),
+                  text_type(TestMigrations.CONFIG_FILE_PATH))
         if os.path.exists(TestMigrations.CONFIG_FILE_PATH):
             cp = ConfigParser.RawConfigParser()
             try:
@@ -332,7 +334,7 @@ class TestMigrations(test_utils.BaseTestCase):
                               init_version + 1)
         self.assertEqual(init_version + 1, db_version())
 
-        LOG.debug('latest version is %s' % TestMigrations.REPOSITORY.latest)
+        LOG.debug(_('latest version is %s'), TestMigrations.REPOSITORY.latest)
 
         for version in xrange(init_version + 2,
                               TestMigrations.REPOSITORY.latest + 1):
