@@ -17,7 +17,6 @@
 
 import hashlib
 import httplib
-import urllib
 
 import netaddr
 from oslo.config import cfg
@@ -133,7 +132,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                           'dsName': self.specs.get('datastore_name')}
         else:
             param_list = {'dsName': self.specs.get('datastore_name')}
-        self.query = urllib.urlencode(param_list)
+        self.query = urlparse.urlencode(param_list)
 
     def get_uri(self):
         if is_valid_ipv6(self.server_host):

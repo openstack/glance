@@ -20,7 +20,6 @@ from __future__ import absolute_import
 import hashlib
 import httplib
 import math
-import urllib
 
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
@@ -180,7 +179,8 @@ class StoreLocation(glance.store.location.StoreLocation):
 
     def _get_credstring(self):
         if self.user and self.key:
-            return '%s:%s@' % (urllib.quote(self.user), urllib.quote(self.key))
+            return '%s:%s@' % (urlparse.quote(self.user),
+                               urlparse.quote(self.key))
         return ''
 
     def get_uri(self):
@@ -247,8 +247,8 @@ class StoreLocation(glance.store.location.StoreLocation):
                 LOG.debug(reason)
                 raise exception.BadStoreUri()
             user, key = cred_parts
-            self.user = urllib.unquote(user)
-            self.key = urllib.unquote(key)
+            self.user = urlparse.unquote(user)
+            self.key = urlparse.unquote(key)
         else:
             self.user = None
             self.key = None

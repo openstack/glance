@@ -20,10 +20,10 @@ import httplib
 import mock
 import StringIO
 import tempfile
-import urllib
 import uuid
 
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 import stubout
 import swiftclient
 
@@ -222,7 +222,7 @@ class SwiftTests(object):
 
     @property
     def swift_store_user(self):
-        return urllib.quote(CONF.swift_store_user)
+        return urlparse.quote(CONF.swift_store_user)
 
     def test_get_size(self):
         """

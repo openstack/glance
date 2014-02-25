@@ -15,10 +15,10 @@
 # under the License.
 
 import copy
-import urllib
 import webob.exc
 
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 
 from glance.api import policy
 from glance.common import exception
@@ -272,7 +272,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def index(self, response, result):
         params = dict(response.request.params)
         params.pop('marker', None)
-        query = urllib.urlencode(params)
+        query = urlparse.urlencode(params)
         body = {
             'tasks': [self._format_task(self.partial_task_schema, task)
                       for task in result['tasks']],
@@ -283,7 +283,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             body['first'] = '%s?%s' % (body['first'], query)
         if 'next_marker' in result:
             params['marker'] = result['next_marker']
-            next_query = urllib.urlencode(params)
+            next_query = urlparse.urlencode(params)
             body['next'] = '/v2/tasks?%s' % next_query
         response.unicode_body = unicode(json.dumps(body, ensure_ascii=False))
         response.content_type = 'application/json'
