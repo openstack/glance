@@ -20,6 +20,7 @@ import httplib
 
 import netaddr
 from oslo.config import cfg
+from oslo.vmware import api
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
@@ -27,7 +28,7 @@ import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
 import glance.store.location
-from glance.store.vmware import api
+
 
 LOG = logging.getLogger(__name__)
 

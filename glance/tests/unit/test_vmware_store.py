@@ -78,7 +78,7 @@ class FakeHTTPConnection(object):
 
 class TestStore(base.StoreClearingUnitTest):
 
-    @mock.patch('glance.store.vmware.api.VMwareAPISession', autospec=True)
+    @mock.patch('oslo.vmware.api.VMwareAPISession', autospec=True)
     def setUp(self, mock_session):
         """Establish a clean test environment"""
         super(TestStore, self).setUp()
