@@ -429,8 +429,8 @@ class TaskRepoProxy(glance.domain.proxy.TaskRepo):
         self.context = context
         super(TaskRepoProxy, self).__init__(task_repo)
 
-    def get_task_and_details(self, task_id):
-        task, task_details = self.task_repo.get_task_and_details(task_id)
+    def get_task_stub_and_details(self, task_id):
+        task, task_details = self.task_repo.get_task_stub_and_details(task_id)
         return proxy_task(self.context, task), proxy_task_details(self.context,
                                                                   task,
                                                                   task_details)

@@ -977,7 +977,7 @@ class TestTaskRepoProxy(utils.BaseTestCase):
         def __init__(self, fixtures):
             self.fixtures = fixtures
 
-        def get_task_and_details(self, task_id):
+        def get_task_stub_and_details(self, task_id):
             for f in self.fixtures:
                 if f.task_id == task_id:
                     return f, None
@@ -1005,12 +1005,13 @@ class TestTaskRepoProxy(utils.BaseTestCase):
         )
 
     def test_get_mutable_task(self):
-        task, _ = self.task_repo.get_task_and_details(self.fixtures[0].task_id)
+        task, _ = self.task_repo.get_task_stub_and_details(
+            self.fixtures[0].task_id)
         self.assertEqual(task.task_id, self.fixtures[0].task_id)
 
     def test_get_immutable_task(self):
         task_id = self.fixtures[1].task_id
-        task, task_details = self.task_repo.get_task_and_details(task_id)
+        task, task_details = self.task_repo.get_task_stub_and_details(task_id)
         self.assertRaises(exception.Forbidden,
                           setattr,
                           task_details,

@@ -63,10 +63,12 @@ class ImageRepoStub(object):
         return ['images_from_list']
 
 
-class TaskStub(glance.domain.Task):
+class TaskStub(glance.domain.TaskStub):
     def run(self, executor):
         pass
 
+
+class Task(glance.domain.Task):
     def succeed(self, result):
         pass
 
@@ -401,17 +403,31 @@ class TestTaskNotifications(utils.BaseTestCase):
 
     def setUp(self):
         super(TestTaskNotifications, self).setUp()
-        self.task = TaskStub(
+        task_input = {"loc": "fake"}
+        self.task_stub = TaskStub(
             task_id='aaa',
             task_type='import',
             status='pending',
             owner=TENANT2,
             expires_at=None,
             created_at=DATETIME,
-            updated_at=DATETIME
+            updated_at=DATETIME,
+        )
+
+        self.task = Task(
+            task_id='aaa',
+            task_type='import',
+            status='pending',
+            owner=TENANT2,
+            expires_at=None,
+            created_at=DATETIME,
+            updated_at=DATETIME,
+            task_input=task_input,
+            result='res',
+            message='blah'
         )
         self.task_details = domain.TaskDetails(task_id=self.task.task_id,
-                                               task_input={"loc": "fake"},
+                                               task_input=task_input,
                                                result='',
                                                message='')
         self.context = glance.context.RequestContext(
@@ -430,6 +446,11 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.context,
             self.notifier
         )
+        self.task_stub_proxy = glance.notifier.TaskStubProxy(
+            self.task_stub,
+            self.context,
+            self.notifier
+        )
         self.task_details_proxy = notifier.TaskDetailsProxy(self.task_details,
                                                             self.context,
                                                             self.notifier)
@@ -442,7 +463,8 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.patcher.stop()
 
     def test_task_create_notification(self):
-        self.task_repo_proxy.add(self.task_proxy, self.task_details_proxy)
+        self.task_repo_proxy.add(self.task_stub_proxy,
+                                 self.task_details_proxy)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]
@@ -462,7 +484,7 @@ class TestTaskNotifications(utils.BaseTestCase):
 
     def test_task_delete_notification(self):
         now = timeutils.isotime()
-        self.task_repo_proxy.remove(self.task_proxy)
+        self.task_repo_proxy.remove(self.task_stub_proxy)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]
@@ -485,7 +507,7 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
 
     def test_task_run_notification(self):
-        self.task_proxy.run(executor=None)
+        self.task_stub_proxy.run(executor=None)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]

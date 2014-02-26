@@ -56,9 +56,9 @@ class TasksController(object):
         task_repo = self.gateway.get_task_repo(req.context)
         live_time = CONF.task.task_time_to_live
         try:
-            new_task = task_factory.new_task(task_type=task['type'],
-                                             owner=req.context.owner,
-                                             task_time_to_live=live_time)
+            new_task = task_factory.new_task_stub(task_type=task['type'],
+                                                  owner=req.context.owner,
+                                                  task_time_to_live=live_time)
             new_task_details = task_factory.new_task_details(new_task.task_id,
                                                              task['input'])
             task_repo.add(new_task, new_task_details)
@@ -104,7 +104,7 @@ class TasksController(object):
     def get(self, req, task_id):
         try:
             task_repo = self.gateway.get_task_repo(req.context)
-            task, task_details = task_repo.get_task_and_details(task_id)
+            task, task_details = task_repo.get_task_stub_and_details(task_id)
         except exception.NotFound as e:
             msg = (_("Failed to find task %(task_id)s. Reason: %(reason)s") %
                    {'task_id': task_id, 'reason': unicode(e)})

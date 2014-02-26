@@ -311,7 +311,8 @@ class Task(object):
     _supported_task_status = ('pending', 'processing', 'success', 'failure')
 
     def __init__(self, task_id, task_type, status, owner,
-                 expires_at, created_at, updated_at, task_time_to_live=48):
+                 expires_at, created_at, updated_at,
+                 task_input, result, message, task_time_to_live=48):
 
         if task_type not in self._supported_task_type:
             raise exception.InvalidTaskType(task_type)
@@ -329,13 +330,13 @@ class Task(object):
         self._time_to_live = datetime.timedelta(hours=task_time_to_live)
         self.created_at = created_at
         self.updated_at = updated_at
+        self.task_input = task_input
+        self.result = result
+        self.message = message
 
     @property
     def status(self):
         return self._status
-
-    def run(self, executor):
-        pass
 
     def _validate_task_status_transition(self, cur_status, new_status):
             valid_transitions = {
@@ -384,6 +385,27 @@ class Task(object):
         self.expires_at = timeutils.utcnow() + self._time_to_live
 
 
+class TaskStub(object):
+
+    def __init__(self, task_id, task_type, status, owner,
+                 expires_at, created_at, updated_at, task_time_to_live=48):
+        self.task_id = task_id
+        self._status = status
+        self.type = task_type
+        self.owner = owner
+        self.expires_at = expires_at
+        self._time_to_live = datetime.timedelta(hours=task_time_to_live)
+        self.created_at = created_at
+        self.updated_at = updated_at
+
+    @property
+    def status(self):
+        return self._status
+
+    def run(self, executor):
+        pass
+
+
 class TaskDetails(object):
 
     def __init__(self, task_id, task_input, message, result):
@@ -407,6 +429,28 @@ class TaskFactory(object):
         created_at = timeutils.utcnow()
         updated_at = created_at
         return Task(
+            task_id,
+            task_type,
+            status,
+            owner,
+            expires_at,
+            created_at,
+            updated_at,
+            None,  # input
+            None,  # result
+            None,  # message
+            task_time_to_live
+        )
+
+    def new_task_stub(self, task_type, owner, task_time_to_live=48):
+        task_id = str(uuid.uuid4())
+        status = 'pending'
+        # Note(nikhil): expires_at would be set on the task, only when it
+        # succeeds or fails.
+        expires_at = None
+        created_at = timeutils.utcnow()
+        updated_at = created_at
+        return TaskStub(
             task_id,
             task_type,
             status,
