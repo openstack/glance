@@ -23,15 +23,19 @@ VMware Datastore backend
 
 import ConfigParser
 import httplib
+import logging
 import os
 
 import oslo.config.cfg
+from oslo.vmware import api
 import six.moves.urllib.parse as urlparse
 import testtools
 
-from glance.store.vmware import api
 import glance.store.vmware_datastore
 import glance.tests.functional.store as store_tests
+
+
+logging.getLogger('suds').setLevel(logging.INFO)
 
 
 def read_config(path):
@@ -47,6 +51,7 @@ def parse_config(config):
         'vmware_server_username',
         'vmware_server_password',
         'vmware_api_retry_count',
+        'vmware_task_poll_interval',
         'vmware_store_image_dir',
         'vmware_datacenter_path',
         'vmware_datastore_name',
@@ -63,13 +68,14 @@ class VMwareDatastoreStoreError(RuntimeError):
 
 
 def vsphere_connect(server_ip, server_username, server_password,
-                    api_retry_count, scheme='https',
-                    create_session=True, wsdl_loc=None):
+                    api_retry_count, task_poll_interval,
+                    scheme='https', create_session=True, wsdl_loc=None):
     try:
         return api.VMwareAPISession(server_ip,
                                     server_username,
                                     server_password,
                                     api_retry_count,
+                                    task_poll_interval,
                                     scheme=scheme,
                                     create_session=create_session,
                                     wsdl_loc=wsdl_loc)
@@ -105,6 +111,7 @@ class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
                                        config['vmware_server_username'],
                                        config['vmware_server_password'],
                                        config['vmware_api_retry_count'],
+                                       config['vmware_task_poll_interval'],
                                        scheme=scheme)
 
         self.vmware_config = config
