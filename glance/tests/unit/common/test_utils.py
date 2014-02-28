@@ -15,6 +15,7 @@
 
 import os
 import tempfile
+import uuid
 
 import six
 import webob
@@ -215,3 +216,15 @@ class TestUtils(test_utils.BaseTestCase):
                 self.assertRaises(RuntimeError,
                                   utils.validate_key_cert,
                                   keyf.name, keyf.name)
+
+
+class UUIDTestCase(test_utils.BaseTestCase):
+
+    def test_is_uuid_like(self):
+        self.assertTrue(utils.is_uuid_like(str(uuid.uuid4())))
+
+    def test_id_is_uuid_like(self):
+        self.assertFalse(utils.is_uuid_like(1234567))
+
+    def test_name_is_uuid_like(self):
+        self.assertFalse(utils.is_uuid_like('zhongyueluo'))
