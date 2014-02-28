@@ -280,8 +280,12 @@ class Driver(base.Driver):
                 return None
 
         path = self.get_image_filepath(image_id)
-        file_info = os.stat(path)
-        return image_id, file_info[stat.ST_SIZE]
+        try:
+            file_info = os.stat(path)
+            size = file_info[stat.ST_SIZE]
+        except OSError:
+            size = 0
+        return image_id, size
 
     @contextmanager
     def open_for_write(self, image_id):
