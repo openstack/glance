@@ -233,6 +233,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.partial_task_schema = partial_task_schema \
             or _get_partial_task_schema()
 
+    def _inject_location_header(self, response, task):
+        location = self._get_task_location(task)
+        response.headers['Location'] = location.encode('utf-8')
+
+    def _get_task_location(self, task):
+        return '/v2/tasks/%s' % task.task_id
+
     def _format_task(self, schema, task, task_details=None):
         task_view = {}
         task_attributes = ['type', 'status', 'owner']
@@ -247,7 +254,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             task_view['expires_at'] = timeutils.isotime(task.expires_at)
         task_view['created_at'] = timeutils.isotime(task.created_at)
         task_view['updated_at'] = timeutils.isotime(task.updated_at)
-        task_view['self'] = '/v2/tasks/%s' % task.task_id
+        task_view['self'] = self._get_task_location(task)
         task_view['schema'] = '/v2/schemas/task'
         task_view = schema.filter(task_view)  # domain
         return task_view
@@ -256,6 +263,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 201
         task = result['task']
         task_details = result['task_details']
+        self._inject_location_header(response, task)
         self._get(response, task, task_details)
 
     def get(self, response, result):
