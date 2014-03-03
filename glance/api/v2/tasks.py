@@ -137,13 +137,13 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return sort_dir
 
     def _get_filters(self, filters):
-        status = filters.get('status', None)
+        status = filters.get('status')
         if status:
             if status not in ['pending', 'processing', 'success', 'failure']:
                 msg = _('Invalid status value: %s') % status
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
-        type = filters.get('type', None)
+        type = filters.get('type')
         if type:
             if type not in ['import']:
                 msg = _('Invalid type value: %s') % type

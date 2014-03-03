@@ -868,7 +868,7 @@ class Controller(controller.BaseController):
         activating = orig_status == 'queued' and (location or image_data)
 
         # Make image public in the backend store (if implemented)
-        orig_or_updated_loc = location or orig_image_meta.get('location', None)
+        orig_or_updated_loc = location or orig_image_meta.get('location')
         if orig_or_updated_loc:
             try:
                 self.update_store_acls(req, id, orig_or_updated_loc,

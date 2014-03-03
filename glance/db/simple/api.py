@@ -524,7 +524,7 @@ def image_create(context, image_values):
     image = _image_format(image_id, **image_values)
     DATA['images'][image_id] = image
 
-    location_data = image_values.get('locations', None)
+    location_data = image_values.get('locations')
     if location_data is not None:
         _image_locations_set(image_id, location_data)
 
