@@ -72,6 +72,10 @@ class GlanceBase(models.ModelBase, models.TimestampMixin):
     __protected_attributes__ = set([
         "created_at", "updated_at", "deleted_at", "deleted"])
 
+    def save(self, session=None):
+        from glance.db.sqlalchemy import api as db_api
+        super(GlanceBase, self).save(session or db_api.get_session())
+
     created_at = Column(DateTime, default=timeutils.utcnow,
                         nullable=False)
     # TODO(vsergeyev): Column `updated_at` have no default value in

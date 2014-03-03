@@ -44,13 +44,39 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
 
 CONF = cfg.CONF
 CONF.import_opt('debug', 'glance.openstack.common.log')
+CONF.import_opt('connection', 'glance.openstack.common.db.options',
+                group='database')
+
+
+_FACADE = None
+
+
+def _create_facade_lazily():
+    global _FACADE
+    if _FACADE is None:
+        _FACADE = session.EngineFacade(
+            CONF.database.connection,
+            **dict(CONF.database.iteritems()))
+    return _FACADE
+
+
+def get_engine():
+    facade = _create_facade_lazily()
+    return facade.get_engine()
+
+
+def get_session(autocommit=True, expire_on_commit=False):
+    facade = _create_facade_lazily()
+    return facade.get_session(autocommit=autocommit,
+                              expire_on_commit=expire_on_commit)
 
 
 def clear_db_env():
     """
     Unset global configuration variables for database.
     """
-    session.cleanup()
+    global _FACADE
+    _FACADE = None
 
 
 def _check_mutate_authorization(context, image_ref):
@@ -63,10 +89,6 @@ def _check_mutate_authorization(context, image_ref):
             exc_class = exception.Forbidden
 
         raise exc_class(msg)
-
-
-_get_session = session.get_session
-get_engine = session.get_engine
 
 
 def image_create(context, values):
@@ -87,7 +109,7 @@ def image_update(context, image_id, values, purge_props=False,
 
 def image_destroy(context, image_id):
     """Destroy the image or raise if it does not exist."""
-    session = _get_session()
+    session = get_session()
     with session.begin():
         image_ref = _image_get(context, image_id, session=session)
 
@@ -141,7 +163,7 @@ def _check_image_id(image_id):
 def _image_get(context, image_id, session=None, force_show_deleted=False):
     """Get an image or raise if it does not exist."""
     _check_image_id(image_id)
-    session = session or _get_session()
+    session = session or get_session()
 
     try:
         query = session.query(models.Image)\
@@ -411,7 +433,7 @@ def _make_image_property_condition(key, value):
 
 def _select_images_query(context, image_conditions, admin_as_user,
                          member_status, visibility):
-    session = _get_session()
+    session = get_session()
 
     img_conditional_clause = sa_sql.and_(*image_conditions)
 
@@ -593,7 +615,7 @@ def _image_update(context, values, image_id, purge_props=False,
     #NOTE(jbresnah) values is altered in this so a copy is needed
     values = values.copy()
 
-    session = _get_session()
+    session = get_session()
     with session.begin():
 
         # Remove the properties passed in the values mapping. We
@@ -767,7 +789,7 @@ def _image_child_entry_delete_all(child_model_cls, image_id, delete_time=None,
     :rtype: int
     :return: The number of child entries got soft-deleted.
     """
-    session = session or _get_session()
+    session = session or get_session()
 
     query = session.query(child_model_cls) \
         .filter_by(image_id=image_id) \
@@ -801,7 +823,7 @@ def image_property_delete(context, prop_ref, image_ref, session=None):
     """
     Used internally by image_property_create and image_property_update.
     """
-    session = session or _get_session()
+    session = session or get_session()
     prop = session.query(models.ImageProperty).filter_by(image_id=image_ref,
                                                          name=prop_ref).one()
     prop.delete(session=session)
@@ -840,7 +862,7 @@ def _image_member_format(member_ref):
 
 def image_member_update(context, memb_id, values):
     """Update an ImageMember object."""
-    session = _get_session()
+    session = get_session()
     memb_ref = _image_member_get(context, memb_id, session)
     _image_member_update(context, memb_ref, values, session)
     return _image_member_format(memb_ref)
@@ -858,7 +880,7 @@ def _image_member_update(context, memb_ref, values, session=None):
 
 def image_member_delete(context, memb_id, session=None):
     """Delete an ImageMember object."""
-    session = session or _get_session()
+    session = session or get_session()
     member_ref = _image_member_get(context, memb_id, session)
     _image_member_delete(context, member_ref, session)
 
@@ -890,7 +912,7 @@ def image_member_find(context, image_id=None, member=None, status=None):
     :param image_id: identifier of image entity
     :param member: tenant to which membership has been granted
     """
-    session = _get_session()
+    session = get_session()
     members = _image_member_find(context, session, image_id, member, status)
     return [_image_member_format(m) for m in members]
 
@@ -923,7 +945,7 @@ def image_member_count(context, image_id):
 
     :param image_id: identifier of image entity
     """
-    session = _get_session()
+    session = get_session()
 
     if not image_id:
         msg = _("Image id is required.")
@@ -950,7 +972,7 @@ def _can_show_deleted(context):
 
 
 def image_tag_set_all(context, image_id, tags):
-    session = _get_session()
+    session = get_session()
     existing_tags = set(image_tag_get_all(context, image_id, session))
     tags = set(tags)
 
@@ -968,7 +990,7 @@ def image_tag_set_all(context, image_id, tags):
 
 def image_tag_create(context, image_id, value, session=None):
     """Create an image tag."""
-    session = session or _get_session()
+    session = session or get_session()
     tag_ref = models.ImageTag(image_id=image_id, value=value)
     tag_ref.save(session=session)
     return tag_ref['value']
@@ -977,7 +999,7 @@ def image_tag_create(context, image_id, value, session=None):
 def image_tag_delete(context, image_id, value, session=None):
     """Delete an image tag."""
     _check_image_id(image_id)
-    session = session or _get_session()
+    session = session or get_session()
     query = session.query(models.ImageTag)\
                    .filter_by(image_id=image_id)\
                    .filter_by(value=value)\
@@ -1002,7 +1024,7 @@ def _image_tag_delete_all(context, image_id, delete_time=None, session=None):
 def image_tag_get_all(context, image_id, session=None):
     """Get a list of tags for a specific image."""
     _check_image_id(image_id)
-    session = session or _get_session()
+    session = session or get_session()
     tags = session.query(models.ImageTag)\
                   .filter_by(image_id=image_id)\
                   .filter_by(deleted=False)\
@@ -1013,7 +1035,7 @@ def image_tag_get_all(context, image_id, session=None):
 
 def user_get_storage_usage(context, owner_id, image_id=None, session=None):
     _check_image_id(image_id)
-    session = session or _get_session()
+    session = session or get_session()
     total_size = _image_get_disk_usage_by_owner(
         owner_id, session, image_id=image_id)
     return total_size
@@ -1033,7 +1055,7 @@ def _task_info_format(task_info_ref):
 
 def _task_info_create(context, task_id, values, session=None):
     """Create an TaskInfo object"""
-    session = session or _get_session()
+    session = session or get_session()
     task_info_ref = models.TaskInfo()
     task_info_ref.task_id = task_id
     task_info_ref.update(values)
@@ -1043,7 +1065,7 @@ def _task_info_create(context, task_id, values, session=None):
 
 def _task_info_update(context, task_id, values, session=None):
     """Update an TaskInfo object"""
-    session = session or _get_session()
+    session = session or get_session()
     task_info_ref = _task_info_get(context, task_id, session=session)
     if task_info_ref:
         task_info_ref.update(values)
@@ -1053,7 +1075,7 @@ def _task_info_update(context, task_id, values, session=None):
 
 def _task_info_get(context, task_id, session=None):
     """Fetch an TaskInfo entity by task_id"""
-    session = session or _get_session()
+    session = session or get_session()
     query = session.query(models.TaskInfo)
     query = query.filter_by(task_id=task_id)
     try:
@@ -1071,7 +1093,7 @@ def task_create(context, values, session=None):
     """Create a task object"""
 
     values = values.copy()
-    session = session or _get_session()
+    session = session or get_session()
     with session.begin():
         task_info_values = _pop_task_info_values(values)
 
@@ -1099,7 +1121,7 @@ def _pop_task_info_values(values):
 def task_update(context, task_id, values, session=None):
     """Update a task object"""
 
-    session = session or _get_session()
+    session = session or get_session()
 
     with session.begin():
         task_info_values = _pop_task_info_values(values)
@@ -1129,7 +1151,7 @@ def task_get(context, task_id, session=None, force_show_deleted=False):
 
 def task_delete(context, task_id, session=None):
     """Delete a task"""
-    session = session or _get_session()
+    session = session or get_session()
     task_ref = _task_get(context, task_id, session=session)
     task_ref.delete(session=session)
     return _task_format(task_ref, task_ref.info)
@@ -1152,7 +1174,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     """
     filters = filters or {}
 
-    session = _get_session()
+    session = get_session()
     query = session.query(models.Task)
 
     if not (context.is_admin or admin_as_user == True) and \
@@ -1215,7 +1237,7 @@ def _is_task_visible(context, task):
 
 def _task_get(context, task_id, session=None, force_show_deleted=False):
     """Fetch a task entity by id"""
-    session = session or _get_session()
+    session = session or get_session()
     query = session.query(models.Task).options(
         sa_orm.joinedload(models.Task.info)
     ).filter_by(id=task_id)
