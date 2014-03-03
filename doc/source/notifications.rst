@@ -76,6 +76,21 @@ Notification Types
 
   Emitted when an image deleted from Glance.
 
+* ``task.run``
+
+  Emitted when a task is picked up by the executor to be run.
+
+* ``task.processing``
+
+  Emitted when a task is sent over to the executor to begin processing.
+
+* ``task.success``
+
+  Emitted when a task is successfully completed.
+
+* ``task.failure``
+
+  Emitted when a task fails.
 
 Content
 -------
@@ -153,4 +168,51 @@ Payload
 * image.delete
 
   For INFO events, it is the image id.
+  WARN and ERROR events contain a text message in the payload.
+
+* task.run
+
+  The payload for INFO, WARN, and ERROR events contain the following:
+
+  task_id
+    ID of the task (UUID)
+  owner
+    Tenant or User ID that created this task (string)
+  task_type
+    Type of the task. Example, task_type is "import". (string)
+  status,
+    status of the task. Status can be "pending", "processing",
+    "success" or "failure". (string)
+  task_input
+    Input provided by the user when attempting to create a task. (dict)
+  result
+    Resulting output from a successful task. (dict)
+  message
+    Message shown in the task if it fails. None if task succeeds. (string)
+  expires_at
+    UTC time at which the task would not be visible to the user. (string)
+  created_at
+    UTC time at which the task was created. (string)
+  updated_at
+    UTC time at which the task was latest updated. (string)
+
+  The exceptions are:-
+    For INFO events, it is the task dict with result and message as None.
+    WARN and ERROR events contain a text message in the payload.
+
+* task.processing
+
+  For INFO events, it is the task dict with result and message as None.
+  WARN and ERROR events contain a text message in the payload.
+
+* task.success
+
+  For INFO events, it is the task dict with message as None and result is a
+  dict.
+  WARN and ERROR events contain a text message in the payload.
+
+* task.failure
+
+  For INFO events, it is the task dict with result as None and message is
+  text.
   WARN and ERROR events contain a text message in the payload.
