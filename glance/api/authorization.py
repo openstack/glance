@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+
 from glance.common import exception
 import glance.domain.proxy
 
@@ -221,6 +223,9 @@ class ImmutableLocations(list):
         message = _("You are not permitted to modify locations "
                     "for this image.")
         raise exception.Forbidden(message)
+
+    def __deepcopy__(self, memo):
+        return ImmutableLocations(copy.deepcopy(list(self), memo))
 
     append = forbidden
     extend = forbidden
