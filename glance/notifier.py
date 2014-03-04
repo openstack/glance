@@ -20,6 +20,7 @@ import webob
 
 from glance.common import exception
 import glance.domain.proxy
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
@@ -271,19 +272,19 @@ class ImageProxy(glance.domain.proxy.Image):
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPNotFound(explanation=unicode(e))
         except webob.exc.HTTPError as e:
-            msg = (_("Failed to upload image data for image %(image_id)s"
-                     " due to HTTP error: %(error)s") %
-                   {'image_id': self.image.image_id,
-                    'error': e})
-            self.notifier.error('image.upload', msg)
-            raise
+            with excutils.save_and_reraise_exception():
+                msg = (_("Failed to upload image data for image %(image_id)s"
+                         " due to HTTP error: %(error)s") %
+                       {'image_id': self.image.image_id,
+                        'error': e})
+                self.notifier.error('image.upload', msg)
         except Exception as e:
-            msg = (_("Failed to upload image data for image %(image_id)s "
-                     "due to internal error: %(error)s") %
-                   {'image_id': self.image.image_id,
-                    'error': e})
-            self.notifier.error('image.upload', msg)
-            raise
+            with excutils.save_and_reraise_exception():
+                msg = (_("Failed to upload image data for image %(image_id)s "
+                         "due to internal error: %(error)s") %
+                       {'image_id': self.image.image_id,
+                        'error': e})
+                self.notifier.error('image.upload', msg)
         else:
             payload = format_image_notification(self.image)
             self.notifier.info('image.upload', payload)

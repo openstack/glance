@@ -21,6 +21,7 @@ import glance.common.exception as exception
 from glance.common import utils
 import glance.domain
 import glance.domain.proxy
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 
 
@@ -313,12 +314,12 @@ class ImageProxy(glance.domain.proxy.Image):
                 self.context, self.image.size, self.db_api,
                 image_id=self.image.image_id)
         except exception.StorageQuotaFull:
-            LOG.info(_('Cleaning up %s after exceeding the quota.')
-                     % self.image.image_id)
-            location = self.image.locations[0]['url']
-            glance.store.safe_delete_from_backend(
-                self.context, location, self.image.image_id)
-            raise
+            with excutils.save_and_reraise_exception():
+                LOG.info(_('Cleaning up %s after exceeding the quota.')
+                         % self.image.image_id)
+                location = self.image.locations[0]['url']
+                glance.store.safe_delete_from_backend(
+                    self.context, location, self.image.image_id)
 
     @property
     def tags(self):

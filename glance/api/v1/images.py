@@ -40,6 +40,7 @@ from glance.common import property_utils
 from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
@@ -631,15 +632,14 @@ class Controller(controller.BaseController):
             self.notifier.info("image.update", redact_loc(image_meta_data))
             return image_meta_data
         except exception.Duplicate:
-            # Delete image data since it has been supersceded by another
-            # upload.
-            LOG.debug(_("duplicate operation - deleting image data for %(id)s "
-                      "(location:%(location)s)") %
-                      {'id': image_id, 'location': image_meta['location']})
-            upload_utils.initiate_deletion(req, image_meta['location'],
-                                           image_id, CONF.delayed_delete)
-            # Then propagate the exception.
-            raise
+            with excutils.save_and_reraise_exception():
+                # Delete image data since it has been supersceded by another
+                # upload and re-raise.
+                LOG.debug(_("duplicate operation - deleting image data for "
+                            " %(id)s (location:%(location)s)") %
+                          {'id': image_id, 'location': image_meta['location']})
+                upload_utils.initiate_deletion(req, image_meta['location'],
+                                               image_id, CONF.delayed_delete)
         except exception.Invalid as e:
             msg = _("Failed to activate image. Got error: %(e)s") % {'e': e}
             LOG.debug(msg)

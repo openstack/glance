@@ -30,6 +30,7 @@ import sqlite3
 
 from glance.common import exception
 from glance.image_cache.drivers import base
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
@@ -340,8 +341,8 @@ class Driver(base.Driver):
             with open(incomplete_path, 'wb') as cache_file:
                 yield cache_file
         except Exception as e:
-            rollback(e)
-            raise
+            with excutils.save_and_reraise_exception():
+                rollback(e)
         else:
             commit()
         finally:

@@ -104,10 +104,11 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             glance.api.common.check_quota(
                 req.context, size, db_api, image_id=image_id)
         except exception.StorageQuotaFull:
-            LOG.info(_('Cleaning up %s after exceeding the quota') % image_id)
-            glance.store.safe_delete_from_backend(
-                location, req.context, image_meta['id'])
-            raise
+            with excutils.save_and_reraise_exception():
+                LOG.info(_('Cleaning up %s after exceeding '
+                           'the quota') % image_id)
+                glance.store.safe_delete_from_backend(
+                    location, req.context, image_meta['id'])
 
         def _kill_mismatched(image_meta, attr, actual):
             supplied = image_meta.get(attr)
