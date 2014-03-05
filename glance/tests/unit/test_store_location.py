@@ -383,21 +383,41 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         """
         Test the specific StoreLocation for the VMware store
         """
-        uri = ('vsphere://127.0.0.1/folder/'
-               'openstack_glance/29038321?dcPath=my-dc&dsName=my-ds')
+        ds_url_prefix = glance.store.vmware_datastore.DS_URL_PREFIX
+        image_dir = glance.store.vmware_datastore.DEFAULT_STORE_IMAGE_DIR
+        uri = ('vsphere://127.0.0.1%s%s/29038321?dcPath=my-dc&dsName=my-ds' %
+               (ds_url_prefix, image_dir))
         loc = glance.store.vmware_datastore.StoreLocation({})
         loc.parse_uri(uri)
 
         self.assertEqual("vsphere", loc.scheme)
         self.assertEqual("127.0.0.1", loc.server_host)
-        self.assertEqual("/folder/openstack_glance/29038321", loc.path)
+        self.assertEqual("%s%s/29038321" %
+                         (ds_url_prefix, image_dir), loc.path)
         self.assertEqual("dcPath=my-dc&dsName=my-ds", loc.query)
         self.assertEqual(uri, loc.get_uri())
 
         bad_uri = 'vphere://'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
-        bad_uri = 'http://image'
+        bad_uri = ('vspheer://127.0.0.1%s%s/29038321?dcPath=my-dc&dsName=my-ds'
+                   % (ds_url_prefix, image_dir))
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = ('http://127.0.0.1%s%s/29038321?dcPath=my-dc&dsName=my-ds'
+                   % (ds_url_prefix, image_dir))
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = ('vsphere:/127.0.0.1%s%s/29038321?dcPath=my-dc&dsName=my-ds'
+                   % (ds_url_prefix, image_dir))
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = ('vsphere://127.0.0.1%s%s/29038321?dcPath=my-dc&dsName=my-ds'
+                   % (ds_url_prefix, "/folder_not_in_configuration"))
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = ('vsphere://127.0.0.1%s%s/29038321?dcPath=my-dc&dsName=my-ds'
+                   % ("/wrong_folder_path", image_dir))
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
     def test_cinder_store_good_location(self):

@@ -36,6 +36,7 @@ MAX_REDIRECTS = 5
 DEFAULT_STORE_IMAGE_DIR = '/openstack_glance'
 DEFAULT_ESX_DATACENTER_PATH = 'ha-datacenter'
 DS_URL_PREFIX = '/folder'
+STORE_SCHEME = 'vsphere'
 
 # check that datacenter/datastore combination is valid
 _datastore_info_valid = False
@@ -123,7 +124,7 @@ class StoreLocation(glance.store.location.StoreLocation):
     """
 
     def process_specs(self):
-        self.scheme = self.specs.get('scheme', 'vsphere')
+        self.scheme = self.specs.get('scheme', STORE_SCHEME)
         self.server_host = self.specs.get('server_host')
         self.path = (DS_URL_PREFIX + self.specs.get('folder_name')
                      + '/' + self.specs.get('image_id'))
@@ -149,6 +150,11 @@ class StoreLocation(glance.store.location.StoreLocation):
         return path.startswith(DS_URL_PREFIX + CONF.vmware_store_image_dir)
 
     def parse_uri(self, uri):
+        if not uri.startswith('%s://' % STORE_SCHEME):
+            reason = (_("URI %(uri)s must start with %(scheme)s://") %
+                      {'uri': uri, 'scheme': STORE_SCHEME})
+            LOG.error(reason)
+            raise exception.BadStoreUri(reason)
         (self.scheme, self.server_host,
          path, params, query, fragment) = urlparse.urlparse(uri)
         if not query:
@@ -171,10 +177,10 @@ class Store(glance.store.base.Store):
     """An implementation of the VMware datastore adapter."""
 
     def get_schemes(self):
-        return ('vsphere',)
+        return (STORE_SCHEME,)
 
     def configure(self):
-        self.scheme = 'vsphere'
+        self.scheme = STORE_SCHEME
         self.server_host = self._option_get('vmware_server_host')
         self.server_username = self._option_get('vmware_server_username')
         self.server_password = self._option_get('vmware_server_password')
