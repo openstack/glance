@@ -669,3 +669,43 @@ New API Calls
 
   where <STATUS_VALUE> is one of ``pending``, ``accepted``, or ``rejected``.
   The {memberId} is the tenant ID of the image member.
+
+
+API Message Localization
+---------------------------------------
+Glance supports HTTP message localization. For example, an HTTP client can
+receive API messages in Chinese even if the locale language of the server is
+English.
+
+How to use it
+*************
+To receive localized API messages, the HTTP client needs to specify the
+**Accept-Language** header to indicate the language to use to translate the
+message. For more info about Accept-Language, please refer http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+
+A typical curl API request will be like below::
+
+   curl -i -X GET -H 'Accept-Language: zh' -H 'Content-Type: application/json'
+   http://127.0.0.1:9292/v2/images/aaa
+
+Then the response will be like the following::
+
+   HTTP/1.1 404 Not Found
+   Content-Length: 234
+   Content-Type: text/html; charset=UTF-8
+   X-Openstack-Request-Id: req-54d403a0-064e-4544-8faf-4aeef086f45a
+   Date: Sat, 22 Feb 2014 06:26:26 GMT
+
+   <html>
+   <head>
+   <title>404 Not Found</title>
+   </head>
+   <body>
+   <h1>404 Not Found</h1>
+   &#25214;&#19981;&#21040;&#20219;&#20309;&#20855;&#26377;&#26631;&#35782; aaa &#30340;&#26144;&#20687;<br /><br />
+   </body>
+   </html>
+
+.. note::
+   Be sure there is the language package under /usr/share/locale-langpack/ on
+   the target Glance server.
