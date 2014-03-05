@@ -546,6 +546,17 @@ class Httplib2WebobResponse(object):
     def get(self, key):
         return self.webob_resp.headers[key]
 
+    @property
+    def allow(self):
+        return self.webob_resp.allow
+
+    @allow.setter
+    def allow(self, allowed):
+        if type(allowed) is not str:
+            raise TypeError('Allow header should be a str')
+
+        self.webob_resp.allow = allowed
+
 
 class HttplibWsgiAdapter(object):
     def __init__(self, app):

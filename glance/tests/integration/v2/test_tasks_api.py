@@ -504,3 +504,40 @@ class TestTasksApi(base.ApiTest):
         actual_tasks = json.loads(content)['tasks']
 
         self.assertEqual(0, len(actual_tasks))
+
+    def test_delete_task(self):
+        # 0. POST /tasks
+        # Create a new task with valid input and type
+        task_data = _new_task_fixture()
+        task_owner = 'tenant1'
+        body_content = json.dumps(task_data)
+
+        path = "/v2/tasks"
+        response, content = self.http.request(path, 'POST',
+                                              headers=
+                                              minimal_task_headers(task_owner),
+                                              body=body_content)
+        self.assertEqual(response.status, 201)
+
+        data = json.loads(content)
+        task_id = data['id']
+
+        # 1. DELETE on /tasks/{task_id}
+        # Attempt to delete a task
+        path = "/v2/tasks/%s" % task_id
+        response, content = self.http.request(path,
+                                              'DELETE',
+                                              headers=minimal_task_headers())
+        self.assertEqual(response.status, 405)
+        self.assertEqual('GET', response.webob_resp.headers.get('Allow'))
+        self.assertEqual(('GET',), response.webob_resp.allow)
+        self.assertEqual(('GET',), response.allow)
+
+        # 2. GET /tasks/{task_id}
+        # Ensure that methods mentioned in the Allow header work
+        path = "/v2/tasks/%s" % task_id
+        response, content = self.http.request(path,
+                                              'GET',
+                                              headers=minimal_task_headers())
+        self.assertEqual(response.status, 200)
+        self.assertIsNotNone(content)

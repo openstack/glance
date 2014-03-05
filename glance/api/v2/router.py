@@ -132,5 +132,9 @@ class API(wsgi.Router):
                        controller=tasks_resource,
                        action='get',
                        conditions={'method': ['GET']})
+        mapper.connect('/tasks/{task_id}',
+                       controller=tasks_resource,
+                       action='delete',
+                       conditions={'method': ['DELETE']})
 
         super(API, self).__init__(mapper)

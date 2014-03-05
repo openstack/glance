@@ -118,6 +118,14 @@ class TasksController(object):
         result = {'task': task, 'task_details': task_details}
         return result
 
+    def delete(self, req, task_id):
+        msg = (_("This operation is currently not permitted on Glance Tasks. "
+                 "They are auto deleted after reaching the time based on "
+                 "their expires_at property."))
+        raise webob.exc.HTTPMethodNotAllowed(explanation=msg,
+                                             headers={'Allow': 'GET'},
+                                             body_template='${explanation}')
+
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
     _required_properties = ['type', 'input']

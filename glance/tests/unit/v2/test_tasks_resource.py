@@ -338,6 +338,13 @@ class TestTasksControllerPolicies(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
                           request, task)
 
+    def test_delete(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPMethodNotAllowed,
+                          self.controller.delete,
+                          request,
+                          'fake_id')
+
 
 class TestTasksDeserializer(test_utils.BaseTestCase):
 
