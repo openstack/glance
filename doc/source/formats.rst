@@ -102,3 +102,7 @@ You can set your image's container format to one of the following:
 * **ami**
 
   This indicates what is stored in Glance is an Amazon machine image
+
+* **ova**
+
+  This indicates what is stored in Glance is an OVA tar archive file
