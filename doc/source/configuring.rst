@@ -395,8 +395,13 @@ The following configuration option is specified in the
 
 Optional. Default: 0 (Unlimited).
 
-This value specifies the maximum amount of bytes that each user can use
-across all storage systems.
+This value specifies the maximum amount of storage that each user can use
+across all storage systems. Optionally unit can be specified for the value.
+Values are accepted in B, KB, MB, GB or TB which are for Bytes, KiloBytes,
+MegaBytes, GigaBytes and TeraBytes respectively. Default unit is Bytes.
+
+Example values would be,
+    user_storage_quota=20GB
 
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

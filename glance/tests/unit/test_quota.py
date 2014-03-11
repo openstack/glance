@@ -18,6 +18,7 @@ from mock import patch
 import uuid
 
 from glance.common import exception
+from glance.openstack.common import units
 import glance.quota
 import glance.store
 from glance.tests.unit import utils as unit_test_utils
@@ -69,7 +70,7 @@ class TestImageQuota(test_utils.BaseTestCase):
 
     def test_quota_allowed(self):
         quota = 10
-        self.config(user_storage_quota=quota)
+        self.config(user_storage_quota=str(quota))
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()
         base_image = FakeImage()
@@ -79,6 +80,33 @@ class TestImageQuota(test_utils.BaseTestCase):
         base_image.set_data(data, size=None)
         image.set_data(data)
         self.assertEqual(quota, base_image.size)
+
+    def _test_quota_allowed_unit(self, data_length, config_quota):
+        self.config(user_storage_quota=config_quota)
+        context = FakeContext()
+        db_api = unit_test_utils.FakeDB()
+        base_image = FakeImage()
+        base_image.image_id = 'id'
+        image = glance.quota.ImageProxy(base_image, context, db_api)
+        data = '*' * data_length
+        base_image.set_data(data, size=None)
+        image.set_data(data)
+        self.assertEqual(data_length, base_image.size)
+
+    def test_quota_allowed_unit_b(self):
+        self._test_quota_allowed_unit(10, '10B')
+
+    def test_quota_allowed_unit_kb(self):
+        self._test_quota_allowed_unit(10, '1KB')
+
+    def test_quota_allowed_unit_mb(self):
+        self._test_quota_allowed_unit(10, '1MB')
+
+    def test_quota_allowed_unit_gb(self):
+        self._test_quota_allowed_unit(10, '1GB')
+
+    def test_quota_allowed_unit_tb(self):
+        self._test_quota_allowed_unit(10, '1TB')
 
     def _quota_exceeded_size(self, quota, data,
                              deleted=True, size=None):
@@ -111,17 +139,31 @@ class TestImageQuota(test_utils.BaseTestCase):
         # That's why 'get_remaining_quota' is mocked with return_value = 0.
         with patch.object(glance.api.common, 'get_remaining_quota',
                           return_value=0):
-            self._quota_exceeded_size(quota, data)
+            self._quota_exceeded_size(str(quota), data)
 
     def test_quota_exceeded_with_right_size(self):
         quota = 10
         data = '*' * (quota + 1)
-        self._quota_exceeded_size(quota, data, size=len(data), deleted=False)
+        self._quota_exceeded_size(str(quota), data, size=len(data),
+                                  deleted=False)
+
+    def test_quota_exceeded_with_right_size_b(self):
+        quota = 10
+        data = '*' * (quota + 1)
+        self._quota_exceeded_size('10B', data, size=len(data),
+                                  deleted=False)
+
+    def test_quota_exceeded_with_right_size_kb(self):
+        quota = units.Ki
+        data = '*' * (quota + 1)
+        self._quota_exceeded_size('1KB', data, size=len(data),
+                                  deleted=False)
 
     def test_quota_exceeded_with_lie_size(self):
         quota = 10
         data = '*' * (quota + 1)
-        self._quota_exceeded_size(quota, data, deleted=False, size=quota - 1)
+        self._quota_exceeded_size(str(quota), data, deleted=False,
+                                  size=quota - 1)
 
     def test_append_location(self):
         new_location = {'url': 'file:///a/path', 'metadata': {}}
@@ -163,7 +205,7 @@ class TestImageQuota(test_utils.BaseTestCase):
 
     def _make_image_with_quota(self, image_size=10, location_count=2):
         quota = image_size * location_count
-        self.config(user_storage_quota=quota)
+        self.config(user_storage_quota=str(quota))
         return self._get_image(image_size=image_size,
                                location_count=location_count)
 

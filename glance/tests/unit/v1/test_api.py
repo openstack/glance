@@ -560,7 +560,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_add_image_size_header_exceed_quota(self):
         quota = 500
-        self.config(user_storage_quota=quota)
+        self.config(user_storage_quota=str(quota))
         fixture_headers = {'x-image-meta-size': quota + 1,
                            'x-image-meta-name': 'fake image #3',
                            'x-image-meta-container_format': 'bare',
@@ -578,7 +578,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_add_image_size_data_exceed_quota(self):
         quota = 500
-        self.config(user_storage_quota=quota)
+        self.config(user_storage_quota=str(quota))
         fixture_headers = {
             'x-image-meta-name': 'fake image #3',
             'x-image-meta-container_format': 'bare',
@@ -598,7 +598,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_add_image_size_data_exceed_quota_readd(self):
         quota = 500
-        self.config(user_storage_quota=quota)
+        self.config(user_storage_quota=str(quota))
         fixture_headers = {
             'x-image-meta-name': 'fake image #3',
             'x-image-meta-container_format': 'bare',
