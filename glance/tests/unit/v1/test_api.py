@@ -374,7 +374,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         fixture_headers = {
             'x-image-meta-store': 'swift',
             'x-image-meta-name': 'bogus',
-            'x-image-meta-location': 'swift+http://bah',
+            'x-image-meta-location': 'http://',
             'x-image-meta-disk-format': 'qcow2',
             'x-image-meta-container-format': 'bare',
         }
@@ -1004,7 +1004,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['Content-Type'] = 'application/octet-stream'
         req.headers['x-image-disk-format'] = 'vhd'
         req.headers['x-image-container-format'] = 'ovf'
-        req.headers['x-image-meta-location'] = 'swift+http://bla'
+        req.headers['x-image-meta-location'] = 'http://'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
         self.assertTrue('Invalid location' in res.body)

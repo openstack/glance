@@ -81,7 +81,15 @@ class TestStore(base.StoreClearingUnitTest):
     @mock.patch('oslo.vmware.api.VMwareAPISession', autospec=True)
     def setUp(self, mock_session):
         """Establish a clean test environment"""
+
+        self.config(default_store='file')
+
+        # NOTE(flaper87): Each store should test
+        # this in their test suite.
+        self.config(known_stores=VMWARE_DATASTORE_CONF['known_stores'])
+
         super(TestStore, self).setUp()
+
         Store.CHUNKSIZE = 2
         self.store = Store()
 

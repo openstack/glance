@@ -20,7 +20,7 @@ from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils
 
 
-BASE_URI = 'swift+http://storeurl.com/container'
+BASE_URI = 'http://storeurl.com/container'
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'
 USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'

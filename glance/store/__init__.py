@@ -35,13 +35,7 @@ store_opts = [
     cfg.ListOpt('known_stores',
                 default=[
                     'glance.store.filesystem.Store',
-                    'glance.store.http.Store',
-                    'glance.store.rbd.Store',
-                    'glance.store.s3.Store',
-                    'glance.store.swift.Store',
-                    'glance.store.sheepdog.Store',
-                    'glance.store.cinder.Store',
-                    'glance.store.vmware_datastore.Store',
+                    'glance.store.http.Store'
                 ],
                 help=_('List of which store classes and store class locations '
                        'are currently known to glance at startup.')),
