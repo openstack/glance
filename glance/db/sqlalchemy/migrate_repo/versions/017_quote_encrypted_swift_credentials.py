@@ -77,14 +77,19 @@ def migrate_location_credentials(migrate_engine, to_quoted):
 
     for image in images:
         try:
-            fixed_uri = fix_uri_credentials(image['location'], to_quoted,
-                                            image['id'])
+            fixed_uri = fix_uri_credentials(image['location'], to_quoted)
             images_table.update()\
                         .where(images_table.c.id == image['id'])\
                         .values(location=fixed_uri).execute()
         except exception.Invalid:
             msg = _("Failed to decrypt location value for image %(image_id)s")
             LOG.warn(msg % {'image_id': image['id']})
+        except exception.BadStoreUri as e:
+            err_msg = _("Invalid store uri for image: %(image_id)s. "
+                        "Details: %(reason)s") % {'image_id': image.id,
+                                                  'reason': unicode(e)}
+            LOG.exception(err_msg)
+            raise
 
 
 def decrypt_location(uri):
@@ -95,7 +100,7 @@ def encrypt_location(uri):
     return crypt.urlsafe_encrypt(CONF.metadata_encryption_key, uri, 64)
 
 
-def fix_uri_credentials(uri, to_quoted, image_id):
+def fix_uri_credentials(uri, to_quoted):
     """
     Fix the given uri's embedded credentials by round-tripping with
     StoreLocation.
@@ -117,10 +122,10 @@ def fix_uri_credentials(uri, to_quoted, image_id):
     except (TypeError, ValueError) as e:
         raise exception.Invalid(str(e))
 
-    return legacy_parse_uri(decrypted_uri, to_quoted, image_id)
+    return legacy_parse_uri(decrypted_uri, to_quoted)
 
 
-def legacy_parse_uri(uri, to_quote, image_id):
+def legacy_parse_uri(uri, to_quote):
     """
     Parse URLs. This method fixes an issue where credentials specified
     in the URL are interpreted differently in Python 2.6.1+ than prior
@@ -147,9 +152,6 @@ def legacy_parse_uri(uri, to_quote, image_id):
                    ", you need to change it to use the swift+http:// scheme, "
                    "like so: "
                    "swift+http://user:pass@authurl.com/v1/container/obj")
-
-        LOG.error(_("Invalid store uri for image %(image_id)s: %(reason)s") %
-                  {'image_id': image_id, 'reason': reason})
         raise exception.BadStoreUri(message=reason)
 
     pieces = urlparse.urlparse(uri)
@@ -182,8 +184,7 @@ def legacy_parse_uri(uri, to_quote, image_id):
             if len(cred_parts) == 1:
                 reason = (_("Badly formed credentials '%(creds)s' in Swift "
                             "URI") % {'creds': creds})
-                LOG.error(reason)
-                raise exception.BadStoreUri()
+                raise exception.BadStoreUri(message=reason)
             elif len(cred_parts) == 3:
                 user = ':'.join(cred_parts[0:2])
             else:
@@ -194,8 +195,7 @@ def legacy_parse_uri(uri, to_quote, image_id):
         else:
             if len(cred_parts) != 2:
                 reason = (_("Badly formed credentials in Swift URI."))
-                LOG.debug(reason)
-                raise exception.BadStoreUri()
+                raise exception.BadStoreUri(message=reason)
             user, key = cred_parts
             user = urlparse.unquote(user)
             key = urlparse.unquote(key)
@@ -212,8 +212,7 @@ def legacy_parse_uri(uri, to_quote, image_id):
             auth_or_store_url = '/'.join(path_parts)
     except IndexError:
         reason = _("Badly formed S3 URI: %(uri)s") % {'uri': uri}
-        LOG.error(message=reason)
-        raise exception.BadStoreUri()
+        raise exception.BadStoreUri(message=reason)
 
     if auth_or_store_url.startswith('http://'):
         auth_or_store_url = auth_or_store_url[len('http://'):]

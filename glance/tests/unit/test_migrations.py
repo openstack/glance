@@ -27,6 +27,7 @@ from __future__ import print_function
 
 import ConfigParser
 import datetime
+import exceptions
 import os
 import pickle
 import subprocess
@@ -40,9 +41,11 @@ from six.moves import xrange
 import sqlalchemy
 
 from glance.common import crypt
+from glance.common import exception
 from glance.common import utils
 import glance.db.migration as migration
 import glance.db.sqlalchemy.migrate_repo
+from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 from glance.db.sqlalchemy import models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import log as logging
@@ -712,6 +715,72 @@ class TestMigrations(test_utils.BaseTestCase):
             if row['name'] == 'ramdisk_id':
                 self.assertEqual(row['value'], str(ids['ramdisk']))
 
+    def _assert_invalid_swift_uri_raises_bad_store_uri(self,
+                                                       legacy_parse_uri_fn):
+        invalid_uri = ('swift://http://acct:usr:pass@example.com'
+                       '/container/obj-id')
+        # URI cannot contain more than one occurrence of a scheme.
+        self.assertRaises(exception.BadStoreUri,
+                          legacy_parse_uri_fn,
+                          invalid_uri,
+                          True)
+
+        invalid_scheme_uri = ('http://acct:usr:pass@example.com'
+                              '/container/obj-id')
+        self.assertRaises(exceptions.AssertionError,
+                          legacy_parse_uri_fn,
+                          invalid_scheme_uri,
+                          True)
+
+        invalid_account_missing_uri = 'swift+http://container/obj-id'
+        # Badly formed S3 URI: swift+http://container/obj-id
+        self.assertRaises(exception.BadStoreUri,
+                          legacy_parse_uri_fn,
+                          invalid_account_missing_uri,
+                          True)
+
+        invalid_container_missing_uri = ('swift+http://'
+                                         'acct:usr:pass@example.com/obj-id')
+        # Badly formed S3 URI: swift+http://acct:usr:pass@example.com/obj-id
+        self.assertRaises(exception.BadStoreUri,
+                          legacy_parse_uri_fn,
+                          invalid_container_missing_uri,
+                          True)
+
+        invalid_object_missing_uri = ('swift+http://'
+                                      'acct:usr:pass@example.com/container')
+        # Badly formed S3 URI: swift+http://acct:usr:pass@example.com/container
+        self.assertRaises(exception.BadStoreUri,
+                          legacy_parse_uri_fn,
+                          invalid_object_missing_uri,
+                          True)
+
+        invalid_user_without_pass_uri = ('swift://acctusr@example.com'
+                                         '/container/obj-id')
+        # Badly formed credentials '%(creds)s' in Swift URI
+        self.assertRaises(exception.BadStoreUri,
+                          legacy_parse_uri_fn,
+                          invalid_user_without_pass_uri,
+                          True)
+
+        # Badly formed credentials in Swift URI.
+        self.assertRaises(exception.BadStoreUri,
+                          legacy_parse_uri_fn,
+                          invalid_user_without_pass_uri,
+                          False)
+
+    def test_legacy_parse_swift_uri_015(self):
+        (legacy_parse_uri,) = from_migration_import(
+            '015_quote_swift_credentials', ['legacy_parse_uri'])
+
+        uri = legacy_parse_uri(
+            'swift://acct:usr:pass@example.com/container/obj-id',
+            True)
+        self.assertTrue(uri, 'swift://acct%3Ausr:pass@example.com'
+                             '/container/obj-id')
+
+        self._assert_invalid_swift_uri_raises_bad_store_uri(legacy_parse_uri)
+
     def _pre_upgrade_015(self, engine):
         images = get_table(engine, 'images')
         unquoted_locations = [
@@ -773,6 +842,21 @@ class TestMigrations(test_utils.BaseTestCase):
                         "'status' column found in image_members table "
                         "columns! image_members table columns: %s"
                         % image_members.c.keys())
+
+    def test_legacy_parse_swift_uri_017(self):
+        metadata_encryption_key = 'a' * 16
+        self.config(metadata_encryption_key=metadata_encryption_key)
+
+        (legacy_parse_uri, encrypt_location) = from_migration_import(
+            '017_quote_encrypted_swift_credentials', ['legacy_parse_uri',
+                                                      'encrypt_location'])
+
+        uri = legacy_parse_uri('swift://acct:usr:pass@example.com'
+                               '/container/obj-id', True)
+        self.assertTrue(uri, encrypt_location(
+            'swift://acct%3Ausr:pass@example.com/container/obj-id'))
+
+        self._assert_invalid_swift_uri_raises_bad_store_uri(legacy_parse_uri)
 
     def _pre_upgrade_017(self, engine):
         metadata_encryption_key = 'a' * 16
