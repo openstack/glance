@@ -17,6 +17,7 @@
 
 import hashlib
 import httplib
+import os
 
 import netaddr
 from oslo.config import cfg
@@ -24,6 +25,7 @@ from oslo.vmware import api
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -126,8 +128,9 @@ class StoreLocation(glance.store.location.StoreLocation):
     def process_specs(self):
         self.scheme = self.specs.get('scheme', STORE_SCHEME)
         self.server_host = self.specs.get('server_host')
-        self.path = (DS_URL_PREFIX + self.specs.get('folder_name')
-                     + '/' + self.specs.get('image_id'))
+        self.path = os.path.join(DS_URL_PREFIX,
+                                 self.specs.get('image_dir').strip('/'),
+                                 self.specs.get('image_id'))
         dc_path = self.specs.get('datacenter_path')
         if dc_path is not None:
             param_list = {'dcPath': self.specs.get('datacenter_path'),
@@ -144,10 +147,12 @@ class StoreLocation(glance.store.location.StoreLocation):
             base_url = '%s://%s%s' % (self.scheme,
                                       self.server_host, self.path)
 
-        return base_url + '?' + self.query
+        return '%s?%s' % (base_url, self.query)
 
     def _is_valid_path(self, path):
-        return path.startswith(DS_URL_PREFIX + CONF.vmware_store_image_dir)
+        return path.startswith(
+            os.path.join(DS_URL_PREFIX,
+                         CONF.vmware_store_image_dir.strip('/')))
 
     def parse_uri(self, uri):
         if not uri.startswith('%s://' % STORE_SCHEME):
@@ -245,24 +250,40 @@ class Store(glance.store.base.Store):
                 and a dictionary with storage system specific information
         :raises `glance.common.exception.Duplicate` if the image already
                 existed
+                `glance.common.exception.UnexpectedStatus` if the upload
+                request returned an unexpected status. The expected responses
+                are 201 Created and 200 OK.
         """
         checksum = hashlib.md5()
         image_file = _Reader(image_file, checksum)
         loc = StoreLocation({'scheme': self.scheme,
                              'server_host': self.server_host,
-                             'folder_name': self.store_image_dir,
+                             'image_dir': self.store_image_dir,
                              'datacenter_path': self.datacenter_path,
                              'datastore_name': self.datastore_name,
                              'image_id': image_id})
         cookie = self._build_vim_cookie_header(
             self._session.vim.client.options.transport.cookiejar)
         headers = {'Cookie': cookie, 'Content-Length': image_size}
-        conn = self._get_http_conn('PUT', loc, headers,
-                                   content=image_file)
-        res = conn.getresponse()
+        try:
+            conn = self._get_http_conn('PUT', loc, headers,
+                                       content=image_file)
+            res = conn.getresponse()
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                LOG.exception(_('Failed to upload content of image '
+                                '%(image)s') % {'image': image_id})
+
         if res.status == httplib.CONFLICT:
             raise exception.Duplicate(_("Image file %(image_id)s already "
                                         "exists!") % {'image_id': image_id})
+
+        if res.status not in (httplib.CREATED, httplib.OK):
+            msg = (_('Failed to upload content of image %(image)s') %
+                   {'image': image_id})
+            LOG.error(msg)
+            raise exception.UnexpectedStatus(status=res.status,
+                                             body=res.read())
 
         return (loc.get_uri(), image_size, checksum.hexdigest(), {})
 
@@ -325,7 +346,12 @@ class Store(glance.store.base.Store):
             self._service_content.fileManager,
             name=file_path,
             datacenter=dc_moref)
-        self._session.wait_for_task(delete_task)
+        try:
+            self._session.wait_for_task(delete_task)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                LOG.exception(_('Failed to delete image %(image)s content.') %
+                              {'image': location.image_id})
 
     def _query(self, location, method, headers, depth=0):
         if depth > MAX_REDIRECTS:
@@ -334,15 +360,20 @@ class Store(glance.store.base.Store):
             LOG.debug(msg)
             raise exception.MaxRedirectsExceeded(redirects=MAX_REDIRECTS)
         loc = location.store_location
-        conn = self._get_http_conn(method, loc, headers)
-        resp = conn.getresponse()
+        try:
+            conn = self._get_http_conn(method, loc, headers)
+            resp = conn.getresponse()
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                LOG.exception(_('Failed to access image %(image)s content.') %
+                              {'image': location.image_id})
         if resp.status >= 400:
             if resp.status == httplib.NOT_FOUND:
                 msg = _('VMware datastore could not find image at URI.')
                 LOG.debug(msg)
                 raise exception.NotFound(msg)
-            msg = (_('HTTP URL %(url)s returned a %(status)s status code.')
-                   % {'url': loc.get_uri(), 'status': resp.status})
+            msg = (_('HTTP request returned a %(status)s status code.')
+                   % {'status': resp.status})
             LOG.debug(msg)
             raise exception.BadStoreUri(msg)
         location_header = resp.getheader('location')
@@ -367,7 +398,8 @@ class Store(glance.store.base.Store):
     def _get_http_conn(self, method, loc, headers, content=None):
         conn_class = self._get_http_conn_class()
         conn = conn_class(loc.server_host)
-        conn.request(method, '%s?%s' % (loc.path, loc.query), content, headers)
+        url = urlparse.quote('%s?%s' % (loc.path, loc.query))
+        conn.request(method, url, content, headers)
 
         return conn
 

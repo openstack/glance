@@ -31,7 +31,7 @@ from oslo.vmware import api
 import six.moves.urllib.parse as urlparse
 import testtools
 
-import glance.store.vmware_datastore
+import glance.store.vmware_datastore as vm_store
 import glance.tests.functional.store as store_tests
 
 
@@ -87,7 +87,7 @@ def vsphere_connect(server_ip, server_username, server_password,
 class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
 
     store_cls_path = 'glance.store.vmware_datastore.Store'
-    store_cls = glance.store.vmware_datastore.Store
+    store_cls = vm_store.Store
     store_name = 'vmware_datastore'
 
     def _build_vim_cookie_header(self, vim_cookies):
@@ -118,7 +118,7 @@ class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
         super(TestVMwareDatastoreStore, self).setUp()
 
     def get_store(self, **kwargs):
-        store = glance.store.vmware_datastore.Store(
+        store = vm_store.Store(
             context=kwargs.get('context'))
         store.configure()
         store.configure_add()
@@ -126,8 +126,9 @@ class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
 
     def stash_image(self, image_id, image_data):
         server_ip = self.vmware_config['vmware_server_host']
-        path = ('/folder' + self.vmware_config['vmware_store_image_dir']
-                + '/' + image_id)
+        path = os.path.join(
+            vm_store.DS_URL_PREFIX,
+            self.vmware_config['vmware_store_image_dir'].strip('/'), image_id)
         dc_path = self.vmware_config.get('vmware_datacenter_path',
                                          'ha-datacenter')
         param_list = {'dcPath': dc_path,
@@ -139,7 +140,8 @@ class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
         cookie = self._build_vim_cookie_header(
             self.vsphere.vim.client.options.transport.cookiejar)
         headers = {'Cookie': cookie, 'Content-Length': len(image_data)}
-        conn.request('PUT', '%s%s%s' % (path, '?', query), image_data, headers)
+        url = urlparse.quote('%s?%s' % (path, query))
+        conn.request('PUT', url, image_data, headers)
         conn.getresponse()
 
-        return 'vsphere://%s%s?%s' % (server_ip, path, query)
+        return '%s://%s%s?%s' % (vm_store.STORE_SCHEME, server_ip, path, query)
