@@ -496,6 +496,9 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
 
         Reproduces LP bug 1238604.
         """
+        self.config(
+            scrubber_datadir="/tmp",
+        )
         swift_store_user = self.swift_config['swift_store_user']
         tenant_name, username = swift_store_user.split(':')
         tenant_id, auth_token, service_catalog = keystone_authenticate(
