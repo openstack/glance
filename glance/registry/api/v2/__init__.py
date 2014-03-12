@@ -13,20 +13,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import routes
-
 from glance.common import wsgi
 from glance.registry.api.v2 import rpc
+
+
+def init(mapper):
+        rpc_resource = rpc.create_resource()
+        mapper.connect("/rpc", controller=rpc_resource,
+                       conditions=dict(method=["POST"]),
+                       action="__call__")
 
 
 class API(wsgi.Router):
     """WSGI entry point for all Registry requests."""
 
     def __init__(self, mapper):
-        mapper = mapper or routes.Mapper()
+        mapper = mapper or wsgi.APIMapper()
 
-        rpc_resource = rpc.create_resource()
-        mapper.connect("/rpc", controller=rpc_resource,
-                       conditions=dict(method=["POST"]),
-                       action="__call__")
+        init(mapper)
+
         super(API, self).__init__(mapper)

@@ -1029,6 +1029,22 @@ Can only be specified in configuration files.
 Sets the number of seconds after which SQLAlchemy should reconnect to the
 datastore if no activity has been made on the connection.
 
+* ``enable_v1_registry=<True|False>``
+
+Optional. Default: ``True``
+
+* ``enable_v2_registry=<True|False>``
+
+Optional. Default: ``True``
+
+Defines which version(s) of the Registry API will be enabled.
+If the Glance API server parameter ``enable_v1_api`` has been set to ``True`` the
+``enable_v1_registry`` has to be ``True`` as well.
+If the Glance API server parameter ``enable_v2_api`` has been set to ``True`` and
+the parameter ``data_api`` has been set to ``glance.db.registry.api`` the
+``enable_v2_registry`` has to be set to ``True``
+
+
 Configuring Notifications
 -------------------------
 

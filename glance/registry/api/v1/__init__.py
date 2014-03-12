@@ -13,19 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import routes
-
 from glance.common import wsgi
 from glance.registry.api.v1 import images
 from glance.registry.api.v1 import members
 
 
-class API(wsgi.Router):
-    """WSGI entry point for all Registry requests."""
-
-    def __init__(self, mapper):
-        mapper = routes.Mapper()
-
+def init(mapper):
         images_resource = images.create_resource()
 
         mapper.connect("/",
@@ -85,5 +78,14 @@ class API(wsgi.Router):
         mapper.connect("/shared-images/{id}",
                        controller=members_resource,
                        action="index_shared_images")
+
+
+class API(wsgi.Router):
+    """WSGI entry point for all Registry requests."""
+
+    def __init__(self, mapper):
+        mapper = mapper or wsgi.APIMapper()
+
+        init(mapper)
 
         super(API, self).__init__(mapper)
