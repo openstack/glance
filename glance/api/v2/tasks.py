@@ -177,16 +177,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                 msg = _("Task '%s' is required") % param
                 raise webob.exc.HTTPBadRequest(explanation=unicode(msg))
 
-        #NOTE(venkatesh): this import type validation needs to be
-        # moved from here
-        task_type = body['type']
-        if task_type == 'import':
-            for key in ['import_from', 'import_from_format',
-                        'image_properties']:
-                if key not in body['input']:
-                    msg = _("Input does not contain '%s' field") % key
-                    raise webob.exc.HTTPBadRequest(explanation=unicode(msg))
-
     def __init__(self, schema=None):
         super(RequestDeserializer, self).__init__()
         self.schema = schema or get_task_schema()
