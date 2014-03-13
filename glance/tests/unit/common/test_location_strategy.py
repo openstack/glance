@@ -124,7 +124,7 @@ class TestLocationStrategy(base.IsolatedUnitTest):
         original_locs = [{'url': 'loc1'}, {'url': 'loc2'}]
         ordered_locs = location_strategy.get_ordered_locations(original_locs)
 
-        # Deep copy protect original location list.
+        # Original location list should remain unchanged
         self.assertNotEqual(id(original_locs), id(ordered_locs))
         self.assertEqual(original_locs, ordered_locs)
 

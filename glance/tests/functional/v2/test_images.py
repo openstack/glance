@@ -1845,7 +1845,8 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         headers = self._headers({'content-type': 'application/json'})
         data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
                                 'foo': 'bar', 'disk_format': 'aki',
-                                'container_format': 'aki'})
+                                'container_format': 'aki',
+                                'visibility': 'public'})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 
@@ -1874,6 +1875,15 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertTrue('direct_url' in image)
+
+        # Image direct_url should be visible to non-owner, non-admin user
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'Content-Type': 'application/json',
+                                 'X-Tenant-Id': TENANT2})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        image = jsonutils.loads(response.text)
+        self.assertIn('direct_url', image)
 
         # Image direct_url should be visible in a list
         path = self._url('/v2/images')
