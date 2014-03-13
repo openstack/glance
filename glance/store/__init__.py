@@ -63,6 +63,16 @@ REGISTERED_STORES = set()
 CONF = cfg.CONF
 CONF.register_opts(store_opts)
 
+_EXTRA_STORES = [
+    'glance.store.rbd.Store',
+    'glance.store.s3.Store',
+    'glance.store.swift.Store',
+    'glance.store.sheepdog.Store',
+    'glance.store.cinder.Store',
+    'glance.store.gridfs.Store',
+    'glance.store.vmware_datastore.Store'
+]
+
 
 class BackendException(Exception):
     pass
@@ -169,7 +179,7 @@ def create_stores():
     """
     store_count = 0
     store_classes = set()
-    for store_entry in CONF.known_stores:
+    for store_entry in (CONF.known_stores + _EXTRA_STORES):
         store_entry = store_entry.strip()
         if not store_entry:
             continue
@@ -177,8 +187,16 @@ def create_stores():
         try:
             store_instance = store_cls()
         except exception.BadStoreConfiguration as e:
-            LOG.warn(_("%s Skipping store driver.") % unicode(e))
+            if store_entry in CONF.known_stores:
+                LOG.warn(_("%s Skipping store driver.") % unicode(e))
             continue
+        finally:
+            # NOTE(flaper87): To be removed in Juno
+            if store_entry not in CONF.known_stores:
+                LOG.deprecated(_("%s not found in `known_store`. "
+                                 "Stores need to be explicitly enabled in "
+                                 "the configuration file.") % store_entry)
+
         schemes = store_instance.get_schemes()
         if not schemes:
             raise BackendException('Unable to register store %s. '
