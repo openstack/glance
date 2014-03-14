@@ -92,6 +92,10 @@ class TestTasks(functional.FunctionalTest):
         # Returned task entity should have a generated id and status
         task = jsonutils.loads(response.text)
         task_id = task['id']
+
+        self.assertTrue('Location' in response.headers)
+        self.assertEqual(path + '/' + task_id, response.headers['Location'])
+
         checked_keys = set([u'created_at',
                             u'id',
                             u'input',
