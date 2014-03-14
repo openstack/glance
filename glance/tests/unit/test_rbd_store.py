@@ -75,6 +75,27 @@ class TestStore(base.StoreClearingUnitTest):
 
         self.called_commands_expected = ['create', 'delete']
 
+    def test_add_w_rbd_image_exception2(self):
+        def _fake_create_image(*args, **kwargs):
+            self.called_commands_actual.append('create')
+            return self.location
+
+        def _fake_delete_image(*args, **kwargs):
+            self.called_commands_actual.append('delete')
+            raise exception.InUseByStore()
+
+        def _fake_enter(*args, **kwargs):
+            raise exception.NotFound("")
+
+        self.stubs.Set(self.store, '_create_image', _fake_create_image)
+        self.stubs.Set(self.store, '_delete_image', _fake_delete_image)
+        self.stubs.Set(mock_rbd.Image, '__enter__', _fake_enter)
+
+        self.assertRaises(exception.InUseByStore, self.store.add,
+                          'fake_image_id', self.data_iter, self.data_len)
+
+        self.called_commands_expected = ['create', 'delete']
+
     def test_add_duplicate_image(self):
         def _fake_create_image(*args, **kwargs):
             self.called_commands_actual.append('create')
