@@ -69,7 +69,7 @@ class BaseTestCase(object):
     def test_create_store(self):
         self.config(known_stores=[self.store_cls_path])
         count = glance.store.create_stores()
-        self.assertEqual(count, 7)
+        self.assertEqual(8, count)
 
     def test_lifecycle(self):
         """Add, get and delete an image"""

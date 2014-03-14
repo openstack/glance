@@ -63,7 +63,9 @@ REGISTERED_STORES = set()
 CONF = cfg.CONF
 CONF.register_opts(store_opts)
 
-_EXTRA_STORES = [
+_ALL_STORES = [
+    'glance.store.filesystem.Store',
+    'glance.store.http.Store',
     'glance.store.rbd.Store',
     'glance.store.s3.Store',
     'glance.store.swift.Store',
@@ -179,7 +181,7 @@ def create_stores():
     """
     store_count = 0
     store_classes = set()
-    for store_entry in (CONF.known_stores + _EXTRA_STORES):
+    for store_entry in set(CONF.known_stores + _ALL_STORES):
         store_entry = store_entry.strip()
         if not store_entry:
             continue

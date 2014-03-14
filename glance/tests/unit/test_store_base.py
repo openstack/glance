@@ -56,4 +56,4 @@ class TestStoreBase(test_base.StoreClearingUnitTest):
             "glance.tests.unit.test_store_base.FakeUnconfigurableStoreDriver",
             "glance.store.filesystem.Store"])
         count = store.create_stores()
-        self.assertEqual(count, 8)
+        self.assertEqual(9, count)
