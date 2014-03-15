@@ -111,11 +111,17 @@ class _Reader(object):
     def __init__(self, data, checksum):
         self.data = data
         self.checksum = checksum
+        self._size = 0
 
-    def read(self, len):
-        result = self.data.read(len)
+    def read(self, length):
+        result = self.data.read(length)
+        self._size += len(result)
         self.checksum.update(result)
         return result
+
+    @property
+    def size(self):
+        return self._size
 
 
 class StoreLocation(glance.store.location.StoreLocation):
@@ -285,7 +291,7 @@ class Store(glance.store.base.Store):
             raise exception.UnexpectedStatus(status=res.status,
                                              body=res.read())
 
-        return (loc.get_uri(), image_size, checksum.hexdigest(), {})
+        return (loc.get_uri(), image_file.size, checksum.hexdigest(), {})
 
     def get(self, location):
         """Takes a `glance.store.location.Location` object that indicates

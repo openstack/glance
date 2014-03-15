@@ -24,6 +24,7 @@ import six
 from glance.common import exception
 from glance.openstack.common import units
 from glance.store.location import get_location_from_uri
+import glance.store.vmware_datastore as vm_store
 from glance.store.vmware_datastore import Store
 from glance.tests.unit import base
 from glance.tests import utils
@@ -160,13 +161,15 @@ class TestStore(base.StoreClearingUnitTest):
             HttpConn.return_value = FakeHTTPConnection(status=404)
             self.assertRaises(exception.NotFound, self.store.get, loc)
 
-    def test_add(self):
+    @mock.patch.object(vm_store._Reader, 'size')
+    def test_add(self, fake_size):
         """Test that we can add an image via the VMware backend"""
         expected_image_id = str(uuid.uuid4())
         expected_size = FIVE_KB
         expected_contents = "*" * expected_size
         hash_code = hashlib.md5(expected_contents)
         expected_checksum = hash_code.hexdigest()
+        fake_size.__get__ = mock.Mock(return_value=expected_size)
         with mock.patch('hashlib.md5') as md5:
             md5.return_value = hash_code
             expected_location = format_location(
@@ -181,6 +184,35 @@ class TestStore(base.StoreClearingUnitTest):
                 location, size, checksum, _ = self.store.add(expected_image_id,
                                                              image,
                                                              expected_size)
+        self.assertEqual(expected_location, location)
+        self.assertEqual(expected_size, size)
+        self.assertEqual(expected_checksum, checksum)
+
+    @mock.patch.object(vm_store._Reader, 'size')
+    def test_add_size_zero(self, fake_size):
+        """
+        Test that when specifying size zero for the image to add,
+        the actual size of the image is returned.
+        """
+        expected_image_id = str(uuid.uuid4())
+        expected_size = FIVE_KB
+        expected_contents = "*" * expected_size
+        hash_code = hashlib.md5(expected_contents)
+        expected_checksum = hash_code.hexdigest()
+        fake_size.__get__ = mock.Mock(return_value=expected_size)
+        with mock.patch('hashlib.md5') as md5:
+            md5.return_value = hash_code
+            expected_location = format_location(
+                VMWARE_DATASTORE_CONF['vmware_server_host'],
+                VMWARE_DATASTORE_CONF['vmware_store_image_dir'],
+                expected_image_id,
+                VMWARE_DATASTORE_CONF['vmware_datacenter_path'],
+                VMWARE_DATASTORE_CONF['vmware_datastore_name'])
+            image = six.StringIO(expected_contents)
+            with mock.patch('httplib.HTTPConnection') as HttpConn:
+                HttpConn.return_value = FakeHTTPConnection()
+                location, size, checksum, _ = self.store.add(expected_image_id,
+                                                             image, 0)
         self.assertEqual(expected_location, location)
         self.assertEqual(expected_size, size)
         self.assertEqual(expected_checksum, checksum)
