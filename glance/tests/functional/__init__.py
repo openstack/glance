@@ -75,6 +75,8 @@ class Server(object):
         self.property_protection_file = ''
         self.enable_v1_api = True
         self.enable_v2_api = True
+        self.enable_v1_registry = True
+        self.enable_v2_registry = True
         self.needs_database = False
         self.log_file = None
         self.sock = sock
@@ -485,6 +487,7 @@ sql_idle_timeout = 3600
 api_limit_max = 1000
 limit_param_default = 25
 owner_is_tenant = %(owner_is_tenant)s
+enable_v2_registry = %(enable_v2_registry)s
 workers = %(workers)s
 user_storage_quota = %(user_storage_quota)s
 [paste_deploy]
@@ -497,7 +500,7 @@ pipeline = unauthenticated-context registryapp
 pipeline = fakeauth context registryapp
 
 [app:registryapp]
-paste.app_factory = glance.registry.api.v%(api_version)s:API.factory
+paste.app_factory = glance.registry.api:API.factory
 
 [filter:context]
 paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
