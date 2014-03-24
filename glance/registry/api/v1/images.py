@@ -111,6 +111,9 @@ class Controller(object):
                        "'not found'") % {'id': params.get('marker')})
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
+        except Exception:
+            LOG.exception(_("Unable to get images"))
+            raise
 
     def index(self, req):
         """Return a basic filtered list of public, non-deleted images
@@ -325,6 +328,9 @@ class Controller(object):
             msg = _("Access denied to image %(id)s but returning 'not found'")
             LOG.info(msg % {'id': id})
             raise exc.HTTPNotFound()
+        except Exception:
+            LOG.exception(_("Unable to show image %s"), id)
+            raise
 
         return dict(image=make_image_dict(image))
 
@@ -357,6 +363,9 @@ class Controller(object):
             msg = _("Image %(id)s not found")
             LOG.info(msg % {'id': id})
             return exc.HTTPNotFound()
+        except Exception:
+            LOG.exception(_("Unable to delete image %s"), id)
+            raise
 
     @utils.mutating
     def create(self, req, body):
@@ -405,6 +414,9 @@ class Controller(object):
                      "Got error: %(e)s") % {'e': e})
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
+        except Exception:
+            LOG.exception(_("Unable to create image %s"), image_id)
+            raise
 
     @utils.mutating
     def update(self, req, id, body):
@@ -473,6 +485,9 @@ class Controller(object):
             raise exc.HTTPConflict(body='Image operation conflicts',
                                    request=req,
                                    content_type='text/plain')
+        except Exception:
+            LOG.exception(_("Unable to update image %s"), id)
+            raise
 
 
 def _limit_locations(image):
