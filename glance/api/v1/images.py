@@ -440,7 +440,7 @@ class Controller(controller.BaseController):
         try:
             image_data, image_size = get_from_backend(context, where)
         except exception.NotFound as e:
-            raise HTTPNotFound(explanation="%s" % e)
+            raise HTTPNotFound(explanation=e.msg)
         image_size = int(image_size) if image_size else None
         return image_data, image_size
 
