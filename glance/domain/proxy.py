@@ -45,36 +45,36 @@ class Helper(object):
 
 
 class TaskRepo(object):
-    def __init__(self,
-                 base,
-                 task_proxy_class=None, task_proxy_kwargs=None,
-                 task_details_proxy_class=None,
-                 task_details_proxy_kwargs=None):
+    def __init__(self, base,
+                 task_proxy_class=None, task_proxy_kwargs=None):
         self.base = base
         self.task_proxy_helper = Helper(task_proxy_class, task_proxy_kwargs)
-        self.task_details_proxy_helper = Helper(task_details_proxy_class,
-                                                task_details_proxy_kwargs)
 
-    def get_task_stub_and_details(self, task_id):
-        task, task_details = self.base.get_task_stub_and_details(task_id)
-        return (self.task_proxy_helper.proxy(task),
-                self.task_details_proxy_helper.proxy(task_details))
+    def get(self, task_id):
+        task = self.base.get(task_id)
+        return self.task_proxy_helper.proxy(task)
 
-    def list_tasks(self, *args, **kwargs):
-        tasks = self.base.list_tasks(*args, **kwargs)
-        return [self.task_proxy_helper.proxy(task) for task in tasks]
+    def add(self, task):
+        self.base.add(self.task_proxy_helper.unproxy(task))
 
-    def add(self, task, task_details=None):
-        self.base.add(self.task_proxy_helper.unproxy(task),
-                      self.task_details_proxy_helper.unproxy(task_details))
-
-    def save(self, task, task_details=None):
-        self.base.save(self.task_proxy_helper.unproxy(task),
-                       self.task_details_proxy_helper.unproxy(task_details))
+    def save(self, task):
+        self.base.save(self.task_proxy_helper.unproxy(task))
 
     def remove(self, task):
         base_task = self.task_proxy_helper.unproxy(task)
         self.base.remove(base_task)
+
+
+class TaskStubRepo(object):
+    def __init__(self, base, task_stub_proxy_class=None,
+                 task_stub_proxy_kwargs=None):
+        self.base = base
+        self.task_stub_proxy_helper = Helper(task_stub_proxy_class,
+                                             task_stub_proxy_kwargs)
+
+    def list(self, *args, **kwargs):
+        tasks = self.base.list(*args, **kwargs)
+        return [self.task_stub_proxy_helper.proxy(task) for task in tasks]
 
 
 class Repo(object):
@@ -191,6 +191,9 @@ class Task(object):
     def fail(self, message):
         self.base.fail(message)
 
+    def run(self, executor):
+        self.base.run(executor)
+
 
 class TaskStub(object):
     def __init__(self, base):
@@ -204,40 +207,15 @@ class TaskStub(object):
     created_at = _proxy('base', 'created_at')
     updated_at = _proxy('base', 'updated_at')
 
-    def run(self, executor):
-        self.base.run(executor)
-
-
-class TaskDetails(object):
-    def __init__(self, base):
-        self.base = base
-
-    task_id = _proxy('base', 'task_id')
-    input = _proxy('base', 'input')
-    result = _proxy('base', 'result')
-    message = _proxy('base', 'message')
-
 
 class TaskFactory(object):
     def __init__(self,
                  base,
                  task_proxy_class=None,
-                 task_proxy_kwargs=None,
-                 task_details_proxy_class=None,
-                 task_details_proxy_kwargs=None):
+                 task_proxy_kwargs=None):
         self.task_helper = Helper(task_proxy_class, task_proxy_kwargs)
-        self.task_details_helper = Helper(task_details_proxy_class,
-                                          task_details_proxy_kwargs)
         self.base = base
 
     def new_task(self, **kwargs):
         t = self.base.new_task(**kwargs)
         return self.task_helper.proxy(t)
-
-    def new_task_stub(self, **kwargs):
-        t = self.base.new_task_stub(**kwargs)
-        return self.task_helper.proxy(t)
-
-    def new_task_details(self, task_id, task_input, message=None, result=None):
-        td = self.base.new_task_details(task_id, task_input, message, result)
-        return self.task_details_helper.proxy(td)

@@ -56,20 +56,17 @@ class TasksController(object):
         task_repo = self.gateway.get_task_repo(req.context)
         live_time = CONF.task.task_time_to_live
         try:
-            new_task = task_factory.new_task_stub(task_type=task['type'],
-                                                  owner=req.context.owner,
-                                                  task_time_to_live=live_time)
-            new_task_details = task_factory.new_task_details(new_task.task_id,
-                                                             task['input'])
-            task_repo.add(new_task, new_task_details)
+            new_task = task_factory.new_task(task_type=task['type'],
+                                             owner=req.context.owner,
+                                             task_time_to_live=live_time,
+                                             task_input=task['input'])
+            task_repo.add(new_task)
         except exception.Forbidden as e:
             msg = (_("Forbidden to create task. Reason: %(reason)s")
                    % {'reason': unicode(e)})
             LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-
-        result = {'task': new_task, 'task_details': new_task_details}
-        return result
+        return new_task
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
               sort_dir='desc', filters=None):
@@ -82,13 +79,10 @@ class TasksController(object):
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)
 
-        task_repo = self.gateway.get_task_repo(req.context)
+        task_repo = self.gateway.get_task_stub_repo(req.context)
         try:
-            tasks = task_repo.list_tasks(marker,
-                                         limit,
-                                         sort_key,
-                                         sort_dir,
-                                         filters)
+            tasks = task_repo.list(marker, limit, sort_key,
+                                   sort_dir, filters)
             if len(tasks) != 0 and len(tasks) == limit:
                 result['next_marker'] = tasks[-1].task_id
         except (exception.NotFound, exception.InvalidSortKey,
@@ -104,7 +98,7 @@ class TasksController(object):
     def get(self, req, task_id):
         try:
             task_repo = self.gateway.get_task_repo(req.context)
-            task, task_details = task_repo.get_task_stub_and_details(task_id)
+            task = task_repo.get(task_id)
         except exception.NotFound as e:
             msg = (_("Failed to find task %(task_id)s. Reason: %(reason)s") %
                    {'task_id': task_id, 'reason': unicode(e)})
@@ -115,8 +109,7 @@ class TasksController(object):
                    {'task_id': task_id, 'reason': unicode(e)})
             LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        result = {'task': task, 'task_details': task_details}
-        return result
+        return task
 
     def delete(self, req, task_id):
         msg = (_("This operation is currently not permitted on Glance Tasks. "
@@ -238,16 +231,15 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def _get_task_location(self, task):
         return '/v2/tasks/%s' % task.task_id
 
-    def _format_task(self, schema, task, task_details=None):
+    def _format_task(self, schema, task):
         task_view = {}
-        task_attributes = ['type', 'status', 'owner']
-        task_details_attributes = ['input', 'result', 'message']
-        for key in task_attributes:
-            task_view[key] = getattr(task, key)
-        if task_details:
-            for key in task_details_attributes:
-                task_view[key] = getattr(task_details, key)
         task_view['id'] = task.task_id
+        task_view['input'] = task.task_input
+        task_view['type'] = task.type
+        task_view['status'] = task.status
+        task_view['owner'] = task.owner
+        task_view['message'] = task.message
+        task_view['result'] = task.result
         if task.expires_at:
             task_view['expires_at'] = timeutils.isotime(task.expires_at)
         task_view['created_at'] = timeutils.isotime(task.created_at)
@@ -257,20 +249,28 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         task_view = schema.filter(task_view)  # domain
         return task_view
 
-    def create(self, response, result):
+    def _format_task_stub(self, schema, task):
+        task_view = {}
+        task_view['id'] = task.task_id
+        task_view['type'] = task.type
+        task_view['status'] = task.status
+        task_view['owner'] = task.owner
+        if task.expires_at:
+            task_view['expires_at'] = timeutils.isotime(task.expires_at)
+        task_view['created_at'] = timeutils.isotime(task.created_at)
+        task_view['updated_at'] = timeutils.isotime(task.updated_at)
+        task_view['self'] = self._get_task_location(task)
+        task_view['schema'] = '/v2/schemas/task'
+        task_view = schema.filter(task_view)  # domain
+        return task_view
+
+    def create(self, response, task):
         response.status_int = 201
-        task = result['task']
-        task_details = result['task_details']
         self._inject_location_header(response, task)
-        self._get(response, task, task_details)
+        self.get(response, task)
 
-    def get(self, response, result):
-        task = result['task']
-        task_details = result['task_details']
-        self._get(response, task, task_details)
-
-    def _get(self, response, task, task_details):
-        task_view = self._format_task(self.task_schema, task, task_details)
+    def get(self, response, task):
+        task_view = self._format_task(self.task_schema, task)
         body = json.dumps(task_view, ensure_ascii=False)
         response.unicode_body = unicode(body)
         response.content_type = 'application/json'
@@ -280,7 +280,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         params.pop('marker', None)
         query = urlparse.urlencode(params)
         body = {
-            'tasks': [self._format_task(self.partial_task_schema, task)
+            'tasks': [self._format_task_stub(self.partial_task_schema, task)
                       for task in result['tasks']],
             'first': '/v2/tasks',
             'schema': '/v2/schemas/tasks',

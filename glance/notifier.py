@@ -311,14 +311,12 @@ class TaskRepoProxy(glance.domain.proxy.TaskRepo):
         super(TaskRepoProxy, self) \
             .__init__(task_repo,
                       task_proxy_class=TaskProxy,
-                      task_proxy_kwargs=proxy_kwargs,
-                      task_details_proxy_class=TaskDetailsProxy,
-                      task_details_proxy_kwargs=proxy_kwargs)
+                      task_proxy_kwargs=proxy_kwargs)
 
-    def add(self, task, task_details=None):
+    def add(self, task):
         self.notifier.info('task.create',
                            format_task_notification(task))
-        super(TaskRepoProxy, self).add(task, task_details)
+        super(TaskRepoProxy, self).add(task)
 
     def remove(self, task):
         payload = format_task_notification(task)
@@ -328,15 +326,26 @@ class TaskRepoProxy(glance.domain.proxy.TaskRepo):
         super(TaskRepoProxy, self).remove(task)
 
 
+class TaskStubRepoProxy(glance.domain.proxy.TaskStubRepo):
+
+    def __init__(self, task_stub_repo, context, notifier):
+        self.task_stub_repo = task_stub_repo
+        self.context = context
+        self.notifier = notifier
+        proxy_kwargs = {'context': self.context, 'notifier': self.notifier}
+        super(TaskStubRepoProxy, self) \
+            .__init__(task_stub_repo,
+                      task_stub_proxy_class=TaskStubProxy,
+                      task_stub_proxy_kwargs=proxy_kwargs)
+
+
 class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
     def __init__(self, task_factory, context, notifier):
         kwargs = {'context': context, 'notifier': notifier}
         super(TaskFactoryProxy, self).__init__(
             task_factory,
             task_proxy_class=TaskProxy,
-            task_proxy_kwargs=kwargs,
-            task_details_proxy_class=TaskDetailsProxy,
-            task_details_proxy_kwargs=kwargs)
+            task_proxy_kwargs=kwargs)
 
 
 class TaskProxy(glance.domain.proxy.Task):
@@ -364,6 +373,11 @@ class TaskProxy(glance.domain.proxy.Task):
                            format_task_notification(self.task))
         return super(TaskProxy, self).fail(message)
 
+    def run(self, executor):
+        self.notifier.info('task.run',
+                           format_task_notification(self.task))
+        return super(TaskProxy, self).run(executor)
+
 
 class TaskStubProxy(glance.domain.proxy.TaskStub):
 
@@ -372,17 +386,3 @@ class TaskStubProxy(glance.domain.proxy.TaskStub):
         self.context = context
         self.notifier = notifier
         super(TaskStubProxy, self).__init__(task)
-
-    def run(self, executor):
-        self.notifier.info('task.run',
-                           format_task_notification(self.task))
-        return super(TaskStubProxy, self).run(executor)
-
-
-class TaskDetailsProxy(glance.domain.proxy.TaskDetails):
-
-    def __init__(self, task_details, context, notifier):
-        self.task_details = task_details
-        self.context = context
-        self.notifier = notifier
-        super(TaskDetailsProxy, self).__init__(task_details)

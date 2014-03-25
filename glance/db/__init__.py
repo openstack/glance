@@ -290,6 +290,20 @@ class TaskRepo(object):
         self.context = context
         self.db_api = db_api
 
+    def _format_task_from_db(self, db_task):
+        return glance.domain.Task(
+            task_id=db_task['id'],
+            task_type=db_task['type'],
+            status=db_task['status'],
+            owner=db_task['owner'],
+            expires_at=db_task['expires_at'],
+            created_at=db_task['created_at'],
+            updated_at=db_task['updated_at'],
+            task_input=db_task['input'],
+            result=db_task['result'],
+            message=db_task['message'],
+        )
+
     def _format_task_stub_from_db(self, db_task):
         return glance.domain.TaskStub(
             task_id=db_task['id'],
@@ -301,50 +315,30 @@ class TaskRepo(object):
             updated_at=db_task['updated_at'],
         )
 
-    def _format_task_details_from_db(self, db_task):
-        return glance.domain.TaskDetails(
-            task_id=db_task['id'],
-            task_input=db_task['input'],
-            result=db_task['result'],
-            message=db_task['message'],
-        )
-
-    def _format_task_stub_and_details_to_db(self, task, task_details=None):
+    def _format_task_to_db(self, task):
         task = {'id': task.task_id,
                 'type': task.type,
                 'status': task.status,
-                'input': None,
-                'result': None,
+                'input': task.task_input,
+                'result': task.result,
                 'owner': task.owner,
-                'message': None,
+                'message': task.message,
                 'expires_at': task.expires_at,
                 'created_at': task.created_at,
-                'updated_at': task.updated_at}
-
-        if task_details is not None:
-            task.update({
-                'input': task_details.input,
-                'result': task_details.result,
-                'message': task_details.message,
-            })
-
+                'updated_at': task.updated_at,
+                }
         return task
 
-    def get_task_stub_and_details(self, task_id):
+    def get(self, task_id):
         try:
             db_api_task = self.db_api.task_get(self.context, task_id)
         except (exception.NotFound, exception.Forbidden):
             msg = _('Could not find task %s') % task_id
             raise exception.NotFound(msg)
-        return (self._format_task_stub_from_db(db_api_task),
-                self._format_task_details_from_db(db_api_task))
+        return self._format_task_from_db(db_api_task)
 
-    def list_tasks(self,
-                   marker=None,
-                   limit=None,
-                   sort_key='created_at',
-                   sort_dir='desc',
-                   filters=None):
+    def list(self, marker=None, limit=None, sort_key='created_at',
+             sort_dir='desc', filters=None):
         db_api_tasks = self.db_api.task_get_all(self.context,
                                                 filters=filters,
                                                 marker=marker,
@@ -353,9 +347,8 @@ class TaskRepo(object):
                                                 sort_dir=sort_dir)
         return [self._format_task_stub_from_db(task) for task in db_api_tasks]
 
-    def save(self, task, task_details=None):
-        task_values = self._format_task_stub_and_details_to_db(task,
-                                                               task_details)
+    def save(self, task):
+        task_values = self._format_task_to_db(task)
         try:
             updated_values = self.db_api.task_update(self.context,
                                                      task.task_id,
@@ -365,15 +358,14 @@ class TaskRepo(object):
             raise exception.NotFound(msg)
         task.updated_at = updated_values['updated_at']
 
-    def add(self, task, task_details=None):
-        task_values = self._format_task_stub_and_details_to_db(task,
-                                                               task_details)
+    def add(self, task):
+        task_values = self._format_task_to_db(task)
         updated_values = self.db_api.task_create(self.context, task_values)
         task.created_at = updated_values['created_at']
         task.updated_at = updated_values['updated_at']
 
     def remove(self, task):
-        task_values = self._format_task_stub_and_details_to_db(task)
+        task_values = self._format_task_to_db(task)
         try:
             self.db_api.task_update(self.context, task.task_id, task_values)
             updated_values = self.db_api.task_delete(self.context,
