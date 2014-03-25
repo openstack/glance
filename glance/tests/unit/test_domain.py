@@ -317,7 +317,7 @@ class TestTaskFactory(test_utils.BaseTestCase):
         self.assertIsNone(task.expires_at)
         self.assertEqual(owner, task.owner)
         self.assertEqual(task_input, task.task_input)
-        self.assertIsNone(task.message)
+        self.assertEqual(task.message, u'')
         self.assertIsNone(task.result)
 
     def test_new_task_invalid_type(self):
@@ -424,7 +424,7 @@ class TestTask(test_utils.BaseTestCase):
         self.task.succeed('{"location": "file://home"}')
         self.assertEqual(self.task.status, 'success')
         self.assertEqual(self.task.result, '{"location": "file://home"}')
-        self.assertEqual(self.task.message, None)
+        self.assertEqual(self.task.message, u'')
         expected = (timeutils.utcnow() +
                     datetime.timedelta(hours=CONF.task.task_time_to_live))
         self.assertEqual(

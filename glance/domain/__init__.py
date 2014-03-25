@@ -19,6 +19,7 @@ import datetime
 import uuid
 
 from oslo.config import cfg
+import six
 
 from glance.common import exception
 import glance.openstack.common.log as logging
@@ -337,6 +338,17 @@ class Task(object):
     @property
     def status(self):
         return self._status
+
+    @property
+    def message(self):
+        return self._message
+
+    @message.setter
+    def message(self, message):
+        if message:
+            self._message = six.text_type(message)
+        else:
+            self._message = six.text_type('')
 
     def _validate_task_status_transition(self, cur_status, new_status):
             valid_transitions = {

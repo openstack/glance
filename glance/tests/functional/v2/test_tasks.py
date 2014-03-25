@@ -99,6 +99,7 @@ class TestTasks(functional.FunctionalTest):
         checked_keys = set([u'created_at',
                             u'id',
                             u'input',
+                            u'message',
                             u'owner',
                             u'schema',
                             u'self',
