@@ -593,6 +593,8 @@ def translate_exception(req, e):
     if isinstance(e, webob.exc.HTTPError):
         e.explanation = gettextutils.translate(e.explanation, locale)
         e.detail = gettextutils.translate(e.detail, locale)
+        if getattr(e, 'body_template', None):
+            e.body_template = gettextutils.translate(e.body_template, locale)
     return e
 
 

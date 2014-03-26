@@ -129,4 +129,11 @@ class TestTasks(functional.FunctionalTest):
         self.assertEqual(1, len(tasks))
         self.assertEqual(tasks[0]['id'], task_id)
 
+        # Attempt to delete a task
+        path = self._url('/v2/tasks/%s' % tasks[0]['id'])
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(405, response.status_code)
+        self.assertIsNotNone(response.headers.get('Allow'))
+        self.assertEqual('GET', response.headers.get('Allow'))
+
         self.stop_servers()
