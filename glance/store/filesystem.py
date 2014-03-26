@@ -22,7 +22,6 @@ import hashlib
 import os
 
 from oslo.config import cfg
-import six
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
@@ -281,19 +280,20 @@ class Store(glance.store.base.Store):
                         'used: %(error)s  An empty dictionary will be '
                         'returned to the client.') %
                       {'file': CONF.filesystem_store_metadata_file,
-                       'error': six.text_type(bee)})
+                       'error': utils.exception_to_str(bee)})
             return {}
         except IOError as ioe:
             LOG.error(_('The path for the metadata file %(file)s could not be '
                         'opened: %(error)s  An empty dictionary will be '
                         'returned to the client.') %
                       {'file': CONF.filesystem_store_metadata_file,
-                       'error': six.text_type(ioe)})
+                       'error': utils.exception_to_str(ioe)})
             return {}
         except Exception as ex:
             LOG.exception(_('An error occurred processing the storage systems '
                             'meta data file: %s.  An empty dictionary will be '
-                            'returned to the client.') % six.text_type(ex))
+                            'returned to the client.') %
+                          utils.exception_to_str(ex))
             return {}
 
     def get(self, location):

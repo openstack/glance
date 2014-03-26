@@ -18,6 +18,7 @@ import copy
 import webob.exc
 
 from oslo.config import cfg
+import six
 import six.moves.urllib.parse as urlparse
 
 from glance.api import policy
@@ -63,7 +64,7 @@ class TasksController(object):
             task_repo.add(new_task)
         except exception.Forbidden as e:
             msg = (_("Forbidden to create task. Reason: %(reason)s")
-                   % {'reason': unicode(e)})
+                   % {'reason': utils.exception_to_str(e)})
             LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return new_task
@@ -87,10 +88,10 @@ class TasksController(object):
                 result['next_marker'] = tasks[-1].task_id
         except (exception.NotFound, exception.InvalidSortKey,
                 exception.InvalidFilterRangeValue) as e:
-            LOG.info(unicode(e))
+            LOG.info(utils.exception_to_str(e))
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.info(unicode(e))
+            LOG.info(utils.exception_to_str(e))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         result['tasks'] = tasks
         return result
@@ -101,12 +102,12 @@ class TasksController(object):
             task = task_repo.get(task_id)
         except exception.NotFound as e:
             msg = (_("Failed to find task %(task_id)s. Reason: %(reason)s") %
-                   {'task_id': task_id, 'reason': unicode(e)})
+                   {'task_id': task_id, 'reason': utils.exception_to_str(e)})
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
             msg = (_("Forbidden to get task %(task_id)s. Reason: %(reason)s") %
-                   {'task_id': task_id, 'reason': unicode(e)})
+                   {'task_id': task_id, 'reason': utils.exception_to_str(e)})
             LOG.info(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return task
@@ -176,7 +177,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         for param in self._required_properties:
             if param not in body:
                 msg = _("Task '%s' is required") % param
-                raise webob.exc.HTTPBadRequest(explanation=unicode(msg))
+                raise webob.exc.HTTPBadRequest(explanation=msg)
 
     def __init__(self, schema=None):
         super(RequestDeserializer, self).__init__()
@@ -272,7 +273,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def get(self, response, task):
         task_view = self._format_task(self.task_schema, task)
         body = json.dumps(task_view, ensure_ascii=False)
-        response.unicode_body = unicode(body)
+        response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def index(self, response, result):
@@ -291,7 +292,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             params['marker'] = result['next_marker']
             next_query = urlparse.urlencode(params)
             body['next'] = '/v2/tasks?%s' % next_query
-        response.unicode_body = unicode(json.dumps(body, ensure_ascii=False))
+        response.unicode_body = six.text_type(json.dumps(body,
+                                                         ensure_ascii=False))
         response.content_type = 'application/json'
 
 

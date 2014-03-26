@@ -14,9 +14,9 @@
 #    under the License.
 
 import jsonschema
-import six
 
 from glance.common import exception
+from glance.common import utils
 
 
 class Schema(object):
@@ -33,7 +33,7 @@ class Schema(object):
             jsonschema.validate(obj, self.raw())
         except jsonschema.ValidationError as e:
             raise exception.InvalidObject(schema=self.name,
-                                          reason=six.text_type(e))
+                                          reason=utils.exception_to_str(e))
 
     def filter(self, obj):
         filtered = {}

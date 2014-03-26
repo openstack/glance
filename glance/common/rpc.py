@@ -25,6 +25,7 @@ from webob import exc
 
 from glance.common import client
 from glance.common import exception
+from glance.common import utils
 from glance.common import wsgi
 import glance.openstack.common.importutils as imp
 import glance.openstack.common.log as logging
@@ -178,7 +179,7 @@ class Controller(object):
                 if self.raise_exc:
                     raise
 
-                cls, val = e.__class__, six.text_type(e)
+                cls, val = e.__class__, utils.exception_to_str(e)
                 msg = (_("RPC Call Error: %(val)s\n%(tb)s") %
                        dict(val=val, tb=traceback.format_exc()))
                 LOG.error(msg)

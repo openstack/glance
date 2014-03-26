@@ -133,7 +133,7 @@ class TestRBDStore(store_tests.BaseTestCase, testtools.TestCase):
         # and uri to ascii before passing it to librbd.
         store = self.get_store()
 
-        image_id = unicode(str(uuid.uuid4()))
+        image_id = six.text_type(str(uuid.uuid4()))
         image_size = 300
         image_data = six.StringIO('X' * image_size)
         image_checksum = '41757066eaff7c4c6c965556b4d3c6c5'
@@ -141,7 +141,7 @@ class TestRBDStore(store_tests.BaseTestCase, testtools.TestCase):
         uri, add_size, add_checksum = store.add(image_id,
                                                 image_data,
                                                 image_size)
-        uri = unicode(uri)
+        uri = six.text_type(uri)
 
         self.assertEqual(image_size, add_size)
         self.assertEqual(image_checksum, add_checksum)

@@ -30,27 +30,6 @@ class TestStoreBase(test_base.StoreClearingUnitTest):
         self.config(default_store='file')
         super(TestStoreBase, self).setUp()
 
-    def test_exception_to_unicode(self):
-        class FakeException(Exception):
-            def __str__(self):
-                raise UnicodeError()
-
-        exc = Exception('error message')
-        ret = store_base._exception_to_unicode(exc)
-        self.assertIsInstance(ret, unicode)
-        self.assertEqual(ret, 'error message')
-
-        exc = Exception('\xa5 error message')
-        ret = store_base._exception_to_unicode(exc)
-        self.assertIsInstance(ret, unicode)
-        self.assertEqual(ret, ' error message')
-
-        exc = FakeException('\xa5 error message')
-        ret = store_base._exception_to_unicode(exc)
-        self.assertIsInstance(ret, unicode)
-        self.assertEqual(ret, _("Caught '%(exception)s' exception.") %
-                         {'exception': 'FakeException'})
-
     def test_create_store_exclude_unconfigurable_drivers(self):
         self.config(known_stores=[
             "glance.tests.unit.test_store_base.FakeUnconfigurableStoreDriver",

@@ -3054,7 +3054,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         # want to output utf-8.
         FIXTURE = {
             'image_meta': {
-                'id': unicode(UUID2),
+                'id': six.text_type(UUID2),
                 'name': u'fake image #2 with utf-8 éàè',
                 'status': u'active',
                 'disk_format': u'vhd',
@@ -3066,7 +3066,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
                 'deleted': False,
                 'checksum': u'06ff575a2856444fbe93100157ed74ab92eb7eff',
                 'size': 19,
-                'owner': unicode(_gen_uuid()),
+                'owner': six.text_type(_gen_uuid()),
                 'location': u"file:///tmp/glance-tests/2",
                 'properties': {
                     u'prop_éé': u'ça marche',

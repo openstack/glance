@@ -191,7 +191,8 @@ def create_stores():
             store_instance = store_cls()
         except exception.BadStoreConfiguration as e:
             if store_entry in CONF.known_stores:
-                LOG.warn(_("%s Skipping store driver.") % unicode(e))
+                LOG.warn(_("%s Skipping store driver.") %
+                         utils.exception_to_str(e))
             continue
         finally:
             # NOTE(flaper87): To be removed in Juno
@@ -322,7 +323,7 @@ def safe_delete_from_backend(context, uri, image_id, **kwargs):
         msg = _('Failed to delete image %s in store from URI')
         LOG.warn(msg % image_id)
     except exception.StoreDeleteNotSupported as e:
-        LOG.warn(six.text_type(e))
+        LOG.warn(utils.exception_to_str(e))
     except UnsupportedBackend:
         exc_type = sys.exc_info()[0].__name__
         msg = (_('Failed to delete image %(image_id)s from store '
@@ -359,7 +360,7 @@ def check_location_metadata(val, key=''):
         for v in val:
             check_location_metadata(v, key='%s[%d]' % (key, ndx))
             ndx = ndx + 1
-    elif not isinstance(val, unicode):
+    elif not isinstance(val, six.text_type):
         raise BackendException(_("The image metadata key %(key)s has an "
                                  "invalid type of %(val)s.  Only dict, list, "
                                  "and unicode are supported.") %
@@ -397,7 +398,7 @@ def store_add_to_backend(image_id, data, size, store):
                        "%(store)s storage driver: %(metadata)s.  %(error)s.") %
                      {'store': six.text_type(store),
                       'metadata': six.text_type(metadata),
-                      'error': six.text_type(e)})
+                      'error': utils.exception_to_str(e)})
             LOG.error(e_msg)
             raise BackendException(e_msg)
     return (location, size, checksum, metadata)
@@ -747,7 +748,7 @@ class ImageProxy(glance.domain.proxy.Image):
             except Exception as e:
                 LOG.warn(_('Get image %(id)s data failed: '
                            '%(err)s.') % {'id': self.image.image_id,
-                                          'err': six.text_type(e)})
+                                          'err': utils.exception_to_str(e)})
                 err = e
         # tried all locations
         LOG.error(_('Glance tried all locations to get data for image %s '

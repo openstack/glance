@@ -34,6 +34,7 @@ import sqlalchemy
 
 from glance.common import crypt
 from glance.common import exception
+from glance.common import utils
 import glance.openstack.common.log as logging
 import glance.store.swift  # noqa
 
@@ -85,9 +86,10 @@ def migrate_location_credentials(migrate_engine, to_quoted):
             msg = _("Failed to decrypt location value for image %(image_id)s")
             LOG.warn(msg % {'image_id': image['id']})
         except exception.BadStoreUri as e:
+            reason = utils.exception_to_str(e)
             err_msg = _("Invalid store uri for image: %(image_id)s. "
                         "Details: %(reason)s") % {'image_id': image.id,
-                                                  'reason': unicode(e)}
+                                                  'reason': reason}
             LOG.exception(err_msg)
             raise
 

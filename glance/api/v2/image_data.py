@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 import webob.exc
 
 import glance.api.policy
@@ -56,7 +55,7 @@ class ImageDataController(object):
                 image_repo.save(image)
         except Exception as e:
             msg = _("Unable to restore image %(image_id)s: %(e)s") % \
-                {'image_id': image.image_id, 'e': unicode(e)}
+                {'image_id': image.image_id, 'e': utils.exception_to_str(e)}
             LOG.exception(msg)
 
     @utils.mutating
@@ -88,12 +87,13 @@ class ImageDataController(object):
 
         except ValueError as e:
             LOG.debug(_("Cannot save data for image %(id)s: %(e)s"),
-                      {'id': image_id, 'e': six.text_type(e)})
+                      {'id': image_id, 'e': utils.exception_to_str(e)})
             self._restore(image_repo, image)
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=
+                                           utils.exception_to_str(e))
 
         except exception.InvalidImageStatusTransition as e:
-            msg = unicode(e)
+            msg = utils.exception_to_str(e)
             LOG.debug(msg)
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
