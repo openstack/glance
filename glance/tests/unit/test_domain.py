@@ -17,6 +17,7 @@
 import datetime
 import uuid
 
+import mock
 from oslo.config import cfg
 
 from glance.common import exception
@@ -422,8 +423,9 @@ class TestTask(test_utils.BaseTestCase):
         self.task.begin_processing()
         self.assertEqual(self.task.status, 'processing')
 
-    def test_succeed(self):
-        timeutils.set_time_override()
+    @mock.patch.object(timeutils, 'utcnow')
+    def test_succeed(self, mock_utcnow):
+        mock_utcnow.return_value = datetime.datetime.utcnow()
         self.task.begin_processing()
         self.task.succeed('{"location": "file://home"}')
         self.assertEqual(self.task.status, 'success')
@@ -433,10 +435,10 @@ class TestTask(test_utils.BaseTestCase):
             self.task.expires_at,
             expected
         )
-        timeutils.clear_time_override()
 
-    def test_fail(self):
-        timeutils.set_time_override()
+    @mock.patch.object(timeutils, 'utcnow')
+    def test_fail(self, mock_utcnow):
+        mock_utcnow.return_value = datetime.datetime.utcnow()
         self.task.begin_processing()
         self.task.fail('{"message": "connection failed"}')
         self.assertEqual(self.task.status, 'failure')
@@ -446,7 +448,6 @@ class TestTask(test_utils.BaseTestCase):
             self.task.expires_at,
             expected
         )
-        timeutils.clear_time_override()
 
 
 class TestTaskDetails(test_utils.BaseTestCase):
