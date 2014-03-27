@@ -71,6 +71,16 @@ task_opts = [
                       "can be spun up by the eventlet based task executor to "
                       "perform execution of Glance tasks.")),
 ]
+manage_opts = [
+    cfg.BoolOpt('db_enforce_mysql_charset',
+                default=True,
+                help=_('DEPRECATED. TO BE REMOVED IN THE JUNO RELEASE. '
+                       'Whether or not to enforce that all DB tables have '
+                       'charset utf8. If your database tables do not have '
+                       'charset utf8 you will need to convert before this '
+                       'option is removed. This option is only relevant if '
+                       'your database engine is MySQL.'))
+]
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 help=_('Whether to allow users to specify image properties '
@@ -141,6 +151,7 @@ CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(image_format_opts, group='image_format')
 CONF.register_opts(task_opts, group='task')
+CONF.register_opts(manage_opts)
 CONF.register_opts(common_opts)
 
 

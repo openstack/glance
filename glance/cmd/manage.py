@@ -55,19 +55,8 @@ from glance.openstack.common import strutils
 LOG = log.getLogger(__name__)
 _LW = gettextutils._LW
 
-manager_opts = [
-    cfg.BoolOpt('db_enforce_mysql_charset',
-                default=True,
-                help=_('DEPRECATED. TO BE REMOVED IN THE JUNO RELEASE. '
-                       'Whether or not to enforce that all DB tables have '
-                       'charset utf8. If your database tables do not have '
-                       'charset utf8 you will need to convert before this '
-                       'option is removed. This option is only relevant if '
-                       'your database engine is MySQL.'))
-]
-
 CONF = cfg.CONF
-CONF.register_opts(manager_opts)
+CONF.import_opt('db_enforce_mysql_charset', 'glance.common.config')
 
 
 # Decorators for actions
