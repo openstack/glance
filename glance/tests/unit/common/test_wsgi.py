@@ -296,6 +296,12 @@ class JSONResponseSerializerTest(test_utils.BaseTestCase):
         actual = wsgi.JSONResponseSerializer().to_json(fixture)
         self.assertEqual(actual, expected)
 
+    def test_to_json_with_set(self):
+        fixture = set(["foo"])
+        expected = '["foo"]'
+        actual = wsgi.JSONResponseSerializer().to_json(fixture)
+        self.assertEqual(actual, expected)
+
     def test_default(self):
         fixture = {"key": "value"}
         response = webob.Response()

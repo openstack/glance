@@ -569,6 +569,8 @@ class JSONResponseSerializer(object):
             return obj.to_dict()
         if isinstance(obj, multidict.MultiDict):
             return obj.mixed()
+        if isinstance(obj, set):
+            return list(obj)
         return obj
 
     def to_json(self, data):
