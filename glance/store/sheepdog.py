@@ -25,6 +25,7 @@ from glance.common import exception
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import processutils
+from glance.openstack.common import uuidutils
 import glance.store
 import glance.store.base
 import glance.store.location
@@ -32,7 +33,7 @@ import glance.store.location
 
 LOG = logging.getLogger(__name__)
 
-DEFAULT_ADDR = 'localhost'
+DEFAULT_ADDR = '127.0.0.1'
 DEFAULT_PORT = '7000'
 DEFAULT_CHUNKSIZE = 64  # in MiB
 
@@ -63,18 +64,14 @@ class SheepdogImage:
         self.chunk_size = chunk_size
 
     def _run_command(self, command, data, *params):
-        cmd = ("collie vdi %(command)s -a %(addr)s -p %(port)s %(name)s "
-               "%(params)s" %
-               {"command": command,
-                "addr": self.addr,
-                "port": self.port,
-                "name": self.name,
-                "params": " ".join(map(str, params))})
+        cmd = ["collie", "vdi"]
+        cmd.extend(command)
+        cmd.extend(["-a", self.addr, "-p", self.port, self.name])
+        cmd.extend(params)
 
         try:
-            return processutils.execute(
-                cmd, process_input=data, shell=True)[0]
-        except processutils.ProcessExecutionError as exc:
+            return processutils.execute(*cmd, process_input=data)[0]
+        except (processutils.ProcessExecutionError, OSError) as exc:
             LOG.error(exc)
             raise glance.store.BackendException(exc)
 
@@ -84,7 +81,7 @@ class SheepdogImage:
 
         Sheepdog Usage: collie vdi list -r -a address -p port image
         """
-        out = self._run_command("list -r", None)
+        out = self._run_command(["list", "-r"], None)
         return long(out.split(' ')[3])
 
     def read(self, offset, count):
@@ -94,7 +91,7 @@ class SheepdogImage:
 
         Sheepdog Usage: collie vdi read -a address -p port image offset len
         """
-        return self._run_command("read", None, str(offset), str(count))
+        return self._run_command(["read"], None, str(offset), str(count))
 
     def write(self, data, offset, count):
         """
@@ -103,7 +100,7 @@ class SheepdogImage:
 
         Sheepdog Usage: collie vdi write -a address -p port image offset len
         """
-        self._run_command("write", data, str(offset), str(count))
+        self._run_command(["write"], data, str(offset), str(count))
 
     def create(self, size):
         """
@@ -111,7 +108,7 @@ class SheepdogImage:
 
         Sheepdog Usage: collie vdi create -a address -p port image size
         """
-        self._run_command("create", None, str(size))
+        self._run_command(["create"], None, str(size))
 
     def delete(self):
         """
@@ -119,7 +116,7 @@ class SheepdogImage:
 
         Sheepdog Usage: collie vdi delete -a address -p port image
         """
-        self._run_command("delete", None)
+        self._run_command(["delete"], None)
 
     def exist(self):
         """
@@ -127,7 +124,7 @@ class SheepdogImage:
 
         Sheepdog Usage: collie vdi list -r -a address -p port image
         """
-        out = self._run_command("list -r", None)
+        out = self._run_command(["list", "-r"], None)
         if not out:
             return False
         else:
@@ -138,7 +135,7 @@ class StoreLocation(glance.store.location.StoreLocation):
     """
     Class describing a Sheepdog URI. This is of the form:
 
-        sheepdog://image
+        sheepdog://image-id
 
     """
 
@@ -149,10 +146,14 @@ class StoreLocation(glance.store.location.StoreLocation):
         return "sheepdog://%s" % self.image
 
     def parse_uri(self, uri):
-        if not uri.startswith('sheepdog://'):
-            raise exception.BadStoreUri(uri, "URI must start with %s://" %
-                                        'sheepdog')
-        self.image = uri[11:]
+        valid_schema = 'sheepdog://'
+        if not uri.startswith(valid_schema):
+            raise exception.BadStoreUri(_("URI must start with %s://") %
+                                        valid_schema)
+        self.image = uri[len(valid_schema):]
+        if not uuidutils.is_uuid_like(self.image):
+            raise exception.BadStoreUri(_("URI must contains well-formated "
+                                          "image id"))
 
 
 class ImageIterator(object):
@@ -192,7 +193,7 @@ class Store(glance.store.base.Store):
 
         try:
             self.chunk_size = CONF.sheepdog_store_chunk_size * 1024 * 1024
-            self.addr = CONF.sheepdog_store_address
+            self.addr = CONF.sheepdog_store_address.strip()
             self.port = CONF.sheepdog_store_port
         except cfg.ConfigFileValueError as e:
             reason = _("Error in store configuration: %s") % e
@@ -200,10 +201,18 @@ class Store(glance.store.base.Store):
             raise exception.BadStoreConfiguration(store_name='sheepdog',
                                                   reason=reason)
 
+        if ' ' in self.addr:
+            reason = (_("Invalid address configuration of sheepdog store: %s")
+                      % self.addr)
+            LOG.error(reason)
+            raise exception.BadStoreConfiguration(store_name='sheepdog',
+                                                  reason=reason)
+
         try:
-            processutils.execute("collie", shell=True)
-        except processutils.ProcessExecutionError as exc:
-            reason = _("Error in store configuration: %s") % exc
+            cmd = ["collie", "vdi", "list", "-a", self.addr, "-p", self.port]
+            processutils.execute(*cmd)
+        except Exception as e:
+            reason = _("Error in store configuration: %s") % e
             LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name='sheepdog',
                                                   reason=reason)

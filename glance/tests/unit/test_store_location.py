@@ -52,7 +52,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             'rbd://imagename',
             'rbd://fsid/pool/image/snap',
             'rbd://%2F/%2F/%2F/%2F',
-            'sheepdog://imagename',
+            'sheepdog://244e75f1-9c69-4167-9db7-1aa7d1973f6c',
             'cinder://12345678-9012-3455-6789-012345678901',
         ]
 
@@ -367,15 +367,18 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         """
         Test the specific StoreLocation for the Sheepdog store
         """
-        uri = 'sheepdog://imagename'
+        uri = 'sheepdog://244e75f1-9c69-4167-9db7-1aa7d1973f6c'
         loc = glance.store.sheepdog.StoreLocation({})
         loc.parse_uri(uri)
-        self.assertEqual('imagename', loc.image)
+        self.assertEqual('244e75f1-9c69-4167-9db7-1aa7d1973f6c', loc.image)
 
-        bad_uri = 'sheepdog:/image'
+        bad_uri = 'sheepdog:/244e75f1-9c69-4167-9db7-1aa7d1973f6c'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
-        bad_uri = 'http://image'
+        bad_uri = 'http://244e75f1-9c69-4167-9db7-1aa7d1973f6c'
+        self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
+
+        bad_uri = 'image; name'
         self.assertRaises(exception.BadStoreUri, loc.parse_uri, bad_uri)
 
     def test_cinder_store_good_location(self):
