@@ -56,4 +56,5 @@ class TestStore(base.StoreClearingUnitTest):
                           'fake_image_id',
                           utils.LimitingReader(six.StringIO('xx'), 1),
                           2)
-        self.assertEqual(called_commands, ['list -r', 'create', 'delete'])
+        self.assertEqual([['list', '-r'], ['create'], ['delete']],
+                         called_commands)
