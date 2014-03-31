@@ -173,6 +173,8 @@ function run_pep8 {
       echo "Running flake8 without virtual env may miss OpenStack HACKING detection"
   fi
   bash -c "${wrapper} flake8"
+  echo "Testing translation files ..."
+  bash -c "${wrapper} find glance -type f -regex '.*\.pot?' -print0|${wrapper} xargs --null -n 1 ${wrapper} msgfmt --check-format -o /dev/null"
 }
 
 
