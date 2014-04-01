@@ -32,16 +32,17 @@ class TestManageBase(testtools.TestCase):
         def clear_conf():
             manage.CONF.reset()
             manage.CONF.unregister_opt(manage.command_opt)
+            manage.CONF.db_enforce_mysql_charset = True
         self.addCleanup(clear_conf)
 
         self.patcher = mock.patch('glance.db.sqlalchemy.api.get_engine')
         self.patcher.start()
         self.addCleanup(self.patcher.stop)
 
-    def _main_test_helper(self, argv, func_name=None, *exp_args):
+    def _main_test_helper(self, argv, func_name=None, *exp_args, **exp_kwargs):
         self.useFixture(fixtures.MonkeyPatch('sys.argv', argv))
         manage.main()
-        func_name.assert_called_once_with(*exp_args)
+        func_name.assert_called_once_with(*exp_args, **exp_kwargs)
 
 
 class TestLegacyManage(TestManageBase):
@@ -60,14 +61,16 @@ class TestLegacyManage(TestManageBase):
                                glance.openstack.common.db.sqlalchemy.
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               db_migration.MIGRATE_REPO_PATH, None,
+                               sanity_check=True)
 
     def test_legacy_db_upgrade(self):
         migration.db_sync = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db_upgrade'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               db_migration.MIGRATE_REPO_PATH, None,
+                               sanity_check=True)
 
     def test_legacy_db_version_control(self):
         migration.db_version_control = mock.Mock()
@@ -81,21 +84,51 @@ class TestLegacyManage(TestManageBase):
         self._main_test_helper(['glance.cmd.manage', 'db_sync', '20'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=True)
 
     def test_legacy_db_upgrade_version(self):
         migration.db_sync = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db_upgrade', '20'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=True)
 
     def test_legacy_db_downgrade_version(self):
         migration.db_sync = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db_downgrade', '20'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=True)
+
+    def test_legacy_db_sync_version_without_sanity_check(self):
+        migration.db_sync = mock.Mock()
+        manage.CONF.db_enforce_mysql_charset = False
+        self._main_test_helper(['glance.cmd.manage', 'db_sync', '20'],
+                               migration.db_sync,
+                               db_api.get_engine(),
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=False)
+
+    def test_legacy_db_upgrade_version_without_sanity_check(self):
+        migration.db_sync = mock.Mock()
+        manage.CONF.db_enforce_mysql_charset = False
+        self._main_test_helper(['glance.cmd.manage', 'db_upgrade', '40'],
+                               migration.db_sync,
+                               db_api.get_engine(),
+                               db_migration.MIGRATE_REPO_PATH, '40',
+                               sanity_check=False)
+
+    def test_legacy_db_downgrade_version_without_sanity_check(self):
+        migration.db_sync = mock.Mock()
+        manage.CONF.db_enforce_mysql_charset = False
+        self._main_test_helper(['glance.cmd.manage', 'db_downgrade', '20'],
+                               migration.db_sync,
+                               db_api.get_engine(),
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=False)
 
 
 class TestManage(TestManageBase):
@@ -112,14 +145,16 @@ class TestManage(TestManageBase):
         self._main_test_helper(['glance.cmd.manage', 'db', 'sync'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               db_migration.MIGRATE_REPO_PATH, None,
+                               sanity_check=True)
 
     def test_db_upgrade(self):
         migration.db_sync = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db', 'upgrade'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               db_migration.MIGRATE_REPO_PATH, None,
+                               sanity_check=True)
 
     def test_db_version_control(self):
         migration.db_version_control = mock.Mock()
@@ -133,18 +168,48 @@ class TestManage(TestManageBase):
         self._main_test_helper(['glance.cmd.manage', 'db', 'sync', '20'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, u'20')
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=True)
 
     def test_db_upgrade_version(self):
         migration.db_sync = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db', 'upgrade', '20'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=True)
 
     def test_db_downgrade_version(self):
         migration.db_sync = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db', 'downgrade', '20'],
                                migration.db_sync,
                                db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=True)
+
+    def test_db_sync_version_without_sanity_check(self):
+        migration.db_sync = mock.Mock()
+        manage.CONF.db_enforce_mysql_charset = False
+        self._main_test_helper(['glance.cmd.manage', 'db', 'sync', '20'],
+                               migration.db_sync,
+                               db_api.get_engine(),
+                               db_migration.MIGRATE_REPO_PATH, u'20',
+                               sanity_check=False)
+
+    def test_db_upgrade_version_without_sanity_check(self):
+        migration.db_sync = mock.Mock()
+        manage.CONF.db_enforce_mysql_charset = False
+        self._main_test_helper(['glance.cmd.manage', 'db', 'upgrade', '40'],
+                               migration.db_sync,
+                               db_api.get_engine(),
+                               db_migration.MIGRATE_REPO_PATH, '40',
+                               sanity_check=False)
+
+    def test_db_downgrade_version_without_sanity_check(self):
+        migration.db_sync = mock.Mock()
+        manage.CONF.db_enforce_mysql_charset = False
+        self._main_test_helper(['glance.cmd.manage', 'db', 'downgrade', '20'],
+                               migration.db_sync,
+                               db_api.get_engine(),
+                               db_migration.MIGRATE_REPO_PATH, '20',
+                               sanity_check=False)
