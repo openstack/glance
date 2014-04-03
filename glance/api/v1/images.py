@@ -1141,7 +1141,6 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
     def meta(self, response, result):
         image_meta = result['image_meta']
         self._inject_image_meta_headers(response, image_meta)
-        self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
         return response
 
@@ -1158,7 +1157,6 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         response.headers['Content-Type'] = 'application/octet-stream'
 
         self._inject_image_meta_headers(response, image_meta)
-        self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
 
         return response
@@ -1167,7 +1165,6 @@ class ImageSerializer(wsgi.JSONResponseSerializer):
         image_meta = result['image_meta']
         response.body = self.to_json(dict(image=image_meta))
         response.headers['Content-Type'] = 'application/json'
-        self._inject_location_header(response, image_meta)
         self._inject_checksum_header(response, image_meta)
         return response
 

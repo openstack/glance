@@ -1479,6 +1479,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 req.body = "somedata"
                 res = req.get_response(self.api)
                 self.assertEqual(res.status_int, 200)
+                self.assertFalse(res.location)
 
                 self.stubs.Set(registry, 'update_image_metadata',
                                orig_update_image_metadata)
@@ -2212,6 +2213,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'HEAD'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
+        self.assertFalse(res.location)
 
         for key, value in expected_headers.iteritems():
             self.assertEqual(value, res.headers[key])
@@ -2228,6 +2230,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % UUID2)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
+        self.assertFalse(res.location)
         self.assertEqual(res.content_type, 'application/octet-stream')
         self.assertEqual('chunk00000remainder', res.body)
 
@@ -2255,6 +2258,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
+        self.assertFalse(res.location)
         self.assertEqual(res.body, '')
 
         req = webob.Request.blank("/images/%s" % UUID2)
