@@ -15,7 +15,6 @@
 
 """Tests the filesystem backend store"""
 
-import __builtin__
 import errno
 import hashlib
 import json
@@ -26,6 +25,7 @@ import fixtures
 import mox
 from oslo.config import cfg
 import six
+import six.moves.builtins as __builtin__
 
 from glance.common import exception
 from glance.openstack.common import units
