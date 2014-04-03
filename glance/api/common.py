@@ -16,6 +16,7 @@
 from oslo.config import cfg
 
 from glance.common import exception
+from glance.openstack.common import excutils
 from glance.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -41,11 +42,11 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
             yield chunk
             bytes_written += len(chunk)
     except Exception as err:
-        msg = (_("An error occurred reading from backend storage "
-                 "for image %(image_id)s: %(err)s") % {'image_id': image_id,
+        with excutils.save_and_reraise_exception():
+            msg = (_("An error occurred reading from backend storage for "
+                     "image %(image_id)s: %(err)s") % {'image_id': image_id,
                                                        'err': err})
-        LOG.error(msg)
-        raise
+            LOG.error(msg)
 
     if expected_size != bytes_written:
         msg = (_("Backend storage for image %(image_id)s "

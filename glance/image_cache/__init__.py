@@ -23,6 +23,7 @@ from oslo.config import cfg
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import excutils
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import units
@@ -255,10 +256,10 @@ class ImageCache(object):
                     raise exception.GlanceException(msg)
 
         except exception.GlanceException as e:
-            # image_iter has given us bad, (size_checked_iter has found a
-            # bad length), or corrupt data (checksum is wrong).
-            LOG.exception(e)
-            raise
+            with excutils.save_and_reraise_exception():
+                # image_iter has given us bad, (size_checked_iter has found a
+                # bad length), or corrupt data (checksum is wrong).
+                LOG.exception(e)
         except Exception as e:
             LOG.exception(_("Exception encountered while tee'ing "
                             "image '%(image_id)s' into cache: %(error)s. "

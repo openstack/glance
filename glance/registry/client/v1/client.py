@@ -20,6 +20,7 @@ the Glance Registry API
 
 from glance.common.client import BaseClient
 from glance.common import crypt
+from glance.openstack.common import excutils
 from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 from glance.registry.api.v1 import images
@@ -114,12 +115,12 @@ class RegistryClient(BaseClient):
             LOG.debug(msg)
 
         except Exception as exc:
-            exc_name = exc.__class__.__name__
-            LOG.info(_("Registry client request %(method)s %(action)s "
-                       "raised %(exc_name)s"),
-                     {'method': method, 'action': action,
-                      'exc_name': exc_name})
-            raise
+            with excutils.save_and_reraise_exception():
+                exc_name = exc.__class__.__name__
+                LOG.info(_("Registry client request %(method)s %(action)s "
+                           "raised %(exc_name)s"),
+                         {'method': method, 'action': action,
+                          'exc_name': exc_name})
         return res
 
     def get_images_detailed(self, **kwargs):

@@ -24,6 +24,7 @@ from glance.common import exception
 from glance.common import utils
 import glance.context
 import glance.domain.proxy
+from glance.openstack.common import excutils
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
 from glance import scrubber
@@ -556,8 +557,8 @@ class StoreLocations(collections.MutableSequence):
                                       self.image_proxy.image.image_id,
                                       location['url'])
         except Exception:
-            self.value.insert(i, location)
-            raise
+            with excutils.save_and_reraise_exception():
+                self.value.insert(i, location)
         return location
 
     def count(self, location):

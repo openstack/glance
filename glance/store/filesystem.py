@@ -27,6 +27,7 @@ import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import excutils
 from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import processutils
@@ -441,8 +442,8 @@ class Store(glance.store.base.Store):
                           errno.EACCES: exception.StorageWriteDenied()}
             raise exceptions.get(e.errno, e)
         except Exception:
-            self._delete_partial(filepath, image_id)
-            raise
+            with excutils.save_and_reraise_exception():
+                self._delete_partial(filepath, image_id)
 
         checksum_hex = checksum.hexdigest()
         metadata = self._get_metadata()

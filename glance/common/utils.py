@@ -38,6 +38,7 @@ from oslo.config import cfg
 from webob import exc
 
 from glance.common import exception
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 
@@ -100,9 +101,9 @@ def cooperative_iter(iter):
             sleep(0)
             yield chunk
     except Exception as err:
-        msg = _("Error: cooperative_iter exception %s") % err
-        LOG.error(msg)
-        raise
+        with excutils.save_and_reraise_exception():
+            msg = _("Error: cooperative_iter exception %s") % err
+            LOG.error(msg)
 
 
 def cooperative_read(fd):
@@ -455,8 +456,8 @@ def setup_remote_pydev_debug(host, port):
                         stderrToServer=True)
         return True
     except Exception:
-        LOG.exception(error_msg)
-        raise
+        with excutils.save_and_reraise_exception():
+            LOG.exception(error_msg)
 
 
 class LazyPluggable(object):

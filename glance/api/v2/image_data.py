@@ -22,6 +22,7 @@ from glance.common import wsgi
 import glance.db
 import glance.gateway
 import glance.notifier
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.store
 
@@ -132,15 +133,15 @@ class ImageDataController(object):
                                                    request=req)
 
         except webob.exc.HTTPError as e:
-            LOG.error(_("Failed to upload image data due to HTTP error"))
-            self._restore(image_repo, image)
-            raise
+            with excutils.save_and_reraise_exception():
+                LOG.error(_("Failed to upload image data due to HTTP error"))
+                self._restore(image_repo, image)
 
         except Exception as e:
-            LOG.exception(_("Failed to upload image data due to "
-                            "internal error"))
-            self._restore(image_repo, image)
-            raise
+            with excutils.save_and_reraise_exception():
+                LOG.exception(_("Failed to upload image data due to "
+                                "internal error"))
+                self._restore(image_repo, image)
 
     def download(self, req, image_id):
         image_repo = self.gateway.get_repo(req.context)
