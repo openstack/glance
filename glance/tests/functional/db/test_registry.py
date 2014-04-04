@@ -13,8 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import glance.db.registry.api
-from glance.registry.client.v2 import api
+import glance.db
 from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
@@ -22,8 +21,8 @@ from glance.tests.functional.db import base
 
 def get_db(config):
     config(group='database', connection='sqlite://')
-    api.configure_registry_client()
-    return glance.db.registry.api
+    config(data_api='glance.db.registry.api')
+    return glance.db.get_api()
 
 
 def reset_db(db_api):
