@@ -2403,6 +2403,17 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
+    def test_head_details(self):
+        req = webob.Request.blank('/images/detail')
+        req.method = 'HEAD'
+        res = req.get_response(self.api)
+        self.assertEqual(405, res.status_int)
+        self.assertEqual('GET', res.headers.get('Allow'))
+        self.assertEqual(('GET',), res.allow)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(200, res.status_int)
+
     def test_get_details_invalid_marker(self):
         """
         Tests that the /images/detail registry API returns a 400

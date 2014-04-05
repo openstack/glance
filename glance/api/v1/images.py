@@ -25,6 +25,7 @@ import six.moves.urllib.parse as urlparse
 from webob.exc import HTTPBadRequest
 from webob.exc import HTTPConflict
 from webob.exc import HTTPForbidden
+from webob.exc import HTTPMethodNotAllowed
 from webob.exc import HTTPNotFound
 from webob.exc import HTTPRequestEntityTooLarge
 from webob import Response
@@ -332,6 +333,12 @@ class Controller(controller.BaseController):
                  'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
             ]}
         """
+        if req.method == 'HEAD':
+            msg = (_("This operation is currently not permitted on "
+                     "Glance images details."))
+            raise HTTPMethodNotAllowed(explanation=msg,
+                                       headers={'Allow': 'GET'},
+                                       body_template='${explanation}')
         self._enforce(req, 'get_images')
         params = self._get_query_params(req)
         try:
