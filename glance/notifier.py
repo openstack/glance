@@ -78,10 +78,20 @@ class Notifier(object):
 
         publisher_id = CONF.default_publisher_id
 
-        # NOTE(flaper87): Assume the user has configured
-        # the transport url.
-        self._transport = messaging.get_transport(CONF,
-                                                  aliases=_ALIASES)
+        try:
+            # NOTE(flaper87): Assume the user has configured
+            # the transport url.
+            self._transport = messaging.get_transport(CONF,
+                                                      aliases=_ALIASES)
+        except messaging.DriverLoadFailure:
+            # NOTE(flaper87): Catch driver load failures and re-raise
+            # them *just* if the `transport_url` option was set. This
+            # step is intended to keep backwards compatibility and avoid
+            # weird behaviors (like exceptions on missing dependencies)
+            # when the old notifier options are used.
+            if CONF.transport_url is not None:
+                with excutils.save_and_reraise_exception():
+                    LOG.exception(_('Error loading the notifier'))
 
         # NOTE(flaper87): This needs to be checked
         # here because the `get_transport` call
