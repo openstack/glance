@@ -72,7 +72,7 @@ def _domain_fixture(task_id, **kwargs):
         'created_at': kwargs.get('created_at', default_datetime),
         'updated_at': kwargs.get('updated_at', default_datetime),
     }
-    task = glance.domain.Task(**task_properties)
+    task = glance.domain.TaskStub(**task_properties)
     task_details = glance.domain.TaskDetails(task_id,
                                              kwargs.get('input', {}),
                                              kwargs.get('message', None),

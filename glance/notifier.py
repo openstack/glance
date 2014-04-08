@@ -347,11 +347,6 @@ class TaskProxy(glance.domain.proxy.Task):
         self.notifier = notifier
         super(TaskProxy, self).__init__(task)
 
-    def run(self, executor):
-        self.notifier.info('task.run',
-                           format_task_notification(self.task))
-        return super(TaskProxy, self).run(executor)
-
     def begin_processing(self):
         self.notifier.info(
             'task.processing',
@@ -368,6 +363,20 @@ class TaskProxy(glance.domain.proxy.Task):
         self.notifier.info('task.failure',
                            format_task_notification(self.task))
         return super(TaskProxy, self).fail(message)
+
+
+class TaskStubProxy(glance.domain.proxy.TaskStub):
+
+    def __init__(self, task, context, notifier):
+        self.task = task
+        self.context = context
+        self.notifier = notifier
+        super(TaskStubProxy, self).__init__(task)
+
+    def run(self, executor):
+        self.notifier.info('task.run',
+                           format_task_notification(self.task))
+        return super(TaskStubProxy, self).run(executor)
 
 
 class TaskDetailsProxy(glance.domain.proxy.TaskDetails):

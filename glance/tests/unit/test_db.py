@@ -562,7 +562,7 @@ class TestTaskRepo(test_utils.BaseTestCase):
         [self.db.task_create(None, task) for task in self.tasks]
 
     def test_get(self):
-        task, task_details = self.task_repo.get_task_and_details(UUID1)
+        task, task_details = self.task_repo.get_task_stub_and_details(UUID1)
         self.assertEqual(task.task_id, UUID1)
         self.assertEqual(task.type, 'import')
         self.assertEqual(task.status, 'pending')
@@ -573,12 +573,12 @@ class TestTaskRepo(test_utils.BaseTestCase):
 
     def test_get_not_found(self):
         self.assertRaises(exception.NotFound,
-                          self.task_repo.get_task_and_details,
+                          self.task_repo.get_task_stub_and_details,
                           str(uuid.uuid4()))
 
     def test_get_forbidden(self):
         self.assertRaises(exception.NotFound,
-                          self.task_repo.get_task_and_details,
+                          self.task_repo.get_task_stub_and_details,
                           UUID4)
 
     def test_list(self):
@@ -635,24 +635,24 @@ class TestTaskRepo(test_utils.BaseTestCase):
 
         self.task_repo.add(task, task_details)
         retrieved_task, retrieved_task_details = \
-            self.task_repo.get_task_and_details(task.task_id)
+            self.task_repo.get_task_stub_and_details(task.task_id)
         self.assertEqual(retrieved_task.updated_at, task.updated_at)
         self.assertEqual(retrieved_task_details.task_id,
                          retrieved_task.task_id)
         self.assertEqual(retrieved_task_details.input, task_details.input)
 
     def test_save_task(self):
-        task, task_details = self.task_repo.get_task_and_details(UUID1)
+        task, task_details = self.task_repo.get_task_stub_and_details(UUID1)
         original_update_time = task.updated_at
         self.task_repo.save(task)
         current_update_time = task.updated_at
         self.assertTrue(current_update_time > original_update_time)
-        task, task_details = self.task_repo.get_task_and_details(UUID1)
+        task, task_details = self.task_repo.get_task_stub_and_details(UUID1)
         self.assertEqual(task.updated_at, current_update_time)
 
     def test_remove_task(self):
-        task, task_details = self.task_repo.get_task_and_details(UUID1)
+        task, task_details = self.task_repo.get_task_stub_and_details(UUID1)
         self.task_repo.remove(task)
         self.assertRaises(exception.NotFound,
-                          self.task_repo.get_task_and_details,
+                          self.task_repo.get_task_stub_and_details,
                           task.task_id)

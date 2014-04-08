@@ -380,9 +380,9 @@ class TaskRepoProxy(glance.domain.proxy.TaskRepo):
                              task_details_proxy_class=TaskDetailsProxy,
                              task_details_proxy_kwargs=proxy_kwargs)
 
-    def get_task_and_details(self, task_id):
+    def get_task_stub_and_details(self, task_id):
         self.policy.enforce(self.context, 'get_task', {})
-        return super(TaskRepoProxy, self).get_task_and_details(task_id)
+        return super(TaskRepoProxy, self).get_task_stub_and_details(task_id)
 
     def list_tasks(self, *args, **kwargs):
         self.policy.enforce(self.context, 'get_tasks', {})

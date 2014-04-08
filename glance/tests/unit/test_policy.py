@@ -85,7 +85,7 @@ class ImageMembershipStub(object):
 
 
 class TaskRepoStub(object):
-    def get_task_and_details(self, *args, **kwargs):
+    def get_task_stub_and_details(self, *args, **kwargs):
         return 'task_from_get', 'task_details_from_get'
 
     def add(self, *args, **kwargs):
@@ -386,7 +386,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
             self.policy
         )
         self.assertRaises(exception.Forbidden,
-                          task_repo.get_task_and_details,
+                          task_repo.get_task_stub_and_details,
                           UUID1)
 
     def test_get_task_allowed(self):
@@ -397,7 +397,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
             {},
             self.policy
         )
-        task, task_details = task_repo.get_task_and_details(UUID1)
+        task, task_details = task_repo.get_task_stub_and_details(UUID1)
         self.assertIsInstance(task, glance.api.policy.TaskProxy)
         self.assertEqual(task.task, 'task_from_get')
 

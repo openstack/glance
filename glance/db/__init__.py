@@ -283,8 +283,12 @@ class ImageMemberRepo(object):
 
 class TaskRepo(object):
 
-    def _format_task_from_db(self, db_task):
-        return glance.domain.Task(
+    def __init__(self, context, db_api):
+        self.context = context
+        self.db_api = db_api
+
+    def _format_task_stub_from_db(self, db_task):
+        return glance.domain.TaskStub(
             task_id=db_task['id'],
             task_type=db_task['type'],
             status=db_task['status'],
@@ -302,7 +306,7 @@ class TaskRepo(object):
             message=db_task['message'],
         )
 
-    def _format_task_to_db(self, task, task_details=None):
+    def _format_task_stub_and_details_to_db(self, task, task_details=None):
         task = {'id': task.task_id,
                 'type': task.type,
                 'status': task.status,
@@ -323,17 +327,13 @@ class TaskRepo(object):
 
         return task
 
-    def __init__(self, context, db_api):
-        self.context = context
-        self.db_api = db_api
-
-    def get_task_and_details(self, task_id):
+    def get_task_stub_and_details(self, task_id):
         try:
             db_api_task = self.db_api.task_get(self.context, task_id)
         except (exception.NotFound, exception.Forbidden):
             msg = _('Could not find task %s') % task_id
             raise exception.NotFound(msg)
-        return (self._format_task_from_db(db_api_task),
+        return (self._format_task_stub_from_db(db_api_task),
                 self._format_task_details_from_db(db_api_task))
 
     def list_tasks(self,
@@ -348,10 +348,11 @@ class TaskRepo(object):
                                                 limit=limit,
                                                 sort_key=sort_key,
                                                 sort_dir=sort_dir)
-        return [self._format_task_from_db(task) for task in db_api_tasks]
+        return [self._format_task_stub_from_db(task) for task in db_api_tasks]
 
     def save(self, task, task_details=None):
-        task_values = self._format_task_to_db(task, task_details)
+        task_values = self._format_task_stub_and_details_to_db(task,
+                                                               task_details)
         try:
             updated_values = self.db_api.task_update(self.context,
                                                      task.task_id,
@@ -362,13 +363,14 @@ class TaskRepo(object):
         task.updated_at = updated_values['updated_at']
 
     def add(self, task, task_details=None):
-        task_values = self._format_task_to_db(task, task_details)
+        task_values = self._format_task_stub_and_details_to_db(task,
+                                                               task_details)
         updated_values = self.db_api.task_create(self.context, task_values)
         task.created_at = updated_values['created_at']
         task.updated_at = updated_values['updated_at']
 
     def remove(self, task):
-        task_values = self._format_task_to_db(task)
+        task_values = self._format_task_stub_and_details_to_db(task)
         try:
             self.db_api.task_update(self.context, task.task_id, task_values)
             updated_values = self.db_api.task_delete(self.context,

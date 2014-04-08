@@ -23,7 +23,6 @@ from oslo.config import cfg
 from glance.common import exception
 from glance import domain
 from glance.openstack.common import timeutils
-import glance.tests.unit.utils as unittest_utils
 import glance.tests.utils as test_utils
 
 
@@ -308,11 +307,28 @@ class TestTaskFactory(test_utils.BaseTestCase):
         task_type = 'import'
         owner = TENANT1
         task = self.task_factory.new_task(task_type, owner)
-        self.assertTrue(task.task_id is not None)
-        self.assertTrue(task.created_at is not None)
+        self.assertIsNotNone(task.task_id)
+        self.assertEqual('pending', task.status)
+        self.assertEqual(task_type, task.type)
+        self.assertEqual(owner, task.owner)
+        self.assertIsNone(task.expires_at)
+        self.assertIsNotNone(task.created_at)
         self.assertEqual(task.created_at, task.updated_at)
-        self.assertEqual(task.status, 'pending')
-        self.assertEqual(task.owner, TENANT1)
+        self.assertIsNone(task.task_input)
+        self.assertIsNone(task.result)
+        self.assertIsNone(task.message)
+
+    def test_new_task_stub(self):
+        task_type = 'import'
+        owner = TENANT1
+        task = self.task_factory.new_task_stub(task_type, owner)
+        self.assertIsNotNone(task.task_id)
+        self.assertEqual('pending', task.status)
+        self.assertEqual(task_type, task.type)
+        self.assertEqual(owner, task.owner)
+        self.assertIsNone(task.expires_at)
+        self.assertIsNotNone(task.created_at)
+        self.assertEqual(task.created_at, task.updated_at)
 
     def test_new_task_invalid_type(self):
         task_type = 'blah'
@@ -347,7 +363,6 @@ class TestTask(test_utils.BaseTestCase):
         task_type = 'import'
         owner = TENANT1
         task_ttl = CONF.task.task_time_to_live
-        self.gateway = unittest_utils.FakeGateway()
         self.task = self.task_factory.new_task(task_type,
                                                owner,
                                                task_time_to_live=task_ttl)
@@ -364,7 +379,10 @@ class TestTask(test_utils.BaseTestCase):
             owner=None,
             expires_at=None,
             created_at=timeutils.utcnow(),
-            updated_at=timeutils.utcnow()
+            updated_at=timeutils.utcnow(),
+            task_input=None,
+            result=None,
+            message=None
         )
 
     def test_validate_status_transition_from_pending(self):
@@ -429,6 +447,8 @@ class TestTask(test_utils.BaseTestCase):
         self.task.begin_processing()
         self.task.succeed('{"location": "file://home"}')
         self.assertEqual(self.task.status, 'success')
+        self.assertEqual(self.task.result, '{"location": "file://home"}')
+        self.assertEqual(self.task.message, None)
         expected = (timeutils.utcnow() +
                     datetime.timedelta(hours=CONF.task.task_time_to_live))
         self.assertEqual(
@@ -442,12 +462,57 @@ class TestTask(test_utils.BaseTestCase):
         self.task.begin_processing()
         self.task.fail('{"message": "connection failed"}')
         self.assertEqual(self.task.status, 'failure')
+        self.assertEqual(self.task.message, '{"message": "connection failed"}')
+        self.assertEqual(self.task.result, None)
         expected = (timeutils.utcnow() +
                     datetime.timedelta(hours=CONF.task.task_time_to_live))
         self.assertEqual(
             self.task.expires_at,
             expected
         )
+
+
+class TestTaskStub(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestTaskStub, self).setUp()
+        self.task_id = str(uuid.uuid4())
+        self.task_type = 'import'
+        self.owner = TENANT1
+        self.task_ttl = CONF.task.task_time_to_live
+
+    def test_task_stub_init(self):
+        self.task_factory = domain.TaskFactory()
+        task = domain.TaskStub(
+            self.task_id,
+            self.task_type,
+            'status',
+            self.owner,
+            'expires_at',
+            'created_at',
+            'updated_at',
+            task_time_to_live=self.task_ttl
+        )
+        self.assertEqual(self.task_id, task.task_id)
+        self.assertEqual(self.task_type, task.type)
+        self.assertEqual(self.owner, task.owner)
+        self.assertEqual('status', task.status)
+        self.assertEqual('expires_at', task.expires_at)
+        self.assertEqual('created_at', task.created_at)
+        self.assertEqual('updated_at', task.updated_at)
+
+    def test_task_stub_get_status(self):
+        status = 'pending'
+        task = domain.TaskStub(
+            self.task_id,
+            self.task_type,
+            status,
+            self.owner,
+            'expires_at',
+            'created_at',
+            'updated_at',
+            task_time_to_live=self.task_ttl
+        )
+        self.assertEqual(status, task.status)
 
 
 class TestTaskDetails(test_utils.BaseTestCase):

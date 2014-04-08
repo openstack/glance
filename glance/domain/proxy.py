@@ -55,8 +55,8 @@ class TaskRepo(object):
         self.task_details_proxy_helper = Helper(task_details_proxy_class,
                                                 task_details_proxy_kwargs)
 
-    def get_task_and_details(self, task_id):
-        task, task_details = self.base.get_task_and_details(task_id)
+    def get_task_stub_and_details(self, task_id):
+        task, task_details = self.base.get_task_stub_and_details(task_id)
         return (self.task_proxy_helper.proxy(task),
                 self.task_details_proxy_helper.proxy(task_details))
 
@@ -178,9 +178,9 @@ class Task(object):
     expires_at = _proxy('base', 'expires_at')
     created_at = _proxy('base', 'created_at')
     updated_at = _proxy('base', 'updated_at')
-
-    def run(self, executor):
-        self.base.run(executor)
+    task_input = _proxy('base', 'task_input')
+    result = _proxy('base', 'result')
+    message = _proxy('base', 'message')
 
     def begin_processing(self):
         self.base.begin_processing()
@@ -190,6 +190,22 @@ class Task(object):
 
     def fail(self, message):
         self.base.fail(message)
+
+
+class TaskStub(object):
+    def __init__(self, base):
+        self.base = base
+
+    task_id = _proxy('base', 'task_id')
+    type = _proxy('base', 'type')
+    status = _proxy('base', 'status')
+    owner = _proxy('base', 'owner')
+    expires_at = _proxy('base', 'expires_at')
+    created_at = _proxy('base', 'created_at')
+    updated_at = _proxy('base', 'updated_at')
+
+    def run(self, executor):
+        self.base.run(executor)
 
 
 class TaskDetails(object):
@@ -216,6 +232,10 @@ class TaskFactory(object):
 
     def new_task(self, **kwargs):
         t = self.base.new_task(**kwargs)
+        return self.task_helper.proxy(t)
+
+    def new_task_stub(self, **kwargs):
+        t = self.base.new_task_stub(**kwargs)
         return self.task_helper.proxy(t)
 
     def new_task_details(self, task_id, task_input, message=None, result=None):
