@@ -40,7 +40,7 @@ class API(wsgi.Router):
         mapper.connect("/images/detail",
                        controller=images_resource,
                        action='detail',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET', 'HEAD']})
         mapper.connect("/images/{id}",
                        controller=images_resource,
                        action="meta",

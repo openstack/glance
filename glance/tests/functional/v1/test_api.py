@@ -549,4 +549,11 @@ class TestApi(functional.FunctionalTest):
         images = jsonutils.loads(content)['images']
         self.assertEqual(len(images), 0)
 
+        # 34. HEAD /images/detail
+        path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(405, response.status)
+        self.assertEqual('GET', response.get('allow'))
+
         self.stop_servers()
