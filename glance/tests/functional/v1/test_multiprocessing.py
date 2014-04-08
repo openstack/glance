@@ -45,7 +45,7 @@ class TestMultiprocessing(functional.FunctionalTest):
         api_pid = self.api_server.process_pid
         process = psutil.Process(api_pid)
 
-        children = process.get_children()
+        children = process.children()
         pids = [str(child.pid) for child in children]
         return pids
 
