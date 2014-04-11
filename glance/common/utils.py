@@ -1,5 +1,6 @@
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
+# Copyright 2014 SoftLayer Technologies, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -29,10 +30,12 @@ from eventlet.green import socket
 import functools
 import os
 import platform
+import re
 import subprocess
 import sys
 import uuid
 
+import netaddr
 from OpenSSL import crypto
 from oslo.config import cfg
 from webob import exc
@@ -40,6 +43,7 @@ from webob import exc
 from glance.common import exception
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
+from glance.openstack.common import network_utils
 from glance.openstack.common import strutils
 
 CONF = cfg.CONF
@@ -559,3 +563,73 @@ def is_uuid_like(val):
         return str(uuid.UUID(val)) == val
     except (TypeError, ValueError, AttributeError):
         return False
+
+
+def is_valid_port(port):
+    """Verify that port represents a valid port number."""
+    return str(port).isdigit() and int(port) > 0 and int(port) <= 65535
+
+
+def is_valid_ipv4(address):
+    """Verify that address represents a valid IPv4 address."""
+    try:
+        return netaddr.valid_ipv4(address)
+    except Exception:
+        return False
+
+
+def is_valid_ipv6(address):
+    """Verify that address represents a valid IPv6 address."""
+    try:
+        return netaddr.valid_ipv6(address)
+    except Exception:
+        return False
+
+
+def is_valid_hostname(hostname):
+    """Verify whether a hostname (not an FQDN) is valid."""
+    return re.match('^[a-zA-Z0-9-]+$', hostname) is not None
+
+
+def is_valid_fqdn(fqdn):
+    """Verify whether a host is a valid FQDN."""
+    return re.match('^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', fqdn) is not None
+
+
+def parse_valid_host_port(host_port):
+    """
+    Given a "host:port" string, attempts to parse it as intelligently as
+    possible to determine if it is valid. This includes IPv6 [host]:port form,
+    IPv4 ip:port form, and hostname:port or fqdn:port form.
+
+    Invalid inputs will raise a ValueError, while valid inputs will return
+    a (host, port) tuple where the port will always be of type int.
+    """
+
+    try:
+        try:
+            host, port = network_utils.parse_host_port(host_port)
+        except Exception:
+            raise ValueError(_('Host and port "%s" is not valid.') % host_port)
+
+        if not is_valid_port(port):
+            raise ValueError(_('Port "%s" is not valid.') % port)
+
+        # First check for valid IPv6 and IPv4 addresses, then a generic
+        # hostname. Failing those, if the host includes a period, then this
+        # should pass a very generic FQDN check. The FQDN check for letters at
+        # the tail end will weed out any hilariously absurd IPv4 addresses.
+
+        if not (is_valid_ipv6(host) or is_valid_ipv4(host) or
+                is_valid_hostname(host) or is_valid_fqdn(host)):
+            raise ValueError(_('Host "%s" is not valid.') % host)
+
+    except Exception as ex:
+        raise ValueError(_('%s '
+                           'Please specify a host:port pair, where host is an '
+                           'IPv4 address, IPv6 address, hostname, or FQDN. If '
+                           'using an IPv6 address, enclose it in brackets '
+                           'separately from the port (i.e., '
+                           '"[fe80::a:b:c]:9876").') % ex)
+
+    return (host, int(port))
