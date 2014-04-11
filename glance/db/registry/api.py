@@ -37,6 +37,10 @@ from glance.registry.client.v2 import api
 LOG = logging.getLogger(__name__)
 
 
+def configure():
+    api.configure_registry_client()
+
+
 def _get_client(func):
     """Injects a client instance to the each function
 
