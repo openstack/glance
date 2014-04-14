@@ -153,7 +153,7 @@ class ImageService(object):
             response = self._http_request('GET', url, {}, '')
             result = jsonutils.loads(response.read())
 
-            if not result or not 'images' in result or not result['images']:
+            if not result or 'images' not in result or not result['images']:
                 return
             for image in result.get('images', []):
                 params['marker'] = image['id']
@@ -372,8 +372,8 @@ def _dict_diff(a, b):
     for key in a:
         if str(a[key]) != str(b[key]):
             logging.debug(_('metadata diff -- value differs for key '
-                          '%(key)s: master "%(master_value)s" vs '
-                          'slave "%(slave_value)s"') %
+                            '%(key)s: master "%(master_value)s" vs '
+                            'slave "%(slave_value)s"') %
                           {'key': key, 'master_value': a[key],
                            'slave_value': b[key]})
             return True
@@ -594,8 +594,8 @@ def replication_compare(options, args):
             for key in image:
                 if image[key] != headers.get(key, None):
                     logging.info(_('%(image_id)s: field %(key)s differs '
-                                 '(source is %(master_value)s, destination '
-                                 'is %(slave_value)s)')
+                                   '(source is %(master_value)s, destination '
+                                   'is %(slave_value)s)')
                                  % {'image_id': image['id'],
                                     'key': key,
                                     'master_value': image[key],

@@ -358,7 +358,7 @@ class TestApi(functional.FunctionalTest):
         # 16. Attempt to replace members with an overlimit amount
         # Adding 11 image members should fail since configured limit is 10
         path = ("http://%s:%d/v1/images/%s/members" %
-               ("127.0.0.1", self.api_port, image_id))
+                ("127.0.0.1", self.api_port, image_id))
         memberships = []
         for i in range(11):
             member_id = "foo%d" % i
@@ -371,7 +371,7 @@ class TestApi(functional.FunctionalTest):
         # 17. Attempt to add a member while at limit
         # Adding an 11th member should fail since configured limit is 10
         path = ("http://%s:%d/v1/images/%s/members" %
-               ("127.0.0.1", self.api_port, image_id))
+                ("127.0.0.1", self.api_port, image_id))
         memberships = []
         for i in range(10):
             member_id = "foo%d" % i
@@ -382,7 +382,7 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 204)
 
         path = ("http://%s:%d/v1/images/%s/members/fail_me" %
-               ("127.0.0.1", self.api_port, image_id))
+                ("127.0.0.1", self.api_port, image_id))
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
         self.assertEqual(response.status, 413)

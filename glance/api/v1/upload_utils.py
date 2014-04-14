@@ -134,10 +134,10 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         # Update the database with the checksum returned
         # from the backend store
         LOG.debug(_("Updating image %(image_id)s data. "
-                  "Checksum set to %(checksum)s, size set "
-                  "to %(size)d"), {'image_id': image_id,
-                                   'checksum': checksum,
-                                   'size': size})
+                    "Checksum set to %(checksum)s, size set "
+                    "to %(size)d"), {'image_id': image_id,
+                                     'checksum': checksum,
+                                     'size': size})
         update_data = {'checksum': checksum,
                        'size': size}
         try:

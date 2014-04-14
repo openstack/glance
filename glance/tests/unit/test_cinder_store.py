@@ -48,8 +48,8 @@ class TestCinderStore(base.StoreClearingUnitTest):
         store = cinder.Store(context=FakeObject(service_catalog=None))
         self.assertRaises(exception.BadStoreConfiguration,
                           store.configure_add)
-        store = cinder.Store(context=FakeObject(service_catalog=
-                                                'fake_service_catalog'))
+        store = cinder.Store(context=FakeObject(
+            service_catalog='fake_service_catalog'))
         store.configure_add()
 
     def test_cinder_get_size(self):
