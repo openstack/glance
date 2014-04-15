@@ -40,7 +40,9 @@ CONFIG_SECTIONS = [
 ]
 
 
-def create_context(policy, roles=[]):
+def create_context(policy, roles=None):
+    if roles is None:
+        roles = []
     return glance.context.RequestContext(roles=roles,
                                          policy_enforcer=policy)
 

@@ -61,7 +61,10 @@ class V2Token(object):
         service = catalog[-1]
         service['endpoints'] = [self.base_endpoint]
 
-    def add_service(self, s_type, region_list=[]):
+    def add_service(self, s_type, region_list=None):
+        if region_list is None:
+            region_list = []
+
         catalog = self.tok['access']['serviceCatalog']
         service_type = {"type": s_type, "name": "glance"}
         catalog.append(service_type)

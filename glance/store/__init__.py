@@ -411,8 +411,13 @@ def add_to_backend(context, scheme, image_id, data, size):
         raise exception.StoreAddNotSupported
 
 
-def set_acls(context, location_uri, public=False, read_tenants=[],
-             write_tenants=[]):
+def set_acls(context, location_uri, public=False, read_tenants=None,
+             write_tenants=None):
+    if read_tenants is None:
+        read_tenants = []
+    if write_tenants is None:
+        write_tenants = []
+
     loc = location.get_location_from_uri(location_uri)
     scheme = get_store_from_location(location_uri)
     store = get_store_from_scheme(context, scheme, loc)

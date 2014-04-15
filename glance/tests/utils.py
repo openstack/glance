@@ -445,11 +445,13 @@ class RegistryAPIMixIn(object):
             created_at=created_at, updated_at=updated_at,
             **kwargs)
 
-    def get_api_response_ext(self, http_resp, url='/images', headers={},
+    def get_api_response_ext(self, http_resp, url='/images', headers=None,
                              body=None, method=None, api=None,
                              content_type=None):
         if api is None:
             api = self.api
+        if headers is None:
+            headers = {}
         req = webob.Request.blank(url)
         for k, v in headers.iteritems():
             req.headers[k] = v
@@ -563,7 +565,9 @@ class HttplibWsgiAdapter(object):
         self.app = app
         self.req = None
 
-    def request(self, method, url, body=None, headers={}):
+    def request(self, method, url, body=None, headers=None):
+        if headers is None:
+            headers = {}
         self.req = webob.Request.blank(url, method=method, headers=headers)
         self.req.body = body
 

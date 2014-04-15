@@ -33,7 +33,10 @@ from glance.tests import utils as test_utils
 
 class RequestTest(test_utils.BaseTestCase):
 
-    def _set_expected_languages(self, all_locales=[], avail_locales=None):
+    def _set_expected_languages(self, all_locales=None, avail_locales=None):
+        if all_locales is None:
+            all_locales = []
+
         # Override localedata.locale_identifiers to return some locales.
         def returns_some_locales(*args, **kwargs):
             return all_locales

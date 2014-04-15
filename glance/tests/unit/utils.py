@@ -107,7 +107,12 @@ class FakeStoreAPI(object):
         pass
 
     def set_acls(self, context, uri, public=False,
-                 read_tenants=[], write_tenants=[]):
+                 read_tenants=None, write_tenants=None):
+        if read_tenants is None:
+            read_tenants = []
+        if write_tenants is None:
+            write_tenants = []
+
         self.acls[uri] = {
             'public': public,
             'read': read_tenants,
