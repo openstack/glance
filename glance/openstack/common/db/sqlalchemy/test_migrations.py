@@ -20,6 +20,7 @@ import os
 import subprocess
 
 import lockfile
+import six
 from six import moves
 from six.moves.urllib import parse
 import sqlalchemy
@@ -88,7 +89,7 @@ class BaseMigrationTestCase(test.BaseTestCase):
 
         # Load test databases from the config file. Only do this
         # once. No need to re-run this on each test...
-        LOG.debug('config_path is %s' % self.CONFIG_FILE_PATH)
+        LOG.debug(_('config_path is %s'), six.text_type(self.CONFIG_FILE_PATH))
         if os.path.exists(self.CONFIG_FILE_PATH):
             cp = moves.configparser.RawConfigParser()
             try:
@@ -193,7 +194,7 @@ class WalkVersionsMixin(object):
                          self.migration_api.db_version(engine,
                                                        self.REPOSITORY))
 
-        LOG.debug('latest version is %s' % self.REPOSITORY.latest)
+        LOG.debug(_('latest version is %s'), self.REPOSITORY.latest)
         versions = range(self.INIT_VERSION + 1, self.REPOSITORY.latest + 1)
 
         for version in versions:
@@ -264,6 +265,6 @@ class WalkVersionsMixin(object):
                 if check:
                     check(engine, data)
         except Exception:
-            LOG.error(_LE("Failed to migrate to version %s on engine %s") %
-                      (version, engine))
+            LOG.error(_LE("Failed to migrate to version %(version)s on engine "
+                        "%(engine)s"), {'version': version, 'engine': engine})
             raise

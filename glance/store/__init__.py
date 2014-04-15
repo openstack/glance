@@ -166,7 +166,7 @@ def _register_stores(store_classes):
 def _get_store_class(store_entry):
     store_cls = None
     try:
-        LOG.debug("Attempting to import store %s", store_entry)
+        LOG.debug(_("Attempting to import store %s"), store_entry)
         store_cls = importutils.import_class(store_entry)
     except exception.NotFound:
         raise BackendException('Unable to load store. '
@@ -207,8 +207,9 @@ def create_stores():
                                    % store_cls)
         else:
             if store_cls not in store_classes:
-                LOG.debug("Registering store %s with schemes %s",
-                          store_cls, schemes)
+                LOG.debug(_("Registering store %(cls)s with schemes "
+                            "%(schemes)s"), {'cls': store_cls,
+                                             'schemes': schemes})
                 store_classes.add(store_cls)
                 scheme_map = {}
                 for scheme in schemes:
@@ -220,7 +221,7 @@ def create_stores():
                 location.register_scheme_map(scheme_map)
                 store_count += 1
             else:
-                LOG.debug("Store %s already registered", store_cls)
+                LOG.debug(_("Store %s already registered"), store_cls)
     _register_stores(store_classes)
     return store_count
 

@@ -23,6 +23,7 @@ import math
 
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
+from six import text_type
 
 from glance.common import exception
 from glance.common import utils
@@ -322,8 +323,11 @@ class Store(glance.store.base.Store):
                 fsid = conn.get_fsid()
             with conn.open_ioctx(self.pool) as ioctx:
                 order = int(math.log(self.chunk_size, 2))
-                LOG.debug('creating image %s with order %d and size %d',
-                          image_name, order, image_size)
+                LOG.debug(_('creating image %(name)s with order %(order)d and '
+                            'size %(size)d'),
+                          {'name': text_type(image_name),
+                          'order': order,
+                          'size': image_size})
                 if image_size == 0:
                     LOG.warning(_("since image size is zero we will be doing "
                                   "resize-before-write for each chunk which "

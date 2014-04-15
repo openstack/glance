@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
 import webob.exc
 
 import glance.api.policy
@@ -86,7 +87,8 @@ class ImageDataController(object):
                                          content_type='text/plain')
 
         except ValueError as e:
-            LOG.debug("Cannot save data for image %s: %s", image_id, e)
+            LOG.debug(_("Cannot save data for image %(id)s: %(e)s"),
+                      {'id': image_id, 'e': six.text_type(e)})
             self._restore(image_repo, image)
             raise webob.exc.HTTPBadRequest(explanation=unicode(e))
 
