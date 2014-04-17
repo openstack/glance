@@ -21,7 +21,6 @@ import webob
 
 from glance.common import exception
 import glance.context
-from glance import domain
 from glance import notifier
 from glance.openstack.common import timeutils
 import glance.tests.unit.utils as unit_test_utils
@@ -427,10 +426,6 @@ class TestTaskNotifications(utils.BaseTestCase):
             result='res',
             message='blah'
         )
-        self.task_details = domain.TaskDetails(task_id=self.task.task_id,
-                                               task_input=task_input,
-                                               result='',
-                                               message='')
         self.context = glance.context.RequestContext(
             tenant=TENANT2,
             user=USER1
@@ -452,9 +447,6 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.context,
             self.notifier
         )
-        self.task_details_proxy = notifier.TaskDetailsProxy(self.task_details,
-                                                            self.context,
-                                                            self.notifier)
         self.patcher = mock.patch.object(timeutils, 'utcnow')
         mock_utcnow = self.patcher.start()
         mock_utcnow.return_value = datetime.datetime.utcnow()
@@ -464,8 +456,7 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.patcher.stop()
 
     def test_task_create_notification(self):
-        self.task_repo_proxy.add(self.task_stub_proxy,
-                                 self.task_details_proxy)
+        self.task_repo_proxy.add(self.task_stub_proxy)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]
@@ -508,7 +499,7 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
 
     def test_task_run_notification(self):
-        self.task_stub_proxy.run(executor=None)
+        self.task_proxy.run(executor=None)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]

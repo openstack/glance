@@ -306,29 +306,19 @@ class TestTaskFactory(test_utils.BaseTestCase):
     def test_new_task(self):
         task_type = 'import'
         owner = TENANT1
-        task = self.task_factory.new_task(task_type, owner)
+        task_input = 'input'
+        task = self.task_factory.new_task(task_type, owner,
+                                          task_input=task_input)
         self.assertIsNotNone(task.task_id)
-        self.assertEqual('pending', task.status)
-        self.assertEqual(task_type, task.type)
-        self.assertEqual(owner, task.owner)
-        self.assertIsNone(task.expires_at)
         self.assertIsNotNone(task.created_at)
+        self.assertEqual(task_type, task.type)
         self.assertEqual(task.created_at, task.updated_at)
-        self.assertIsNone(task.task_input)
-        self.assertIsNone(task.result)
+        self.assertEqual('pending', task.status)
+        self.assertIsNone(task.expires_at)
+        self.assertEqual(owner, task.owner)
+        self.assertEqual(task_input, task.task_input)
         self.assertIsNone(task.message)
-
-    def test_new_task_stub(self):
-        task_type = 'import'
-        owner = TENANT1
-        task = self.task_factory.new_task_stub(task_type, owner)
-        self.assertIsNotNone(task.task_id)
-        self.assertEqual('pending', task.status)
-        self.assertEqual(task_type, task.type)
-        self.assertEqual(owner, task.owner)
-        self.assertIsNone(task.expires_at)
-        self.assertIsNotNone(task.created_at)
-        self.assertEqual(task.created_at, task.updated_at)
+        self.assertIsNone(task.result)
 
     def test_new_task_invalid_type(self):
         task_type = 'blah'
@@ -339,20 +329,6 @@ class TestTaskFactory(test_utils.BaseTestCase):
             task_type,
             owner,
         )
-
-    def test_new_task_details(self):
-        task_id = 'fake_task_id'
-        task_input = '{"import_from": "fake"}'
-        result = '{"result": "success"}'
-        message = 'fake message'
-        task_details = self.task_factory.new_task_details(task_id,
-                                                          task_input,
-                                                          message,
-                                                          result)
-        self.assertEqual(task_details.task_id, task_id)
-        self.assertEqual(task_details.input, task_input)
-        self.assertEqual(task_details.result, result)
-        self.assertEqual(task_details.message, message)
 
 
 class TestTask(test_utils.BaseTestCase):
@@ -381,8 +357,8 @@ class TestTask(test_utils.BaseTestCase):
             created_at=timeutils.utcnow(),
             updated_at=timeutils.utcnow(),
             task_input=None,
-            result=None,
-            message=None
+            message=None,
+            result=None
         )
 
     def test_validate_status_transition_from_pending(self):
@@ -489,8 +465,7 @@ class TestTaskStub(test_utils.BaseTestCase):
             self.owner,
             'expires_at',
             'created_at',
-            'updated_at',
-            task_time_to_live=self.task_ttl
+            'updated_at'
         )
         self.assertEqual(self.task_id, task.task_id)
         self.assertEqual(self.task_type, task.type)
@@ -509,32 +484,6 @@ class TestTaskStub(test_utils.BaseTestCase):
             self.owner,
             'expires_at',
             'created_at',
-            'updated_at',
-            task_time_to_live=self.task_ttl
+            'updated_at'
         )
         self.assertEqual(status, task.status)
-
-
-class TestTaskDetails(test_utils.BaseTestCase):
-    def setUp(self):
-        super(TestTaskDetails, self).setUp()
-        self.task_input = ('{"import_from": "file:///home/a.img",'
-                           ' "import_from_format": "qcow2"}')
-
-    def test_task_details_init(self):
-        task_details_values = ['task_id_1',
-                               self.task_input,
-                               'result',
-                               'None']
-        task_details = domain.TaskDetails(*task_details_values)
-        self.assertIsNotNone(task_details)
-
-    def test_task_details_with_no_task_id(self):
-        task_id = None
-        task_details_values = [task_id,
-                               self.task_input,
-                               'result',
-                               'None']
-        self.assertRaises(exception.TaskException,
-                          domain.TaskDetails,
-                          *task_details_values)

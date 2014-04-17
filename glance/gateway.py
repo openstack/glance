@@ -107,3 +107,13 @@ class Gateway(object):
         authorized_task_repo = authorization.TaskRepoProxy(
             notifier_task_repo, context)
         return authorized_task_repo
+
+    def get_task_stub_repo(self, context):
+        task_stub_repo = glance.db.TaskRepo(context, self.db_api)
+        policy_task_stub_repo = policy.TaskStubRepoProxy(
+            task_stub_repo, context, self.policy)
+        notifier_task_stub_repo = glance.notifier.TaskStubRepoProxy(
+            policy_task_stub_repo, context, self.notifier)
+        authorized_task_stub_repo = authorization.TaskStubRepoProxy(
+            notifier_task_stub_repo, context)
+        return authorized_task_stub_repo

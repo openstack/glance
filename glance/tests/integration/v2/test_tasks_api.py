@@ -207,7 +207,7 @@ class TestTasksApi(base.ApiTest):
         # 1. POST /tasks
         # Create a new task with invalid input for type 'import'
         # Expect BadRequest(400) Error as response
-        task_data = _new_task_fixture(input='{something: invalid}')
+        task_data = _new_task_fixture(task_input='{something: invalid}')
         task_owner = 'tenant1'
         body_content = json.dumps(task_data)
 

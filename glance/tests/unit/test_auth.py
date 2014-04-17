@@ -925,6 +925,53 @@ class TestImmutableTask(utils.BaseTestCase):
         )
 
 
+class TestImmutableTaskStub(utils.BaseTestCase):
+    def setUp(self):
+        super(TestImmutableTaskStub, self).setUp()
+        task_factory = glance.domain.TaskFactory()
+        self.context = glance.context.RequestContext(tenant=TENANT2)
+        task_type = 'import'
+        owner = TENANT2
+        task = task_factory.new_task(task_type, owner)
+        self.task = authorization.ImmutableTaskStubProxy(task)
+
+    def _test_change(self, attr, value):
+        self.assertRaises(
+            exception.Forbidden,
+            setattr,
+            self.task,
+            attr,
+            value
+        )
+        self.assertRaises(
+            exception.Forbidden,
+            delattr,
+            self.task,
+            attr
+        )
+
+    def test_change_id(self):
+        self._test_change('task_id', UUID2)
+
+    def test_change_type(self):
+        self._test_change('type', 'fake')
+
+    def test_change_status(self):
+        self._test_change('status', 'success')
+
+    def test_change_owner(self):
+        self._test_change('owner', 'fake')
+
+    def test_change_expires_at(self):
+        self._test_change('expires_at', 'fake')
+
+    def test_change_created_at(self):
+        self._test_change('created_at', 'fake')
+
+    def test_change_updated_at(self):
+        self._test_change('updated_at', 'fake')
+
+
 class TestTaskFactoryProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestTaskFactoryProxy, self).setUp()
@@ -977,14 +1024,18 @@ class TestTaskRepoProxy(utils.BaseTestCase):
         def __init__(self, fixtures):
             self.fixtures = fixtures
 
-        def get_task_stub_and_details(self, task_id):
+        def get(self, task_id):
             for f in self.fixtures:
                 if f.task_id == task_id:
-                    return f, None
+                    return f
             else:
                 raise ValueError(task_id)
 
-        def list_tasks(self, *args, **kwargs):
+    class TaskStubRepoStub(object):
+        def __init__(self, fixtures):
+            self.fixtures = fixtures
+
+        def list(self, *args, **kwargs):
             return self.fixtures
 
     def setUp(self):
@@ -999,27 +1050,28 @@ class TestTaskRepoProxy(utils.BaseTestCase):
         ]
         self.context = glance.context.RequestContext(tenant=TENANT1)
         task_repo = self.TaskRepoStub(self.fixtures)
+        task_stub_repo = self.TaskStubRepoStub(self.fixtures)
         self.task_repo = authorization.TaskRepoProxy(
             task_repo,
             self.context
         )
+        self.task_stub_repo = authorization.TaskStubRepoProxy(
+            task_stub_repo,
+            self.context
+        )
 
     def test_get_mutable_task(self):
-        task, _ = self.task_repo.get_task_stub_and_details(
-            self.fixtures[0].task_id)
+        task = self.task_repo.get(self.fixtures[0].task_id)
         self.assertEqual(task.task_id, self.fixtures[0].task_id)
 
     def test_get_immutable_task(self):
         task_id = self.fixtures[1].task_id
-        task, task_details = self.task_repo.get_task_stub_and_details(task_id)
+        task = self.task_repo.get(task_id)
         self.assertRaises(exception.Forbidden,
-                          setattr,
-                          task_details,
-                          'input',
-                          'foo')
+                          setattr, task, 'input', 'foo')
 
     def test_list(self):
-        tasks = self.task_repo.list_tasks()
+        tasks = self.task_stub_repo.list()
         self.assertEqual(tasks[0].task_id, self.fixtures[0].task_id)
         self.assertRaises(exception.Forbidden,
                           setattr,

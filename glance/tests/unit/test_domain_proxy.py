@@ -305,24 +305,13 @@ class TestTaskFactory(test_utils.BaseTestCase):
             owner=self.fake_owner
         )
 
-        proxy_factory.new_task_details("task_01", "input")
-
-        self.factory.new_task_details.assert_called_once_with(
-            "task_01",
-            "input",
-            None, None
-        )
-
     def test_proxy_wrapping(self):
         proxy_factory = proxy.TaskFactory(
             self.factory,
             task_proxy_class=FakeProxy,
-            task_proxy_kwargs={'dog': 'bark'},
-            task_details_proxy_class=FakeProxy,
-            task_details_proxy_kwargs={'dog': 'bark'})
+            task_proxy_kwargs={'dog': 'bark'})
 
         self.factory.new_task.return_value = 'fake_task'
-        self.factory.new_task_details.return_value = 'fake_task_detail'
 
         task = proxy_factory.new_task(
             type=self.fake_type,
@@ -335,14 +324,3 @@ class TestTaskFactory(test_utils.BaseTestCase):
         )
         self.assertIsInstance(task, FakeProxy)
         self.assertEqual(task.base, 'fake_task')
-
-        task_details = proxy_factory.new_task_details('task_01', "input")
-
-        self.factory.new_task_details.assert_called_once_with(
-            'task_01',
-            "input",
-            None, None
-        )
-
-        self.assertIsInstance(task_details, FakeProxy)
-        self.assertEqual(task_details.base, 'fake_task_detail')

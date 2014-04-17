@@ -67,6 +67,17 @@ def is_task_mutable(context, task):
     return task.owner == context.owner
 
 
+def is_task_stub_mutable(context, task_stub):
+    """Return True if the task stub is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    return task_stub.owner == context.owner
+
+
 def proxy_task(context, task):
     if is_task_mutable(context, task):
         return task
@@ -74,11 +85,11 @@ def proxy_task(context, task):
         return ImmutableTaskProxy(task)
 
 
-def proxy_task_details(context, task, task_details):
-    if is_task_mutable(context, task):
-        return task_details
+def proxy_task_stub(context, task_stub):
+    if is_task_stub_mutable(context, task_stub):
+        return task_stub
     else:
-        return ImmutableTaskDetailsProxy(task_details)
+        return ImmutableTaskStubProxy(task_stub)
 
 
 class ImageRepoProxy(glance.domain.proxy.Repo):
@@ -342,6 +353,9 @@ class ImmutableTaskProxy(object):
     expires_at = _immutable_attr('base', 'expires_at')
     created_at = _immutable_attr('base', 'created_at')
     updated_at = _immutable_attr('base', 'updated_at')
+    input = _immutable_attr('base', 'input')
+    message = _immutable_attr('base', 'message')
+    result = _immutable_attr('base', 'result')
 
     def run(self, executor):
         self.base.run(executor)
@@ -359,13 +373,18 @@ class ImmutableTaskProxy(object):
         raise exception.Forbidden(message)
 
 
-class ImmutableTaskDetailsProxy(object):
+class ImmutableTaskStubProxy(object):
     def __init__(self, base):
         self.base = base
+        self.resource_name = 'task stub'
 
-    input = _immutable_attr('base', 'input')
-    message = _immutable_attr('base', 'message')
-    result = _immutable_attr('base', 'result')
+    task_id = _immutable_attr('base', 'task_id')
+    type = _immutable_attr('base', 'type')
+    status = _immutable_attr('base', 'status')
+    owner = _immutable_attr('base', 'owner')
+    expires_at = _immutable_attr('base', 'expires_at')
+    created_at = _immutable_attr('base', 'created_at')
+    updated_at = _immutable_attr('base', 'updated_at')
 
 
 class ImageProxy(glance.domain.proxy.Image):
@@ -391,13 +410,6 @@ class TaskProxy(glance.domain.proxy.Task):
         super(TaskProxy, self).__init__(task)
 
 
-class TaskDetailsProxy(glance.domain.proxy.TaskDetails):
-
-    def __init__(self, task_details):
-        self.task_details = task_details
-        super(TaskDetailsProxy, self).__init__(task_details)
-
-
 class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
 
     def __init__(self, task_factory, context):
@@ -405,8 +417,7 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
         self.context = context
         super(TaskFactoryProxy, self).__init__(
             task_factory,
-            task_proxy_class=TaskProxy,
-            task_details_proxy_class=TaskDetailsProxy)
+            task_proxy_class=TaskProxy)
 
     def new_task(self, **kwargs):
         owner = kwargs.get('owner', self.context.owner)
@@ -429,12 +440,18 @@ class TaskRepoProxy(glance.domain.proxy.TaskRepo):
         self.context = context
         super(TaskRepoProxy, self).__init__(task_repo)
 
-    def get_task_stub_and_details(self, task_id):
-        task, task_details = self.task_repo.get_task_stub_and_details(task_id)
-        return proxy_task(self.context, task), proxy_task_details(self.context,
-                                                                  task,
-                                                                  task_details)
+    def get(self, task_id):
+        task = self.task_repo.get(task_id)
+        return proxy_task(self.context, task)
 
-    def list_tasks(self, *args, **kwargs):
-        tasks = self.task_repo.list_tasks(*args, **kwargs)
-        return [proxy_task(self.context, t) for t in tasks]
+
+class TaskStubRepoProxy(glance.domain.proxy.TaskStubRepo):
+
+    def __init__(self, task_stub_repo, context):
+        self.task_stub_repo = task_stub_repo
+        self.context = context
+        super(TaskStubRepoProxy, self).__init__(task_stub_repo)
+
+    def list(self, *args, **kwargs):
+        task_stubs = self.task_stub_repo.list(*args, **kwargs)
+        return [proxy_task_stub(self.context, t) for t in task_stubs]
