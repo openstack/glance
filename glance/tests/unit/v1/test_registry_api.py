@@ -209,7 +209,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         when a malformed marker is provided
         """
         res = self.get_api_response_ext(400, url='/images?marker=4')
-        self.assertTrue('marker' in res.body)
+        self.assertIn('marker', res.body)
 
     def test_get_index_forbidden_marker(self):
         """
@@ -712,7 +712,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         when a malformed marker is provided
         """
         res = self.get_api_response_ext(400, url='/images/detail?marker=4')
-        self.assertTrue('marker' in res.body)
+        self.assertIn('marker', res.body)
 
     def test_get_details_forbidden_marker(self):
         """
@@ -941,7 +941,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.assertEqual(len(images), 2)
 
         for image in images:
-            self.assertTrue(image['size'] <= 19 and image['size'] >= 18)
+            self.assertTrue(18 <= image['size'] <= 19)
 
     def test_get_details_filter_changes_since(self):
         """
@@ -1139,7 +1139,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         images = res_dict['images']
 
         for image in images:
-            self.assertEqual(False, image['deleted'])
+            self.assertFalse(image['deleted'])
 
     def test_get_filter_no_public_with_no_admin(self):
         """
@@ -1270,7 +1270,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         res = self.get_api_response_ext(400, body=body,
                                         method='POST', content_type='json')
-        self.assertTrue('Invalid image status' in res.body)
+        self.assertIn('Invalid image status', res.body)
 
     def test_create_image_with_bad_id(self):
         """Tests proper exception is raised if a bad disk_format is set"""
@@ -1334,7 +1334,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(400, method='PUT', body=body,
                                         url='/images/%s' % UUID2,
                                         content_type='json')
-        self.assertTrue('Invalid image status' in res.body)
+        self.assertIn('Invalid image status', res.body)
 
     def test_update_private_image_no_admin(self):
         """
@@ -1702,7 +1702,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(404, method='DELETE',
                                         url=('/images/%s/members/pattieblack' %
                                              UUID2))
-        self.assertTrue('Membership could not be found' in res.body)
+        self.assertIn('Membership could not be found', res.body)
 
     def test_delete_member_from_non_exist_image(self):
         """

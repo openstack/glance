@@ -654,7 +654,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             self.assertEqual(v, data[k])
 
         # Test status was updated properly
-        self.assertTrue('status' in data.keys())
+        self.assertIn('status', data.keys())
         self.assertEqual('active', data['status'])
 
     def test_add_image_with_properties(self):
@@ -669,7 +669,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             self.assertEqual(v, new_image[k])
 
         # Test status was updated properly
-        self.assertTrue('status' in new_image.keys())
+        self.assertIn('status', new_image.keys())
         self.assertEqual('active', new_image['status'])
 
     def test_add_image_with_location_data(self):

@@ -172,12 +172,12 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
              ('x-image-meta-property-frog', 11),
              ('x-image-meta-property-duck', 12)]
         o = glance_replicator.ImageService._header_list_to_dict(i)
-        self.assertTrue('banana' in o)
-        self.assertTrue('gerkin' in o)
-        self.assertTrue('properties' in o)
-        self.assertTrue('frog' in o['properties'])
-        self.assertTrue('duck' in o['properties'])
-        self.assertFalse('x-image-meta-banana' in o)
+        self.assertIn('banana', o)
+        self.assertIn('gerkin', o)
+        self.assertIn('properties', o)
+        self.assertIn('frog', o['properties'])
+        self.assertIn('duck', o['properties'])
+        self.assertNotIn('x-image-meta-banana', o)
 
     def test_rest_get_image_meta(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
@@ -188,7 +188,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                              200, '', IMG_RESPONSE_ACTIVE)
 
         header = c.get_image_meta(IMG_RESPONSE_ACTIVE['id'])
-        self.assertTrue('id' in header)
+        self.assertIn('id', header)
 
     def test_rest_dict_to_headers(self):
         i = {'banana': 42,
@@ -197,12 +197,12 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
                             'kernel_id': None}
              }
         o = glance_replicator.ImageService._dict_to_headers(i)
-        self.assertTrue('x-image-meta-banana' in o)
-        self.assertTrue('x-image-meta-gerkin' in o)
-        self.assertTrue('x-image-meta-property-frog' in o)
-        self.assertTrue('x-image-meta-property-kernel_id' in o)
+        self.assertIn('x-image-meta-banana', o)
+        self.assertIn('x-image-meta-gerkin', o)
+        self.assertIn('x-image-meta-property-frog', o)
+        self.assertIn('x-image-meta-property-kernel_id', o)
         self.assertEqual(o['x-image-meta-property-kernel_id'], '')
-        self.assertFalse('properties' in o)
+        self.assertNotIn('properties', o)
 
     def test_rest_add_image(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
@@ -385,9 +385,9 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
 
             with open(imgfile) as f:
                 d = jsonutils.loads(f.read())
-                self.assertTrue('status' in d)
-                self.assertTrue('id' in d)
-                self.assertTrue('size' in d)
+                self.assertIn('status', d)
+                self.assertIn('id', d)
+                self.assertIn('size', d)
 
         for inactive in ['f4da1d2a-40e8-4710-b3aa-0222a4cc887b']:
             imgfile = os.path.join(tempdir, inactive)
@@ -396,9 +396,9 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
 
             with open(imgfile) as f:
                 d = jsonutils.loads(f.read())
-                self.assertTrue('status' in d)
-                self.assertTrue('id' in d)
-                self.assertTrue('size' in d)
+                self.assertIn('status', d)
+                self.assertIn('id', d)
+                self.assertIn('size', d)
 
     def test_replication_dump_with_no_args(self):
         args = []
@@ -464,10 +464,10 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         finally:
             glance_replicator.get_image_service = orig_img_service
 
-        self.assertTrue('5dcddce0-cba5-4f18-9cf4-9853c7b207a6' in updated)
-        self.assertFalse('f4da1d2a-40e8-4710-b3aa-0222a4cc887b' in updated)
-        self.assertTrue(new_id in updated)
-        self.assertFalse(new_id_missing_data in updated)
+        self.assertIn('5dcddce0-cba5-4f18-9cf4-9853c7b207a6', updated)
+        self.assertNotIn('f4da1d2a-40e8-4710-b3aa-0222a4cc887b', updated)
+        self.assertIn(new_id, updated)
+        self.assertNotIn(new_id_missing_data, updated)
 
     def test_replication_load_with_no_args(self):
         args = []
@@ -523,10 +523,10 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         finally:
             glance_replicator.get_image_service = orig_img_service
 
-        self.assertTrue('15648dd7-8dd0-401c-bd51-550e1ba9a088' in differences)
+        self.assertIn('15648dd7-8dd0-401c-bd51-550e1ba9a088', differences)
         self.assertEqual(differences['15648dd7-8dd0-401c-bd51-550e1ba9a088'],
                          'missing')
-        self.assertTrue('37ff82db-afca-48c7-ae0b-ddc7cf83e3db' in differences)
+        self.assertIn('37ff82db-afca-48c7-ae0b-ddc7cf83e3db', differences)
         self.assertEqual(differences['37ff82db-afca-48c7-ae0b-ddc7cf83e3db'],
                          'diff')
 

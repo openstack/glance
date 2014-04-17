@@ -197,7 +197,7 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
 
     def test_image_change_append_invalid_location_metatdata(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -221,8 +221,8 @@ class TestStoreImage(utils.BaseTestCase):
         image2.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
     def test_image_change_append_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -243,8 +243,8 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image2.delete()
 
@@ -272,8 +272,8 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image2.delete()
 
@@ -291,7 +291,7 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
 
     def test_image_change_extend_invalid_locations_metadata(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -310,8 +310,8 @@ class TestStoreImage(utils.BaseTestCase):
         image2.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
     def test_image_change_extend_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -332,8 +332,8 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image2.delete()
 
@@ -361,8 +361,8 @@ class TestStoreImage(utils.BaseTestCase):
         image2.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
     def test_image_change_delete_location(self):
         self.assertEqual(len(self.store_api.data.keys()), 2)
@@ -376,7 +376,7 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(len(image1.locations), 0)
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
 
         image1.delete()
 
@@ -393,7 +393,7 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
 
     def test_image_change_insert_invalid_location_metadata(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -412,8 +412,8 @@ class TestStoreImage(utils.BaseTestCase):
         image2.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
     def test_image_change_insert_location(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -434,8 +434,8 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image2.delete()
 
@@ -464,8 +464,8 @@ class TestStoreImage(utils.BaseTestCase):
         image2.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
     def test_image_change_adding_invalid_location_uri(self):
         self.assertEqual(len(self.store_api.data.keys()), 2)
@@ -484,7 +484,7 @@ class TestStoreImage(utils.BaseTestCase):
         image1.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
 
     def test_image_change_adding_invalid_location_metadata(self):
         self.assertEqual(len(self.store_api.data.keys()), 2)
@@ -506,7 +506,7 @@ class TestStoreImage(utils.BaseTestCase):
         image2.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
 
     def test_image_change_adding_locations(self):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
@@ -530,8 +530,8 @@ class TestStoreImage(utils.BaseTestCase):
         image3.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image1.delete()
         image2.delete()
@@ -556,8 +556,8 @@ class TestStoreImage(utils.BaseTestCase):
         image3.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image1.delete()
         image2.delete()
@@ -583,8 +583,8 @@ class TestStoreImage(utils.BaseTestCase):
         image3.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image1.delete()
         image2.delete()
@@ -606,14 +606,14 @@ class TestStoreImage(utils.BaseTestCase):
 
         image3.locations += [location2, location3]
 
-        self.assertTrue(location3 in image_stub3.locations)
-        self.assertFalse(location_bad in image_stub3.locations)
+        self.assertIn(location3, image_stub3.locations)
+        self.assertNotIn(location_bad, image_stub3.locations)
 
         image3.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image1.delete()
         image2.delete()
@@ -641,8 +641,8 @@ class TestStoreImage(utils.BaseTestCase):
         image3.delete()
 
         self.assertEqual(len(self.store_api.data.keys()), 2)
-        self.assertFalse(UUID2 in self.store_api.data.keys())
-        self.assertFalse(UUID3 in self.store_api.data.keys())
+        self.assertNotIn(UUID2, self.store_api.data.keys())
+        self.assertNotIn(UUID3, self.store_api.data.keys())
 
         image1.delete()
         image2.delete()
@@ -740,8 +740,8 @@ class TestImageFactory(utils.BaseTestCase):
 
     def test_new_image(self):
         image = self.image_factory.new_image()
-        self.assertTrue(image.image_id is None)
-        self.assertTrue(image.status is None)
+        self.assertIsNone(image.image_id)
+        self.assertIsNone(image.status)
         self.assertEqual(image.visibility, 'private')
         self.assertEqual(image.locations, [])
 

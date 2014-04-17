@@ -147,7 +147,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid value' in res.body, res.body)
+        self.assertIn('Invalid value', res.body)
 
     def test_bad_min_disk_size_update(self):
         fixture_headers = {'x-image-meta-disk-format': 'vhd',
@@ -169,7 +169,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['x-image-meta-min-disk'] = '-42'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid value' in res.body, res.body)
+        self.assertIn('Invalid value', res.body)
 
     def test_bad_min_ram_size_create(self):
         fixture_headers = {'x-image-meta-store': 'file',
@@ -184,7 +184,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid value' in res.body, res.body)
+        self.assertIn('Invalid value', res.body)
 
     def test_bad_min_ram_size_update(self):
         fixture_headers = {'x-image-meta-disk-format': 'vhd',
@@ -206,7 +206,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['x-image-meta-min-ram'] = '-42'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid value' in res.body, res.body)
+        self.assertIn('Invalid value', res.body)
 
     def test_bad_disk_format(self):
         fixture_headers = {
@@ -224,7 +224,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid disk format' in res.body, res.body)
+        self.assertIn('Invalid disk format', res.body)
 
     def test_configured_disk_format_good(self):
         self.config(disk_formats=['foo'], group="image_format")
@@ -260,7 +260,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid disk format' in res.body, res.body)
+        self.assertIn('Invalid disk format', res.body)
 
     def test_configured_container_format_good(self):
         self.config(container_formats=['foo'], group="image_format")
@@ -296,7 +296,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid container format' in res.body, res.body)
+        self.assertIn('Invalid container format', res.body)
 
     def test_container_and_disk_amazon_format_differs(self):
         fixture_headers = {
@@ -317,7 +317,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                     "'aki', 'ari', or 'ami', "
                     "the container and disk formats must match.")
         self.assertEqual(res.status_int, 400)
-        self.assertTrue(expected in res.body, res.body)
+        self.assertIn(expected, res.body)
 
     def test_create_with_location_no_container_format(self):
         fixture_headers = {
@@ -333,7 +333,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid container format' in res.body)
+        self.assertIn('Invalid container format', res.body)
 
     def test_create_with_bad_store_name(self):
         fixture_headers = {
@@ -350,7 +350,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Required store bad is invalid' in res.body)
+        self.assertIn('Required store bad is invalid', res.body)
 
     def test_create_with_location_unknown_scheme(self):
         fixture_headers = {
@@ -368,7 +368,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('External sourcing not supported' in res.body)
+        self.assertIn('External sourcing not supported', res.body)
 
     def test_create_with_location_bad_store_uri(self):
         fixture_headers = {
@@ -386,7 +386,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid location' in res.body)
+        self.assertIn('Invalid location', res.body)
 
     def test_create_image_with_too_many_properties(self):
         self.config(image_property_quota=1)
@@ -416,7 +416,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid container format' in res.body)
+        self.assertIn('Invalid container format', res.body)
 
     def test_bad_image_size(self):
         fixture_headers = {
@@ -434,7 +434,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                                       headers=fixture_headers)
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 400)
-            self.assertTrue(expected_substr in res.body)
+            self.assertIn(expected_substr, res.body)
 
         expected = "Cannot convert image size 'invalid' to an integer."
         exec_bad_size_test('invalid', expected)
@@ -489,7 +489,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         # Once the location is set, the image should be activated
         # see LP Bug #939484
         self.assertEqual('active', res_body['status'])
-        self.assertFalse('location' in res_body)  # location never shown
+        self.assertNotIn('location', res_body)  # location never shown
 
     def test_add_image_no_location_no_content_type(self):
         """Tests creates a queued image for no body and no loc header"""
@@ -639,8 +639,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
         res = req.get_response(self.api)
         res_body = jsonutils.loads(res.body)['image']
-        self.assertFalse('locations' in res_body)
-        self.assertFalse('direct_url' in res_body)
+        self.assertNotIn('locations', res_body)
+        self.assertNotIn('direct_url', res_body)
         image_id = res_body['id']
 
         # HEAD empty image
@@ -648,8 +648,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'HEAD'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        self.assertFalse('x-image-meta-locations' in res.headers)
-        self.assertFalse('x-image-meta-direct_url' in res.headers)
+        self.assertNotIn('x-image-meta-locations', res.headers)
+        self.assertNotIn('x-image-meta-direct_url', res.headers)
 
     def test_add_check_no_url_info_ml(self):
         self.config(show_multiple_locations=True)
@@ -765,8 +765,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                         "'location' not in response headers.\n"
                         "res.headerlist = %r" % res.headerlist)
         res_body = jsonutils.loads(res.body)['image']
-        self.assertTrue('/images/%s' % res_body['id']
-                        in res.headers['location'])
+        self.assertIn('/images/%s' % res_body['id'], res.headers['location'])
         self.assertEqual('active', res_body['status'])
         image_id = res_body['id']
 
@@ -1007,7 +1006,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['x-image-meta-location'] = 'http://'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
-        self.assertTrue('Invalid location' in res.body)
+        self.assertIn('Invalid location', res.body)
 
     def test_update_data_upload_image_unauthorized(self):
         rules = {"upload_image": '!', "modify_image": '@',
@@ -1173,7 +1172,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
-        self.assertTrue('Forbidden to update deleted image' in res.body)
+        self.assertIn('Forbidden to update deleted image', res.body)
 
     def test_delete_deleted_image(self):
         """Tests that exception raised trying to delete a deleted image"""
@@ -1194,7 +1193,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 404)
         msg = "Image %s not found." % UUID2
-        self.assertTrue(msg in res.body)
+        self.assertIn(msg, res.body)
 
         # Verify the status is still deleted
         req = webob.Request.blank("/images/%s" % UUID2)
@@ -1248,8 +1247,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
-        self.assertTrue('Forbidden to delete a pending_delete image'
-                        in res.body)
+        self.assertIn('Forbidden to delete a pending_delete image', res.body)
 
         # Verify the status is still pending_delete
         req = webob.Request.blank("/images/%s" % UUID2)
@@ -1281,7 +1279,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res_body = jsonutils.loads(res.body)['image']
 
         image_id = res_body['id']
-        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+        self.assertIn('/images/%s' % image_id, res.headers['location'])
 
         # verify the status is 'queued'
         self.assertEqual('queued', res_body['status'])
@@ -1384,18 +1382,18 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 201)
         res_body = jsonutils.loads(res.body)['image']
 
-        self.assertTrue('id' in res_body)
+        self.assertIn('id', res_body)
 
         image_id = res_body['id']
-        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+        self.assertIn('/images/%s' % image_id, res.headers['location'])
 
         # Verify the status is queued
-        self.assertTrue('status' in res_body)
+        self.assertIn('status', res_body)
         self.assertEqual('queued', res_body['status'])
 
         # Check properties are not deleted
-        self.assertTrue('properties' in res_body)
-        self.assertTrue('key1' in res_body['properties'])
+        self.assertIn('properties', res_body)
+        self.assertIn('key1', res_body['properties'])
         self.assertEqual('value1', res_body['properties']['key1'])
 
         # Now upload the image file along with some more
@@ -1438,10 +1436,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 201)
         res_body = jsonutils.loads(res.body)['image']
 
-        self.assertTrue('id' in res_body)
+        self.assertIn('id', res_body)
 
         image_id = res_body['id']
-        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+        self.assertIn('/images/%s' % image_id, res.headers['location'])
 
         # Verify the status is queued
         self.assertEqual('queued', res_body['status'])
@@ -1526,18 +1524,18 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 201)
         res_body = jsonutils.loads(res.body)['image']
 
-        self.assertTrue('id' in res_body)
+        self.assertIn('id', res_body)
 
         image_id = res_body['id']
-        self.assertTrue('/images/%s' % image_id in res.headers['location'])
+        self.assertIn('/images/%s' % image_id, res.headers['location'])
 
         # Verify the status is queued
-        self.assertTrue('status' in res_body)
+        self.assertIn('status', res_body)
         self.assertEqual('active', res_body['status'])
 
         # Check properties are not deleted
-        self.assertTrue('properties' in res_body)
-        self.assertTrue('key1' in res_body['properties'])
+        self.assertIn('properties', res_body)
+        self.assertIn('key1', res_body['properties'])
         self.assertEqual('value1', res_body['properties']['key1'])
 
         # Now update the image, setting new properties without
@@ -2084,14 +2082,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % UUID2)
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        self.assertFalse('X-Image-Meta-Location' in res.headers)
+        self.assertNotIn('X-Image-Meta-Location', res.headers)
 
         # Check HEAD
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
-        self.assertFalse('X-Image-Meta-Location' in res.headers)
+        self.assertNotIn('X-Image-Meta-Location', res.headers)
 
         # Check PUT
         req = webob.Request.blank("/images/%s" % UUID2)
@@ -2100,7 +2098,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
         res_body = jsonutils.loads(res.body)
-        self.assertFalse('location' in res_body['image'])
+        self.assertNotIn('location', res_body['image'])
 
         # Check POST
         req = webob.Request.blank("/images")
@@ -2114,7 +2112,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
         res_body = jsonutils.loads(res.body)
-        self.assertFalse('location' in res_body['image'])
+        self.assertNotIn('location', res_body['image'])
 
     def test_image_is_checksummed(self):
         """Test that the image contents are checksummed properly"""
@@ -2760,8 +2758,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
-        self.assertTrue(
-            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+        self.assertIn(
+            'Image with identifier %s has been deleted.' % UUID2, res.body)
 
     def test_delete_member_of_deleted_image_raises_404(self):
         """
@@ -2779,8 +2777,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
-        self.assertTrue(
-            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+        self.assertIn(
+            'Image with identifier %s has been deleted.' % UUID2, res.body)
 
     def test_update_members_of_deleted_image_raises_404(self):
         """
@@ -2806,8 +2804,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.body = jsonutils.dumps(dict(memberships=fixture))
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
-        self.assertTrue(
-            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+        self.assertIn(
+            'Image with identifier %s has been deleted.' % UUID2, res.body)
 
     def test_replace_members_of_image(self):
         test_router = router.API(self.mapper)
@@ -2906,8 +2904,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
-        self.assertTrue(
-            'Image with identifier %s has been deleted.' % UUID2 in res.body)
+        self.assertIn(
+            'Image with identifier %s has been deleted.' % UUID2, res.body)
 
     def test_delete_member(self):
         """
@@ -2970,7 +2968,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.content_type = 'application/json'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 404)
-        self.assertTrue('Forbidden' in res.body)
+        self.assertIn('Forbidden', res.body)
 
     def test_delete_member_allowed_by_policy(self):
         rules = {"delete_member": '@', "modify_member": '@'}
@@ -3976,7 +3974,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         output = another_request.get_response(self.api)
 
         self.assertEqual(output.status_int, 413)
-        self.assertTrue("Attempted: 2, Maximum: 1" in output.text)
+        self.assertIn("Attempted: 2, Maximum: 1", output.text)
 
     def test_update_image_with_too_many_properties_without_purge_props(self):
         """
@@ -4008,7 +4006,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         output = another_request.get_response(self.api)
 
         self.assertEqual(output.status_int, 413)
-        self.assertTrue("Attempted: 2, Maximum: 1" in output.text)
+        self.assertIn("Attempted: 2, Maximum: 1", output.text)
 
     def test_update_properties_without_purge_props_overwrite_value(self):
         """

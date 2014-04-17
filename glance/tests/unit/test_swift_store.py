@@ -423,8 +423,8 @@ class SwiftTests(object):
             self.store.add(str(uuid.uuid4()), image_swift, 0)
         except BackendException as e:
             exception_caught = True
-            self.assertTrue("container noexist does not exist "
-                            "in Swift" in six.text_type(e))
+            self.assertIn("container noexist does not exist "
+                          "in Swift", six.text_type(e))
         self.assertTrue(exception_caught)
         self.assertEqual(SWIFT_PUT_OBJECT_CALLS, 0)
 

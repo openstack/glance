@@ -334,7 +334,7 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
         request.body = 'asdf'
-        self.assertTrue('Content-Length' in request.headers)
+        self.assertIn('Content-Length', request.headers)
         self.assertTrue(wsgi.JSONRequestDeserializer().has_body(request))
 
     def test_no_body_no_content_length(self):
@@ -371,7 +371,7 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
         request.method = 'POST'
         request.body = 'fake_body'
         request.headers['transfer-encoding'] = 0
-        self.assertTrue('transfer-encoding' in request.headers)
+        self.assertIn('transfer-encoding', request.headers)
         self.assertTrue(wsgi.JSONRequestDeserializer().has_body(request))
 
     def test_get_bind_addr_default_value(self):
@@ -430,7 +430,7 @@ class TestHelpers(test_utils.BaseTestCase):
             if v is not None:
                 self.assertEqual(v, result[k])
             else:
-                self.assertFalse(k in result)
+                self.assertNotIn(k, result)
 
 
 class GetSocketTestCase(test_utils.BaseTestCase):
@@ -466,19 +466,19 @@ class GetSocketTestCase(test_utils.BaseTestCase):
             'glance.common.wsgi.eventlet.listen',
             lambda *x, **y: None))
         wsgi.get_socket(1234)
-        self.assertTrue(mock.call().setsockopt(
+        self.assertIn(mock.call().setsockopt(
             socket.SOL_SOCKET,
             socket.SO_REUSEADDR,
-            1) in mock_socket.mock_calls)
-        self.assertTrue(mock.call().setsockopt(
+            1), mock_socket.mock_calls)
+        self.assertIn(mock.call().setsockopt(
             socket.SOL_SOCKET,
             socket.SO_KEEPALIVE,
-            1) in mock_socket.mock_calls)
+            1), mock_socket.mock_calls)
         if hasattr(socket, 'TCP_KEEPIDLE'):
-            self.assertTrue(mock.call().setsockopt(
+            self.assertIn(mock.call().setsockopt(
                 socket.IPPROTO_TCP,
                 socket.TCP_KEEPIDLE,
-                wsgi.CONF.tcp_keepidle) in mock_socket.mock_calls)
+                wsgi.CONF.tcp_keepidle), mock_socket.mock_calls)
 
     def test_get_socket_without_all_ssl_reqs(self):
         wsgi.CONF.key_file = None

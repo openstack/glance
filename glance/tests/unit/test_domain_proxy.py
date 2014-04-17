@@ -131,7 +131,7 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         self.assertEqual(self.fake_repo.kwargs, {})
 
         if result is None:
-            self.assertTrue(proxy_result is None)
+            self.assertIsNone(proxy_result)
         else:
             self.assertIsInstance(proxy_result, FakeProxy)
             self.assertEqual(proxy_result.base, result)

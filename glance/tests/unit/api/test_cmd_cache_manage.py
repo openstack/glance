@@ -114,8 +114,8 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
         self.assertEqual(cache_manage.queue_image(mock_options, ['img_id']),
                          cache_manage.SUCCESS)
         self.assertTrue(mock_client.called)
-        self.assertTrue(
-            mock.call.mock_client().queue_image_for_caching('img_id') in
+        self.assertIn(
+            mock.call.mock_client().queue_image_for_caching('img_id'),
             manager.mock_calls)
 
     def test_delete_cached_image_without_index(self):
@@ -154,8 +154,8 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
             cache_manage.delete_cached_image(mock_options, ['img_id']),
             cache_manage.SUCCESS)
 
-        self.assertTrue(
-            mock.call.mock_client().delete_cached_image('img_id') in
+        self.assertIn(
+            mock.call.mock_client().delete_cached_image('img_id'),
             manager.mock_calls)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
@@ -190,8 +190,8 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
             cache_manage.delete_all_cached_images(mock_options, None),
             cache_manage.SUCCESS)
         self.assertTrue(mock_client.called)
-        self.assertTrue(
-            mock.call.mock_client().delete_all_cached_images() in
+        self.assertIn(
+            mock.call.mock_client().delete_all_cached_images(),
             manager.mock_calls)
 
     def test_delete_queued_image_without_index(self):
@@ -230,8 +230,8 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
             cache_manage.delete_queued_image(mock_options, ['img_id']),
             cache_manage.SUCCESS)
         self.assertTrue(mock_client.called)
-        self.assertTrue(
-            mock.call.mock_client().delete_queued_image('img_id') in
+        self.assertIn(
+            mock.call.mock_client().delete_queued_image('img_id'),
             manager.mock_calls)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
@@ -265,8 +265,8 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
             cache_manage.delete_all_queued_images(mock_options, None),
             cache_manage.SUCCESS)
         self.assertTrue(mock_client.called)
-        self.assertTrue(
-            mock.call.mock_client().delete_all_queued_images() in
+        self.assertIn(
+            mock.call.mock_client().delete_all_queued_images(),
             manager.mock_calls)
 
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')

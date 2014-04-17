@@ -305,14 +305,14 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
-            self.assertTrue(plugin.authenticate() is None)
+            self.assertIsNone(plugin.authenticate())
             self.assertEqual(plugin.management_url, "example.com")
 
         # Assert it does not update management_url via auth response
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds, configure_via_auth=False)
-            self.assertTrue(plugin.authenticate() is None)
-            self.assertTrue(plugin.management_url is None)
+            self.assertIsNone(plugin.authenticate())
+            self.assertIsNone(plugin.management_url)
 
     def test_v2_auth(self):
         """Test v2 auth code paths"""
@@ -387,7 +387,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         }
 
         plugin = auth.KeystoneStrategy(no_region_creds)
-        self.assertTrue(plugin.authenticate() is None)
+        self.assertIsNone(plugin.authenticate())
         self.assertEqual(plugin.management_url, 'http://localhost:9292')
 
         # Add another image service, with a different region
@@ -483,7 +483,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
         for creds in good_creds:
             plugin = auth.KeystoneStrategy(creds)
-            self.assertTrue(plugin.authenticate() is None)
+            self.assertIsNone(plugin.authenticate())
             self.assertEqual(plugin.management_url, 'http://localhost:9292')
 
         ambiguous_region_creds = {
