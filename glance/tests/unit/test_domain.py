@@ -20,6 +20,7 @@ import uuid
 import mock
 from oslo.config import cfg
 
+import glance.async
 from glance.common import exception
 from glance import domain
 from glance.openstack.common import timeutils
@@ -447,6 +448,16 @@ class TestTask(test_utils.BaseTestCase):
             expected
         )
 
+    @mock.patch.object(glance.async.TaskExecutor, 'begin_processing')
+    def test_run(self, mock_begin_processing):
+        executor = glance.async.TaskExecutor(context=mock.ANY,
+                                             task_repo=mock.ANY,
+                                             image_repo=mock.ANY,
+                                             image_factory=mock.ANY)
+        self.task.run(executor)
+
+        mock_begin_processing.assert_called_once_with(self.task.task_id)
+
 
 class TestTaskStub(test_utils.BaseTestCase):
     def setUp(self):
@@ -487,3 +498,46 @@ class TestTaskStub(test_utils.BaseTestCase):
             'updated_at'
         )
         self.assertEqual(status, task.status)
+
+
+class TestTaskExecutorFactory(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestTaskExecutorFactory, self).setUp()
+        self.task_repo = mock.Mock()
+        self.image_repo = mock.Mock()
+        self.image_factory = mock.Mock()
+
+    def test_init(self):
+        task_executor_factory = domain.TaskExecutorFactory(self.task_repo,
+                                                           self.image_repo,
+                                                           self.image_factory)
+        self.assertEqual(self.task_repo, task_executor_factory.task_repo)
+
+    def test_new_task_executor(self):
+        task_executor_factory = domain.TaskExecutorFactory(self.task_repo,
+                                                           self.image_repo,
+                                                           self.image_factory)
+        context = mock.Mock()
+        with mock.patch.object(glance.openstack.common.importutils,
+                               'import_class') as mock_import_class:
+            mock_executor = mock.Mock()
+            mock_import_class.return_value = mock_executor
+            task_executor_factory.new_task_executor(context)
+
+        mock_executor.assert_called_once_with(context,
+                                              self.task_repo,
+                                              self.image_repo,
+                                              self.image_factory)
+
+    def test_new_task_executor_error(self):
+        task_executor_factory = domain.TaskExecutorFactory(self.task_repo,
+                                                           self.image_repo,
+                                                           self.image_factory)
+        context = mock.Mock()
+        with mock.patch.object(glance.openstack.common.importutils,
+                               'import_class') as mock_import_class:
+            mock_import_class.side_effect = ImportError
+
+            self.assertRaises(ImportError,
+                              task_executor_factory.new_task_executor,
+                              context)

@@ -239,6 +239,15 @@ def user_get_storage_usage(client, owner_id, image_id=None, session=None):
 
 
 @_get_client
+def task_get(client, task_id, session=None, force_show_deleted=False):
+    """Get a single task object
+    :return: task dictionary
+    """
+    return client.task_get(task_id=task_id, session=session,
+                           force_show_deleted=force_show_deleted)
+
+
+@_get_client
 def task_get_all(client, filters=None, marker=None, limit=None,
                  sort_key='created_at', sort_dir='desc', admin_as_user=False):
     """Get all tasks that match zero or more filters.
@@ -261,7 +270,18 @@ def task_get_all(client, filters=None, marker=None, limit=None,
 @_get_client
 def task_create(client, values, session=None):
     """Create a task object"""
-    return client.task_create(values=values)
+    return client.task_create(values=values, session=session)
+
+
+@_get_client
+def task_delete(client, task_id, session=None):
+    """Delete a task object"""
+    return client.task_delete(task_id=task_id, session=session)
+
+
+@_get_client
+def task_update(client, task_id, values, session=None):
+    return client.task_update(task_id=task_id, values=values, session=session)
 
 
 # Metadef

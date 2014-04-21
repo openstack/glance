@@ -61,6 +61,15 @@ task_opts = [
                       "succeeding or failing"),
                deprecated_opts=[cfg.DeprecatedOpt('task_time_to_live',
                                                   group='DEFAULT')]),
+    cfg.StrOpt('task_executor',
+               default='eventlet',
+               help=_("Specifies which task executor to be used to run the "
+                      "task scripts.")),
+    cfg.IntOpt('eventlet_executor_pool_size',
+               default=1000,
+               help=_("Specifies the maximum number of eventlet threads which "
+                      "can be spun up by the eventlet based task executor to "
+                      "perform execution of Glance tasks.")),
 ]
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,

@@ -56,6 +56,7 @@ class TasksController(object):
 
     def create(self, req, task):
         task_factory = self.gateway.get_task_factory(req.context)
+        executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
         live_time = CONF.task.task_time_to_live
         try:
@@ -64,6 +65,8 @@ class TasksController(object):
                                              task_time_to_live=live_time,
                                              task_input=task['input'])
             task_repo.add(new_task)
+            task_executor = executor_factory.new_task_executor(req.context)
+            new_task.run(task_executor)
         except exception.Forbidden as e:
             msg = (_LI("Forbidden to create task. Reason: %(reason)s")
                    % {'reason': utils.exception_to_str(e)})

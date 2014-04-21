@@ -21,6 +21,7 @@ from oslo.config import cfg
 from oslo import messaging
 import webob
 
+import glance.async
 from glance.common import exception
 import glance.context
 from glance import notifier
@@ -87,7 +88,7 @@ class TaskRepoStub(object):
     def add(self, *args, **kwargs):
         return 'task_from_add'
 
-    def get(self, *args, **kwargs):
+    def get_task(self, *args, **kwargs):
         return 'task_from_get'
 
     def list(self, *args, **kwargs):
@@ -486,7 +487,10 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
 
     def test_task_run_notification(self):
-        self.task_proxy.run(executor=None)
+        with mock.patch('glance.async.TaskExecutor') as mock_executor:
+            executor = mock_executor.return_value
+            executor._run.return_value = mock.Mock()
+            self.task_proxy.run(executor=mock_executor)
         output_logs = self.notifier.get_logs()
         self.assertEqual(len(output_logs), 1)
         output_log = output_logs[0]

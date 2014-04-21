@@ -14,10 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
 import uuid
 
-import fixtures
 import requests
 
 from glance.openstack.common import jsonutils
@@ -35,7 +33,6 @@ class TestTasks(functional.FunctionalTest):
     def setUp(self):
         super(TestTasks, self).setUp()
         self.cleanup()
-        self.file_path = self._stash_file()
         self.api_server.deployment_flavor = 'noauth'
 
     def _url(self, path):
@@ -51,16 +48,6 @@ class TestTasks(functional.FunctionalTest):
         }
         base_headers.update(custom_headers or {})
         return base_headers
-
-    def _stash_file(self):
-        self.tmp_dir = self.useFixture(fixtures.TempDir()).path
-        self.store_dir = os.path.join(self.tmp_dir, 'images')
-        os.mkdir(self.store_dir)
-
-        file_path = os.path.join(self.store_dir, 'foo')
-        with open(file_path, 'w') as f:
-            f.write('blah')
-        return 'file://%s' % file_path
 
     def test_task_lifecycle(self):
         self.start_servers(**self.__dict__.copy())
@@ -78,7 +65,7 @@ class TestTasks(functional.FunctionalTest):
         data = jsonutils.dumps({
             "type": "import",
             "input": {
-                "import_from": self.file_path,
+                "import_from": "http://example.com",
                 "import_from_format": "qcow2",
                 "image_properties": {
                     'disk_format': 'vhd',
@@ -111,7 +98,7 @@ class TestTasks(functional.FunctionalTest):
             'status': 'pending',
             'type': 'import',
             'input': {
-                "import_from": self.file_path,
+                "import_from": "http://example.com",
                 "import_from_format": "qcow2",
                 "image_properties": {
                     'disk_format': 'vhd',
@@ -125,15 +112,15 @@ class TestTasks(functional.FunctionalTest):
         # Tasks list should now have one entry
         path = self._url('/v2/tasks')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.status_code, 200)
         tasks = jsonutils.loads(response.text)['tasks']
-        self.assertEqual(1, len(tasks))
+        self.assertEqual(len(tasks), 1)
         self.assertEqual(tasks[0]['id'], task_id)
 
         # Attempt to delete a task
         path = self._url('/v2/tasks/%s' % tasks[0]['id'])
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(405, response.status_code)
+        self.assertEqual(response.status_code, 405)
         self.assertIsNotNone(response.headers.get('Allow'))
         self.assertEqual('GET', response.headers.get('Allow'))
 

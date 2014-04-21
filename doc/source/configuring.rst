@@ -1257,10 +1257,6 @@ Configuring Glance Tasks
 
 Glance Tasks are implemented only for version 2 of the OpenStack Images API.
 
-``Please be aware that Glance tasks are currently a work in progress
-feature.`` Although, the API is available, the execution part of it
-is being worked on.
-
 The config value ``task_time_to_live`` is used to determine how long a task
 would be visible to the user after transitioning to either the ``success`` or
 the ``failure`` state.
@@ -1268,6 +1264,22 @@ the ``failure`` state.
 * ``task_time_to_live=<Time_in_hours>``
 
 Optional. Default: ``48``
+
+The config value ``task_executor`` is used to determine which executor
+should be used by the Glance service to process the task.
+
+* ``task_executor=<executor_type>``
+
+Optional. Default: ``eventlet``
+
+The config value ``eventlet_executor_pool_size`` is used to configure the
+eventlet task executor. It sets the maximum on the number of threads which can
+be spun up at any given point of time, that are used for the execution of
+Glance Tasks.
+
+* ``eventlet_executor_pool_size=<Size_of_pool_in_int>``
+
+Optional. Default: ``1000``
 
 Configuring Glance performance profiling
 ----------------------------------------

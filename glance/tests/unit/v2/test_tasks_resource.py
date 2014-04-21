@@ -17,10 +17,12 @@
 import datetime
 import uuid
 
+import mock
 import webob
 
 import glance.api.v2.tasks
 import glance.domain
+import glance.gateway
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 from glance.tests.unit import base
@@ -282,7 +284,37 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.get, request, UUID4)
 
-    def test_create(self):
+    @mock.patch.object(glance.gateway.Gateway, 'get_task_factory')
+    @mock.patch.object(glance.gateway.Gateway, 'get_task_executor_factory')
+    @mock.patch.object(glance.gateway.Gateway, 'get_task_repo')
+    def test_create(self, mock_get_task_repo, mock_get_task_executor_factory,
+                    mock_get_task_factory):
+        # setup
+        request = unit_test_utils.get_fake_request()
+        task = {
+            "type": "import",
+            "input": {
+                "import_from": "swift://cloud.foo/myaccount/mycontainer/path",
+                "image_from_format": "qcow2"
+            }
+        }
+        new_task = mock.Mock()
+        mock_get_task_factory.new_task.return_value = new_task
+        mock_get_task_factory.new_task.run.return_value = mock.ANY
+        mock_get_task_executor_factory.new_task_exector.return_value = \
+            mock.Mock()
+        mock_get_task_repo.add.return_value = mock.Mock()
+
+        # call
+        self.controller.create(request, task=task)
+
+        # assert
+        mock_get_task_factory.new_task.assert_called_once()
+        mock_get_task_repo.add.assert_called_once()
+        mock_get_task_executor_factory.new_task_exector.assert_called_once()
+        mock_get_task_factory.new_task.run.assert_called_once()
+
+    def test_notifications_on_create(self):
         request = unit_test_utils.get_fake_request()
         task = {"type": "import", "input": {
             "import_from": "swift://cloud.foo/myaccount/mycontainer/path",

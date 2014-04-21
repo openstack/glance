@@ -416,8 +416,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         partial_image = None
         if len(change['path']) == 1:
             partial_image = {path_root: change['value']}
-        elif ((path_root in _get_base_properties().keys()) and
-              (_get_base_properties()[path_root].get('type', '') == 'array')):
+        elif ((path_root in get_base_properties().keys()) and
+              (get_base_properties()[path_root].get('type', '') == 'array')):
             # NOTE(zhiyan): cient can use PATCH API to adding element to
             # the image's existing set property directly.
             # Such as: 1. using '/locations/N' path to adding a location
@@ -667,7 +667,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 204
 
 
-def _get_base_properties():
+def get_base_properties():
     return {
         'id': {
             'type': 'string',
@@ -801,7 +801,7 @@ def _get_base_links():
 
 
 def get_schema(custom_properties=None):
-    properties = _get_base_properties()
+    properties = get_base_properties()
     links = _get_base_links()
     if CONF.allow_additional_image_properties:
         schema = glance.schema.PermissiveSchema('image', properties, links)

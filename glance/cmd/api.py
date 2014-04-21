@@ -29,7 +29,7 @@ from glance.common import utils
 
 # Monkey patch socket, time, select, threads
 eventlet.patcher.monkey_patch(all=False, socket=True, time=True,
-                              select=True, thread=True)
+                              select=True, thread=True, os=True)
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...

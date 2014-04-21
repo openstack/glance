@@ -13,8 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import time
+
 from glance.api.v2 import tasks
 import glance.openstack.common.jsonutils as json
+from glance.openstack.common import timeutils
 from glance.tests.integration.v2 import base
 
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
@@ -35,7 +38,7 @@ def _new_task_fixture(**kwargs):
     task_data = {
         "type": "import",
         "input": {
-            "import_from": "/some/file/path",
+            "import_from": "http://example.com",
             "import_from_format": "qcow2",
             "image_properties": {
                 'disk_format': 'vhd',
@@ -54,10 +57,42 @@ class TestTasksApi(base.ApiTest):
         self.api_flavor = 'fakeauth'
         self.registry_flavor = 'fakeauth'
 
+    def _wait_on_task_execution(self):
+        """Wait until all the tasks have finished execution and are in
+        state of success or failure.
+        """
+
+        start = timeutils.utcnow()
+
+        # wait for maximum of 5 seconds
+        while timeutils.delta_seconds(start, timeutils.utcnow()) < 5:
+            wait = False
+            # Verify that no task is in status of pending or processing
+            path = "/v2/tasks"
+            res, content = self.http.request(path, 'GET',
+                                             headers=minimal_task_headers())
+            content_dict = json.loads(content)
+
+            self.assertEqual(res.status, 200)
+            res_tasks = content_dict['tasks']
+            if len(res_tasks) != 0:
+                for task in res_tasks:
+                    if task['status'] in ('pending', 'processing'):
+                        wait = True
+                        break
+
+            if wait:
+                time.sleep(0.05)
+                continue
+            else:
+                break
+
     def _post_new_task(self, **kwargs):
-        task_owner = kwargs['owner']
+        task_owner = kwargs.get('owner')
         headers = minimal_task_headers(task_owner)
+
         task_data = _new_task_fixture()
+        task_data['input']['import_from'] = "http://example.com"
         body_content = json.dumps(task_data)
 
         path = "/v2/tasks"
@@ -68,7 +103,14 @@ class TestTasksApi(base.ApiTest):
         self.assertEqual(response.status, 201)
 
         task = json.loads(content)
-        return task
+        task_id = task['id']
+
+        self.assertIsNotNone(task_id)
+        self.assertEqual(task_owner, task['owner'])
+        self.assertEqual(task_data['type'], task['type'])
+        self.assertEqual(task_data['input'], task['input'])
+
+        return task, task_data
 
     def test_all_task_api(self):
         # 0. GET /tasks
@@ -92,32 +134,18 @@ class TestTasksApi(base.ApiTest):
 
         # 2. POST /tasks
         # Create a new task
-        task_data = _new_task_fixture()
         task_owner = 'tenant1'
-        body_content = json.dumps(task_data)
-
-        path = "/v2/tasks"
-        response, content = self.http.request(
-            path, 'POST', headers=minimal_task_headers(task_owner),
-            body=body_content)
-        self.assertEqual(response.status, 201)
-
-        data = json.loads(content)
-        task_id = data['id']
-
-        self.assertIsNotNone(task_id)
-        self.assertEqual(task_owner, data['owner'])
-        self.assertEqual(task_data['type'], data['type'])
-        self.assertEqual(task_data['input'], data['input'])
+        data, req_input = self._post_new_task(owner=task_owner)
 
         # 3. GET /tasks/{task_id}
         # Get an existing task
+        task_id = data['id']
         path = "/v2/tasks/%s" % task_id
         response, content = self.http.request(path, 'GET',
                                               headers=minimal_task_headers())
         self.assertEqual(response.status, 200)
 
-        # 4. GET /tasks/{task_id}
+        # 4. GET /tasks
         # Get all tasks (not deleted)
         path = "/v2/tasks"
         response, content = self.http.request(path, 'GET',
@@ -134,11 +162,15 @@ class TestTasksApi(base.ApiTest):
                              'created_at', 'updated_at', 'self', 'schema'])
         task = data['tasks'][0]
         self.assertEqual(expected_keys, set(task.keys()))
-        self.assertEqual(task_data['type'], task['type'])
+        self.assertEqual(req_input['type'], task['type'])
         self.assertEqual(task_owner, task['owner'])
-        self.assertEqual('pending', task['status'])
+        self.assertEqual('processing', task['status'])
         self.assertIsNotNone(task['created_at'])
         self.assertIsNotNone(task['updated_at'])
+
+        # NOTE(nikhil): wait for all task executions to finish before exiting
+        # else there is a risk of running into deadlock
+        self._wait_on_task_execution()
 
     def test_task_schema_api(self):
         # 0. GET /schemas/task
@@ -166,6 +198,10 @@ class TestTasksApi(base.ApiTest):
         data = json.loads(content)
         self.assertIsNotNone(data)
         self.assertEqual(expected_schema, data)
+
+        # NOTE(nikhil): wait for all task executions to finish before exiting
+        # else there is a risk of running into deadlock
+        self._wait_on_task_execution()
 
     def test_create_new_task(self):
         # 0. POST /tasks
@@ -214,6 +250,10 @@ class TestTasksApi(base.ApiTest):
             body=body_content)
         self.assertEqual(response.status, 400)
 
+        # NOTE(nikhil): wait for all task executions to finish before exiting
+        # else there is a risk of running into deadlock
+        self._wait_on_task_execution()
+
     def test_tasks_with_filter(self):
 
         # 0. GET /v2/tasks
@@ -229,30 +269,13 @@ class TestTasksApi(base.ApiTest):
 
         task_ids = []
 
-        # 1. POST /tasks with two tasks with status 'pending' and 'processing'
-        # with various attributes
+        # 1. Make 2 POST requests on /tasks with various attributes
         task_owner = TENANT1
-        headers = minimal_task_headers(task_owner)
-        task_data = _new_task_fixture()
-        body_content = json.dumps(task_data)
-        path = "/v2/tasks"
-        response, content = self.http.request(path, 'POST',
-                                              headers=headers,
-                                              body=body_content)
-        self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data, req_input1 = self._post_new_task(owner=task_owner)
         task_ids.append(data['id'])
 
         task_owner = TENANT2
-        headers = minimal_task_headers(task_owner)
-        task_data = _new_task_fixture()
-        body_content = json.dumps(task_data)
-        path = "/v2/tasks"
-        response, content = self.http.request(path, 'POST',
-                                              headers=headers,
-                                              body=body_content)
-        self.assertEqual(response.status, 201)
-        data = json.loads(content)
+        data, req_input2 = self._post_new_task(owner=task_owner)
         task_ids.append(data['id'])
 
         # 2. GET /tasks
@@ -308,32 +331,9 @@ class TestTasksApi(base.ApiTest):
         actual_task_ids = [task['id'] for task in content_dict['tasks']]
         self.assertEqual(set(task_ids), set(actual_task_ids))
 
-        # 5. GET /tasks with status filter
-        # Verify correct tasks are returned for status 'pending'
-        params = "status=pending"
-        path = "/v2/tasks?%s" % params
-
-        response, content = self.http.request(path, 'GET',
-                                              headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
-
-        content_dict = json.loads(content)
-        self.assertEqual(2, len(content_dict['tasks']))
-
-        actual_task_ids = [task['id'] for task in content_dict['tasks']]
-        self.assertEqual(set(task_ids), set(actual_task_ids))
-
-        # 6. GET /tasks with status filter
-        # Verify no task are returned for status which is not 'pending'
-        params = "status=success"
-        path = "/v2/tasks?%s" % params
-
-        response, content = self.http.request(path, 'GET',
-                                              headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
-
-        content_dict = json.loads(content)
-        self.assertEqual(0, len(content_dict['tasks']))
+        # NOTE(nikhil): wait for all task executions to finish before exiting
+        # else there is a risk of running into deadlock
+        self._wait_on_task_execution()
 
     def test_limited_tasks(self):
         """
@@ -353,13 +353,13 @@ class TestTasksApi(base.ApiTest):
 
         # 1. POST /tasks with three tasks with various attributes
 
-        task = self._post_new_task(owner=TENANT1)
+        task, _ = self._post_new_task(owner=TENANT1)
         task_ids.append(task['id'])
 
-        task = self._post_new_task(owner=TENANT2)
+        task, _ = self._post_new_task(owner=TENANT2)
         task_ids.append(task['id'])
 
-        task = self._post_new_task(owner=TENANT3)
+        task, _ = self._post_new_task(owner=TENANT3)
         task_ids.append(task['id'])
 
         # 2. GET /tasks
@@ -418,6 +418,10 @@ class TestTasksApi(base.ApiTest):
         self.assertEqual(1, len(actual_tasks))
         self.assertEqual(tasks[2]['id'], actual_tasks[0]['id'])
 
+        # NOTE(nikhil): wait for all task executions to finish before exiting
+        # else there is a risk of running into deadlock
+        self._wait_on_task_execution()
+
     def test_ordered_tasks(self):
         # 0. GET /tasks
         # Verify no tasks
@@ -431,13 +435,13 @@ class TestTasksApi(base.ApiTest):
         task_ids = []
 
         # 1. POST /tasks with three tasks with various attributes
-        task = self._post_new_task(owner=TENANT1)
+        task, _ = self._post_new_task(owner=TENANT1)
         task_ids.append(task['id'])
 
-        task = self._post_new_task(owner=TENANT2)
+        task, _ = self._post_new_task(owner=TENANT2)
         task_ids.append(task['id'])
 
-        task = self._post_new_task(owner=TENANT3)
+        task, _ = self._post_new_task(owner=TENANT3)
         task_ids.append(task['id'])
 
         # 2. GET /tasks with no query params
@@ -501,6 +505,10 @@ class TestTasksApi(base.ApiTest):
 
         self.assertEqual(0, len(actual_tasks))
 
+        # NOTE(nikhil): wait for all task executions to finish before exiting
+        # else there is a risk of running into deadlock
+        self._wait_on_task_execution()
+
     def test_delete_task(self):
         # 0. POST /tasks
         # Create a new task with valid input and type
@@ -536,3 +544,7 @@ class TestTasksApi(base.ApiTest):
                                               headers=minimal_task_headers())
         self.assertEqual(response.status, 200)
         self.assertIsNotNone(content)
+
+        # NOTE(nikhil): wait for all task executions to finish before exiting
+        # else there is a risk of running into deadlock
+        self._wait_on_task_execution()
