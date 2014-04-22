@@ -150,8 +150,8 @@ class Store(object):
         """
         raise NotImplementedError
 
-    def set_acls(self, location, public=False, read_tenants=[],
-                 write_tenants=[]):
+    def set_acls(self, location, public=False, read_tenants=None,
+                 write_tenants=None):
         """
         Sets the read and write access control list for an image in the
         backend store.

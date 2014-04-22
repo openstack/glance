@@ -754,8 +754,11 @@ class TestStoreAuthV2(TestStoreAuthV1):
 class FakeConnection(object):
     def __init__(self, authurl, user, key, retries=5, preauthurl=None,
                  preauthtoken=None, snet=False, starting_backoff=1,
-                 tenant_name=None, os_options={}, auth_version="1",
+                 tenant_name=None, os_options=None, auth_version="1",
                  insecure=False, ssl_compression=True):
+        if os_options is None:
+            os_options = {}
+
         self.authurl = authurl
         self.user = user
         self.key = key

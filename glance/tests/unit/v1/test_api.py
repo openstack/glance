@@ -3240,7 +3240,9 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         db_models.unregister_models(db_api.get_engine())
         db_models.register_models(db_api.get_engine())
 
-    def _create_admin_image(self, props={}):
+    def _create_admin_image(self, props=None):
+        if props is None:
+            props = {}
         request = unit_test_utils.get_fake_request(path='/images')
         headers = {'x-image-meta-disk-format': 'ami',
                    'x-image-meta-container-format': 'ami',
@@ -3942,7 +3944,9 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         db_models.unregister_models(db_api.get_engine())
         db_models.register_models(db_api.get_engine())
 
-    def _create_admin_image(self, props={}):
+    def _create_admin_image(self, props=None):
+        if props is None:
+            props = {}
         request = unit_test_utils.get_fake_request(path='/images')
         headers = {'x-image-meta-disk-format': 'ami',
                    'x-image-meta-container-format': 'ami',
