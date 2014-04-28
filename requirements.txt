@@ -22,6 +22,7 @@ iso8601>=0.1.9
 ordereddict
 oslo.config>=1.2.0
 stevedore>=0.14
+netaddr>=0.7.6
 
 # For Swift storage backend.
 python-swiftclient>=1.6

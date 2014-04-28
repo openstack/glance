@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright 2012 Michael Still and Canonical Inc
+# Copyright 2014 SoftLayer Technologies, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -23,12 +24,12 @@ import logging.config
 import logging.handlers
 import optparse
 import os
-import re
 import sys
 import uuid
 
 import six.moves.urllib.parse as urlparse
 
+from glance.common import utils
 from glance.openstack.common import jsonutils
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
@@ -57,8 +58,6 @@ IMAGE_ALREADY_PRESENT_MESSAGE = _('The image %s is already present on '
                                   'not find it. This indicates that we '
                                   'do not have permissions to see all '
                                   'the images on the slave server.')
-
-SERVER_PORT_REGEX = '\w+:\w+'
 
 
 class AuthenticationException(Exception):
@@ -281,12 +280,7 @@ def replication_size(options, args):
     if len(args) < 1:
         raise TypeError(_("Too few arguments."))
 
-    server_port = args.pop()
-
-    if not re.match(SERVER_PORT_REGEX, server_port):
-        raise ValueError(_("Bad format of the given arguments."))
-
-    server, port = server_port.split(':')
+    server, port = utils.parse_valid_host_port(args.pop())
 
     total_size = 0
     count = 0
@@ -319,12 +313,7 @@ def replication_dump(options, args):
         raise TypeError(_("Too few arguments."))
 
     path = args.pop()
-    server_port = args.pop()
-
-    if not re.match(SERVER_PORT_REGEX, server_port):
-        raise ValueError(_("Bad format of the given arguments."))
-
-    server, port = server_port.split(':')
+    server, port = utils.parse_valid_host_port(args.pop())
 
     imageservice = get_image_service()
     client = imageservice(httplib.HTTPConnection(server, port),
@@ -404,12 +393,7 @@ def replication_load(options, args):
         raise TypeError(_("Too few arguments."))
 
     path = args.pop()
-    server_port = args.pop()
-
-    if not re.match(SERVER_PORT_REGEX, server_port):
-        raise ValueError(_("Bad format of the given arguments."))
-
-    server, port = server_port.split(':')
+    server, port = utils.parse_valid_host_port(args.pop())
 
     imageservice = get_image_service()
     client = imageservice(httplib.HTTPConnection(server, port),
@@ -482,20 +466,13 @@ def replication_livecopy(options, args):
     if len(args) < 2:
         raise TypeError(_("Too few arguments."))
 
-    slave_server_port = args.pop()
-    master_server_port = args.pop()
-
-    if not re.match(SERVER_PORT_REGEX, slave_server_port) or \
-            not re.match(SERVER_PORT_REGEX, master_server_port):
-        raise ValueError(_("Bad format of the given arguments."))
-
     imageservice = get_image_service()
 
-    slave_server, slave_port = slave_server_port.split(':')
+    slave_server, slave_port = utils.parse_valid_host_port(args.pop())
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
-    master_server, master_port = master_server_port.split(':')
+    master_server, master_port = utils.parse_valid_host_port(args.pop())
     master_conn = httplib.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
 
@@ -559,20 +536,13 @@ def replication_compare(options, args):
     if len(args) < 2:
         raise TypeError(_("Too few arguments."))
 
-    slave_server_port = args.pop()
-    master_server_port = args.pop()
-
-    if not re.match(SERVER_PORT_REGEX, slave_server_port) or \
-            not re.match(SERVER_PORT_REGEX, master_server_port):
-        raise ValueError(_("Bad format of the given arguments."))
-
     imageservice = get_image_service()
 
-    slave_server, slave_port = slave_server_port.split(':')
+    slave_server, slave_port = utils.parse_valid_host_port(args.pop())
     slave_conn = httplib.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
-    master_server, master_port = master_server_port.split(':')
+    master_server, master_port = utils.parse_valid_host_port(args.pop())
     master_conn = httplib.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
 

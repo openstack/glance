@@ -217,6 +217,152 @@ class TestUtils(test_utils.BaseTestCase):
                                   utils.validate_key_cert,
                                   keyf.name, keyf.name)
 
+    def test_valid_port(self):
+        valid_inputs = [1, '1', 2, '3', '5', 8, 13, 21,
+                        '80', '3246', '65535']
+        for input_str in valid_inputs:
+            self.assertTrue(utils.is_valid_port(input_str))
+
+    def test_valid_port_fail(self):
+        invalid_inputs = ['-32768', '0', 0, '65536', 528491, '528491',
+                          '528.491', 'thirty-seven']
+        for input_str in invalid_inputs:
+            self.assertFalse(utils.is_valid_port(input_str))
+
+    def test_valid_ipv4(self):
+        valid_inputs = ['10.11.12.13',
+                        '172.17.17.1']
+        for input_str in valid_inputs:
+            self.assertTrue(utils.is_valid_ipv4(input_str))
+
+    def test_valid_ipv4_fail(self):
+        invalid_pairs = ['',
+                         '290.12.52.80',
+                         'a.b.c.d',
+                         u'\u2601',
+                         u'\u2603:8080',
+                         'fe80::1',
+                         '[fe80::2]',
+                         '<fe80::3>:5673',
+                         'fe80:a:b:c:d:e:f:1:2:3:4',
+                         'fe80:a:b:c:d:e:f:g',
+                         'fe80::1:8080',
+                         '[fe80:a:b:c:d:e:f:g]:9090',
+                         '[a:b:s:u:r:d]:fe80']
+
+        for pair in invalid_pairs:
+            self.assertRaises(ValueError,
+                              utils.parse_valid_host_port,
+                              pair)
+
+    def test_valid_ipv6(self):
+        valid_inputs = ['fe80::1',
+                        'fe80:0000:0000:0000:0000:0000:0000:0002',
+                        'fe80:a:b:c:d:e:f:0',
+                        'fe80::a:b:c:d',
+                        'fe80::1:8080']
+
+        for input_str in valid_inputs:
+            self.assertTrue(utils.is_valid_ipv6(input_str))
+
+    def test_valid_ipv6_fail(self):
+        invalid_pairs = ['',
+                         '[fe80::2]',
+                         '<fe80::3>',
+                         'fe80:::a',
+                         'fe80:a:b:c:d:e:f:1:2:3:4',
+                         'fe80:a:b:c:d:e:f:g',
+                         'fe80::1:8080',
+                         'i:n:s:a:n:i:t:y']
+
+        for pair in invalid_pairs:
+            self.assertRaises(ValueError,
+                              utils.parse_valid_host_port,
+                              pair)
+
+    def test_valid_hostname(self):
+        valid_inputs = ['localhost',
+                        'glance04-a'
+                        'G',
+                        '528491']
+
+        for input_str in valid_inputs:
+            self.assertTrue(utils.is_valid_hostname(input_str))
+
+    def test_valid_hostname_fail(self):
+        invalid_inputs = ['localhost.localdomain',
+                          '192.168.0.1',
+                          u'\u2603',
+                          'glance02.stack42.local']
+
+        for input_str in invalid_inputs:
+            self.assertFalse(utils.is_valid_hostname(input_str))
+
+    def test_valid_fqdn(self):
+        valid_inputs = ['localhost.localdomain',
+                        'glance02.stack42.local'
+                        'glance04-a.stack47.local',
+                        'img83.glance.xn--penstack-r74e.org']
+
+        for input_str in valid_inputs:
+            self.assertTrue(utils.is_valid_fqdn(input_str))
+
+    def test_valid_fqdn_fail(self):
+        invalid_inputs = ['localhost',
+                          '192.168.0.1',
+                          '999.88.77.6',
+                          u'\u2603.local',
+                          'glance02.stack42']
+
+        for input_str in invalid_inputs:
+            self.assertFalse(utils.is_valid_fqdn(input_str))
+
+    def test_valid_host_port_string(self):
+        valid_pairs = ['10.11.12.13:80',
+                       '172.17.17.1:65535',
+                       '[fe80::a:b:c:d]:9990',
+                       'localhost:9990',
+                       'localhost.localdomain:9990',
+                       'glance02.stack42.local:1234',
+                       'glance04-a.stack47.local:1234',
+                       'img83.glance.xn--penstack-r74e.org:13080']
+
+        for pair_str in valid_pairs:
+            host, port = utils.parse_valid_host_port(pair_str)
+
+            escaped = pair_str.startswith('[')
+            expected_host = '%s%s%s' % ('[' if escaped else '', host,
+                                        ']' if escaped else '')
+
+            self.assertTrue(pair_str.startswith(expected_host))
+            self.assertTrue(port > 0)
+
+            expected_pair = '%s:%d' % (expected_host, port)
+            self.assertEqual(expected_pair, pair_str)
+
+    def test_valid_host_port_string_fail(self):
+        invalid_pairs = ['',
+                         '10.11.12.13',
+                         '172.17.17.1:99999',
+                         '290.12.52.80:5673',
+                         'absurd inputs happen',
+                         u'\u2601',
+                         u'\u2603:8080',
+                         'fe80::1',
+                         '[fe80::2]',
+                         '<fe80::3>:5673',
+                         '[fe80::a:b:c:d]9990',
+                         'fe80:a:b:c:d:e:f:1:2:3:4',
+                         'fe80:a:b:c:d:e:f:g',
+                         'fe80::1:8080',
+                         '[fe80:a:b:c:d:e:f:g]:9090',
+                         '[a:b:s:u:r:d]:fe80']
+
+        for pair in invalid_pairs:
+            self.assertRaises(ValueError,
+                              utils.parse_valid_host_port,
+                              pair)
+
 
 class UUIDTestCase(test_utils.BaseTestCase):
 
