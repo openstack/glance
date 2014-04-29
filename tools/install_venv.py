@@ -26,7 +26,7 @@ from __future__ import print_function
 import os
 import sys
 
-from tools import install_venv_common as install_venv
+import install_venv_common as install_venv  # noqa
 
 
 def print_help():
