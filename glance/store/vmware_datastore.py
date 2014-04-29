@@ -108,16 +108,40 @@ def http_response_iterator(conn, response, size):
 
 class _Reader(object):
 
-    def __init__(self, data, checksum):
+    def __init__(self, data, checksum, blocksize=8192):
         self.data = data
         self.checksum = checksum
         self._size = 0
+        self.blocksize = blocksize
+        self.current_chunk = ""
+        self.closed = False
 
-    def read(self, length):
-        result = self.data.read(length)
-        self._size += len(result)
-        self.checksum.update(result)
-        return result
+    def read(self, size=None):
+        ret = ""
+        while size is None or size >= len(self.current_chunk):
+            ret += self.current_chunk
+            if size is not None:
+                size -= len(self.current_chunk)
+            if self.closed:
+                self.current_chunk = ""
+                break
+            self._get_chunk()
+        else:
+            ret += self.current_chunk[:size]
+            self.current_chunk = self.current_chunk[size:]
+        return ret
+
+    def _get_chunk(self):
+        if not self.closed:
+            chunk = self.data.read(self.blocksize)
+            chunk_len = len(chunk)
+            self._size += chunk_len
+            self.checksum.update(chunk)
+            if chunk:
+                self.current_chunk = '%x\r\n%s\r\n' % (chunk_len, chunk)
+            else:
+                self.current_chunk = '0\r\n\r\n'
+                self.closed = True
 
     @property
     def size(self):
@@ -270,7 +294,9 @@ class Store(glance.store.base.Store):
                              'image_id': image_id})
         cookie = self._build_vim_cookie_header(
             self._session.vim.client.options.transport.cookiejar)
-        headers = {'Cookie': cookie, 'Content-Length': image_size}
+        headers = {'Connection': 'Keep-Alive',
+                   'Cookie': cookie,
+                   'Transfer-Encoding': 'chunked'}
         try:
             conn = self._get_http_conn('PUT', loc, headers,
                                        content=image_file)
