@@ -99,7 +99,7 @@ class Indexable(object):
         """
         Initialize the object
 
-        :param wrappped: the wrapped iterator or filelike.
+        :param wrapped: the wrapped iterator or filelike.
         :param size: the size of data available
         """
         self.wrapped = wrapped

@@ -343,7 +343,7 @@ def main():
                     children[new_pid] = args
                 else:
                     rsn = 'bouncing' if bouncing else 'deliberately stopped'
-                    print(_('Supressed respawn as %(serv)s was %(rsn)s.')
+                    print(_('Suppressed respawn as %(serv)s was %(rsn)s.')
                           % {'serv': server, 'rsn': rsn})
 
     if CONF.server.command == 'start':

@@ -49,7 +49,7 @@ class TestStoreLocation(base.StoreClearingUnitTest):
     def test_get_location_from_uri_back_to_uri(self):
         """
         Test that for various URIs, the correct Location
-        object can be contructed and then the original URI
+        object can be constructed and then the original URI
         returned via the get_store_uri() method.
         """
         good_store_uris = [

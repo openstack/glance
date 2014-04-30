@@ -31,7 +31,7 @@ from glance.tests import utils as test_utils
 # The default sort order of results is whatever sort key is specified,
 # plus created_at and id for ties.  When we're not specifying a sort_key,
 # we get the default (created_at). Some tests below expect the fixtures to be
-# returned in array-order, so if if the created_at timestamps are the same,
+# returned in array-order, so if the created_at timestamps are the same,
 # these tests rely on the UUID* values being in order
 UUID1, UUID2, UUID3 = sorted([str(uuid.uuid4()) for x in range(3)])
 

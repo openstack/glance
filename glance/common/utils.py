@@ -506,7 +506,7 @@ def validate_key_cert(key_file, cert_file):
         key_str = open(key_file, "r").read()
         key = crypto.load_privatekey(crypto.FILETYPE_PEM, key_str)
 
-        error_key_name = "certficate"
+        error_key_name = "certificate"
         error_filename = cert_file
         cert_str = open(cert_file, "r").read()
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_str)
