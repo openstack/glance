@@ -19,7 +19,6 @@ psutil>=1.1.1
 # Optional packages that should be installed when testing
 MySQL-python
 psycopg2
--f http://pysendfile.googlecode.com/files/pysendfile-2.0.0.tar.gz
 pysendfile==2.0.0
 qpid-python
 xattr>=0.4
