@@ -45,7 +45,7 @@ use when configuring the server application.
   configuration files that you can copy to a standard configuation directory and
   adapt for your own uses. Specifically, bind_host must be set properly.
 
-If you do `not` specifiy a configuration file on the command line, Glance will
+If you do `not` specify a configuration file on the command line, Glance will
 do its best to locate a configuration file in one of the
 following directories, stopping at the first config file it finds:
 
