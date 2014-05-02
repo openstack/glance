@@ -280,6 +280,7 @@ class ApiServer(Server):
         self.pid_file = pid_file or os.path.join(self.test_dir, "api.pid")
         self.scrubber_datadir = os.path.join(self.test_dir, "scrubber")
         self.log_file = os.path.join(self.test_dir, "api.log")
+        self.image_size_cap = 1099511627776
         self.s3_store_host = "s3.amazonaws.com"
         self.s3_store_access_key = ""
         self.s3_store_secret_key = ""
@@ -341,6 +342,7 @@ metadata_encryption_key = %(metadata_encryption_key)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 log_file = %(log_file)s
+image_size_cap = %(image_size_cap)d
 s3_store_host = %(s3_store_host)s
 s3_store_access_key = %(s3_store_access_key)s
 s3_store_secret_key = %(s3_store_secret_key)s

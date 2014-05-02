@@ -119,8 +119,10 @@ class TestStoreImage(utils.BaseTestCase):
 
         self.stubs.Set(unit_test_utils.FakeStoreAPI, 'get_from_backend',
                        fake_get_from_backend)
-
-        self.assertEqual(image1.get_data().fd, 'ZZZ')
+        # This time, image1.get_data() returns the data wrapped in a
+        # LimitingReader|CooperativeReader pipeline, so peeking under
+        # the hood of those objects to get at the underlying string.
+        self.assertEqual(image1.get_data().data.fd, 'ZZZ')
         image1.locations.pop(0)
         self.assertEqual(len(image1.locations), 1)
         image2.delete()

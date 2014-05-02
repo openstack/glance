@@ -451,6 +451,48 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_image_size_cap(self):
+        self.api_server.image_size_cap = 128
+        self.start_servers(**self.__dict__.copy())
+        # create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-size-cap-test-image',
+                                'type': 'kernel', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        #try to populate it with oversized data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+
+        class StreamSim(object):
+            # Using a one-shot iterator to force chunked transfer in the PUT
+            # request
+            def __init__(self, size):
+                self.size = size
+
+            def __iter__(self):
+                yield 'Z' * self.size
+
+        response = requests.put(path, headers=headers, data=StreamSim(
+                                self.api_server.image_size_cap + 1))
+        self.assertEqual(413, response.status_code)
+
+        # hashlib.md5('Z'*129).hexdigest()
+        #     == '76522d28cb4418f12704dfa7acd6e7ee'
+        # If the image has this checksum, it means that the whole stream was
+        # accepted and written to the store, which should not be the case.
+        path = self._url('/v2/images/{0}'.format(image_id))
+        headers = self._headers({'content-type': 'application/json'})
+        response = requests.get(path, headers=headers)
+        image_checksum = jsonutils.loads(response.text).get('checksum')
+        self.assertNotEqual(image_checksum, '76522d28cb4418f12704dfa7acd6e7ee')
+
     def test_permissions(self):
         # Create an image that belongs to TENANT1
         path = self._url('/v2/images')
