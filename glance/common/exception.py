@@ -239,6 +239,10 @@ class StoreAddDisabled(GlanceException):
                 "store is disabled.")
 
 
+class StoreNotConfigured(GlanceException):
+    message = _("Store is not configured.")
+
+
 class MaxRedirectsExceeded(GlanceException):
     message = _("Maximum redirects (%(redirects)s) was exceeded.")
 

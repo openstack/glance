@@ -285,11 +285,11 @@ class StoreLocation(glance.store.location.StoreLocation):
             return ''.join([auth_scheme, self.auth_or_store_url])
 
 
-def Store(context=None, loc=None):
+def Store(context=None, loc=None, configure=True):
     if (CONF.swift_store_multi_tenant and
             (loc is None or loc.store_location.user is None)):
-        return MultiTenantStore(context, loc)
-    return SingleTenantStore(context, loc)
+        return MultiTenantStore(context, loc, configure=configure)
+    return SingleTenantStore(context, loc, configure=configure)
 
 
 class BaseStore(glance.store.base.Store):

@@ -59,8 +59,6 @@ class TestSheepdogStore(store_tests.BaseTestCase, testtools.TestCase):
 
     def get_store(self, **kwargs):
         store = sheepdog.Store(context=kwargs.get('context'))
-        store.configure()
-        store.configure_add()
         return store
 
     def stash_image(self, image_id, image_data):

@@ -176,8 +176,6 @@ class TestSwiftStore(store_tests.BaseTestCase, testtools.TestCase):
 
     def get_store(self, **kwargs):
         store = glance.store.swift.Store(context=kwargs.get('context'))
-        store.configure()
-        store.configure_add()
         return store
 
     def test_object_chunking(self):

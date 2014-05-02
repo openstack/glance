@@ -118,10 +118,7 @@ class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
         super(TestVMwareDatastoreStore, self).setUp()
 
     def get_store(self, **kwargs):
-        store = vm_store.Store(
-            context=kwargs.get('context'))
-        store.configure()
-        store.configure_add()
+        store = vm_store.Store(context=kwargs.get('context'))
         return store
 
     def stash_image(self, image_id, image_data):

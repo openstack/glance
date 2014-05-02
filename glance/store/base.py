@@ -29,14 +29,27 @@ class Store(object):
 
     CHUNKSIZE = 16 * units.Mi  # 16M
 
-    def __init__(self, context=None, location=None):
+    @staticmethod
+    def _unconfigured(*args, **kwargs):
+        raise exception.StoreNotConfigured
+
+    def __init__(self, context=None, location=None, configure=True):
         """
         Initialize the Store
         """
         self.store_location_class = None
         self.context = context
-        self.configure()
 
+        if not configure:
+            self.add = Store._unconfigured
+            self.get = Store._unconfigured
+            self.get_size = Store._unconfigured
+            self.add_disabled = Store._unconfigured
+            self.delete = Store._unconfigured
+            self.set_acls = Store._unconfigured
+            return
+
+        self.configure()
         try:
             self.configure_add()
         except exception.BadStoreConfiguration as e:

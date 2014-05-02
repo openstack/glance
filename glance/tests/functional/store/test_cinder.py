@@ -81,8 +81,6 @@ class TestCinderStore(store_tests.BaseTestCase, testtools.TestCase):
 
     def get_store(self, **kwargs):
         store = cinder.Store(context=kwargs.get('context') or self.context)
-        store.configure()
-        store.configure_add()
         return store
 
     def stash_image(self, image_id, image_data):

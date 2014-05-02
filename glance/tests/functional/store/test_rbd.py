@@ -107,8 +107,6 @@ class TestRBDStore(store_tests.BaseTestCase, testtools.TestCase):
 
     def get_store(self, **kwargs):
         store = glance.store.rbd.Store(context=kwargs.get('context'))
-        store.configure()
-        store.configure_add()
         return store
 
     def stash_image(self, image_id, image_data):

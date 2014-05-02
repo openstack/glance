@@ -228,7 +228,7 @@ def verify_default_store():
     scheme = cfg.CONF.default_store
     context = glance.context.RequestContext()
     try:
-        get_store_from_scheme(context, scheme)
+        get_store_from_scheme(context, scheme, configure=False)
     except exception.UnknownScheme:
         msg = _("Store for scheme %s not found") % scheme
         raise RuntimeError(msg)
@@ -244,7 +244,7 @@ def get_known_stores():
     return list(REGISTERED_STORES)
 
 
-def get_store_from_scheme(context, scheme, loc=None):
+def get_store_from_scheme(context, scheme, loc=None, configure=True):
     """
     Given a scheme, return the appropriate store object
     for handling that scheme.
@@ -252,7 +252,7 @@ def get_store_from_scheme(context, scheme, loc=None):
     if scheme not in location.SCHEME_TO_CLS_MAP:
         raise exception.UnknownScheme(scheme=scheme)
     scheme_info = location.SCHEME_TO_CLS_MAP[scheme]
-    store = scheme_info['store_class'](context, loc)
+    store = scheme_info['store_class'](context, loc, configure)
     return store
 
 

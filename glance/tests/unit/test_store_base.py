@@ -26,6 +26,26 @@ class FakeUnconfigurableStoreDriver(store_base.Store):
 
 class TestStoreBase(test_base.StoreClearingUnitTest):
 
+    class UnconfiguredStore(store_base.Store):
+        def add(self, image_id, image_file, image_size):
+            return True
+
+        def delete(self, location):
+            return True
+
+        def set_acls(self, location, public=False, read_tenants=None,
+                     write_tenants=None):
+            return True
+
+        def get_size(self, location):
+            return True
+
+        def get(self, location):
+            return True
+
+        def add_disabled(self, *args, **kwargs):
+            return True
+
     def setUp(self):
         self.config(default_store='file')
         super(TestStoreBase, self).setUp()
@@ -36,3 +56,21 @@ class TestStoreBase(test_base.StoreClearingUnitTest):
             "glance.store.filesystem.Store"])
         count = store.create_stores()
         self.assertEqual(9, count)
+
+    def test_create_store_not_configured(self):
+        store = self.UnconfiguredStore(configure=False)
+        self.assertRaises(exception.StoreNotConfigured, store.add)
+        self.assertRaises(exception.StoreNotConfigured, store.get)
+        self.assertRaises(exception.StoreNotConfigured, store.get_size)
+        self.assertRaises(exception.StoreNotConfigured, store.add_disabled)
+        self.assertRaises(exception.StoreNotConfigured, store.delete)
+        self.assertRaises(exception.StoreNotConfigured, store.set_acls)
+
+    def test_create_store_configured(self):
+        store = self.UnconfiguredStore(configure=True)
+        self.assertTrue(store.add)
+        self.assertTrue(store.get)
+        self.assertTrue(store.get_size)
+        self.assertTrue(store.add_disabled)
+        self.assertTrue(store.delete)
+        self.assertTrue(store.set_acls)
