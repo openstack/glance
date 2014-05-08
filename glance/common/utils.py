@@ -40,6 +40,8 @@ from OpenSSL import crypto
 from oslo.config import cfg
 from webob import exc
 
+import six
+
 from glance.common import exception
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
@@ -633,3 +635,15 @@ def parse_valid_host_port(host_port):
                            '"[fe80::a:b:c]:9876").') % ex)
 
     return (host, int(port))
+
+
+def exception_to_str(exc):
+    try:
+        error = six.text_type(exc)
+    except UnicodeError:
+        try:
+            error = str(exc)
+        except UnicodeError:
+            error = ("Caught '%(exception)s' exception." %
+                     {"exception": exc.__class__.__name__})
+    return strutils.safe_encode(error, errors='ignore')

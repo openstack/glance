@@ -14,6 +14,7 @@
 #    under the License.
 
 import copy
+import six
 import webob
 
 from glance.api import policy
@@ -104,7 +105,8 @@ class ImageMembersController(object):
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except ValueError as e:
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=
+                                           utils.exception_to_str(e))
 
     def index(self, req, image_id):
         """
@@ -233,13 +235,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def create(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
         body = jsonutils.dumps(image_member_view, ensure_ascii=False)
-        response.unicode_body = unicode(body)
+        response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def update(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
         body = jsonutils.dumps(image_member_view, ensure_ascii=False)
-        response.unicode_body = unicode(body)
+        response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def index(self, response, image_members):
@@ -251,13 +253,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         totalview = dict(members=image_members_view)
         totalview['schema'] = '/v2/schemas/members'
         body = jsonutils.dumps(totalview, ensure_ascii=False)
-        response.unicode_body = unicode(body)
+        response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def show(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
         body = jsonutils.dumps(image_member_view, ensure_ascii=False)
-        response.unicode_body = unicode(body)
+        response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
 

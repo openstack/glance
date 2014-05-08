@@ -18,6 +18,7 @@ Reference implementation registry server WSGI controller
 """
 
 from oslo.config import cfg
+import six
 from webob import exc
 
 from glance.common import exception
@@ -481,7 +482,7 @@ class Controller(object):
                                    request=req,
                                    content_type='text/plain')
         except exception.Conflict as e:
-            LOG.info(unicode(e))
+            LOG.info(six.text_type(e))
             raise exc.HTTPConflict(body='Image operation conflicts',
                                    request=req,
                                    content_type='text/plain')

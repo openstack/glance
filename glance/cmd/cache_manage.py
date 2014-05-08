@@ -26,6 +26,8 @@ import os
 import sys
 import time
 
+from glance.common import utils
+
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
 possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
@@ -35,7 +37,6 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 from glance.common import exception
-from glance.common import utils
 import glance.image_cache.client
 from glance.openstack.common import timeutils
 from glance.version import version_info as version
@@ -66,7 +67,7 @@ def catch_error(action):
                 if options.debug:
                     raise
                 print("Failed to %s. Got error:" % action)
-                pieces = unicode(e).split('\n')
+                pieces = utils.exception_to_str(e).split('\n')
                 for piece in pieces:
                     print(piece)
                 return FAILURE

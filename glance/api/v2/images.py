@@ -16,6 +16,7 @@
 import re
 
 from oslo.config import cfg
+import six
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
@@ -66,7 +67,7 @@ class ImagesController(object):
         except exception.InvalidParameterValue as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.LimitExceeded as e:
-            LOG.info(unicode(e))
+            LOG.info(utils.exception_to_str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
 
@@ -135,7 +136,7 @@ class ImagesController(object):
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')
         except exception.LimitExceeded as e:
-            LOG.info(unicode(e))
+            LOG.info(utils.exception_to_str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
 
@@ -230,7 +231,8 @@ class ImagesController(object):
             except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
                 raise webob.exc.HTTPBadRequest(explanation=bse.msg)
             except ValueError as ve:    # update image status failed.
-                raise webob.exc.HTTPBadRequest(explanation=unicode(ve))
+                raise webob.exc.HTTPBadRequest(explanation=
+                                               utils.exception_to_str(ve))
 
     def _do_add_locations(self, image, path_pos, value):
         pos = self._get_locations_op_pos(path_pos,
@@ -245,7 +247,8 @@ class ImagesController(object):
         except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
             raise webob.exc.HTTPBadRequest(explanation=bse.msg)
         except ValueError as ve:    # update image status failed.
-            raise webob.exc.HTTPBadRequest(explanation=unicode(ve))
+            raise webob.exc.HTTPBadRequest(explanation=
+                                           utils.exception_to_str(ve))
 
     def _do_remove_locations(self, image, path_pos):
         pos = self._get_locations_op_pos(path_pos,
@@ -258,7 +261,8 @@ class ImagesController(object):
             # from the backend store.
             image.locations.pop(pos)
         except Exception as e:
-            raise webob.exc.HTTPInternalServerError(explanation=unicode(e))
+            raise webob.exc.HTTPInternalServerError(explanation=
+                                                    utils.exception_to_str(e))
         if (len(image.locations) == 0) and (image.status == 'active'):
             image.status = 'queued'
 
@@ -293,7 +297,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         for key in cls._disallowed_properties:
             if key in image:
                 msg = _("Attribute '%s' is read-only.") % key
-                raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+                raise webob.exc.HTTPForbidden(explanation=
+                                              utils.exception_to_str(msg))
 
     def create(self, request):
         body = self._get_request_body(request)
@@ -392,10 +397,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         path_root = change['path'][0]
         if path_root in self._readonly_properties:
             msg = _("Attribute '%s' is read-only.") % path_root
-            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+            raise webob.exc.HTTPForbidden(explanation=six.text_type(msg))
         if path_root in self._reserved_properties:
             msg = _("Attribute '%s' is reserved.") % path_root
-            raise webob.exc.HTTPForbidden(explanation=unicode(msg))
+            raise webob.exc.HTTPForbidden(explanation=six.text_type(msg))
 
         if change['op'] == 'delete':
             return
@@ -426,7 +431,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if len(path) != limits.get(op, 1):
             msg = _("Invalid JSON pointer for this resource: "
                     "'/%s'") % '/'.join(path)
-            raise webob.exc.HTTPBadRequest(explanation=unicode(msg))
+            raise webob.exc.HTTPBadRequest(explanation=six.text_type(msg))
 
     def _parse_json_schema_change(self, raw_change, draft_version):
         if draft_version == 10:
@@ -606,13 +611,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def show(self, response, image):
         image_view = self._format_image(image)
         body = json.dumps(image_view, ensure_ascii=False)
-        response.unicode_body = unicode(body)
+        response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def update(self, response, image):
         image_view = self._format_image(image)
         body = json.dumps(image_view, ensure_ascii=False)
-        response.unicode_body = unicode(body)
+        response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def index(self, response, result):
@@ -630,7 +635,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             params['marker'] = result['next_marker']
             next_query = urlparse.urlencode(params)
             body['next'] = '/v2/images?%s' % next_query
-        response.unicode_body = unicode(json.dumps(body, ensure_ascii=False))
+        response.unicode_body = six.text_type(json.dumps(body,
+                                                         ensure_ascii=False))
         response.content_type = 'application/json'
 
     def delete(self, response, result):

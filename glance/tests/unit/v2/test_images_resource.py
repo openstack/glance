@@ -17,6 +17,7 @@ import datetime
 import uuid
 
 from oslo.config import cfg
+import six
 import testtools
 import webob
 
@@ -2805,8 +2806,8 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
                     u'disk_format': u'ami',
                     u'min_ram': 128,
                     u'min_disk': 10,
-                    u'created_at': unicode(ISOTIME),
-                    u'updated_at': unicode(ISOTIME),
+                    u'created_at': six.text_type(ISOTIME),
+                    u'updated_at': six.text_type(ISOTIME),
                     u'self': u'/v2/images/%s' % UUID1,
                     u'file': u'/v2/images/%s/file' % UUID1,
                     u'schema': u'/v2/schemas/image',
@@ -2840,8 +2841,8 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'disk_format': u'ami',
             u'min_ram': 128,
             u'min_disk': 10,
-            u'created_at': unicode(ISOTIME),
-            u'updated_at': unicode(ISOTIME),
+            u'created_at': six.text_type(ISOTIME),
+            u'updated_at': six.text_type(ISOTIME),
             u'self': u'/v2/images/%s' % UUID1,
             u'file': u'/v2/images/%s/file' % UUID1,
             u'schema': u'/v2/schemas/image',
@@ -2871,8 +2872,8 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'disk_format': u'ami',
             u'min_ram': 128,
             u'min_disk': 10,
-            u'created_at': unicode(ISOTIME),
-            u'updated_at': unicode(ISOTIME),
+            u'created_at': six.text_type(ISOTIME),
+            u'updated_at': six.text_type(ISOTIME),
             u'self': u'/v2/images/%s' % UUID1,
             u'file': u'/v2/images/%s/file' % UUID1,
             u'schema': u'/v2/schemas/image',
@@ -2902,8 +2903,8 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'disk_format': u'ami',
             u'min_ram': 128,
             u'min_disk': 10,
-            u'created_at': unicode(ISOTIME),
-            u'updated_at': unicode(ISOTIME),
+            u'created_at': six.text_type(ISOTIME),
+            u'updated_at': six.text_type(ISOTIME),
             u'self': u'/v2/images/%s' % UUID1,
             u'file': u'/v2/images/%s/file' % UUID1,
             u'schema': u'/v2/schemas/image',

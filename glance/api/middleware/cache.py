@@ -96,7 +96,7 @@ class CacheFilter(wsgi.Middleware):
         try:
             self.policy.enforce(req.context, action, {})
         except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=unicode(e), request=req)
+            raise webob.exc.HTTPForbidden(explanation=e.msg, request=req)
 
     def process_request(self, request):
         """

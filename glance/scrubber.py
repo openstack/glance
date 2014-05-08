@@ -20,6 +20,7 @@ import os
 import time
 
 from oslo.config import cfg
+import six
 
 from glance.common import crypt
 from glance.common import exception
@@ -386,11 +387,11 @@ class Daemon(object):
 class Scrubber(object):
     def __init__(self, store_api):
         LOG.info(_("Initializing scrubber with configuration: %s") %
-                 unicode({'scrubber_datadir': CONF.scrubber_datadir,
-                          'cleanup': CONF.cleanup_scrubber,
-                          'cleanup_time': CONF.cleanup_scrubber_time,
-                          'registry_host': CONF.registry_host,
-                          'registry_port': CONF.registry_port}))
+                 six.text_type({'scrubber_datadir': CONF.scrubber_datadir,
+                                'cleanup': CONF.cleanup_scrubber,
+                                'cleanup_time': CONF.cleanup_scrubber_time,
+                                'registry_host': CONF.registry_host,
+                                'registry_port': CONF.registry_port}))
 
         utils.safe_mkdirs(CONF.scrubber_datadir)
 
@@ -473,13 +474,13 @@ class Scrubber(object):
         """
         try:
             if not os.path.exists(file_path):
-                msg = _("%s file is not exists.") % unicode(file_path)
+                msg = _("%s file is not exists.") % six.text_type(file_path)
                 raise Exception(msg)
             atime = int(os.path.getatime(file_path))
             mtime = int(os.path.getmtime(file_path))
             if atime != mtime:
                 msg = _("%s file contains conflicting cleanup "
-                        "timestamp.") % unicode(file_path)
+                        "timestamp.") % six.text_type(file_path)
                 raise Exception(msg)
             return atime
         except Exception as e:
@@ -497,7 +498,8 @@ class Scrubber(object):
             os.chmod(file_path, 0o600)
             os.utime(file_path, (cleanup_time, cleanup_time))
         except Exception:
-            LOG.error(_("%s file can not be created.") % unicode(file_path))
+            LOG.error(_("%s file can not be created.") %
+                      six.text_type(file_path))
 
     def _cleanup(self, pool):
         now = time.time()

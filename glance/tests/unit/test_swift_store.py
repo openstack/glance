@@ -29,6 +29,7 @@ import swiftclient
 
 import glance.common.auth
 from glance.common import exception
+from glance.common import utils
 from glance.openstack.common import units
 
 from glance.store import BackendException
@@ -424,7 +425,7 @@ class SwiftTests(object):
         except BackendException as e:
             exception_caught = True
             self.assertIn("container noexist does not exist "
-                          "in Swift", six.text_type(e))
+                          "in Swift", utils.exception_to_str(e))
         self.assertTrue(exception_caught)
         self.assertEqual(SWIFT_PUT_OBJECT_CALLS, 0)
 

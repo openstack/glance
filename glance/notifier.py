@@ -19,6 +19,7 @@ from oslo import messaging
 import webob
 
 from glance.common import exception
+from glance.common import utils
 import glance.domain.proxy
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
@@ -260,7 +261,8 @@ class ImageProxy(glance.domain.proxy.Image):
                    {'image_id': self.image.image_id,
                     'error': e})
             self.notifier.error('image.upload', msg)
-            raise webob.exc.HTTPBadRequest(explanation=unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=
+                                           utils.exception_to_str(e))
         except exception.Duplicate as e:
             msg = (_("Unable to upload duplicate image data for image"
                      "%(image_id)s: %(error)s") %
@@ -280,7 +282,7 @@ class ImageProxy(glance.domain.proxy.Image):
                      " %(error)s") % {'image_id': self.image.image_id,
                                       'error': e})
             self.notifier.error('image.upload', msg)
-            raise webob.exc.HTTPNotFound(explanation=unicode(e))
+            raise webob.exc.HTTPNotFound(explanation=utils.exception_to_str(e))
         except webob.exc.HTTPError as e:
             with excutils.save_and_reraise_exception():
                 msg = (_("Failed to upload image data for image %(image_id)s"

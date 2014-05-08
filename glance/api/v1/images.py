@@ -953,7 +953,7 @@ class Controller(controller.BaseController):
                                 request=req,
                                 content_type="text/plain")
         except (exception.Conflict, exception.Duplicate) as e:
-            LOG.info(unicode(e))
+            LOG.info(utils.exception_to_str(e))
             raise HTTPConflict(body='Image operation conflicts',
                                request=req,
                                content_type='text/plain')
@@ -1075,7 +1075,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
         try:
             result['image_meta'] = utils.get_image_meta_from_headers(request)
         except exception.InvalidParameterValue as e:
-            msg = unicode(e)
+            msg = utils.exception_to_str(e)
             LOG.warn(msg, exc_info=True)
             raise HTTPBadRequest(explanation=e.msg, request=request)
 
