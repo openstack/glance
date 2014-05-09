@@ -178,13 +178,13 @@ def _image_get(context, image_id, session=None, force_show_deleted=False):
         image = query.one()
 
     except sa_orm.exc.NoResultFound:
-        msg = (_("No image found with ID %s") % image_id)
+        msg = "No image found with ID %s" % image_id
         LOG.debug(msg)
         raise exception.NotFound(msg)
 
     # Make sure they can look at it
     if not is_image_visible(context, image):
-        msg = (_("Forbidding request, image %s not visible") % image_id)
+        msg = "Forbidding request, image %s not visible" % image_id
         LOG.debug(msg)
         raise exception.Forbidden(msg)
 
@@ -1081,7 +1081,7 @@ def _task_info_get(context, task_id, session=None):
     try:
         task_info_ref = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = (_("TaskInfo was not found for task with id %(task_id)s") %
+        msg = ("TaskInfo was not found for task with id %(task_id)s" %
                {'task_id': task_id})
         LOG.debug(msg)
         task_info_ref = None
@@ -1247,13 +1247,13 @@ def _task_get(context, task_id, session=None, force_show_deleted=False):
     try:
         task_ref = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = (_("No task found with ID %s") % task_id)
+        msg = "No task found with ID %s" % task_id
         LOG.debug(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
     # Make sure the task is visible
     if not _is_task_visible(context, task_ref):
-        msg = (_("Forbidding request, task %s is not visible") % task_id)
+        msg = "Forbidding request, task %s is not visible" % task_id
         LOG.debug(msg)
         raise exception.Forbidden(msg)
 

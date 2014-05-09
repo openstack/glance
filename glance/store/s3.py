@@ -112,15 +112,15 @@ class StoreLocation(glance.store.location.StoreLocation):
         # s3://accesskey:secretkey@https://s3.amazonaws.com/bucket/key-id
         # are immediately rejected.
         if uri.count('://') != 1:
-            reason = _("URI cannot contain more than one occurrence "
-                       "of a scheme. If you have specified a URI like "
-                       "s3://accesskey:secretkey@"
-                       "https://s3.amazonaws.com/bucket/key-id"
-                       ", you need to change it to use the "
-                       "s3+https:// scheme, like so: "
-                       "s3+https://accesskey:secretkey@"
-                       "s3.amazonaws.com/bucket/key-id")
-            LOG.debug(_("Invalid store uri: %s") % reason)
+            reason = ("URI cannot contain more than one occurrence "
+                      "of a scheme. If you have specified a URI like "
+                      "s3://accesskey:secretkey@"
+                      "https://s3.amazonaws.com/bucket/key-id"
+                      ", you need to change it to use the "
+                      "s3+https:// scheme, like so: "
+                      "s3+https://accesskey:secretkey@"
+                      "s3.amazonaws.com/bucket/key-id")
+            LOG.debug("Invalid store uri: %s" % reason)
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -146,7 +146,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.accesskey = access_key
                 self.secretkey = secret_key
             except IndexError:
-                reason = _("Badly formed S3 credentials %s") % creds
+                reason = "Badly formed S3 credentials %s" % creds
                 LOG.debug(reason)
                 raise exception.BadStoreUri()
         else:
@@ -162,7 +162,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 reason = _("Badly formed S3 URI. Missing s3 service URL.")
                 raise exception.BadStoreUri()
         except IndexError:
-            reason = _("Badly formed S3 URI: %s") % uri
+            reason = "Badly formed S3 URI: %s" % uri
             LOG.debug(reason)
             raise exception.BadStoreUri()
 
@@ -249,8 +249,8 @@ class Store(glance.store.base.Store):
     def _option_get(self, param):
         result = getattr(CONF, param)
         if not result:
-            reason = (_("Could not find %(param)s in configuration "
-                        "options.") % {'param': param})
+            reason = ("Could not find %(param)s in configuration "
+                      "options." % {'param': param})
             LOG.debug(reason)
             raise exception.BadStoreConfiguration(store_name="s3",
                                                   reason=reason)
@@ -304,12 +304,12 @@ class Store(glance.store.base.Store):
 
         key = get_key(bucket_obj, loc.key)
 
-        msg = _("Retrieved image object from S3 using (s3_host=%(s3_host)s, "
-                "access_key=%(accesskey)s, bucket=%(bucket)s, "
-                "key=%(obj_name)s)") % ({'s3_host': loc.s3serviceurl,
-                                         'accesskey': loc.accesskey,
-                                         'bucket': loc.bucket,
-                                         'obj_name': loc.key})
+        msg = ("Retrieved image object from S3 using (s3_host=%(s3_host)s, "
+               "access_key=%(accesskey)s, bucket=%(bucket)s, "
+               "key=%(obj_name)s)" % ({'s3_host': loc.s3serviceurl,
+                                       'accesskey': loc.accesskey,
+                                       'bucket': loc.bucket,
+                                       'obj_name': loc.key}))
         LOG.debug(msg)
 
         return key
@@ -368,12 +368,12 @@ class Store(glance.store.base.Store):
                                       "location %s") %
                                       _sanitize(loc.get_uri()))
 
-        msg = _("Adding image object to S3 using (s3_host=%(s3_host)s, "
-                "access_key=%(access_key)s, bucket=%(bucket)s, "
-                "key=%(obj_name)s)") % ({'s3_host': self.s3_host,
-                                         'access_key': self.access_key,
-                                         'bucket': self.bucket,
-                                         'obj_name': obj_name})
+        msg = ("Adding image object to S3 using (s3_host=%(s3_host)s, "
+               "access_key=%(access_key)s, bucket=%(bucket)s, "
+               "key=%(obj_name)s)" % ({'s3_host': self.s3_host,
+                                       'access_key': self.access_key,
+                                       'bucket': self.bucket,
+                                       'obj_name': obj_name}))
         LOG.debug(msg)
 
         key = bucket_obj.new_key(obj_name)
@@ -390,8 +390,8 @@ class Store(glance.store.base.Store):
         # take this opportunity to calculate the image checksum while
         # writing the tempfile, so we don't need to call key.compute_md5()
 
-        msg = _("Writing request body file to temporary file "
-                "for %s") % _sanitize(loc.get_uri())
+        msg = ("Writing request body file to temporary file "
+               "for %s" % _sanitize(loc.get_uri()))
         LOG.debug(msg)
 
         tmpdir = self.s3_store_object_buffer_dir
@@ -402,7 +402,7 @@ class Store(glance.store.base.Store):
             temp_file.write(chunk)
         temp_file.flush()
 
-        msg = (_("Uploading temporary file to S3 for %s") %
+        msg = ("Uploading temporary file to S3 for %s" %
                _sanitize(loc.get_uri()))
         LOG.debug(msg)
 
@@ -411,8 +411,8 @@ class Store(glance.store.base.Store):
         size = key.size
         checksum_hex = checksum.hexdigest()
 
-        LOG.debug(_("Wrote %(size)d bytes to S3 key named %(obj_name)s "
-                    "with checksum %(checksum_hex)s"),
+        LOG.debug("Wrote %(size)d bytes to S3 key named %(obj_name)s "
+                  "with checksum %(checksum_hex)s",
                   {'size': size, 'obj_name': obj_name,
                    'checksum_hex': checksum_hex})
 
@@ -439,12 +439,12 @@ class Store(glance.store.base.Store):
         # Close the key when we're through.
         key = get_key(bucket_obj, loc.key)
 
-        msg = _("Deleting image object from S3 using (s3_host=%(s3_host)s, "
-                "access_key=%(accesskey)s, bucket=%(bucket)s, "
-                "key=%(obj_name)s)") % ({'s3_host': loc.s3serviceurl,
-                                         'accesskey': loc.accesskey,
-                                         'bucket': loc.bucket,
-                                         'obj_name': loc.key})
+        msg = ("Deleting image object from S3 using (s3_host=%(s3_host)s, "
+               "access_key=%(accesskey)s, bucket=%(bucket)s, "
+               "key=%(obj_name)s)" % ({'s3_host': loc.s3serviceurl,
+                                       'accesskey': loc.accesskey,
+                                       'bucket': loc.bucket,
+                                       'obj_name': loc.key}))
         LOG.debug(msg)
 
         return key.delete()
@@ -461,7 +461,7 @@ def get_bucket(conn, bucket_id):
 
     bucket = conn.get_bucket(bucket_id)
     if not bucket:
-        msg = _("Could not find bucket with ID %s") % bucket_id
+        msg = "Could not find bucket with ID %s" % bucket_id
         LOG.debug(msg)
         raise exception.NotFound(msg)
 
@@ -525,7 +525,7 @@ def get_key(bucket, obj):
 
     key = bucket.get_key(obj)
     if not key or not key.exists():
-        msg = (_("Could not find key %(obj)s in bucket %(bucket)s") %
+        msg = ("Could not find key %(obj)s in bucket %(bucket)s" %
                {'obj': obj, 'bucket': bucket})
         LOG.debug(msg)
         raise exception.NotFound(msg)

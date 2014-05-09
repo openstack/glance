@@ -86,7 +86,7 @@ class ImageDataController(object):
                                          content_type='text/plain')
 
         except ValueError as e:
-            LOG.debug(_("Cannot save data for image %(id)s: %(e)s"),
+            LOG.debug("Cannot save data for image %(id)s: %(e)s",
                       {'id': image_id, 'e': utils.exception_to_str(e)})
             self._restore(image_repo, image)
             raise webob.exc.HTTPBadRequest(explanation=
@@ -98,7 +98,7 @@ class ImageDataController(object):
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
         except exception.Forbidden as e:
-            msg = (_("Not allowed to upload image data for image %s") %
+            msg = ("Not allowed to upload image data for image %s" %
                    image_id)
             LOG.debug(msg)
             raise webob.exc.HTTPForbidden(explanation=msg, request=req)

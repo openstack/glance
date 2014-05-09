@@ -156,21 +156,21 @@ def get_image_metadata(context, image_id):
 
 
 def add_image_metadata(context, image_meta):
-    LOG.debug(_("Adding image metadata..."))
+    LOG.debug("Adding image metadata...")
     c = get_registry_client(context)
     return c.add_image(image_meta)
 
 
 def update_image_metadata(context, image_id, image_meta,
                           purge_props=False, from_state=None):
-    LOG.debug(_("Updating image metadata for image %s..."), image_id)
+    LOG.debug("Updating image metadata for image %s...", image_id)
     c = get_registry_client(context)
     return c.update_image(image_id, image_meta, purge_props=purge_props,
                           from_state=from_state)
 
 
 def delete_image_metadata(context, image_id):
-    LOG.debug(_("Deleting image metadata for image %s..."), image_id)
+    LOG.debug("Deleting image metadata for image %s...", image_id)
     c = get_registry_client(context)
     return c.delete_image(image_id)
 

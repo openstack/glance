@@ -178,8 +178,7 @@ class StoreLocation(glance.store.location.StoreLocation):
             self.path = path
             self.query = query
             return
-        reason = (_('Badly formed VMware datastore URI %(uri)s.')
-                  % {'uri': uri})
+        reason = 'Badly formed VMware datastore URI %(uri)s.' % {'uri': uri}
         LOG.debug(reason)
         raise exception.BadStoreUri(reason)
 
@@ -361,8 +360,8 @@ class Store(glance.store.base.Store):
 
     def _query(self, location, method, headers, depth=0):
         if depth > MAX_REDIRECTS:
-            msg = (_("The HTTP URL exceeded %(max_redirects)s maximum "
-                     "redirects.") % {'max_redirects': MAX_REDIRECTS})
+            msg = ("The HTTP URL exceeded %(max_redirects)s maximum "
+                   "redirects." % {'max_redirects': MAX_REDIRECTS})
             LOG.debug(msg)
             raise exception.MaxRedirectsExceeded(redirects=MAX_REDIRECTS)
         loc = location.store_location
@@ -375,18 +374,18 @@ class Store(glance.store.base.Store):
                               {'image': location.image_id})
         if resp.status >= 400:
             if resp.status == httplib.NOT_FOUND:
-                msg = _('VMware datastore could not find image at URI.')
+                msg = 'VMware datastore could not find image at URI.'
                 LOG.debug(msg)
                 raise exception.NotFound(msg)
-            msg = (_('HTTP request returned a %(status)s status code.')
+            msg = ('HTTP request returned a %(status)s status code.'
                    % {'status': resp.status})
             LOG.debug(msg)
             raise exception.BadStoreUri(msg)
         location_header = resp.getheader('location')
         if location_header:
             if resp.status not in (301, 302):
-                msg = (_("The HTTP URL %(path)s attempted to redirect "
-                         "with an invalid %(status)s status code.")
+                msg = ("The HTTP URL %(path)s attempted to redirect "
+                       "with an invalid %(status)s status code."
                        % {'path': loc.path, 'status': resp.status})
                 LOG.debug(msg)
                 raise exception.BadStoreUri(msg)

@@ -140,7 +140,7 @@ class TestMigrations(test_utils.BaseTestCase):
 
         # Load test databases from the config file. Only do this
         # once. No need to re-run this on each test...
-        LOG.debug(_('config_path is %s'),
+        LOG.debug('config_path is %s',
                   text_type(TestMigrations.CONFIG_FILE_PATH))
         if os.path.exists(TestMigrations.CONFIG_FILE_PATH):
             cp = ConfigParser.RawConfigParser()
@@ -334,7 +334,7 @@ class TestMigrations(test_utils.BaseTestCase):
                               init_version + 1)
         self.assertEqual(init_version + 1, db_version())
 
-        LOG.debug(_('latest version is %s'), TestMigrations.REPOSITORY.latest)
+        LOG.debug('latest version is %s', TestMigrations.REPOSITORY.latest)
 
         for version in xrange(init_version + 2,
                               TestMigrations.REPOSITORY.latest + 1):

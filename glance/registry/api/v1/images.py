@@ -441,9 +441,9 @@ class Controller(object):
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         try:
-            LOG.debug(_("Updating image %(id)s with metadata: "
-                        "%(image_data)r"), {'id': id,
-                                            'image_data': image_data})
+            LOG.debug("Updating image %(id)s with metadata: "
+                      "%(image_data)r", {'id': id,
+                                         'image_data': image_data})
             image_data = _normalize_image_location_for_db(image_data)
             if purge_props == "true":
                 purge_props = True

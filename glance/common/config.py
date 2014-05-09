@@ -210,7 +210,7 @@ def load_paste_app(app_name, flavor=None, conf_file=None):
 
     try:
         logger = logging.getLogger(__name__)
-        logger.debug(_("Loading %(app_name)s from %(conf_file)s"),
+        logger.debug("Loading %(app_name)s from %(conf_file)s",
                      {'conf_file': conf_file, 'app_name': app_name})
 
         app = deploy.loadapp("config:%s" % conf_file, name=app_name)
