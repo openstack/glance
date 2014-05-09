@@ -117,9 +117,8 @@ def do_start(verb, pid_file, server, args):
         os.environ['PYTHON_EGG_CACHE'] = '/tmp'
 
     def write_pid_file(pid_file, pid):
-        fp = open(pid_file, 'w')
-        fp.write('%d\n' % pid)
-        fp.close()
+        with open(pid_file, 'w') as fp:
+            fp.write('%d\n' % pid)
 
     def redirect_to_null(fds):
         with open(os.devnull, 'r+b') as nullfile:
