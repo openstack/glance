@@ -797,8 +797,8 @@ def load_custom_properties():
     filename = 'schema-image.json'
     match = CONF.find_file(filename)
     if match:
-        schema_file = open(match)
-        schema_data = schema_file.read()
+        with open(match, 'r') as schema_file:
+            schema_data = schema_file.read()
         return json.loads(schema_data)
     else:
         msg = _('Could not find schema properties file %s. Continuing '

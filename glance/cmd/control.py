@@ -201,7 +201,8 @@ def do_start(verb, pid_file, server, args):
 
 def do_check_status(pid_file, server):
     if os.path.exists(pid_file):
-        pid = open(pid_file).read().strip()
+        with open(pid_file, 'r') as pidfile:
+            pid = pidfile.read().strip()
         print(_("%(serv)s (pid %(pid)s) is running...") %
               {'serv': server, 'pid': pid})
     else:

@@ -82,13 +82,12 @@ class BaseTestCase(testtools.TestCase):
         return dst_file_name
 
     def set_property_protection_rules(self, rules):
-        f = open(self.property_file, 'w')
-        for rule_key in rules.keys():
-            f.write('[%s]\n' % rule_key)
-            for operation in rules[rule_key].keys():
-                roles_str = ','.join(rules[rule_key][operation])
-                f.write('%s = %s\n' % (operation, roles_str))
-        f.close()
+        with open(self.property_file, 'w') as f:
+            for rule_key in rules.keys():
+                f.write('[%s]\n' % rule_key)
+                for operation in rules[rule_key].keys():
+                    roles_str = ','.join(rules[rule_key][operation])
+                    f.write('%s = %s\n' % (operation, roles_str))
 
     def config(self, **kw):
         """

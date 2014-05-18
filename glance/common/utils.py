@@ -505,12 +505,14 @@ def validate_key_cert(key_file, cert_file):
     try:
         error_key_name = "private key"
         error_filename = key_file
-        key_str = open(key_file, "r").read()
+        with open(key_file, 'r') as keyfile:
+            key_str = keyfile.read()
         key = crypto.load_privatekey(crypto.FILETYPE_PEM, key_str)
 
         error_key_name = "certficate"
         error_filename = cert_file
-        cert_str = open(cert_file, "r").read()
+        with open(cert_file, 'r') as certfile:
+            cert_str = certfile.read()
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_str)
     except IOError as ioe:
         raise RuntimeError(_("There is a problem with your %(error_key_name)s "
