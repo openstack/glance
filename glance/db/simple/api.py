@@ -555,7 +555,7 @@ def image_update(context, image_id, image_values, purge_props=False,
             # this matches weirdness in the sqlalchemy api
             prop['deleted'] = True
 
-    # add in any completly new properties
+    # add in any completely new properties
     image['properties'].extend([{'name': k, 'value': v,
                                  'image_id': image_id, 'deleted': False}
                                 for k, v in new_properties.items()])

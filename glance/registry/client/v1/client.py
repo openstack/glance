@@ -90,7 +90,7 @@ class RegistryClient(BaseClient):
         :param marker: image id after which to start page
         :param limit: max number of images to return
         :param sort_key: results will be ordered by this image attribute
-        :param sort_dir: direction in which to to order results (asc, desc)
+        :param sort_dir: direction in which to order results (asc, desc)
         """
         params = self._extract_params(kwargs, images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images", params=params)
@@ -131,7 +131,7 @@ class RegistryClient(BaseClient):
         :param marker: image id after which to start page
         :param limit: max number of images to return
         :param sort_key: results will be ordered by this image attribute
-        :param sort_dir: direction in which to to order results (asc, desc)
+        :param sort_dir: direction in which to order results (asc, desc)
         """
         params = self._extract_params(kwargs, images.SUPPORTED_PARAMS)
         res = self.do_request("GET", "/images/detail", params=params)

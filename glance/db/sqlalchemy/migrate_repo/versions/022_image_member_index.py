@@ -80,7 +80,7 @@ def _infer_original_keyname(table):
 def _sanitize(migrate_engine, table):
     """
     Avoid possible integrity error by removing deleted rows
-    to accommdate less restrictive uniqueness constraint
+    to accommodate less restrictive uniqueness constraint
     """
     session = orm.sessionmaker(bind=migrate_engine)()
     # find the image_member rows containing duplicate combinations

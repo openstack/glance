@@ -1563,7 +1563,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.delete(path, headers=self._headers())
         self.assertEqual(404, response.status_code)
 
-        # The tags won't be able to to query the images after deleting
+        # The tags won't be able to query the images after deleting
         path = self._url('/v2/images?tag=gabe%%40example.com')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
