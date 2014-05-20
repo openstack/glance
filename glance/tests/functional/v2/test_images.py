@@ -2056,7 +2056,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.assertTrue('locations' in image)
         self.assertTrue(image["locations"] == [])
 
-       # Update image locations via PATCH
+        # Update image locations via PATCH
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type})
@@ -2115,7 +2115,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.assertTrue('locations' in image)
         self.assertTrue(image["locations"] == [])
 
-       # Update image locations via PATCH
+        # Update image locations via PATCH
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type})

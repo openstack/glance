@@ -97,10 +97,9 @@ class TestTasksApi(base.ApiTest):
         body_content = json.dumps(task_data)
 
         path = "/v2/tasks"
-        response, content = self.http.request(path, 'POST',
-                                              headers=
-                                              minimal_task_headers(task_owner),
-                                              body=body_content)
+        response, content = self.http.request(
+            path, 'POST', headers=minimal_task_headers(task_owner),
+            body=body_content)
         self.assertEqual(response.status, 201)
 
         data = json.loads(content)
@@ -176,10 +175,9 @@ class TestTasksApi(base.ApiTest):
         body_content = json.dumps(task_data)
 
         path = "/v2/tasks"
-        response, content = self.http.request(path, 'POST',
-                                              headers=
-                                              minimal_task_headers(task_owner),
-                                              body=body_content)
+        response, content = self.http.request(
+            path, 'POST', headers=minimal_task_headers(task_owner),
+            body=body_content)
         self.assertEqual(response.status, 201)
 
         data = json.loads(content)
@@ -198,10 +196,9 @@ class TestTasksApi(base.ApiTest):
         body_content = json.dumps(task_data)
 
         path = "/v2/tasks"
-        response, content = self.http.request(path, 'POST',
-                                              headers=
-                                              minimal_task_headers(task_owner),
-                                              body=body_content)
+        response, content = self.http.request(
+            path, 'POST', headers=minimal_task_headers(task_owner),
+            body=body_content)
         self.assertEqual(response.status, 400)
 
         # 1. POST /tasks
@@ -212,10 +209,9 @@ class TestTasksApi(base.ApiTest):
         body_content = json.dumps(task_data)
 
         path = "/v2/tasks"
-        response, content = self.http.request(path, 'POST',
-                                              headers=
-                                              minimal_task_headers(task_owner),
-                                              body=body_content)
+        response, content = self.http.request(
+            path, 'POST', headers=minimal_task_headers(task_owner),
+            body=body_content)
         self.assertEqual(response.status, 400)
 
     def test_tasks_with_filter(self):
@@ -513,10 +509,9 @@ class TestTasksApi(base.ApiTest):
         body_content = json.dumps(task_data)
 
         path = "/v2/tasks"
-        response, content = self.http.request(path, 'POST',
-                                              headers=
-                                              minimal_task_headers(task_owner),
-                                              body=body_content)
+        response, content = self.http.request(
+            path, 'POST', headers=minimal_task_headers(task_owner),
+            body=body_content)
         self.assertEqual(response.status, 201)
 
         data = json.loads(content)
