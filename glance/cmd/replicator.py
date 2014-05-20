@@ -25,7 +25,6 @@ import logging.handlers
 import optparse
 import os
 import sys
-import uuid
 
 import six.moves.urllib.parse as urlparse
 
@@ -370,15 +369,6 @@ def _dict_diff(a, b):
     return False
 
 
-# This is lifted from openstack-common, but copied here to reduce dependancies
-def is_uuid_like(value):
-    try:
-        uuid.UUID(value)
-        return True
-    except Exception:
-        return False
-
-
 def replication_load(options, args):
     """%(prog)s load <server:port> <path>
 
@@ -402,7 +392,7 @@ def replication_load(options, args):
     updated = []
 
     for ent in os.listdir(path):
-        if is_uuid_like(ent):
+        if utils.is_uuid_like(ent):
             image_uuid = ent
             logging.info(_('Considering: %s') % image_uuid)
 
