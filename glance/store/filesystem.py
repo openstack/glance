@@ -75,7 +75,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         self.scheme = pieces.scheme
         path = (pieces.netloc + pieces.path).strip()
         if path == '':
-            reason = _("No path specified in URI: %s") % uri
+            reason = "No path specified in URI: %s" % uri
             LOG.debug(reason)
             raise exception.BadStoreUri('No path specified')
         self.path = path
@@ -307,7 +307,7 @@ class Store(glance.store.base.Store):
         :raises `glance.exception.NotFound` if image does not exist
         """
         filepath, filesize = self._resolve_location(location)
-        msg = _("Found image at %s. Returning in ChunkedFile.") % filepath
+        msg = "Found image at %s. Returning in ChunkedFile." % filepath
         LOG.debug(msg)
         return (ChunkedFile(filepath), filesize)
 
@@ -322,7 +322,7 @@ class Store(glance.store.base.Store):
         :rtype int
         """
         filepath, filesize = self._resolve_location(location)
-        msg = _("Found image at %s.") % filepath
+        msg = "Found image at %s." % filepath
         LOG.debug(msg)
         return filesize
 
@@ -341,7 +341,7 @@ class Store(glance.store.base.Store):
         fn = loc.path
         if os.path.exists(fn):
             try:
-                LOG.debug(_("Deleting image at %(fn)s"), {'fn': fn})
+                LOG.debug("Deleting image at %(fn)s", {'fn': fn})
                 os.unlink(fn)
             except OSError:
                 raise exception.Forbidden(_("You cannot delete file %s") % fn)
@@ -448,8 +448,8 @@ class Store(glance.store.base.Store):
         checksum_hex = checksum.hexdigest()
         metadata = self._get_metadata()
 
-        LOG.debug(_("Wrote %(bytes_written)d bytes to %(filepath)s with "
-                    "checksum %(checksum_hex)s"),
+        LOG.debug("Wrote %(bytes_written)d bytes to %(filepath)s with "
+                  "checksum %(checksum_hex)s",
                   {'bytes_written': bytes_written,
                    'filepath': filepath,
                    'checksum_hex': checksum_hex})

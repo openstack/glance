@@ -65,7 +65,7 @@ class Store(object):
         """
         if not self.store_location_class:
             class_name = "%s.StoreLocation" % (self.__module__)
-            LOG.debug(_("Late loading location class %s"), class_name)
+            LOG.debug("Late loading location class %s", class_name)
             self.store_location_class = importutils.import_class(class_name)
         return self.store_location_class
 

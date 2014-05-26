@@ -53,7 +53,7 @@ class Prefetcher(base.CacheApp):
 
         location = image_meta['location']
         image_data, image_size = glance.store.get_from_backend(ctx, location)
-        LOG.debug(_("Caching image '%s'"), image_id)
+        LOG.debug("Caching image '%s'", image_id)
         cache_tee_iter = self.cache.cache_tee_iter(image_id, image_data,
                                                    image_meta['checksum'])
         # Image is tee'd into cache and checksum verified
@@ -65,11 +65,11 @@ class Prefetcher(base.CacheApp):
 
         images = self.cache.get_queued_images()
         if not images:
-            LOG.debug(_("Nothing to prefetch."))
+            LOG.debug("Nothing to prefetch.")
             return True
 
         num_images = len(images)
-        LOG.debug(_("Found %d images to prefetch"), num_images)
+        LOG.debug("Found %d images to prefetch", num_images)
 
         pool = eventlet.GreenPool(num_images)
         results = pool.imap(self.fetch_image_into_cache, images)

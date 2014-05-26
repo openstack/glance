@@ -106,17 +106,17 @@ class StoreLocation(glance.store.location.StoreLocation):
         prefix = 'rbd://'
         if not uri.startswith(prefix):
             reason = _('URI must start with rbd://')
-            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
-                                                            'reason': reason})
+            msg = "Invalid URI: %(uri)s: %(reason)s" % {'uri': uri,
+                                                        'reason': reason}
             LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
         # convert to ascii since librbd doesn't handle unicode
         try:
             ascii_uri = str(uri)
         except UnicodeError:
-            reason = _('URI contains non-ascii characters')
-            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
-                                                            'reason': reason})
+            reason = 'URI contains non-ascii characters'
+            msg = "Invalid URI: %(uri)s: %(reason)s" % {'uri': uri,
+                                                        'reason': reason}
             LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
         pieces = ascii_uri[len(prefix):].split('/')
@@ -127,15 +127,15 @@ class StoreLocation(glance.store.location.StoreLocation):
             self.fsid, self.pool, self.image, self.snapshot = \
                 map(urlparse.unquote, pieces)
         else:
-            reason = _('URI must have exactly 1 or 4 components')
-            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
-                                                            'reason': reason})
+            reason = 'URI must have exactly 1 or 4 components'
+            msg = "Invalid URI: %(uri)s: %(reason)s" % {'uri': uri,
+                                                        'reason': reason}
             LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
         if any(map(lambda p: p == '', pieces)):
-            reason = _('URI cannot contain empty components')
-            msg = (_("Invalid URI: %(uri)s: %(reason)s") % {'uri': uri,
-                                                            'reason': reason})
+            reason = 'URI cannot contain empty components'
+            msg = "Invalid URI: %(uri)s: %(reason)s" % {'uri': uri,
+                                                        'reason': reason}
             LOG.debug(msg)
             raise exception.BadStoreUri(message=reason)
 
@@ -233,7 +233,7 @@ class Store(glance.store.base.Store):
                         img_info = image.stat()
                         return img_info['size']
                 except rbd.ImageNotFound:
-                    msg = _('RBD image %s does not exist') % loc.get_uri()
+                    msg = 'RBD image %s does not exist' % loc.get_uri()
                     LOG.debug(msg)
                     raise exception.NotFound(msg)
 
@@ -280,9 +280,9 @@ class Store(glance.store.base.Store):
                             try:
                                 image.unprotect_snap(snapshot_name)
                             except rbd.ImageBusy:
-                                log_msg = _("snapshot %(image)s@%(snap)s "
-                                            "could not be unprotected because "
-                                            "it is in use")
+                                log_msg = ("snapshot %(image)s@%(snap)s "
+                                           "could not be unprotected because "
+                                           "it is in use")
                                 LOG.debug(log_msg %
                                           {'image': image_name,
                                            'snap': snapshot_name})
@@ -295,8 +295,8 @@ class Store(glance.store.base.Store):
                     raise exception.NotFound(
                         _("RBD image %s does not exist") % image_name)
                 except rbd.ImageBusy:
-                    log_msg = _("image %s could not be removed "
-                                "because it is in use")
+                    log_msg = ("image %s could not be removed "
+                               "because it is in use")
                     LOG.debug(log_msg % image_name)
                     raise exception.InUseByStore()
 
@@ -323,8 +323,8 @@ class Store(glance.store.base.Store):
                 fsid = conn.get_fsid()
             with conn.open_ioctx(self.pool) as ioctx:
                 order = int(math.log(self.chunk_size, 2))
-                LOG.debug(_('creating image %(name)s with order %(order)d and '
-                            'size %(size)d'),
+                LOG.debug('creating image %(name)s with order %(order)d and '
+                          'size %(size)d',
                           {'name': text_type(image_name),
                           'order': order,
                           'size': image_size})
@@ -354,10 +354,10 @@ class Store(glance.store.base.Store):
                                 chunk_length = len(chunk)
                                 length = offset + chunk_length
                                 bytes_written += chunk_length
-                                LOG.debug(_("resizing image to %s KiB") %
+                                LOG.debug("resizing image to %s KiB" %
                                           (length / units.Ki))
                                 image.resize(length)
-                            LOG.debug(_("writing chunk at offset %s") %
+                            LOG.debug("writing chunk at offset %s" %
                                       (offset))
                             offset += image.write(chunk, offset)
                             checksum.update(chunk)

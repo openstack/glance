@@ -8,4 +8,4 @@ glance Style Commandments
 glance Specific Commandments
 --------------------------
 
-None so far
+- [G319] Validate that debug level logs are not translated

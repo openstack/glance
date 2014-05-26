@@ -436,7 +436,7 @@ def mutating(func):
     @functools.wraps(func)
     def wrapped(self, req, *args, **kwargs):
         if req.context.read_only:
-            msg = _("Read-only access")
+            msg = "Read-only access"
             LOG.debug(msg)
             raise exc.HTTPForbidden(msg, request=req,
                                     content_type="text/plain")

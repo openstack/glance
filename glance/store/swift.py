@@ -211,13 +211,13 @@ class StoreLocation(glance.store.location.StoreLocation):
         # swift://user:pass@http://authurl.com/v1/container/obj
         # are immediately rejected.
         if uri.count('://') != 1:
-            reason = _("URI cannot contain more than one occurrence "
-                       "of a scheme. If you have specified a URI like "
-                       "swift://user:pass@http://authurl.com/v1/container/obj"
-                       ", you need to change it to use the "
-                       "swift+http:// scheme, like so: "
-                       "swift+http://user:pass@authurl.com/v1/container/obj")
-            LOG.debug(_("Invalid store URI: %(reason)s"), {'reason': reason})
+            reason = ("URI cannot contain more than one occurrence "
+                      "of a scheme. If you have specified a URI like "
+                      "swift://user:pass@http://authurl.com/v1/container/obj"
+                      ", you need to change it to use the "
+                      "swift+http:// scheme, like so: "
+                      "swift+http://user:pass@authurl.com/v1/container/obj")
+            LOG.debug("Invalid store URI: %(reason)s", {'reason': reason})
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -243,7 +243,7 @@ class StoreLocation(glance.store.location.StoreLocation):
         if creds:
             cred_parts = creds.split(':')
             if len(cred_parts) != 2:
-                reason = (_("Badly formed credentials in Swift URI."))
+                reason = "Badly formed credentials in Swift URI."
                 LOG.debug(reason)
                 raise exception.BadStoreUri()
             user, key = cred_parts
@@ -261,7 +261,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 path_parts.insert(0, netloc)
                 self.auth_or_store_url = '/'.join(path_parts)
         except IndexError:
-            reason = _("Badly formed Swift URI.")
+            reason = "Badly formed Swift URI."
             LOG.debug(reason)
             raise exception.BadStoreUri()
 
@@ -372,7 +372,7 @@ class BaseStore(glance.store.base.Store):
 
     def _delete_stale_chunks(self, connection, container, chunk_list):
         for chunk in chunk_list:
-            LOG.debug(_("Deleting chunk %s") % chunk)
+            LOG.debug("Deleting chunk %s" % chunk)
             try:
                 connection.delete_object(container, chunk)
             except Exception:
@@ -388,8 +388,8 @@ class BaseStore(glance.store.base.Store):
 
         self._create_container_if_missing(location.container, connection)
 
-        LOG.debug(_("Adding image object '%(obj_name)s' "
-                    "to Swift") % dict(obj_name=location.obj))
+        LOG.debug("Adding image object '%(obj_name)s' "
+                  "to Swift" % dict(obj_name=location.obj))
         try:
             if image_size > 0 and image_size < self.large_object_size:
                 # Image size is known, and is less than large_object_size.
@@ -408,8 +408,8 @@ class BaseStore(glance.store.base.Store):
                     # image_size == 0 is when we don't know the size
                     # of the image. This can occur with older clients
                     # that don't inspect the payload size.
-                    LOG.debug(_("Cannot determine image size. Adding as a "
-                                "segmented object to Swift."))
+                    LOG.debug("Cannot determine image size. Adding as a "
+                              "segmented object to Swift.")
                     total_chunks = '?'
 
                 checksum = hashlib.md5()
@@ -444,10 +444,10 @@ class BaseStore(glance.store.base.Store):
                                                       written_chunks)
 
                     bytes_read = reader.bytes_read
-                    msg = (_("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
-                             "%(total_chunks)s) of length %(bytes_read)d "
-                             "to Swift returning MD5 of content: "
-                             "%(chunk_etag)s") %
+                    msg = ("Wrote chunk %(chunk_name)s (%(chunk_id)d/"
+                           "%(total_chunks)s) of length %(bytes_read)d "
+                           "to Swift returning MD5 of content: "
+                           "%(chunk_etag)s" %
                            {'chunk_name': chunk_name,
                             'chunk_id': chunk_id,
                             'total_chunks': total_chunks,
@@ -458,7 +458,7 @@ class BaseStore(glance.store.base.Store):
                     if bytes_read == 0:
                         # Delete the last chunk, because it's of zero size.
                         # This will happen if size == 0.
-                        LOG.debug(_("Deleting final zero-length chunk"))
+                        LOG.debug("Deleting final zero-length chunk")
                         connection.delete_object(location.container,
                                                  chunk_name)
                         break
@@ -607,7 +607,7 @@ class SingleTenantStore(BaseStore):
 
     def get_connection(self, location):
         if not location.user:
-            reason = (_("Location is missing user:password information."))
+            reason = "Location is missing user:password information."
             LOG.debug(reason)
             raise exception.BadStoreUri(message=reason)
 
@@ -619,8 +619,8 @@ class SingleTenantStore(BaseStore):
             try:
                 tenant_name, user = location.user.split(':')
             except ValueError:
-                reason = (_("Badly formed tenant:user '%(user)s' in "
-                            "Swift URI") % {'user': location.user})
+                reason = ("Badly formed tenant:user '%(user)s' in "
+                          "Swift URI" % {'user': location.user})
                 LOG.debug(reason)
                 raise exception.BadStoreUri()
         else:

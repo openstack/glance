@@ -378,10 +378,10 @@ class Daemon(object):
             LOG.info(msg)
 
     def _run(self, application):
-        LOG.debug(_("Running application"))
+        LOG.debug("Running application")
         self.pool.spawn_n(application.run, self.pool, self.event)
         eventlet.spawn_after(self.wakeup_time, self._run, application)
-        LOG.debug(_("Next run scheduled in %s seconds") % self.wakeup_time)
+        LOG.debug("Next run scheduled in %s seconds" % self.wakeup_time)
 
 
 class Scrubber(object):
@@ -449,7 +449,7 @@ class Scrubber(object):
             uri = crypt.urlsafe_decrypt(CONF.metadata_encryption_key, uri)
 
         try:
-            LOG.debug(_("Deleting URI from image %(image_id)s.") %
+            LOG.debug("Deleting URI from image %(image_id)s." %
                       {'image_id': image_id})
 
             # Here we create a request context with credentials to support

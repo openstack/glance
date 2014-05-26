@@ -737,7 +737,7 @@ def task_update(context, task_id, values):
     try:
         task = DATA['tasks'][task_id]
     except KeyError:
-        msg = (_("No task found with ID %s") % task_id)
+        msg = "No task found with ID %s" % task_id
         LOG.debug(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
@@ -769,7 +769,7 @@ def _task_get(context, task_id, force_show_deleted=False):
         raise exception.TaskNotFound(task_id=task_id)
 
     if not _is_task_visible(context, task):
-        msg = (_("Forbidding request, task %s is not visible") % task_id)
+        msg = "Forbidding request, task %s is not visible" % task_id
         LOG.debug(msg)
         raise exception.Forbidden(msg)
 
@@ -787,7 +787,7 @@ def task_delete(context, task_id):
         DATA['tasks'][task_id]['updated_at'] = timeutils.utcnow()
         return copy.deepcopy(DATA['tasks'][task_id])
     except KeyError:
-        msg = (_("No task found with ID %s") % task_id)
+        msg = "No task found with ID %s" % task_id
         LOG.debug(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
@@ -909,7 +909,7 @@ def _task_info_update(task_id, values):
     try:
         task_info = DATA['task_info'][task_id]
     except KeyError:
-        msg = (_("No task info found with task id %s") % task_id)
+        msg = "No task info found with task id %s" % task_id
         LOG.debug(msg)
         raise exception.TaskNotFound(task_id=task_id)
 

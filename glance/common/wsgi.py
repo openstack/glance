@@ -275,7 +275,7 @@ class Server(object):
                 break
         eventlet.greenio.shutdown_safe(self.sock)
         self.sock.close()
-        self.logger.debug(_('Exited'))
+        self.logger.debug('Exited')
 
     def wait(self):
         """Wait until all servers have completed running."""

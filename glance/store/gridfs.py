@@ -154,8 +154,8 @@ class Store(glance.store.base.Store):
             parsed = urlparse.urlparse(store_location.get_uri())
             return self.fs.get(parsed.netloc)
         except gridfs.errors.NoFile:
-            msg = _("Could not find %s image in GridFS") % \
-                store_location.get_uri()
+            msg = ("Could not find %s image in GridFS"
+                   % store_location.get_uri())
             LOG.debug(msg)
             raise exception.NotFound(msg)
 
@@ -180,9 +180,9 @@ class Store(glance.store.base.Store):
             raise exception.Duplicate(_("GridFS already has an image at "
                                         "location %s") % loc.get_uri())
 
-        LOG.debug(_("Adding a new image to GridFS with id %(id)s and "
-                    "size %(size)s") % {'id': image_id,
-                                        'size': image_size})
+        LOG.debug("Adding a new image to GridFS with id %(id)s and "
+                  "size %(size)s" % {'id': image_id,
+                                     'size': image_size})
 
         try:
             self.fs.put(image_file, _id=image_id)
@@ -193,10 +193,10 @@ class Store(glance.store.base.Store):
             with excutils.save_and_reraise_exception():
                 self.fs.delete(image_id)
 
-        LOG.debug(_("Uploaded image %(id)s, md5 %(md5)s, length %(length)s "
-                    "to GridFS") % {'id': image._id,
-                                    'md5': image.md5,
-                                    'length': image.length})
+        LOG.debug("Uploaded image %(id)s, md5 %(md5)s, length %(length)s "
+                  "to GridFS" % {'id': image._id,
+                                 'md5': image.md5,
+                                 'length': image.length})
 
         return (loc.get_uri(), image.length, image.md5, {})
 
@@ -212,4 +212,4 @@ class Store(glance.store.base.Store):
         """
         image = self._get_file(location)
         self.fs.delete(image._id)
-        LOG.debug(_("Deleted image %s from GridFS"), image._id)
+        LOG.debug("Deleted image %s from GridFS", image._id)

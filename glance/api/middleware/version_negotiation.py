@@ -50,24 +50,24 @@ class VersionNegotiationFilter(wsgi.Middleware):
 
         accept = str(req.accept)
         if accept.startswith('application/vnd.openstack.images-'):
-            LOG.debug(_("Using media-type versioning"))
+            LOG.debug("Using media-type versioning")
             token_loc = len('application/vnd.openstack.images-')
             req_version = accept[token_loc:]
         else:
-            LOG.debug(_("Using url versioning"))
+            LOG.debug("Using url versioning")
             # Remove version in url so it doesn't conflict later
             req_version = self._pop_path_info(req)
 
         try:
             version = self._match_version_string(req_version)
         except ValueError:
-            LOG.debug(_("Unknown version. Returning version choices."))
+            LOG.debug("Unknown version. Returning version choices.")
             return self.versions_app
 
         req.environ['api.version'] = version
         req.path_info = ''.join(('/v', str(version), req.path_info))
-        LOG.debug(_("Matched version: v%d"), version)
-        LOG.debug(_('new path %s'), req.path_info)
+        LOG.debug("Matched version: v%d", version)
+        LOG.debug('new path %s', req.path_info)
         return None
 
     def _match_version_string(self, subject):

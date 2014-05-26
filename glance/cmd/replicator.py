@@ -101,8 +101,8 @@ class ImageService(object):
         if self.auth_token:
             headers.setdefault('x-auth-token', self.auth_token)
 
-        logging.debug(_('Request: %(method)s http://%(server)s:%(port)s'
-                        '%(url)s with headers %(headers)s')
+        logging.debug('Request: %(method)s http://%(server)s:%(port)s'
+                      '%(url)s with headers %(headers)s'
                       % {'method': method,
                          'server': self.conn.host,
                          'port': self.conn.port,
@@ -114,7 +114,7 @@ class ImageService(object):
         headers = self._header_list_to_dict(response.getheaders())
         code = response.status
         code_description = httplib.responses[code]
-        logging.debug(_('Response: %(code)s %(status)s %(headers)s')
+        logging.debug('Response: %(code)s %(status)s %(headers)s'
                       % {'code': code,
                          'status': code_description,
                          'headers': repr(headers)})
@@ -236,7 +236,7 @@ class ImageService(object):
         response = self._http_request('POST', url, headers, image_data)
         headers = self._header_list_to_dict(response.getheaders())
 
-        logging.debug(_('Image post done'))
+        logging.debug('Image post done')
         body = response.read()
         return headers, body
 
@@ -255,7 +255,7 @@ class ImageService(object):
         response = self._http_request('PUT', url, headers, '')
         headers = self._header_list_to_dict(response.getheaders())
 
-        logging.debug(_('Image post done'))
+        logging.debug('Image post done')
         body = response.read()
         return headers, body
 
@@ -289,7 +289,7 @@ def replication_size(options, args):
     client = imageservice(httplib.HTTPConnection(server, port),
                           options.slavetoken)
     for image in client.get_images():
-        logging.debug(_('Considering image: %(image)s') % {'image': image})
+        logging.debug('Considering image: %(image)s' % {'image': image})
         if image['status'] == 'active':
             total_size += int(image['size'])
             count += 1
@@ -354,15 +354,15 @@ def _dict_diff(a, b):
     """
     # Only things the master has which the slave lacks matter
     if set(a.keys()) - set(b.keys()):
-        logging.debug(_('metadata diff -- master has extra keys: %(keys)s')
+        logging.debug('metadata diff -- master has extra keys: %(keys)s'
                       % {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
         return True
 
     for key in a:
         if str(a[key]) != str(b[key]):
-            logging.debug(_('metadata diff -- value differs for key '
-                            '%(key)s: master "%(master_value)s" vs '
-                            'slave "%(slave_value)s"') %
+            logging.debug('metadata diff -- value differs for key '
+                          '%(key)s: master "%(master_value)s" vs '
+                          'slave "%(slave_value)s"' %
                           {'key': key, 'master_value': a[key],
                            'slave_value': b[key]})
             return True
@@ -413,20 +413,20 @@ def replication_load(options, args):
             # Remove keys which don't make sense for replication
             for key in options.dontreplicate.split(' '):
                 if key in meta:
-                    logging.debug(_('Stripping %(header)s from saved '
-                                    'metadata'), {'header': key})
+                    logging.debug('Stripping %(header)s from saved '
+                                  'metadata', {'header': key})
                     del meta[key]
 
             if _image_present(client, image_uuid):
                 # NOTE(mikal): Perhaps we just need to update the metadata?
                 # Note that we don't attempt to change an image file once it
                 # has been uploaded.
-                logging.debug(_('Image %s already present'), image_uuid)
+                logging.debug('Image %s already present', image_uuid)
                 headers = client.get_image_meta(image_uuid)
                 for key in options.dontreplicate.split(' '):
                     if key in headers:
-                        logging.debug(_('Stripping %(header)s from slave '
-                                        'metadata'), {'header': key})
+                        logging.debug('Stripping %(header)s from slave '
+                                      'metadata', {'header': key})
                         del headers[key]
 
                 if _dict_diff(meta, headers):
@@ -482,7 +482,7 @@ def replication_livecopy(options, args):
         logging.info(_('Considering %(id)s') % {'id': image['id']})
         for key in options.dontreplicate.split(' '):
             if key in image:
-                logging.debug(_('Stripping %(header)s from master metadata'),
+                logging.debug('Stripping %(header)s from master metadata',
                               {'header': key})
                 del image[key]
 
@@ -494,12 +494,12 @@ def replication_livecopy(options, args):
             if headers['status'] == 'active':
                 for key in options.dontreplicate.split(' '):
                     if key in image:
-                        logging.debug(_('Stripping %(header)s from master '
-                                        'metadata'), {'header': key})
+                        logging.debug('Stripping %(header)s from master '
+                                      'metadata', {'header': key})
                         del image[key]
                     if key in headers:
-                        logging.debug(_('Stripping %(header)s from slave '
-                                        'metadata'), {'header': key})
+                        logging.debug('Stripping %(header)s from slave '
+                                      'metadata', {'header': key})
                         del headers[key]
 
                 if _dict_diff(image, headers):
@@ -553,12 +553,12 @@ def replication_compare(options, args):
             headers = slave_client.get_image_meta(image['id'])
             for key in options.dontreplicate.split(' '):
                 if key in image:
-                    logging.debug(_('Stripping %(header)s from master '
-                                    'metadata'), {'header': key})
+                    logging.debug('Stripping %(header)s from master '
+                                  'metadata', {'header': key})
                     del image[key]
                 if key in headers:
-                    logging.debug(_('Stripping %(header)s from slave '
-                                    'metadata'), {'header': key})
+                    logging.debug('Stripping %(header)s from slave '
+                                  'metadata', {'header': key})
                     del headers[key]
 
             for key in image:
@@ -573,7 +573,7 @@ def replication_compare(options, args):
                                                                'undefined')})
                     differences[image['id']] = 'diff'
                 else:
-                    logging.debug(_('%(image_id)s is identical')
+                    logging.debug('%(image_id)s is identical'
                                   % {'image_id': image['id']})
 
         elif image['status'] == 'active':

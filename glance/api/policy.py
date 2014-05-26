@@ -80,7 +80,7 @@ class Enforcer(object):
             rule_type = "default "
 
         text_rules = dict((k, str(v)) for k, v in rules.items())
-        msg = (_('Loaded %(rule_type)spolicy rules: %(text_rules)s') %
+        msg = ('Loaded %(rule_type)spolicy rules: %(text_rules)s' %
                {'rule_type': rule_type, 'text_rules': text_rules})
         LOG.debug(msg)
 
@@ -103,7 +103,7 @@ class Enforcer(object):
         """
         mtime = os.path.getmtime(self.policy_path)
         if not self.policy_file_contents or mtime != self.policy_file_mtime:
-            LOG.debug(_("Loading policy from %s") % self.policy_path)
+            LOG.debug("Loading policy from %s" % self.policy_path)
             with open(self.policy_path) as fap:
                 raw_contents = fap.read()
                 rules_dict = jsonutils.loads(raw_contents)
