@@ -439,7 +439,7 @@ class TestTask(test_utils.BaseTestCase):
         self.task.fail('{"message": "connection failed"}')
         self.assertEqual(self.task.status, 'failure')
         self.assertEqual(self.task.message, '{"message": "connection failed"}')
-        self.assertEqual(self.task.result, None)
+        self.assertIsNone(self.task.result)
         expected = (timeutils.utcnow() +
                     datetime.timedelta(hours=CONF.task.task_time_to_live))
         self.assertEqual(
