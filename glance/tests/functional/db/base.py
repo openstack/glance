@@ -196,7 +196,7 @@ class DriverTests(object):
                   for p in image['properties']]
         self.assertEqual(expected, actual)
 
-    def test_image_create_unknown_attribtues(self):
+    def test_image_create_unknown_attributes(self):
         fixture = {'ping': 'pong'}
         self.assertRaises(exception.Invalid,
                           self.db_api.image_create, self.context, fixture)
