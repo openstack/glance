@@ -51,7 +51,7 @@ class BaseTestCase(object):
         super(BaseTestCase, self).tearDown()
 
     def config(self, **kw):
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             CONF.set_override(k, v, group=None)
 
     def get_store(self, **kwargs):

@@ -18,6 +18,8 @@ import copy
 import functools
 import uuid
 
+import six
+
 from glance.common import exception
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
@@ -246,7 +248,7 @@ def _filter_images(images, filters, context,
                 continue
 
         to_add = True
-        for k, value in filters.iteritems():
+        for k, value in six.iteritems(filters):
             key = k
             if k.endswith('_min') or k.endswith('_max'):
                 key = key[0:-4]
@@ -847,7 +849,7 @@ def _filter_tasks(tasks, filters, context, admin_as_user=False):
             continue
 
         add = True
-        for k, value in filters.iteritems():
+        for k, value in six.iteritems(filters):
             add = task[k] == value and task['deleted'] is False
             if not add:
                 break

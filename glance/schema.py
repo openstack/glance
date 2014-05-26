@@ -14,6 +14,7 @@
 #    under the License.
 
 import jsonschema
+import six
 
 from glance.common import exception
 from glance.common import utils
@@ -37,7 +38,7 @@ class Schema(object):
 
     def filter(self, obj):
         filtered = {}
-        for key, value in obj.iteritems():
+        for key, value in six.iteritems(obj):
             if self._filter_func(self.properties, key) and value is not None:
                 filtered[key] = value
         return filtered

@@ -424,7 +424,7 @@ class Scrubber(object):
     def run(self, pool, event=None):
         delete_jobs = self._get_delete_jobs(self.file_queue, True)
         if delete_jobs:
-            for image_id, jobs in delete_jobs.iteritems():
+            for image_id, jobs in six.iteritems(delete_jobs):
                 self._scrub_image(pool, image_id, jobs)
 
         if CONF.cleanup_scrubber:
@@ -521,7 +521,7 @@ class Scrubber(object):
         if not delete_jobs:
             return
 
-        for image_id, jobs in delete_jobs.iteritems():
+        for image_id, jobs in six.iteritems(delete_jobs):
             with lockutils.lock("scrubber-%s" % image_id,
                                 lock_file_prefix='glance-', external=True):
                 if not self.file_queue.has_image(image_id):

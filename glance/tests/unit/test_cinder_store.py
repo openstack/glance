@@ -16,6 +16,7 @@
 import stubout
 
 from cinderclient.v2 import client as cinderclient
+import six
 
 from glance.common import exception
 from glance.openstack.common import units
@@ -26,7 +27,7 @@ from glance.tests.unit import base
 
 class FakeObject(object):
     def __init__(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             setattr(self, name, value)
 
 

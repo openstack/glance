@@ -103,7 +103,7 @@ class BaseTestCase(testtools.TestCase):
         test by the fixtures cleanup process.
         """
         group = kw.pop('group', None)
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             CONF.set_override(k, v, group)
 
 
@@ -452,7 +452,7 @@ class RegistryAPIMixIn(object):
         if headers is None:
             headers = {}
         req = webob.Request.blank(url)
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             req.headers[k] = v
         if method:
             req.method = method

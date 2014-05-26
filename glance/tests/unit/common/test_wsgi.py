@@ -22,6 +22,7 @@ import eventlet.patcher
 import fixtures
 import gettext
 import mock
+import six
 import webob
 
 from glance.common import exception
@@ -407,7 +408,7 @@ class TestHelpers(test_utils.BaseTestCase):
                    'location': "file:///tmp/glance-tests/2",
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
         headers = utils.image_meta_to_http_headers(fixture)
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             self.assertIsInstance(v, unicode)
 
     def test_data_passed_properly_through_headers(self):
@@ -429,7 +430,7 @@ class TestHelpers(test_utils.BaseTestCase):
         response = FakeResponse()
         response.headers = headers
         result = utils.get_image_meta_from_headers(response)
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             if v is not None:
                 self.assertEqual(v, result[k])
             else:
