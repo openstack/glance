@@ -28,7 +28,7 @@
 
   **--config-dir DIR**
         Path to a config directory to pull \*.conf files from. This
-        file set is sorted, so as to provide a predictable parse order
+        file set is sorted, to provide a predictable parse order
         if individual options are over-ridden. The set is parsed after
         the file(s) specified via previous --config-file, arguments hence
         over-ridden options in the directory take precedence. This means

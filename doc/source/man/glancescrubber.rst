@@ -21,7 +21,7 @@ glance-scrubber [options]
 DESCRIPTION
 ===========
 
-glance-scrubber is an utility that cleans up images that have been deleted. The
+glance-scrubber is a utility that cleans up images that have been deleted. The
 mechanics of this differ depending on the backend store and pending_deletion
 options chosen.
 

@@ -165,7 +165,7 @@ These two resources also accept additional query parameters:
 * ``marker=ID``
 
   An image identifier marker may be specified. When present only images which
-  occur after the identifier ``ID`` will be listed, ie the images which have
+  occur after the identifier ``ID`` will be listed, i.e. the images which have
   a `sort_key` later than that of the marker ``ID`` in the `sort_dir` direction.
 
 * ``limit=LIMIT``
@@ -396,7 +396,7 @@ The list of metadata headers that Glance accepts are listed below.
   When present, Glance will use the supplied identifier for the image.
   If the identifier already exists in that Glance node, then a
   **409 Conflict** will be returned by Glance. The value of the header
-  must be a uuid in hexadecimal string notation
+  must be an uuid in hexadecimal string notation
   (i.e. 71c675ab-d94f-49cd-a114-e12490b328d9).
 
   When this header is *not* present, Glance will generate an identifier
