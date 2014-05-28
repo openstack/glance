@@ -381,7 +381,7 @@ def create_options(parser):
                       help=optparse.SUPPRESS_HELP)
 
     parser.add_option('-S', '--os_auth_strategy', dest="os_auth_strategy",
-                      metavar="STRATEGY", default=None,
+                      metavar="STRATEGY",
                       help="Authentication strategy (keystone or noauth).")
 
 

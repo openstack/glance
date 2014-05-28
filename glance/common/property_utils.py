@@ -33,7 +33,6 @@ LOG = logging.getLogger(__name__)
 
 property_opts = [
     cfg.StrOpt('property_protection_file',
-               default=None,
                help=_('The location of the property protection file.')),
     cfg.StrOpt('property_protection_rule_format',
                default='roles',
