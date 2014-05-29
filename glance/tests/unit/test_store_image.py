@@ -15,6 +15,7 @@
 import mox
 
 from glance.common import exception
+import glance.location
 import glance.store
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils
@@ -87,7 +88,7 @@ class TestStoreImage(utils.BaseTestCase):
         super(TestStoreImage, self).setUp()
 
     def test_image_delete(self):
-        image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
+        image = glance.location.ImageProxy(self.image_stub, {}, self.store_api)
         location = image.locations[0]
         self.assertEqual(image.status, 'active')
         self.store_api.get_from_backend({}, location['url'])
@@ -97,7 +98,7 @@ class TestStoreImage(utils.BaseTestCase):
                           self.store_api.get_from_backend, {}, location['url'])
 
     def test_image_get_data(self):
-        image = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
+        image = glance.location.ImageProxy(self.image_stub, {}, self.store_api)
         self.assertEqual(image.get_data(), 'XXX')
 
     def test_image_get_data_from_second_location(self):
@@ -107,7 +108,8 @@ class TestStoreImage(utils.BaseTestCase):
             else:
                 return self.data[location]
 
-        image1 = glance.store.ImageProxy(self.image_stub, {}, self.store_api)
+        image1 = glance.location.ImageProxy(self.image_stub, {},
+                                            self.store_api)
         self.assertEqual(image1.get_data(), 'XXX')
         # Multiple location support
         context = glance.context.RequestContext(user=USER1)
@@ -128,7 +130,8 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_set_data(self):
         context = glance.context.RequestContext(user=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
-        image = glance.store.ImageProxy(image_stub, context, self.store_api)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api)
         image.set_data('YYYY', 4)
         self.assertEqual(image.size, 4)
         #NOTE(markwash): FakeStore returns image_id for location
@@ -141,7 +144,7 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         loc_meta = {'key': 'value5032'}
         store_api = unit_test_utils.FakeStoreAPI(store_metadata=loc_meta)
-        image = glance.store.ImageProxy(image_stub, context, store_api)
+        image = glance.location.ImageProxy(image_stub, context, store_api)
         image.set_data('YYYY', 4)
         self.assertEqual(image.size, 4)
         location_data = image.locations[0]
@@ -158,7 +161,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_set_data_unknown_size(self):
         context = glance.context.RequestContext(user=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
-        image = glance.store.ImageProxy(image_stub, context, self.store_api)
+        image = glance.location.ImageProxy(image_stub, context, self.store_api)
         image.set_data('YYYY', None)
         self.assertEqual(image.size, 4)
         #NOTE(markwash): FakeStore returns image_id for location
@@ -173,8 +176,8 @@ class TestStoreImage(utils.BaseTestCase):
 
     def _add_image(self, context, image_id, data, len):
         image_stub = ImageStub(image_id, status='queued', locations=[])
-        image = glance.store.ImageProxy(image_stub,
-                                        context, self.store_api)
+        image = glance.location.ImageProxy(image_stub,
+                                           context, self.store_api)
         image.set_data(data, len)
         self.assertEqual(image.size, len)
         #NOTE(markwash): FakeStore returns image_id for location
@@ -472,7 +475,8 @@ class TestStoreImage(utils.BaseTestCase):
 
         context = glance.context.RequestContext(user=USER1)
         image_stub1 = ImageStub('fake_image_id', status='queued', locations=[])
-        image1 = glance.store.ImageProxy(image_stub1, context, self.store_api)
+        image1 = glance.location.ImageProxy(image_stub1, context,
+                                            self.store_api)
 
         location_bad = {'url': 'unknown://location', 'metadata': {}}
 
@@ -493,7 +497,8 @@ class TestStoreImage(utils.BaseTestCase):
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
 
         image_stub2 = ImageStub('fake_image_id', status='queued', locations=[])
-        image2 = glance.store.ImageProxy(image_stub2, context, self.store_api)
+        image2 = glance.location.ImageProxy(image_stub2, context,
+                                            self.store_api)
 
         location_bad = {'url': UUID2, 'metadata': "a invalid metadata"}
 
@@ -517,7 +522,8 @@ class TestStoreImage(utils.BaseTestCase):
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
-        image3 = glance.store.ImageProxy(image_stub3, context, self.store_api)
+        image3 = glance.location.ImageProxy(image_stub3, context,
+                                            self.store_api)
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
@@ -544,7 +550,8 @@ class TestStoreImage(utils.BaseTestCase):
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
-        image3 = glance.store.ImageProxy(image_stub3, context, self.store_api)
+        image3 = glance.location.ImageProxy(image_stub3, context,
+                                            self.store_api)
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
@@ -570,7 +577,8 @@ class TestStoreImage(utils.BaseTestCase):
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
-        image3 = glance.store.ImageProxy(image_stub3, context, self.store_api)
+        image3 = glance.location.ImageProxy(image_stub3, context,
+                                            self.store_api)
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
@@ -598,7 +606,8 @@ class TestStoreImage(utils.BaseTestCase):
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
-        image3 = glance.store.ImageProxy(image_stub3, context, self.store_api)
+        image3 = glance.location.ImageProxy(image_stub3, context,
+                                            self.store_api)
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
@@ -630,7 +639,8 @@ class TestStoreImage(utils.BaseTestCase):
         location3 = {'url': UUID3, 'metadata': {}}
 
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
-        image3 = glance.store.ImageProxy(image_stub3, context, self.store_api)
+        image3 = glance.location.ImageProxy(image_stub3, context,
+                                            self.store_api)
         image3.locations += [location2, location3]
 
         image_stub3.locations.reverse()
@@ -653,11 +663,11 @@ class TestStoreImageRepo(utils.BaseTestCase):
         super(TestStoreImageRepo, self).setUp()
         self.store_api = unit_test_utils.FakeStoreAPI()
         self.image_stub = ImageStub(UUID1)
-        self.image = glance.store.ImageProxy(self.image_stub,
-                                             {}, self.store_api)
+        self.image = glance.location.ImageProxy(self.image_stub,
+                                                {}, self.store_api)
         self.image_repo_stub = ImageRepoStub()
-        self.image_repo = glance.store.ImageRepoProxy(self.image_repo_stub,
-                                                      {}, self.store_api)
+        self.image_repo = glance.location.ImageRepoProxy(self.image_repo_stub,
+                                                         {}, self.store_api)
 
     def test_add_updates_acls(self):
         self.image_stub.locations = [{'url': 'foo', 'metadata': {}},
@@ -733,7 +743,7 @@ class TestImageFactory(utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageFactory, self).setUp()
-        self.image_factory = glance.store.ImageFactoryProxy(
+        self.image_factory = glance.location.ImageFactoryProxy(
             ImageFactoryStub(),
             glance.context.RequestContext(user=USER1),
             unit_test_utils.FakeStoreAPI())

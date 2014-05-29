@@ -20,6 +20,7 @@ from glance.api import property_protections
 from glance.common import property_utils
 import glance.db
 import glance.domain
+import glance.location
 import glance.notifier
 import glance.quota
 import glance.store
@@ -35,7 +36,7 @@ class Gateway(object):
 
     def get_image_factory(self, context):
         image_factory = glance.domain.ImageFactory()
-        store_image_factory = glance.store.ImageFactoryProxy(
+        store_image_factory = glance.location.ImageFactoryProxy(
             image_factory, context, self.store_api)
         quota_image_factory = glance.quota.ImageFactoryProxy(
             store_image_factory, context, self.db_api)
@@ -67,7 +68,7 @@ class Gateway(object):
 
     def get_repo(self, context):
         image_repo = glance.db.ImageRepo(context, self.db_api)
-        store_image_repo = glance.store.ImageRepoProxy(
+        store_image_repo = glance.location.ImageRepoProxy(
             image_repo, context, self.store_api)
         quota_image_repo = glance.quota.ImageRepoProxy(
             store_image_repo, context, self.db_api)
