@@ -45,7 +45,8 @@ VMWARE_DATASTORE_CONF = {
     'vmware_datacenter_path': 'dc1',
     'vmware_datastore_name': 'ds1',
     'vmware_store_image_dir': '/openstack_glance',
-    'vmware_api_insecure': 'True'
+    'vmware_api_insecure': 'True',
+    'vmware_api_retry_count': 10
 }
 
 
@@ -126,6 +127,8 @@ class TestStore(base.StoreClearingUnitTest):
             VMWARE_DATASTORE_CONF['vmware_datastore_name'])
         self.store.api_insecure = (
             VMWARE_DATASTORE_CONF['vmware_api_insecure'])
+        self.store.api_retry_count = (
+            VMWARE_DATASTORE_CONF['vmware_api_retry_count'])
         self.store._session = FakeSession()
         self.store._session.invoke_api = mock.Mock()
         self.store._session.wait_for_task = mock.Mock()
@@ -308,3 +311,48 @@ class TestStore(base.StoreClearingUnitTest):
         self.assertEqual(expected_checksum, reader.checksum.hexdigest())
         self.assertEqual(image.len, reader.size)
         self.assertTrue(reader.closed)
+
+    def test_sanity_check_api_retry_count(self):
+        """Test that sanity check raises if api_retry_count is <= 0."""
+        vm_store.CONF.vmware_api_retry_count = -1
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store._sanity_check)
+        vm_store.CONF.vmware_api_retry_count = 0
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store._sanity_check)
+        vm_store.CONF.vmware_api_retry_count = 1
+        try:
+            self.store._sanity_check()
+        except exception.BadStoreConfiguration:
+            self.fail()
+
+    def test_sanity_check_task_poll_interval(self):
+        """Test that sanity check raises if task_poll_interval is <= 0."""
+        vm_store.CONF.vmware_task_poll_interval = -1
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store._sanity_check)
+        vm_store.CONF.vmware_task_poll_interval = 0
+        self.assertRaises(exception.BadStoreConfiguration,
+                          self.store._sanity_check)
+        vm_store.CONF.vmware_task_poll_interval = 1
+        try:
+            self.store._sanity_check()
+        except exception.BadStoreConfiguration:
+            self.fail()
+
+    def test_retry_count(self):
+        expected_image_id = str(uuid.uuid4())
+        expected_size = FIVE_KB
+        expected_contents = "*" * expected_size
+        image = six.StringIO(expected_contents)
+        self.store._create_session = mock.Mock()
+        with mock.patch('httplib.HTTPConnection') as HttpConn:
+            HttpConn.return_value = FakeHTTPConnection(status=401)
+            try:
+                location, size, checksum, _ = self.store.add(expected_image_id,
+                                                             image,
+                                                             expected_size)
+            except exception.NotAuthenticated:
+                pass
+        self.assertEqual(VMWARE_DATASTORE_CONF['vmware_api_retry_count'] + 1,
+                         self.store._create_session.call_count)

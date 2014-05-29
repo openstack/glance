@@ -1,4 +1,5 @@
 # Copyright 2014 OpenStack, LLC
+# Copyright (c) 2014 VMware, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -22,10 +23,12 @@ import os
 import netaddr
 from oslo.config import cfg
 from oslo.vmware import api
+from retrying import retry
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.openstack.common import excutils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -33,6 +36,8 @@ import glance.store.location
 
 
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
+_LI = gettextutils._LI
 
 MAX_REDIRECTS = 5
 DEFAULT_STORE_IMAGE_DIR = '/openstack_glance'
@@ -131,6 +136,13 @@ class _Reader(object):
             self.current_chunk = self.current_chunk[size:]
         return ret
 
+    def rewind(self):
+        try:
+            self.data.seek(0)
+        except IOError:
+            with excutils.save_and_reraise_exception():
+                LOG.exception(_LE('Failed to rewind image content'))
+
     def _get_chunk(self):
         if not self.closed:
             chunk = self.data.read(self.blocksize)
@@ -212,7 +224,20 @@ class Store(glance.store.base.Store):
     def get_schemes(self):
         return (STORE_SCHEME,)
 
+    def _sanity_check(self):
+        if CONF.vmware_api_retry_count <= 0:
+            msg = _("vmware_api_retry_count should be greater than zero")
+            LOG.error(msg)
+            raise exception.BadStoreConfiguration(
+                store_name='vmware_datastore', reason=msg)
+        if CONF.vmware_task_poll_interval <= 0:
+            msg = _("vmware_task_poll_interval should be greater than zero")
+            LOG.error(msg)
+            raise exception.BadStoreConfiguration(
+                store_name='vmware_datastore', reason=msg)
+
     def configure(self):
+        self._sanity_check()
         self.scheme = STORE_SCHEME
         self.server_host = self._option_get('vmware_server_host')
         self.server_username = self._option_get('vmware_server_username')
@@ -220,12 +245,7 @@ class Store(glance.store.base.Store):
         self.api_retry_count = CONF.vmware_api_retry_count
         self.task_poll_interval = CONF.vmware_task_poll_interval
         self.api_insecure = CONF.vmware_api_insecure
-        self._session = api.VMwareAPISession(self.server_host,
-                                             self.server_username,
-                                             self.server_password,
-                                             self.api_retry_count,
-                                             self.task_poll_interval)
-        self._service_content = self._session.vim.service_content
+        self._create_session()
 
     def configure_add(self):
         self.datacenter_path = CONF.vmware_datacenter_path
@@ -241,15 +261,22 @@ class Store(glance.store.base.Store):
                                                 search_index_moref,
                                                 inventoryPath=inventory_path)
             if ds_moref is None:
-                reason = (_("Could not find datastore %(ds_name)s "
-                            "in datacenter %(dc_path)s")
-                          % {'ds_name': self.datastore_name,
-                             'dc_path': self.datacenter_path})
+                msg = (_("Could not find datastore %(ds_name)s "
+                         "in datacenter %(dc_path)s")
+                       % {'ds_name': self.datastore_name,
+                          'dc_path': self.datacenter_path})
+                LOG.error(msg)
                 raise exception.BadStoreConfiguration(
-                    store_name='vmware_datastore', reason=reason)
+                    store_name='vmware_datastore', reason=msg)
             else:
                 _datastore_info_valid = True
         self.store_image_dir = CONF.vmware_store_image_dir
+
+    def _create_session(self):
+        self._session = api.VMwareAPISession(
+            self.server_host, self.server_username, self.server_password,
+            self.api_retry_count, self.task_poll_interval)
+        self._service_content = self._session.vim.service_content
 
     def _option_get(self, param):
         result = getattr(CONF, param)
@@ -266,6 +293,14 @@ class Store(glance.store.base.Store):
             cookie = list(vim_cookies)[0]
             return cookie.name + '=' + cookie.value
 
+    def _session_not_authenticated(exc):
+        if isinstance(exc, exception.NotAuthenticated):
+            LOG.info(_LI("Store session is not authenticated, retry attempt"))
+            return True
+        return False
+
+    @retry(stop_max_attempt_number=CONF.vmware_api_retry_count + 1,
+           retry_on_exception=_session_not_authenticated)
     def add(self, image_id, image_file, image_size):
         """Stores an image file with supplied identifier to the backend
         storage system and returns a tuple containing information
@@ -301,15 +336,20 @@ class Store(glance.store.base.Store):
             res = conn.getresponse()
         except Exception:
             with excutils.save_and_reraise_exception():
-                LOG.exception(_('Failed to upload content of image '
-                                '%(image)s') % {'image': image_id})
+                LOG.exception(_LE('Failed to upload content of image '
+                                  '%(image)s'), {'image': image_id})
+
+        if res.status == httplib.UNAUTHORIZED:
+            self._create_session()
+            image_file.rewind()
+            raise exception.NotAuthenticated()
 
         if res.status == httplib.CONFLICT:
             raise exception.Duplicate(_("Image file %(image_id)s already "
                                         "exists!") % {'image_id': image_id})
 
         if res.status not in (httplib.CREATED, httplib.OK):
-            msg = (_('Failed to upload content of image %(image)s') %
+            msg = (_LE('Failed to upload content of image %(image)s') %
                    {'image': image_id})
             LOG.error(msg)
             raise exception.UnexpectedStatus(status=res.status,
@@ -325,11 +365,7 @@ class Store(glance.store.base.Store):
         :param location: `glance.store.location.Location` object, supplied
                         from glance.store.location.get_location_from_uri()
         """
-        cookie = self._build_vim_cookie_header(
-            self._session.vim.client.options.transport.cookiejar)
-        conn, resp, content_length = self._query(location,
-                                                 'GET',
-                                                 headers={'Cookie': cookie})
+        conn, resp, content_length = self._query(location, 'GET')
         iterator = http_response_iterator(conn, resp, self.CHUNKSIZE)
 
         class ResponseIndexable(glance.store.Indexable):
@@ -349,10 +385,7 @@ class Store(glance.store.base.Store):
         :param location: `glance.store.location.Location` object, supplied
                         from glance.store.location.get_location_from_uri()
         """
-        cookie = self._build_vim_cookie_header(
-            self._session.vim.client.options.transport.cookiejar)
-
-        return self._query(location, 'HEAD', headers={'Cookie': cookie})[2]
+        return self._query(location, 'HEAD')[2]
 
     def delete(self, location):
         """Takes a `glance.store.location.Location` object that indicates
@@ -380,24 +413,32 @@ class Store(glance.store.base.Store):
             self._session.wait_for_task(delete_task)
         except Exception:
             with excutils.save_and_reraise_exception():
-                LOG.exception(_('Failed to delete image %(image)s content.') %
+                LOG.exception(_LE('Failed to delete image %(image)s content.'),
                               {'image': location.image_id})
 
-    def _query(self, location, method, headers, depth=0):
+    @retry(stop_max_attempt_number=CONF.vmware_api_retry_count + 1,
+           retry_on_exception=_session_not_authenticated)
+    def _query(self, location, method, depth=0):
         if depth > MAX_REDIRECTS:
             msg = ("The HTTP URL exceeded %(max_redirects)s maximum "
-                   "redirects." % {'max_redirects': MAX_REDIRECTS})
+                   "redirects.", {'max_redirects': MAX_REDIRECTS})
             LOG.debug(msg)
             raise exception.MaxRedirectsExceeded(redirects=MAX_REDIRECTS)
         loc = location.store_location
+        cookie = self._build_vim_cookie_header(
+            self._session.vim.client.options.transport.cookiejar)
+        headers = {'Cookie': cookie}
         try:
             conn = self._get_http_conn(method, loc, headers)
             resp = conn.getresponse()
         except Exception:
             with excutils.save_and_reraise_exception():
-                LOG.exception(_('Failed to access image %(image)s content.') %
+                LOG.exception(_LE('Failed to access image %(image)s content.'),
                               {'image': location.image_id})
         if resp.status >= 400:
+            if resp.status == httplib.UNAUTHORIZED:
+                self._create_session()
+                raise exception.NotAuthenticated()
             if resp.status == httplib.NOT_FOUND:
                 msg = 'VMware datastore could not find image at URI.'
                 LOG.debug(msg)
