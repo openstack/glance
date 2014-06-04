@@ -19,10 +19,19 @@ import webob
 import glance.api.middleware.cache
 from glance.common import exception
 from glance import context
-import glance.db.sqlalchemy.api as db
 import glance.registry.client.v1.api as registry
 from glance.tests.unit import base
 from glance.tests.unit import utils as unit_test_utils
+
+
+class ImageStub(object):
+    def __init__(self, image_id, extra_properties={}, visibility='private'):
+        self.image_id = image_id
+        self.visibility = visibility
+        self.status = 'active'
+        self.extra_properties = extra_properties
+        self.checksum = 'c1234'
+        self.size = 123456789
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):
@@ -64,16 +73,20 @@ class TestCacheMiddlewareRequestStashCacheInfo(testtools.TestCase):
         self.middleware = glance.api.middleware.cache.CacheFilter
 
     def test_stash_cache_request_info(self):
-        self.middleware._stash_request_info(self.request, 'asdf', 'GET')
+        self.middleware._stash_request_info(self.request, 'asdf', 'GET', 'v2')
         self.assertEqual(self.request.environ['api.cache.image_id'], 'asdf')
         self.assertEqual(self.request.environ['api.cache.method'], 'GET')
+        self.assertEqual(self.request.environ['api.cache.version'], 'v2')
 
     def test_fetch_cache_request_info(self):
         self.request.environ['api.cache.image_id'] = 'asdf'
         self.request.environ['api.cache.method'] = 'GET'
-        (image_id, method) = self.middleware._fetch_request_info(self.request)
+        self.request.environ['api.cache.version'] = 'v2'
+        (image_id, method, version) = \
+            self.middleware._fetch_request_info(self.request)
         self.assertEqual('asdf', image_id)
         self.assertEqual('GET', method)
+        self.assertEqual('v2', version)
 
     def test_fetch_cache_request_info_unset(self):
         out = self.middleware._fetch_request_info(self.request)
@@ -159,35 +172,56 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         Test for determining that when an admin tries to download a deleted
         image it returns 404 Not Found error.
         """
-        def fake_get_image_metadata(context, image_id):
-            return {'deleted': True}
-
         def dummy_img_iterator():
             for i in range(3):
                 yield i
 
         image_id = 'test1'
+        image_meta = {
+            'id': image_id,
+            'name': 'fake_image',
+            'status': 'deleted',
+            'created_at': '',
+            'min_disk': '10G',
+            'min_ram': '1024M',
+            'protected': False,
+            'locations': '',
+            'checksum': 'c1234',
+            'owner': '',
+            'disk_format': 'raw',
+            'container_format': 'bare',
+            'size': '123456789',
+            'virtual_size': '123456789',
+            'is_public': 'public',
+            'deleted': True,
+            'updated_at': '',
+            'properties': {},
+        }
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
         cache_filter = ProcessRequestTestCacheFilter()
-        self.stubs.Set(registry, 'get_image_metadata',
-                       fake_get_image_metadata)
         self.assertRaises(exception.NotFound, cache_filter._process_v1_request,
-                          request, image_id, dummy_img_iterator)
+                          request, image_id, dummy_img_iterator, image_meta)
 
     def test_process_v1_request_for_deleted_but_cached_image(self):
         """
         Test for determining image is deleted from cache when it is not found
         in Glance Registry.
         """
-        def fake_process_v1_request(request, image_id, image_iterator):
+        def fake_process_v1_request(request, image_id, image_iterator,
+                                    image_meta):
             raise exception.NotFound()
+
+        def fake_get_v1_image_metadata(request, image_id):
+            return {'properties': {}}
 
         image_id = 'test1'
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
 
         cache_filter = ProcessRequestTestCacheFilter()
+        self.stubs.Set(cache_filter, '_get_v1_image_metadata',
+                       fake_get_v1_image_metadata)
         self.stubs.Set(cache_filter, '_process_v1_request',
                        fake_process_v1_request)
         cache_filter.process_request(request)
@@ -195,21 +229,36 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
 
     def test_v1_process_request_image_fetch(self):
 
-        def fake_get_image_metadata(context, image_id):
-            return {'is_public': True, 'deleted': False, 'size': '20'}
-
         def dummy_img_iterator():
             for i in range(3):
                 yield i
 
         image_id = 'test1'
+        image_meta = {
+            'id': image_id,
+            'name': 'fake_image',
+            'status': 'active',
+            'created_at': '',
+            'min_disk': '10G',
+            'min_ram': '1024M',
+            'protected': False,
+            'locations': '',
+            'checksum': 'c1234',
+            'owner': '',
+            'disk_format': 'raw',
+            'container_format': 'bare',
+            'size': '123456789',
+            'virtual_size': '123456789',
+            'is_public': 'public',
+            'deleted': False,
+            'updated_at': '',
+            'properties': {},
+        }
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
         cache_filter = ProcessRequestTestCacheFilter()
-        self.stubs.Set(registry, 'get_image_metadata',
-                       fake_get_image_metadata)
         actual = cache_filter._process_v1_request(
-            request, image_id, dummy_img_iterator)
+            request, image_id, dummy_img_iterator, image_meta)
         self.assertTrue(actual)
 
     def test_v1_remove_location_image_fetch(self):
@@ -218,31 +267,44 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             def show(self, response, raw_response):
                 return 'location_data' in raw_response['image_meta']
 
-        def fake_get_image_metadata(context, image_id):
-            return {'location_data': {'url': "file:///some/path",
-                                      'metadata': {}},
-                    'is_public': True, 'deleted': False, 'size': '20'}
-
         def dummy_img_iterator():
             for i in range(3):
                 yield i
 
         image_id = 'test1'
+        image_meta = {
+            'id': image_id,
+            'name': 'fake_image',
+            'status': 'active',
+            'created_at': '',
+            'min_disk': '10G',
+            'min_ram': '1024M',
+            'protected': False,
+            'locations': '',
+            'checksum': 'c1234',
+            'owner': '',
+            'disk_format': 'raw',
+            'container_format': 'bare',
+            'size': '123456789',
+            'virtual_size': '123456789',
+            'is_public': 'public',
+            'deleted': False,
+            'updated_at': '',
+            'properties': {},
+        }
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter.serializer = CheckNoLocationDataSerializer()
-        self.stubs.Set(registry, 'get_image_metadata',
-                       fake_get_image_metadata)
         actual = cache_filter._process_v1_request(
-            request, image_id, dummy_img_iterator)
+            request, image_id, dummy_img_iterator, image_meta)
         self.assertFalse(actual)
 
     def test_verify_metadata_deleted_image(self):
         """
         Test verify_metadata raises exception.NotFound for a deleted image
         """
-        image_meta = {'is_public': True, 'deleted': True}
+        image_meta = {'status': 'deleted', 'is_public': True, 'deleted': True}
         cache_filter = ProcessRequestTestCacheFilter()
         self.assertRaises(exception.NotFound,
                           cache_filter._verify_metadata, image_meta)
@@ -258,7 +320,8 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             return image_size
 
         image_id = 'test1'
-        image_meta = {'size': 0, 'deleted': False, 'id': image_id}
+        image_meta = {'size': 0, 'deleted': False, 'id': image_id,
+                      'status': 'active'}
         cache_filter = ProcessRequestTestCacheFilter()
         self.stubs.Set(cache_filter.cache, 'get_image_size',
                        fake_get_image_size)
@@ -270,45 +333,39 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             for i in range(3):
                 yield i
 
-        def fake_image_get(self, image_id):
-            return {
-                'id': 'test1',
-                'name': 'fake_image',
-                'status': 'active',
-                'created_at': '',
-                'min_disk': '10G',
-                'min_ram': '1024M',
-                'protected': False,
-                'locations': '',
-                'checksum': 'c352f4e7121c6eae958bc1570324f17e',
-                'owner': '',
-                'disk_format': 'raw',
-                'container_format': 'bare',
-                'size': '123456789',
-                'virtual_size': '123456789',
-                'is_public': 'public',
-                'deleted': False,
-                'updated_at': '',
-                'properties': {},
-            }
-
-        def fake_image_tag_get_all(context, image_id, session=None):
-            return None
-
         image_id = 'test1'
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext()
+        request.environ['api.cache.image'] = ImageStub(image_id)
 
-        self.stubs.Set(db, 'image_get', fake_image_get)
-        self.stubs.Set(db, 'image_tag_get_all', fake_image_tag_get_all)
+        image_meta = {
+            'id': image_id,
+            'name': 'fake_image',
+            'status': 'active',
+            'created_at': '',
+            'min_disk': '10G',
+            'min_ram': '1024M',
+            'protected': False,
+            'locations': '',
+            'checksum': 'c1234',
+            'owner': '',
+            'disk_format': 'raw',
+            'container_format': 'bare',
+            'size': '123456789',
+            'virtual_size': '123456789',
+            'is_public': 'public',
+            'deleted': False,
+            'updated_at': '',
+            'properties': {},
+        }
 
         cache_filter = ProcessRequestTestCacheFilter()
         response = cache_filter._process_v2_request(
-            request, image_id, dummy_img_iterator)
+            request, image_id, dummy_img_iterator, image_meta)
         self.assertEqual(response.headers['Content-Type'],
                          'application/octet-stream')
         self.assertEqual(response.headers['Content-MD5'],
-                         'c352f4e7121c6eae958bc1570324f17e')
+                         'c1234')
         self.assertEqual(response.headers['Content-Length'],
                          '123456789')
 
@@ -317,17 +374,196 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         Test for cache middleware skip processing when request
         context has not 'download_image' role.
         """
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {'properties': {}}
+
         image_id = 'test1'
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
 
         cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
 
         rules = {'download_image': '!'}
         self.set_policy_rules(rules)
         cache_filter.policy = glance.api.policy.Enforcer()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          cache_filter.process_request, request)
 
-        self.assertIsNone(cache_filter.process_request(request))
+    def test_v1_process_request_download_restricted(self):
+        """
+        Test process_request for v1 api where _member_ role not able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {
+                'id': image_id,
+                'name': 'fake_image',
+                'status': 'active',
+                'created_at': '',
+                'min_disk': '10G',
+                'min_ram': '1024M',
+                'protected': False,
+                'locations': '',
+                'checksum': 'c1234',
+                'owner': '',
+                'disk_format': 'raw',
+                'container_format': 'bare',
+                'size': '123456789',
+                'virtual_size': '123456789',
+                'is_public': 'public',
+                'deleted': False,
+                'updated_at': '',
+                'x_test_key': 'test_1234'
+            }
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['_member_'])
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          cache_filter.process_request, request)
+
+    def test_v1_process_request_download_permitted(self):
+        """
+        Test process_request for v1 api where member role able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {
+                'id': image_id,
+                'name': 'fake_image',
+                'status': 'active',
+                'created_at': '',
+                'min_disk': '10G',
+                'min_ram': '1024M',
+                'protected': False,
+                'locations': '',
+                'checksum': 'c1234',
+                'owner': '',
+                'disk_format': 'raw',
+                'container_format': 'bare',
+                'size': '123456789',
+                'virtual_size': '123456789',
+                'is_public': 'public',
+                'deleted': False,
+                'updated_at': '',
+                'x_test_key': 'test_1234'
+            }
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['member'])
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+        actual = cache_filter.process_request(request)
+        self.assertTrue(actual)
+
+    def test_v1_process_request_image_meta_not_found(self):
+        """
+        Test process_request for v1 api where registry raises NotFound
+        exception as image metadata not found.
+        """
+        image_id = 'test1'
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            raise exception.NotFound()
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['_member_'])
+        cache_filter = ProcessRequestTestCacheFilter()
+        self.stubs.Set(registry, 'get_image_metadata',
+                       fake_get_v1_image_metadata)
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          cache_filter.process_request, request)
+
+    def test_v2_process_request_download_restricted(self):
+        """
+        Test process_request for v2 api where _member_ role not able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+        extra_properties = {
+            'x_test_key': 'test_1234'
+        }
+
+        def fake_get_v2_image_metadata(*args, **kwargs):
+            image = ImageStub(image_id, extra_properties=extra_properties)
+            request.environ['api.cache.image'] = image
+            return glance.api.policy.ImageTarget(image)
+
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext(roles=['_member_'])
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          cache_filter.process_request, request)
+
+    def test_v2_process_request_download_permitted(self):
+        """
+        Test process_request for v2 api where member role able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+        extra_properties = {
+            'x_test_key': 'test_1234'
+        }
+
+        def fake_get_v2_image_metadata(*args, **kwargs):
+            image = ImageStub(image_id, extra_properties=extra_properties)
+            request.environ['api.cache.image'] = image
+            return glance.api.policy.ImageTarget(image)
+
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext(roles=['member'])
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+        actual = cache_filter.process_request(request)
+        self.assertTrue(actual)
 
 
 class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
@@ -350,10 +586,14 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
 
     def test_process_response(self):
         def fake_fetch_request_info(*args, **kwargs):
-            return ('test1', 'GET')
+            return ('test1', 'GET', 'v1')
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {'properties': {}}
 
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
         image_id = 'test1'
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext()
@@ -368,10 +608,14 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         when request context has not 'download_image' role.
         """
         def fake_fetch_request_info(*args, **kwargs):
-            return ('test1', 'GET')
+            return ('test1', 'GET', 'v1')
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {'properties': {}}
 
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
         rules = {'download_image': '!'}
         self.set_policy_rules(rules)
         cache_filter.policy = glance.api.policy.Enforcer()
@@ -383,3 +627,206 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden,
                           cache_filter.process_response, resp)
         self.assertEqual([''], resp.app_iter)
+
+    def test_v1_process_response_download_restricted(self):
+        """
+        Test process_response for v1 api where _member_ role not able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET', 'v1')
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {
+                'id': image_id,
+                'name': 'fake_image',
+                'status': 'active',
+                'created_at': '',
+                'min_disk': '10G',
+                'min_ram': '1024M',
+                'protected': False,
+                'locations': '',
+                'checksum': 'c1234',
+                'owner': '',
+                'disk_format': 'raw',
+                'container_format': 'bare',
+                'size': '123456789',
+                'virtual_size': '123456789',
+                'is_public': 'public',
+                'deleted': False,
+                'updated_at': '',
+                'x_test_key': 'test_1234'
+            }
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['_member_'])
+        resp = webob.Response(request=request)
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          cache_filter.process_response, resp)
+
+    def test_v1_process_response_download_permitted(self):
+        """
+        Test process_response for v1 api where member role able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET', 'v1')
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {
+                'id': image_id,
+                'name': 'fake_image',
+                'status': 'active',
+                'created_at': '',
+                'min_disk': '10G',
+                'min_ram': '1024M',
+                'protected': False,
+                'locations': '',
+                'checksum': 'c1234',
+                'owner': '',
+                'disk_format': 'raw',
+                'container_format': 'bare',
+                'size': '123456789',
+                'virtual_size': '123456789',
+                'is_public': 'public',
+                'deleted': False,
+                'updated_at': '',
+                'x_test_key': 'test_1234'
+            }
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['member'])
+        resp = webob.Response(request=request)
+        actual = cache_filter.process_response(resp)
+        self.assertEqual(actual, resp)
+
+    def test_v1_process_response_image_meta_not_found(self):
+        """
+        Test process_response for v1 api where registry raises NotFound
+        exception as image metadata not found.
+        """
+        image_id = 'test1'
+
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET', 'v1')
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            raise exception.NotFound()
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+
+        self.stubs.Set(registry, 'get_image_metadata',
+                       fake_get_v1_image_metadata)
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['_member_'])
+        resp = webob.Response(request=request)
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          cache_filter.process_response, resp)
+
+    def test_v2_process_response_download_restricted(self):
+        """
+        Test process_response for v2 api where _member_ role not able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+        extra_properties = {
+            'x_test_key': 'test_1234'
+        }
+
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET', 'v2')
+
+        def fake_get_v2_image_metadata(*args, **kwargs):
+            image = ImageStub(image_id, extra_properties=extra_properties)
+            request.environ['api.cache.image'] = image
+            return glance.api.policy.ImageTarget(image)
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext(roles=['_member_'])
+        resp = webob.Response(request=request)
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          cache_filter.process_response, resp)
+
+    def test_v2_process_response_download_permitted(self):
+        """
+        Test process_response for v2 api where member role able to
+        download the image with custom property.
+        """
+        image_id = 'test1'
+        extra_properties = {
+            'x_test_key': 'test_1234'
+        }
+
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET', 'v2')
+
+        def fake_get_v2_image_metadata(*args, **kwargs):
+            image = ImageStub(image_id, extra_properties=extra_properties)
+            request.environ['api.cache.image'] = image
+            return glance.api.policy.ImageTarget(image)
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext(roles=['member'])
+        resp = webob.Response(request=request)
+        actual = cache_filter.process_response(resp)
+        self.assertEqual(actual, resp)

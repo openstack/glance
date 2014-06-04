@@ -270,6 +270,27 @@ def get_image_meta_from_headers(response):
     return result
 
 
+def create_mashup_dict(image_meta):
+    """
+    Returns a dictionary-like mashup of the image core properties
+    and the image custom properties from given image metadata.
+
+    :param image_meta: metadata of image with core and custom properties
+    """
+
+    def get_items():
+        for key, value in six.iteritems(image_meta):
+            if isinstance(value, dict):
+                for subkey, subvalue in six.iteritems(
+                        create_mashup_dict(value)):
+                    if subkey not in image_meta:
+                        yield subkey, subvalue
+            else:
+                yield key, value
+
+    return dict(get_items())
+
+
 def safe_mkdirs(path):
     try:
         os.makedirs(path)

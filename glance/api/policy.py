@@ -230,7 +230,9 @@ class ImageProxy(glance.domain.proxy.Image):
         return self.image.delete()
 
     def get_data(self, *args, **kwargs):
-        self.policy.enforce(self.context, 'download_image', {})
+        target = ImageTarget(self.image)
+        self.policy.enforce(self.context, 'download_image',
+                            target=target)
         return self.image.get_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
@@ -416,3 +418,31 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
             task_factory,
             task_proxy_class=TaskProxy,
             task_proxy_kwargs=proxy_kwargs)
+
+
+class ImageTarget(object):
+
+    def __init__(self, image):
+        """
+        Initialize the object
+
+        :param image: Image object
+        """
+        self.image = image
+
+    def __getitem__(self, key):
+        """
+        Returns the value of 'key' from the image if image has that attribute
+        else tries to retrieve value from the extra_properties of image.
+
+        :param key: value to retrieve
+        """
+        # Need to change the key 'id' to 'image_id' as Image object has
+        # attribute as 'image_id' in case of V2.
+        if key == 'id':
+            key = 'image_id'
+
+        if hasattr(self.image, key):
+            return getattr(self.image, key)
+        else:
+            return self.image.extra_properties[key]

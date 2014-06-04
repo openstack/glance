@@ -557,3 +557,159 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual('GET', response.get('allow'))
 
         self.stop_servers()
+
+    def test_download_non_exists_image_raises_http_forbidden(self):
+        """
+        We test the following sequential series of actions:
+
+        0. POST /images with public image named Image1
+        and no custom properties
+        - Verify 201 returned
+        1. HEAD image
+        - Verify HTTP headers have correct information we just added
+        2. GET image
+        - Verify all information on image we just added is correct
+        3. DELETE image1
+        - Delete the newly added image
+        4. GET image
+        - Verify that 403 HTTPForbidden exception is raised prior to
+          404 HTTPNotFound
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        image_data = "*" * FIVE_KB
+        headers = minimal_headers('Image1')
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201)
+        data = jsonutils.loads(content)
+        image_id = data['image']['id']
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 1. HEAD image
+        # Verify image found now
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+
+        # 2. GET /images
+        # Verify one public image
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_result = {"images": [
+            {"container_format": "ovf",
+             "disk_format": "raw",
+             "id": image_id,
+             "name": "Image1",
+             "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
+             "size": 5120}]}
+        self.assertEqual(jsonutils.loads(content), expected_result)
+
+        # 3. DELETE image1
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        # 4. GET image
+        # Verify that 403 HTTPForbidden exception is raised prior to
+        # 404 HTTPNotFound
+        rules = {"download_image": '!'}
+        self.set_policy_rules(rules)
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 403)
+
+        self.stop_servers()
+
+    def test_download_non_exists_image_raises_http_not_found(self):
+        """
+        We test the following sequential series of actions:
+
+        0. POST /images with public image named Image1
+        and no custom properties
+        - Verify 201 returned
+        1. HEAD image
+        - Verify HTTP headers have correct information we just added
+        2. GET image
+        - Verify all information on image we just added is correct
+        3. DELETE image1
+        - Delete the newly added image
+        4. GET image
+        - Verify that 404 HTTPNotFound exception is raised
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        image_data = "*" * FIVE_KB
+        headers = minimal_headers('Image1')
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(response.status, 201)
+        data = jsonutils.loads(content)
+        image_id = data['image']['id']
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(data['image']['is_public'], True)
+
+        # 1. HEAD image
+        # Verify image found now
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response['x-image-meta-name'], "Image1")
+
+        # 2. GET /images
+        # Verify one public image
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 200)
+
+        expected_result = {"images": [
+            {"container_format": "ovf",
+             "disk_format": "raw",
+             "id": image_id,
+             "name": "Image1",
+             "checksum": "c2e5db72bd7fd153f53ede5da5a06de3",
+             "size": 5120}]}
+        self.assertEqual(jsonutils.loads(content), expected_result)
+
+        # 3. DELETE image1
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(response.status, 200)
+
+        # 4. GET image
+        # Verify that 404 HTTPNotFound exception is raised
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(response.status, 404)
+
+        self.stop_servers()

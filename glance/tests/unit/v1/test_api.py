@@ -2440,6 +2440,32 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
+    def test_show_image_restricted_download_for_core_property(self):
+        rules = {
+            "restricted":
+            "not ('1024M':%(min_ram)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.headers['X-Auth-Token'] = 'user:tenant:_member_'
+        req.headers['min_ram'] = '1024M'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
+    def test_show_image_restricted_download_for_custom_property(self):
+        rules = {
+            "restricted":
+            "not ('test_1234'==%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.headers['X-Auth-Token'] = 'user:tenant:_member_'
+        req.headers['x_test_key'] = 'test_1234'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 403)
+
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'

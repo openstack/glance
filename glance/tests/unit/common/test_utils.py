@@ -145,6 +145,61 @@ class TestUtils(test_utils.BaseTestCase):
         self.assertEqual({'x-image-meta-property-test': u'test'},
                          actual_test2)
 
+    def test_create_mashup_dict_with_different_core_custom_properties(self):
+        image_meta = {
+            'id': 'test-123',
+            'name': 'fake_image',
+            'status': 'active',
+            'created_at': '',
+            'min_disk': '10G',
+            'min_ram': '1024M',
+            'protected': False,
+            'locations': '',
+            'checksum': 'c1234',
+            'owner': '',
+            'disk_format': 'raw',
+            'container_format': 'bare',
+            'size': '123456789',
+            'virtual_size': '123456789',
+            'is_public': 'public',
+            'deleted': True,
+            'updated_at': '',
+            'properties': {'test_key': 'test_1234'},
+        }
+
+        mashup_dict = utils.create_mashup_dict(image_meta)
+        self.assertFalse('properties' in mashup_dict)
+        self.assertEqual(image_meta['properties']['test_key'],
+                         mashup_dict['test_key'])
+
+    def test_create_mashup_dict_with_same_core_custom_properties(self):
+        image_meta = {
+            'id': 'test-123',
+            'name': 'fake_image',
+            'status': 'active',
+            'created_at': '',
+            'min_disk': '10G',
+            'min_ram': '1024M',
+            'protected': False,
+            'locations': '',
+            'checksum': 'c1234',
+            'owner': '',
+            'disk_format': 'raw',
+            'container_format': 'bare',
+            'size': '123456789',
+            'virtual_size': '123456789',
+            'is_public': 'public',
+            'deleted': True,
+            'updated_at': '',
+            'properties': {'min_ram': '2048M'},
+        }
+
+        mashup_dict = utils.create_mashup_dict(image_meta)
+        self.assertFalse('properties' in mashup_dict)
+        self.assertNotEqual(image_meta['properties']['min_ram'],
+                            mashup_dict['min_ram'])
+        self.assertEqual(image_meta['min_ram'], mashup_dict['min_ram'])
+
     def test_create_pretty_table(self):
         class MyPrettyTable(utils.PrettyTable):
             def __init__(self):
