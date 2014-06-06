@@ -76,7 +76,8 @@ def _check_location_uri(context, store_api, uri):
     except (exception.UnknownScheme, exception.NotFound):
         is_ok = False
     if not is_ok:
-        raise exception.BadStoreUri(_('Invalid location: %s') % uri)
+        reason = _('Invalid location')
+        raise exception.BadStoreUri(message=reason)
 
 
 def _check_image_location(context, store_api, location):
@@ -269,7 +270,8 @@ def _locations_proxy(target, attr):
 
     def set_attr(self, value):
         if not isinstance(value, (list, StoreLocations)):
-            raise exception.BadStoreUri(_('Invalid locations: %s') % value)
+            reason = _('Invalid locations')
+            raise exception.BadStoreUri(message=reason)
         ori_value = getattr(getattr(self, target), attr)
         if ori_value != value:
             # NOTE(zhiyan): Enforced locations list was previously empty list.

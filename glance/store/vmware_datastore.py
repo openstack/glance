@@ -186,10 +186,9 @@ class StoreLocation(glance.store.location.StoreLocation):
 
     def parse_uri(self, uri):
         if not uri.startswith('%s://' % STORE_SCHEME):
-            reason = (_("URI %(uri)s must start with %(scheme)s://") %
-                      {'uri': uri, 'scheme': STORE_SCHEME})
-            LOG.error(reason)
-            raise exception.BadStoreUri(reason)
+            reason = (_("URI must start with %s://") % STORE_SCHEME)
+            LOG.info(reason)
+            raise exception.BadStoreUri(message=reason)
         (self.scheme, self.server_host,
          path, params, query, fragment) = urlparse.urlparse(uri)
         if not query:
@@ -202,9 +201,9 @@ class StoreLocation(glance.store.location.StoreLocation):
             self.path = path
             self.query = query
             return
-        reason = 'Badly formed VMware datastore URI %(uri)s.' % {'uri': uri}
-        LOG.debug(reason)
-        raise exception.BadStoreUri(reason)
+        reason = _('Badly formed VMware datastore URI')
+        LOG.info(reason)
+        raise exception.BadStoreUri(message=reason)
 
 
 class Store(glance.store.base.Store):
@@ -403,18 +402,18 @@ class Store(glance.store.base.Store):
                 msg = 'VMware datastore could not find image at URI.'
                 LOG.debug(msg)
                 raise exception.NotFound(msg)
-            msg = ('HTTP request returned a %(status)s status code.'
-                   % {'status': resp.status})
-            LOG.debug(msg)
-            raise exception.BadStoreUri(msg)
+            reason = (_('HTTP request returned a %(status)s status code.')
+                      % {'status': resp.status})
+            LOG.info(reason)
+            raise exception.BadStoreUri(message=reason)
         location_header = resp.getheader('location')
         if location_header:
             if resp.status not in (301, 302):
-                msg = ("The HTTP URL %(path)s attempted to redirect "
-                       "with an invalid %(status)s status code."
-                       % {'path': loc.path, 'status': resp.status})
-                LOG.debug(msg)
-                raise exception.BadStoreUri(msg)
+                reason = (_("The HTTP URL %(path)s attempted to redirect "
+                          "with an invalid %(status)s status code.")
+                          % {'path': loc.path, 'status': resp.status})
+                LOG.info(reason)
+                raise exception.BadStoreUri(message=reason)
             location_class = glance.store.location.Location
             new_loc = location_class(location.store_name,
                                      location.store_location.__class__,

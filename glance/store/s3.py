@@ -195,15 +195,15 @@ class StoreLocation(glance.store.location.StoreLocation):
         # s3://accesskey:secretkey@https://s3.amazonaws.com/bucket/key-id
         # are immediately rejected.
         if uri.count('://') != 1:
-            reason = ("URI cannot contain more than one occurrence "
-                      "of a scheme. If you have specified a URI like "
-                      "s3://accesskey:secretkey@"
-                      "https://s3.amazonaws.com/bucket/key-id"
-                      ", you need to change it to use the "
-                      "s3+https:// scheme, like so: "
-                      "s3+https://accesskey:secretkey@"
-                      "s3.amazonaws.com/bucket/key-id")
-            LOG.debug("Invalid store uri: %s" % reason)
+            reason = _("URI cannot contain more than one occurrence "
+                       "of a scheme. If you have specified a URI like "
+                       "s3://accesskey:secretkey@"
+                       "https://s3.amazonaws.com/bucket/key-id"
+                       ", you need to change it to use the "
+                       "s3+https:// scheme, like so: "
+                       "s3+https://accesskey:secretkey@"
+                       "s3.amazonaws.com/bucket/key-id")
+            LOG.info(_LI("Invalid store uri: %s") % reason)
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -229,9 +229,9 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.accesskey = access_key
                 self.secretkey = secret_key
             except IndexError:
-                reason = "Badly formed S3 credentials %s" % creds
-                LOG.debug(reason)
-                raise exception.BadStoreUri()
+                reason = _("Badly formed S3 credentials")
+                LOG.info(reason)
+                raise exception.BadStoreUri(message=reason)
         else:
             self.accesskey = None
             path = entire_path
@@ -243,11 +243,11 @@ class StoreLocation(glance.store.location.StoreLocation):
                 self.s3serviceurl = '/'.join(path_parts).strip('/')
             else:
                 reason = _("Badly formed S3 URI. Missing s3 service URL.")
-                raise exception.BadStoreUri()
+                raise exception.BadStoreUri(message=reason)
         except IndexError:
-            reason = "Badly formed S3 URI: %s" % uri
-            LOG.debug(reason)
-            raise exception.BadStoreUri()
+            reason = _("Badly formed S3 URI")
+            LOG.info(reason)
+            raise exception.BadStoreUri(message=reason)
 
 
 class ChunkedFile(object):

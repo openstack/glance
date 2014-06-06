@@ -147,12 +147,12 @@ class StoreLocation(glance.store.location.StoreLocation):
     def parse_uri(self, uri):
         valid_schema = 'sheepdog://'
         if not uri.startswith(valid_schema):
-            raise exception.BadStoreUri(_("URI must start with %s://") %
-                                        valid_schema)
+            reason = _("URI must start with '%s://'") % valid_schema
+            raise exception.BadStoreUri(message=reason)
         self.image = uri[len(valid_schema):]
         if not utils.is_uuid_like(self.image):
-            raise exception.BadStoreUri(_("URI must contains well-formated "
-                                          "image id"))
+            reason = _("URI must contains well-formated image id")
+            raise exception.BadStoreUri(message=reason)
 
 
 class ImageIterator(object):

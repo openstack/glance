@@ -79,15 +79,14 @@ class StoreLocation(glance.store.location.StoreLocation):
             try:
                 self.user, self.password = creds.split(':')
             except ValueError:
-                reason = (_("Credentials '%s' not well-formatted.")
-                          % "".join(creds))
-                LOG.debug(reason)
-                raise exception.BadStoreUri()
+                reason = _("Credentials are not well-formatted.")
+                LOG.info(reason)
+                raise exception.BadStoreUri(message=reason)
         else:
             self.user = None
         if netloc == '':
             reason = _("No address specified in HTTP URL")
-            LOG.debug(reason)
+            LOG.info(reason)
             raise exception.BadStoreUri(message=reason)
         self.netloc = netloc
         self.path = path
@@ -149,8 +148,8 @@ class Store(glance.store.base.Store):
             size = self._query(location, 'HEAD')[2]
         except socket.error:
             reason = _("The HTTP URL is invalid.")
-            LOG.debug(reason)
-            raise exception.BadStoreUri(reason)
+            LOG.info(reason)
+            raise exception.BadStoreUri(message=reason)
         except Exception:
             # NOTE(flaper87): Catch more granular exceptions,
             # keeping this branch for backwards compatibility.
@@ -176,16 +175,16 @@ class Store(glance.store.base.Store):
                 LOG.debug(reason)
                 raise exception.NotFound(reason)
             reason = _("HTTP URL returned a %s status code.") % resp.status
-            LOG.debug(reason)
-            raise exception.BadStoreUri(loc.path, reason)
+            LOG.info(reason)
+            raise exception.BadStoreUri(message=reason)
 
         location_header = resp.getheader("location")
         if location_header:
             if resp.status not in (301, 302):
                 reason = (_("The HTTP URL attempted to redirect with an "
                             "invalid %s status code.") % resp.status)
-                LOG.debug(reason)
-                raise exception.BadStoreUri(loc.path, reason)
+                LOG.info(reason)
+                raise exception.BadStoreUri(message=reason)
             location_class = glance.store.location.Location
             new_loc = location_class(location.store_name,
                                      location.store_location.__class__,

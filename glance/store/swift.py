@@ -29,7 +29,7 @@ from glance.common import auth
 from glance.common import exception
 from glance.common import swift_store_utils
 from glance.openstack.common import excutils
-from glance.openstack.common.gettextutils import _LI
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -41,6 +41,7 @@ except ImportError:
     pass
 
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
 
 DEFAULT_CONTAINER = 'glance'
 DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024  # 5GB
@@ -221,8 +222,8 @@ class StoreLocation(glance.store.location.StoreLocation):
         except KeyError:
             reason = _("Badly formed Swift URI. Credentials not found for"
                        "account reference")
-            LOG.debug(reason)
-            raise exception.BadStoreUri()
+            LOG.info(reason)
+            raise exception.BadStoreUri(message=reason)
         return netloc
 
     def _form_uri_parts(self, netloc, path):
@@ -244,9 +245,9 @@ class StoreLocation(glance.store.location.StoreLocation):
         if creds:
             cred_parts = creds.split(':')
             if len(cred_parts) < 2:
-                reason = "Badly formed credentials in Swift URI."
-                LOG.debug(reason)
-                raise exception.BadStoreUri()
+                reason = _("Badly formed credentials in Swift URI.")
+                LOG.info(reason)
+                raise exception.BadStoreUri(message=reason)
             key = cred_parts.pop()
             user = ':'.join(cred_parts)
             creds = urllib.unquote(creds)
@@ -270,9 +271,9 @@ class StoreLocation(glance.store.location.StoreLocation):
                 path_parts.insert(0, netloc)
                 self.auth_or_store_url = '/'.join(path_parts)
         except IndexError:
-            reason = "Badly formed Swift URI."
-            LOG.debug(reason)
-            raise exception.BadStoreUri()
+            reason = _("Badly formed Swift URI.")
+            LOG.info(reason)
+            raise exception.BadStoreUri(message=reason)
 
     def parse_uri(self, uri):
         """
@@ -295,7 +296,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                        ", you need to change it to use the "
                        "swift+http:// scheme, like so: "
                        "swift+http://user:pass@authurl.com/v1/container/obj")
-            LOG.debug("Invalid store URI: %(reason)s", {'reason': reason})
+            LOG.info(_LI("Invalid store URI: %(reason)s"), {'reason': reason})
             raise exception.BadStoreUri(message=reason)
 
         pieces = urlparse.urlparse(uri)
@@ -691,8 +692,8 @@ class SingleTenantStore(BaseStore):
 
     def get_connection(self, location):
         if not location.user:
-            reason = "Location is missing user:password information."
-            LOG.debug(reason)
+            reason = _("Location is missing user:password information.")
+            LOG.info(reason)
             raise exception.BadStoreUri(message=reason)
 
         auth_url = location.swift_url
@@ -703,10 +704,10 @@ class SingleTenantStore(BaseStore):
             try:
                 tenant_name, user = location.user.split(':')
             except ValueError:
-                reason = ("Badly formed tenant:user '%(user)s' in "
-                          "Swift URI" % {'user': location.user})
-                LOG.debug(reason)
-                raise exception.BadStoreUri()
+                reason = (_("Badly formed tenant:user '%(user)s' in "
+                            "Swift URI") % {'user': location.user})
+                LOG.info(reason)
+                raise exception.BadStoreUri(message=reason)
         else:
             tenant_name = None
             user = location.user
