@@ -158,8 +158,8 @@ class Store(glance.store.base.Store):
 
     def _query(self, location, verb, depth=0):
         if depth > MAX_REDIRECTS:
-            reason = (_("The HTTP URL exceeded %s maximum "
-                        "redirects.") % MAX_REDIRECTS)
+            reason = ("The HTTP URL exceeded %s maximum "
+                      "redirects." % MAX_REDIRECTS)
             LOG.debug(reason)
             raise exception.MaxRedirectsExceeded(redirects=MAX_REDIRECTS)
         loc = location.store_location
