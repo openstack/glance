@@ -223,9 +223,9 @@ class ImageProxy(glance.domain.proxy.Image):
             'receiver_user_id': self.context.user,
         }
 
-    def get_data(self):
+    def _get_chunk_data_iterator(self, data):
         sent = 0
-        for chunk in self.image.get_data():
+        for chunk in data:
             yield chunk
             sent += len(chunk)
 
@@ -241,6 +241,13 @@ class ImageProxy(glance.domain.proxy.Image):
             msg = (_("An error occurred during image.send"
                      " notification: %(err)s") % {'err': err})
             LOG.error(msg)
+
+    def get_data(self):
+        # Due to the need of evaluating subsequent proxies, this one
+        # should return a generator, the call should be done before
+        # generator creation
+        data = self.image.get_data()
+        return self._get_chunk_data_iterator(data)
 
     def set_data(self, data, size=None):
         payload = format_image_notification(self.image)

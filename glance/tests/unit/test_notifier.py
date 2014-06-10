@@ -197,6 +197,12 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertIsInstance(images[0], glance.notifier.ImageProxy)
         self.assertEqual(images[0].image, 'images_from_list')
 
+    def test_image_get_data_should_call_next_image_get_data(self):
+        with mock.patch.object(self.image, 'get_data') as get_data_mock:
+            self.image_proxy.get_data()
+
+            self.assertTrue(get_data_mock.called)
+
     def test_image_get_data_notification(self):
         self.image_proxy.size = 10
         data = ''.join(self.image_proxy.get_data())
