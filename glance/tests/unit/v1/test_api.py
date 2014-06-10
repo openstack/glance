@@ -120,7 +120,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         with mock.patch.object(http.Store, 'get_size') as mocked_size:
@@ -146,7 +146,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
@@ -159,7 +159,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -183,7 +183,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
@@ -196,7 +196,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -222,7 +222,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -240,7 +240,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         with mock.patch.object(http.Store, 'get_size') as mocked_size:
@@ -260,7 +260,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -278,7 +278,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         with mock.patch.object(http.Store, 'get_size') as mocked_size:
@@ -298,7 +298,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -315,7 +315,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -335,7 +335,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         with mock.patch.object(http.Store, 'get_size') as mocked_size:
@@ -354,7 +354,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -372,7 +372,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -390,7 +390,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -404,7 +404,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '1',
                    'x-image-meta-property-x_all_permitted_foo': '2'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 413)
@@ -420,7 +420,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -461,7 +461,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -476,7 +476,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -513,7 +513,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.method = 'POST'
         req.body = "chunk00000remainder"
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
@@ -525,7 +525,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -545,7 +545,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'POST'
 
         req.body_file = six.StringIO('X' * (CONF.image_size_cap + 1))
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -564,7 +564,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'POST'
 
         req.body = 'X' * (CONF.image_size_cap + 1)
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -582,7 +582,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         req.body = 'X' * (quota + 1)
         res = req.get_response(self.api)
@@ -602,7 +602,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'POST'
 
         req.body = 'X' * (quota + 1)
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -621,7 +621,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.method = 'POST'
         req.body = 'X' * (quota + 1)
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -632,7 +632,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.method = 'POST'
         req.body = 'X' * (quota - used_size)
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -647,7 +647,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         res_body = jsonutils.loads(res.body)['image']
@@ -688,7 +688,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -711,7 +711,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -745,7 +745,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -762,7 +762,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -800,7 +800,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -820,7 +820,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -840,7 +840,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -859,7 +859,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -878,7 +878,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -896,7 +896,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -915,7 +915,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['Content-Type'] = 'application/octet-stream'
         req.method = 'POST'
         req.body = "chunk00000remainder"
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
@@ -932,7 +932,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['Content-Type'] = 'application/octet-stream'
         req.method = 'POST'
         req.body = "chunk00000remainder"
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
@@ -953,7 +953,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         with mock.patch.object(http.Store, 'get_size') as size:
             size.return_value = 2
 
-            for k, v in fixture_headers.iteritems():
+            for k, v in six.iteritems(fixture_headers):
                 req.headers[k] = v
 
             res = req.get_response(self.api)
@@ -970,7 +970,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 400)
@@ -992,7 +992,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'POST'
 
         req.body_file = six.StringIO('X' * (CONF.image_size_cap))
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -1003,7 +1003,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -1032,7 +1032,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -1061,7 +1061,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -1087,7 +1087,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -1115,7 +1115,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -1144,7 +1144,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -1155,7 +1155,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         req.headers['Content-Type'] = 'application/octet-stream'
         req.body = "chunk00000remainder"
@@ -1284,7 +1284,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         # create an image but don't upload yet.
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -1388,7 +1388,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -1442,7 +1442,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -1528,7 +1528,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -1610,7 +1610,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -1628,7 +1628,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'PUT'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -1642,7 +1642,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
 
         req.body = 'X' * (CONF.image_size_cap + 1)
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -1668,7 +1668,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
 
         req.body_file = six.StringIO('X' * (CONF.image_size_cap + 1))
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -1696,7 +1696,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -1719,7 +1719,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)
@@ -2119,7 +2119,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                    'x-image-meta-disk-format': 'vhd',
                    'x-image-meta-container-format': 'ovf',
                    'x-image-meta-name': 'fake image #3'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             req.headers[k] = v
         req.method = 'POST'
 
@@ -2141,7 +2141,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -2165,7 +2165,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -2187,7 +2187,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             self.assertTrue(key in res.headers,
                             "required header '%s' missing from "
                             "returned headers" % key)
-        for key, value in expected_headers.iteritems():
+        for key, value in six.iteritems(expected_headers):
             self.assertEqual(value, res.headers[key])
 
     def test_bad_checksum_prevents_image_creation(self):
@@ -2203,7 +2203,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -2229,7 +2229,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 200)
         self.assertFalse(res.location)
 
-        for key, value in expected_headers.iteritems():
+        for key, value in six.iteritems(expected_headers):
             self.assertEqual(value, res.headers[key])
 
     def test_image_meta_unauthorized(self):
@@ -2330,7 +2330,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -2365,7 +2365,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -2395,7 +2395,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 201)
@@ -2542,7 +2542,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for fixture_header in fixture_header_list:
             req = webob.Request.blank('/images/%s' % UUID2)
             req.method = 'PUT'
-            for k, v in fixture_header.iteritems():
+            for k, v in six.iteritems(fixture_header):
                 req = webob.Request.blank('/images/%s' % UUID2)
                 req.method = 'HEAD'
                 res = req.get_response(self.api)
@@ -2577,7 +2577,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for fixture_header in fixture_header_list:
             req = webob.Request.blank('/images/%s' % UUID2)
             req.method = 'PUT'
-            for k, v in fixture_header.iteritems():
+            for k, v in six.iteritems(fixture_header):
                 req = webob.Request.blank('/images/%s' % UUID2)
                 req.method = 'HEAD'
                 res = req.get_response(self.api)
@@ -3061,7 +3061,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         req.context = self.context
         response = webob.Response(request=req)
         self.serializer.meta(response, self.FIXTURE)
-        for key, value in exp_headers.iteritems():
+        for key, value in six.iteritems(exp_headers):
             self.assertEqual(value, response.headers[key])
 
     def test_meta_utf8(self):
@@ -3107,7 +3107,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
                             type(response.headers['x-image-meta-name']))
         self.assertEqual(response.headers['x-image-meta-name'].decode('utf-8'),
                          FIXTURE['image_meta']['name'])
-        for key, value in exp_headers.iteritems():
+        for key, value in six.iteritems(exp_headers):
             self.assertEqual(value, response.headers[key])
 
         FIXTURE['image_meta']['properties'][u'prop_bad'] = 'çé'
@@ -3124,7 +3124,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         req.context = self.context
         response = webob.Response(request=req)
         self.serializer.show(response, self.FIXTURE)
-        for key, value in exp_headers.iteritems():
+        for key, value in six.iteritems(exp_headers):
             self.assertEqual(value, response.headers[key])
 
         self.assertEqual(response.body, 'chunk67891123456789')
@@ -3266,7 +3266,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
                    'x-image-meta-size': '0',
                    'x-auth-token': 'user:tenant:admin'}
         headers.update(props)
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             request.headers[k] = v
         created_image = request.get_response(self.api)
         res_body = jsonutils.loads(created_image.body)['image']
@@ -3283,7 +3283,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_owner_foo': 'bar'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3300,7 +3300,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-spl_create_prop_policy': 'bar'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3318,7 +3318,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_member',
                    'x-image-meta-property-x_owner_foo': 'bar'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         another_request.get_response(self.api)
         output = another_request.get_response(self.api)
@@ -3336,7 +3336,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:member'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         res2 = another_request.get_response(self.api)
         self.assertEqual(res2.headers['x-image-meta-property-x_owner_foo'],
@@ -3353,7 +3353,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:fake_role'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3370,7 +3370,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:member'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         res2 = another_request.get_response(self.api)
         self.assertEqual(res2.headers['x-image-meta-property-x_owner_foo'],
@@ -3387,7 +3387,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:fake_role'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3404,7 +3404,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:member'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3422,7 +3422,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:member'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3439,7 +3439,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:fake_role'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3458,7 +3458,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='GET', path='/images/detail')
         headers = {'x-auth-token': 'user:tenant:fake_role'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3477,7 +3477,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_owner_foo': 'baz'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3495,7 +3495,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-spl_default_policy': 'baz'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3512,7 +3512,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_role',
                    'x-image-meta-property-x_owner_foo': 'baz'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, webob.exc.HTTPForbidden.code)
@@ -3531,7 +3531,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_role',
                    'x-image-meta-property-x_owner_foo': 'baz'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, webob.exc.HTTPForbidden.code)
@@ -3548,7 +3548,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_update_only_prop': 'bar'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, webob.exc.HTTPForbidden.code)
@@ -3566,7 +3566,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_read_prop': 'foo'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3584,7 +3584,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3602,7 +3602,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3619,7 +3619,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:fake_role',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3628,7 +3628,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:admin'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3647,7 +3647,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3657,7 +3657,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:admin'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3678,7 +3678,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_update_prop': '1',
                    'X-Glance-Registry-Purge-Props': 'False'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3698,7 +3698,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_owner_foo': 'baz'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3724,7 +3724,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_read_only_prop': '1',
                    'x-image-meta-property-spl_update_prop': '1'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3736,7 +3736,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'x-image-meta-property-spl_read_only_prop': '2',
                    'x-image-meta-property-spl_update_prop': '1'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3754,7 +3754,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3777,7 +3777,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:spl_role',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3792,7 +3792,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '1'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3810,7 +3810,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:joe_soap'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3829,7 +3829,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '2'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3846,7 +3846,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         res_body = jsonutils.loads(output.body)['image']
@@ -3861,7 +3861,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_none_permitted': '1'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3870,7 +3870,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-x_none_permitted_admin': '1'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3886,7 +3886,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:member'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3895,7 +3895,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         another_request = unit_test_utils.get_fake_request(
             method='HEAD', path='/images/%s' % image_id)
         headers = {'x-auth-token': 'user:tenant:admin'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 200)
@@ -3911,7 +3911,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'x-image-meta-property-x_none_update': '2'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3920,7 +3920,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'x-image-meta-property-x_none_update': '2'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3935,7 +3935,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:member',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3944,7 +3944,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             path='/images/%s' % image_id, method='PUT')
         headers = {'x-auth-token': 'user:tenant:admin',
                    'X-Glance-Registry-Purge-Props': 'True'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
         self.assertEqual(output.status_int, 403)
@@ -3970,7 +3970,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
                    'x-image-meta-size': '0',
                    'x-auth-token': 'user:tenant:admin'}
         headers.update(props)
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             request.headers[k] = v
         created_image = request.get_response(self.api)
         res_body = jsonutils.loads(created_image.body)['image']
@@ -3988,7 +3988,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-image-meta-property-x_all_permitted': '1',
                    'x-image-meta-property-x_all_permitted_foo': '2'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
 
         output = another_request.get_response(self.api)
@@ -4009,7 +4009,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
                    'x-image-meta-size': '0',
                    'x-image-meta-property-x_all_permitted_create': '1',
                    'x-auth-token': 'user:tenant:admin'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             request.headers[k] = v
         created_image = request.get_response(self.api)
         res_body = jsonutils.loads(created_image.body)['image']
@@ -4020,7 +4020,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
         headers = {'x-auth-token': 'user:tenant:joe_soap',
                    'x-glance-registry-purge-props': 'False',
                    'x-image-meta-property-x_all_permitted': '1'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
 
         output = another_request.get_response(self.api)
@@ -4041,7 +4041,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
                    'x-image-meta-size': '0',
                    'x-image-meta-property-x_all_permitted_create': '1',
                    'x-auth-token': 'user:tenant:admin'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             request.headers[k] = v
         created_image = request.get_response(self.api)
         res_body = jsonutils.loads(created_image.body)['image']
@@ -4053,7 +4053,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
                    'x-glance-registry-purge-props': 'False',
                    'x-image-meta-property-x_all_permitted_create': '3',
                    'x-image-meta-property-x_all_permitted': '1'}
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             another_request.headers[k] = v
 
         output = another_request.get_response(self.api)

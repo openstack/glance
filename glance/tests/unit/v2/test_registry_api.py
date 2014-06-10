@@ -20,6 +20,7 @@ import uuid
 
 from oslo.config import cfg
 import routes
+import six
 import webob
 
 import glance.api.common
@@ -135,7 +136,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 200)
         res_dict = jsonutils.loads(res.body)[0]
         image = res_dict
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, image[k])
 
     def test_show_unknown(self):
@@ -179,7 +180,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(len(images), 1)
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, images[0][k])
 
     def test_get_index_marker(self):
@@ -1195,7 +1196,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
 
         res_dict = jsonutils.loads(res.body)[0]
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, res_dict[k])
 
         # Test status was updated properly
@@ -1319,7 +1320,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertNotEqual(res_dict['created_at'],
                             res_dict['updated_at'])
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, res_dict[k])
 
     def test_delete_image(self):

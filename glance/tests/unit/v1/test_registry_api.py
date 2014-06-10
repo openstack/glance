@@ -20,6 +20,7 @@ import uuid
 
 from oslo.config import cfg
 import routes
+import six
 import webob
 
 import glance.api.common
@@ -91,7 +92,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(200, '/images/%s' % UUID2)
         res_dict = jsonutils.loads(res.body)
         image = res_dict['image']
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, image[k])
 
     def test_show_unknown(self):
@@ -151,7 +152,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         images = res_dict['images']
         self.assertEqual(len(images), 1)
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, images[0][k])
 
     def test_get_index(self):
@@ -166,7 +167,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         images = res_dict['images']
         self.assertEqual(len(images), 1)
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, images[0][k])
 
     def test_get_index_marker(self):
@@ -669,7 +670,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         images = res_dict['images']
         self.assertEqual(len(images), 1)
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, images[0][k])
 
     def test_get_details_limit_marker(self):
@@ -1213,7 +1214,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                                         method='POST', content_type='json')
         res_dict = jsonutils.loads(res.body)
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, res_dict['image'][k])
 
         # Test status was updated properly
@@ -1312,7 +1313,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.assertNotEqual(res_dict['image']['created_at'],
                             res_dict['image']['updated_at'])
 
-        for k, v in fixture.iteritems():
+        for k, v in six.iteritems(fixture):
             self.assertEqual(v, res_dict['image'][k])
 
     def test_update_image_not_existing(self):

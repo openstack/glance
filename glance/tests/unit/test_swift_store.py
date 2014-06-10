@@ -83,7 +83,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         fixture_containers.append(container)
 
     def fake_post_container(url, token, container, headers, http_conn=None):
-        for key, value in headers.iteritems():
+        for key, value in six.iteritems(headers):
             fixture_container_headers[key] = value
 
     def fake_put_object(url, token, container, name, contents, **kwargs):
@@ -139,7 +139,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         byte_range = None
         headers = kwargs.get('headers', dict())
         if headers is not None:
-            headers = dict((k.lower(), v) for k, v in headers.iteritems())
+            headers = dict((k.lower(), v) for k, v in six.iteritems(headers))
             if 'range' in headers:
                 byte_range = headers.get('range')
 

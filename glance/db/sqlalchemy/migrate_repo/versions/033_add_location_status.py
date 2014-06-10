@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
 import sqlalchemy
 
 from glance.db.sqlalchemy.migrate_repo import schema
@@ -33,7 +34,7 @@ def upgrade(migrate_engine):
     # Set 'status' column initial value for image_locations table
     mapping = {'active': 'active', 'pending_delete': 'pending_delete',
                'deleted': 'deleted', 'killed': 'deleted'}
-    for src, dst in mapping.iteritems():
+    for src, dst in six.iteritems(mapping):
         subq = sqlalchemy.sql.select([images_table.c.id])\
             .where(images_table.c.status == src)
         image_locations_table.update(values={'status': dst})\

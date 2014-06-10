@@ -21,6 +21,7 @@
 """Defines interface for DB access."""
 
 from oslo.config import cfg
+import six
 from six.moves import xrange
 import sqlalchemy
 import sqlalchemy.orm as sa_orm
@@ -56,7 +57,7 @@ def _create_facade_lazily():
     if _FACADE is None:
         _FACADE = session.EngineFacade(
             CONF.database.connection,
-            **dict(CONF.database.iteritems()))
+            **dict(six.iteritems(CONF.database)))
     return _FACADE
 
 
@@ -750,7 +751,7 @@ def _set_properties_for_image(context, image_ref, properties,
     for prop_ref in image_ref.properties:
         orig_properties[prop_ref.name] = prop_ref
 
-    for name, value in properties.iteritems():
+    for name, value in six.iteritems(properties):
         prop_values = {'image_id': image_ref.id,
                        'name': name,
                        'value': value}
