@@ -88,7 +88,7 @@ def no_translate_debug_logs(logical_line, filename):
 
     if max([name in filename for name in dirs]):
         if logical_line.startswith("LOG.debug(_("):
-            yield(0, "N319: Don't translate debug level logs")
+            yield(0, "G319: Don't translate debug level logs")
 
 
 def factory(register):
