@@ -27,6 +27,7 @@ import six.moves.urllib.parse as urlparse
 from glance.common import auth
 from glance.common import exception
 from glance.openstack.common import excutils
+from glance.openstack.common.gettextutils import _LI
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -557,6 +558,9 @@ class BaseStore(glance.store.base.Store):
             if e.http_status == httplib.NOT_FOUND:
                 if CONF.swift_store_create_container_on_put:
                     try:
+                        msg = (_LI("Creating swift container %(container)s") %
+                               {'container': container})
+                        LOG.info(msg)
                         connection.put_container(container)
                     except swiftclient.ClientException as e:
                         msg = (_("Failed to add container to Swift.\n"
