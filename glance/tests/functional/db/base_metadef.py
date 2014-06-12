@@ -14,11 +14,10 @@
 
 import copy
 
-from glance import context
-import glance.tests.functional.db as db_tests
-
 from glance.common import config
 from glance.common import exception
+from glance import context
+import glance.tests.functional.db as db_tests
 from glance.tests import utils as test_utils
 
 

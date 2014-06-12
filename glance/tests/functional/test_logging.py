@@ -15,9 +15,10 @@
 
 """Functional test case that tests logging output"""
 
-import httplib2
 import os
 import stat
+
+import httplib2
 
 from glance.tests import functional
 

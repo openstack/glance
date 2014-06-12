@@ -215,8 +215,8 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         image_meta_with_proto['Content-Length'] = len(image_body)
 
         for key in IMG_RESPONSE_ACTIVE:
-            image_meta_with_proto['x-image-meta-%s' % key] = \
-                IMG_RESPONSE_ACTIVE[key]
+            image_meta_with_proto[
+                'x-image-meta-%s' % key] = IMG_RESPONSE_ACTIVE[key]
 
         c.conn.prime_request('POST', 'v1/images',
                              image_body, image_meta_with_proto,
@@ -230,8 +230,8 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
 
         image_meta = {'id': '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'}
-        image_meta_headers = \
-            glance_replicator.ImageService._dict_to_headers(image_meta)
+        image_meta_headers = glance_replicator.ImageService._dict_to_headers(
+            image_meta)
         image_meta_headers['x-auth-token'] = 'noauth'
         image_meta_headers['Content-Type'] = 'application/octet-stream'
         c.conn.prime_request('PUT', 'v1/images/%s' % image_meta['id'],

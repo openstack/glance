@@ -27,7 +27,7 @@ import stubout
 from glance.common import exception
 from glance import image_cache
 from glance.openstack.common import units
-#NOTE(bcwaldon): This is imported to load the registry config options
+# NOTE(bcwaldon): This is imported to load the registry config options
 import glance.registry  # noqa
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled
@@ -152,8 +152,8 @@ class ImageCacheTestCase(object):
             incomplete_file.close()
 
         mtime = os.path.getmtime(incomplete_file_path_1)
-        pastday = datetime.datetime.fromtimestamp(mtime) - \
-            datetime.timedelta(days=1)
+        pastday = (datetime.datetime.fromtimestamp(mtime) -
+                   datetime.timedelta(days=1))
         atime = int(time.mktime(pastday.timetuple()))
         mtime = atime
         os.utime(incomplete_file_path_1, (atime, mtime))

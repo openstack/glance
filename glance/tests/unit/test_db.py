@@ -29,7 +29,6 @@ from glance.db.sqlalchemy import api
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
-
 CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
@@ -547,8 +546,8 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
     def test_remove_image_member_does_not_exist(self):
         fake_uuid = str(uuid.uuid4())
         image = self.image_repo.get(UUID2)
-        fake_member = glance.domain.ImageMemberFactory()\
-                                   .new_image_member(image, TENANT4)
+        fake_member = glance.domain.ImageMemberFactory().new_image_member(
+            image, TENANT4)
         fake_member.id = fake_uuid
         exc = self.assertRaises(exception.NotFound,
                                 self.image_member_repo.remove,

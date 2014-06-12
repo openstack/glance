@@ -86,8 +86,8 @@ def _get(context, namespace_id, session):
             .filter_by(id=namespace_id)
         namespace_rec = query.one()
     except sa_orm.exc.NoResultFound:
-        LOG.warn(_LW("Metadata definition namespace not found for id=%s",
-                     namespace_id))
+        msg = _LW("Metadata definition namespace not found for id=%s")
+        LOG.warn(msg % namespace_id)
         raise exc.MetadefRecordNotFound(record_type='namespace',
                                         id=namespace_id)
 

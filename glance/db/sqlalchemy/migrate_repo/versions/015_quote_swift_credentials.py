@@ -54,9 +54,9 @@ def migrate_location_credentials(migrate_engine, to_quoted):
     for image in images:
         try:
             fixed_uri = legacy_parse_uri(image['location'], to_quoted)
-            images_table.update()\
-                        .where(images_table.c.id == image['id'])\
-                        .values(location=fixed_uri).execute()
+            images_table.update().where(
+                images_table.c.id == image['id']).values(
+                    location=fixed_uri).execute()
         except exception.BadStoreUri as e:
             reason = utils.exception_to_str(e)
             msg = _LE("Invalid store uri for image: %(image_id)s. "

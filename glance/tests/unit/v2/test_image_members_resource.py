@@ -24,7 +24,6 @@ from glance.openstack.common import jsonutils
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
-
 DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)
 ISOTIME = '2012-05-16T15:27:36Z'
 
@@ -97,11 +96,11 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.notifier = unit_test_utils.FakeNotifier()
         self._create_images()
         self._create_image_members()
-        self.controller = glance.api.v2.image_members\
-                                       .ImageMembersController(self.db,
-                                                               self.policy,
-                                                               self.notifier,
-                                                               self.store)
+        self.controller = glance.api.v2.image_members.ImageMembersController(
+            self.db,
+            self.policy,
+            self.notifier,
+            self.store)
         glance_store.create_stores()
 
     def _create_images(self):

@@ -277,7 +277,7 @@ class Driver(base.Driver):
             LOG.debug("Fetch finished, moving "
                       "'%(incomplete_path)s' to '%(final_path)s'",
                       dict(incomplete_path=incomplete_path,
-                      final_path=final_path))
+                           final_path=final_path))
             os.rename(incomplete_path, final_path)
 
             # Make sure that we "pop" the image from the queue...
@@ -376,7 +376,7 @@ class Driver(base.Driver):
             items.append((mtime, os.path.basename(path)))
 
         items.sort()
-        return [image_id for (mtime, image_id) in items]
+        return [image_id for (modtime, image_id) in items]
 
     def _reap_old_files(self, dirpath, entry_type, grace=None):
         now = time.time()

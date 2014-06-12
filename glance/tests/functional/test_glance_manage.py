@@ -56,7 +56,7 @@ class TestGlanceManage(functional.FunctionalTest):
         self.assertTrue('CREATE TABLE image_tags' in out)
         self.assertTrue('CREATE TABLE image_locations' in out)
 
-        #NOTE(bcwaldon): For some reason we need double-quotes around
+        # NOTE(bcwaldon): For some reason we need double-quotes around
         # these two table names
         # NOTE(vsergeyev): There are some cases when we have no double-quotes
         self.assertTrue(

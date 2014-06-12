@@ -12,10 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-import webob.exc
-
 import glance_store
+import webob.exc
 
 from glance.api import policy
 from glance.common import exception

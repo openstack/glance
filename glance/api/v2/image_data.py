@@ -12,10 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-import webob.exc
-
 import glance_store
+import webob.exc
 
 import glance.api.policy
 from glance.common import exception
@@ -95,8 +93,8 @@ class ImageDataController(object):
             LOG.debug("Cannot save data for image %(id)s: %(e)s",
                       {'id': image_id, 'e': utils.exception_to_str(e)})
             self._restore(image_repo, image)
-            raise webob.exc.HTTPBadRequest(explanation=
-                                           utils.exception_to_str(e))
+            raise webob.exc.HTTPBadRequest(
+                explanation=utils.exception_to_str(e))
 
         except exception.InvalidImageStatusTransition as e:
             msg = utils.exception_to_str(e)
@@ -208,12 +206,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                                                     chunk_size=chunk_size))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        #NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5
+        # NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5
         # (https://github.com/Pylons/webob/issues/86), so it should be set
         # afterwards for the time being.
         if image.checksum:
             response.headers['Content-MD5'] = image.checksum
-        #NOTE(markwash): "response.app_iter = ..." also erroneously resets the
+        # NOTE(markwash): "response.app_iter = ..." also erroneously resets the
         # content-length
         response.headers['Content-Length'] = str(image.size)
 

@@ -211,8 +211,8 @@ class ImageProxy(glance.domain.proxy.Image):
                    {'image_id': self.image.image_id,
                     'error': utils.exception_to_str(e)})
             self.notifier.error('image.upload', msg)
-            raise webob.exc.HTTPBadRequest(explanation=
-                                           utils.exception_to_str(e))
+            raise webob.exc.HTTPBadRequest(
+                explanation=utils.exception_to_str(e))
         except exception.Duplicate as e:
             msg = (_("Unable to upload duplicate image data for image"
                      "%(image_id)s: %(error)s") %
@@ -260,10 +260,9 @@ class TaskRepoProxy(glance.domain.proxy.TaskRepo):
         self.context = context
         self.notifier = notifier
         proxy_kwargs = {'context': self.context, 'notifier': self.notifier}
-        super(TaskRepoProxy, self) \
-            .__init__(task_repo,
-                      task_proxy_class=TaskProxy,
-                      task_proxy_kwargs=proxy_kwargs)
+        super(TaskRepoProxy, self).__init__(task_repo,
+                                            task_proxy_class=TaskProxy,
+                                            task_proxy_kwargs=proxy_kwargs)
 
     def add(self, task):
         self.notifier.info('task.create',
@@ -285,10 +284,10 @@ class TaskStubRepoProxy(glance.domain.proxy.TaskStubRepo):
         self.context = context
         self.notifier = notifier
         proxy_kwargs = {'context': self.context, 'notifier': self.notifier}
-        super(TaskStubRepoProxy, self) \
-            .__init__(task_stub_repo,
-                      task_stub_proxy_class=TaskStubProxy,
-                      task_stub_proxy_kwargs=proxy_kwargs)
+        super(TaskStubRepoProxy, self).__init__(
+            task_stub_repo,
+            task_stub_proxy_class=TaskStubProxy,
+            task_stub_proxy_kwargs=proxy_kwargs)
 
 
 class TaskFactoryProxy(glance.domain.proxy.TaskFactory):

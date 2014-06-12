@@ -195,9 +195,9 @@ class TestImageMember(test_utils.BaseTestCase):
         self.image_member_factory = domain.ImageMemberFactory()
         self.image_factory = domain.ImageFactory()
         self.image = self.image_factory.new_image()
-        self.image_member = self.image_member_factory\
-                                .new_image_member(image=self.image,
-                                                  member_id=TENANT1)
+        self.image_member = self.image_member_factory.new_image_member(
+            image=self.image,
+            member_id=TENANT1)
 
     def test_status_enumerated(self):
         self.image_member.status = 'pending'
@@ -377,7 +377,7 @@ class TestTask(test_utils.BaseTestCase):
         self.assertEqual(self.task.status, 'failure')
 
     def test_invalid_status_transitions_from_pending(self):
-        #test do not allow transition from pending to success
+        # test do not allow transition from pending to success
         self.assertRaises(
             exception.InvalidTaskStatusTransition,
             self.task.succeed,
@@ -385,14 +385,14 @@ class TestTask(test_utils.BaseTestCase):
         )
 
     def test_invalid_status_transitions_from_success(self):
-        #test do not allow transition from success to processing
+        # test do not allow transition from success to processing
         self.task.begin_processing()
         self.task.succeed('')
         self.assertRaises(
             exception.InvalidTaskStatusTransition,
             self.task.begin_processing
         )
-        #test do not allow transition from success to failure
+        # test do not allow transition from success to failure
         self.assertRaises(
             exception.InvalidTaskStatusTransition,
             self.task.fail,
@@ -400,14 +400,14 @@ class TestTask(test_utils.BaseTestCase):
         )
 
     def test_invalid_status_transitions_from_failure(self):
-        #test do not allow transition from failure to processing
+        # test do not allow transition from failure to processing
         self.task.begin_processing()
         self.task.fail('')
         self.assertRaises(
             exception.InvalidTaskStatusTransition,
             self.task.begin_processing
         )
-        #test do not allow transition from failure to success
+        # test do not allow transition from failure to success
         self.assertRaises(
             exception.InvalidTaskStatusTransition,
             self.task.succeed,

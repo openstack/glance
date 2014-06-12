@@ -25,7 +25,7 @@ TASKS_MIGRATE_COLUMNS = ['input', 'message', 'result']
 
 def define_task_info_table(meta):
     Table('tasks', meta, autoload=True)
-    #NOTE(nikhil): input and result are stored as text in the DB.
+    # NOTE(nikhil): input and result are stored as text in the DB.
     # SQLAlchemy marshals the data to/from JSON using custom type
     # JSONEncodedDict. It uses simplejson underneath.
     task_info = Table('task_info',
@@ -86,9 +86,7 @@ def downgrade(migrate_engine):
             'message': task_info.message
         }
 
-        tasks_table\
-            .update(values=values)\
-            .where(tasks_table.c.id == task_info.task_id)\
-            .execute()
+        tasks_table.update(values=values).where(
+            tasks_table.c.id == task_info.task_id).execute()
 
     drop_tables([task_info_table])

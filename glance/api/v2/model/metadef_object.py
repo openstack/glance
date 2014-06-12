@@ -27,12 +27,12 @@ class MetadefObject(types.Base, WSMEModelTransformer):
     description = wsme.wsattr(types.text, mandatory=False)
     properties = wsme.wsattr({types.text: PropertyType}, mandatory=False)
 
-    #Not using datetime since time format has to be
-    #in glance.openstack.common.timeutils.isotime() format
+    # Not using datetime since time format has to be
+    # in glance.openstack.common.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 
-    #Generated fields
+    # Generated fields
     self = wsme.wsattr(types.text, mandatory=False)
     schema = wsme.wsattr(types.text, mandatory=False)
 

@@ -29,8 +29,8 @@ def upgrade(migrate_engine):
     new_meta_data.create(image_locations)
 
     noe = pickle.dumps({})
-    s = sqlalchemy.sql.select([image_locations]).\
-        where(image_locations.c.meta_data != noe)
+    s = sqlalchemy.sql.select([image_locations]).where(
+        image_locations.c.meta_data != noe)
     conn = migrate_engine.connect()
     res = conn.execute(s)
 
@@ -38,9 +38,8 @@ def upgrade(migrate_engine):
         meta_data = row['meta_data']
         x = pickle.loads(meta_data)
         if x != {}:
-            stmt = image_locations.update().\
-                where(image_locations.c.id == row['id']).\
-                values(storage_meta_data=x)
+            stmt = image_locations.update().where(
+                image_locations.c.id == row['id']).values(storage_meta_data=x)
             conn.execute(stmt)
     conn.close()
     image_locations.columns['meta_data'].drop()
@@ -55,8 +54,8 @@ def downgrade(migrate_engine):
     old_meta_data.create(image_locations)
 
     noj = json.dumps({})
-    s = sqlalchemy.sql.select([image_locations]).\
-        where(image_locations.c.meta_data != noj)
+    s = sqlalchemy.sql.select([image_locations]).where(
+        image_locations.c.meta_data != noj)
     conn = migrate_engine.connect()
     res = conn.execute(s)
 
@@ -64,9 +63,9 @@ def downgrade(migrate_engine):
         x = row['meta_data']
         meta_data = json.loads(x)
         if meta_data != {}:
-            stmt = image_locations.update().\
-                where(image_locations.c.id == row['id']).\
-                values(old_meta_data=meta_data)
+            stmt = image_locations.update().where(
+                image_locations.c.id == row['id']).values(
+                    old_meta_data=meta_data)
             conn.execute(stmt)
     conn.close()
     image_locations.columns['meta_data'].drop()

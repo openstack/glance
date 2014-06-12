@@ -27,7 +27,7 @@ class TestRootApi(functional.FunctionalTest):
     def test_version_configurations(self):
         """Test that versioning is handled properly through all channels"""
 
-        #v1 and v2 api enabled
+        # v1 and v2 api enabled
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
@@ -69,7 +69,7 @@ class TestRootApi(functional.FunctionalTest):
         self.assertEqual(content, versions_json)
         self.stop_servers()
 
-        #v2 api enabled
+        # v2 api enabled
         self.cleanup()
         self.api_server.enable_v1_api = False
         self.api_server.enable_v2_api = True
@@ -103,7 +103,7 @@ class TestRootApi(functional.FunctionalTest):
         self.assertEqual(content, versions_json)
         self.stop_servers()
 
-        #v1 api enabled
+        # v1 api enabled
         self.cleanup()
         self.api_server.enable_v1_api = True
         self.api_server.enable_v2_api = False

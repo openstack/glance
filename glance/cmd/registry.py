@@ -21,9 +21,10 @@
 Reference implementation server for Glance Registry
 """
 
-import eventlet
 import os
 import sys
+
+import eventlet
 
 # Monkey patch socket and time
 eventlet.patcher.monkey_patch(all=False, socket=True, time=True, thread=True)

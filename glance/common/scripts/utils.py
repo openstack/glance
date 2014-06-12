@@ -101,7 +101,7 @@ def validate_location_uri(location):
         raise StandardError(msg)
 
     else:
-        #TODO(nikhil): add other supported uris
+        # TODO(nikhil): add other supported uris
         supported = ['http', ]
         msg = _("The given uri is not valid. Please specify a "
                 "valid uri from the following list of supported uri "

@@ -12,18 +12,16 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-import mock
 import uuid
 
 import glance_store
+import mock
 import six
 import webob
 
 import glance.api.v2.image_data
 from glance.common import exception
 from glance.common import wsgi
-
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils

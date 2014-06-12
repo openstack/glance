@@ -14,10 +14,10 @@
 #    under the License.
 
 import copy
-import six
-import webob
 
 import glance_store
+import six
+import webob
 
 from glance.api import policy
 from glance.common import exception
@@ -58,8 +58,8 @@ class ImageMembersController(object):
 
         """
         image_repo = self.gateway.get_repo(req.context)
-        image_member_factory = self.gateway\
-                                   .get_image_member_factory(req.context)
+        image_member_factory = self.gateway.get_image_member_factory(
+            req.context)
         try:
             image = image_repo.get(image_id)
             member_repo = image.get_member_repo()
@@ -106,8 +106,8 @@ class ImageMembersController(object):
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except ValueError as e:
-            raise webob.exc.HTTPBadRequest(explanation=
-                                           utils.exception_to_str(e))
+            raise webob.exc.HTTPBadRequest(
+                explanation=utils.exception_to_str(e))
 
     def index(self, req, image_id):
         """
@@ -278,14 +278,14 @@ _MEMBER_SCHEMA = {
     'created_at': {
         'type': 'string',
         'description': _('Date and time of image member creation'),
-        #TODO(brian-rosmaita): our jsonschema library doesn't seem to like the
+        # TODO(brian-rosmaita): our jsonschema library doesn't seem to like the
         # format attribute, figure out why (and also fix in images.py)
-        #'format': 'date-time',
+        # 'format': 'date-time',
     },
     'updated_at': {
         'type': 'string',
         'description': _('Date and time of last modification of image member'),
-        #'format': 'date-time',
+        # 'format': 'date-time',
     },
     'status': {
         'type': 'string',

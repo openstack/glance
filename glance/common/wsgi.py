@@ -433,7 +433,7 @@ class Debug(Middleware):
             sys.stdout.write(part)
             sys.stdout.flush()
             yield part
-        print
+        print()
 
 
 class APIMapper(routes.Mapper):

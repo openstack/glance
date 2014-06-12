@@ -66,14 +66,14 @@ def _execute(t_id, task_repo, image_repo, image_factory):
         # Note: The message string contains Error in it to indicate
         # in the task.message that it's a error message for the user.
 
-        #TODO(nikhil): need to bring back save_and_reraise_exception when
+        # TODO(nikhil): need to bring back save_and_reraise_exception when
         # necessary
         err_msg = ("Error: " + six.text_type(type(e)) + ': ' +
                    common_utils.exception_to_str(e))
-        log_msg = _LE(err_msg + ("Task ID %s" % task.task_id))
+        log_msg = _LE(err_msg + ("Task ID %s" % task.task_id))  # noqa
         LOG.exception(log_msg)
 
-        task.fail(_LE(err_msg))
+        task.fail(_LE(err_msg))  # noqa
     finally:
         task_repo.save(task)
 

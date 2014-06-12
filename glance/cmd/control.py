@@ -65,8 +65,8 @@ And command is one of:
 
     {1}
 
-And CONFPATH is the optional configuration file to use.""".\
-    format(', '.join(ALL_SERVERS), ', '.join(ALL_COMMANDS))
+And CONFPATH is the optional configuration file to use.""".format(
+    ', '.join(ALL_SERVERS), ', '.join(ALL_COMMANDS))
 
 exitcode = 0
 

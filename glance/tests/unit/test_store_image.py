@@ -12,9 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import mox
-
 import glance_store
+import mox
 
 from glance.common import exception
 import glance.location
@@ -141,7 +140,7 @@ class TestStoreImage(utils.BaseTestCase):
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', 4)
         self.assertEqual(image.size, 4)
-        #NOTE(markwash): FakeStore returns image_id for location
+        # NOTE(markwash): FakeStore returns image_id for location
         self.assertEqual(image.locations[0]['url'], UUID2)
         self.assertEqual(image.checksum, 'Z')
         self.assertEqual(image.status, 'active')
@@ -174,7 +173,7 @@ class TestStoreImage(utils.BaseTestCase):
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', None)
         self.assertEqual(image.size, 4)
-        #NOTE(markwash): FakeStore returns image_id for location
+        # NOTE(markwash): FakeStore returns image_id for location
         self.assertEqual(image.locations[0]['url'], UUID2)
         self.assertEqual(image.checksum, 'Z')
         self.assertEqual(image.status, 'active')
@@ -190,7 +189,7 @@ class TestStoreImage(utils.BaseTestCase):
                                            self.store_api, self.store_utils)
         image.set_data(data, len)
         self.assertEqual(image.size, len)
-        #NOTE(markwash): FakeStore returns image_id for location
+        # NOTE(markwash): FakeStore returns image_id for location
         location = {'url': image_id, 'metadata': {}, 'status': 'active'}
         self.assertEqual(image.locations, [location])
         self.assertEqual(image_stub.locations, [location])

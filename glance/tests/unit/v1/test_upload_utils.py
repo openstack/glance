@@ -14,10 +14,10 @@
 #    under the License.
 
 from contextlib import contextmanager
-import mock
-from mock import patch
 
 import glance_store
+import mock
+from mock import patch
 import webob.exc
 
 from glance.api.v1 import upload_utils

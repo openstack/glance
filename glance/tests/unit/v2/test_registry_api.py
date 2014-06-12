@@ -30,7 +30,6 @@ from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
-
 from glance.registry.api import v2 as rserver
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
@@ -114,10 +113,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         db_models.register_models(db_api.get_engine())
 
     def test_show(self):
-        """
-        Tests that registry API endpoint
-        returns the expected image
-        """
+        """Tests that registry API endpoint returns the expected image."""
         fixture = {'id': UUID2,
                    'name': 'fake image #2',
                    'size': 19,
@@ -139,10 +135,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             self.assertEqual(v, image[k])
 
     def test_show_unknown(self):
-        """
-        Tests that the registry API endpoint
-        returns a 404 for an unknown image id
-        """
+        """Tests the registry API endpoint returns 404 for an unknown id."""
         req = webob.Request.blank('/rpc')
         req.method = "POST"
         cmd = [{
@@ -156,10 +149,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'glance.common.exception.NotFound')
 
     def test_get_index(self):
-        """
-        Tests that the image_get_all command returns list of
-        images
-        """
+        """Tests that the image_get_all command returns list of images."""
         fixture = {'id': UUID2,
                    'name': 'fake image #2',
                    'size': 19,
@@ -183,9 +173,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             self.assertEqual(v, images[0][k])
 
     def test_get_index_marker(self):
-        """
-        Tests that the registry API returns list of
-        public images that conforms to a marker query param
+        """Tests that the registry API returns list of public images.
+
+        Must conforms to a marker query param.
         """
         uuid5_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
         uuid4_time = uuid5_time + datetime.timedelta(seconds=5)
@@ -450,10 +440,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(len(images), 0)
 
     def test_get_index_unknown_marker(self):
-        """
-        Tests that the registry API returns a NotFound
-        when an unknown marker is provided
-        """
+        """Tests the registry API returns a NotFound with unknown marker."""
         req = webob.Request.blank('/rpc')
         req.method = "POST"
         cmd = [{
@@ -468,9 +455,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertIn("NotFound", result["_error"]["cls"])
 
     def test_get_index_limit(self):
-        """
-        Tests that the registry API returns list of
-        public images that conforms to a limit query param
+        """Tests that the registry API returns list of public images.
+
+        Must conforms to a limit query param.
         """
         uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
         uuid4_time = uuid3_time + datetime.timedelta(seconds=5)
@@ -521,9 +508,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[0]['id'], UUID4)
 
     def test_get_index_limit_marker(self):
-        """
-        Tests that the registry API returns list of
-        public images that conforms to limit and marker query params
+        """Tests that the registry API returns list of public images.
+
+        Must conforms to limit and marker query params.
         """
         uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
         uuid4_time = uuid3_time + datetime.timedelta(seconds=5)
@@ -573,10 +560,11 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[0]['id'], UUID2)
 
     def test_get_index_filter_name(self):
-        """
-        Tests that the registry API returns list of
-        public images that have a specific name. This is really a sanity
-        check, filtering is tested more in-depth using /images/detail
+        """Tests that the registry API returns list of public images.
+
+        Use a specific name. This is really a sanity check, filtering is
+        tested more in-depth using /images/detail
+
         """
         extra_fixture = {'id': _gen_uuid(),
                          'status': 'active',
@@ -618,9 +606,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
             self.assertEqual('new name! #123', image['name'])
 
     def test_get_index_filter_on_user_defined_properties(self):
-        """
-        Tests that the registry API returns list of
-        public images that have a specific user-defined properties.
+        """Tests that the registry API returns list of public images.
+
+        Use a specific user-defined properties.
         """
         properties = {'distro': 'ubuntu', 'arch': 'i386', 'type': 'kernel'}
         extra_id = _gen_uuid()
@@ -728,9 +716,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(len(images), 0)
 
     def test_get_index_sort_default_created_at_desc(self):
-        """
-        Tests that the registry API returns list of
-        public images that conforms to a default sort key/dir
+        """Tests that the registry API returns list of public images.
+
+        Must conforms to a default sort key/dir.
         """
         uuid5_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
         uuid4_time = uuid5_time + datetime.timedelta(seconds=5)
@@ -800,10 +788,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[4]['id'], UUID1)
 
     def test_get_index_sort_name_asc(self):
-        """
-        Tests that the registry API returns list of
-        public images sorted alphabetically by name in
-        ascending order.
+        """Tests that the registry API returns list of public images.
+
+        Must be  sorted alphabetically by name in ascending order.
         """
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -860,10 +847,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[4]['id'], UUID4)
 
     def test_get_index_sort_status_desc(self):
-        """
-        Tests that the registry API returns list of
-        public images sorted alphabetically by status in
-        descending order.
+        """Tests that the registry API returns list of public images.
+
+        Must be sorted alphabetically by status in descending order.
         """
         uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
 
@@ -912,10 +898,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[3]['id'], UUID3)
 
     def test_get_index_sort_disk_format_asc(self):
-        """
-        Tests that the registry API returns list of
-        public images sorted alphabetically by disk_format in
-        ascending order.
+        """Tests that the registry API returns list of public images.
+
+        Must be sorted alphabetically by disk_format in ascending order.
         """
         uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=5)
 
@@ -964,10 +949,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[3]['id'], UUID2)
 
     def test_get_index_sort_container_format_desc(self):
-        """
-        Tests that the registry API returns list of
-        public images sorted alphabetically by container_format in
-        descending order.
+        """Tests that the registry API returns list of public images.
+
+        Must be sorted alphabetically by container_format in descending order.
         """
         uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=5)
 
@@ -1017,9 +1001,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[3]['id'], UUID1)
 
     def test_get_index_sort_size_asc(self):
-        """
-        Tests that the registry API returns list of
-        public images sorted by size in ascending order.
+        """Tests that the registry API returns list of public images.
+
+        Must be sorted by size in ascending order.
         """
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -1065,9 +1049,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[3]['id'], UUID3)
 
     def test_get_index_sort_created_at_asc(self):
-        """
-        Tests that the registry API returns list of
-        public images sorted by created_at in ascending order.
+        """Tests that the registry API returns list of public images.
+
+        Must be sorted by created_at in ascending order.
         """
         uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
         uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
@@ -1120,9 +1104,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(images[3]['id'], UUID3)
 
     def test_get_index_sort_updated_at_desc(self):
-        """
-        Tests that the registry API returns list of
-        public images sorted by updated_at in descending order.
+        """Tests that the registry API returns list of public images.
+
+        Must be sorted by updated_at in descending order.
         """
         uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
         uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
@@ -1383,9 +1367,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertTrue(deleted_image['deleted_at'])
 
     def test_get_image_members(self):
-        """
-        Tests members listing for existing images
-        """
+        """Tests members listing for existing images."""
         req = webob.Request.blank('/rpc')
         req.method = 'POST'
         cmd = [{

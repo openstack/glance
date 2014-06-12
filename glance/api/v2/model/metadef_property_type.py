@@ -21,8 +21,8 @@ from glance.common.wsme_utils import WSMEModelTransformer
 
 
 class PropertyType(types.Base, WSMEModelTransformer):
-    #When used in collection of PropertyTypes, name is a dictionary key
-    #and not included as separate field.
+    # When used in collection of PropertyTypes, name is a dictionary key
+    # and not included as separate field.
     name = wsme.wsattr(types.text, mandatory=False)
 
     type = wsme.wsattr(types.text, mandatory=True)

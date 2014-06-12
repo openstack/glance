@@ -32,13 +32,12 @@ from six.moves import xrange
 from glance.openstack.common import jsonutils
 from glance.openstack.common import units
 from glance.tests import functional
+from glance.tests.functional.store_utils import get_http_uri
+from glance.tests.functional.store_utils import setup_http
 from glance.tests.utils import execute
 from glance.tests.utils import minimal_headers
 from glance.tests.utils import skip_if_disabled
 from glance.tests.utils import xattr_writes_supported
-
-from glance.tests.functional.store_utils import get_http_uri
-from glance.tests.functional.store_utils import setup_http
 
 FIVE_KB = 5 * units.Ki
 

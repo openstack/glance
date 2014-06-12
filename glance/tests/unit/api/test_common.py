@@ -14,7 +14,6 @@
 #    under the License.
 
 import testtools
-
 import webob
 
 import glance.api.common

@@ -67,8 +67,8 @@ class SwiftParams(object):
 
     def _form_default_params(self):
         default = {}
-        if CONF.swift_store_user and CONF.swift_store_key \
-                and CONF.swift_store_auth_address:
+        if (CONF.swift_store_user and CONF.swift_store_key
+           and CONF.swift_store_auth_address):
             default['user'] = CONF.swift_store_user
             default['key'] = CONF.swift_store_key
             default['auth_address'] = CONF.swift_store_auth_address

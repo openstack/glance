@@ -48,7 +48,7 @@ class BaseTestCase(testtools.TestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
 
-        #NOTE(bcwaldon): parse_args has to be called to register certain
+        # NOTE(bcwaldon): parse_args has to be called to register certain
         # command-line options - specifically we need config_dir for
         # the following policy tests
         config.parse_args(args=[])
@@ -294,11 +294,11 @@ def execute(cmd,
         exitcode = 0
 
     if exitcode != expected_exitcode and raise_error:
-        msg = "Command %(cmd)s did not succeed. Returned an exit "\
-              "code of %(exitcode)d."\
-              "\n\nSTDOUT: %(out)s"\
-              "\n\nSTDERR: %(err)s" % {'cmd': cmd, 'exitcode': exitcode,
-                                       'out': out, 'err': err}
+        msg = "Command %(cmd)s did not succeed. Returned an exit "
+        "code of %(exitcode)d."
+        "\n\nSTDOUT: %(out)s"
+        "\n\nSTDERR: %(err)s" % {'cmd': cmd, 'exitcode': exitcode,
+                                 'out': out, 'err': err}
         if context:
             msg += "\n\nCONTEXT: %s" % context
         raise RuntimeError(msg)

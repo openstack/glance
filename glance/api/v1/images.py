@@ -268,8 +268,8 @@ class Controller(controller.BaseController):
                         key, 'read', req.context) is False):
                     # NOTE(bourke): if read protected, re-add to image_meta to
                     # prevent deletion
-                    image_meta['properties'][key] = \
-                        orig_meta['properties'][key]
+                    image_meta['properties'][key] = orig_meta[
+                        'properties'][key]
                 elif (self.prop_enforcer.check_property_rules(
                         key, 'delete', req.context) is False):
                     msg = "Property '%s' is protected" % key
@@ -1073,7 +1073,7 @@ class Controller(controller.BaseController):
                                 content_type="text/plain")
         except exception.InUseByStore as e:
             msg = (_LI("Image %s could not be deleted because it is in use: "
-                       "%s") % (id, utils.exception_to_str(e)))
+                       "%s") % (id, utils.exception_to_str(e)))  # noqa
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPConflict(explanation=msg,

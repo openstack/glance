@@ -13,6 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import glance_store
 
 from glance.api import authorization
 from glance.api import policy
@@ -24,7 +25,6 @@ import glance.domain
 import glance.location
 import glance.notifier
 import glance.quota
-import glance_store
 
 
 class Gateway(object):
@@ -48,11 +48,10 @@ class Gateway(object):
             policy_image_factory, context, self.notifier)
         if property_utils.is_property_protection_enabled():
             property_rules = property_utils.PropertyRules(self.policy)
-            protected_image_factory = property_protections.\
-                ProtectedImageFactoryProxy(notifier_image_factory, context,
-                                           property_rules)
+            pif = property_protections.ProtectedImageFactoryProxy(
+                notifier_image_factory, context, property_rules)
             authorized_image_factory = authorization.ImageFactoryProxy(
-                protected_image_factory, context)
+                pif, context)
         else:
             authorized_image_factory = authorization.ImageFactoryProxy(
                 notifier_image_factory, context)
@@ -80,11 +79,10 @@ class Gateway(object):
             policy_image_repo, context, self.notifier)
         if property_utils.is_property_protection_enabled():
             property_rules = property_utils.PropertyRules(self.policy)
-            protected_image_repo = property_protections.\
-                ProtectedImageRepoProxy(notifier_image_repo, context,
-                                        property_rules)
+            pir = property_protections.ProtectedImageRepoProxy(
+                notifier_image_repo, context, property_rules)
             authorized_image_repo = authorization.ImageRepoProxy(
-                protected_image_repo, context)
+                pir, context)
         else:
             authorized_image_repo = authorization.ImageRepoProxy(
                 notifier_image_repo, context)
@@ -165,20 +163,16 @@ class Gateway(object):
         resource_type_factory = glance.domain.MetadefResourceTypeFactory()
         policy_resource_type_factory = policy.MetadefResourceTypeFactoryProxy(
             resource_type_factory, context, self.policy)
-        authorized_resource_type_factory = \
-            authorization.MetadefResourceTypeFactoryProxy(
-                policy_resource_type_factory, context)
-        return authorized_resource_type_factory
+        return authorization.MetadefResourceTypeFactoryProxy(
+            policy_resource_type_factory, context)
 
     def get_metadef_resource_type_repo(self, context):
         resource_type_repo = glance.db.MetadefResourceTypeRepo(
             context, self.db_api)
         policy_object_repo = policy.MetadefResourceTypeRepoProxy(
             resource_type_repo, context, self.policy)
-        authorized_resource_type_repo = \
-            authorization.MetadefResourceTypeRepoProxy(policy_object_repo,
-                                                       context)
-        return authorized_resource_type_repo
+        return authorization.MetadefResourceTypeRepoProxy(policy_object_repo,
+                                                          context)
 
     def get_metadef_property_factory(self, context):
         prop_factory = glance.domain.MetadefPropertyFactory()

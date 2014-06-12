@@ -53,6 +53,6 @@ def downgrade(migrate_engine):
     image_records = image_locations_table.select().execute().fetchall()
 
     for image_location in image_records:
-        images_table.update(values={'location': image_location.value})\
-                    .where(images_table.c.id == image_location.image_id)\
-                    .execute()
+        images_table.update(
+            values={'location': image_location.value}).where(
+                images_table.c.id == image_location.image_id).execute()

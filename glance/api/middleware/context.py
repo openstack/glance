@@ -91,12 +91,12 @@ class ContextMiddleware(BaseContextMiddleware):
         return glance.context.RequestContext(**kwargs)
 
     def _get_authenticated_context(self, req):
-        #NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
+        # NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
         # it into a list to be useful
         roles_header = req.headers.get('X-Roles', '')
         roles = [r.strip().lower() for r in roles_header.split(',')]
 
-        #NOTE(bcwaldon): This header is deprecated in favor of X-Auth-Token
+        # NOTE(bcwaldon): This header is deprecated in favor of X-Auth-Token
         deprecated_token = req.headers.get('X-Storage-Token')
 
         service_catalog = None

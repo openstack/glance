@@ -33,7 +33,7 @@ class Controller(object):
         self.task_schema = tasks.get_task_schema()
         self.task_collection_schema = tasks.get_collection_schema()
 
-        #Metadef schemas
+        # Metadef schemas
         self.metadef_namespace_schema = metadef_namespaces.get_schema()
         self.metadef_namespace_collection_schema = \
             metadef_namespaces.get_collection_schema()

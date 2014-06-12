@@ -20,9 +20,11 @@ from glance.openstack.common import local
 
 
 class RequestContext(object):
-    """
-    Stores information about the security context under which the user
-    accesses the system, as well as additional request information.
+    """Stores information about the security context.
+
+    Stores how the user accesses the system, as well as additional request
+    information.
+
     """
 
     user_idt_format = '{user} {tenant} {domain} {user_domain} {p_domain}'
@@ -47,8 +49,7 @@ class RequestContext(object):
         self.user_domain = user_domain
         self.project_domain = project_domain
         if not self.is_admin:
-            self.is_admin = \
-                self.policy_enforcer.check_is_admin(self)
+            self.is_admin = self.policy_enforcer.check_is_admin(self)
 
         if not hasattr(local.store, 'context'):
             self.update_store()
@@ -67,11 +68,11 @@ class RequestContext(object):
         return {
             'request_id': self.request_id,
 
-            #NOTE(bcwaldon): openstack-common logging expects 'user'
+            # NOTE(bcwaldon): openstack-common logging expects 'user'
             'user': self.user,
             'user_id': self.user,
 
-            #NOTE(bcwaldon): openstack-common logging expects 'tenant'
+            # NOTE(bcwaldon): openstack-common logging expects 'tenant'
             'tenant': self.tenant,
             'tenant_id': self.tenant,
             'project_id': self.tenant,

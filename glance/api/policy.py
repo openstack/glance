@@ -448,7 +448,7 @@ class ImageTarget(object):
             return self.image.extra_properties[key]
 
 
-#Metadef Namespace classes
+# Metadef Namespace classes
 class MetadefNamespaceProxy(glance.domain.proxy.MetadefNamespace):
 
     def __init__(self, namespace, context, policy):
@@ -501,7 +501,7 @@ class MetadefNamespaceFactoryProxy(
             meta_namespace_proxy_kwargs=proxy_kwargs)
 
 
-#Metadef Object classes
+# Metadef Object classes
 class MetadefObjectProxy(glance.domain.proxy.MetadefObject):
 
     def __init__(self, meta_object, context, policy):
@@ -553,7 +553,7 @@ class MetadefObjectFactoryProxy(glance.domain.proxy.MetadefObjectFactory):
             meta_object_proxy_kwargs=proxy_kwargs)
 
 
-#Metadef ResourceType classes
+# Metadef ResourceType classes
 class MetadefResourceTypeProxy(glance.domain.proxy.MetadefResourceType):
 
     def __init__(self, meta_resource_type, context, policy):
@@ -600,7 +600,7 @@ class MetadefResourceTypeFactoryProxy(
             resource_type_proxy_kwargs=proxy_kwargs)
 
 
-#Metadef namespace properties classes
+# Metadef namespace properties classes
 class MetadefPropertyProxy(glance.domain.proxy.MetadefProperty):
 
     def __init__(self, namespace_property, context, policy):

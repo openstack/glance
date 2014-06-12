@@ -12,11 +12,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import uuid
 
 import mock
 from mock import patch
-import uuid
-
 import six
 
 from glance.common import exception
@@ -145,7 +144,7 @@ class TestImageQuota(test_utils.BaseTestCase):
     def test_quota_exceeded_no_size(self):
         quota = 10
         data = '*' * (quota + 1)
-        #NOTE(jbresnah) When the image size is None it means that it is
+        # NOTE(jbresnah) When the image size is None it means that it is
         # not known.  In this case the only time we will raise an
         # exception is when there is no room left at all, thus we know
         # it will not fit.
@@ -592,16 +591,16 @@ class TestImageMemberQuotas(test_utils.BaseTestCase):
 
         self.image_member_factory.new_image_member(self.image,
                                                    'fake_id')
-        self.base_image_member_factory.new_image_member\
-            .assert_called_once_with(self.image.base, 'fake_id')
+        nim = self.base_image_member_factory.new_image_member
+        nim .assert_called_once_with(self.image.base, 'fake_id')
 
     def test_new_image_member_unlimited_members(self):
         self.config(image_member_quota=-1)
 
         self.image_member_factory.new_image_member(self.image,
                                                    'fake_id')
-        self.base_image_member_factory.new_image_member\
-            .assert_called_once_with(self.image.base, 'fake_id')
+        nim = self.base_image_member_factory.new_image_member
+        nim.assert_called_once_with(self.image.base, 'fake_id')
 
     def test_new_image_member_too_many_members(self):
         self.config(image_member_quota=0)

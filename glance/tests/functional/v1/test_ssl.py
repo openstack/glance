@@ -27,18 +27,17 @@ test accounts only.
 If a connection cannot be established, all the test cases are
 skipped.
 """
-
 import datetime
 import hashlib
-import httplib2
 import os
 import tempfile
 import uuid
 
+import httplib2
+
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 from glance.openstack.common import units
-
 from glance.tests import functional
 from glance.tests.utils import minimal_headers
 from glance.tests.utils import skip_if_disabled

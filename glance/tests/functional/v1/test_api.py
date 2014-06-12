@@ -433,8 +433,8 @@ class TestApi(functional.FunctionalTest):
 
         # 21. GET /images with filter on user-defined property 'distro'.
         # Verify both images are returned
-        path = "http://%s:%d/v1/images?property-distro=Ubuntu" % \
-               ("127.0.0.1", self.api_port)
+        path = "http://%s:%d/v1/images?property-distro=Ubuntu" % (
+            "127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)
@@ -445,8 +445,8 @@ class TestApi(functional.FunctionalTest):
 
         # 22. GET /images with filter on user-defined property 'distro' but
         # with non-existent value. Verify no images are returned
-        path = "http://%s:%d/v1/images?property-distro=fedora" % \
-               ("127.0.0.1", self.api_port)
+        path = "http://%s:%d/v1/images?property-distro=fedora" % (
+            "127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(response.status, 200)

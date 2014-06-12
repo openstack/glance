@@ -34,8 +34,8 @@ def _get(context, object_id, session):
             .filter_by(id=object_id)
         metadef_object = query.one()
     except sa_orm.exc.NoResultFound:
-        LOG.warn(_LW("Metadata definition object not found for id %s",
-                     object_id))
+        msg = _LW("Metadata definition object not found for id %s")
+        LOG.warn(msg % object_id)
         raise exc.MetadefRecordNotFound(record_type='object', id=object_id)
 
     return metadef_object

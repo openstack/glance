@@ -422,7 +422,7 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
     def new_task(self, **kwargs):
         owner = kwargs.get('owner', self.context.owner)
 
-        #NOTE(nikhil): Unlike Images, Tasks are expected to have owner.
+        # NOTE(nikhil): Unlike Images, Tasks are expected to have owner.
         # We currently do not allow even admins to set the owner to None.
         if owner is not None and (owner == self.context.owner
                                   or self.context.is_admin):
@@ -457,7 +457,7 @@ class TaskStubRepoProxy(glance.domain.proxy.TaskStubRepo):
         return [proxy_task_stub(self.context, t) for t in task_stubs]
 
 
-#Metadef Namespace classes
+# Metadef Namespace classes
 def is_namespace_mutable(context, namespace):
     """Return True if the namespace is mutable in this context."""
     if context.is_admin:
@@ -548,7 +548,7 @@ class MetadefNamespaceRepoProxy(glance.domain.proxy.MetadefNamespaceRepo):
                 namespace in namespaces]
 
 
-#Metadef Object classes
+# Metadef Object classes
 def is_object_mutable(context, object):
     """Return True if the object is mutable in this context."""
     if context.is_admin:
@@ -635,7 +635,7 @@ class MetadefObjectRepoProxy(glance.domain.proxy.MetadefObjectRepo):
                 meta_object in objects]
 
 
-#Metadef ResourceType classes
+# Metadef ResourceType classes
 def is_meta_resource_type_mutable(context, meta_resource_type):
     """Return True if the meta_resource_type is mutable in this context."""
     if context.is_admin:
@@ -644,7 +644,7 @@ def is_meta_resource_type_mutable(context, meta_resource_type):
     if context.owner is None:
         return False
 
-    #(lakshmiS): resource type can exist without an association with
+    # (lakshmiS): resource type can exist without an association with
     # namespace and resource type cannot be created/update/deleted directly(
     # they have to be associated/de-associated from namespace)
     if meta_resource_type.namespace:
@@ -724,7 +724,7 @@ class MetadefResourceTypeRepoProxy(
                 meta_resource_type in meta_resource_types]
 
 
-#Metadef namespace properties classes
+# Metadef namespace properties classes
 def is_namespace_property_mutable(context, namespace_property):
     """Return True if the object is mutable in this context."""
     if context.is_admin:
@@ -787,8 +787,8 @@ class MetadefPropertyFactoryProxy(glance.domain.proxy.MetadefPropertyFactory):
                             "owned by '%s'")
                 raise exception.Forbidden(message % (owner))
 
-        return super(MetadefPropertyFactoryProxy, self).\
-            new_namespace_property(**kwargs)
+        return super(MetadefPropertyFactoryProxy, self).new_namespace_property(
+            **kwargs)
 
 
 class MetadefPropertyRepoProxy(glance.domain.proxy.MetadefPropertyRepo):
