@@ -62,9 +62,10 @@ class _AnsiColorizer(object):
     def __init__(self, stream):
         self.stream = stream
 
-    def supported(cls, stream=sys.stdout):
+    @staticmethod
+    def supported(stream=sys.stdout):
         """
-        A class method that returns True if the current platform supports
+        A method that returns True if the current platform supports
         coloring terminal output using this method. Returns False otherwise.
         """
         if not stream.isatty():
@@ -83,7 +84,6 @@ class _AnsiColorizer(object):
             except Exception:
                 # guess false in case of error
                 return False
-    supported = classmethod(supported)
 
     def write(self, text, color):
         """
@@ -121,7 +121,8 @@ class _Win32Colorizer(object):
             'white': red | green | blue | bold
         }
 
-    def supported(cls, stream=sys.stdout):
+    @staticmethod
+    def supported(stream=sys.stdout):
         try:
             import win32console
             screenBuffer = win32console.GetStdHandle(
@@ -138,7 +139,6 @@ class _Win32Colorizer(object):
             return False
         else:
             return True
-    supported = classmethod(supported)
 
     def write(self, text, color):
         color = self._colors[color]
@@ -154,9 +154,9 @@ class _NullColorizer(object):
     def __init__(self, stream):
         self.stream = stream
 
-    def supported(cls, stream=sys.stdout):
+    @staticmethod
+    def supported(stream=sys.stdout):
         return True
-    supported = classmethod(supported)
 
     def write(self, text, color):
         self.stream.write(text)
