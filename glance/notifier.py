@@ -26,14 +26,6 @@ import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
 notifier_opts = [
-    cfg.StrOpt('notifier_strategy',
-               help=_('Notifications can be sent when images are create, '
-                      'updated or deleted. There are three methods of sending '
-                      'notifications, logging (via the log_file directive), '
-                      'rabbit (via a rabbitmq queue), qpid (via a Qpid '
-                      'message queue), or noop (no notifications sent, the '
-                      'default). (DEPRECATED)')),
-
     cfg.StrOpt('default_publisher_id', default="image.localhost",
                help='Default publisher_id for outgoing notifications.'),
 ]
@@ -42,14 +34,6 @@ CONF = cfg.CONF
 CONF.register_opts(notifier_opts)
 
 LOG = logging.getLogger(__name__)
-
-_STRATEGY_ALIASES = {
-    "logging": "log",
-    "rabbit": "messaging",
-    "qpid": "messaging",
-    "noop": "noop",
-    "default": "noop",
-}
 
 _ALIASES = {
     'glance.openstack.common.rpc.impl_kombu': 'rabbit',
@@ -62,31 +46,9 @@ class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
 
     def __init__(self):
-
-        driver = None
-        transport_url = None
         publisher_id = CONF.default_publisher_id
-
-        if CONF.notifier_strategy:
-            msg = _("notifier_strategy was deprecated in "
-                    "favor of `notification_driver`")
-            LOG.warn(msg)
-
-            strategy = CONF.notifier_strategy
-
-            # NOTE(flaper87): Use this to keep backwards
-            # compatibility. We'll try to get an oslo.messaging
-            # driver from the specified strategy.
-            driver = _STRATEGY_ALIASES.get(strategy)
-            if driver == 'messaging':
-                transport_url = strategy + ':///'
-
-        self._transport = messaging.get_transport(CONF,
-                                                  url=transport_url,
-                                                  aliases=_ALIASES)
-
+        self._transport = messaging.get_transport(CONF, aliases=_ALIASES)
         self._notifier = messaging.Notifier(self._transport,
-                                            driver=driver,
                                             publisher_id=publisher_id)
 
     def warn(self, event_type, payload):
