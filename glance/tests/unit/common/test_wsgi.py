@@ -447,12 +447,35 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
         self.assertEqual(expected, actual)
 
     def test_has_body_has_transfer_encoding(self):
+        self.assertTrue(self._check_transfer_encoding(
+                        transfer_encoding='chunked'))
+
+    def test_has_body_multiple_transfer_encoding(self):
+        self.assertTrue(self._check_transfer_encoding(
+                        transfer_encoding='chunked, gzip'))
+
+    def test_has_body_invalid_transfer_encoding(self):
+        self.assertFalse(self._check_transfer_encoding(
+                         transfer_encoding='invalid', content_length=0))
+
+    def test_has_body_invalid_transfer_encoding_with_content_length(self):
+        self.assertTrue(self._check_transfer_encoding(
+                        transfer_encoding='invalid', content_length=5))
+
+    def test_has_body_valid_transfer_encoding_with_content_length(self):
+        self.assertTrue(self._check_transfer_encoding(
+                        transfer_encoding='chunked', content_length=0))
+
+    def _check_transfer_encoding(self, transfer_encoding=None,
+                                 content_length=None):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
         request.body = 'fake_body'
-        request.headers['transfer-encoding'] = 0
-        self.assertIn('transfer-encoding', request.headers)
-        self.assertTrue(wsgi.JSONRequestDeserializer().has_body(request))
+        request.headers['transfer-encoding'] = transfer_encoding
+        if content_length is not None:
+            request.headers['content-length'] = content_length
+
+        return wsgi.JSONRequestDeserializer().has_body(request)
 
     def test_get_bind_addr_default_value(self):
         expected = ('0.0.0.0', '123456')
