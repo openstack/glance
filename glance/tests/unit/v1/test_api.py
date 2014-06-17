@@ -20,6 +20,7 @@ import datetime
 import hashlib
 import uuid
 
+import glance_store as store
 import mock
 from oslo.config import cfg
 import routes
@@ -39,8 +40,6 @@ from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 
 import glance.registry.client.v1.api as registry
-import glance.store.filesystem
-from glance.store import http
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 from glance.tests import utils as test_utils
@@ -91,7 +90,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                             'metadata': {}, 'status': 'active'}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
-        glance.api.v1.images.validate_location = mock.Mock()
+        store.validate_location = mock.Mock()
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -126,7 +125,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
-        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as mocked_size:
             mocked_size.return_value = 0
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 201)
@@ -246,7 +247,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
-        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+        http = store.get_store_from_scheme('http')
+        with mock.patch.object(http, 'get_size') as mocked_size:
             mocked_size.return_value = 0
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 201)
@@ -284,7 +286,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
-        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as mocked_size:
             mocked_size.return_value = 0
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 201)
@@ -341,7 +345,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
-        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as mocked_size:
             mocked_size.return_value = 0
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 400)
@@ -384,7 +390,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_create_with_location_bad_store_uri(self):
         fixture_headers = {
-            'x-image-meta-store': 'swift',
+            'x-image-meta-store': 'file',
             'x-image-meta-name': 'bogus',
             'x-image-meta-location': 'http://',
             'x-image-meta-disk-format': 'qcow2',
@@ -495,7 +501,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
         req.headers['x-image-meta-location'] = 'http://localhost:0/images/123'
 
-        with mock.patch.object(http.Store, 'get_size') as mocked_size:
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as mocked_size:
             mocked_size.return_value = 0
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 200)
@@ -953,7 +961,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.headers['Content-Type'] = 'application/octet-stream'
         req.method = 'POST'
-        with mock.patch.object(http.Store, 'get_size') as size:
+
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as size:
             size.return_value = 2
 
             for k, v in six.iteritems(fixture_headers):
@@ -966,8 +977,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         """Tests creates an image from location and conflict image size"""
 
         mock_validate_location = mock.Mock()
-        glance.api.v1.images.validate_location = mock_validate_location
-        mock_validate_location.side_effect = exception.BadStoreUri()
+        store.validate_location = mock_validate_location
+        mock_validate_location.side_effect = store.BadStoreUri()
 
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
@@ -1240,26 +1251,29 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 200)
         self.assertEqual("deleted", res.headers['x-image-meta-status'])
 
-    @mock.patch.object(glance.store.filesystem.Store, 'delete')
-    def test_image_status_when_delete_fails(self, mock_fsstore_delete):
+    def test_image_status_when_delete_fails(self):
         """
         Tests that the image status set to active if deletion of image fails.
         """
-        mock_fsstore_delete.side_effect = exception.Forbidden()
 
-        # trigger the v1 delete api
-        req = webob.Request.blank("/images/%s" % UUID2)
-        req.method = 'DELETE'
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 403)
-        self.assertTrue('Forbidden to delete image' in res.body)
+        fs = store.get_store_from_scheme('file')
 
-        # check image metadata is still there with active state
-        req = webob.Request.blank("/images/%s" % UUID2)
-        req.method = 'HEAD'
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 200)
-        self.assertEqual("active", res.headers['x-image-meta-status'])
+        with mock.patch.object(fs, 'delete') as mock_fsstore_delete:
+            mock_fsstore_delete.side_effect = exception.Forbidden()
+
+            # trigger the v1 delete api
+            req = webob.Request.blank("/images/%s" % UUID2)
+            req.method = 'DELETE'
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 403)
+            self.assertTrue('Forbidden to delete image' in res.body)
+
+            # check image metadata is still there with active state
+            req = webob.Request.blank("/images/%s" % UUID2)
+            req.method = 'HEAD'
+            res = req.get_response(self.api)
+            self.assertEqual(res.status_int, 200)
+            self.assertEqual("active", res.headers['x-image-meta-status'])
 
     def test_delete_pending_delete_image(self):
         """
@@ -1542,7 +1556,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         # We expect 500 since an exception occured during upload.
         self.assertEqual(500, res.status_int)
 
-    @mock.patch('glance.store.store_add_to_backend')
+    @mock.patch('glance_store.store_add_to_backend')
     def test_upload_safe_kill(self, mock_store_add_to_backend):
 
         def mock_store_add_to_backend_w_exception(*args, **kwargs):
@@ -1562,7 +1576,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         self.assertEqual(1, mock_store_add_to_backend.call_count)
 
-    @mock.patch('glance.store.store_add_to_backend')
+    @mock.patch('glance_store.store_add_to_backend')
     def test_upload_safe_kill_deleted(self, mock_store_add_to_backend):
         test_router_api = router.API(self.mapper)
         self.api = test_utils.FakeAuthMiddleware(test_router_api,
@@ -2296,7 +2310,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
         req.method = 'POST'
 
-        with mock.patch.object(http.Store, 'get_size') as size:
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as size:
             size.return_value = 0
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 201)
@@ -2615,15 +2631,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
-
-    @mock.patch.object(glance.store.filesystem.Store, 'delete')
-    def test_delete_image_in_use(self, mock_filesystem_delete):
-        mock_filesystem_delete.side_effect = exception.InUseByStore()
-
-        req = webob.Request.blank("/images/%s" % UUID2)
-        req.method = 'DELETE'
-        res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 409)
 
     def test_head_details(self):
         req = webob.Request.blank('/images/detail')

@@ -17,6 +17,7 @@ from contextlib import contextmanager
 import mock
 from mock import patch
 
+import glance_store
 import webob.exc
 
 from glance.api.v1 import upload_utils
@@ -210,12 +211,12 @@ class TestUploadUtils(base.StoreClearingUnitTest):
 
     def test_upload_data_to_store_storage_full(self):
         self._test_upload_data_to_store_exception_with_notify(
-            exception.StorageFull,
+            glance_store.StorageFull,
             webob.exc.HTTPRequestEntityTooLarge)
 
     def test_upload_data_to_store_storage_write_denied(self):
         self._test_upload_data_to_store_exception_with_notify(
-            exception.StorageWriteDenied,
+            glance_store.StorageWriteDenied,
             webob.exc.HTTPServiceUnavailable)
 
     def test_upload_data_to_store_size_limit_exceeded(self):

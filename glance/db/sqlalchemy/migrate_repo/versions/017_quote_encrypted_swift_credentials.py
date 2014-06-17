@@ -28,6 +28,8 @@ Fixes bug #1081043
 """
 import types  # noqa
 
+#NOTE(flaper87): This is bad but there ain't better way to do it.
+from glance_store._drivers import swift  # noqa
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
 import sqlalchemy
@@ -37,7 +39,6 @@ from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
-import glance.store.swift  # noqa
 
 LOG = logging.getLogger(__name__)
 _LE = gettextutils._LE

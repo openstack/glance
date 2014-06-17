@@ -38,12 +38,12 @@ _delayed_delete_imported = False
 
 
 def _import_delayed_delete():
-    # glance.store (indirectly) imports glance.domain therefore we can't put
+    # glance_store (indirectly) imports glance.domain therefore we can't put
     # the CONF.import_opt outside - we have to do it in a convoluted/indirect
     # way!
     global _delayed_delete_imported
     if not _delayed_delete_imported:
-        CONF.import_opt('delayed_delete', 'glance.store')
+        CONF.import_opt('delayed_delete', 'glance_store')
         _delayed_delete_imported = True
 
 

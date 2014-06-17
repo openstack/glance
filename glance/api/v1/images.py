@@ -20,6 +20,8 @@
 import copy
 
 import eventlet
+import glance_store as store
+import glance_store.location
 from oslo.config import cfg
 import six.moves.urllib.parse as urlparse
 from webob.exc import HTTPBadRequest
@@ -47,12 +49,6 @@ from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
-from glance.store import get_from_backend
-from glance.store import get_known_schemes
-from glance.store import get_size_from_backend
-from glance.store import get_store_from_location
-from glance.store import get_store_from_scheme
-from glance.store import validate_location
 
 LOG = logging.getLogger(__name__)
 _LI = gettextutils._LI
@@ -425,7 +421,7 @@ class Controller(controller.BaseController):
         """
         if source:
             pieces = urlparse.urlparse(source)
-            schemes = [scheme for scheme in get_known_schemes()
+            schemes = [scheme for scheme in store.get_known_schemes()
                        if scheme != 'file']
             for scheme in schemes:
                 if pieces.scheme == scheme:
@@ -451,8 +447,14 @@ class Controller(controller.BaseController):
     @staticmethod
     def _get_from_store(context, where, dest=None):
         try:
-            image_data, image_size = get_from_backend(
-                context, where, dest=dest)
+            loc = glance_store.location.get_location_from_uri(where)
+            src_store = store.get_store_from_uri(where)
+
+            if dest is not None:
+                src_store.READ_CHUNKSIZE = dest.WRITE_CHUNKSIZE
+
+            image_data, image_size = src_store.get(loc, context=context)
+
         except exception.NotFound as e:
             raise HTTPNotFound(explanation=e.msg)
         image_size = int(image_size) if image_size else None
@@ -492,7 +494,6 @@ class Controller(controller.BaseController):
                                                         image_meta['location'])
             image_iterator = utils.cooperative_iter(image_iterator)
             image_meta['size'] = size or image_meta['size']
-
         image_meta = redact_loc(image_meta)
         return {
             'image_iterator': image_iterator,
@@ -513,9 +514,9 @@ class Controller(controller.BaseController):
         :raises HTTPBadRequest if image metadata is not valid
         """
         location = self._external_source(image_meta, req)
-        store = image_meta.get('store')
-        if store and store not in get_known_schemes():
-            msg = "Required store %s is invalid" % store
+        scheme = image_meta.get('store')
+        if scheme and scheme not in store.get_known_schemes():
+            msg = "Required store %s is invalid" % scheme
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  content_type='text/plain')
@@ -525,8 +526,8 @@ class Controller(controller.BaseController):
 
         if location:
             try:
-                store = get_store_from_location(location)
-            except exception.BadStoreUri:
+                backend = store.get_store_from_location(location)
+            except store.BadStoreUri:
                 msg = "Invalid location %s" % location
                 LOG.debug(msg)
                 raise HTTPBadRequest(explanation=msg,
@@ -534,7 +535,7 @@ class Controller(controller.BaseController):
                                      content_type="text/plain")
             # check the store exists before we hit the registry, but we
             # don't actually care what it is at this point
-            self.get_store_or_400(req, store)
+            self.get_store_or_400(req, backend)
 
             # retrieve the image size from remote store (if not provided)
             image_meta['size'] = self._get_size(req.context, image_meta,
@@ -585,7 +586,9 @@ class Controller(controller.BaseController):
         :retval The location where the image was stored
         """
 
-        scheme = req.headers.get('x-image-meta-store', CONF.default_store)
+        scheme = req.headers.get('x-image-meta-store',
+                                 CONF.glance_store.default_store)
+
         store = self.get_store_or_400(req, scheme)
 
         copy_from = self._copy_from(req)
@@ -691,8 +694,8 @@ class Controller(controller.BaseController):
         # retrieve the image size from remote store (if not provided)
         try:
             return (image_meta.get('size', 0) or
-                    get_size_from_backend(context, location))
-        except (exception.NotFound, exception.BadStoreUri) as e:
+                    store.get_size_from_backend(location, context=context))
+        except (exception.NotFound, store.BadStoreUri) as e:
             LOG.debug(e)
             raise HTTPBadRequest(explanation=e.msg, content_type="text/plain")
 
@@ -718,16 +721,17 @@ class Controller(controller.BaseController):
         else:
             if location:
                 try:
-                    validate_location(req.context, location)
-                except exception.BadStoreUri as bse:
+                    store.validate_location(location, context=req.context)
+                except store.BadStoreUri as bse:
                     raise HTTPBadRequest(explanation=bse.msg,
                                          request=req)
 
                 self._validate_image_for_activation(req, image_id, image_meta)
                 image_size_meta = image_meta.get('size')
                 if image_size_meta:
-                    image_size_store = get_size_from_backend(req.context,
-                                                             location)
+                    image_size_store = store.get_size_from_backend(
+                        location,
+                        context=req.context)
                     # NOTE(zhiyan): A returned size of zero usually means
                     # the driver encountered an error. In this case the
                     # size provided by the client will be used as-is.
@@ -902,7 +906,7 @@ class Controller(controller.BaseController):
             try:
                 self.update_store_acls(req, id, orig_or_updated_loc,
                                        public=is_public)
-            except exception.BadStoreUri:
+            except store.BadStoreUri:
                 msg = "Invalid location %s" % location
                 LOG.debug(msg)
                 raise HTTPBadRequest(explanation=msg,
@@ -1049,6 +1053,7 @@ class Controller(controller.BaseController):
                 with excutils.save_and_reraise_exception():
                     registry.update_image_metadata(req.context, id,
                                                    {'status': ori_status})
+
             registry.delete_image_metadata(req.context, id)
         except exception.NotFound as e:
             msg = (_("Failed to find image to delete: %s") %
@@ -1089,7 +1094,7 @@ class Controller(controller.BaseController):
         :raises HTTPNotFound if store does not exist
         """
         try:
-            return get_store_from_scheme(request.context, scheme)
+            return store.get_store_from_scheme(scheme)
         except exception.UnknownScheme:
             msg = "Store for scheme %s not found" % scheme
             LOG.debug(msg)

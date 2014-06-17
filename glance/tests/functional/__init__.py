@@ -39,7 +39,6 @@ import testtools
 from glance.common import utils
 from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common import jsonutils
-from glance.openstack.common import units
 from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 
@@ -280,28 +279,6 @@ class ApiServer(Server):
         self.scrubber_datadir = os.path.join(self.test_dir, "scrubber")
         self.log_file = os.path.join(self.test_dir, "api.log")
         self.image_size_cap = 1099511627776
-        self.s3_store_host = "s3.amazonaws.com"
-        self.s3_store_access_key = ""
-        self.s3_store_secret_key = ""
-        self.s3_store_bucket = ""
-        self.s3_store_bucket_url_format = ""
-        self.swift_store_auth_version = kwargs.get("swift_store_auth_version",
-                                                   "2")
-        self.swift_store_auth_address = kwargs.get("swift_store_auth_address",
-                                                   "")
-        self.swift_store_user = kwargs.get("swift_store_user", "")
-        self.swift_store_key = kwargs.get("swift_store_key", "")
-        self.swift_store_container = kwargs.get("swift_store_container", "")
-        self.swift_store_create_container_on_put = kwargs.get(
-            "swift_store_create_container_on_put", "True")
-        self.swift_store_large_object_size = 5 * units.Ki
-        self.swift_store_large_object_chunk_size = 200
-        self.swift_store_multi_tenant = False
-        self.swift_store_admin_tenants = []
-        self.rbd_store_ceph_conf = ""
-        self.rbd_store_pool = ""
-        self.rbd_store_user = ""
-        self.rbd_store_chunk_size = 4
         self.delayed_delete = delayed_delete
         self.owner_is_tenant = True
         self.workers = 0
@@ -333,8 +310,6 @@ class ApiServer(Server):
 verbose = %(verbose)s
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG
-filesystem_store_datadir=%(image_dir)s
-default_store = %(default_store)s
 bind_host = 127.0.0.1
 bind_port = %(bind_port)s
 key_file = %(key_file)s
@@ -344,25 +319,6 @@ registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
-s3_store_host = %(s3_store_host)s
-s3_store_access_key = %(s3_store_access_key)s
-s3_store_secret_key = %(s3_store_secret_key)s
-s3_store_bucket = %(s3_store_bucket)s
-s3_store_bucket_url_format = %(s3_store_bucket_url_format)s
-swift_store_auth_version = %(swift_store_auth_version)s
-swift_store_auth_address = %(swift_store_auth_address)s
-swift_store_user = %(swift_store_user)s
-swift_store_key = %(swift_store_key)s
-swift_store_container = %(swift_store_container)s
-swift_store_create_container_on_put = %(swift_store_create_container_on_put)s
-swift_store_large_object_size = %(swift_store_large_object_size)s
-swift_store_large_object_chunk_size = %(swift_store_large_object_chunk_size)s
-swift_store_multi_tenant = %(swift_store_multi_tenant)s
-swift_store_admin_tenants = %(swift_store_admin_tenants)s
-rbd_store_chunk_size = %(rbd_store_chunk_size)s
-rbd_store_user = %(rbd_store_user)s
-rbd_store_pool = %(rbd_store_pool)s
-rbd_store_ceph_conf = %(rbd_store_ceph_conf)s
 delayed_delete = %(delayed_delete)s
 owner_is_tenant = %(owner_is_tenant)s
 workers = %(workers)s
@@ -392,6 +348,9 @@ location_strategy=%(location_strategy)s
 flavor = %(deployment_flavor)s
 [store_type_location_strategy]
 store_type_preference = %(store_type_location_strategy_preference)s
+[glance_store]
+filesystem_store_datadir=%(image_dir)s
+default_store = %(default_store)s
 """
         self.paste_conf_base = """[pipeline:glance-api]
 pipeline = versionnegotiation gzip unauthenticated-context rootapp
@@ -540,13 +499,6 @@ class ScrubberDaemon(Server):
                                              "scrubber")
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
         self.log_file = os.path.join(self.test_dir, "scrubber.log")
-        self.swift_store_auth_address = kwargs.get("swift_store_auth_address",
-                                                   "")
-        self.swift_store_user = kwargs.get("swift_store_user", "")
-        self.swift_store_key = kwargs.get("swift_store_key", "")
-        self.swift_store_container = kwargs.get("swift_store_container", "")
-        self.swift_store_auth_version = kwargs.get("swift_store_auth_version",
-                                                   "2")
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.lock_path = self.test_dir
 
@@ -566,11 +518,6 @@ scrubber_datadir = %(scrubber_datadir)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-swift_store_auth_address = %(swift_store_auth_address)s
-swift_store_user = %(swift_store_user)s
-swift_store_key = %(swift_store_key)s
-swift_store_container = %(swift_store_container)s
-swift_store_auth_version = %(swift_store_auth_version)s
 lock_path = %(lock_path)s
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600

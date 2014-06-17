@@ -15,10 +15,12 @@
 
 import webob.exc
 
+import glance_store as store
+
 from glance.common import exception
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
-import glance.store as store
+
 
 LOG = logging.getLogger(__name__)
 
@@ -74,10 +76,11 @@ class BaseController(object):
                             write_tenants.append(member['member_id'])
                         else:
                             read_tenants.append(member['member_id'])
-                store.set_acls(req.context, location_uri, public=public,
+                store.set_acls(location_uri, public=public,
                                read_tenants=read_tenants,
-                               write_tenants=write_tenants)
-            except exception.UnknownScheme:
+                               write_tenants=write_tenants,
+                               context=req.context)
+            except store.UnknownScheme:
                 msg = _("Store for image_id not found: %s") % image_id
                 raise webob.exc.HTTPBadRequest(explanation=msg,
                                                request=req,

@@ -16,6 +16,7 @@
 import collections
 import copy
 
+import glance_store as store
 from oslo.config import cfg
 
 from glance.common import exception
@@ -24,7 +25,7 @@ import glance.domain.proxy
 from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
-from glance import store
+
 
 _LE = gettextutils._LE
 
@@ -50,8 +51,9 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
             member_repo = image.get_member_repo()
             member_ids = [m.member_id for m in member_repo.list()]
         for location in image.locations:
-            self.store_api.set_acls(self.context, location['url'], public,
-                                    read_tenants=member_ids)
+            self.store_api.set_acls(location['url'], public=public,
+                                    read_tenants=member_ids,
+                                    context=self.context)
 
     def add(self, image):
         result = super(ImageRepoProxy, self).add(image)
@@ -73,10 +75,10 @@ def _check_location_uri(context, store_api, uri):
     """
     is_ok = True
     try:
-        size = store_api.get_size_from_backend(context, uri)
+        size = store_api.get_size_from_backend(uri, context=context)
         # NOTE(zhiyan): Some stores return zero when it catch exception
         is_ok = size > 0
-    except (exception.UnknownScheme, exception.NotFound):
+    except (store.UnknownScheme, store.NotFound):
         is_ok = False
     if not is_ok:
         reason = _('Invalid location')
@@ -92,7 +94,8 @@ def _set_image_size(context, image, locations):
     if not image.size:
         for location in locations:
             size_from_backend = store.get_size_from_backend(
-                context, location['url'])
+                location['url'], context=context)
+
             if size_from_backend:
                 # NOTE(flwang): This assumes all locations have the same size
                 image.size = size_from_backend
@@ -353,11 +356,12 @@ class ImageProxy(glance.domain.proxy.Image):
         if size is None:
             size = 0  # NOTE(markwash): zero -> unknown size
         location, size, checksum, loc_meta = self.store_api.add_to_backend(
-            self.context, CONF.default_store,
+            CONF,
             self.image.image_id,
             utils.LimitingReader(utils.CooperativeReader(data),
                                  CONF.image_size_cap),
-            size)
+            size,
+            context=self.context)
         self.image.locations = [{'url': location, 'metadata': loc_meta,
                                  'status': 'active'}]
         self.image.size = size
@@ -366,12 +370,13 @@ class ImageProxy(glance.domain.proxy.Image):
 
     def get_data(self):
         if not self.image.locations:
-            raise exception.NotFound(_("No image data could be found"))
+            raise store.NotFound(_("No image data could be found"))
         err = None
         for loc in self.image.locations:
             try:
-                data, size = self.store_api.get_from_backend(self.context,
-                                                             loc['url'])
+                data, size = self.store_api.get_from_backend(
+                    loc['url'],
+                    context=self.context)
 
                 return data
             except Exception as e:
@@ -398,8 +403,9 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
         if self.image.locations and not public:
             member_ids = [m.member_id for m in self.repo.list()]
             for location in self.image.locations:
-                self.store_api.set_acls(self.context, location['url'],
-                                        public, read_tenants=member_ids)
+                self.store_api.set_acls(location['url'], public=public,
+                                        read_tenants=member_ids,
+                                        context=self.context)
 
     def add(self, member):
         super(ImageMemberRepoProxy, self).add(member)

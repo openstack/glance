@@ -19,13 +19,14 @@ Prefetches images into the Image Cache
 
 import eventlet
 
+import glance_store
+
 from glance.common import exception
 from glance import context
 from glance.image_cache import base
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
-import glance.store
 
 LOG = logging.getLogger(__name__)
 _LI = gettextutils._LI
@@ -54,8 +55,9 @@ class Prefetcher(base.CacheApp):
             return False
 
         location = image_meta['location']
-        image_data, image_size = glance.store.get_from_backend(ctx, location)
-        LOG.debug("Caching image '%s'" % image_id)
+        image_data, image_size = glance_store.get_from_backend(location,
+                                                               context=ctx)
+        LOG.debug("Caching image '%s'", image_id)
         cache_tee_iter = self.cache.cache_tee_iter(image_id, image_data,
                                                    image_meta['checksum'])
         # Image is tee'd into cache and checksum verified

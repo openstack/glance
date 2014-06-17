@@ -24,14 +24,14 @@ import glance.domain
 import glance.location
 import glance.notifier
 import glance.quota
-import glance.store
+import glance_store
 
 
 class Gateway(object):
     def __init__(self, db_api=None, store_api=None, notifier=None,
                  policy_enforcer=None):
         self.db_api = db_api or glance.db.get_api()
-        self.store_api = store_api or glance.store
+        self.store_api = store_api or glance_store
         self.store_utils = store_utils
         self.notifier = notifier or glance.notifier.Notifier()
         self.policy = policy_enforcer or policy.Enforcer()

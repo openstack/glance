@@ -16,6 +16,7 @@ import copy
 
 import six
 
+import glance_store as store
 from oslo.config import cfg
 
 import glance.api.common
@@ -57,9 +58,9 @@ def _calc_required_size(context, image, locations):
         for location in locations:
             size_from_backend = None
             try:
-                size_from_backend = glance.store.get_size_from_backend(
-                    context, location['url'])
-            except (exception.UnknownScheme, exception.NotFound):
+                size_from_backend = store.get_size_from_backend(
+                    location['url'], context=context)
+            except (store.UnknownScheme, store.NotFound):
                 pass
             if size_from_backend:
                 required_size = size_from_backend * len(locations)

@@ -17,6 +17,7 @@
 import copy
 import webob.exc
 
+import glance_store
 from oslo.config import cfg
 import six
 import six.moves.urllib.parse as urlparse
@@ -33,7 +34,6 @@ import glance.openstack.common.jsonutils as json
 import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 import glance.schema
-import glance.store
 
 LOG = logging.getLogger(__name__)
 _LI = gettextutils._LI
@@ -50,7 +50,7 @@ class TasksController(object):
         self.db_api = db_api or glance.db.get_api()
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()
-        self.store_api = store_api or glance.store
+        self.store_api = store_api or glance_store
         self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
                                               self.notifier, self.policy)
 

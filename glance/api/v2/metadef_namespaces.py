@@ -37,7 +37,6 @@ import glance.notifier
 from glance.openstack.common import jsonutils as json
 import glance.openstack.common.log as logging
 import glance.schema
-import glance.store
 
 LOG = logging.getLogger(__name__)
 _LE = i18n._LE

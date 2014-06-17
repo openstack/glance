@@ -14,15 +14,14 @@
 
 import sys
 
+import glance_store as store_api
 from oslo.config import cfg
 
-from glance.common import exception
 from glance.common import utils
 import glance.db as db_api
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 from glance import scrubber
-import glance.store as store_api
 
 _LE = gettextutils._LE
 _LW = gettextutils._LW
@@ -53,16 +52,16 @@ def safe_delete_from_backend(context, image_id, location):
     """
 
     try:
-        ret = store_api.delete_from_backend(context, location['url'])
+        ret = store_api.delete_from_backend(location['url'], context=context)
         location['status'] = 'deleted'
         if 'id' in location:
             db_api.get_api().image_location_delete(context, image_id,
                                                    location['id'], 'deleted')
         return ret
-    except exception.NotFound:
+    except store_api.NotFound:
         msg = _LW('Failed to delete image %s in store from URI') % image_id
         LOG.warn(msg)
-    except exception.StoreDeleteNotSupported as e:
+    except store_api.StoreDeleteNotSupported as e:
         LOG.warn(utils.exception_to_str(e))
     except store_api.UnsupportedBackend:
         exc_type = sys.exc_info()[0].__name__

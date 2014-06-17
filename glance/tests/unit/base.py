@@ -17,20 +17,16 @@ import os
 import shutil
 
 import fixtures
+import glance_store as store
+from glance_store import location
 from oslo.config import cfg
 from oslo.db import options
 
-from glance.common import exception
 from glance.openstack.common import jsonutils
-from glance import store
-from glance.store import location
-from glance.store import sheepdog
-from glance.store import vmware_datastore
 from glance.tests import stubs
 from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
-CONF.import_opt('filesystem_store_datadir', 'glance.store.filesystem')
 
 
 class StoreClearingUnitTest(test_utils.BaseTestCase):
@@ -50,17 +46,8 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
         :param passing_config: making store driver passes basic configurations.
         :returns: the number of how many store drivers been loaded.
         """
-
-        def _fun(*args, **kwargs):
-            if passing_config:
-                return None
-            else:
-                raise exception.BadStoreConfiguration()
-
-        self.stubs.Set(sheepdog.Store, 'configure', _fun)
-        self.stubs.Set(vmware_datastore.Store, 'configure', _fun)
-        self.stubs.Set(vmware_datastore.Store, 'configure_add', _fun)
-        return store.create_stores()
+        store.register_opts(CONF)
+        store.create_stores(CONF)
 
 
 class IsolatedUnitTest(StoreClearingUnitTest):
@@ -77,12 +64,17 @@ class IsolatedUnitTest(StoreClearingUnitTest):
         policy_file = self._copy_data_file('policy.json', self.test_dir)
         options.set_defaults(CONF, connection='sqlite://',
                              sqlite_db='glance.sqlite')
+
         self.config(verbose=False,
                     debug=False,
-                    default_store='filesystem',
-                    filesystem_store_datadir=os.path.join(self.test_dir),
                     policy_file=policy_file,
                     lock_path=os.path.join(self.test_dir))
+
+        self.config(default_store='filesystem',
+                    filesystem_store_datadir=os.path.join(self.test_dir),
+                    group="glance_store")
+
+        store.create_stores()
         stubs.stub_out_registry_and_store_server(self.stubs,
                                                  self.test_dir,
                                                  registry=self.registry)

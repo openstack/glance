@@ -16,6 +16,7 @@
 import urllib
 import urlparse
 
+import glance_store as store
 from oslo.config import cfg
 
 from glance.common import exception
@@ -23,7 +24,6 @@ from glance.common import wsgi
 import glance.context
 import glance.db.simple.api as simple_db
 import glance.openstack.common.log as logging
-import glance.store
 
 
 CONF = cfg.CONF
@@ -78,7 +78,7 @@ def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
     return req
 
 
-def fake_get_size_from_backend(context, uri):
+def fake_get_size_from_backend(uri, context=None):
     return 1
 
 
@@ -151,8 +151,8 @@ class FakeStoreAPI(object):
     def create_stores(self):
         pass
 
-    def set_acls(self, context, uri, public=False,
-                 read_tenants=None, write_tenants=None):
+    def set_acls(self, uri, public=False, read_tenants=None,
+                 write_tenants=None, context=None):
         if read_tenants is None:
             read_tenants = []
         if write_tenants is None:
@@ -164,19 +164,20 @@ class FakeStoreAPI(object):
             'write': write_tenants,
         }
 
-    def get_from_backend(self, context, location):
+    def get_from_backend(self, location, context=None):
         try:
             scheme = location[:location.find('/') - 1]
             if scheme == 'unknown':
-                raise exception.UnknownScheme(scheme=scheme)
+                raise store.UnknownScheme(scheme=scheme)
             return self.data[location]
         except KeyError:
-            raise exception.NotFound()
+            raise store.NotFound()
 
-    def get_size_from_backend(self, context, location):
-        return self.get_from_backend(context, location)[1]
+    def get_size_from_backend(self, location, context=None):
+        return self.get_from_backend(location, context=context)[1]
 
-    def add_to_backend(self, context, scheme, image_id, data, size):
+    def add_to_backend(self, conf, image_id, data, size,
+                       scheme=None, context=None):
         store_max_size = 7
         current_store_size = 2
         for location in self.data.keys():
@@ -198,7 +199,7 @@ class FakeStoreAPI(object):
         return (image_id, size, checksum, self.store_metadata)
 
     def check_location_metadata(self, val, key=''):
-        glance.store.check_location_metadata(val)
+        store.check_location_metadata(val)
 
 
 class FakePolicyEnforcer(object):

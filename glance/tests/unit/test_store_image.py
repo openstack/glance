@@ -14,9 +14,10 @@
 #    under the License.
 import mox
 
+import glance_store
+
 from glance.common import exception
 import glance.location
-import glance.store
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils
 
@@ -93,11 +94,11 @@ class TestStoreImage(utils.BaseTestCase):
                                            self.store_api, self.store_utils)
         location = image.locations[0]
         self.assertEqual(image.status, 'active')
-        self.store_api.get_from_backend({}, location['url'])
+        self.store_api.get_from_backend(location['url'], context={})
         image.delete()
         self.assertEqual(image.status, 'deleted')
-        self.assertRaises(exception.NotFound,
-                          self.store_api.get_from_backend, {}, location['url'])
+        self.assertRaises(glance_store.NotFound,
+                          self.store_api.get_from_backend, location['url'], {})
 
     def test_image_get_data(self):
         image = glance.location.ImageProxy(self.image_stub, {},
@@ -105,7 +106,7 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(image.get_data(), 'XXX')
 
     def test_image_get_data_from_second_location(self):
-        def fake_get_from_backend(self, context, location):
+        def fake_get_from_backend(self, location, context=None):
             if UUID1 in location:
                 raise Exception('not allow download from %s' % location)
             else:
@@ -161,9 +162,9 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(image.status, 'active')
         image.delete()
         self.assertEqual(image.status, 'deleted')
-        self.assertRaises(exception.NotFound,
-                          self.store_api.get_from_backend, {},
-                          image.locations[0]['url'])
+        self.assertRaises(glance_store.NotFound,
+                          self.store_api.get_from_backend,
+                          image.locations[0]['url'], {})
 
     def test_image_set_data_unknown_size(self):
         context = glance.context.RequestContext(user=USER1)
@@ -178,9 +179,9 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(image.status, 'active')
         image.delete()
         self.assertEqual(image.status, 'deleted')
-        self.assertRaises(exception.NotFound,
-                          self.store_api.get_from_backend, {},
-                          image.locations[0]['url'])
+        self.assertRaises(glance_store.NotFound,
+                          self.store_api.get_from_backend,
+                          image.locations[0]['url'], context={})
 
     def _add_image(self, context, image_id, data, len):
         image_stub = ImageStub(image_id, status='queued', locations=[])
@@ -225,7 +226,7 @@ class TestStoreImage(utils.BaseTestCase):
         # check below cases within 'TestStoreMetaDataChecker'.
         location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
 
-        self.assertRaises(glance.store.BackendException,
+        self.assertRaises(glance_store.BackendException,
                           image1.locations.append, location_bad)
 
         image1.delete()
@@ -314,7 +315,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
 
-        self.assertRaises(glance.store.BackendException,
+        self.assertRaises(glance_store.BackendException,
                           image1.locations.extend, [location_bad])
 
         image1.delete()
@@ -416,7 +417,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
 
-        self.assertRaises(glance.store.BackendException,
+        self.assertRaises(glance_store.BackendException,
                           image1.locations.insert, 0, location_bad)
 
         image1.delete()
@@ -510,7 +511,7 @@ class TestStoreImage(utils.BaseTestCase):
 
         location_bad = {'url': UUID2, 'metadata': "a invalid metadata"}
 
-        self.assertRaises(glance.store.BackendException,
+        self.assertRaises(glance_store.BackendException,
                           image2.locations.__iadd__, [location_bad])
         self.assertEqual(image_stub2.locations, [])
         self.assertEqual(image2.locations, [])
@@ -790,43 +791,43 @@ class TestImageFactory(utils.BaseTestCase):
 class TestStoreMetaDataChecker(utils.BaseTestCase):
 
     def test_empty(self):
-        glance.store.check_location_metadata({})
+        glance_store.check_location_metadata({})
 
     def test_unicode(self):
         m = {'key': u'somevalue'}
-        glance.store.check_location_metadata(m)
+        glance_store.check_location_metadata(m)
 
     def test_unicode_list(self):
         m = {'key': [u'somevalue', u'2']}
-        glance.store.check_location_metadata(m)
+        glance_store.check_location_metadata(m)
 
     def test_unicode_dict(self):
         inner = {'key1': u'somevalue', 'key2': u'somevalue'}
         m = {'topkey': inner}
-        glance.store.check_location_metadata(m)
+        glance_store.check_location_metadata(m)
 
     def test_unicode_dict_list(self):
         inner = {'key1': u'somevalue', 'key2': u'somevalue'}
         m = {'topkey': inner, 'list': [u'somevalue', u'2'], 'u': u'2'}
-        glance.store.check_location_metadata(m)
+        glance_store.check_location_metadata(m)
 
     def test_nested_dict(self):
         inner = {'key1': u'somevalue', 'key2': u'somevalue'}
         inner = {'newkey': inner}
         inner = {'anotherkey': inner}
         m = {'topkey': inner}
-        glance.store.check_location_metadata(m)
+        glance_store.check_location_metadata(m)
 
     def test_simple_bad(self):
         m = {'key1': object()}
-        self.assertRaises(glance.store.BackendException,
-                          glance.store.check_location_metadata,
+        self.assertRaises(glance_store.BackendException,
+                          glance_store.check_location_metadata,
                           m)
 
     def test_list_bad(self):
         m = {'key1': [u'somevalue', object()]}
-        self.assertRaises(glance.store.BackendException,
-                          glance.store.check_location_metadata,
+        self.assertRaises(glance_store.BackendException,
+                          glance_store.check_location_metadata,
                           m)
 
     def test_nested_dict_bad(self):
@@ -835,8 +836,8 @@ class TestStoreMetaDataChecker(utils.BaseTestCase):
         inner = {'anotherkey': inner}
         m = {'topkey': inner}
 
-        self.assertRaises(glance.store.BackendException,
-                          glance.store.check_location_metadata,
+        self.assertRaises(glance_store.BackendException,
+                          glance_store.check_location_metadata,
                           m)
 
 
@@ -856,36 +857,36 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         self.mox.UnsetStubs()
 
     def _bad_metadata(self, in_metadata):
-        store = self.mox.CreateMockAnything()
-        store.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
+        mstore = self.mox.CreateMockAnything()
+        mstore.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
             (self.location, self.size, self.checksum, in_metadata))
-        store.__str__ = lambda: "hello"
-        store.__unicode__ = lambda: "hello"
+        mstore.__str__ = lambda: "hello"
+        mstore.__unicode__ = lambda: "hello"
 
         self.mox.ReplayAll()
 
-        self.assertRaises(glance.store.BackendException,
-                          glance.store.store_add_to_backend,
+        self.assertRaises(glance_store.BackendException,
+                          glance_store.store_add_to_backend,
                           self.image_id,
                           self.data,
                           self.size,
-                          store)
+                          mstore)
         self.mox.VerifyAll()
 
     def _good_metadata(self, in_metadata):
 
-        store = self.mox.CreateMockAnything()
-        store.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
+        mstore = self.mox.CreateMockAnything()
+        mstore.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
             (self.location, self.size, self.checksum, in_metadata))
 
         self.mox.ReplayAll()
         (location,
          size,
          checksum,
-         metadata) = glance.store.store_add_to_backend(self.image_id,
+         metadata) = glance_store.store_add_to_backend(self.image_id,
                                                        self.data,
                                                        self.size,
-                                                       store)
+                                                       mstore)
         self.mox.VerifyAll()
         self.assertEqual(self.location, location)
         self.assertEqual(self.size, size)
@@ -940,8 +941,8 @@ class TestStoreAddToBackend(utils.BaseTestCase):
 
         self.mox.ReplayAll()
 
-        self.assertRaises(glance.store.BackendException,
-                          glance.store.store_add_to_backend,
+        self.assertRaises(glance_store.BackendException,
+                          glance_store.store_add_to_backend,
                           self.image_id,
                           self.data,
                           self.size,

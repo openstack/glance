@@ -32,7 +32,6 @@ from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 
 from glance.registry.api import v2 as rserver
-import glance.store.filesystem
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
