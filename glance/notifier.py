@@ -26,7 +26,7 @@ import glance.openstack.common.log as logging
 from glance.openstack.common import timeutils
 
 notifier_opts = [
-    cfg.StrOpt('notifier_strategy', default='default',
+    cfg.StrOpt('notifier_strategy',
                help=_('Notifications can be sent when images are create, '
                       'updated or deleted. There are three methods of sending '
                       'notifications, logging (via the log_file directive), '
@@ -61,57 +61,32 @@ _ALIASES = {
 class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
 
-    def __init__(self, strategy=None):
+    def __init__(self):
 
-        _driver = None
-        _strategy = strategy
+        driver = None
+        transport_url = None
+        publisher_id = CONF.default_publisher_id
 
-        if CONF.notifier_strategy != 'default':
+        if CONF.notifier_strategy:
             msg = _("notifier_strategy was deprecated in "
                     "favor of `notification_driver`")
             LOG.warn(msg)
 
+            strategy = CONF.notifier_strategy
+
             # NOTE(flaper87): Use this to keep backwards
             # compatibility. We'll try to get an oslo.messaging
             # driver from the specified strategy.
-            _strategy = strategy or CONF.notifier_strategy
-            _driver = _STRATEGY_ALIASES.get(_strategy)
+            driver = _STRATEGY_ALIASES.get(strategy)
+            if driver == 'messaging':
+                transport_url = strategy + ':///'
 
-        publisher_id = CONF.default_publisher_id
-
-        try:
-            # NOTE(flaper87): Assume the user has configured
-            # the transport url.
-            self._transport = messaging.get_transport(CONF,
-                                                      aliases=_ALIASES)
-        except messaging.DriverLoadFailure:
-            # NOTE(flaper87): Catch driver load failures and re-raise
-            # them *just* if the `transport_url` option was set. This
-            # step is intended to keep backwards compatibility and avoid
-            # weird behaviors (like exceptions on missing dependencies)
-            # when the old notifier options are used.
-            if CONF.transport_url is not None:
-                with excutils.save_and_reraise_exception():
-                    LOG.exception(_('Error loading the notifier'))
-
-        # NOTE(flaper87): This needs to be checked
-        # here because the `get_transport` call
-        # registers `transport_url` into ConfigOpts.
-        if not CONF.transport_url:
-            # NOTE(flaper87): The next 3 lines help
-            # with the migration to oslo.messaging.
-            # Without them, gate tests won't know
-            # what driver should be loaded.
-            # Once this patch lands, devstack will be
-            # updated and then these lines will be removed.
-            url = None
-            if _strategy in ['rabbit', 'qpid']:
-                url = _strategy + '://'
-            self._transport = messaging.get_transport(CONF, url,
-                                                      aliases=_ALIASES)
+        self._transport = messaging.get_transport(CONF,
+                                                  url=transport_url,
+                                                  aliases=_ALIASES)
 
         self._notifier = messaging.Notifier(self._transport,
-                                            driver=_driver,
+                                            driver=driver,
                                             publisher_id=publisher_id)
 
     def warn(self, event_type, payload):

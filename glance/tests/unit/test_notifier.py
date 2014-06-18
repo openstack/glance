@@ -17,6 +17,8 @@
 import datetime
 
 import mock
+from oslo.config import cfg
+from oslo import messaging
 import webob
 
 from glance.common import exception
@@ -94,42 +96,50 @@ class TaskRepoStub(object):
 
 class TestNotifier(utils.BaseTestCase):
 
-    def test_load_rabbit(self):
-        nfier = notifier.Notifier('rabbit')
-        self.assertIsNotNone(nfier._transport)
-
-    def test_load_qpid(self):
-        nfier = notifier.Notifier('qpid')
-        self.assertIsNotNone(nfier._transport)
-        self.assertEqual(str(nfier._transport._driver._url),
-                         'qpid:///')
-
-    def test_notifier_strategy(self):
-        self.config(notifier_strategy='qpid')
+    @mock.patch.object(messaging, 'Notifier')
+    @mock.patch.object(messaging, 'get_transport')
+    def _test_load_strategy(self,
+                            mock_get_transport, mock_notifier,
+                            strategy, url, driver):
+        if strategy is not None:
+            self.config(notifier_strategy=strategy)
         nfier = notifier.Notifier()
+        mock_get_transport.assert_called_with(cfg.CONF, url=url,
+                                              aliases=notifier._ALIASES)
         self.assertIsNotNone(nfier._transport)
-        self.assertEqual(str(nfier._transport._driver._url),
-                         'qpid:///')
+        mock_notifier.assert_called_with(nfier._transport, driver=driver,
+                                         publisher_id='image.localhost')
+        self.assertIsNotNone(nfier._notifier)
 
-    def test_transport_url(self):
-        transport_url = "qpid://superhost:5672/"
-        self.config(transport_url=transport_url)
-        notify = notifier.Notifier()
-        self.assertEqual(str(notify._transport._driver._url),
-                         transport_url)
+    def test_notifier_strategy_default(self):
+        self._test_load_strategy(strategy='default',
+                                 url=None,
+                                 driver='noop')
 
-    def test_notification_driver_option(self):
-        self.config(rpc_backend='qpid')
-        self.config(notification_driver='messaging')
-        self.config(notifier_strategy='rabbit')
-        notify = notifier.Notifier()
-        self.assertEqual(str(notify._transport._driver._url),
-                         'rabbit:///')
+    def test_notifier_strategy_noop(self):
+        self._test_load_strategy(strategy='noop',
+                                 url=None,
+                                 driver='noop')
 
-        self.config(notifier_strategy='default')
-        notify = notifier.Notifier()
-        self.assertEqual(str(notify._transport._driver._url),
-                         'qpid:///')
+    def test_notifier_strategy_rabbit(self):
+        self._test_load_strategy(strategy='rabbit',
+                                 url='rabbit:///',
+                                 driver='messaging')
+
+    def test_notifier_strategy_qpid(self):
+        self._test_load_strategy(strategy='qpid',
+                                 url='qpid:///',
+                                 driver='messaging')
+
+    def test_notifier_strategy_logging(self):
+        self._test_load_strategy(strategy='logging',
+                                 url=None,
+                                 driver='log')
+
+    def test_notifier_strategy_none(self):
+        self._test_load_strategy(strategy=None,
+                                 url=None,
+                                 driver=None)
 
 
 class TestImageNotifications(utils.BaseTestCase):
