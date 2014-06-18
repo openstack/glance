@@ -7,7 +7,7 @@
         disk_format: "qcow2"
       runner:
         type: "constant"
-        times: 100
+        times: 20
         concurrency: 5
       context:
         users:
@@ -22,9 +22,24 @@
         disk_format: "qcow2"
       runner:
         type: "constant"
-        times: 100
+        times: 20
         concurrency: 5
       context:
         users:
           tenants: 5
           users_per_tenant: 2
+
+  GlancePlugin.your_mega_benchmark:
+    -
+      args:
+        image_location: "~/.rally/extra/fake.img"
+        container_format: "bare"
+        disk_format: "qcow2"
+      runner:
+        type: "constant"
+        times: 700
+        concurrency: 7
+      context:
+        users:
+          tenants: 1
+          users_per_tenant: 1
