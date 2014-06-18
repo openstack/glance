@@ -66,7 +66,7 @@ If no configuration file is found, you will see an error, like::
 
 Here is an example showing how you can manually start the ``glance-api`` server and ``glance-registry`` in a shell.::
 
-  $ sudo glance-api glance-api.conf --debug &
+  $ sudo glance-api --config-file glance-api.conf --debug &
   jsuh@mc-ats1:~$ 2011-04-13 14:50:12    DEBUG [glance-api] ********************************************************************************
   2011-04-13 14:50:12    DEBUG [glance-api] Configuration options gathered from config file:
   2011-04-13 14:50:12    DEBUG [glance-api] /home/jsuh/glance-api.conf
@@ -83,7 +83,7 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   2011-04-13 14:50:12    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
   2011-04-13 14:50:12    DEBUG [eventlet.wsgi.server] (21354) wsgi starting up on http://65.114.169.29:9292/
 
-  $ sudo glance-registry glance-registry.conf &
+  $ sudo glance-registry --config-file glance-registry.conf &
   jsuh@mc-ats1:~$ 2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] PRAGMA table_info("images")
   2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] ()
   2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Col ('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk')
@@ -116,10 +116,10 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   root     20012  2.0  0.1  25188 13356 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-registry glance-registry.conf
   jsuh     20017  0.0  0.0   3368   744 pts/1    S+   12:47   0:00 grep glance
 
-Simply supply the configuration file as the first argument
+Simply supply the configuration file as the parameter to the ``--config-file`` option
 (the ``etc/glance-api.conf`` and  ``etc/glance-registry.conf`` sample configuration
-files were used in the above example) and then any common options
-you want to use (``--debug`` was used above to show some of the debugging
+files were used in the above example) and then any other options
+you want to use. (``--debug`` was used above to show some of the debugging
 output that the server shows when starting up. Call the server program
 with ``--help`` to see all available options you can specify on the
 command line.)
