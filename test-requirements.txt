@@ -14,7 +14,7 @@ sphinx>=1.1.2,<1.2
 requests>=1.1
 testrepository>=0.0.18
 testtools>=0.9.34
-psutil>=1.1.1
+psutil>=1.1.1,<2.0.0
 
 # Optional packages that should be installed when testing
 MySQL-python
