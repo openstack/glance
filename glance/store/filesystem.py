@@ -30,6 +30,7 @@ from glance.openstack.common import excutils
 from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import processutils
+from glance.openstack.common import units
 import glance.store
 import glance.store.base
 import glance.store.location
@@ -355,9 +356,9 @@ class Store(glance.store.base.Store):
         """
 
         #Calculate total available space
-        df = processutils.execute("df", "--block-size=1",
+        df = processutils.execute("df", "-k",
                                   mount_point)[0].strip("'\n'")
-        total_available_space = int(df.split('\n')[1].split()[3])
+        total_available_space = int(df.split('\n')[1].split()[3]) * units.Ki
 
         return max(0, total_available_space)
 
