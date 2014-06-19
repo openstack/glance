@@ -61,6 +61,7 @@ class ImageDataController(object):
     @utils.mutating
     def upload(self, req, image_id, data, size):
         image_repo = self.gateway.get_repo(req.context)
+        image = None
         try:
             image = image_repo.get(image_id)
             image.status = 'saving'
