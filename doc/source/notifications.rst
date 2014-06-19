@@ -20,24 +20,19 @@ Notifications
 Notifications can be generated for several events in the image lifecycle.
 These can be used for auditing, troubleshooting, etc.
 
-Strategies
-----------
+Notification Drivers
+--------------------
 
-* logging
+* log
 
-  This strategy uses the standard Python logging infrastructure with
+  This driver uses the standard Python logging infrastructure with
   the notifications ending up in file specificed by the log_file
   configuration directive.
 
-* rabbit
+* messaging
 
-  This strategy sends notifications to a rabbitmq queue. This can then
-  be processed by other services or applications.
-
-* qpid
-
-  This strategy is similar to rabbit. It sends notifications to an AMQP
-  message queue via Qpid.
+  This strategy sends notifications to a message queue configured
+  using oslo.messaging configuration options.
 
 * noop
 

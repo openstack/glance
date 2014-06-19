@@ -100,46 +100,17 @@ class TestNotifier(utils.BaseTestCase):
     @mock.patch.object(messaging, 'get_transport')
     def _test_load_strategy(self,
                             mock_get_transport, mock_notifier,
-                            strategy, url, driver):
-        if strategy is not None:
-            self.config(notifier_strategy=strategy)
+                            url, driver):
         nfier = notifier.Notifier()
-        mock_get_transport.assert_called_with(cfg.CONF, url=url,
+        mock_get_transport.assert_called_with(cfg.CONF,
                                               aliases=notifier._ALIASES)
         self.assertIsNotNone(nfier._transport)
-        mock_notifier.assert_called_with(nfier._transport, driver=driver,
+        mock_notifier.assert_called_with(nfier._transport,
                                          publisher_id='image.localhost')
         self.assertIsNotNone(nfier._notifier)
 
-    def test_notifier_strategy_default(self):
-        self._test_load_strategy(strategy='default',
-                                 url=None,
-                                 driver='noop')
-
-    def test_notifier_strategy_noop(self):
-        self._test_load_strategy(strategy='noop',
-                                 url=None,
-                                 driver='noop')
-
-    def test_notifier_strategy_rabbit(self):
-        self._test_load_strategy(strategy='rabbit',
-                                 url='rabbit:///',
-                                 driver='messaging')
-
-    def test_notifier_strategy_qpid(self):
-        self._test_load_strategy(strategy='qpid',
-                                 url='qpid:///',
-                                 driver='messaging')
-
-    def test_notifier_strategy_logging(self):
-        self._test_load_strategy(strategy='logging',
-                                 url=None,
-                                 driver='log')
-
-    def test_notifier_strategy_none(self):
-        self._test_load_strategy(strategy=None,
-                                 url=None,
-                                 driver=None)
+    def test_notifier_load(self):
+        self._test_load_strategy(url=None, driver=None)
 
 
 class TestImageNotifications(utils.BaseTestCase):
