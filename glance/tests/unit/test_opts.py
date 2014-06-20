@@ -102,7 +102,6 @@ class OptsTestCase(utils.BaseTestCase):
             'bind_host',
             'bind_port',
             'workers',
-            'eventlet_hub',
             'max_header_line',
             'backlog',
             'tcp_keepidle',
@@ -202,7 +201,6 @@ class OptsTestCase(utils.BaseTestCase):
             'cert_file',
             'key_file',
             'workers',
-            'eventlet_hub',
             'max_header_line',
             'flavor',
             'config_file'

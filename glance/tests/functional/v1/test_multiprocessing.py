@@ -54,7 +54,6 @@ class TestMultiprocessing(functional.FunctionalTest):
         Ensure an interrupt signal does not cause a respawn storm.
         See bug #978130
         """
-        self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
         children = self._get_children()

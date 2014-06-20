@@ -79,11 +79,6 @@ eventlet_opts = [
                help=_('The number of child process workers that will be '
                       'created to service requests. The default will be '
                       'equal to the number of CPUs available.')),
-    cfg.StrOpt('eventlet_hub', default='poll',
-               help=_('Name of eventlet hub to use. Traditionally, we have '
-                      'only supported \'poll\', however \'selects\' may be '
-                      'appropriate for some platforms. See '
-                      'http://eventlet.net/doc/hubs.html for more details.')),
     cfg.IntOpt('max_header_line', default=16384,
                help=_('Maximum line size of message headers to be accepted. '
                       'max_header_line may need to be increased when using '
@@ -197,11 +192,15 @@ def get_socket(default_port):
 
 def set_eventlet_hub():
     try:
-        eventlet.hubs.use_hub(cfg.CONF.eventlet_hub)
+        eventlet.hubs.use_hub('poll')
     except Exception:
-        msg = _("eventlet '%s' hub is not available on this platform")
-        raise exception.WorkerCreationFailure(
-            reason=msg % cfg.CONF.eventlet_hub)
+        try:
+            eventlet.hubs.use_hub('selects')
+        except Exception:
+            msg = _("eventlet 'poll' nor 'selects' hubs are available "
+                    "on this platform")
+            raise exception.WorkerCreationFailure(
+                reason=msg)
 
 
 class Server(object):
