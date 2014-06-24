@@ -23,6 +23,7 @@ ordereddict
 oslo.config>=1.2.1
 stevedore>=0.14
 netaddr>=0.7.6
+keystonemiddleware
 # For openstack/common/lockutils
 posix_ipc
 

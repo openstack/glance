@@ -49,7 +49,7 @@ pieces of middleware exist in the ``glance-api-paste.ini``.  Here is
 an example for ``authtoken``::
 
   [filter:authtoken]
-  paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
+  paste.filter_factory = keystonemiddleware.auth_token:filter_factory
   auth_host = 127.0.0.1
   auth_port = 35357
   auth_protocol = http
