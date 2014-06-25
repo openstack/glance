@@ -23,6 +23,8 @@ ordereddict
 oslo.config>=1.2.1
 stevedore>=0.14
 netaddr>=0.7.6
+# For openstack/common/lockutils
+posix_ipc
 
 # For Swift storage backend.
 python-swiftclient>=2.0.2

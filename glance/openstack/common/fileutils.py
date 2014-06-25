@@ -13,14 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 import contextlib
 import errno
 import os
 import tempfile
 
 from glance.openstack.common import excutils
-from glance.openstack.common.gettextutils import _
 from glance.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -60,7 +58,7 @@ def read_cached_file(filename, force_reload=False):
     cache_info = _FILE_CACHE.setdefault(filename, {})
 
     if not cache_info or mtime > cache_info.get('mtime', 0):
-        LOG.debug(_("Reloading cached file %s") % filename)
+        LOG.debug("Reloading cached file %s" % filename)
         with open(filename) as fap:
             cache_info['data'] = fap.read()
         cache_info['mtime'] = mtime
@@ -101,13 +99,13 @@ def remove_path_on_error(path, remove=delete_if_exists):
 def file_open(*args, **kwargs):
     """Open file
 
-    see built-in file() documentation for more details
+    see built-in open() documentation for more details
 
     Note: The reason this is kept in a separate module is to easily
     be able to provide a stub module that doesn't alter system
     state at all (for unit tests)
     """
-    return file(*args, **kwargs)
+    return open(*args, **kwargs)
 
 
 def write_to_tempfile(content, path=None, suffix='', prefix='tmp'):
