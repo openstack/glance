@@ -165,13 +165,13 @@ class ImageProxy(glance.domain.proxy.Image):
             'receiver_user_id': self.context.user,
         }
 
-    def _get_chunk_data_iterator(self, data):
+    def _get_chunk_data_iterator(self, data, chunk_size=None):
         sent = 0
         for chunk in data:
             yield chunk
             sent += len(chunk)
 
-        if sent != self.image.size:
+        if sent != (chunk_size or self.image.size):
             notify = self.notifier.error
         else:
             notify = self.notifier.info
@@ -184,12 +184,12 @@ class ImageProxy(glance.domain.proxy.Image):
                      " notification: %(err)s") % {'err': err})
             LOG.error(msg)
 
-    def get_data(self):
+    def get_data(self, offset=0, chunk_size=None):
         # Due to the need of evaluating subsequent proxies, this one
         # should return a generator, the call should be done before
         # generator creation
-        data = self.image.get_data()
-        return self._get_chunk_data_iterator(data)
+        data = self.image.get_data(offset=offset, chunk_size=chunk_size)
+        return self._get_chunk_data_iterator(data, chunk_size=chunk_size)
 
     def set_data(self, data, size=None):
         payload = format_image_notification(self.image)

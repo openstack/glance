@@ -22,6 +22,7 @@ import webob
 
 import glance.api.v2.image_data
 from glance.common import exception
+from glance.common import wsgi
 
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
@@ -61,7 +62,7 @@ class FakeImage(object):
         else:
             self._status = value
 
-    def get_data(self):
+    def get_data(self, *args, **kwargs):
         return self.data
 
     def set_data(self, data, size=None):
@@ -414,7 +415,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.serializer = glance.api.v2.image_data.ResponseSerializer()
 
     def test_download(self):
-        request = webob.Request.blank('/')
+        request = wsgi.Request.blank('/')
         request.environ = {}
         response = webob.Response()
         response.request = request
@@ -427,7 +428,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
                          response.headers['Content-Type'])
 
     def test_download_with_checksum(self):
-        request = webob.Request.blank('/')
+        request = wsgi.Request.blank('/')
         request.environ = {}
         response = webob.Response()
         response.request = request
@@ -444,13 +445,13 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         """Make sure the serializer can return 403 forbidden error instead of
         500 internal server error.
         """
-        def get_data():
+        def get_data(*args, **kwargs):
             raise exception.Forbidden()
 
         self.stubs.Set(glance.api.policy.ImageProxy,
                        'get_data',
                        get_data)
-        request = webob.Request.blank('/')
+        request = wsgi.Request.blank('/')
         request.environ = {}
         response = webob.Response()
         response.request = request

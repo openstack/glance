@@ -41,7 +41,7 @@ TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
 
 
 class ImageStub(glance.domain.Image):
-    def get_data(self):
+    def get_data(self, offset=0, chunk_size=None):
         return ['01234', '56789']
 
     def set_data(self, data, size=None):

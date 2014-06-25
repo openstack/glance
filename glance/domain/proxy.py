@@ -160,8 +160,8 @@ class Image(object):
     def set_data(self, data, size=None):
         self.base.set_data(data, size)
 
-    def get_data(self):
-        return self.base.get_data()
+    def get_data(self, *args, **kwargs):
+        return self.base.get_data(*args, **kwargs)
 
     def get_member_repo(self):
         return self.helper.proxy(self.base.get_member_repo())

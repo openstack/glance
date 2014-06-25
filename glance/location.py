@@ -368,7 +368,7 @@ class ImageProxy(glance.domain.proxy.Image):
         self.image.checksum = checksum
         self.image.status = 'active'
 
-    def get_data(self):
+    def get_data(self, offset=0, chunk_size=None):
         if not self.image.locations:
             raise store.NotFound(_("No image data could be found"))
         err = None
@@ -376,6 +376,8 @@ class ImageProxy(glance.domain.proxy.Image):
             try:
                 data, size = self.store_api.get_from_backend(
                     loc['url'],
+                    offset=offset,
+                    chunk_size=chunk_size,
                     context=self.context)
 
                 return data
