@@ -167,7 +167,7 @@ performance (especially if using SSL with compression enabled). Typically
 it is recommended to have one worker process per CPU. The value `0`
 will prevent any new processes from being created.
 
-Optional. Default: ``1``
+Optional. Default: The number of CPUs available will be used by default.
 
 * ``db_auto_create=False``
 
