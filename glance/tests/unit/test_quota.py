@@ -17,6 +17,8 @@ import mock
 from mock import patch
 import uuid
 
+import six
+
 from glance.common import exception
 import glance.quota
 import glance.store
@@ -296,7 +298,7 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar', 'foo2': 'bar2'}
         exc = self.assertRaises(exception.ImagePropertyLimitExceeded,
                                 self.image_repo_proxy.save, self.image)
-        self.assertTrue("Attempted: 2, Maximum: 1" in str(exc))
+        self.assertTrue("Attempted: 2, Maximum: 1" in six.text_type(exc))
 
     def test_save_image_unlimited_image_properties(self):
         self.config(image_property_quota=-1)
@@ -320,7 +322,7 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar', 'foo2': 'bar2'}
         exc = self.assertRaises(exception.ImagePropertyLimitExceeded,
                                 self.image_repo_proxy.add, self.image)
-        self.assertTrue("Attempted: 2, Maximum: 1" in str(exc))
+        self.assertTrue("Attempted: 2, Maximum: 1" in six.text_type(exc))
 
     def test_add_image_unlimited_image_properties(self):
         self.config(image_property_quota=-1)
@@ -356,7 +358,7 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
 
         exc = self.assertRaises(exception.ImageTagLimitExceeded,
                                 setattr, self.image, 'tags', ['foo', 'bar'])
-        self.assertTrue('Attempted: 2, Maximum: 0' in str(exc))
+        self.assertTrue('Attempted: 2, Maximum: 0' in six.text_type(exc))
         self.assertEqual(len(self.image.tags), 0)
 
     def test_replace_unlimited_image_tags(self):
@@ -374,7 +376,7 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
         self.image.tags.add('foo')
         exc = self.assertRaises(exception.ImageTagLimitExceeded,
                                 self.image.tags.add, 'bar')
-        self.assertTrue('Attempted: 2, Maximum: 1' in str(exc))
+        self.assertTrue('Attempted: 2, Maximum: 1' in six.text_type(exc))
 
     def test_add_unlimited_image_tags(self):
         self.config(image_tag_quota=-1)
@@ -404,7 +406,7 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
         proxy = glance.quota.QuotaImageTagsProxy(set([]))
         exc = self.assertRaises(exception.ImageTagLimitExceeded,
                                 proxy.add, 'bar')
-        self.assertTrue('Attempted: 1, Maximum: 0' in str(exc))
+        self.assertTrue('Attempted: 1, Maximum: 0' in six.text_type(exc))
 
     def test_equals(self):
         proxy = glance.quota.QuotaImageTagsProxy(set([]))
@@ -500,7 +502,7 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         ]
         exc = self.assertRaises(exception.ImageLocationLimitExceeded,
                                 setattr, self.image, 'locations', locations)
-        self.assertTrue('Attempted: 3, Maximum: 1' in str(exc))
+        self.assertTrue('Attempted: 3, Maximum: 1' in six.text_type(exc))
         self.assertEqual(len(self.image.locations), 1)
 
     def test_replace_unlimited_image_locations(self):
@@ -523,7 +525,7 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         location2 = {"url": "file:///fake2.img.tar.gz", "metadata": {}}
         exc = self.assertRaises(exception.ImageLocationLimitExceeded,
                                 self.image.locations.append, location2)
-        self.assertTrue('Attempted: 2, Maximum: 1' in str(exc))
+        self.assertTrue('Attempted: 2, Maximum: 1' in six.text_type(exc))
 
     def test_add_unlimited_image_locations(self):
         self.config(image_location_quota=-1)

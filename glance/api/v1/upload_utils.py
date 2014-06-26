@@ -161,7 +161,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                    content_type='text/plain')
 
     except exception.Duplicate as e:
-        msg = _("Attempt to upload duplicate image: %s") % e
+        msg = u"Attempt to upload duplicate image: %s" % e
         LOG.debug(msg)
         # NOTE(dosaboy): do not delete the image since it is likely that this
         # conflict is a result of another concurrent upload that will be
@@ -172,7 +172,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                      content_type="text/plain")
 
     except exception.Forbidden as e:
-        msg = _("Forbidden upload attempt: %s") % e
+        msg = u"Forbidden upload attempt: %s" % e
         LOG.debug(msg)
         safe_kill(req, image_id)
         notifier.error('image.upload', msg)
