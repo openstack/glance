@@ -76,7 +76,7 @@ socket_opts = [
 eventlet_opts = [
     cfg.IntOpt('workers', default=1,
                help=_('The number of child process workers that will be '
-                      'created to service API requests.')),
+                      'created to service requests.')),
     cfg.StrOpt('eventlet_hub', default='poll',
                help=_('Name of eventlet hub to use. Traditionally, we have '
                       'only supported \'poll\', however \'selects\' may be '
