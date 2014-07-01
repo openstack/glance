@@ -30,6 +30,7 @@ from glance.common import exception
 from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
+from glance.openstack.common import units
 import glance.store
 import glance.store.base
 import glance.store.location
@@ -221,6 +222,8 @@ class StoreLocation(glance.store.location.StoreLocation):
 class Store(glance.store.base.Store):
     """An implementation of the VMware datastore adapter."""
 
+    WRITE_CHUNKSIZE = units.Mi
+
     def get_schemes(self):
         return (STORE_SCHEME,)
 
@@ -366,7 +369,7 @@ class Store(glance.store.base.Store):
                         from glance.store.location.get_location_from_uri()
         """
         conn, resp, content_length = self._query(location, 'GET')
-        iterator = http_response_iterator(conn, resp, self.CHUNKSIZE)
+        iterator = http_response_iterator(conn, resp, self.READ_CHUNKSIZE)
 
         class ResponseIndexable(glance.store.Indexable):
 

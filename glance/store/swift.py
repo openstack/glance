@@ -31,6 +31,7 @@ from glance.common import swift_store_utils
 from glance import i18n
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
+from glance.openstack.common import units
 import glance.store
 import glance.store.base
 import glance.store.location
@@ -350,7 +351,7 @@ def Store(context=None, loc=None, configure=True):
 
 
 class BaseStore(glance.store.base.Store):
-    CHUNKSIZE = 65536
+    READ_CHUNKSIZE = 64 * units.Ki
 
     def get_schemes(self):
         return ('swift+https', 'swift', 'swift+http', 'swift+config')
@@ -379,7 +380,7 @@ class BaseStore(glance.store.base.Store):
         try:
             resp_headers, resp_body = connection.get_object(
                 container=location.container, obj=location.obj,
-                resp_chunk_size=self.CHUNKSIZE, headers=headers)
+                resp_chunk_size=self.READ_CHUNKSIZE, headers=headers)
         except swiftclient.ClientException as e:
             if e.http_status == httplib.NOT_FOUND:
                 msg = _("Swift could not find object %s.") % location.obj

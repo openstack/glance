@@ -93,7 +93,7 @@ class TestHttpStore(base.StoreClearingUnitTest):
         super(TestHttpStore, self).setUp()
         self.stubs = stubout.StubOutForTesting()
         stub_out_http_backend(self.stubs)
-        Store.CHUNKSIZE = 2
+        Store.READ_CHUNKSIZE = 2
         self.store = Store()
         configure_registry_client()
 

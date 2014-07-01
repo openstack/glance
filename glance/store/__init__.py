@@ -258,10 +258,12 @@ def get_from_backend(context, uri, **kwargs):
     """Yields chunks of data from backend specified by uri"""
 
     loc = location.get_location_from_uri(uri)
-    store = get_store_from_uri(context, uri, loc)
-
+    src_store = get_store_from_uri(context, uri, loc)
+    dest_store = kwargs.get('dest')
+    if dest_store is not None:
+        src_store.READ_CHUNKSIZE = dest_store.WRITE_CHUNKSIZE
     try:
-        return store.get(loc)
+        return src_store.get(loc)
     except NotImplementedError:
         raise exception.StoreGetNotSupported
 

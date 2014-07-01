@@ -99,7 +99,7 @@ def stub_out_swiftclient(stubs, swift_store_auth_version):
         # Large object manifest...
         global SWIFT_PUT_OBJECT_CALLS
         SWIFT_PUT_OBJECT_CALLS += 1
-        CHUNKSIZE = 64 * units.Ki
+        CHUNKSIZE = swift.BaseStore.READ_CHUNKSIZE
         fixture_key = "%s/%s" % (container, name)
         if fixture_key not in fixture_headers:
             if kwargs.get('headers'):

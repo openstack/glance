@@ -191,7 +191,8 @@ class Store(glance.store.base.Store):
         """
 
         try:
-            self.chunk_size = CONF.sheepdog_store_chunk_size * units.Mi
+            self.READ_CHUNKSIZE = CONF.sheepdog_store_chunk_size * units.Mi
+            self.WRITE_CHUNKSIZE = self.READ_CHUNKSIZE
             self.addr = CONF.sheepdog_store_address.strip()
             self.port = CONF.sheepdog_store_port
         except cfg.ConfigFileValueError as e:
@@ -231,7 +232,7 @@ class Store(glance.store.base.Store):
 
         loc = location.store_location
         image = SheepdogImage(self.addr, self.port, loc.image,
-                              self.chunk_size)
+                              self.READ_CHUNKSIZE)
         if not image.exist():
             raise exception.NotFound(_("Sheepdog image %s does not exist")
                                      % image.name)
@@ -250,7 +251,7 @@ class Store(glance.store.base.Store):
 
         loc = location.store_location
         image = SheepdogImage(self.addr, self.port, loc.image,
-                              self.chunk_size)
+                              self.READ_CHUNKSIZE)
         if not image.exist():
             raise exception.NotFound(_("Sheepdog image %s does not exist")
                                      % image.name)
@@ -272,7 +273,7 @@ class Store(glance.store.base.Store):
         """
 
         image = SheepdogImage(self.addr, self.port, image_id,
-                              self.chunk_size)
+                              self.WRITE_CHUNKSIZE)
         if image.exist():
             raise exception.Duplicate(_("Sheepdog image %s already exists")
                                       % image_id)
@@ -285,7 +286,7 @@ class Store(glance.store.base.Store):
         try:
             total = left = image_size
             while left > 0:
-                length = min(self.chunk_size, left)
+                length = min(self.WRITE_CHUNKSIZE, left)
                 data = image_file.read(length)
                 image.write(data, total - left, length)
                 left -= length
@@ -311,7 +312,7 @@ class Store(glance.store.base.Store):
 
         loc = location.store_location
         image = SheepdogImage(self.addr, self.port, loc.image,
-                              self.chunk_size)
+                              self.WRITe_CHUNKSIZE)
         if not image.exist():
             raise exception.NotFound(_("Sheepdog image %s does not exist") %
                                      loc.image)

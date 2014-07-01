@@ -447,9 +447,10 @@ class Controller(controller.BaseController):
         return Controller._validate_source(source, req)
 
     @staticmethod
-    def _get_from_store(context, where):
+    def _get_from_store(context, where, dest=None):
         try:
-            image_data, image_size = get_from_backend(context, where)
+            image_data, image_size = get_from_backend(
+                context, where, dest=dest)
         except exception.NotFound as e:
             raise HTTPNotFound(explanation=e.msg)
         image_size = int(image_size) if image_size else None
@@ -571,11 +572,15 @@ class Controller(controller.BaseController):
         :retval The location where the image was stored
         """
 
+        scheme = req.headers.get('x-image-meta-store', CONF.default_store)
+        store = self.get_store_or_400(req, scheme)
+
         copy_from = self._copy_from(req)
         if copy_from:
             try:
                 image_data, image_size = self._get_from_store(req.context,
-                                                              copy_from)
+                                                              copy_from,
+                                                              dest=store)
             except Exception as e:
                 upload_utils.safe_kill(req, image_meta['id'])
                 msg = ("Copy from external source failed: %s" %
@@ -593,10 +598,6 @@ class Controller(controller.BaseController):
                 raise HTTPBadRequest(explanation=msg)
 
             image_data = req.body_file
-
-        scheme = req.headers.get('x-image-meta-store', CONF.default_store)
-
-        store = self.get_store_or_400(req, scheme)
 
         image_id = image_meta['id']
         LOG.debug("Setting image %s to status 'saving'", image_id)
@@ -1102,7 +1103,7 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
         if image_size is None and data is not None:
             data = utils.LimitingReader(data, CONF.image_size_cap)
 
-            #NOTE(bcwaldon): this is a hack to make sure the downstream code
+            # NOTE(bcwaldon): this is a hack to make sure the downstream code
             # gets the correct image data
             request.body_file = data
 

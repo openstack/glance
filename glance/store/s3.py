@@ -257,8 +257,6 @@ class ChunkedFile(object):
     something that can iterate over a ``boto.s3.key.Key``
     """
 
-    CHUNKSIZE = 65536
-
     def __init__(self, fp):
         self.fp = fp
 
@@ -267,7 +265,7 @@ class ChunkedFile(object):
         try:
             if self.fp:
                 while True:
-                    chunk = self.fp.read(ChunkedFile.CHUNKSIZE)
+                    chunk = self.fp.read(Store.READ_CHUNKSIZE)
                     if chunk:
                         yield chunk
                     else:
@@ -294,6 +292,9 @@ class ChunkedFile(object):
 
 class Store(glance.store.base.Store):
     """An implementation of the s3 adapter."""
+
+    READ_CHUNKSIZE = 64 * units.Ki
+    WRITE_CHUNKSIZE = READ_CHUNKSIZE
 
     EXAMPLE_URL = "s3://<ACCESS_KEY>:<SECRET_KEY>@<S3_URL>/<BUCKET>/<OBJ>"
 
@@ -372,11 +373,11 @@ class Store(glance.store.base.Store):
         """
         key = self._retrieve_key(location)
 
-        key.BufferSize = self.CHUNKSIZE
+        key.BufferSize = self.READ_CHUNKSIZE
 
         class ChunkedIndexable(glance.store.Indexable):
             def another(self):
-                return (self.wrapped.fp.read(ChunkedFile.CHUNKSIZE)
+                return (self.wrapped.fp.read(self.READ_CHUNKSIZE)
                         if self.wrapped.fp else None)
 
         return (ChunkedIndexable(ChunkedFile(key), key.size), key.size)
@@ -504,7 +505,7 @@ class Store(glance.store.base.Store):
             tmpdir = self.s3_store_object_buffer_dir
             temp_file = tempfile.NamedTemporaryFile(dir=tmpdir)
             checksum = hashlib.md5()
-            for chunk in utils.chunkreadable(image_file, self.CHUNKSIZE):
+            for chunk in utils.chunkreadable(image_file, self.WRITE_CHUNKSIZE):
                 checksum.update(chunk)
                 temp_file.write(chunk)
             temp_file.flush()

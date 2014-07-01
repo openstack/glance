@@ -92,7 +92,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         super(TestStore, self).setUp()
 
-        Store.CHUNKSIZE = 2
+        Store.READ_CHUNKSIZE = 2
         self.store = Store()
 
         class FakeSession:

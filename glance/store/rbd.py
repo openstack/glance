@@ -188,7 +188,8 @@ class Store(glance.store.base.Store):
         itself, it should raise `exception.BadStoreConfiguration`
         """
         try:
-            self.chunk_size = CONF.rbd_store_chunk_size * units.Mi
+            self.READ_CHUNKSIZE = CONF.rbd_store_chunk_size * units.Mi
+            self.WRITE_CHUNKSIZE = self.READ_CHUNKSIZE
 
             # these must not be unicode since they will be passed to a
             # non-unicode-aware C library
@@ -323,7 +324,7 @@ class Store(glance.store.base.Store):
             if hasattr(conn, 'get_fsid'):
                 fsid = conn.get_fsid()
             with conn.open_ioctx(self.pool) as ioctx:
-                order = int(math.log(self.chunk_size, 2))
+                order = int(math.log(self.WRITE_CHUNKSIZE, 2))
                 LOG.debug('creating image %(name)s with order %(order)d and '
                           'size %(size)d',
                           {'name': text_type(image_name),
@@ -345,7 +346,7 @@ class Store(glance.store.base.Store):
                         bytes_written = 0
                         offset = 0
                         chunks = utils.chunkreadable(image_file,
-                                                     self.chunk_size)
+                                                     self.WRITE_CHUNKSIZE)
                         for chunk in chunks:
                             # If the image size provided is zero we need to do
                             # a resize for the amount we are writing. This will

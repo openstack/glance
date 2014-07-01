@@ -27,7 +27,8 @@ LOG = logging.getLogger(__name__)
 
 class Store(object):
 
-    CHUNKSIZE = 16 * units.Mi  # 16M
+    READ_CHUNKSIZE = 16 * units.Mi  # 16M
+    WRITE_CHUNKSIZE = READ_CHUNKSIZE
 
     @staticmethod
     def _unconfigured(*args, **kwargs):
