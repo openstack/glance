@@ -135,7 +135,7 @@ class Enforcer(object):
 
            :param context: Glance request context
            :param action: String representing the action to be checked
-           :param object: Dictionary representing the object of the action.
+           :param target: Dictionary representing the object of the action.
            :raises: `glance.common.exception.Forbidden`
            :returns: A non-False value if access is allowed.
         """
@@ -147,7 +147,7 @@ class Enforcer(object):
 
            :param context: Glance request context
            :param action: String representing the action to be checked
-           :param object: Dictionary representing the object of the action.
+           :param target: Dictionary representing the object of the action.
            :returns: A non-False value if access is allowed.
         """
         return self._check(context, action, target)
