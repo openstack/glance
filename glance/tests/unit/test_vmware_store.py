@@ -254,7 +254,43 @@ class TestStore(base.StoreClearingUnitTest):
             HttpConn.return_value = FakeHTTPConnection(status=404)
             self.assertRaises(exception.NotFound, self.store.get_size, loc)
 
-    def test_reader_image_fits_in_blocksize(self):
+    def test_reader_full(self):
+        content = 'XXX'
+        image = six.StringIO(content)
+        expected_checksum = hashlib.md5(content).hexdigest()
+        reader = vm_store._Reader(image)
+        ret = reader.read()
+        self.assertEqual(content, ret)
+        self.assertEqual(expected_checksum, reader.checksum.hexdigest())
+        self.assertEqual(len(content), reader.size)
+
+    def test_reader_partial(self):
+        content = 'XXX'
+        image = six.StringIO(content)
+        expected_checksum = hashlib.md5('X').hexdigest()
+        reader = vm_store._Reader(image)
+        ret = reader.read(1)
+        self.assertEqual('X', ret)
+        self.assertEqual(expected_checksum, reader.checksum.hexdigest())
+        self.assertEqual(1, reader.size)
+
+    def test_rewind(self):
+        content = 'XXX'
+        image = six.StringIO(content)
+        expected_checksum = hashlib.md5(content).hexdigest()
+        reader = vm_store._Reader(image)
+        reader.read(1)
+        ret = reader.read()
+        self.assertEqual('XX', ret)
+        self.assertEqual(expected_checksum, reader.checksum.hexdigest())
+        self.assertEqual(len(content), reader.size)
+        reader.rewind()
+        ret = reader.read()
+        self.assertEqual(content, ret)
+        self.assertEqual(expected_checksum, reader.checksum.hexdigest())
+        self.assertEqual(len(content), reader.size)
+
+    def test_chunkreader_image_fits_in_blocksize(self):
         """
         Test that the image file reader returns the expected chunk of data
         when the block size is larger than the image.
@@ -262,8 +298,7 @@ class TestStore(base.StoreClearingUnitTest):
         content = 'XXX'
         image = six.StringIO(content)
         expected_checksum = hashlib.md5(content).hexdigest()
-        checksum = hashlib.md5()
-        reader = vm_store._Reader(image, checksum)
+        reader = vm_store._ChunkReader(image)
         ret = reader.read()
         expected_chunk = '%x\r\n%s\r\n' % (len(content), content)
         last_chunk = '0\r\n\r\n'
@@ -277,7 +312,7 @@ class TestStore(base.StoreClearingUnitTest):
         self.assertTrue(reader.closed)
         self.assertEqual('', ret)
 
-    def test_reader_image_larger_blocksize(self):
+    def test_chunkreader_image_larger_blocksize(self):
         """
         Test that the image file reader returns the expected chunks when
         the block size specified is smaller than the image.
@@ -285,9 +320,8 @@ class TestStore(base.StoreClearingUnitTest):
         content = 'XXX'
         image = six.StringIO(content)
         expected_checksum = hashlib.md5(content).hexdigest()
-        checksum = hashlib.md5()
         last_chunk = '0\r\n\r\n'
-        reader = vm_store._Reader(image, checksum, blocksize=1)
+        reader = vm_store._ChunkReader(image, blocksize=1)
         ret = reader.read()
         expected_chunk = '1\r\nX\r\n'
         self.assertEqual('%s%s%s%s' % (expected_chunk, expected_chunk,
@@ -296,13 +330,12 @@ class TestStore(base.StoreClearingUnitTest):
         self.assertEqual(image.len, reader.size)
         self.assertTrue(reader.closed)
 
-    def test_reader_size(self):
+    def test_chunkreader_size(self):
         """Test that the image reader takes into account the specified size."""
         content = 'XXX'
         image = six.StringIO(content)
         expected_checksum = hashlib.md5(content).hexdigest()
-        checksum = hashlib.md5()
-        reader = vm_store._Reader(image, checksum, blocksize=1)
+        reader = vm_store._ChunkReader(image, blocksize=1)
         ret = reader.read(size=3)
         self.assertEqual('1\r\n', ret)
         ret = reader.read(size=1)
