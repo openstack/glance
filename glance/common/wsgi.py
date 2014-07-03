@@ -47,6 +47,7 @@ from glance.common import utils
 from glance.openstack.common import gettextutils
 from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
+from glance.openstack.common import processutils
 
 
 bind_opts = [
@@ -74,9 +75,10 @@ socket_opts = [
 ]
 
 eventlet_opts = [
-    cfg.IntOpt('workers', default=1,
+    cfg.IntOpt('workers', default=processutils.get_worker_count(),
                help=_('The number of child process workers that will be '
-                      'created to service requests.')),
+                      'created to service requests. The default will be '
+                      'equal to the number of CPUs available.')),
     cfg.StrOpt('eventlet_hub', default='poll',
                help=_('Name of eventlet hub to use. Traditionally, we have '
                       'only supported \'poll\', however \'selects\' may be '
