@@ -637,10 +637,10 @@ class BaseStore(glance.store.base.Store):
                 raise
 
     def get_connection(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def create_location(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class SingleTenantStore(BaseStore):
