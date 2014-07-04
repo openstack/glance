@@ -32,6 +32,8 @@ except ImportError:
     import socket
     import ssl
 
+import osprofiler.web
+
 try:
     import sendfile  # noqa
     SENDFILE_SUPPORTED = True
@@ -457,6 +459,7 @@ class BaseClient(object):
         try:
             connection_type = self.get_connection_type()
             headers = self._encode_headers(headers or {})
+            headers.update(osprofiler.web.get_trace_id_headers())
 
             if 'x-auth-token' not in headers and self.auth_tok:
                 headers['x-auth-token'] = self.auth_tok

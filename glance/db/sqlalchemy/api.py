@@ -25,6 +25,7 @@ import threading
 from oslo.config import cfg
 from oslo.db import exception as db_exception
 from oslo.db.sqlalchemy import session
+import osprofiler.sqlalchemy
 from retrying import retry
 import six
 from six.moves import xrange
@@ -51,6 +52,7 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
 
 CONF = cfg.CONF
 CONF.import_opt('debug', 'glance.openstack.common.log')
+CONF.import_group("profiler", "glance.common.wsgi")
 
 _FACADE = None
 _LOCK = threading.Lock()
@@ -71,6 +73,11 @@ def _create_facade_lazily():
         with _LOCK:
             if _FACADE is None:
                 _FACADE = session.EngineFacade.from_config(CONF)
+
+                if CONF.profiler.enabled and CONF.profiler.trace_sqlalchemy:
+                    osprofiler.sqlalchemy.add_tracing(sqlalchemy,
+                                                      _FACADE.get_engine(),
+                                                      "db")
     return _FACADE
 
 

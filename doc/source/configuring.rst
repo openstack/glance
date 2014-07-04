@@ -1268,3 +1268,37 @@ the ``failure`` state.
 * ``task_time_to_live=<Time_in_hours>``
 
 Optional. Default: ``48``
+
+Configuring Glance performance profiling
+----------------------------------------
+
+Glance supports using osprofiler to trace the performance of each key internal
+handling, including RESTful API calling, DB operation and etc.
+
+``Please be aware that Glance performance profiling is currently a work in
+progress feature.`` Although, some trace points is available, e.g. API
+execution profiling at wsgi main entry and SQL execution profiling at DB
+module, the more fine-grained trace point is being worked on.
+
+The config value ``enabled`` is used to determine whether fully enable
+profiling feature for glance-api and glance-registry service.
+
+* ``enabled=<True|False>``
+
+Optional. Default: ``True``
+
+The config value ``trace_sqlalchemy`` is used to determin whether fully enable
+sqlalchemy engine based SQL execution profiling feature for glance-api and
+glance-registry services.
+
+* ``trace_sqlalchemy=<True|False>``
+
+Optional. Default: ``True``
+
+**IMPORTANT NOTE**: The HMAC key which is used for encrypting context data for
+performance profiling is configued in paste config file of glance-api and
+glance-registry service separately, by default they place at
+/etc/glance/api-paste.ini and /etc/glance/registry-paste.ini files, in order
+to make profiling work as designed operator needs to make those values of HMAC
+key be consistent for all services in your deployment. Without HMAC key the
+profiling will not be triggered even profiling feature is enabled.

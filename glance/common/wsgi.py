@@ -91,11 +91,19 @@ eventlet_opts = [
                       'Keystone v3 API with big service catalogs')),
 ]
 
+profiler_opts = [
+    cfg.BoolOpt("enabled", default=True,
+                help=_('If False fully disable profiling feature.')),
+    cfg.BoolOpt("trace_sqlalchemy", default=True,
+                help=_("If False doesn't trace SQL requests."))
+]
+
 
 CONF = cfg.CONF
 CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
+CONF.register_opts(profiler_opts, group="profiler")
 
 
 def get_bind_addr(default_port=None):

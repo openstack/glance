@@ -42,12 +42,16 @@ _ALIASES = {
 }
 
 
+def get_transport():
+    return messaging.get_transport(CONF, aliases=_ALIASES)
+
+
 class Notifier(object):
     """Uses a notification strategy to send out messages about events."""
 
     def __init__(self):
         publisher_id = CONF.default_publisher_id
-        self._transport = messaging.get_transport(CONF, aliases=_ALIASES)
+        self._transport = get_transport()
         self._notifier = messaging.Notifier(self._transport,
                                             publisher_id=publisher_id)
 

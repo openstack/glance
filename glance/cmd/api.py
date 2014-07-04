@@ -39,11 +39,19 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
+from oslo.config import cfg
+import osprofiler.notifier
+import osprofiler.web
+
 from glance.common import config
 from glance.common import exception
 from glance.common import wsgi
+from glance import notifier
 from glance.openstack.common import log
 import glance.store
+
+CONF = cfg.CONF
+CONF.import_group("profiler", "glance.common.wsgi")
 
 
 def fail(returncode, e):
@@ -59,6 +67,16 @@ def main():
 
         glance.store.create_stores()
         glance.store.verify_default_store()
+
+        if cfg.CONF.profiler.enabled:
+            _notifier = osprofiler.notifier.create("Messaging",
+                                                   notifier.messaging, {},
+                                                   notifier.get_transport(),
+                                                   "glance", "api",
+                                                   cfg.CONF.bind_host)
+            osprofiler.notifier.set(_notifier)
+        else:
+            osprofiler.web.disable()
 
         server = wsgi.Server()
         server.start(config.load_paste_app('glance-api'), default_port=9292)
