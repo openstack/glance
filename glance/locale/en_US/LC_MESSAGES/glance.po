@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-06-30 06:00+0000\n"
+"POT-Creation-Date: 2014-07-06 06:00+0000\n"
 "PO-Revision-Date: 2013-04-10 10:09+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en_US <LL@li.org>\n"
@@ -1805,7 +1805,7 @@ msgid ""
 "brackets separately from the port (i.e., \"[fe80::a:b:c]:9876\")."
 msgstr ""
 
-#: glance/common/wsgi.py:54
+#: glance/common/wsgi.py:55
 msgid ""
 "Address to bind the server.  Useful when selecting a particular network "
 "interface."
@@ -1813,54 +1813,54 @@ msgstr ""
 "Address to bind the server.  Useful when selecting a particular network "
 "interface."
 
-#: glance/common/wsgi.py:57
+#: glance/common/wsgi.py:58
 msgid "The port on which the server will listen."
 msgstr "The port on which the server will listen."
 
-#: glance/common/wsgi.py:62
+#: glance/common/wsgi.py:63
 msgid "The backlog value that will be used when creating the TCP listener socket."
 msgstr "The backlog value that will be used when creating the TCP listener socket."
 
-#: glance/common/wsgi.py:65
+#: glance/common/wsgi.py:66
 msgid ""
 "The value for the socket option TCP_KEEPIDLE.  This is the time in "
 "seconds that the connection must be idle before TCP starts sending "
 "keepalive probes."
 msgstr ""
 
-#: glance/common/wsgi.py:68
+#: glance/common/wsgi.py:69
 msgid "CA certificate file to use to verify connecting clients."
 msgstr "CA certificate file to use to verify connecting clients."
 
-#: glance/common/wsgi.py:70
+#: glance/common/wsgi.py:71
 msgid "Certificate file to use when starting API server securely."
 msgstr "Certificate file to use when starting API server securely."
 
-#: glance/common/wsgi.py:72
+#: glance/common/wsgi.py:73
 msgid "Private key file to use when starting API server securely."
 msgstr "Private key file to use when starting API server securely."
 
-#: glance/common/wsgi.py:78
+#: glance/common/wsgi.py:79
 msgid ""
 "The number of child process workers that will be created to service "
-"requests."
+"requests. The default will be equal to the number of CPUs available."
 msgstr ""
 
-#: glance/common/wsgi.py:81
+#: glance/common/wsgi.py:83
 msgid ""
 "Name of eventlet hub to use. Traditionally, we have only supported "
 "'poll', however 'selects' may be appropriate for some platforms. See "
 "http://eventlet.net/doc/hubs.html for more details."
 msgstr ""
 
-#: glance/common/wsgi.py:86
+#: glance/common/wsgi.py:88
 msgid ""
 "Maximum line size of message headers to be accepted. max_header_line may "
 "need to be increased when using large tokens (typically those generated "
 "by the Keystone v3 API with big service catalogs"
 msgstr ""
 
-#: glance/common/wsgi.py:132
+#: glance/common/wsgi.py:134
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
 "key_file option value in your configuration file"
@@ -1868,54 +1868,54 @@ msgstr ""
 "When running server in SSL mode, you must specify both a cert_file and "
 "key_file option value in your configuration file"
 
-#: glance/common/wsgi.py:170
+#: glance/common/wsgi.py:172
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
 
-#: glance/common/wsgi.py:245
+#: glance/common/wsgi.py:247
 #, python-format
 msgid "Starting %d workers"
 msgstr "Starting %d workers"
 
-#: glance/common/wsgi.py:260
+#: glance/common/wsgi.py:262
 #, python-format
 msgid "Removing dead child %s"
 msgstr "Removing dead child %s"
 
-#: glance/common/wsgi.py:263
+#: glance/common/wsgi.py:265
 #, python-format
 msgid "Not respawning child %d, cannot recover from termination"
 msgstr "Not respawning child %d, cannot recover from termination"
 
-#: glance/common/wsgi.py:267
+#: glance/common/wsgi.py:269
 msgid "All workers have terminated. Exiting"
 msgstr "All workers have terminated. Exiting"
 
-#: glance/common/wsgi.py:275
+#: glance/common/wsgi.py:277
 msgid "Caught keyboard interrupt. Exiting."
 msgstr "Caught keyboard interrupt. Exiting."
 
-#: glance/common/wsgi.py:301
+#: glance/common/wsgi.py:303
 #, python-format
 msgid "Child %d exiting normally"
 msgstr "Child %d exiting normally"
 
-#: glance/common/wsgi.py:306
+#: glance/common/wsgi.py:308
 #, python-format
 msgid "Started child %s"
 msgstr "Started child %s"
 
-#: glance/common/wsgi.py:319
+#: glance/common/wsgi.py:321
 #, python-format
 msgid "eventlet '%s' hub is not available on this platform"
 msgstr ""
 
-#: glance/common/wsgi.py:336
+#: glance/common/wsgi.py:338
 msgid "Starting single process server"
 msgstr "Starting single process server"
 
-#: glance/common/wsgi.py:553
+#: glance/common/wsgi.py:555
 msgid "Malformed JSON in request body."
 msgstr "Malformed JSON in request body."
 
@@ -2321,21 +2321,6 @@ msgstr ""
 msgid "Reaped %(reaped)s %(entry_type)s cache entries"
 msgstr "Reaped %(reaped)s %(entry_type)s cache entries"
 
-#: glance/openstack/common/excutils.py:62
-#, python-format
-msgid "Original exception being dropped: %s"
-msgstr ""
-
-#: glance/openstack/common/excutils.py:91
-#, python-format
-msgid "Unexpected exception occurred %d time(s)... retrying."
-msgstr ""
-
-#: glance/openstack/common/fileutils.py:63
-#, python-format
-msgid "Reloading cached file %s"
-msgstr ""
-
 #: glance/openstack/common/gettextutils.py:320
 msgid "Message objects do not support addition."
 msgstr ""
@@ -2346,47 +2331,12 @@ msgid ""
 "characters. Please use unicode() or translate() instead."
 msgstr ""
 
-#: glance/openstack/common/lockutils.py:103
+#: glance/openstack/common/lockutils.py:102
 #, python-format
-msgid "Could not release the acquired lock `%s`"
+msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
 msgstr ""
 
-#: glance/openstack/common/lockutils.py:168
-#, python-format
-msgid "Got semaphore \"%(lock)s\""
-msgstr ""
-
-#: glance/openstack/common/lockutils.py:177
-#, python-format
-msgid "Attempting to grab file lock \"%(lock)s\""
-msgstr ""
-
-#: glance/openstack/common/lockutils.py:187
-#, python-format
-msgid "Created lock path: %s"
-msgstr ""
-
-#: glance/openstack/common/lockutils.py:205
-#, python-format
-msgid "Got file lock \"%(lock)s\" at %(path)s"
-msgstr ""
-
-#: glance/openstack/common/lockutils.py:209
-#, python-format
-msgid "Released file lock \"%(lock)s\" at %(path)s"
-msgstr ""
-
-#: glance/openstack/common/lockutils.py:247
-#, python-format
-msgid "Got semaphore / lock \"%(function)s\""
-msgstr ""
-
-#: glance/openstack/common/lockutils.py:251
-#, python-format
-msgid "Semaphore / lock released \"%(function)s\""
-msgstr ""
-
-#: glance/openstack/common/log.py:325
+#: glance/openstack/common/log.py:327
 #, python-format
 msgid "Deprecated: %s"
 msgstr "Deprecated: %s"
@@ -2396,12 +2346,12 @@ msgstr "Deprecated: %s"
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
 msgstr ""
 
-#: glance/openstack/common/log.py:487
+#: glance/openstack/common/log.py:486
 #, python-format
 msgid "syslog facility must be one of: %s"
 msgstr "syslog facility must be one of: %s"
 
-#: glance/openstack/common/log.py:714
+#: glance/openstack/common/log.py:729
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
 msgstr "Fatal call to deprecated config: %(msg)s"
@@ -2421,37 +2371,34 @@ msgstr "No handler for matches of kind %s"
 msgid "Failed to understand rule %(rule)r"
 msgstr "Failed to understand rule %(rule)r"
 
-#: glance/openstack/common/processutils.py:127
+#: glance/openstack/common/processutils.py:59
+msgid "Unexpected error while running command."
+msgstr ""
+
+#: glance/openstack/common/processutils.py:62
+#, python-format
+msgid ""
+"%(description)s\n"
+"Command: %(cmd)s\n"
+"Exit code: %(exit_code)s\n"
+"Stdout: %(stdout)r\n"
+"Stderr: %(stderr)r"
+msgstr ""
+
+#: glance/openstack/common/processutils.py:144
 #, python-format
 msgid "Got unknown keyword args to utils.execute: %r"
 msgstr ""
 
-#: glance/openstack/common/processutils.py:142
-#, python-format
-msgid "Running cmd (subprocess): %s"
+#: glance/openstack/common/processutils.py:150
+msgid "Command requested root, but did not specify a root helper."
 msgstr ""
 
-#: glance/openstack/common/processutils.py:167
-#: glance/openstack/common/processutils.py:240
-#, python-format
-msgid "Result was %s"
-msgstr ""
-
-#: glance/openstack/common/processutils.py:179
-#, python-format
-msgid "%r failed. Retrying."
-msgstr ""
-
-#: glance/openstack/common/processutils.py:219
-#, python-format
-msgid "Running cmd (SSH): %s"
-msgstr ""
-
-#: glance/openstack/common/processutils.py:221
+#: glance/openstack/common/processutils.py:247
 msgid "Environment not supported over SSH"
 msgstr ""
 
-#: glance/openstack/common/processutils.py:225
+#: glance/openstack/common/processutils.py:251
 msgid "process_input not supported over SSH"
 msgstr ""
 
