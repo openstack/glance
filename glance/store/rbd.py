@@ -28,6 +28,7 @@ from six import text_type
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import units
@@ -363,14 +364,13 @@ class Store(glance.store.base.Store):
                         if loc.snapshot:
                             image.create_snap(loc.snapshot)
                             image.protect_snap(loc.snapshot)
-                except Exception as exc:
-                    # Delete image if one was created
-                    try:
-                        self._delete_image(loc.image, loc.snapshot)
-                    except exception.NotFound:
-                        pass
-
-                    raise exc
+                except Exception:
+                    with excutils.save_and_reraise_exception():
+                        # Delete image if one was created
+                        try:
+                            self._delete_image(loc.image, loc.snapshot)
+                        except exception.NotFound:
+                            pass
 
         # Make sure we send back the image size whether provided or inferred.
         if image_size == 0:
