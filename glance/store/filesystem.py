@@ -356,7 +356,7 @@ class Store(glance.store.base.Store):
         """
 
         #Calculate total available space
-        df = processutils.execute("df", "-k",
+        df = processutils.execute("df", "-k", "-P",
                                   mount_point)[0].strip("'\n'")
         total_available_space = int(df.split('\n')[1].split()[3]) * units.Ki
 
