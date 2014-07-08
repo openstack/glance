@@ -28,7 +28,7 @@ import webob
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-from glance.openstack.common import gettextutils
+from glance import i18n
 from glance.tests import utils as test_utils
 
 
@@ -266,7 +266,7 @@ class ResourceTest(test_utils.BaseTestCase):
         self.assertEqual(message_es, str(e))
 
     @mock.patch.object(webob.acceptparse.AcceptLanguage, 'best_match')
-    @mock.patch.object(gettextutils, 'translate')
+    @mock.patch.object(i18n, 'translate')
     def test_translate_exception(self, mock_translate, mock_best_match):
 
         mock_translate.return_value = 'No Encontrado'

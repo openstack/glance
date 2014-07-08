@@ -29,7 +29,7 @@ import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.common import utils
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 from glance.openstack.common import units
 import glance.store
@@ -37,8 +37,8 @@ import glance.store.base
 import glance.store.location
 
 LOG = logging.getLogger(__name__)
-_LE = gettextutils._LE
-_LI = gettextutils._LI
+_LE = i18n._LE
+_LI = i18n._LI
 
 DEFAULT_LARGE_OBJECT_SIZE = 100          # 100M
 DEFAULT_LARGE_OBJECT_CHUNK_SIZE = 10     # 10M
