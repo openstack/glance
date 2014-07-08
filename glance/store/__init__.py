@@ -338,7 +338,7 @@ def safe_delete_from_backend(context, uri, image_id, **kwargs):
 def schedule_delayed_delete_from_backend(context, uri, image_id, **kwargs):
     """Given a uri, schedule the deletion of an image location."""
     (file_queue, _db_queue) = scrubber.get_scrub_queues()
-    # NOTE(zhiyan): Defautly ask glance-api store using file based queue.
+    # NOTE(zhiyan): Default ask glance-api store using file based queue.
     # In future we can change it using DB based queued instead,
     # such as using image location's status to saving pending delete flag
     # when that property be added.
