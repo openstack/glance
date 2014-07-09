@@ -733,6 +733,34 @@ class DriverTests(object):
         images = self.db_api.image_get_all(self.context, limit=2)
         self.assertEqual(2, len(images))
 
+    def test_image_get_all_with_tag_returning(self):
+        expected_tags = {UUID1: ['foo'], UUID2: ['bar'], UUID3: ['baz']}
+
+        self.db_api.image_tag_create(self.context, UUID1,
+                                     expected_tags[UUID1][0])
+        self.db_api.image_tag_create(self.context, UUID2,
+                                     expected_tags[UUID2][0])
+        self.db_api.image_tag_create(self.context, UUID3,
+                                     expected_tags[UUID3][0])
+
+        images = self.db_api.image_get_all(self.context, return_tag=True)
+        self.assertEqual(3, len(images))
+
+        for image in images:
+            self.assertIn('tags', image)
+            self.assertEqual(image['tags'], expected_tags[image['id']])
+
+        self.db_api.image_tag_delete(self.context, UUID1,
+                                     expected_tags[UUID1][0])
+        expected_tags[UUID1] = []
+
+        images = self.db_api.image_get_all(self.context, return_tag=True)
+        self.assertEqual(3, len(images))
+
+        for image in images:
+            self.assertIn('tags', image)
+            self.assertEqual(image['tags'], expected_tags[image['id']])
+
     def test_image_destroy(self):
         location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
                          {'url': 'b', 'metadata': {}}]

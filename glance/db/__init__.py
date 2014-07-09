@@ -75,12 +75,11 @@ class ImageRepo(object):
         db_api_images = self.db_api.image_get_all(
             self.context, filters=filters, marker=marker, limit=limit,
             sort_key=sort_key, sort_dir=sort_dir,
-            member_status=member_status)
+            member_status=member_status, return_tag=True)
         images = []
         for db_api_image in db_api_images:
-            tags = self.db_api.image_tag_get_all(self.context,
-                                                 db_api_image['id'])
-            image = self._format_image_from_db(dict(db_api_image), tags)
+            db_image = dict(db_api_image)
+            image = self._format_image_from_db(db_image, db_image['tags'])
             images.append(image)
         return images
 

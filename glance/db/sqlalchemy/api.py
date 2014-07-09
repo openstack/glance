@@ -140,6 +140,12 @@ def _normalize_locations(image):
     return image
 
 
+def _normalize_tags(image):
+    undeleted_tags = filter(lambda x: not x.deleted, image['tags'])
+    image['tags'] = [tag['value'] for tag in undeleted_tags]
+    return image
+
+
 def image_get(context, image_id, session=None, force_show_deleted=False):
     image = _image_get(context, image_id, session=session,
                        force_show_deleted=force_show_deleted)
@@ -479,7 +485,7 @@ def _select_images_query(context, image_conditions, admin_as_user,
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc',
                   member_status='accepted', is_public=None,
-                  admin_as_user=False):
+                  admin_as_user=False, return_tag=False):
     """
     Get all images that match zero or more filters.
 
@@ -497,6 +503,9 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     :param admin_as_user: For backwards compatibility. If true, then return to
                       an admin the equivalent set of images which it would see
                       if it were a regular user
+    :param return_tag: To indicates whether image entry in result includes it
+                       relevant tag entries. This could improve upper-layer
+                       query performance, to prevent using separated calls
     """
     filters = filters or {}
 
@@ -545,8 +554,17 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     query = query.options(sa_orm.joinedload(models.Image.properties))\
                  .options(sa_orm.joinedload(models.Image.locations))
+    if return_tag:
+        query = query.options(sa_orm.joinedload(models.Image.tags))
 
-    return [_normalize_locations(image.to_dict()) for image in query.all()]
+    images = []
+    for image in query.all():
+        image_dict = image.to_dict()
+        image_dict = _normalize_locations(image_dict)
+        if return_tag:
+            image_dict = _normalize_tags(image_dict)
+        images.append(image_dict)
+    return images
 
 
 def _drop_protected_attrs(model_class, values):
@@ -1026,12 +1044,11 @@ def image_tag_get_all(context, image_id, session=None):
     """Get a list of tags for a specific image."""
     _check_image_id(image_id)
     session = session or get_session()
-    tags = session.query(models.ImageTag)\
+    tags = session.query(models.ImageTag.value)\
                   .filter_by(image_id=image_id)\
                   .filter_by(deleted=False)\
-                  .order_by(sqlalchemy.asc(models.ImageTag.created_at))\
                   .all()
-    return [tag['value'] for tag in tags]
+    return [tag[0] for tag in tags]
 
 
 def user_get_storage_usage(context, owner_id, image_id=None, session=None):

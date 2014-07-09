@@ -353,7 +353,7 @@ def image_get(context, image_id, session=None, force_show_deleted=False):
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc',
                   member_status='accepted', is_public=None,
-                  admin_as_user=False):
+                  admin_as_user=False, return_tag=False):
     filters = filters or {}
     images = DATA['images'].values()
     images = _filter_images(images, filters, context, member_status,
@@ -364,6 +364,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
 
     for image in images:
         image['locations'] = _image_location_get_all(image['id'])
+        if return_tag:
+            image['tags'] = image_tag_get_all(context, image['id'])
         _normalize_locations(image)
 
     return images
