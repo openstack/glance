@@ -182,7 +182,7 @@ class Store(glance.store.base.Store):
     def get_schemes(self):
         return ('sheepdog',)
 
-    def configure_add(self):
+    def configure(self):
         """
         Configure the Store to use the stored configuration options
         Any store that needs special configuration should implement

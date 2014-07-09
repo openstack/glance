@@ -19,6 +19,7 @@ import shutil
 import fixtures
 from oslo.config import cfg
 
+from glance.common import exception
 from glance.openstack.common import jsonutils
 from glance import store
 from glance.store import location
@@ -43,14 +44,24 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
         self._create_stores()
         self.addCleanup(setattr, location, 'SCHEME_TO_CLS_MAP', dict())
 
-    def _create_stores(self):
+    def _create_stores(self, passing_config=True):
         """Create known stores. Mock out sheepdog's subprocess dependency
         on collie.
+
+        :param passing_config: making store driver passes basic configurations.
+        :returns: the number of how many store drivers been loaded.
         """
-        self.stubs.Set(sheepdog.Store, 'configure_add', lambda x: None)
-        self.stubs.Set(vmware_datastore.Store, 'configure', lambda x: None)
-        self.stubs.Set(vmware_datastore.Store, 'configure_add', lambda x: None)
-        store.create_stores()
+
+        def _fun(*args, **kwargs):
+            if passing_config:
+                return None
+            else:
+                raise exception.BadStoreConfiguration()
+
+        self.stubs.Set(sheepdog.Store, 'configure', _fun)
+        self.stubs.Set(vmware_datastore.Store, 'configure', _fun)
+        self.stubs.Set(vmware_datastore.Store, 'configure_add', _fun)
+        return store.create_stores()
 
 
 class IsolatedUnitTest(StoreClearingUnitTest):

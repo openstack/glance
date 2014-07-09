@@ -14,7 +14,6 @@
 #    under the License.
 
 from glance.common import exception
-from glance import store
 from glance.store import base as store_base
 from glance.tests.unit import base as test_base
 
@@ -54,8 +53,13 @@ class TestStoreBase(test_base.StoreClearingUnitTest):
         self.config(known_stores=[
             "glance.tests.unit.test_store_base.FakeUnconfigurableStoreDriver",
             "glance.store.filesystem.Store"])
-        count = store.create_stores()
+        count = self._create_stores(passing_config=True)
         self.assertEqual(9, count)
+        count = self._create_stores(passing_config=False)
+        # Sheepdog and vshpere store driver
+        # needs to use default configure()
+        # to handle essential options.
+        self.assertEqual(7, count)
 
     def test_create_store_not_configured(self):
         store = self.UnconfiguredStore(configure=False)
