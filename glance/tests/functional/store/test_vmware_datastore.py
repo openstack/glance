@@ -25,12 +25,16 @@ import ConfigParser
 import httplib
 import logging
 import os
+import uuid
 
 import oslo.config.cfg
 from oslo.vmware import api
+import six
 import six.moves.urllib.parse as urlparse
 import testtools
 
+from glance.common import exception
+import glance.store.location
 import glance.store.vmware_datastore as vm_store
 import glance.tests.functional.store as store_tests
 
@@ -142,3 +146,31 @@ class TestVMwareDatastoreStore(store_tests.BaseTestCase, testtools.TestCase):
         conn.getresponse()
 
         return '%s://%s%s?%s' % (vm_store.STORE_SCHEME, server_ip, path, query)
+
+    def test_timeout(self):
+        store = self.get_store()
+        store._session.logout()
+        image_id = str(uuid.uuid4())
+        image_data = six.StringIO('XXX')
+        image_checksum = 'bc9189406be84ec297464a514221406d'
+        uri, add_size, add_checksum, _ = store.add(image_id, image_data, 3)
+        self.assertEqual(3, add_size)
+        self.assertEqual(image_checksum, add_checksum)
+
+        loc = glance.store.location.Location(
+            self.store_name,
+            store.get_store_location_class(),
+            uri=uri,
+            image_id=image_id)
+        store._session.logout()
+        get_iter, get_size = store.get(loc)
+        self.assertEqual(3, get_size)
+        self.assertEqual('XXX', ''.join(get_iter))
+
+        store._session.logout()
+        image_size = store.get_size(loc)
+        self.assertEqual(3, image_size)
+
+        store._session.logout()
+        store.delete(loc)
+        self.assertRaises(exception.NotFound, store.get, loc)
