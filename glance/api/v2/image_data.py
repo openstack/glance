@@ -74,7 +74,7 @@ class ImageDataController(object):
                          "The image may have been deleted during the upload: "
                          "%(error)s Cleaning up the chunks uploaded") %
                        {'id': image_id,
-                        'error': e})
+                        'error': utils.exception_to_str(e)})
                 LOG.warn(msg)
                 # NOTE(sridevi): Cleaning up the uploaded chunks.
                 try:
@@ -108,28 +108,32 @@ class ImageDataController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         except exception.StorageFull as e:
-            msg = _("Image storage media is full: %s") % e
+            msg = _("Image storage media "
+                    "is full: %s") % utils.exception_to_str(e)
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageQuotaFull as e:
-            msg = _("Image exceeds the storage quota: %s") % e
+            msg = _("Image exceeds the storage "
+                    "quota: %s") % utils.exception_to_str(e)
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.ImageSizeLimitExceeded as e:
-            msg = _("The incoming image is too large: %s") % e
+            msg = _("The incoming image is "
+                    "too large: %s") % utils.exception_to_str(e)
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageWriteDenied as e:
-            msg = _("Insufficient permissions on image storage media: %s") % e
+            msg = _("Insufficient permissions on image "
+                    "storage media: %s") % utils.exception_to_str(e)
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
