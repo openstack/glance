@@ -182,7 +182,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                       content_type="text/plain")
 
     except exception.StorageFull as e:
-        msg = _("Image storage media is full: %s") % e
+        msg = _("Image storage media is full: %s") % utils.exception_to_str(e)
         LOG.error(msg)
         safe_kill(req, image_id)
         notifier.error('image.upload', msg)
@@ -191,7 +191,8 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                   content_type='text/plain')
 
     except exception.StorageWriteDenied as e:
-        msg = _("Insufficient permissions on image storage media: %s") % e
+        msg = (_("Insufficient permissions on image storage media: %s") %
+               utils.exception_to_str(e))
         LOG.error(msg)
         safe_kill(req, image_id)
         notifier.error('image.upload', msg)
@@ -211,7 +212,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
 
     except exception.StorageQuotaFull as e:
         msg = (_("Denying attempt to upload image because it exceeds the ."
-                 "quota: %s") % e)
+                 "quota: %s") % utils.exception_to_str(e))
         LOG.info(msg)
         safe_kill(req, image_id)
         notifier.error('image.upload', msg)

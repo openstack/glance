@@ -761,8 +761,6 @@ def main():
     except ValueError as e:
         logging.error(command.__doc__ % {'prog': command.__name__})
         sys.exit("ERROR: %s" % e)
-    except Exception as e:
-        raise
 
 
 if __name__ == '__main__':

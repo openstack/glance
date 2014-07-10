@@ -123,7 +123,8 @@ def swift_retry_iter(resp_iter, length, store, location):
                 yield chunk
                 bytes_read += len(chunk)
         except swiftclient.ClientException as e:
-            LOG.warn(_("Swift exception raised %s") % e)
+            LOG.warn(_("Swift exception raised %s") %
+                     utils.exception_to_str(e))
 
         if bytes_read != length:
             if retries == CONF.swift_store_retry_get_count:
@@ -559,7 +560,7 @@ class BaseStore(glance.store.base.Store):
                 raise exception.Duplicate(_("Swift already has an image at "
                                             "this location"))
             msg = (_("Failed to add object to Swift.\n"
-                     "Got error from Swift: %(e)s") % {'e': e})
+                     "Got error from Swift: %s") % utils.exception_to_str(e))
             LOG.error(msg)
             raise glance.store.BackendException(msg)
 

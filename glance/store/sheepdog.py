@@ -195,7 +195,8 @@ class Store(glance.store.base.Store):
             self.addr = CONF.sheepdog_store_address.strip()
             self.port = CONF.sheepdog_store_port
         except cfg.ConfigFileValueError as e:
-            reason = _("Error in store configuration: %s") % e
+            reason = (_("Error in store configuration: %s") %
+                      utils.exception_to_str(e))
             LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name='sheepdog',
                                                   reason=reason)
@@ -211,7 +212,8 @@ class Store(glance.store.base.Store):
             cmd = ["collie", "vdi", "list", "-a", self.addr, "-p", self.port]
             processutils.execute(*cmd)
         except Exception as e:
-            reason = _("Error in store configuration: %s") % e
+            reason = (_("Error in store configuration: %s") %
+                      utils.exception_to_str(e))
             LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name='sheepdog',
                                                   reason=reason)

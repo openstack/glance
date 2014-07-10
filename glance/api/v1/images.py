@@ -541,7 +541,8 @@ class Controller(controller.BaseController):
                                request=req,
                                content_type="text/plain")
         except exception.Invalid as e:
-            msg = _("Failed to reserve image. Got error: %(e)s") % {'e': e}
+            msg = (_("Failed to reserve image. Got error: %s") %
+                   utils.exception_to_str(e))
             for line in msg.split('\n'):
                 LOG.debug(line)
             raise HTTPBadRequest(explanation=msg,
@@ -575,7 +576,8 @@ class Controller(controller.BaseController):
                                                               copy_from)
             except Exception as e:
                 upload_utils.safe_kill(req, image_meta['id'])
-                msg = "Copy from external source failed: %s" % e
+                msg = ("Copy from external source failed: %s" %
+                       utils.exception_to_str(e))
                 LOG.debug(msg)
                 return
             image_meta['size'] = image_size or image_meta['size']
@@ -649,7 +651,8 @@ class Controller(controller.BaseController):
                 upload_utils.initiate_deletion(req, image_meta['location'],
                                                image_id, CONF.delayed_delete)
         except exception.Invalid as e:
-            msg = "Failed to activate image. Got error: %(e)s" % {'e': e}
+            msg = ("Failed to activate image. Got error: %s" %
+                   utils.exception_to_str(e))
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
@@ -939,21 +942,23 @@ class Controller(controller.BaseController):
                                                  image_data)
 
         except exception.Invalid as e:
-            msg = ("Failed to update image metadata. Got error: %(e)s" %
-                   {'e': e})
+            msg = ("Failed to update image metadata. Got error: %s" %
+                   utils.exception_to_str(e))
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
         except exception.NotFound as e:
-            msg = _("Failed to find image to update: %(e)s") % {'e': e}
+            msg = (_("Failed to find image to update: %s") %
+                   utils.exception_to_str(e))
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden as e:
-            msg = _("Forbidden to update image: %(e)s") % {'e': e}
+            msg = (_("Forbidden to update image: %s") %
+                   utils.exception_to_str(e))
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPForbidden(explanation=msg,
@@ -1037,14 +1042,16 @@ class Controller(controller.BaseController):
                 raise e
             registry.delete_image_metadata(req.context, id)
         except exception.NotFound as e:
-            msg = _("Failed to find image to delete: %(e)s") % {'e': e}
+            msg = (_("Failed to find image to delete: %s") %
+                   utils.exception_to_str(e))
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden as e:
-            msg = _("Forbidden to delete image: %(e)s") % {'e': e}
+            msg = (_("Forbidden to delete image: %s") %
+                   utils.exception_to_str(e))
             for line in msg.split('\n'):
                 LOG.info(line)
             raise HTTPForbidden(explanation=msg,

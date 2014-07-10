@@ -259,13 +259,13 @@ class ImageCache(object):
             with excutils.save_and_reraise_exception():
                 # image_iter has given us bad, (size_checked_iter has found a
                 # bad length), or corrupt data (checksum is wrong).
-                LOG.exception(e)
+                LOG.exception(utils.exception_to_str(e))
         except Exception as e:
             LOG.exception(_("Exception encountered while tee'ing "
                             "image '%(image_id)s' into cache: %(error)s. "
                             "Continuing with response.") %
                           {'image_id': image_id,
-                           'error': e})
+                           'error': utils.exception_to_str(e)})
 
             # If no checksum provided continue responding even if
             # caching failed.

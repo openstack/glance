@@ -181,8 +181,8 @@ class ScrubFileQueue(ScrubQueue):
                 if image['status'] == 'deleted':
                     return
             except exception.NotFound as e:
-                LOG.error(_("Failed to find image to delete: "
-                            "%(e)s"), {'e': e})
+                LOG.error(_("Failed to find image to delete: %s"),
+                          utils.exception_to_str(e))
                 return
 
             delete_time = time.time() + self.scrub_time
@@ -484,7 +484,7 @@ class Scrubber(object):
                 raise Exception(msg)
             return atime
         except Exception as e:
-            LOG.error(e)
+            LOG.error(utils.exception_to_str(e))
         return None
 
     def _update_cleanup_file(self, file_path, cleanup_time):
