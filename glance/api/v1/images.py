@@ -306,7 +306,7 @@ class Controller(controller.BaseController):
         try:
             images = registry.get_images_list(req.context, **params)
         except exception.Invalid as e:
-            raise HTTPBadRequest(explanation="%s" % e)
+            raise HTTPBadRequest(explanation=e.msg, request=req)
 
         return dict(images=images)
 
@@ -353,7 +353,7 @@ class Controller(controller.BaseController):
                 redact_loc(image, copy_dict=False)
                 self._enforce_read_protected_props(image, req)
         except exception.Invalid as e:
-            raise HTTPBadRequest(explanation="%s" % e)
+            raise HTTPBadRequest(explanation=e.msg, request=req)
         return dict(images=images)
 
     def _get_query_params(self, req):
@@ -710,8 +710,8 @@ class Controller(controller.BaseController):
             if location:
                 try:
                     validate_location(req.context, location)
-                except (exception.BadStoreUri) as bse:
-                    raise HTTPBadRequest(explanation=unicode(bse),
+                except exception.BadStoreUri as bse:
+                    raise HTTPBadRequest(explanation=bse.msg,
                                          request=req)
 
                 self._validate_image_for_activation(req, image_id, image_meta)
