@@ -120,7 +120,7 @@ def is_image_visible(context, image, status=None):
 def image_get_all(client, filters=None, marker=None, limit=None,
                   sort_key='created_at', sort_dir='desc',
                   member_status='accepted', is_public=None,
-                  admin_as_user=False):
+                  admin_as_user=False, return_tag=False):
     """
     Get all images that match zero or more filters.
 
@@ -138,12 +138,16 @@ def image_get_all(client, filters=None, marker=None, limit=None,
     :param admin_as_user: For backwards compatibility. If true, then return to
                       an admin the equivalent set of images which it would see
                       if it were a regular user
+    :param return_tag: To indicates whether image entry in result includes it
+                       relevant tag entries. This could improve upper-layer
+                       query performance, to prevent using separated calls
     """
     return client.image_get_all(filters=filters, marker=marker, limit=limit,
                                 sort_key=sort_key, sort_dir=sort_dir,
                                 member_status=member_status,
                                 is_public=is_public,
-                                admin_as_user=admin_as_user)
+                                admin_as_user=admin_as_user,
+                                return_tag=return_tag)
 
 
 @_get_client
