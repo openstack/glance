@@ -20,8 +20,6 @@ from glance.tests.integration.v2 import base
 
 CONF = cfg.CONF
 
-CONF.import_opt('backend', 'glance.openstack.common.db.api', group='database')
-
 
 class TestPropertyQuotaViolations(base.ApiTest):
     def __init__(self, *args, **kwargs):

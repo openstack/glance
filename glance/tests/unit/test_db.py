@@ -18,6 +18,7 @@ import uuid
 
 import mock
 from oslo.config import cfg
+from oslo.db import exception as db_exc
 
 from glance.common import crypt
 from glance.common import exception
@@ -25,7 +26,6 @@ from glance.common import utils
 import glance.context
 import glance.db
 from glance.db.sqlalchemy import api
-from glance.openstack.common.db import exception as db_exc
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 

@@ -20,7 +20,11 @@
 
 """Defines interface for DB access."""
 
+import threading
+
 from oslo.config import cfg
+from oslo.db import exception as db_exception
+from oslo.db.sqlalchemy import session
 from retrying import retry
 import six
 from six.moves import xrange
@@ -30,8 +34,6 @@ import sqlalchemy.sql as sa_sql
 
 from glance.common import exception
 from glance.db.sqlalchemy import models
-from glance.openstack.common.db import exception as db_exception
-from glance.openstack.common.db.sqlalchemy import session
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as os_logging
 from glance.openstack.common import timeutils
@@ -49,11 +51,9 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
 
 CONF = cfg.CONF
 CONF.import_opt('debug', 'glance.openstack.common.log')
-CONF.import_opt('connection', 'glance.openstack.common.db.options',
-                group='database')
-
 
 _FACADE = None
+_LOCK = threading.Lock()
 
 
 def _retry_on_deadlock(exc):
@@ -66,11 +66,11 @@ def _retry_on_deadlock(exc):
 
 
 def _create_facade_lazily():
-    global _FACADE
+    global _LOCK, _FACADE
     if _FACADE is None:
-        _FACADE = session.EngineFacade(
-            CONF.database.connection,
-            **dict(six.iteritems(CONF.database)))
+        with _LOCK:
+            if _FACADE is None:
+                _FACADE = session.EngineFacade.from_config(CONF)
     return _FACADE
 
 

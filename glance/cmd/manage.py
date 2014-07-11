@@ -39,13 +39,13 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 from oslo.config import cfg
+from oslo.db.sqlalchemy import migration
 
 from glance.common import config
 from glance.common import exception
 from glance.common import utils
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
-from glance.openstack.common.db.sqlalchemy import migration
 from glance.openstack.common import gettextutils
 from glance.openstack.common import log
 from glance.openstack.common import strutils
@@ -67,7 +67,6 @@ manager_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(manager_opts)
-CONF.import_group("database", "glance.openstack.common.db.options")
 
 
 # Decorators for actions
