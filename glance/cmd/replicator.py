@@ -19,9 +19,6 @@
 from __future__ import print_function
 
 import httplib
-import logging
-import logging.config
-import logging.handlers
 import optparse
 import os
 import sys
@@ -29,7 +26,13 @@ import sys
 import six.moves.urllib.parse as urlparse
 
 from glance.common import utils
+from glance.openstack.common import gettextutils
 from glance.openstack.common import jsonutils
+from glance.openstack.common import log
+
+LOG = log.getLogger(__name__)
+_LI = gettextutils._LI
+_LE = gettextutils._LE
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -100,23 +103,23 @@ class ImageService(object):
         if self.auth_token:
             headers.setdefault('x-auth-token', self.auth_token)
 
-        logging.debug('Request: %(method)s http://%(server)s:%(port)s'
-                      '%(url)s with headers %(headers)s'
-                      % {'method': method,
-                         'server': self.conn.host,
-                         'port': self.conn.port,
-                         'url': url,
-                         'headers': repr(headers)})
+        LOG.debug('Request: %(method)s http://%(server)s:%(port)s'
+                  '%(url)s with headers %(headers)s'
+                  % {'method': method,
+                     'server': self.conn.host,
+                     'port': self.conn.port,
+                     'url': url,
+                     'headers': repr(headers)})
         self.conn.request(method, url, body, headers)
 
         response = self.conn.getresponse()
         headers = self._header_list_to_dict(response.getheaders())
         code = response.status
         code_description = httplib.responses[code]
-        logging.debug('Response: %(code)s %(status)s %(headers)s'
-                      % {'code': code,
-                         'status': code_description,
-                         'headers': repr(headers)})
+        LOG.debug('Response: %(code)s %(status)s %(headers)s'
+                  % {'code': code,
+                     'status': code_description,
+                     'headers': repr(headers)})
 
         if code in [400, 500]:
             raise ServerErrorException(response.read())
@@ -235,7 +238,7 @@ class ImageService(object):
         response = self._http_request('POST', url, headers, image_data)
         headers = self._header_list_to_dict(response.getheaders())
 
-        logging.debug('Image post done')
+        LOG.debug('Image post done')
         body = response.read()
         return headers, body
 
@@ -254,7 +257,7 @@ class ImageService(object):
         response = self._http_request('PUT', url, headers, '')
         headers = self._header_list_to_dict(response.getheaders())
 
-        logging.debug('Image post done')
+        LOG.debug('Image post done')
         body = response.read()
         return headers, body
 
@@ -288,7 +291,7 @@ def replication_size(options, args):
     client = imageservice(httplib.HTTPConnection(server, port),
                           options.slavetoken)
     for image in client.get_images():
-        logging.debug('Considering image: %(image)s' % {'image': image})
+        LOG.debug('Considering image: %(image)s' % {'image': image})
         if image['status'] == 'active':
             total_size += int(image['size'])
             count += 1
@@ -318,11 +321,11 @@ def replication_dump(options, args):
     client = imageservice(httplib.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
-        logging.info(_('Considering: %s') % image['id'])
+        LOG.info(_LI('Considering: %s') % image['id'])
 
         data_path = os.path.join(path, image['id'])
         if not os.path.exists(data_path):
-            logging.info(_('... storing'))
+            LOG.info(_LI('... storing'))
 
             # Dump glance information
             with open(data_path, 'w') as f:
@@ -333,7 +336,7 @@ def replication_dump(options, args):
                 # is the same as that which we got from the detailed images
                 # request earlier, so we can ignore it here. Note that we also
                 # only dump active images.
-                logging.info(_('... image is active'))
+                LOG.info(_LI('... image is active'))
                 image_response = client.get_image(image['id'])
                 with open(data_path + '.img', 'wb') as f:
                     while True:
@@ -353,17 +356,18 @@ def _dict_diff(a, b):
     """
     # Only things the master has which the slave lacks matter
     if set(a.keys()) - set(b.keys()):
-        logging.debug('metadata diff -- master has extra keys: %(keys)s'
-                      % {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
+        LOG.debug('metadata diff -- master has extra keys: %(keys)s'
+                  % {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
         return True
 
     for key in a:
         if str(a[key]) != str(b[key]):
-            logging.debug('metadata diff -- value differs for key '
-                          '%(key)s: master "%(master_value)s" vs '
-                          'slave "%(slave_value)s"' %
-                          {'key': key, 'master_value': a[key],
-                           'slave_value': b[key]})
+            LOG.debug('metadata diff -- value differs for key '
+                      '%(key)s: master "%(master_value)s" vs '
+                      'slave "%(slave_value)s"' %
+                      {'key': key,
+                       'master_value': a[key],
+                       'slave_value': b[key]})
             return True
 
     return False
@@ -394,7 +398,7 @@ def replication_load(options, args):
     for ent in os.listdir(path):
         if utils.is_uuid_like(ent):
             image_uuid = ent
-            logging.info(_('Considering: %s') % image_uuid)
+            LOG.info(_LI('Considering: %s') % image_uuid)
 
             meta_file_name = os.path.join(path, image_uuid)
             with open(meta_file_name) as meta_file:
@@ -403,31 +407,31 @@ def replication_load(options, args):
             # Remove keys which don't make sense for replication
             for key in options.dontreplicate.split(' '):
                 if key in meta:
-                    logging.debug('Stripping %(header)s from saved '
-                                  'metadata', {'header': key})
+                    LOG.debug('Stripping %(header)s from saved '
+                              'metadata', {'header': key})
                     del meta[key]
 
             if _image_present(client, image_uuid):
                 # NOTE(mikal): Perhaps we just need to update the metadata?
                 # Note that we don't attempt to change an image file once it
                 # has been uploaded.
-                logging.debug('Image %s already present', image_uuid)
+                LOG.debug('Image %s already present', image_uuid)
                 headers = client.get_image_meta(image_uuid)
                 for key in options.dontreplicate.split(' '):
                     if key in headers:
-                        logging.debug('Stripping %(header)s from slave '
-                                      'metadata', {'header': key})
+                        LOG.debug('Stripping %(header)s from slave '
+                                  'metadata', {'header': key})
                         del headers[key]
 
                 if _dict_diff(meta, headers):
-                    logging.info(_('... metadata has changed'))
+                    LOG.info(_LI('... metadata has changed'))
                     headers, body = client.add_image_meta(meta)
                     _check_upload_response_headers(headers, body)
                     updated.append(meta['id'])
 
             else:
                 if not os.path.exists(os.path.join(path, image_uuid + '.img')):
-                    logging.info(_('... dump is missing image data, skipping'))
+                    LOG.info(_LI('... dump is missing image data, skipping'))
                     continue
 
                 # Upload the image itself
@@ -437,8 +441,8 @@ def replication_load(options, args):
                         _check_upload_response_headers(headers, body)
                         updated.append(meta['id'])
                     except ImageAlreadyPresentException:
-                        logging.error(IMAGE_ALREADY_PRESENT_MESSAGE
-                                      % image_uuid)
+                        LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE)
+                                  % image_uuid)
 
     return updated
 
@@ -469,11 +473,11 @@ def replication_livecopy(options, args):
     updated = []
 
     for image in master_client.get_images():
-        logging.info(_('Considering %(id)s') % {'id': image['id']})
+        LOG.info(_LI('Considering %(id)s') % {'id': image['id']})
         for key in options.dontreplicate.split(' '):
             if key in image:
-                logging.debug('Stripping %(header)s from master metadata',
-                              {'header': key})
+                LOG.debug('Stripping %(header)s from master metadata',
+                          {'header': key})
                 del image[key]
 
         if _image_present(slave_client, image['id']):
@@ -484,22 +488,22 @@ def replication_livecopy(options, args):
             if headers['status'] == 'active':
                 for key in options.dontreplicate.split(' '):
                     if key in image:
-                        logging.debug('Stripping %(header)s from master '
-                                      'metadata', {'header': key})
+                        LOG.debug('Stripping %(header)s from master '
+                                  'metadata', {'header': key})
                         del image[key]
                     if key in headers:
-                        logging.debug('Stripping %(header)s from slave '
-                                      'metadata', {'header': key})
+                        LOG.debug('Stripping %(header)s from slave '
+                                  'metadata', {'header': key})
                         del headers[key]
 
                 if _dict_diff(image, headers):
-                    logging.info(_('... metadata has changed'))
+                    LOG.info(_LI('... metadata has changed'))
                     headers, body = slave_client.add_image_meta(image)
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
 
         elif image['status'] == 'active':
-            logging.info(_('%s is being synced') % image['id'])
+            LOG.info(_LI('%s is being synced') % image['id'])
             if not options.metaonly:
                 image_response = master_client.get_image(image['id'])
                 try:
@@ -508,7 +512,7 @@ def replication_livecopy(options, args):
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
                 except ImageAlreadyPresentException:
-                    logging.error(IMAGE_ALREADY_PRESENT_MESSAGE % image['id'])
+                    LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE) % image['id'])
 
     return updated
 
@@ -543,32 +547,31 @@ def replication_compare(options, args):
             headers = slave_client.get_image_meta(image['id'])
             for key in options.dontreplicate.split(' '):
                 if key in image:
-                    logging.debug('Stripping %(header)s from master '
-                                  'metadata', {'header': key})
+                    LOG.debug('Stripping %(header)s from master metadata',
+                              {'header': key})
                     del image[key]
                 if key in headers:
-                    logging.debug('Stripping %(header)s from slave '
-                                  'metadata', {'header': key})
+                    LOG.debug('Stripping %(header)s from slave metadata',
+                              {'header': key})
                     del headers[key]
 
             for key in image:
                 if image[key] != headers.get(key, None):
-                    logging.info(_('%(image_id)s: field %(key)s differs '
-                                   '(source is %(master_value)s, destination '
-                                   'is %(slave_value)s)')
-                                 % {'image_id': image['id'],
-                                    'key': key,
-                                    'master_value': image[key],
-                                    'slave_value': headers.get(key,
-                                                               'undefined')})
+                    LOG.info(_LI('%(image_id)s: field %(key)s differs '
+                                 '(source is %(master_value)s, destination '
+                                 'is %(slave_value)s)')
+                             % {'image_id': image['id'],
+                                'key': key,
+                                'master_value': image[key],
+                                'slave_value': headers.get(key, 'undefined')})
                     differences[image['id']] = 'diff'
                 else:
-                    logging.debug('%(image_id)s is identical'
-                                  % {'image_id': image['id']})
+                    LOG.debug('%(image_id)s is identical'
+                              % {'image_id': image['id']})
 
         elif image['status'] == 'active':
-            logging.info(_('%s: entirely missing from the destination')
-                         % image['id'])
+            LOG.info(_LI('%s: entirely missing from the destination')
+                     % image['id'])
             differences[image['id']] = 'missing'
 
     return differences
@@ -679,12 +682,6 @@ def lookup_command(parser, command_name):
     return command
 
 
-def logging_excepthook(type, value, tb):
-    extra = {}
-    extra['exc_info'] = (type, value, tb)
-    logging.critical(str(value), **extra)
-
-
 def main():
     """The main function."""
 
@@ -727,39 +724,19 @@ def main():
     (options, command, args) = parse_options(oparser, sys.argv[1:])
 
     # Setup logging
-    root_logger = logging.root
-    if options.debug:
-        root_logger.setLevel(logging.DEBUG)
-    elif options.verbose:
-        root_logger.setLevel(logging.INFO)
-    else:
-        root_logger.setLevel(logging.WARNING)
-
-    formatter = logging.Formatter()
-
-    if options.syslog:
-        handler = logging.handlers.SysLogHandler(address='/dev/log')
-    elif options.logfile:
-        handler = logging.handlers.WatchedFileHandler(options.logfile)
-    else:
-        handler = logging.StreamHandler(sys.stdout)
-
-    sys.excepthook = logging_excepthook
+    log.setup('glance')
 
     if options.token:
         options.slavetoken = options.token
         options.mastertoken = options.token
 
-    handler.setFormatter(formatter)
-    root_logger.addHandler(handler)
-
     try:
         command(options, args)
     except TypeError as e:
-        logging.error(command.__doc__ % {'prog': command.__name__})
+        LOG.error(_LE(command.__doc__) % {'prog': command.__name__})
         sys.exit("ERROR: %s" % e)
     except ValueError as e:
-        logging.error(command.__doc__ % {'prog': command.__name__})
+        LOG.error(_LE(command.__doc__) % {'prog': command.__name__})
         sys.exit("ERROR: %s" % e)
 
 
