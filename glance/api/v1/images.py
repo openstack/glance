@@ -1036,10 +1036,10 @@ class Controller(controller.BaseController):
                 if image['location']:
                     upload_utils.initiate_deletion(req, image['location'], id,
                                                    CONF.delayed_delete)
-            except Exception as e:
-                registry.update_image_metadata(req.context, id,
-                                               {'status': ori_status})
-                raise e
+            except Exception:
+                with excutils.save_and_reraise_exception():
+                    registry.update_image_metadata(req.context, id,
+                                                   {'status': ori_status})
             registry.delete_image_metadata(req.context, id)
         except exception.NotFound as e:
             msg = (_("Failed to find image to delete: %s") %
