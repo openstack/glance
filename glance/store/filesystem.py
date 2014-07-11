@@ -464,4 +464,4 @@ class Store(glance.store.base.Store):
             msg = _('Unable to remove partial image data for image %(id)s: '
                     '%(error)s')
             LOG.error(msg % {'id': id,
-                             'error': e})
+                             'error': utils.exception_to_str(e)})

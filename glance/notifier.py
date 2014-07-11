@@ -192,18 +192,19 @@ class ImageProxy(glance.domain.proxy.Image):
         try:
             self.image.set_data(data, size)
         except exception.StorageFull as e:
-            msg = (_("Image storage media is full: %s") % e)
+            msg = (_("Image storage media is full: %s") %
+                   utils.exception_to_str(e))
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
         except exception.StorageWriteDenied as e:
             msg = (_("Insufficient permissions on image storage media: %s")
-                   % e)
+                   % utils.exception_to_str(e))
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except ValueError as e:
             msg = (_("Cannot save data for image %(image_id)s: %(error)s") %
                    {'image_id': self.image.image_id,
-                    'error': e})
+                    'error': utils.exception_to_str(e)})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPBadRequest(explanation=
                                            utils.exception_to_str(e))
@@ -211,20 +212,20 @@ class ImageProxy(glance.domain.proxy.Image):
             msg = (_("Unable to upload duplicate image data for image"
                      "%(image_id)s: %(error)s") %
                    {'image_id': self.image.image_id,
-                    'error': e})
+                    'error': utils.exception_to_str(e)})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPConflict(explanation=msg)
         except exception.Forbidden as e:
             msg = (_("Not allowed to upload image data for image %(image_id)s:"
                      " %(error)s") % {'image_id': self.image.image_id,
-                                      'error': e})
+                                      'error': utils.exception_to_str(e)})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
         except exception.NotFound as e:
             msg = (_("Image %(image_id)s could not be found after upload."
                      " The image may have been deleted during the upload:"
                      " %(error)s") % {'image_id': self.image.image_id,
-                                      'error': e})
+                                      'error': utils.exception_to_str(e)})
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPNotFound(explanation=utils.exception_to_str(e))
         except webob.exc.HTTPError as e:
@@ -232,14 +233,14 @@ class ImageProxy(glance.domain.proxy.Image):
                 msg = (_("Failed to upload image data for image %(image_id)s"
                          " due to HTTP error: %(error)s") %
                        {'image_id': self.image.image_id,
-                        'error': e})
+                        'error': utils.exception_to_str(e)})
                 self.notifier.error('image.upload', msg)
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 msg = (_("Failed to upload image data for image %(image_id)s "
                          "due to internal error: %(error)s") %
                        {'image_id': self.image.image_id,
-                        'error': e})
+                        'error': utils.exception_to_str(e)})
                 self.notifier.error('image.upload', msg)
         else:
             payload = format_image_notification(self.image)

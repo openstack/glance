@@ -122,7 +122,8 @@ class Controller(object):
             msg = _("Invalid membership association specified for "
                     "image %(id)s")
             LOG.info(msg % {'id': image_id})
-            msg = _("Invalid membership association: %s") % e
+            msg = (_("Invalid membership association: %s") %
+                   utils.exception_to_str(e))
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
         add = []
@@ -138,7 +139,8 @@ class Controller(object):
                 msg = _("Invalid membership association specified for "
                         "image %(id)s")
                 LOG.info(msg % {'id': image_id})
-                msg = _("Invalid membership association: %s") % e
+                msg = (_("Invalid membership association: %s") %
+                       utils.exception_to_str(e))
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
             # Figure out what can_share should be
@@ -237,7 +239,8 @@ class Controller(object):
                 msg = _("Invalid membership association specified for "
                         "image %(id)s")
                 LOG.info(msg % {'id': image_id})
-                msg = _("Invalid membership association: %s") % e
+                msg = (_("Invalid membership association: %s") %
+                       utils.exception_to_str(e))
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
         # Look up an existing membership...

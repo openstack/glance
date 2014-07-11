@@ -196,7 +196,8 @@ class Store(glance.store.base.Store):
             self.user = str(CONF.rbd_store_user)
             self.conf_file = str(CONF.rbd_store_ceph_conf)
         except cfg.ConfigFileValueError as e:
-            reason = _("Error in store configuration: %s") % e
+            reason = (_("Error in store configuration: %s") %
+                      utils.exception_to_str(e))
             LOG.error(reason)
             raise exception.BadStoreConfiguration(store_name='rbd',
                                                   reason=reason)

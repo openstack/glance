@@ -18,7 +18,6 @@ Reference implementation registry server WSGI controller
 """
 
 from oslo.config import cfg
-import six
 from webob import exc
 
 from glance.common import exception
@@ -412,7 +411,7 @@ class Controller(object):
             return exc.HTTPConflict(msg)
         except exception.Invalid as e:
             msg = (_("Failed to add image metadata. "
-                     "Got error: %(e)s") % {'e': e})
+                     "Got error: %s") % utils.exception_to_str(e))
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except Exception:
@@ -460,7 +459,7 @@ class Controller(object):
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid as e:
             msg = (_("Failed to update image metadata. "
-                     "Got error: %(e)s") % {'e': e})
+                     "Got error: %s") % utils.exception_to_str(e))
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.NotFound:
@@ -482,7 +481,7 @@ class Controller(object):
                                    request=req,
                                    content_type='text/plain')
         except exception.Conflict as e:
-            LOG.info(six.text_type(e))
+            LOG.info(utils.exception_to_str(e))
             raise exc.HTTPConflict(body='Image operation conflicts',
                                    request=req,
                                    content_type='text/plain')

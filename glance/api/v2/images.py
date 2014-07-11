@@ -131,7 +131,7 @@ class ImagesController(object):
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.StorageQuotaFull as e:
             msg = (_("Denying attempt to upload image because it exceeds the ."
-                     "quota: %s") % e)
+                     "quota: %s") % utils.exception_to_str(e))
             LOG.info(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')

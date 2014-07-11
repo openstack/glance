@@ -175,5 +175,5 @@ class Store(glance.store.base.Store):
             raise exception.NotFound(reason)
         except Exception as e:
             LOG.exception(_("Failed to get image size due to "
-                            "internal error: %s") % e)
+                            "internal error: %s") % utils.exception_to_str(e))
             return 0
