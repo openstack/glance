@@ -607,30 +607,26 @@ class Controller(controller.BaseController):
 
         self.notifier.info("image.prepare", redact_loc(image_meta))
 
-        image_meta, location, loc_meta = upload_utils.upload_data_to_store(
+        image_meta, location_data = upload_utils.upload_data_to_store(
             req, image_meta, image_data, store, self.notifier)
 
         self.notifier.info('image.upload', redact_loc(image_meta))
 
-        return location, loc_meta
+        return location_data
 
-    def _activate(self, req, image_id, location, location_metadata=None,
-                  from_state=None):
+    def _activate(self, req, image_id, location_data, from_state=None):
         """
         Sets the image status to `active` and the image's location
         attribute.
 
         :param req: The WSGI/Webob Request object
         :param image_id: Opaque image identifier
-        :param location: Location of where Glance stored this image
-        :param location_metadata: a dictionary of storage specific information
+        :param location_data: Location of where Glance stored this image
         """
         image_meta = {}
-        image_meta['location'] = location
+        image_meta['location'] = location_data['url']
         image_meta['status'] = 'active'
-        if location_metadata:
-            image_meta['location_data'] = [{'url': location,
-                                            'metadata': location_metadata}]
+        image_meta['location_data'] = [location_data]
 
         try:
             s = from_state
@@ -669,17 +665,11 @@ class Controller(controller.BaseController):
 
         :retval Mapping of updated image data
         """
-        image_id = image_meta['id']
-        # This is necessary because of a bug in Webob 1.0.2 - 1.0.7
-        # See: https://bitbucket.org/ianb/webob/
-        # issue/12/fix-for-issue-6-broke-chunked-transfer
-        req.is_body_readable = True
-        location, location_metadata = self._upload(req, image_meta)
+        location_data = self._upload(req, image_meta)
         return self._activate(req,
-                              image_id,
-                              location,
-                              location_metadata,
-                              from_state='saving') if location else None
+                              image_meta['id'],
+                              location_data,
+                              from_state='saving') if location_data else None
 
     def _get_size(self, context, image_meta, location):
         # retrieve the image size from remote store (if not provided)
@@ -736,7 +726,9 @@ class Controller(controller.BaseController):
                         raise HTTPConflict(explanation=msg,
                                            request=req,
                                            content_type="text/plain")
-                image_meta = self._activate(req, image_id, location)
+                location_data = {'url': location, 'metadata': {},
+                                 'status': 'active'}
+                image_meta = self._activate(req, image_id, location_data)
         return image_meta
 
     def _validate_image_for_activation(self, req, id, values):
@@ -1034,8 +1026,9 @@ class Controller(controller.BaseController):
                 # to delete the image if the backend doesn't yet store it.
                 # See https://bugs.launchpad.net/glance/+bug/747799
                 if image['location']:
-                    upload_utils.initiate_deletion(req, image['location'], id,
-                                                   CONF.delayed_delete)
+                    for loc_data in image['location_data']:
+                        if loc_data['status'] == 'active':
+                            upload_utils.initiate_deletion(req, loc_data, id)
             except Exception:
                 with excutils.save_and_reraise_exception():
                     registry.update_image_metadata(req.context, id,

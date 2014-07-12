@@ -103,7 +103,9 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_download(self):
         request = unit_test_utils.get_fake_request()
-        image = FakeImage('abcd', locations=['http://example.com/image'])
+        image = FakeImage('abcd',
+                          locations=[{'url': 'http://example.com/image',
+                                      'metadata': {}, 'status': 'active'}])
         self.image_repo.result = image
         image = self.controller.download(request, unit_test_utils.UUID1)
         self.assertEqual(image.image_id, 'abcd')

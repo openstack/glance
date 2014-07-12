@@ -71,7 +71,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
              'min_ram': 0,
              'size': 13,
              'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID1),
-                            'metadata': {}}],
+                            'metadata': {}, 'status': 'active'}],
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -88,7 +88,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
              'min_ram': 256,
              'size': 19,
              'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID2),
-                            'metadata': {}}],
+                            'metadata': {}, 'status': 'active'}],
              'properties': {}}]
 
         self.context = glance.context.RequestContext(is_admin=True)

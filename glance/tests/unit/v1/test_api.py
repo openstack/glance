@@ -73,7 +73,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'checksum': None,
              'size': 13,
              'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID1),
-                            'metadata': {}}],
+                            'metadata': {}, 'status': 'active'}],
              'properties': {'type': 'kernel'}},
             {'id': UUID2,
              'name': 'fake image #2',
@@ -88,7 +88,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'checksum': 'abc123',
              'size': 19,
              'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID2),
-                            'metadata': {}}],
+                            'metadata': {}, 'status': 'active'}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
         glance.api.v1.images.validate_location = mock.Mock()

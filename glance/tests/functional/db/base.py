@@ -53,7 +53,8 @@ def build_image_fixture(**kwargs):
         'min_disk': 5,
         'min_ram': 256,
         'size': 19,
-        'locations': [{'url': "file:///tmp/glance-tests/2", 'metadata': {}}],
+        'locations': [{'url': "file:///tmp/glance-tests/2",
+                       'metadata': {}, 'status': 'active'}],
         'properties': {},
     }
     image.update(kwargs)
@@ -169,22 +170,26 @@ class DriverTests(object):
                           self.context, {'id': UUID1, 'status': 'queued'})
 
     def test_image_create_with_locations(self):
-        locations = [{'url': 'a', 'metadata': {}},
-                     {'url': 'b', 'metadata': {}}]
+        locations = [{'url': 'a', 'metadata': {}, 'status': 'active'},
+                     {'url': 'b', 'metadata': {}, 'status': 'active'}]
 
         fixture = {'status': 'queued',
                    'locations': locations}
         image = self.db_api.image_create(self.context, fixture)
-        actual = [{'url': l['url'], 'metadata': l['metadata']}
+        actual = [{'url': l['url'], 'metadata': l['metadata'],
+                   'status': l['status']}
                   for l in image['locations']]
         self.assertEqual(locations, actual)
 
     def test_image_create_with_location_data(self):
-        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
-                         {'url': 'b', 'metadata': {}}]
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'},
+                          'status': 'active'},
+                         {'url': 'b', 'metadata': {},
+                          'status': 'active'}]
         fixture = {'status': 'queued', 'locations': location_data}
         image = self.db_api.image_create(self.context, fixture)
-        actual = [{'url': l['url'], 'metadata': l['metadata']}
+        actual = [{'url': l['url'], 'metadata': l['metadata'],
+                   'status': l['status']}
                   for l in image['locations']]
         self.assertEqual(location_data, actual)
 
@@ -208,17 +213,28 @@ class DriverTests(object):
         self.assertNotEqual(image['created_at'], image['updated_at'])
 
     def test_image_update_with_locations(self):
-        locations = [{'url': 'a', 'metadata': {}},
-                     {'url': 'b', 'metadata': {}}]
+        locations = [{'url': 'a', 'metadata': {}, 'status': 'active'},
+                     {'url': 'b', 'metadata': {}, 'status': 'active'}]
         fixture = {'locations': locations}
         image = self.db_api.image_update(self.adm_context, UUID3, fixture)
+        self.assertEqual(2, len(image['locations']))
+        self.assertIn('id', image['locations'][0])
+        self.assertIn('id', image['locations'][1])
+        image['locations'][0].pop('id')
+        image['locations'][1].pop('id')
         self.assertEqual(locations, image['locations'])
 
     def test_image_update_with_location_data(self):
-        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
-                         {'url': 'b', 'metadata': {}}]
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'},
+                          'status': 'active'},
+                         {'url': 'b', 'metadata': {}, 'status': 'active'}]
         fixture = {'locations': location_data}
         image = self.db_api.image_update(self.adm_context, UUID3, fixture)
+        self.assertEqual(2, len(image['locations']))
+        self.assertIn('id', image['locations'][0])
+        self.assertIn('id', image['locations'][1])
+        image['locations'][0].pop('id')
+        image['locations'][1].pop('id')
         self.assertEqual(location_data, image['locations'])
 
     def test_image_update(self):
@@ -762,8 +778,10 @@ class DriverTests(object):
             self.assertEqual(image['tags'], expected_tags[image['id']])
 
     def test_image_destroy(self):
-        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
-                         {'url': 'b', 'metadata': {}}]
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'},
+                          'status': 'active'},
+                         {'url': 'b', 'metadata': {},
+                          'status': 'active'}]
         fixture = {'status': 'queued', 'locations': location_data}
         image = self.db_api.image_create(self.context, fixture)
         IMG_ID = image['id']
@@ -775,6 +793,11 @@ class DriverTests(object):
         member = self.db_api.image_member_create(self.context, fixture)
         self.db_api.image_tag_create(self.context, IMG_ID, 'snarf')
 
+        self.assertEqual(2, len(image['locations']))
+        self.assertIn('id', image['locations'][0])
+        self.assertIn('id', image['locations'][1])
+        image['locations'][0].pop('id')
+        image['locations'][1].pop('id')
         self.assertEqual(location_data, image['locations'])
         self.assertEqual(('ping', 'pong', IMG_ID, False),
                          (prop['name'], prop['value'],
@@ -808,8 +831,9 @@ class DriverTests(object):
         elements of the image to be deleted.
         """
         TENANT2 = str(uuid.uuid4())
-        location_data = [{'url': 'a', 'metadata': {'key': 'value'}},
-                         {'url': 'b', 'metadata': {}}]
+        location_data = [{'url': 'a', 'metadata': {'key': 'value'},
+                          'status': 'active'},
+                         {'url': 'b', 'metadata': {}, 'status': 'active'}]
 
         def _create_image_with_child_entries():
             fixture = {'status': 'queued', 'locations': location_data}
@@ -837,6 +861,11 @@ class DriverTests(object):
         self.assertFalse(active_image['deleted'])
         self.assertFalse(active_image['deleted_at'])
 
+        self.assertEqual(len(active_image['locations']), 2)
+        self.assertTrue('id' in active_image['locations'][0])
+        self.assertTrue('id' in active_image['locations'][1])
+        active_image['locations'][0].pop('id')
+        active_image['locations'][1].pop('id')
         self.assertEqual(location_data, active_image['locations'])
         self.assertEqual(1, len(active_image['properties']))
         prop = active_image['properties'][0]
@@ -1258,7 +1287,8 @@ class DriverQuotaTests(test_utils.BaseTestCase):
                             'owner': self.owner_id1}
         new_fixture = build_image_fixture(**new_fixture_dict)
         new_fixture['locations'].append({'url': 'file:///some/path/file',
-                                         'metadata': {}})
+                                         'metadata': {},
+                                         'status': 'active'})
         self.db_api.image_create(self.context1, new_fixture)
 
         total = reduce(lambda x, y: x + y,
@@ -1278,7 +1308,8 @@ class DriverQuotaTests(test_utils.BaseTestCase):
                             'owner': self.owner_id1}
         new_fixture = build_image_fixture(**new_fixture_dict)
         new_fixture['locations'].append({'url': 'file:///some/path/file',
-                                         'metadata': {}})
+                                         'metadata': {},
+                                         'status': 'active'})
         self.db_api.image_create(self.context1, new_fixture)
 
         total = reduce(lambda x, y: x + y,

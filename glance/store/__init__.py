@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sys
 
 from oslo.config import cfg
 import six
@@ -24,7 +23,6 @@ import glance.context
 import glance.domain.proxy
 from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
-from glance import scrubber
 from glance.store import location
 
 LOG = logging.getLogger(__name__)
@@ -41,20 +39,8 @@ store_opts = [
                help=_("Default scheme to use to store image data. The "
                       "scheme must be registered by one of the stores "
                       "defined by the 'known_stores' config option.")),
-    cfg.StrOpt('scrubber_datadir',
-               default='/var/lib/glance/scrubber',
-               help=_('Directory that the scrubber will use to track '
-                      'information about what to delete. '
-                      'Make sure this is set in glance-api.conf and '
-                      'glance-scrubber.conf.')),
     cfg.BoolOpt('delayed_delete', default=False,
                 help=_('Turn on/off delayed delete.')),
-    cfg.BoolOpt('use_user_token', default=True,
-                help=_('Whether to pass through the user token when '
-                       'making requests to the registry.')),
-    cfg.IntOpt('scrub_time', default=0,
-               help=_('The amount of time in seconds to delay before '
-                      'performing a delete.')),
 ]
 
 REGISTERED_STORES = set()
@@ -316,42 +302,6 @@ def get_store_from_location(uri):
     """
     loc = location.get_location_from_uri(uri)
     return loc.store_name
-
-
-def safe_delete_from_backend(context, uri, image_id, **kwargs):
-    """Given a uri, delete an image from the store."""
-    try:
-        return delete_from_backend(context, uri, **kwargs)
-    except exception.NotFound:
-        msg = _('Failed to delete image %s in store from URI')
-        LOG.warn(msg % image_id)
-    except exception.StoreDeleteNotSupported as e:
-        LOG.warn(utils.exception_to_str(e))
-    except UnsupportedBackend:
-        exc_type = sys.exc_info()[0].__name__
-        msg = (_('Failed to delete image %(image_id)s from store '
-                 '(%(error)s)') % {'image_id': image_id,
-                                   'error': exc_type})
-        LOG.error(msg)
-
-
-def schedule_delayed_delete_from_backend(context, uri, image_id, **kwargs):
-    """Given a uri, schedule the deletion of an image location."""
-    (file_queue, _db_queue) = scrubber.get_scrub_queues()
-    # NOTE(zhiyan): Default ask glance-api store using file based queue.
-    # In future we can change it using DB based queued instead,
-    # such as using image location's status to saving pending delete flag
-    # when that property be added.
-    if CONF.use_user_token is False:
-        context = None
-    file_queue.add_location(image_id, uri, user_context=context)
-
-
-def delete_image_from_backend(context, store_api, image_id, uri):
-    if CONF.delayed_delete:
-        store_api.schedule_delayed_delete_from_backend(context, uri, image_id)
-    else:
-        store_api.safe_delete_from_backend(context, uri, image_id)
 
 
 def check_location_metadata(val, key=''):

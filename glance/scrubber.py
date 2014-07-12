@@ -68,12 +68,14 @@ class ScrubQueue(object):
         self.registry = registry.get_registry_client(context.RequestContext())
 
     @abc.abstractmethod
-    def add_location(self, image_id, uri, user_context=None):
+    def add_location(self, image_id, location, user_context=None):
         """Adding image location to scrub queue.
 
         :param image_id: The opaque image identifier
-        :param uri: The opaque image location uri
+        :param location: The opaque image location
         :param user_context: The user's request context
+
+        :retval A boolean value to indicate success or not
         """
         pass
 
@@ -158,12 +160,14 @@ class ScrubFileQueue(ScrubQueue):
         except Exception:
             LOG.error(_("%s file can not be wrote.") % file_path)
 
-    def add_location(self, image_id, uri, user_context=None):
+    def add_location(self, image_id, location, user_context=None):
         """Adding image location to scrub queue.
 
         :param image_id: The opaque image identifier
-        :param uri: The opaque image location uri
+        :param location: The opaque image location
         :param user_context: The user's request context
+
+        :retval A boolean value to indicate success or not
         """
         if user_context is not None:
             registry_client = registry.get_registry_client(user_context)
@@ -179,18 +183,20 @@ class ScrubFileQueue(ScrubQueue):
             try:
                 image = registry_client.get_image(image_id)
                 if image['status'] == 'deleted':
-                    return
+                    return True
             except exception.NotFound as e:
                 LOG.error(_("Failed to find image to delete: %s"),
                           utils.exception_to_str(e))
-                return
+                return False
 
             delete_time = time.time() + self.scrub_time
             file_path = os.path.join(self.scrubber_datadir, str(image_id))
 
             if self.metadata_encryption_key is not None:
                 uri = crypt.urlsafe_encrypt(self.metadata_encryption_key,
-                                            uri, 64)
+                                            location['url'], 64)
+            else:
+                uri = location['url']
 
             if os.path.exists(file_path):
                 # Append the uri of location to the queue file
@@ -204,6 +210,7 @@ class ScrubFileQueue(ScrubQueue):
                 with open(file_path, 'w') as f:
                     f.write('\n'.join([uri, str(int(delete_time))]))
             os.utime(file_path, (delete_time, delete_time))
+            return True
 
     def _walk_all_locations(self, remove=False):
         """Returns a list of image id and location tuple from scrub queue.
@@ -276,12 +283,14 @@ class ScrubDBQueue(ScrubQueue):
         super(ScrubDBQueue, self).__init__()
         self.cleanup_scrubber_time = CONF.cleanup_scrubber_time
 
-    def add_location(self, image_id, uri, user_context=None):
+    def add_location(self, image_id, location, user_context=None):
         """Adding image location to scrub queue.
 
         :param image_id: The opaque image identifier
-        :param uri: The opaque image location uri
+        :param location: The opaque image location
         :param user_context: The user's request context
+
+        :retval A boolean value to indicate success or not
         """
         raise NotImplementedError
 
@@ -437,14 +446,15 @@ class Scrubber(object):
         LOG.info(_("Scrubbing image %(id)s from %(count)d locations.") %
                  {'id': image_id, 'count': len(delete_jobs)})
         # NOTE(bourke): The starmap must be iterated to do work
-        list(pool.starmap(self._delete_image_from_backend, delete_jobs))
+        list(pool.starmap(self._delete_image_location_from_backend,
+                          delete_jobs))
 
         image = self.registry.get_image(image_id)
         if (image['status'] == 'pending_delete' and
                 not self.file_queue.has_image(image_id)):
             self.registry.update_image(image_id, {'status': 'deleted'})
 
-    def _delete_image_from_backend(self, image_id, uri):
+    def _delete_image_location_from_backend(self, image_id, uri):
         if CONF.metadata_encryption_key is not None:
             uri = crypt.urlsafe_decrypt(CONF.metadata_encryption_key, uri)
 

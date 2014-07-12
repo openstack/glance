@@ -677,7 +677,8 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         location = "file:///tmp/glance-tests/2"
         loc_meta = {'key': 'value'}
         fixture = self.get_fixture(location_data=[{'url': location,
-                                                   'metadata': loc_meta}],
+                                                   'metadata': loc_meta,
+                                                   'status': 'active'}],
                                    properties={'distro': 'Ubuntu 10.04 LTS'})
 
         new_image = self.client.add_image(fixture)
@@ -700,9 +701,11 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                    'container_format': 'ovf',
                    'size': 19,
                    'location_data': [{'url': location % 1,
-                                      'metadata': loc_meta},
+                                      'metadata': loc_meta,
+                                      'status': 'active'},
                                      {'url': location % 2,
-                                      'metadata': {}}],
+                                      'metadata': {},
+                                      'status': 'active'}],
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
 
         new_image = self.client.add_image(fixture)

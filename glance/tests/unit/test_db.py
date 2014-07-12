@@ -140,13 +140,15 @@ class TestImageRepo(test_utils.BaseTestCase):
                         name='1', size=256,
                         is_public=True, status='active',
                         locations=[{'url': UUID1_LOCATION,
-                                    'metadata': UUID1_LOCATION_METADATA}]),
+                                    'metadata': UUID1_LOCATION_METADATA,
+                                    'status': 'active'}]),
             _db_fixture(UUID2, owner=TENANT1, checksum=CHCKSUM1,
                         name='2', size=512, is_public=False),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHCKSUM1,
                         name='3', size=1024, is_public=True,
                         locations=[{'url': UUID3_LOCATION,
-                                    'metadata': {}}]),
+                                    'metadata': {},
+                                    'status': 'active'}]),
             _db_fixture(UUID4, owner=TENANT4, name='4', size=2048),
         ]
         [self.db.image_create(None, image) for image in self.images]
@@ -359,8 +361,10 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.image_factory = glance.domain.ImageFactory()
         self.crypt_key = '0123456789abcdef'
         self.config(metadata_encryption_key=self.crypt_key)
-        self.foo_bar_location = [{'url': 'foo', 'metadata': {}},
-                                 {'url': 'bar', 'metadata': {}}]
+        self.foo_bar_location = [{'url': 'foo', 'metadata': {},
+                                  'status': 'active'},
+                                 {'url': 'bar', 'metadata': {},
+                                  'status': 'active'}]
 
     def test_encrypt_locations_on_add(self):
         image = self.image_factory.new_image(UUID1)
@@ -387,30 +391,40 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
 
     def test_decrypt_locations_on_get(self):
         url_loc = ['ping', 'pong']
-        orig_locations = [{'url': l, 'metadata': {}} for l in url_loc]
+        orig_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
+                          for l in url_loc]
         encrypted_locs = [crypt.urlsafe_encrypt(self.crypt_key, l)
                           for l in url_loc]
-        encrypted_locations = [{'url': l, 'metadata': {}}
+        encrypted_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
                                for l in encrypted_locs]
         self.assertNotEqual(encrypted_locations, orig_locations)
         db_data = _db_fixture(UUID1, owner=TENANT1,
                               locations=encrypted_locations)
         self.db.image_create(None, db_data)
         image = self.image_repo.get(UUID1)
+        self.assertIn('id', image.locations[0])
+        self.assertIn('id', image.locations[1])
+        image.locations[0].pop('id')
+        image.locations[1].pop('id')
         self.assertEqual(image.locations, orig_locations)
 
     def test_decrypt_locations_on_list(self):
         url_loc = ['ping', 'pong']
-        orig_locations = [{'url': l, 'metadata': {}} for l in url_loc]
+        orig_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
+                          for l in url_loc]
         encrypted_locs = [crypt.urlsafe_encrypt(self.crypt_key, l)
                           for l in url_loc]
-        encrypted_locations = [{'url': l, 'metadata': {}}
+        encrypted_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
                                for l in encrypted_locs]
         self.assertNotEqual(encrypted_locations, orig_locations)
         db_data = _db_fixture(UUID1, owner=TENANT1,
                               locations=encrypted_locations)
         self.db.image_create(None, db_data)
         image = self.image_repo.list()[0]
+        self.assertIn('id', image.locations[0])
+        self.assertIn('id', image.locations[1])
+        image.locations[0].pop('id')
+        image.locations[1].pop('id')
         self.assertEqual(image.locations, orig_locations)
 
 

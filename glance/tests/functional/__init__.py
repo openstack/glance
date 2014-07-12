@@ -472,6 +472,7 @@ class RegistryServer(Server):
         self.workers = 0
         self.api_version = 1
         self.user_storage_quota = '0'
+        self.metadata_encryption_key = "012345678901234567890123456789ab"
 
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
@@ -488,6 +489,7 @@ owner_is_tenant = %(owner_is_tenant)s
 enable_v2_registry = %(enable_v2_registry)s
 workers = %(workers)s
 user_storage_quota = %(user_storage_quota)s
+metadata_encryption_key = %(metadata_encryption_key)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 """

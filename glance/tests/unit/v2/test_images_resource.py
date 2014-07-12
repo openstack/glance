@@ -118,12 +118,14 @@ class TestImagesController(base.IsolatedUnitTest):
         self.store = unit_test_utils.FakeStoreAPI()
         for i in range(1, 4):
             self.store.data['%s/fake_location_%i' % (BASE_URI, i)] = ('Z', 1)
+        self.store_utils = unit_test_utils.FakeStoreUtils(self.store)
         self._create_images()
         self._create_image_members()
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 self.policy,
                                                                 self.notifier,
                                                                 self.store)
+        self.controller.gateway.store_utils = self.store_utils
         glance.store.create_stores()
 
     def _create_images(self):
@@ -133,7 +135,7 @@ class TestImagesController(base.IsolatedUnitTest):
                         name='1', size=256, virtual_size=1024,
                         is_public=True,
                         locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
-                                    'metadata': {}}],
+                                    'metadata': {}, 'status': 'active'}],
                         disk_format='raw',
                         container_format='bare',
                         status='active'),
@@ -1615,11 +1617,11 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_remove_location_store_exception(self):
-        def fake_delete_image_from_backend(self, *args, **kwargs):
+        def fake_delete_image_location_from_backend(self, *args, **kwargs):
             raise Exception('fake_backend_exception')
 
-        self.stubs.Set(glance.store, 'delete_image_from_backend',
-                       fake_delete_image_from_backend)
+        self.stubs.Set(self.store_utils, 'delete_image_location_from_backend',
+                       fake_delete_image_location_from_backend)
 
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'remove', 'path': ['locations', '0']}]
@@ -1784,6 +1786,8 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         self.policy = unit_test_utils.FakePolicyEnforcer()
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 self.policy)
+        store = unit_test_utils.FakeStoreAPI()
+        self.store_utils = unit_test_utils.FakeStoreUtils(store)
 
     def test_index_unauthorized(self):
         rules = {"get_images": False}
@@ -1854,7 +1858,7 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_set_image_location_unauthorized(self):
-        def fake_delete_image_from_backend(self, *args, **kwargs):
+        def fake_delete_image_location_from_backend(self, *args, **kwargs):
             pass
 
         rules = {"set_image_location": False}
@@ -1866,8 +1870,8 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID1, changes)
 
-        self.stubs.Set(glance.store, 'delete_image_from_backend',
-                       fake_delete_image_from_backend)
+        self.stubs.Set(self.store_utils, 'delete_image_location_from_backend',
+                       fake_delete_image_location_from_backend)
 
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         self.controller.update(request, UUID1, changes)
@@ -3086,8 +3090,8 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
             UUID1, name='image-1', visibility='public',
             status='active', size=1024, virtual_size=3072,
             created_at=DATETIME, updated_at=DATETIME,
-            locations=[{'url': 'http://some/fake/location',
-                        'metadata': {}}])
+            locations=[{'id': '1', 'url': 'http://some/fake/location',
+                        'metadata': {}, 'status': 'active'}])
 
         self.queued_image = _domain_fixture(
             UUID2, name='image-2', status='active',
@@ -3099,8 +3103,10 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
         self.location_data_image = _domain_fixture(
             UUID2, name='image-2', status='active',
             created_at=DATETIME, updated_at=DATETIME,
-            locations=[{'url': self.location_data_image_url,
-                        'metadata': self.location_data_image_meta}])
+            locations=[{'id': '2',
+                        'url': self.location_data_image_url,
+                        'metadata': self.location_data_image_meta,
+                        'status': 'active'}])
 
     def _do_index(self):
         request = webob.Request.blank('/v2/images')

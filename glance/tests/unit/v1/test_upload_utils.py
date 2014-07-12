@@ -19,8 +19,8 @@ import webob.exc
 
 from glance.api.v1 import upload_utils
 from glance.common import exception
+from glance.common import store_utils
 import glance.registry.client.v1.api as registry
-import glance.store
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 
@@ -37,11 +37,13 @@ class TestUploadUtils(base.StoreClearingUnitTest):
 
     def test_initiate_delete(self):
         req = unit_test_utils.get_fake_request()
-        location = "file://foo/bar"
+        location = {"url": "file://foo/bar",
+                    "metadata": {},
+                    "status": "active"}
         id = unit_test_utils.UUID1
 
-        self.mox.StubOutWithMock(glance.store, "safe_delete_from_backend")
-        glance.store.safe_delete_from_backend(req.context, location, id)
+        self.mox.StubOutWithMock(store_utils, "safe_delete_from_backend")
+        store_utils.safe_delete_from_backend(req.context, id, location)
         self.mox.ReplayAll()
 
         upload_utils.initiate_deletion(req, location, id)
@@ -49,18 +51,21 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         self.mox.VerifyAll()
 
     def test_initiate_delete_with_delayed_delete(self):
+        self.config(delayed_delete=True)
         req = unit_test_utils.get_fake_request()
-        location = "file://foo/bar"
+        location = {"url": "file://foo/bar",
+                    "metadata": {},
+                    "status": "active"}
         id = unit_test_utils.UUID1
 
-        self.mox.StubOutWithMock(glance.store,
+        self.mox.StubOutWithMock(store_utils,
                                  "schedule_delayed_delete_from_backend")
-        glance.store.schedule_delayed_delete_from_backend(req.context,
-                                                          location,
-                                                          id)
+        ret = store_utils.schedule_delayed_delete_from_backend(req.context, id,
+                                                               location)
+        ret.AndReturn(True)
         self.mox.ReplayAll()
 
-        upload_utils.initiate_deletion(req, location, id, True)
+        upload_utils.initiate_deletion(req, location, id)
 
         self.mox.VerifyAll()
 
@@ -117,12 +122,12 @@ class TestUploadUtils(base.StoreClearingUnitTest):
             update_data).AndReturn(image_meta.update(update_data))
         self.mox.ReplayAll()
 
-        actual_meta, actual_loc, loc_meta = upload_utils.upload_data_to_store(
+        actual_meta, location_data = upload_utils.upload_data_to_store(
             req, image_meta, image_data, store, notifier)
 
         self.mox.VerifyAll()
 
-        self.assertEqual(actual_loc, location)
+        self.assertEqual(location_data['url'], location)
         self.assertEqual(actual_meta, image_meta.update(update_data))
 
     def test_upload_data_to_store_mismatch_size(self):
@@ -326,8 +331,9 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                        update_data
                                        ).AndRaise(exception.NotFound)
         self.mox.StubOutWithMock(upload_utils, "initiate_deletion")
-        upload_utils.initiate_deletion(req, location, image_meta['id'],
-                                       mox.IsA(bool))
+        upload_utils.initiate_deletion(req, {'url': location,
+                                             'status': 'active',
+                                             'metadata': {}}, image_meta['id'])
         self.mox.StubOutWithMock(upload_utils, "safe_kill")
         upload_utils.safe_kill(req, image_meta['id'])
         notifier.error('image.upload', mox.IgnoreArg())

@@ -22,8 +22,11 @@ from glance.common import exception
 from glance.common import utils
 import glance.domain.proxy
 from glance.openstack.common import excutils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 from glance import store
+
+_LE = gettextutils._LE
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
@@ -31,10 +34,11 @@ LOG = logging.getLogger(__name__)
 
 class ImageRepoProxy(glance.domain.proxy.Repo):
 
-    def __init__(self, image_repo, context, store_api):
+    def __init__(self, image_repo, context, store_api, store_utils):
         self.context = context
         self.store_api = store_api
-        proxy_kwargs = {'context': context, 'store_api': store_api}
+        proxy_kwargs = {'context': context, 'store_api': store_api,
+                        'store_utils': store_utils}
         super(ImageRepoProxy, self).__init__(image_repo,
                                              item_proxy_class=ImageProxy,
                                              item_proxy_kwargs=proxy_kwargs)
@@ -61,8 +65,7 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
 
 def _check_location_uri(context, store_api, uri):
-    """
-    Check if an image location uri is valid.
+    """Check if an image location is valid.
 
     :param context: Glance request context
     :param store_api: store API module
@@ -88,7 +91,7 @@ def _check_image_location(context, store_api, location):
 def _set_image_size(context, image, locations):
     if not image.size:
         for location in locations:
-            size_from_backend = glance.store.get_size_from_backend(
+            size_from_backend = store.get_size_from_backend(
                 context, location['url'])
             if size_from_backend:
                 # NOTE(flwang): This assumes all locations have the same size
@@ -96,23 +99,39 @@ def _set_image_size(context, image, locations):
                 break
 
 
+def _count_duplicated_locations(locations, new):
+    """
+    To calculate the count of duplicated locations for new one.
+
+    :param locations: The exiting image location set
+    :param new: The new image location
+    :returns: The count of duplicated locations
+    """
+
+    ret = 0
+    for loc in locations:
+        if (loc['url'] == new['url'] and loc['metadata'] == new['metadata']):
+            ret += 1
+    return ret
+
+
 class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
-    def __init__(self, factory, context, store_api):
+    def __init__(self, factory, context, store_api, store_utils):
         self.context = context
         self.store_api = store_api
-        proxy_kwargs = {'context': context, 'store_api': store_api}
+        proxy_kwargs = {'context': context, 'store_api': store_api,
+                        'store_utils': store_utils}
         super(ImageFactoryProxy, self).__init__(factory,
                                                 proxy_class=ImageProxy,
                                                 proxy_kwargs=proxy_kwargs)
 
     def new_image(self, **kwargs):
         locations = kwargs.get('locations', [])
-        for l in locations:
-            _check_image_location(self.context, self.store_api, l)
-
-            if locations.count(l) > 1:
-                raise exception.DuplicateLocation(location=l['url'])
-
+        for loc in locations:
+            _check_image_location(self.context, self.store_api, loc)
+            loc['status'] = 'active'
+            if _count_duplicated_locations(locations, loc) > 1:
+                raise exception.DuplicateLocation(location=loc['url'])
         return super(ImageFactoryProxy, self).new_image(**kwargs)
 
 
@@ -148,8 +167,8 @@ class StoreLocations(collections.MutableSequence):
     def insert(self, i, location):
         _check_image_location(self.image_proxy.context,
                               self.image_proxy.store_api, location)
-
-        if location in self.value:
+        location['status'] = 'active'
+        if _count_duplicated_locations(self.value, location) > 0:
             raise exception.DuplicateLocation(location=location['url'])
 
         self.value.insert(i, location)
@@ -160,10 +179,10 @@ class StoreLocations(collections.MutableSequence):
     def pop(self, i=-1):
         location = self.value.pop(i)
         try:
-            store.delete_image_from_backend(self.image_proxy.context,
-                                            self.image_proxy.store_api,
-                                            self.image_proxy.image.image_id,
-                                            location['url'])
+            self.image_proxy.store_utils.delete_image_location_from_backend(
+                self.image_proxy.context,
+                self.image_proxy.image.image_id,
+                location)
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.value.insert(i, location)
@@ -193,6 +212,7 @@ class StoreLocations(collections.MutableSequence):
     def __setitem__(self, i, location):
         _check_image_location(self.image_proxy.context,
                               self.image_proxy.store_api, location)
+        location['status'] = 'active'
         self.value.__setitem__(i, location)
         _set_image_size(self.image_proxy.context,
                         self.image_proxy,
@@ -204,10 +224,10 @@ class StoreLocations(collections.MutableSequence):
             location = self.value.__getitem__(i)
         except Exception:
             return self.value.__delitem__(i)
-        store.delete_image_from_backend(self.image_proxy.context,
-                                        self.image_proxy.store_api,
-                                        self.image_proxy.image.image_id,
-                                        location['url'])
+        self.image_proxy.store_utils.delete_image_location_from_backend(
+            self.image_proxy.context,
+            self.image_proxy.image.image_id,
+            location)
         self.value.__delitem__(i)
 
     def __delslice__(self, i, j):
@@ -219,10 +239,10 @@ class StoreLocations(collections.MutableSequence):
         except Exception:
             return self.value.__delslice__(i, j)
         for location in locations:
-            store.delete_image_from_backend(self.image_proxy.context,
-                                            self.image_proxy.store_api,
-                                            self.image_proxy.image.image_id,
-                                            location['url'])
+            self.image_proxy.store_utils.delete_image_location_from_backend(
+                self.image_proxy.context,
+                self.image_proxy.image.image_id,
+                location)
             self.value.__delitem__(i)
 
     def __iadd__(self, other):
@@ -282,8 +302,8 @@ def _locations_proxy(target, attr):
             for location in value:
                 _check_image_location(self.context, self.store_api,
                                       location)
-
-                if value.count(location) > 1:
+                location['status'] = 'active'
+                if _count_duplicated_locations(value, location) > 1:
                     raise exception.DuplicateLocation(location=location['url'])
             _set_image_size(self.context, getattr(self, target), value)
             return setattr(getattr(self, target), attr, list(value))
@@ -291,8 +311,10 @@ def _locations_proxy(target, attr):
     def del_attr(self):
         value = getattr(getattr(self, target), attr)
         while len(value):
-            delete_image_from_backend(self.context, self.store_api,
-                                      self.image.image_id, value[0]['url'])
+            self.store_utils.delete_image_location_from_backend(
+                self.context,
+                self.image.image_id,
+                value[0])
             del value[0]
             setattr(getattr(self, target), attr, value)
         return delattr(getattr(self, target), attr)
@@ -304,10 +326,11 @@ class ImageProxy(glance.domain.proxy.Image):
 
     locations = _locations_proxy('image', 'locations')
 
-    def __init__(self, image, context, store_api):
+    def __init__(self, image, context, store_api, store_utils):
         self.image = image
         self.context = context
         self.store_api = store_api
+        self.store_utils = store_utils
         proxy_kwargs = {
             'context': context,
             'image': self,
@@ -321,10 +344,10 @@ class ImageProxy(glance.domain.proxy.Image):
         self.image.delete()
         if self.image.locations:
             for location in self.image.locations:
-                self.store_api.delete_image_from_backend(self.context,
-                                                         self.store_api,
-                                                         self.image.image_id,
-                                                         location['url'])
+                self.store_utils.delete_image_location_from_backend(
+                    self.context,
+                    self.image.image_id,
+                    location)
 
     def set_data(self, data, size=None):
         if size is None:
@@ -332,7 +355,8 @@ class ImageProxy(glance.domain.proxy.Image):
         location, size, checksum, loc_meta = self.store_api.add_to_backend(
             self.context, CONF.default_store,
             self.image.image_id, utils.CooperativeReader(data), size)
-        self.image.locations = [{'url': location, 'metadata': loc_meta}]
+        self.image.locations = [{'url': location, 'metadata': loc_meta,
+                                 'status': 'active'}]
         self.image.size = size
         self.image.checksum = checksum
         self.image.status = 'active'
@@ -353,8 +377,8 @@ class ImageProxy(glance.domain.proxy.Image):
                                           'err': utils.exception_to_str(e)})
                 err = e
         # tried all locations
-        LOG.error(_('Glance tried all locations to get data for image %s '
-                    'but all have failed.') % self.image.image_id)
+        LOG.error(_LE('Glance tried all active locations to get data for '
+                      'image %s but all have failed.') % self.image.image_id)
         raise err
 
 
@@ -371,8 +395,8 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
         if self.image.locations and not public:
             member_ids = [m.member_id for m in self.repo.list()]
             for location in self.image.locations:
-                self.store_api.set_acls(self.context, location['url'], public,
-                                        read_tenants=member_ids)
+                self.store_api.set_acls(self.context, location['url'],
+                                        public, read_tenants=member_ids)
 
     def add(self, member):
         super(ImageMemberRepoProxy, self).add(member)
