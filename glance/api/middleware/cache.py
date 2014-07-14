@@ -35,10 +35,14 @@ from glance.common import wsgi
 import glance.db
 from glance import image_cache
 from glance import notifier
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
+_LE = gettextutils._LE
+_LW = gettextutils._LW
 
 PATTERNS = {
     ('v1', 'GET'): re.compile(r'^/v1/images/([^\/]+)$'),
@@ -54,7 +58,7 @@ class CacheFilter(wsgi.Middleware):
         self.cache = image_cache.ImageCache()
         self.serializer = images.ImageSerializer()
         self.policy = policy.Enforcer()
-        LOG.info(_("Initialized image cache middleware"))
+        LOG.info(_LI("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
 
     def _verify_metadata(self, image_meta):
@@ -129,9 +133,9 @@ class CacheFilter(wsgi.Middleware):
         try:
             return method(request, image_id, image_iterator)
         except exception.NotFound:
-            msg = _("Image cache contained image file for image '%s', "
-                    "however the registry did not contain metadata for "
-                    "that image!") % image_id
+            msg = _LE("Image cache contained image file for image '%s', "
+                      "however the registry did not contain metadata for "
+                      "that image!") % image_id
             LOG.error(msg)
             self.cache.delete_cached_image(image_id)
 
@@ -227,7 +231,7 @@ class CacheFilter(wsgi.Middleware):
         try:
             process_response_method = getattr(self, method_str)
         except AttributeError:
-            LOG.error(_('could not find %s') % method_str)
+            LOG.error(_LE('could not find %s') % method_str)
             # Nothing to do here, move along
             return resp
         else:
@@ -247,7 +251,7 @@ class CacheFilter(wsgi.Middleware):
             image_checksum = resp.headers.get('x-image-meta-checksum')
 
         if not image_checksum:
-            LOG.error(_("Checksum header is missing."))
+            LOG.error(_LE("Checksum header is missing."))
 
         # NOTE(zhiyan): image_cache return a generator object and set to
         # response.app_iter, it will be called by eventlet.wsgi later.

@@ -24,10 +24,12 @@ from glance.common import utils
 import glance.domain
 import glance.domain.proxy
 from glance.openstack.common import excutils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
 CONF = cfg.CONF
 CONF.import_opt('image_member_quota', 'glance.common.config')
 CONF.import_opt('image_property_quota', 'glance.common.config')
@@ -324,7 +326,7 @@ class ImageProxy(glance.domain.proxy.Image):
                 image_id=self.image.image_id)
         except exception.StorageQuotaFull:
             with excutils.save_and_reraise_exception():
-                LOG.info(_('Cleaning up %s after exceeding the quota.')
+                LOG.info(_LI('Cleaning up %s after exceeding the quota.')
                          % self.image.image_id)
                 self.store_utils.safe_delete_from_backend(
                     self.context, self.image.image_id, self.image.locations[0])

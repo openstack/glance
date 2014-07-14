@@ -21,6 +21,7 @@ from glance.common import store_utils
 from glance.common import utils
 import glance.db
 from glance.openstack.common import excutils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 import glance.store as store_api
@@ -28,6 +29,8 @@ import glance.store as store_api
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
+_LI = gettextutils._LI
 
 
 def initiate_deletion(req, location_data, id):
@@ -66,7 +69,7 @@ def safe_kill(req, image_id):
     try:
         _kill(req, image_id)
     except Exception:
-        LOG.exception(_("Unable to kill image %(id)s: ") % {'id': image_id})
+        LOG.exception(_LE("Unable to kill image %(id)s: ") % {'id': image_id})
 
 
 def upload_data_to_store(req, image_meta, image_data, store, notifier):
@@ -106,8 +109,8 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                 req.context, size, db_api, image_id=image_id)
         except exception.StorageQuotaFull:
             with excutils.save_and_reraise_exception():
-                LOG.info(_('Cleaning up %s after exceeding '
-                           'the quota') % image_id)
+                LOG.info(_LI('Cleaning up %s after exceeding '
+                             'the quota') % image_id)
                 store_utils.safe_delete_from_backend(
                     req.context, image_meta['id'], location_data)
 
@@ -147,8 +150,8 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                         update_data)
 
         except exception.NotFound as e:
-            msg = _("Image %s could not be found after upload. The image may "
-                    "have been deleted during the upload.") % image_id
+            msg = _LI("Image %s could not be found after upload. The image may"
+                      " have been deleted during the upload.") % image_id
             LOG.info(msg)
 
             # NOTE(jculp): we need to clean up the datastore if an image
@@ -226,7 +229,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         # but something in the above function calls is affecting the
         # exception context and we must explicitly re-raise the
         # caught exception.
-        msg = _("Received HTTP error while uploading image %s") % image_id
+        msg = _LE("Received HTTP error while uploading image %s") % image_id
         notifier.error('image.upload', msg)
         with excutils.save_and_reraise_exception():
             LOG.exception(msg)

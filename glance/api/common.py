@@ -19,10 +19,14 @@ from oslo.config import cfg
 
 from glance.common import exception
 from glance.openstack.common import excutils
+from glance.openstack.common import gettextutils
 from glance.openstack.common import log as logging
 from glance.openstack.common import units
 
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
+_LI = gettextutils._LI
+_LW = gettextutils._LW
 CONF = cfg.CONF
 
 
@@ -46,16 +50,16 @@ def size_checked_iter(response, image_meta, expected_size, image_iter,
             bytes_written += len(chunk)
     except Exception as err:
         with excutils.save_and_reraise_exception():
-            msg = (_("An error occurred reading from backend storage for "
-                     "image %(image_id)s: %(err)s") % {'image_id': image_id,
-                                                       'err': err})
+            msg = (_LE("An error occurred reading from backend storage for "
+                       "image %(image_id)s: %(err)s") % {'image_id': image_id,
+                                                         'err': err})
             LOG.error(msg)
 
     if expected_size != bytes_written:
-        msg = (_("Backend storage for image %(image_id)s "
-                 "disconnected after writing only %(bytes_written)d "
-                 "bytes") % {'image_id': image_id,
-                             'bytes_written': bytes_written})
+        msg = (_LE("Backend storage for image %(image_id)s "
+                   "disconnected after writing only %(bytes_written)d "
+                   "bytes") % {'image_id': image_id,
+                               'bytes_written': bytes_written})
         LOG.error(msg)
         raise exception.GlanceException(_("Corrupt image download for "
                                           "image %(image_id)s") %
@@ -83,8 +87,8 @@ def image_send_notification(bytes_written, expected_size, image_meta, request,
         notify('image.send', payload)
 
     except Exception as err:
-        msg = (_("An error occurred during image.send"
-                 " notification: %(err)s") % {'err': err})
+        msg = (_LE("An error occurred during image.send"
+                   " notification: %(err)s") % {'err': err})
         LOG.error(msg)
 
 
@@ -109,8 +113,8 @@ def get_remaining_quota(context, db_api, image_id=None):
     match = pattern.match(users_quota)
 
     if not match:
-        LOG.warn(_("Invalid value for option user_storage_quota: "
-                   "%(users_quota)s")
+        LOG.warn(_LW("Invalid value for option user_storage_quota: "
+                     "%(users_quota)s")
                  % {'users_quota': users_quota})
         return None
 
@@ -154,18 +158,18 @@ def check_quota(context, image_size, db_api, image_id=None):
         # exception is when there is no room left at all, thus we know
         # it will not fit
         if remaining <= 0:
-            LOG.info(_("User %(user)s attempted to upload an image of"
-                       " unknown size that will exceeed the quota."
-                       " %(remaining)d bytes remaining.")
+            LOG.info(_LI("User %(user)s attempted to upload an image of"
+                         " unknown size that will exceeed the quota."
+                         " %(remaining)d bytes remaining.")
                      % {'user': user, 'remaining': remaining})
             raise exception.StorageQuotaFull(image_size=image_size,
                                              remaining=remaining)
         return
 
     if image_size > remaining:
-        LOG.info(_("User %(user)s attempted to upload an image of size"
-                   " %(size)d that will exceeed the quota. %(remaining)d"
-                   " bytes remaining.")
+        LOG.info(_LI("User %(user)s attempted to upload an image of size"
+                     " %(size)d that will exceeed the quota. %(remaining)d"
+                     " bytes remaining.")
                  % {'user': user, 'size': image_size, 'remaining': remaining})
         raise exception.StorageQuotaFull(image_size=image_size,
                                          remaining=remaining)

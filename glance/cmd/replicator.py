@@ -321,11 +321,11 @@ def replication_dump(options, args):
     client = imageservice(httplib.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
-        LOG.info(_LI('Considering: %s') % image['id'])
+        LOG.debug('Considering: %s' % image['id'])
 
         data_path = os.path.join(path, image['id'])
         if not os.path.exists(data_path):
-            LOG.info(_LI('... storing'))
+            LOG.info(_LI('Storing: %s') % image['id'])
 
             # Dump glance information
             with open(data_path, 'w') as f:
@@ -336,7 +336,7 @@ def replication_dump(options, args):
                 # is the same as that which we got from the detailed images
                 # request earlier, so we can ignore it here. Note that we also
                 # only dump active images.
-                LOG.info(_LI('... image is active'))
+                LOG.debug('Image %s is active' % image['id'])
                 image_response = client.get_image(image['id'])
                 with open(data_path + '.img', 'wb') as f:
                     while True:
@@ -424,14 +424,16 @@ def replication_load(options, args):
                         del headers[key]
 
                 if _dict_diff(meta, headers):
-                    LOG.info(_LI('... metadata has changed'))
+                    LOG.info(_LI('Image %s metadata has changed') %
+                             image_uuid)
                     headers, body = client.add_image_meta(meta)
                     _check_upload_response_headers(headers, body)
                     updated.append(meta['id'])
 
             else:
                 if not os.path.exists(os.path.join(path, image_uuid + '.img')):
-                    LOG.info(_LI('... dump is missing image data, skipping'))
+                    LOG.debug('%s dump is missing image data, skipping' %
+                              image_uuid)
                     continue
 
                 # Upload the image itself
@@ -473,7 +475,7 @@ def replication_livecopy(options, args):
     updated = []
 
     for image in master_client.get_images():
-        LOG.info(_LI('Considering %(id)s') % {'id': image['id']})
+        LOG.debug('Considering %(id)s' % {'id': image['id']})
         for key in options.dontreplicate.split(' '):
             if key in image:
                 LOG.debug('Stripping %(header)s from master metadata',
@@ -497,13 +499,14 @@ def replication_livecopy(options, args):
                         del headers[key]
 
                 if _dict_diff(image, headers):
-                    LOG.info(_LI('... metadata has changed'))
+                    LOG.info(_LI('Image %s metadata has changed') %
+                             image['id'])
                     headers, body = slave_client.add_image_meta(image)
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
 
         elif image['status'] == 'active':
-            LOG.info(_LI('%s is being synced') % image['id'])
+            LOG.info(_LI('Image %s is being synced') % image['id'])
             if not options.metaonly:
                 image_response = master_client.get_image(image['id'])
                 try:
@@ -570,7 +573,7 @@ def replication_compare(options, args):
                               % {'image_id': image['id']})
 
         elif image['status'] == 'active':
-            LOG.info(_LI('%s: entirely missing from the destination')
+            LOG.info(_LI('Image %s entirely missing from the destination')
                      % image['id'])
             differences[image['id']] = 'missing'
 

@@ -32,6 +32,7 @@ from glance.common import exception
 from glance.db.sqlalchemy import models
 from glance.openstack.common.db import exception as db_exception
 from glance.openstack.common.db.sqlalchemy import session
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as os_logging
 from glance.openstack.common import timeutils
 
@@ -39,6 +40,8 @@ from glance.openstack.common import timeutils
 BASE = models.BASE
 sa_logger = None
 LOG = os_logging.getLogger(__name__)
+_LI = gettextutils._LI
+_LW = gettextutils._LW
 
 
 STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
@@ -57,7 +60,7 @@ def _retry_on_deadlock(exc):
     """Decorator to retry a DB API call if Deadlock was received."""
 
     if isinstance(exc, db_exception.DBDeadlock):
-        LOG.warn(_("Deadlock detected. Retrying..."))
+        LOG.warn(_LW("Deadlock detected. Retrying..."))
         return True
     return False
 
@@ -92,7 +95,7 @@ def clear_db_env():
 
 def _check_mutate_authorization(context, image_ref):
     if not is_image_mutable(context, image_ref):
-        LOG.info(_("Attempted to modify image user did not own."))
+        LOG.info(_LI("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
         if image_ref.is_public:
             exc_class = exception.ForbiddenPublicImage
@@ -300,7 +303,7 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
     if 'id' not in sort_keys:
         # TODO(justinsb): If this ever gives a false-positive, check
         # the actual primary key, rather than assuming its id
-        LOG.warn(_('Id not in sort_keys; is sort_keys unique?'))
+        LOG.warn(_LW('Id not in sort_keys; is sort_keys unique?'))
 
     assert(not (sort_dir and sort_dirs))
 

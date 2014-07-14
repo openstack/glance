@@ -18,9 +18,11 @@ import sqlalchemy
 
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
 
 
 def upgrade(migrate_engine):
@@ -57,10 +59,10 @@ def migrate_location_credentials(migrate_engine, to_quoted):
                         .values(location=fixed_uri).execute()
         except exception.BadStoreUri as e:
             reason = utils.exception_to_str(e)
-            err_msg = _("Invalid store uri for image: %(image_id)s. "
-                        "Details: %(reason)s") % {'image_id': image.id,
-                                                  'reason': reason}
-            LOG.exception(err_msg)
+            msg = _LE("Invalid store uri for image: %(image_id)s. "
+                      "Details: %(reason)s") % {'image_id': image.id,
+                                                'reason': reason}
+            LOG.exception(msg)
             raise
 
 

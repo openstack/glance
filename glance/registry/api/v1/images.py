@@ -24,12 +24,15 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 from glance.openstack.common import timeutils
 
 
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
+_LI = gettextutils._LI
 
 CONF = cfg.CONF
 
@@ -118,17 +121,17 @@ class Controller(object):
             return self.db_api.image_get_all(context, filters=filters,
                                              **params)
         except exception.NotFound:
-            LOG.info(_("Invalid marker. Image %(id)s could not be "
-                       "found.") % {'id': params.get('marker')})
+            LOG.info(_LI("Invalid marker. Image %(id)s could not be "
+                         "found.") % {'id': params.get('marker')})
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden:
-            LOG.info(_("Access denied to image %(id)s but returning "
-                       "'not found'") % {'id': params.get('marker')})
+            LOG.info(_LI("Access denied to image %(id)s but returning "
+                         "'not found'") % {'id': params.get('marker')})
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
         except Exception:
-            LOG.exception(_("Unable to get images"))
+            LOG.exception(_LE("Unable to get images"))
             raise
 
     def index(self, req):
@@ -160,7 +163,7 @@ class Controller(object):
                 result[field] = image[field]
             results.append(result)
 
-        LOG.info(_("Returning image list"))
+        LOG.debug("Returning image list")
         return dict(images=results)
 
     def detail(self, req):
@@ -178,7 +181,7 @@ class Controller(object):
 
         images = self._get_images(req.context, **params)
         image_dicts = [make_image_dict(i) for i in images]
-        LOG.info(_("Returning detailed image list"))
+        LOG.debug("Returning detailed image list")
         return dict(images=image_dicts)
 
     def _get_query_params(self, req):
@@ -332,20 +335,21 @@ class Controller(object):
         """Return data about the given image id."""
         try:
             image = self.db_api.image_get(req.context, id)
-            msg = _("Successfully retrieved image %(id)s")
-            LOG.info(msg % {'id': id})
+            msg = "Successfully retrieved image %(id)s" % {'id': id}
+            LOG.debug(msg)
         except exception.NotFound:
-            msg = _("Image %(id)s not found")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Image %(id)s not found") % {'id': id}
+            LOG.info(msg)
             raise exc.HTTPNotFound()
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access denied to image %(id)s but returning 'not found'")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Access denied to image %(id)s but returning"
+                      " 'not found'") % {'id': id}
+            LOG.info(msg)
             raise exc.HTTPNotFound()
         except Exception:
-            LOG.exception(_("Unable to show image %s"), id)
+            LOG.exception(_LE("Unable to show image %s") % id)
             raise
 
         return dict(image=make_image_dict(image))
@@ -362,25 +366,26 @@ class Controller(object):
         """
         try:
             deleted_image = self.db_api.image_destroy(req.context, id)
-            msg = _("Successfully deleted image %(id)s")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Successfully deleted image %(id)s") % {'id': id}
+            LOG.info(msg)
             return dict(image=make_image_dict(deleted_image))
         except exception.ForbiddenPublicImage:
-            msg = _("Delete denied for public image %(id)s")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Delete denied for public image %(id)s") % {'id': id}
+            LOG.info(msg)
             raise exc.HTTPForbidden()
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access denied to image %(id)s but returning 'not found'")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Access denied to image %(id)s but returning"
+                      " 'not found'") % {'id': id}
+            LOG.info(msg)
             return exc.HTTPNotFound()
         except exception.NotFound:
-            msg = _("Image %(id)s not found")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Image %(id)s not found") % {'id': id}
+            LOG.info(msg)
             return exc.HTTPNotFound()
         except Exception:
-            LOG.exception(_("Unable to delete image %s"), id)
+            LOG.exception(_LE("Unable to delete image %s") % id)
             raise
 
     @utils.mutating
@@ -405,9 +410,9 @@ class Controller(object):
 
         image_id = image_data.get('id')
         if image_id and not utils.is_uuid_like(image_id):
-            msg = _("Rejecting image creation request for invalid image "
-                    "id '%(bad_id)s'")
-            LOG.info(msg % {'bad_id': image_id})
+            msg = _LI("Rejecting image creation request for invalid image "
+                      "id '%(bad_id)s'") % {'bad_id': image_id}
+            LOG.info(msg)
             msg = _("Invalid image id format")
             return exc.HTTPBadRequest(explanation=msg)
 
@@ -418,12 +423,13 @@ class Controller(object):
             image_data = _normalize_image_location_for_db(image_data)
             image_data = self.db_api.image_create(req.context, image_data)
             image_data = dict(image=make_image_dict(image_data))
-            msg = _("Successfully created image %(id)s") % image_data['image']
+            msg = (_LI("Successfully created image %(id)s") %
+                   image_data['image'])
             LOG.info(msg)
             return image_data
         except exception.Duplicate:
             msg = _("Image with identifier %s already exists!") % image_id
-            LOG.error(msg)
+            LOG.warn(msg)
             return exc.HTTPConflict(msg)
         except exception.Invalid as e:
             msg = (_("Failed to add image metadata. "
@@ -431,7 +437,7 @@ class Controller(object):
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except Exception:
-            LOG.exception(_("Unable to create image %s"), image_id)
+            LOG.exception(_LE("Unable to create image %s"), image_id)
             raise
 
     @utils.mutating
@@ -470,8 +476,8 @@ class Controller(object):
                                                      purge_props=purge_props,
                                                      from_state=from_state)
 
-            msg = _("Updating metadata for image %(id)s")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Updating metadata for image %(id)s") % {'id': id}
+            LOG.info(msg)
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid as e:
             msg = (_("Failed to update image metadata. "
@@ -479,20 +485,21 @@ class Controller(object):
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.NotFound:
-            msg = _("Image %(id)s not found")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Image %(id)s not found") % {'id': id}
+            LOG.info(msg)
             raise exc.HTTPNotFound(body='Image not found',
                                    request=req,
                                    content_type='text/plain')
         except exception.ForbiddenPublicImage:
-            msg = _("Update denied for public image %(id)s")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Update denied for public image %(id)s") % {'id': id}
+            LOG.info(msg)
             raise exc.HTTPForbidden()
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access denied to image %(id)s but returning 'not found'")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Access denied to image %(id)s but returning"
+                      " 'not found'") % {'id': id}
+            LOG.info(msg)
             raise exc.HTTPNotFound(body='Image not found',
                                    request=req,
                                    content_type='text/plain')
@@ -502,7 +509,7 @@ class Controller(object):
                                    request=req,
                                    content_type='text/plain')
         except Exception:
-            LOG.exception(_("Unable to update image %s"), id)
+            LOG.exception(_LE("Unable to update image %s") % id)
             raise
 
 

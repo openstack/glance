@@ -19,10 +19,12 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
 
 
 class Controller(object):
@@ -63,19 +65,20 @@ class Controller(object):
         try:
             self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
-            msg = _("Image %(id)s not found") % {'id': image_id}
+            msg = _LI("Image %(id)s not found") % {'id': image_id}
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access denied to image %(id)s but returning 'not found'")
-            LOG.info(msg % {'id': image_id})
+            msg = _LI("Access denied to image %(id)s but returning"
+                      " 'not found'") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         members = self.db_api.image_member_find(req.context, image_id=image_id)
-        msg = _("Returning member list for image %(id)s")
-        LOG.info(msg % {'id': image_id})
+        msg = "Returning member list for image %(id)s" % {'id': image_id}
+        LOG.debug(msg)
         return dict(members=make_member_list(members,
                                              member_id='member',
                                              can_share='can_share'))
@@ -103,14 +106,16 @@ class Controller(object):
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access denied to image %(id)s but returning 'not found'")
-            LOG.info(msg % {'id': image_id})
+            msg = _LI("Access denied to image %(id)s but returning"
+                      " 'not found'") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
         if not self.is_image_sharable(req.context, image):
-            msg = _("User lacks permission to share image %(id)s")
-            LOG.info(msg % {'id': image_id})
+            msg = (_LI("User lacks permission to share image %(id)s") %
+                   {'id': image_id})
+            LOG.info(msg)
             msg = _("No permission to share that image")
             raise webob.exc.HTTPForbidden(msg)
 
@@ -119,9 +124,9 @@ class Controller(object):
             memb_list = body['memberships']
         except Exception as e:
             # Malformed entity...
-            msg = _("Invalid membership association specified for "
-                    "image %(id)s")
-            LOG.info(msg % {'id': image_id})
+            msg = _LI("Invalid membership association specified for "
+                      "image %(id)s") % {'id': image_id}
+            LOG.info(msg)
             msg = (_("Invalid membership association: %s") %
                    utils.exception_to_str(e))
             raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -136,9 +141,9 @@ class Controller(object):
                              can_share=None)
             except Exception as e:
                 # Malformed entity...
-                msg = _("Invalid membership association specified for "
-                        "image %(id)s")
-                LOG.info(msg % {'id': image_id})
+                msg = _LI("Invalid membership association specified for "
+                          "image %(id)s") % {'id': image_id}
+                LOG.info(msg)
                 msg = (_("Invalid membership association: %s") %
                        utils.exception_to_str(e))
                 raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -188,8 +193,9 @@ class Controller(object):
             self.db_api.image_member_create(req.context, memb)
 
         # Make an appropriate result
-        msg = _("Successfully updated memberships for image %(id)s")
-        LOG.info(msg % {'id': image_id})
+        msg = (_LI("Successfully updated memberships for image %(id)s") %
+               {'id': image_id})
+        LOG.info(msg)
         return webob.exc.HTTPNoContent()
 
     @utils.mutating
@@ -212,20 +218,22 @@ class Controller(object):
         try:
             image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
-            msg = _("Image %(id)s not found") % {'id': image_id}
+            msg = _LI("Image %(id)s not found") % {'id': image_id}
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access denied to image %(id)s but returning 'not found'")
-            LOG.info(msg % {'id': image_id})
+            msg = _LI("Access denied to image %(id)s but returning"
+                      " 'not found'") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
         if not self.is_image_sharable(req.context, image):
-            msg = _("User lacks permission to share image %(id)s")
-            LOG.info(msg % {'id': image_id})
+            msg = (_LI("User lacks permission to share image %(id)s") %
+                   {'id': image_id})
+            LOG.info(msg)
             msg = _("No permission to share that image")
             raise webob.exc.HTTPForbidden(msg)
 
@@ -236,9 +244,9 @@ class Controller(object):
                 can_share = bool(body['member']['can_share'])
             except Exception as e:
                 # Malformed entity...
-                msg = _("Invalid membership association specified for "
-                        "image %(id)s")
-                LOG.info(msg % {'id': image_id})
+                msg = _LI("Invalid membership association specified for "
+                          "image %(id)s") % {'id': image_id}
+                LOG.info(msg)
                 msg = (_("Invalid membership association: %s") %
                        utils.exception_to_str(e))
                 raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -258,8 +266,9 @@ class Controller(object):
                           can_share=bool(can_share))
             self.db_api.image_member_create(req.context, values)
 
-        msg = _("Successfully updated a membership for image %(id)s")
-        LOG.info(msg % {'id': image_id})
+        msg = (_LI("Successfully updated a membership for image %(id)s") %
+               {'id': image_id})
+        LOG.info(msg)
         return webob.exc.HTTPNoContent()
 
     @utils.mutating
@@ -273,20 +282,22 @@ class Controller(object):
         try:
             image = self.db_api.image_get(req.context, image_id)
         except exception.NotFound:
-            msg = _("Image %(id)s not found") % {'id': image_id}
+            msg = _LI("Image %(id)s not found") % {'id': image_id}
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
             # If it's private and doesn't belong to them, don't let on
             # that it exists
-            msg = _("Access denied to image %(id)s but returning 'not found'")
-            LOG.info(msg % {'id': image_id})
+            msg = _LI("Access denied to image %(id)s but returning"
+                      " 'not found'") % {'id': image_id}
+            LOG.info(msg)
             raise webob.exc.HTTPNotFound()
 
         # Can they manipulate the membership?
         if not self.is_image_sharable(req.context, image):
-            msg = _("User lacks permission to share image %(id)s")
-            LOG.info(msg % {'id': image_id})
+            msg = (_LI("User lacks permission to share image %(id)s") %
+                   {'id': image_id})
+            LOG.info(msg)
             msg = _("No permission to share that image")
             raise webob.exc.HTTPForbidden(msg)
 
@@ -304,8 +315,9 @@ class Controller(object):
             raise webob.exc.HTTPNotFound(explanation=msg)
 
         # Make an appropriate result
-        msg = _("Successfully deleted a membership from image %(id)s")
-        LOG.info(msg % {'id': image_id})
+        msg = (_LI("Successfully deleted a membership from image %(id)s") %
+               {'id': image_id})
+        LOG.info(msg)
         return webob.exc.HTTPNoContent()
 
     def index_shared_images(self, req, id):
@@ -315,13 +327,13 @@ class Controller(object):
         try:
             members = self.db_api.image_member_find(req.context, member=id)
         except exception.NotFound:
-            msg = _("Member %(id)s not found")
-            LOG.info(msg % {'id': id})
+            msg = _LI("Member %(id)s not found") % {'id': id}
+            LOG.info(msg)
             msg = _("Membership could not be found.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
-        msg = _("Returning list of images shared with member %(id)s")
-        LOG.info(msg % {'id': id})
+        msg = "Returning list of images shared with member %(id)s" % {'id': id}
+        LOG.debug(msg)
         return dict(shared_images=make_member_list(members,
                                                    image_id='image_id',
                                                    can_share='can_share'))

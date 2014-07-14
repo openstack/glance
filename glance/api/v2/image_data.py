@@ -23,10 +23,12 @@ import glance.db
 import glance.gateway
 import glance.notifier
 from glance.openstack.common import excutils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.store
 
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
 
 
 class ImageDataController(object):
@@ -54,8 +56,9 @@ class ImageDataController(object):
                 image.status = 'queued'
                 image_repo.save(image)
         except Exception as e:
-            msg = _("Unable to restore image %(image_id)s: %(e)s") % \
-                {'image_id': image.image_id, 'e': utils.exception_to_str(e)}
+            msg = (_LE("Unable to restore image %(image_id)s: %(e)s") %
+                   {'image_id': image.image_id,
+                    'e': utils.exception_to_str(e)})
             LOG.exception(msg)
 
     @utils.mutating
@@ -141,13 +144,13 @@ class ImageDataController(object):
 
         except webob.exc.HTTPError as e:
             with excutils.save_and_reraise_exception():
-                LOG.error(_("Failed to upload image data due to HTTP error"))
+                LOG.error(_LE("Failed to upload image data due to HTTP error"))
                 self._restore(image_repo, image)
 
         except Exception as e:
             with excutils.save_and_reraise_exception():
-                LOG.exception(_("Failed to upload image data due to "
-                                "internal error"))
+                LOG.exception(_LE("Failed to upload image data due to "
+                                  "internal error"))
                 self._restore(image_repo, image)
 
     def download(self, req, image_id):
