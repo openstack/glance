@@ -28,8 +28,8 @@ from six import text_type
 
 from glance.common import exception
 from glance.common import utils
+from glance import i18n
 from glance.openstack.common import excutils
-from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import units
 import glance.store.base
@@ -49,7 +49,7 @@ DEFAULT_CHUNKSIZE = 8  # in MiB
 DEFAULT_SNAPNAME = 'snap'
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
+_LI = i18n._LI
 
 rbd_opts = [
     cfg.IntOpt('rbd_store_chunk_size', default=DEFAULT_CHUNKSIZE,

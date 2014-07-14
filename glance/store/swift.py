@@ -28,8 +28,8 @@ import urllib
 from glance.common import auth
 from glance.common import exception
 from glance.common import swift_store_utils
+from glance import i18n
 from glance.openstack.common import excutils
-from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.store
 import glance.store.base
@@ -41,7 +41,7 @@ except ImportError:
     pass
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
+_LI = i18n._LI
 
 DEFAULT_CONTAINER = 'glance'
 DEFAULT_LARGE_OBJECT_SIZE = 5 * 1024  # 5GB
