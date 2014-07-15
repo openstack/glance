@@ -202,6 +202,15 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(images[0]['id'], image_id)
 
+        # The "changes-since" filter shouldn't work on glance v2
+        path = self._url('/v2/images?changes-since=20001007T10:10:10')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
+        path = self._url('/v2/images?changes-since=aaa')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
         # Image list should list only image-1 based on the filter
         # 'foo=bar&abc=xyz'
         path = self._url('/v2/images?foo=bar&abc=xyz')
