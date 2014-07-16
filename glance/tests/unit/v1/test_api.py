@@ -89,7 +89,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                             'metadata': {}, 'status': 'active'}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
-        store.validate_location = mock.Mock()
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
@@ -974,11 +973,6 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_add_location_with_invalid_location(self):
         """Tests creates an image from location and conflict image size"""
-
-        mock_validate_location = mock.Mock()
-        store.validate_location = mock_validate_location
-        mock_validate_location.side_effect = store.BadStoreUri()
-
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
                            'x-image-meta-location': 'http://a/b/c.tar.gz',
