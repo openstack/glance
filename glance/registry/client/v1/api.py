@@ -33,7 +33,7 @@ registry_client_ctx_opts = [
                 help=_("Whether to pass through headers containing user "
                        "and tenant information when making requests to "
                        "the registry. This allows the registry to use the "
-                       "context middleware without the keystoneclients' "
+                       "context middleware without keystonemiddleware's "
                        "auth_token middleware, removing calls to the keystone "
                        "auth service. It is recommended that when using this "
                        "option, secure communication between glance api and "
