@@ -221,7 +221,7 @@ class StoreLocation(glance.store.location.StoreLocation):
                 elif netloc.startswith('https://'):
                     netloc = netloc[len('https://'):]
         except KeyError:
-            reason = _("Badly formed Swift URI. Credentials not found for"
+            reason = _("Badly formed Swift URI. Credentials not found for "
                        "account reference")
             LOG.info(reason)
             raise exception.BadStoreUri(message=reason)
