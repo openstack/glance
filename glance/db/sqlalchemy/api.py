@@ -21,6 +21,7 @@
 """Defines interface for DB access."""
 
 from oslo.config import cfg
+from retrying import retry
 import six
 from six.moves import xrange
 import sqlalchemy
@@ -50,6 +51,15 @@ CONF.import_opt('connection', 'glance.openstack.common.db.options',
 
 
 _FACADE = None
+
+
+def _retry_on_deadlock(exc):
+    """Decorator to retry a DB API call if Deadlock was received."""
+
+    if isinstance(exc, db_exception.DBDeadlock):
+        LOG.warn(_("Deadlock detected. Retrying..."))
+        return True
+    return False
 
 
 def _create_facade_lazily():
@@ -632,6 +642,8 @@ def _update_values(image_ref, values):
             setattr(image_ref, k, values[k])
 
 
+@retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
+       stop_max_attempt_number=50)
 def _image_update(context, values, image_id, purge_props=False,
                   from_state=None):
     """

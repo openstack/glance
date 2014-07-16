@@ -24,6 +24,8 @@ from glance.common import exception
 from glance.common import utils
 import glance.context
 import glance.db
+from glance.db.sqlalchemy import api
+from glance.openstack.common.db import exception as db_exc
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
@@ -689,3 +691,29 @@ class TestTaskRepo(test_utils.BaseTestCase):
         self.assertRaises(exception.NotFound,
                           self.task_repo.get,
                           task.task_id)
+
+
+class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
+
+    def test_raise_deadlock(self):
+
+        class TestException(Exception):
+            pass
+
+        self.attempts = 3
+
+        def _mock_get_session():
+            def _raise_exceptions():
+                self.attempts -= 1
+                if self.attempts <= 0:
+                    raise TestException("Exit")
+                raise db_exc.DBDeadlock("Fake Exception")
+            return _raise_exceptions
+
+        with mock.patch.object(api, 'get_session') as sess:
+            sess.side_effect = _mock_get_session()
+
+            try:
+                api._image_update(None, {}, 'fake-id')
+            except TestException:
+                self.assertEqual(sess.call_count, 3)
