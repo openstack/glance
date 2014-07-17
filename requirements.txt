@@ -45,7 +45,7 @@ Paste
 jsonschema>=2.0.0,<3.0.0
 python-keystoneclient>=1.1.0
 pyOpenSSL>=0.11
-
+semantic_version>=2.3.1
 # Required by openstack.common libraries
 six>=1.9.0
 
