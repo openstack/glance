@@ -34,7 +34,7 @@ import sqlalchemy.sql as sa_sql
 
 from glance.common import exception
 from glance.db.sqlalchemy import models
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as os_logging
 from glance.openstack.common import timeutils
 
@@ -42,8 +42,8 @@ from glance.openstack.common import timeutils
 BASE = models.BASE
 sa_logger = None
 LOG = os_logging.getLogger(__name__)
-_LI = gettextutils._LI
-_LW = gettextutils._LW
+_LI = i18n._LI
+_LW = i18n._LW
 
 
 STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
