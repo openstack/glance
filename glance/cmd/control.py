@@ -129,9 +129,9 @@ def do_start(verb, pid_file, server, args):
                     pass
 
     def redirect_to_syslog(fds, server):
-        log_cmd = 'logger -t "%s[%d]"' % (server, os.getpid())
-        process = subprocess.Popen(log_cmd,
-                                   shell=True,
+        log_cmd = 'logger'
+        log_cmd_params = '-t "%s[%d]"' % (server, os.getpid())
+        process = subprocess.Popen([log_cmd, log_cmd_params],
                                    stdin=subprocess.PIPE)
         for desc in fds:  # pipe to logger command
             try:
