@@ -35,10 +35,14 @@ import sqlalchemy
 from glance.common import crypt
 from glance.common import exception
 from glance.common import utils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.store.swift  # noqa
 
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
+_LI = gettextutils._LI
+_LW = gettextutils._LW
 CONF = cfg.CONF
 
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
@@ -63,9 +67,9 @@ def migrate_location_credentials(migrate_engine, to_quoted):
                       reverse.
     """
     if not CONF.metadata_encryption_key:
-        msg = _("'metadata_encryption_key' was not specified in the config"
-                " file or a config file was not specified. This means that"
-                " this migration is a NOOP.")
+        msg = _LI("'metadata_encryption_key' was not specified in the config"
+                  " file or a config file was not specified. This means that"
+                  " this migration is a NOOP.")
         LOG.info(msg)
         return
 
@@ -83,14 +87,15 @@ def migrate_location_credentials(migrate_engine, to_quoted):
                         .where(images_table.c.id == image['id'])\
                         .values(location=fixed_uri).execute()
         except exception.Invalid:
-            msg = _("Failed to decrypt location value for image %(image_id)s")
-            LOG.warn(msg % {'image_id': image['id']})
+            msg = _LW("Failed to decrypt location value for image"
+                      " %(image_id)s") % {'image_id': image['id']}
+            LOG.warn(msg)
         except exception.BadStoreUri as e:
             reason = utils.exception_to_str(e)
-            err_msg = _("Invalid store uri for image: %(image_id)s. "
-                        "Details: %(reason)s") % {'image_id': image.id,
-                                                  'reason': reason}
-            LOG.exception(err_msg)
+            msg = _LE("Invalid store uri for image: %(image_id)s. "
+                      "Details: %(reason)s") % {'image_id': image.id,
+                                                'reason': reason}
+            LOG.exception(msg)
             raise
 
 

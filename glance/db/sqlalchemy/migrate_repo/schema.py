@@ -19,10 +19,12 @@ Various conveniences used for migration scripts
 
 import sqlalchemy.types
 
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
 
 
 String = lambda length: sqlalchemy.types.String(
@@ -93,11 +95,11 @@ def from_migration_import(module_name, fromlist):
 
 def create_tables(tables):
     for table in tables:
-        LOG.info(_("creating table %(table)s") % {'table': table})
+        LOG.info(_LI("creating table %(table)s") % {'table': table})
         table.create()
 
 
 def drop_tables(tables):
     for table in tables:
-        LOG.info(_("dropping table %(table)s") % {'table': table})
+        LOG.info(_LI("dropping table %(table)s") % {'table': table})
         table.drop()

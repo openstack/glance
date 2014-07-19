@@ -22,12 +22,14 @@ import eventlet
 from glance.common import exception
 from glance import context
 from glance.image_cache import base
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 import glance.store
 
-
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
+_LW = gettextutils._LW
 
 
 class Prefetcher(base.CacheApp):
@@ -43,17 +45,17 @@ class Prefetcher(base.CacheApp):
         try:
             image_meta = registry.get_image_metadata(ctx, image_id)
             if image_meta['status'] != 'active':
-                LOG.warn(_("Image '%s' is not active. Not caching."),
+                LOG.warn(_LW("Image '%s' is not active. Not caching.") %
                          image_id)
                 return False
 
         except exception.NotFound:
-            LOG.warn(_("No metadata found for image '%s'"), image_id)
+            LOG.warn(_LW("No metadata found for image '%s'") % image_id)
             return False
 
         location = image_meta['location']
         image_data, image_size = glance.store.get_from_backend(ctx, location)
-        LOG.debug("Caching image '%s'", image_id)
+        LOG.debug("Caching image '%s'" % image_id)
         cache_tee_iter = self.cache.cache_tee_iter(image_id, image_data,
                                                    image_meta['checksum'])
         # Image is tee'd into cache and checksum verified
@@ -75,9 +77,9 @@ class Prefetcher(base.CacheApp):
         results = pool.imap(self.fetch_image_into_cache, images)
         successes = sum([1 for r in results if r is True])
         if successes != num_images:
-            LOG.error(_("Failed to successfully cache all "
-                        "images in queue."))
+            LOG.warn(_LW("Failed to successfully cache all "
+                         "images in queue."))
             return False
 
-        LOG.info(_("Successfully cached all %d images"), num_images)
+        LOG.info(_LI("Successfully cached all %d images") % num_images)
         return True

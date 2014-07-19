@@ -20,9 +20,11 @@ Use gzip compression if the client accepts it.
 import re
 
 from glance.common import wsgi
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
 
 
 class GzipMiddleware(wsgi.Middleware):
@@ -30,7 +32,7 @@ class GzipMiddleware(wsgi.Middleware):
     re_zip = re.compile(r'\bgzip\b')
 
     def __init__(self, app):
-        LOG.info(_("Initialized gzip middleware"))
+        LOG.info(_LI("Initialized gzip middleware"))
         super(GzipMiddleware, self).__init__(app)
 
     def process_response(self, response):

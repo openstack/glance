@@ -46,11 +46,13 @@ from glance.common import utils
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.openstack.common.db.sqlalchemy import migration
+from glance.openstack.common import gettextutils
 from glance.openstack.common import log
 from glance.openstack.common import strutils
 
 
 LOG = log.getLogger(__name__)
+_LW = gettextutils._LW
 
 manager_opts = [
     cfg.BoolOpt('db_enforce_mysql_charset',
@@ -84,11 +86,11 @@ class DbCommands(object):
 
     def _need_sanity_check(self):
         if not CONF.db_enforce_mysql_charset:
-            LOG.warning(_('Warning: '
-                          'The db_enforce_mysql_charset option is now '
-                          'deprecated and will be removed in the Juno '
-                          'release. Please migrate DB manually e.g. '
-                          'convert data of all tables to UTF-8 charset.'))
+            LOG.warning(_LW('Warning: '
+                            'The db_enforce_mysql_charset option is now '
+                            'deprecated and will be removed in the Juno '
+                            'release. Please migrate DB manually e.g. '
+                            'convert data of all tables to UTF-8 charset.'))
         return CONF.db_enforce_mysql_charset
 
     def version(self):

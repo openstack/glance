@@ -42,6 +42,7 @@ from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
 from glance.openstack.common import excutils
+from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
@@ -54,6 +55,7 @@ from glance.store import get_store_from_scheme
 from glance.store import validate_location
 
 LOG = logging.getLogger(__name__)
+_LI = gettextutils._LI
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 ACTIVE_IMMUTABLE = glance.api.v1.ACTIVE_IMMUTABLE
@@ -696,7 +698,7 @@ class Controller(controller.BaseController):
                                                              image_meta)
             image_meta = self._upload_and_activate(req, image_meta)
         elif copy_from:
-            msg = _('Triggering asynchronous copy from external source')
+            msg = _LI('Triggering asynchronous copy from external source')
             LOG.info(msg)
             self.pool.spawn_n(self._upload_and_activate, req, image_meta)
         else:
@@ -1106,10 +1108,10 @@ class ImageDeserializer(wsgi.JSONRequestDeserializer):
 
         elif image_size > CONF.image_size_cap:
             max_image_size = CONF.image_size_cap
-            msg = _("Denying attempt to upload image larger than %d bytes.")
-            LOG.warn(msg % max_image_size)
-            raise HTTPBadRequest(explanation=msg % max_image_size,
-                                 request=request)
+            msg = (_("Denying attempt to upload image larger than %d"
+                     " bytes.") % max_image_size)
+            LOG.warn(msg)
+            raise HTTPBadRequest(explanation=msg, request=request)
 
         result['image_data'] = data
         return result
