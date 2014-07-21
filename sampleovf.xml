@@ -1,0 +1,565 @@
+<?xml version="1.0"?>
+<ovf:Envelope xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"
+	xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"
+	xmlns:vim="http://www.ibm.com/xmlns/ovf/extension/vim/2"
+	xmlns:vimrasd="http://www.ibm.com/xmlns/ovf/extension/vim/2/rasd"
+	xmlns:vimzvm="http://www.ibm.com/xmlns/ovf/extension/vim/2/zvm/5"
+	xmlns:vimzvmvssd="http://www.ibm.com/xmlns/ovf/extension/vim/2/zvm/5/vssd"
+	xmlns:vimzvmrasd="http://www.ibm.com/xmlns/ovf/extension/vim/2/zvm/5/rasd"
+	xsi:schemaLocation="http://www.ibm.com/xmlns/ovf/extension/vim/2/zvm/5/vssd ibm-vim2-zvm5-vssd_2.1.0.xsd
+	http://www.ibm.com/xmlns/ovf/extension/vim/2/zvm/5/rasd ibm-vim2-zvm5-rasd_2.1.0.xsd
+	http://www.ibm.com/xmlns/ovf/extension/vim/2 ibm-vim2_2.1.0.xsd
+	http://schemas.dmtf.org/ovf/envelope/1 dsp8023_1.0.0.xsd
+	http://www.ibm.com/xmlns/ovf/extension/vim/2/rasd ibm-vim2-rasd_2.1.0.xsd
+	http://www.ibm.com/xmlns/ovf/extension/vim/2/zvm/5 ibm-vim2-zvm5_2.1.0.xsd"
+	xml:lang="en-us">
+  <ovf:References>
+    <!-- This section contains a list of files referenced by this OVF package. 
+Generally, this will consist of filesystem images. -->
+    <ovf:File ovf:id="EXAMPLE2:/boot"
+              ovf:href="EXAMPLE2_boot.star.gz"
+              ovf:compression="gzip"/>
+    <ovf:File ovf:id="EXAMPLE2:/opt"
+              ovf:href="EXAMPLE2_opt.star.gz"
+              ovf:compression="gzip"/>
+    <ovf:File ovf:id="EXAMPLE2:/"
+              ovf:href="EXAMPLE2.star.gz"
+              ovf:compression="gzip"/>
+  </ovf:References>
+  <ovf:DiskSection>
+    <!-- This section contains a list of the Linux file systems and 
+swap spaces described by this package, along with the size of the 
+volumes which are to contain them and the file format of the image file 
+(if relevant) with which they are to be populated. -->
+    <ovf:Info>Disk-related information for the Linux file systems included 
+within this package.</ovf:Info>
+    <ovf:Disk ovf:diskId="EXAMPLE2:/boot"
+              ovf:capacity="104841216"
+              ovf:capacityAllocationUnits="byte"
+              ovf:fileRef="EXAMPLE2:/boot"
+              ovf:format="http://www.ibm.com/xmlns/ovf/diskformat/s390.linuxfile.exustar.gz"/>
+    <ovf:Disk ovf:diskId="EXAMPLE2:/opt"
+              ovf:capacity="4227858432"
+              ovf:capacityAllocationUnits="byte"
+              ovf:fileRef="EXAMPLE2:/opt"
+              ovf:format="http://www.ibm.com/xmlns/ovf/diskformat/s390.linuxfile.exustar.gz"/>
+    <ovf:Disk ovf:diskId="EXAMPLE2:/"
+              ovf:capacity="6811549696"
+              ovf:capacityAllocationUnits="byte"
+              ovf:fileRef="EXAMPLE2:/"
+              ovf:format="http://www.ibm.com/xmlns/ovf/diskformat/s390.linuxfile.exustar.gz"/>
+    <ovf:Disk ovf:diskId="EXAMPLE2:swap"
+              ovf:capacity="1040187392"
+              ovf:capacityAllocationUnits="byte"/>
+  </ovf:DiskSection>
+  <ovf:NetworkSection>
+    <!-- This section contains a list of logical networks to which any network interfaces 
+described in this package are to be connected. Network interfaces referring to the same 
+"network" here (with their rasd:Connectionproperty) should be connected to the same 
+network when deployed. -->
+    <ovf:Info>The networks to which virtual network ports connect when deploying this package.</ovf:Info>
+    <ovf:Network ovf:name="network1">
+      <ovf:Description>
+        A network to which the virtual system in the package is to be connected (default description).
+      </ovf:Description>
+    </ovf:Network>
+  </ovf:NetworkSection>
+  <ovf:VirtualSystem ovf:id="EXAMPLE2">
+    <!-- This section sontains information describing the virtual server which can be deployed from this package.
+         -->
+    <ovf:Info>A virtual system to be created when deploying this package.</ovf:Info>
+    <ovf:Name>EXAMPLE2</ovf:Name>
+    <ovf:VirtualHardwareSection 
+ovf:transport="http://www.ibm.com/xmlns/ovf/transport/filesystem/etc/ovf-transport">
+      <!-- This section contains the virtual hardware requirements of the target virtual system. -->
+      <ovf:Info>The virtual hardware requirements of the target virtual system.</ovf:Info>
+      <ovf:System>
+        <!-- This is the name by which this element should be identified to users in a 
+GUI interface. -->
+        <vssd:ElementName>z/VM system: EXAMPLE2</vssd:ElementName>
+        <!-- This is a unique identifier for this element within the OVF file.
+             -->
+        <vssd:InstanceID>system-EXAMPLE2</vssd:InstanceID>
+        <vssd:VirtualSystemType>IBM:zVM:LINUX</vssd:VirtualSystemType>
+        <!-- List of z/VM guest privilege classes, such as "G" or "BEG". 
+See the "USER Directory Control Statement" section of the IBM z/VM 
+"CP Planning and Administration" guide. 
+-->
+        <vimzvmvssd:PrivilegeClasses>BEG</vimzvmvssd:PrivilegeClasses>
+        <!-- The maximum virtual storage size to be allowed for this z/VM guest. 
+See the "MAXSTORAGE Directory Control Statement" section of the IBM z/VM 
+"CP Planning and Administration" guide. 
+-->
+        <vimzvmvssd:MaxMemory>1048576</vimzvmvssd:MaxMemory>
+        <vimzvmvssd:MaxMemoryUnits>byte*2^10</vimzvmvssd:MaxMemoryUnits>
+        <!-- The disk from which the system is to be IPLed (booted). 
+See the "IPL Directory Control Statement" section of the IBM z/VM 
+"CP Planning and Administration" guide. 
+-->
+        <vimzvmvssd:IPLSource>0100</vimzvmvssd:IPLSource>
+        <!-- Options to be passed at the time of IPL. 
+See the "OPTION Directory Control Statement" section of the IBM z/VM 
+"CP Planning and Adminstration" guide. 
+-->
+        <vimzvmvssd:Options>LNKNOPAS LANG AMENG</vimzvmvssd:Options>
+      </ovf:System>
+      <!-- The following five items specify the "share" values for each of the processor types 
+available on System z. In this example, the share values used are relative 
+(as opposed to absolute) and no limit is specified. For more information, 
+refer to the "SHARE Directory Control Statement" section of the IBM z/VM 
+"CP Planning and Administration" guide.
+           -->
+      <ovf:Item>
+        <rasd:ElementName>Share for CPU type CP</rasd:ElementName>
+        <rasd:InstanceID>cpushare-cp</rasd:InstanceID>
+        <rasd:ResourceSubType>CP</rasd:ResourceSubType>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>0</rasd:VirtualQuantity>
+        <rasd:Weight>100</rasd:Weight>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:ElementName>Share for CPU type IFL</rasd:ElementName>
+        <rasd:InstanceID>cpushare-ifl</rasd:InstanceID>
+        <rasd:ResourceSubType>IFL</rasd:ResourceSubType>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>0</rasd:VirtualQuantity>
+        <rasd:Weight>100</rasd:Weight>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:ElementName>Share for CPU type ICF</rasd:ElementName>
+        <rasd:InstanceID>cpushare-icf</rasd:InstanceID>
+        <rasd:ResourceSubType>ICF</rasd:ResourceSubType>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>0</rasd:VirtualQuantity>
+        <rasd:Weight>100</rasd:Weight>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:ElementName>Share for CPU type ZAAP</rasd:ElementName>
+        <rasd:InstanceID>cpushare-zaap</rasd:InstanceID>
+        <rasd:ResourceSubType>ZAAP</rasd:ResourceSubType>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>0</rasd:VirtualQuantity>
+        <rasd:Weight>100</rasd:Weight>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:ElementName>Share for CPU type ZIIP</rasd:ElementName>
+        <rasd:InstanceID>cpushare-ziip</rasd:InstanceID>
+        <rasd:ResourceSubType>ZIIP</rasd:ResourceSubType>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>0</rasd:VirtualQuantity>
+        <rasd:Weight>100</rasd:Weight>
+      </ovf:Item>
+      <!-- The following two items refer to actual virtual CPUs. 
+All three are of type "CP". The remaining information is essentially boilerplate. 
+For more information, refer to the "CPU Directory Control Statement" section 
+of the IBM z/VM "CP Planning and Administration" guide.
+           -->
+      <ovf:Item>
+        <rasd:Address>00</rasd:Address>
+        <rasd:ElementName>CPU 00</rasd:ElementName>
+        <rasd:InstanceID>cpu-00</rasd:InstanceID>
+        <rasd:ResourceSubType>CP</rasd:ResourceSubType>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>1</rasd:VirtualQuantity>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:Address>01</rasd:Address>
+        <rasd:ElementName>CPU 01</rasd:ElementName>
+        <rasd:InstanceID>cpu-01</rasd:InstanceID>
+        <rasd:ResourceSubType>CP</rasd:ResourceSubType>
+        <rasd:ResourceType>3</rasd:ResourceType>
+        <rasd:VirtualQuantity>1</rasd:VirtualQuantity>
+      </ovf:Item>
+      <!-- The amount of memory to be allocated to this system at the time it is IPLed. 
+For more information, refer to the "STORAGE Directory Control Statment" section of the 
+IBM z/VM "CP Planning and Administration" guide.
+           -->
+      <ovf:Item>
+        <rasd:ElementName>Memory</rasd:ElementName>
+        <rasd:InstanceID>memory</rasd:InstanceID>
+        <rasd:ResourceType>4</rasd:ResourceType>
+        <rasd:VirtualQuantity>1048576</rasd:VirtualQuantity>
+        <rasd:AllocationUnits>byte*2^10</rasd:AllocationUnits>
+      </ovf:Item>
+      <!-- This sytem's network interface, which is to be connected to a 
+Layer 3 (IP-address-based) network. For more information, refer to the 
+"NICDEF Directory Control Statement" section of the IBM z/VM 
+"CP Planning and Administration" guide.
+           -->
+      <ovf:Item>
+        <rasd:Address>0600</rasd:Address>
+        <rasd:Connection>network1</rasd:Connection>
+        <rasd:ElementName>Network Interface eth0</rasd:ElementName>
+        <rasd:InstanceID>network-interface-eth0</rasd:InstanceID>
+        <rasd:ResourceType>10</rasd:ResourceType>
+        <rasd:VirtualQuantity>1</rasd:VirtualQuantity>
+        <!-- Network interfaces in z/VM can be either QDIO or Hipersockets adapters. -->
+        <vimzvmrasd:IOProtocol>ibm:qdio</vimzvmrasd:IOProtocol>
+        <!-- The network layer can be either "2" or "3". -->
+        <vimzvmrasd:Layer>3</vimzvmrasd:Layer>
+        <!-- This network interface is to be known to the Linux virtual server 
+within this z/VM guest as "eth0".
+             -->
+        <vimzvm:NetworkPortConfigProposal vimzvm:nicdev="eth0"/>
+      </ovf:Item>
+      <!-- The following seven items describe disks at the z/VM guest level, 
+upon which Linux volumes can be created. 
+For more information, refer to the "MDISK Directory Control Statement" 
+section of the IBM z/VM "CP Planning and Administration" guide.
+           -->
+      <ovf:Item>
+        <rasd:Address>0100</rasd:Address>
+        <rasd:ElementName>Disk: 0100</rasd:ElementName>
+        <rasd:InstanceID>disk-0100</rasd:InstanceID>
+        <!-- The "ResourceSubType" here is specifying a family of disk models, 
+such as 3390 (ECKD) or 9336 (FBA).
+             -->
+        <rasd:ResourceSubType>ibm:z:3390</rasd:ResourceSubType>
+        <rasd:ResourceType>31</rasd:ResourceType>
+        <!-- The size of the disk in the disk's native units.
+             -->
+        <rasd:VirtualQuantity>3338</rasd:VirtualQuantity>
+        <!-- This always says "count". Not a particularly useful unit, 
+but required for compatibility with some pre-existing data structures.
+             -->
+        <vimzvmrasd:VirtualQuantityUnits>count</vimzvmrasd:VirtualQuantityUnits>
+        <!-- The size of the disk's native unit, in bytes and as seen by a Linux system 
+accessing that disk. The "737280" here refers to the size of a 3390 ECKD cylinder after 
+low-level DASD formatting. Other sizes, like "512" and "1024" are FBA block sizes.
+             -->
+        <vimzvmrasd:VirtualResourceBlockSize>737280</vimzvmrasd:VirtualResourceBlockSize>
+        <!-- Disk provisioning/allocation method. 
+Other options include "minidisk-devno", "vdisk", and "dedicated".
+             -->
+        <vimzvmrasd:DiskTechnology>minidisk-volser</vimzvmrasd:DiskTechnology>
+        <!-- The disk's access mode. 
+Possibile values include "R", "RR", "W", "WR", "M". "MR", and "MW". 
+These values are described in full under the "MDISK" section in the 
+"CP Planning and Administration Guide".
+             -->
+        <vimzvmrasd:AccessMode>W</vimzvmrasd:AccessMode>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:Address>0101</rasd:Address>
+        <rasd:ElementName>Disk: 0101</rasd:ElementName>
+        <rasd:InstanceID>disk-0101</rasd:InstanceID>
+        <rasd:ResourceSubType>ibm:z:3390</rasd:ResourceSubType>
+        <rasd:ResourceType>31</rasd:ResourceType>
+        <rasd:VirtualQuantity>3338</rasd:VirtualQuantity>
+        <vimzvmrasd:VirtualQuantityUnits>count</vimzvmrasd:VirtualQuantityUnits>
+        <vimzvmrasd:VirtualResourceBlockSize>737280</vimzvmrasd:VirtualResourceBlockSize>
+        <vimzvmrasd:DiskTechnology>minidisk-volser</vimzvmrasd:DiskTechnology>
+        <vimzvmrasd:AccessMode>W</vimzvmrasd:AccessMode>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:Address>0102</rasd:Address>
+        <rasd:ElementName>Disk: 0102</rasd:ElementName>
+        <rasd:InstanceID>disk-0102</rasd:InstanceID>
+        <rasd:ResourceSubType>ibm:z:3390</rasd:ResourceSubType>
+        <rasd:ResourceType>31</rasd:ResourceType>
+        <rasd:VirtualQuantity>3338</rasd:VirtualQuantity>
+        <vimzvmrasd:VirtualQuantityUnits>count</vimzvmrasd:VirtualQuantityUnits>
+        <vimzvmrasd:VirtualResourceBlockSize>737280</vimzvmrasd:VirtualResourceBlockSize>
+        <vimzvmrasd:DiskTechnology>minidisk-volser</vimzvmrasd:DiskTechnology>
+        <vimzvmrasd:AccessMode>W</vimzvmrasd:AccessMode>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:Address>0103</rasd:Address>
+        <rasd:ElementName>Disk: 0103</rasd:ElementName>
+        <rasd:InstanceID>disk-0103</rasd:InstanceID>
+        <rasd:ResourceSubType>ibm:z:3390</rasd:ResourceSubType>
+        <rasd:ResourceType>31</rasd:ResourceType>
+        <rasd:VirtualQuantity>3338</rasd:VirtualQuantity>
+        <vimzvmrasd:VirtualQuantityUnits>count</vimzvmrasd:VirtualQuantityUnits>
+        <vimzvmrasd:VirtualResourceBlockSize>737280</vimzvmrasd:VirtualResourceBlockSize>
+        <vimzvmrasd:DiskTechnology>minidisk-volser</vimzvmrasd:DiskTechnology>
+        <vimzvmrasd:AccessMode>W</vimzvmrasd:AccessMode>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:Address>0104</rasd:Address>
+        <rasd:ElementName>Disk: 0104</rasd:ElementName>
+        <rasd:InstanceID>disk-0104</rasd:InstanceID>
+        <rasd:ResourceSubType>ibm:z:3390</rasd:ResourceSubType>
+        <rasd:ResourceType>31</rasd:ResourceType>
+        <rasd:VirtualQuantity>3238</rasd:VirtualQuantity>
+        <vimzvmrasd:VirtualQuantityUnits>count</vimzvmrasd:VirtualQuantityUnits>
+        <vimzvmrasd:VirtualResourceBlockSize>737280</vimzvmrasd:VirtualResourceBlockSize>
+        <vimzvmrasd:DiskTechnology>minidisk-volser</vimzvmrasd:DiskTechnology>
+        <vimzvmrasd:AccessMode>W</vimzvmrasd:AccessMode>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:Address>0300</rasd:Address>
+        <rasd:ElementName>Disk: 0300</rasd:ElementName>
+        <rasd:InstanceID>disk-0300</rasd:InstanceID>
+        <rasd:ResourceSubType>ibm:z:9336</rasd:ResourceSubType>
+        <rasd:ResourceType>31</rasd:ResourceType>
+        <rasd:VirtualQuantity>524288</rasd:VirtualQuantity>
+        <vimzvmrasd:VirtualQuantityUnits>count</vimzvmrasd:VirtualQuantityUnits>
+        <vimzvmrasd:VirtualResourceBlockSize>512</vimzvmrasd:VirtualResourceBlockSize>
+        <vimzvmrasd:DiskTechnology>vdisk</vimzvmrasd:DiskTechnology>
+        <vimzvmrasd:AccessMode>MR</vimzvmrasd:AccessMode>
+      </ovf:Item>
+      <ovf:Item>
+        <rasd:Address>0301</rasd:Address>
+        <rasd:ElementName>Disk: 0301</rasd:ElementName>
+        <rasd:InstanceID>disk-0301</rasd:InstanceID>
+        <rasd:ResourceSubType>ibm:z:9336</rasd:ResourceSubType>
+        <rasd:ResourceType>31</rasd:ResourceType>
+        <rasd:VirtualQuantity>1048576</rasd:VirtualQuantity>
+        <vimzvmrasd:VirtualQuantityUnits>count</vimzvmrasd:VirtualQuantityUnits>
+        <vimzvmrasd:VirtualResourceBlockSize>512</vimzvmrasd:VirtualResourceBlockSize>
+        <vimzvmrasd:DiskTechnology>vdisk</vimzvmrasd:DiskTechnology>
+        <vimzvmrasd:AccessMode>MR</vimzvmrasd:AccessMode>
+      </ovf:Item>
+    </ovf:VirtualHardwareSection>
+    <!-- The product sections contain information describing this package 
+and a listing of values which must be collected at deploy time to generate an 
+OVF Environment file (this is an OVF Envelope file) to be used by the Activation Engine 
+on the deployed system.
+         -->
+    <ovf:ProductSection>
+      <ovf:Info>This section describes the OVF package itself.</ovf:Info>
+      <ovf:Product ovf:msgid="translateID22">ExampleWithLVM</ovf:Product>
+      <vim:Description ovf:msgid="translateID23">Example system with LVM volume groups.</vim:Description>
+    </ovf:ProductSection>
+    <ovf:ProductSection ovf:class="com.ibm.ovf.vim.2.zvm.5">
+      <ovf:Info>This section describes the customizable properties of this virtual system.</ovf:Info>
+      <ovf:Product>Red Hat Enterprise Linux Server release 5.3 on z/VM.</ovf:Product>
+      <ovf:Category>General Settings</ovf:Category>
+      <ovf:Property ovf:key="timezone.offset"
+                    ovf:type="uint16"
+                    ovf:userConfigurable="true"
+                    ovf:value="-0400">
+        <ovf:Label>Timezone Offset</ovf:Label>
+        <ovf:Description>Timezone Offset</ovf:Description>
+      </ovf:Property>
+      <ovf:Category>TCP/IP Network Settings</ovf:Category>
+      <ovf:Property ovf:key="networkport.eth0.usedhcp"
+                    ovf:type="boolean"
+                    ovf:userConfigurable="true"
+                    ovf:value="false">
+        <ovf:Label>Use DHCP for eth0</ovf:Label>
+        <ovf:Description>Use DHCP for eth0</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.ip"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>IP Address for eth0</ovf:Label>
+        <ovf:Description>IP Address for eth0, if not using DHCP (IP V4 or V6 format)</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.gateway"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>Default gateway for eth0</ovf:Label>
+        <ovf:Description>Default gateway for eth0, if not using DHCP (IP V4 or V6 format)</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.netmask"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>Network mask for eth0</ovf:Label>
+        <ovf:Description>Network mask for eth0, if not using DHCP (IP V4 or V6 format)</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.dns1.ip"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>IP address of primary DNS server for eth0</ovf:Label>
+        <ovf:Description>
+          IP address of primary DNS server for eth0, if not using DHCP (IP V4 or V6 format)
+        </ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.dns2.ip"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>IP address of secondary DNS server for eth0</ovf:Label>
+        <ovf:Description>
+          IP address of secondary DNS server for eth0, if not using DHCP (IP V4 or V6 format)
+        </ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.registerindns"
+                    ovf:type="boolean"
+                    ovf:userConfigurable="true"
+                    ovf:value="true">
+        <ovf:Label>Register eth0 with DNS server</ovf:Label>
+        <ovf:Description>Register IP address and long DNS hostname of eth0 with the DNS server</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.hostname"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>Hostname for eth0</ovf:Label>
+        <ovf:Description>Hostname for eth0</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="networkport.eth0.domainname"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>Domain name for eth0</ovf:Label>
+        <ovf:Description>Domain name for eth0</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="system.hostname"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>Short hostname for the system</ovf:Label>
+        <ovf:Description>Short hostname for the system</ovf:Description>
+      </ovf:Property>
+      <ovf:Property ovf:key="system.domainname"
+                    ovf:type="string"
+                    ovf:userConfigurable="true">
+        <ovf:Label>DNS domain name for the system</ovf:Label>
+        <ovf:Description>DNS domain name for the system</ovf:Description>
+      </ovf:Property>
+    </ovf:ProductSection>
+    <ovf:AnnotationSection>
+      <ovf:Info>Additional annotation for the virtual system</ovf:Info>
+      <ovf:Annotation>z/VM system: EXAMPLE2</ovf:Annotation>
+    </ovf:AnnotationSection>
+    <ovf:OperatingSystemSection ovf:id="36"
+                                kernel="2.6.18-128.el5">
+      <ovf:Info>Information about the operating system in the virtual system.</ovf:Info>
+      <ovf:Description>Red Hat Enterprise Linux Server release 5.3</ovf:Description>
+    </ovf:OperatingSystemSection>
+    <ovf:InstallSection>
+      <ovf:Info>
+        Indicates that the system needs to be booted after deployment to run first-boot customization.
+      </ovf:Info>
+    </ovf:InstallSection>
+    <vimzvm:LinuxFileSystemSection ovf:required="true">
+      <!-- The LinuxFileSystemSection defines a partition, formatting, 
+and mounting scheme which is to be used to re-create the virtual server's Linux file systems.
+           -->
+      <ovf:Info>
+        Defines how the image files (containing Linux file system content) 
+are deployed to Linux mount points. 
+Optionally, provides a configuration proposal for each file system.
+      </ovf:Info>
+      <vimzvm:FileSystem vimzvm:diskRef="EXAMPLE2:/boot"
+                         vimzvm:mountPoint="/boot">
+        <vimzvm:ConfigProposal>
+          <!-- The information in these "ConfigProposal" elements essentially 
+lines up with what is specified in /etc/fstab, with some additional information 
+as required to recreate the original partitioning scheme and LVM configuration.
+               -->
+          <vimzvm:LinuxMount vimzvm:devSpec="LABEL=/boot1"
+                             vimzvm:mountOptions="defaults"
+                             vimzvm:dump="1"
+                             vimzvm:fsckPassNo="2"/>
+          <vimzvm:LinuxFileSystem vimzvm:type="ext3"
+                                  vimzvm:label="/boot1"/>
+          <!-- This file system goes on the first partition of the z/VM guest's 0100 disk, 
+and that partition will have a capacity of 2133 49152-byte tracks.
+               -->
+          <vimzvm:LinuxPartition vimzvm:partNum="1"
+                                 vimzvm:partSize="2133"
+                                 vimzvm:partSizeUnits="TRK"
+                                 vimzvm:partBytesPerUnit="49152"/>
+          <vimzvm:LogicalDiskRef vimzvm:itemRef="disk-0100"/>
+        </vimzvm:ConfigProposal>
+      </vimzvm:FileSystem>
+      <vimzvm:FileSystem vimzvm:diskRef="EXAMPLE2:/opt"
+                         vimzvm:mountPoint="/opt">
+        <vimzvm:ConfigProposal>
+          <vimzvm:LinuxMount vimzvm:devSpec="/dev/VG0/LV4opt"
+                             vimzvm:mountOptions="defaults"
+                             vimzvm:dump="1"
+                             vimzvm:fsckPassNo="2"/>
+          <vimzvm:LinuxFileSystem vimzvm:type="ext3"
+                                  vimzvm:label=""/>
+          <!-- This file system will be placed on an LVM logical volume named 
+"LV4opt" in the volume group "VG0".
+               -->
+          <vimzvm:LinuxLogicalVolume vimzvm:lvName="LV4opt"
+                                     vimzvm:vgName="VG0"
+                                     vimzvm:lvSize="4227858432"
+                                     vimzvm:lvSizeUnits="byte"/>
+        </vimzvm:ConfigProposal>
+      </vimzvm:FileSystem>
+      <vimzvm:FileSystem vimzvm:diskRef="EXAMPLE2:/"
+                         vimzvm:mountPoint="/">
+        <vimzvm:ConfigProposal>
+          <vimzvm:LinuxMount vimzvm:devSpec="/dev/VG0/LV4slash"
+                             vimzvm:mountOptions="defaults"
+                             vimzvm:dump="1"
+                             vimzvm:fsckPassNo="1"/>
+          <vimzvm:LinuxFileSystem vimzvm:type="ext3"
+                                  vimzvm:label=""/>
+          <vimzvm:LinuxLogicalVolume vimzvm:lvName="LV4slash"
+                                     vimzvm:vgName="VG0"
+                                     vimzvm:lvSize="6811549696"
+                                     vimzvm:lvSizeUnits="byte"/>
+        </vimzvm:ConfigProposal>
+      </vimzvm:FileSystem>
+      <vimzvm:FileSystem vimzvm:diskRef="EXAMPLE2:swap"
+                         vimzvm:mountPoint="swap">
+        <vimzvm:ConfigProposal>
+          <vimzvm:LinuxMount vimzvm:devSpec="/dev/VG0/LV4swap"
+                             vimzvm:mountOptions="defaults"
+                             vimzvm:dump="0"
+                             vimzvm:fsckPassNo="0"/>
+          <vimzvm:LinuxFileSystem vimzvm:type="swap"
+                                  vimzvm:label=""/>
+          <vimzvm:LinuxLogicalVolume vimzvm:lvName="LV4swap"
+                                     vimzvm:vgName="VG0"
+                                     vimzvm:lvSize="1040187392"
+                                     vimzvm:lvSizeUnits="byte"/>
+        </vimzvm:ConfigProposal>
+      </vimzvm:FileSystem>
+    </vimzvm:LinuxFileSystemSection>
+    <vimzvm:LinuxLVMSection ovf:required="false">
+      <!-- This section described the virtual server's LVM configuration.
+           -->
+      <ovf:Info>
+        Defines a configuration proposal for the Linux LVM2. The volume groups 
+defined here are referenced by the Linux file system configuration proposals in the 
+LinuxFileSystemSection. The physical volumes defined here reference logical disks, 
+or Item elements of ResourceType=31 (LogicalDisk).
+      </ovf:Info>
+      <vimzvm:ConfigProposal>
+        <vimzvm:VolumeGroup vimzvm:name="VG0"
+                            vimzvm:vgOptions="wz--n-">
+          <!-- This volume group (VG0) is provisioned from the following five "physical" volumes.
+               -->
+          <vimzvm:PhysicalVolume vimzvm:devNode="/dev/disk/by-path/ccw-0.0.0100-part2"
+                                 vimzvm:pvOptions="a-">
+            <vimzvm:LinuxPartition vimzvm:partNum="2"
+                                   vimzvm:partSize="47935"
+                                   vimzvm:partSizeUnits="TRK"
+                                   vimzvm:partBytesPerUnit="49152"/>
+            <vimzvm:LogicalDiskRef vimzvm:itemRef="disk-0100"/>
+          </vimzvm:PhysicalVolume>
+          <vimzvm:PhysicalVolume vimzvm:devNode="/dev/disk/by-path/ccw-0.0.0101-part1"
+                                 vimzvm:pvOptions="a-">
+            <vimzvm:LinuxPartition vimzvm:partNum="1"
+                                   vimzvm:partSize="50068"
+                                   vimzvm:partSizeUnits="TRK"
+                                   vimzvm:partBytesPerUnit="49152"/>
+            <vimzvm:LogicalDiskRef vimzvm:itemRef="disk-0101"/>
+          </vimzvm:PhysicalVolume>
+          <vimzvm:PhysicalVolume vimzvm:devNode="/dev/disk/by-path/ccw-0.0.0102-part1"
+                                 vimzvm:pvOptions="a-">
+            <vimzvm:LinuxPartition vimzvm:partNum="1"
+                                   vimzvm:partSize="50068"
+                                   vimzvm:partSizeUnits="TRK"
+                                   vimzvm:partBytesPerUnit="49152"/>
+            <vimzvm:LogicalDiskRef vimzvm:itemRef="disk-0102"/>
+          </vimzvm:PhysicalVolume>
+          <vimzvm:PhysicalVolume vimzvm:devNode="/dev/disk/by-path/ccw-0.0.0103-part1"
+                                 vimzvm:pvOptions="a-">
+            <vimzvm:LinuxPartition vimzvm:partNum="1"
+                                   vimzvm:partSize="50068"
+                                   vimzvm:partSizeUnits="TRK"
+                                   vimzvm:partBytesPerUnit="49152"/>
+            <vimzvm:LogicalDiskRef vimzvm:itemRef="disk-0103"/>
+          </vimzvm:PhysicalVolume>
+          <vimzvm:PhysicalVolume vimzvm:devNode="/dev/disk/by-path/ccw-0.0.0104-part1"
+                                 vimzvm:pvOptions="a-">
+            <vimzvm:LinuxPartition vimzvm:partNum="1"
+                                   vimzvm:partSize="48568"
+                                   vimzvm:partSizeUnits="TRK"
+                                   vimzvm:partBytesPerUnit="49152"/>
+            <vimzvm:LogicalDiskRef vimzvm:itemRef="disk-0104"/>
+          </vimzvm:PhysicalVolume>
+        </vimzvm:VolumeGroup>
+      </vimzvm:ConfigProposal>
+    </vimzvm:LinuxLVMSection>
+  </ovf:VirtualSystem>
+</ovf:Envelope>

@@ -54,6 +54,11 @@ from glance.store import get_store_from_location
 from glance.store import get_store_from_scheme
 from glance.store import validate_location
 
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
 LOG = logging.getLogger(__name__)
 _LI = gettextutils._LI
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
@@ -118,6 +123,14 @@ def redact_loc(image_meta, copy_dict=True):
     new_image_meta.pop('location_data', None)
     return new_image_meta
 
+
+def _ns(tag):
+    ovf="{http://schemas.dmtf.org/ovf/envelope/1}"
+    return ovf+tag
+
+def _rns(tag):
+    ovf="{http://schemas.dmtf.org/ovf/envelope/1}"
+    return tag[len(ovf):]
 
 class Controller(controller.BaseController):
     """
@@ -789,6 +802,19 @@ class Controller(controller.BaseController):
                 and the request body is not application/octet-stream
                 image data.
         """
+        if image_meta.get('ovf_meta_import_enable') == 'true':
+            # need to break up the ova file from image_data
+            # pass in ovf file for parsing
+            with open('log', 'w') as f:
+                xml_tags = ['Disk', 'Property']
+                ovf_prop = self._parse_ovf('sampleovf.xml', xml_tags)
+                image_meta['properties'].update(ovf_prop)
+                f.write(str(image_meta)+'\n')
+                #f.write('\n\n\n'+str(image_data)+'\n')
+        else:
+            with open('log', 'w') as f:
+                f.write('ovf_meta_import_enable is false or not set\n')
+
         self._enforce(req, 'add_image')
         is_public = image_meta.get('is_public')
         if is_public:
@@ -817,6 +843,26 @@ class Controller(controller.BaseController):
         image_meta = redact_loc(image_meta)
 
         return {'image_meta': image_meta}
+
+    def _parse_ovf(self, ovf_file, xml_tags):
+        """
+        :param ovf_file: The ovf filename as a string
+        :param xml_tags: List of interested xml element tags to parse 
+
+        :retval Returns the ovf properties as a key-value mapping
+        """
+        tree = ET.ElementTree(file=ovf_file)
+        ovf_prop = {}
+        with open('parse-log', 'w') as f:
+            elems = (elem for elem in tree.iter() if _rns(elem.tag) in xml_tags)
+            for elem in elems:
+                f.write(_rns(elem.tag)+'\n')
+                for attr in elem.attrib:
+                    f.write(_rns(attr)+': '+elem.attrib[attr]+'\n')
+                    ovf_prop[_rns(attr)] = elem.attrib[attr]
+                f.write('~'*20+'\n')
+
+        return ovf_prop
 
     @utils.mutating
     def update(self, req, id, image_meta, image_data):
