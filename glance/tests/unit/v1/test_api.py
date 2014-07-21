@@ -2440,6 +2440,15 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
+    @mock.patch.object(glance.store.filesystem.Store, 'delete')
+    def test_delete_image_in_use(self, mock_filesystem_delete):
+        mock_filesystem_delete.side_effect = exception.InUseByStore()
+
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.method = 'DELETE'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 409)
+
     def test_head_details(self):
         req = webob.Request.blank('/images/detail')
         req.method = 'HEAD'
