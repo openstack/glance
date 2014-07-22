@@ -14,15 +14,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
+from oslo.db import options
+
 from glance.common import exception
 import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import models as db_models
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
 
+CONF = cfg.CONF
+
 
 def get_db(config):
-    config(connection='sqlite://', group='database')
+    options.set_defaults(CONF, connection='sqlite://')
     config(verbose=False, debug=False)
     db_api = glance.db.sqlalchemy.api
     return db_api

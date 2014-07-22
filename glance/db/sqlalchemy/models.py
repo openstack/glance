@@ -20,6 +20,7 @@ SQLAlchemy models for glance data
 
 import uuid
 
+from oslo.db.sqlalchemy import models
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
 from sqlalchemy import Column
@@ -35,7 +36,6 @@ from sqlalchemy import Text
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy import UniqueConstraint
 
-from glance.openstack.common.db.sqlalchemy import models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 

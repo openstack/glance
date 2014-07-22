@@ -27,7 +27,7 @@ from glance.db.sqlalchemy import api as db_api
 IMPL = utils.LazyPluggable(
     'backend',
     config_group='database',
-    sqlalchemy='glance.openstack.common.db.sqlalchemy.migration')
+    sqlalchemy='oslo.db.sqlalchemy.migration')
 
 INIT_VERSION = 0
 

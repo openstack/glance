@@ -19,6 +19,7 @@ import tempfile
 
 import fixtures
 from oslo.config import cfg
+from oslo.db import options
 
 import glance.common.client
 from glance.common import config
@@ -156,7 +157,8 @@ class ApiTest(test_utils.BaseTestCase):
 
     def _setup_database(self):
         sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
-        self.config(connection=sql_connection, group='database')
+        options.set_defaults(CONF, connection=sql_connection,
+                             sqlite_db='glance.sqlite')
         glance.db.sqlalchemy.api.clear_db_env()
         glance_db_env = 'GLANCE_DB_TEST_SQLITE_FILE'
         if glance_db_env in os.environ:

@@ -18,6 +18,7 @@ import shutil
 
 import fixtures
 from oslo.config import cfg
+from oslo.db import options
 
 from glance.common import exception
 from glance.openstack.common import jsonutils
@@ -30,8 +31,6 @@ from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
 CONF.import_opt('filesystem_store_datadir', 'glance.store.filesystem')
-CONF.import_opt('connection', 'glance.openstack.common.db.sqlalchemy.session',
-                group='database')
 
 
 class StoreClearingUnitTest(test_utils.BaseTestCase):
@@ -76,8 +75,8 @@ class IsolatedUnitTest(StoreClearingUnitTest):
         super(IsolatedUnitTest, self).setUp()
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         policy_file = self._copy_data_file('policy.json', self.test_dir)
-        self.config(connection='sqlite://',
-                    group='database')
+        options.set_defaults(CONF, connection='sqlite://',
+                             sqlite_db='glance.sqlite')
         self.config(verbose=False,
                     debug=False,
                     default_store='filesystem',

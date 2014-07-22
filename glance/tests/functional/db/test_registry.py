@@ -13,14 +13,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.config import cfg
+from oslo.db import options
+
 import glance.db
 from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
 
+CONF = cfg.CONF
+
 
 def get_db(config):
-    config(group='database', connection='sqlite://')
+    options.set_defaults(CONF, connection='sqlite://')
     config(data_api='glance.db.registry.api')
     return glance.db.get_api()
 

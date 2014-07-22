@@ -15,13 +15,12 @@
 
 import fixtures
 import mock
+from oslo.db.sqlalchemy import migration
 import testtools
 
-import glance
 from glance.cmd import manage
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
-from glance.openstack.common.db.sqlalchemy import migration
 
 
 class TestManageBase(testtools.TestCase):
@@ -50,7 +49,6 @@ class TestLegacyManage(TestManageBase):
     def test_legacy_db_version(self):
         migration.db_version = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db_version'],
-                               glance.openstack.common.db.sqlalchemy.
                                migration.db_version,
                                db_api.get_engine(),
                                db_migration.MIGRATE_REPO_PATH, 0)
@@ -58,7 +56,6 @@ class TestLegacyManage(TestManageBase):
     def test_legacy_db_sync(self):
         migration.db_sync = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db_sync'],
-                               glance.openstack.common.db.sqlalchemy.
                                migration.db_sync,
                                db_api.get_engine(),
                                db_migration.MIGRATE_REPO_PATH, None,
