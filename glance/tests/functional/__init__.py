@@ -320,6 +320,8 @@ class ApiServer(Server):
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
+        self.data_api = kwargs.get("data_api",
+                                   "glance.db.sqlalchemy.api")
         self.user_storage_quota = '0'
         self.lock_path = self.test_dir
 
@@ -369,6 +371,7 @@ image_cache_driver = %(image_cache_driver)s
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
 db_auto_create = False
+data_api = %(data_api)s
 sql_connection = %(sql_connection)s
 show_image_direct_url = %(show_image_direct_url)s
 show_multiple_locations = %(show_multiple_locations)s
@@ -498,6 +501,9 @@ pipeline = unauthenticated-context registryapp
 
 [pipeline:glance-registry-fakeauth]
 pipeline = fakeauth context registryapp
+
+[pipeline:glance-registry-trusted-auth]
+pipeline = context registryapp
 
 [app:registryapp]
 paste.app_factory = glance.registry.api:API.factory

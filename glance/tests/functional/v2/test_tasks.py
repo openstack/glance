@@ -37,7 +37,6 @@ class TestTasks(functional.FunctionalTest):
         self.cleanup()
         self.file_path = self._stash_file()
         self.api_server.deployment_flavor = 'noauth'
-        self.start_servers(**self.__dict__.copy())
 
     def _url(self, path):
         return 'http://127.0.0.1:%d%s' % (self.api_port, path)
@@ -64,6 +63,7 @@ class TestTasks(functional.FunctionalTest):
         return 'file://%s' % file_path
 
     def test_task_lifecycle(self):
+        self.start_servers(**self.__dict__.copy())
         # Task list should be empty
         path = self._url('/v2/tasks')
         response = requests.get(path, headers=self._headers())
@@ -138,3 +138,11 @@ class TestTasks(functional.FunctionalTest):
         self.assertEqual('GET', response.headers.get('Allow'))
 
         self.stop_servers()
+
+
+class TestTasksWithRegistry(TestTasks):
+    def setUp(self):
+        super(TestTasksWithRegistry, self).setUp()
+        self.api_server.data_api = (
+            'glance.tests.functional.v2.registry_data_api')
+        self.registry_server.deployment_flavor = 'trusted-auth'
