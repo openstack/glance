@@ -40,6 +40,7 @@ from glance.common import exception
 from glance.common import property_utils
 from glance.common import utils
 from glance.common import wsgi
+from glance.i18n import _LE
 from glance import notifier
 from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
@@ -581,11 +582,12 @@ class Controller(controller.BaseController):
                 image_data, image_size = self._get_from_store(req.context,
                                                               copy_from,
                                                               dest=store)
-            except Exception as e:
+            except Exception:
                 upload_utils.safe_kill(req, image_meta['id'])
-                msg = ("Copy from external source failed: %s" %
-                       utils.exception_to_str(e))
-                LOG.debug(msg)
+                msg = (_LE("Copy from external source '%(scheme)s' failed for "
+                           "image: %(image)s") %
+                       {'scheme': scheme, 'image': image_meta['id']})
+                LOG.exception(msg)
                 return
             image_meta['size'] = image_size or image_meta['size']
         else:
