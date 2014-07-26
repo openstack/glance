@@ -10,7 +10,7 @@ discover
 fixtures>=0.3.14
 mox>=0.5.3
 mock>=1.0
-sphinx>=1.1.2,<1.2
+sphinx>=1.1.2,<1.1.999
 requests>=1.1
 testrepository>=0.0.18
 testtools>=0.9.34
