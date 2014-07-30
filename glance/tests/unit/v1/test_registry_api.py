@@ -18,6 +18,7 @@
 import datetime
 import uuid
 
+import mock
 from oslo.config import cfg
 import routes
 import webob
@@ -1302,6 +1303,37 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                    'min_ram': 256,
                    'disk_format': 'raw'}
         body = jsonutils.dumps(dict(image=fixture))
+
+        res = self.get_api_response_ext(200, url='/images/%s' % UUID2,
+                                        body=body, method='PUT',
+                                        content_type='json')
+
+        res_dict = jsonutils.loads(res.body)
+
+        self.assertNotEqual(res_dict['image']['created_at'],
+                            res_dict['image']['updated_at'])
+
+        for k, v in fixture.iteritems():
+            self.assertEqual(v, res_dict['image'][k])
+
+    @mock.patch.object(rserver.images.LOG, 'debug')
+    def test_update_image_not_log_sensitive_info(self, log_debug):
+        """
+        Tests that there is no any sensitive info of image location
+        was logged in glance during the image update operation.
+        """
+
+        def fake_log_debug(fmt_str, image_meta):
+            self.assertNotIn("'locations'", fmt_str % image_meta)
+
+        fixture = {'name': 'fake public image #2',
+                   'min_disk': 5,
+                   'min_ram': 256,
+                   'disk_format': 'raw',
+                   'location': 'fake://image'}
+        body = jsonutils.dumps(dict(image=fixture))
+
+        log_debug.side_effect = fake_log_debug
 
         res = self.get_api_response_ext(200, url='/images/%s' % UUID2,
                                         body=body, method='PUT',
