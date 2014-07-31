@@ -37,10 +37,9 @@ class TestGlanceManage(functional.FunctionalTest):
         self.connection = ('sql_connection = sqlite:///%s' %
                            self.db_filepath)
 
-    def _sync_db(self, auto_create):
+    def _sync_db(self):
         with open(self.conf_filepath, 'wb') as conf_file:
             conf_file.write('[DEFAULT]\n')
-            conf_file.write('db_auto_create = %r\n' % auto_create)
             conf_file.write(self.connection)
             conf_file.flush()
 
@@ -70,14 +69,6 @@ class TestGlanceManage(functional.FunctionalTest):
     @skip_if_disabled
     def test_db_creation(self):
         """Test DB creation by db_sync on a fresh DB"""
-        self._sync_db(True)
-
-        self._assert_tables()
-
-    @depends_on_exe('sqlite3')
-    @skip_if_disabled
-    def test_db_creation_auto_create_overridden(self):
-        """Test DB creation with db_auto_create False"""
-        self._sync_db(False)
+        self._sync_db()
 
         self._assert_tables()
