@@ -54,6 +54,7 @@ def fail(returncode, e):
 def main():
     try:
         config.parse_args()
+        wsgi.set_eventlet_hub()
         log.setup('glance')
 
         glance.store.create_stores()

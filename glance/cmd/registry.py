@@ -44,6 +44,7 @@ from glance.openstack.common import log
 def main():
     try:
         config.parse_args()
+        wsgi.set_eventlet_hub()
         log.setup('glance')
 
         server = wsgi.Server()

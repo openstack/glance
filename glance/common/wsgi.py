@@ -185,6 +185,15 @@ def get_socket(default_port):
     return sock
 
 
+def set_eventlet_hub():
+    try:
+        eventlet.hubs.use_hub(cfg.CONF.eventlet_hub)
+    except Exception:
+        msg = _("eventlet '%s' hub is not available on this platform")
+        raise exception.WorkerCreationFailure(
+            reason=msg % cfg.CONF.eventlet_hub)
+
+
 class Server(object):
     """Server class to manage multiple WSGI sockets and applications."""
 
@@ -315,12 +324,6 @@ class Server(object):
                                            cfg.CONF.pydev_worker_debug_port)
 
         eventlet.wsgi.HttpProtocol.default_request_version = "HTTP/1.0"
-        try:
-            eventlet.hubs.use_hub(cfg.CONF.eventlet_hub)
-        except Exception:
-            msg = _("eventlet '%s' hub is not available on this platform")
-            raise exception.WorkerCreationFailure(
-                reason=msg % cfg.CONF.eventlet_hub)
         self.pool = self.create_pool()
         try:
             eventlet.wsgi.server(self.sock,
