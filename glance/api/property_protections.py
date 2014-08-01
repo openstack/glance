@@ -102,7 +102,7 @@ class ExtraPropertiesProxy(glance.domain.ExtraProperties):
         # A user cannot request to read a specific property, hence reads do
         # raise an exception
         try:
-            if self.__getitem__(key):
+            if self.__getitem__(key) is not None:
                 if self.property_rules.check_property_rules(key, 'update',
                                                             self.context):
                     return dict.__setitem__(self, key, value)
@@ -116,7 +116,7 @@ class ExtraPropertiesProxy(glance.domain.ExtraProperties):
                 raise exception.ReservedProperty(property=key)
 
     def __delitem__(self, key):
-        if not super(ExtraPropertiesProxy, self).__getitem__(key):
+        if key not in super(ExtraPropertiesProxy, self).keys():
             raise KeyError
 
         if self.property_rules.check_property_rules(key, 'delete',

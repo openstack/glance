@@ -29,6 +29,7 @@ CONFIG_SECTIONS = [
     'spl_update_prop',
     'spl_update_only_prop',
     'spl_delete_prop',
+    'spl_delete_empty_prop',
     '^x_all_permitted.*',
     '^x_none_permitted.*',
     'x_none_read',

@@ -168,6 +168,14 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
                           extra_prop_proxy.__setitem__, 'spl_create_prop',
                           'par')
 
+    def test_update_empty_extra_property(self):
+        extra_properties = {'foo': ''}
+        context = glance.context.RequestContext(roles=['admin'])
+        extra_prop_proxy = property_protections.ExtraPropertiesProxy(
+            context, extra_properties, self.property_rules)
+        extra_prop_proxy['foo'] = 'bar'
+        self.assertEqual('bar', extra_prop_proxy['foo'])
+
     def test_create_extra_property_admin(self):
         extra_properties = {}
         context = glance.context.RequestContext(roles=['admin'])
@@ -217,6 +225,14 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
             roles, extra_properties, self.property_rules)
         self.assertRaises(KeyError,
                           extra_prop_proxy.__delitem__, 'spl_read_prop')
+
+    def test_delete_empty_extra_property(self):
+        extra_properties = {'foo': ''}
+        context = glance.context.RequestContext(roles=['admin'])
+        extra_prop_proxy = property_protections.ExtraPropertiesProxy(
+            context, extra_properties, self.property_rules)
+        del extra_prop_proxy['foo']
+        self.assertNotIn('foo', extra_prop_proxy)
 
 
 class TestProtectedImageFactoryProxy(utils.BaseTestCase):

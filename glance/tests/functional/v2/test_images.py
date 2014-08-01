@@ -694,7 +694,8 @@ class TestImages(functional.FunctionalTest):
                                 'spl_create_prop_policy': 'create_policy_bar',
                                 'spl_read_prop': 'read_bar',
                                 'spl_update_prop': 'update_bar',
-                                'spl_delete_prop': 'delete_bar'})
+                                'spl_delete_prop': 'delete_bar',
+                                'spl_delete_empty_prop': ''})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
         image = jsonutils.loads(response.text)
@@ -725,14 +726,15 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(403, response.status_code, response.text)
 
-        # Attempt to replace, add and remove properties
+        # Attempt to replace properties
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
                                  'X-Roles': 'spl_role'})
         data = jsonutils.dumps([
+            # Updating an empty property to verify bug #1332103.
+            {'op': 'replace', 'path': '/spl_update_prop', 'value': ''},
             {'op': 'replace', 'path': '/spl_update_prop', 'value': 'u'},
-            {'op': 'remove', 'path': '/spl_delete_prop'},
         ])
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code, response.text)
@@ -744,9 +746,26 @@ class TestImages(functional.FunctionalTest):
         # hence the value has changed
         self.assertEqual('u', image['spl_update_prop'])
 
-        # 'spl_delete_prop' has delete permission for spl_role
-        # hence the property has been deleted
-        self.assertTrue('spl_delete_prop' not in image.keys())
+        # Attempt to remove properties
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'spl_role'})
+        data = jsonutils.dumps([
+            {'op': 'remove', 'path': '/spl_delete_prop'},
+            # Deleting an empty property to verify bug #1332103.
+            {'op': 'remove', 'path': '/spl_delete_empty_prop'},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+
+        # Returned image entity should reflect the changes
+        image = jsonutils.loads(response.text)
+
+        # 'spl_delete_prop' and 'spl_delete_empty_prop' have delete
+        # permission for spl_role hence the property has been deleted
+        self.assertNotIn('spl_delete_prop', image.keys())
+        self.assertNotIn('spl_delete_empty_prop', image.keys())
 
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)
@@ -834,6 +853,8 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'content-type': media_type,
                                  'X-Roles': 'admin'})
         data = jsonutils.dumps([
+            # Updating an empty property to verify bug #1332103.
+            {'op': 'replace', 'path': '/spl_creator_policy', 'value': ''},
             {'op': 'replace', 'path': '/spl_creator_policy', 'value': 'r'},
         ])
         response = requests.patch(path, headers=headers, data=data)
@@ -870,12 +891,14 @@ class TestImages(functional.FunctionalTest):
         # 'random_role' is forbidden to read 'spl_creator_policy'.
         self.assertFalse('spl_creator_policy' in image)
 
-        # Attempt to add and remove properties which are permitted
+        # Attempt to replace and remove properties which are permitted
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
                                  'X-Roles': 'admin'})
         data = jsonutils.dumps([
+            # Deleting an empty property to verify bug #1332103.
+            {'op': 'replace', 'path': '/spl_creator_policy', 'value': ''},
             {'op': 'remove', 'path': '/spl_creator_policy'},
         ])
         response = requests.patch(path, headers=headers, data=data)
