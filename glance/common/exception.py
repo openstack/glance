@@ -188,7 +188,7 @@ class LimitExceeded(GlanceException):
 
 
 class ServiceUnavailable(GlanceException):
-    message = _("The request returned 503 Service Unavilable. This "
+    message = _("The request returned 503 Service Unavailable. This "
                 "generally occurs on service overload or other transient "
                 "outage.")
 
