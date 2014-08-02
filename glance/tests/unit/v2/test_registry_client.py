@@ -66,16 +66,18 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.setup_db_env()
         db_api.get_engine()
         self.context = context.RequestContext(is_admin=True)
-
+        uuid1_time = timeutils.utcnow()
+        uuid2_time = uuid1_time + datetime.timedelta(seconds=5)
         self.FIXTURES = [
             self.get_extra_fixture(
                 id=UUID1, name='fake image #1', is_public=False,
                 disk_format='ami', container_format='ami', size=13,
                 location="swift://user:passwd@acct/container/obj.tar.0",
-                properties={'type': 'kernel'}),
+                properties={'type': 'kernel'}, created_at=uuid1_time),
             self.get_extra_fixture(id=UUID2, name='fake image #2',
                                    properties={}, size=19,
-                                   location="file:///tmp/glance-tests/2")]
+                                   location="file:///tmp/glance-tests/2",
+                                   created_at=uuid2_time)]
         self.destroy_fixtures()
         self.create_fixtures()
         self.client = rclient.RegistryClient("0.0.0.0")
@@ -126,6 +128,8 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         public images sorted alphabetically by status in
         descending order.
         """
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+
         UUID3 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID3, name='asdf',
                                          status='queued')
@@ -133,7 +137,8 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = self.get_fixture(id=UUID4, name='xyz')
+        extra_fixture = self.get_fixture(id=UUID4, name='xyz',
+                                         created_at=uuid4_time)
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -222,17 +227,16 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         Tests that the registry API returns list of
         public images sorted by created_at in ascending order.
         """
-        now = timeutils.utcnow()
-        time1 = now + datetime.timedelta(seconds=5)
-        time2 = now
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
 
         UUID3 = _gen_uuid()
-        extra_fixture = self.get_fixture(id=UUID3, created_at=time1)
+        extra_fixture = self.get_fixture(id=UUID3, created_at=uuid3_time)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
-        extra_fixture = self.get_fixture(id=UUID4, created_at=time2)
+        extra_fixture = self.get_fixture(id=UUID4, created_at=uuid4_time)
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -247,19 +251,18 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         Tests that the registry API returns list of
         public images sorted by updated_at in descending order.
         """
-        now = timeutils.utcnow()
-        time1 = now + datetime.timedelta(seconds=5)
-        time2 = now
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
 
         UUID3 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID3, created_at=None,
-                                         updated_at=time1)
+                                         updated_at=uuid3_time)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID4, created_at=None,
-                                         updated_at=time2)
+                                         updated_at=uuid4_time)
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -271,21 +274,26 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
     def test_image_get_index_marker(self):
         """Test correct set of images returned with marker param."""
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
+
         UUID3 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID3, name='new name! #123',
-                                         status='saving')
+                                         status='saving',
+                                         created_at=uuid3_time)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID4, name='new name! #125',
-                                         status='saving')
+                                         status='saving',
+                                         created_at=uuid4_time)
 
         db_api.image_create(self.context, extra_fixture)
 
-        images = self.client.image_get_all(marker=UUID4)
+        images = self.client.image_get_all(marker=UUID3)
 
-        self.assertEqualImages(images, (UUID3, UUID2, UUID1), unjsonify=False)
+        self.assertEqualImages(images, (UUID4, UUID2, UUID1), unjsonify=False)
 
     def test_image_get_index_limit(self):
         """Test correct number of images returned with limit param."""
@@ -304,19 +312,24 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
     def test_image_get_index_marker_limit(self):
         """Test correct set of images returned with marker/limit params."""
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
+
         UUID3 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID3, name='new name! #123',
-                                         status='saving')
+                                         status='saving',
+                                         created_at=uuid3_time)
 
         db_api.image_create(self.context, extra_fixture)
 
         UUID4 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID4, name='new name! #125',
-                                         status='saving')
+                                         status='saving',
+                                         created_at=uuid4_time)
 
         db_api.image_create(self.context, extra_fixture)
 
-        images = self.client.image_get_all(marker=UUID3, limit=1)
+        images = self.client.image_get_all(marker=UUID4, limit=1)
 
         self.assertEqualImages(images, (UUID2,), unjsonify=False)
 

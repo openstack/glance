@@ -432,9 +432,11 @@ class RegistryAPIMixIn(object):
         return fixture
 
     def get_extra_fixture(self, id, name, **kwargs):
+        created_at = kwargs.pop('created_at', timeutils.utcnow())
+        updated_at = kwargs.pop('updated_at', created_at)
         return self.get_fixture(
             id=id, name=name, deleted=False, deleted_at=None,
-            created_at=timeutils.utcnow(), updated_at=timeutils.utcnow(),
+            created_at=created_at, updated_at=updated_at,
             **kwargs)
 
     def get_api_response_ext(self, http_resp, url='/images', headers={},
