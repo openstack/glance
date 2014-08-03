@@ -52,6 +52,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=True)
 
+        uuid1_time = timeutils.utcnow()
+        uuid2_time = uuid1_time + datetime.timedelta(seconds=5)
+
         self.FIXTURES = [
             {'id': UUID1,
              'name': 'fake image #1',
@@ -59,8 +62,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
              'disk_format': 'ami',
              'container_format': 'ami',
              'is_public': False,
-             'created_at': timeutils.utcnow(),
-             'updated_at': timeutils.utcnow(),
+             'created_at': uuid1_time,
+             'updated_at': uuid1_time,
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -76,8 +79,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
              'disk_format': 'vhd',
              'container_format': 'ovf',
              'is_public': True,
-             'created_at': timeutils.utcnow(),
-             'updated_at': timeutils.utcnow(),
+             'created_at': uuid2_time,
+             'updated_at': uuid2_time,
              'deleted_at': None,
              'deleted': False,
              'checksum': None,
@@ -186,9 +189,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         Tests that the registry API returns list of
         public images that conforms to a marker query param
         """
-        time1 = timeutils.utcnow() + datetime.timedelta(seconds=5)
-        time2 = timeutils.utcnow() + datetime.timedelta(seconds=4)
-        time3 = timeutils.utcnow()
+        uuid5_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid4_time = uuid5_time + datetime.timedelta(seconds=5)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -199,7 +202,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 19,
                          'checksum': None,
-                         'created_at': time1}
+                         'created_at': uuid3_time,
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -212,7 +216,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 20,
                          'checksum': None,
-                         'created_at': time2}
+                         'created_at': uuid4_time,
+                         'updated_at': uuid4_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -225,7 +230,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 20,
                          'checksum': None,
-                         'created_at': time3}
+                         'created_at': uuid5_time,
+                         'updated_at': uuid5_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -468,6 +474,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         Tests that the registry API returns list of
         public images that conforms to a limit query param
         """
+        uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid4_time = uuid3_time + datetime.timedelta(seconds=5)
+
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
@@ -476,7 +485,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'container_format': 'ovf',
                          'name': 'new name! #123',
                          'size': 19,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': uuid3_time,
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -488,7 +499,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'container_format': 'ovf',
                          'name': 'new name! #123',
                          'size': 20,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': uuid4_time,
+                         'updated_at': uuid4_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -514,6 +527,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         Tests that the registry API returns list of
         public images that conforms to limit and marker query params
         """
+        uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid4_time = uuid3_time + datetime.timedelta(seconds=5)
+
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
@@ -522,7 +538,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'container_format': 'ovf',
                          'name': 'new name! #123',
                          'size': 19,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': uuid3_time,
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -533,7 +551,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'container_format': 'ovf',
                          'name': 'new name! #123',
                          'size': 20,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': uuid4_time,
+                         'updated_at': uuid4_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -604,9 +624,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         Tests that the registry API returns list of
         public images that conforms to a default sort key/dir
         """
-        time1 = timeutils.utcnow() + datetime.timedelta(seconds=5)
-        time2 = timeutils.utcnow() + datetime.timedelta(seconds=4)
-        time3 = timeutils.utcnow()
+        uuid5_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid4_time = uuid5_time + datetime.timedelta(seconds=5)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -617,7 +637,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 19,
                          'checksum': None,
-                         'created_at': time1}
+                         'created_at': uuid3_time,
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -630,7 +651,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 20,
                          'checksum': None,
-                         'created_at': time2}
+                         'created_at': uuid4_time,
+                         'updated_at': uuid4_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -643,7 +665,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 20,
                          'checksum': None,
-                         'created_at': time3}
+                         'created_at': uuid5_time,
+                         'updated_at': uuid5_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -734,6 +757,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         public images sorted alphabetically by status in
         descending order.
         """
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'queued',
@@ -754,7 +779,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'container_format': 'ovf',
                          'name': 'xyz',
                          'size': 20,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': uuid4_time,
+                         'updated_at': uuid4_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -782,6 +809,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         public images sorted alphabetically by disk_format in
         ascending order.
         """
+        uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=5)
+
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
@@ -790,7 +819,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'container_format': 'ami',
                          'name': 'asdf',
                          'size': 19,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': uuid3_time,
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -830,6 +861,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         public images sorted alphabetically by container_format in
         descending order.
         """
+        uuid3_time = timeutils.utcnow() + datetime.timedelta(seconds=5)
+
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
@@ -838,7 +871,9 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'container_format': 'ami',
                          'name': 'asdf',
                          'size': 19,
-                         'checksum': None}
+                         'checksum': None,
+                         'created_at': uuid3_time,
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -926,9 +961,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         Tests that the registry API returns list of
         public images sorted by created_at in ascending order.
         """
-        now = timeutils.utcnow()
-        time1 = now + datetime.timedelta(seconds=5)
-        time2 = now
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -939,7 +973,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 19,
                          'checksum': None,
-                         'created_at': time1}
+                         'created_at': uuid3_time,
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -952,7 +987,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'name': 'new name! #123',
                          'size': 20,
                          'checksum': None,
-                         'created_at': time2}
+                         'created_at': uuid4_time,
+                         'updated_at': uuid4_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -980,9 +1016,8 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         Tests that the registry API returns list of
         public images sorted by updated_at in descending order.
         """
-        now = timeutils.utcnow()
-        time1 = now + datetime.timedelta(seconds=5)
-        time2 = now
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
 
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
@@ -994,7 +1029,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'size': 19,
                          'checksum': None,
                          'created_at': None,
-                         'updated_at': time1}
+                         'updated_at': uuid3_time}
 
         db_api.image_create(self.context, extra_fixture)
 
@@ -1008,7 +1043,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
                          'size': 20,
                          'checksum': None,
                          'created_at': None,
-                         'updated_at': time2}
+                         'updated_at': uuid4_time}
 
         db_api.image_create(self.context, extra_fixture)
 
