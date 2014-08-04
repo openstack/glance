@@ -28,6 +28,7 @@ import urllib
 from glance.common import auth
 from glance.common import exception
 from glance.common import swift_store_utils
+from glance.common import utils
 from glance import i18n
 from glance.openstack.common import excutils
 import glance.openstack.common.log as logging

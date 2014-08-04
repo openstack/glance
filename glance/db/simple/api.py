@@ -508,7 +508,7 @@ def image_location_update(context, image_id, location):
 
     if not updated:
         msg = (_("No location found with ID %(loc)s from image %(img)s") %
-               dict(loc=location_id, img=image_id))
+               dict(loc=loc_id, img=image_id))
         LOG.warn(msg)
         raise exception.NotFound(msg)
 
