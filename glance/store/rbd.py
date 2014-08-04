@@ -150,7 +150,7 @@ class ImageIterator(object):
         self.pool = store.pool
         self.user = store.user
         self.conf_file = store.conf_file
-        self.chunk_size = store.chunk_size
+        self.chunk_size = store.READ_CHUNKSIZE
 
     def __iter__(self):
         try:
