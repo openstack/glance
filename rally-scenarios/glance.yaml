@@ -29,7 +29,7 @@
           tenants: 5
           users_per_tenant: 2
 
-  GlancePlugin.your_mega_benchmark:
+  GlancePlugin.create_and_list:
     -
       args:
         image_location: "~/.rally/extra/fake.img"
