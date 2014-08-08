@@ -26,13 +26,12 @@ Rally concepts https://wiki.openstack.org/wiki/Rally/Concepts
 import os
 
 from rally.benchmark.scenarios import base
-from rally.benchmark.scenarios import utils as scenario_utils
 from rally.benchmark import utils as bench_utils
 
 
 class GlancePlugin(base.Scenario):
 
-    @scenario_utils.atomic_action_timer("glance.create_image_label")
+    @base.atomic_action_timer("glance.create_image_label")
     def _create_image(self, image_name, container_format,
                       image_location, disk_format, **kwargs):
         """Create a new image.
@@ -77,13 +76,13 @@ class GlancePlugin(base.Scenario):
 
         return image
 
-    @scenario_utils.atomic_action_timer("glance.list_images_label")
+    @base.atomic_action_timer("glance.list_images_label")
     def _list_images(self):
         return list(self.clients("glance").images.list())
 
     @base.scenario(context={"cleanup": ["glance"]})
-    def your_mega_benchmark(self, container_format,
-                            image_location, disk_format, **kwargs):
+    def create_and_list(self, container_format,
+                        image_location, disk_format, **kwargs):
         self._create_image(self._generate_random_name(),
                            container_format,
                            image_location,
