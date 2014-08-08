@@ -51,7 +51,8 @@ class TestScrubber(functional.FunctionalTest):
         scrubs them
         """
         self.cleanup()
-        self.start_servers(delayed_delete=True, daemon=True)
+        self.start_servers(delayed_delete=True, daemon=True,
+                           metadata_encryption_key='')
 
         headers = {
             'x-image-meta-name': 'test_image',
@@ -89,7 +90,8 @@ class TestScrubber(functional.FunctionalTest):
         daemon mode
         """
         self.cleanup()
-        self.start_servers(delayed_delete=True, daemon=False)
+        self.start_servers(delayed_delete=True, daemon=False,
+                           metadata_encryption_key='')
 
         headers = {
             'x-image-meta-name': 'test_image',
@@ -146,6 +148,7 @@ class TestScrubber(functional.FunctionalTest):
 
         self.cleanup()
         self.start_servers(delayed_delete=True, daemon=False,
+                           metadata_encryption_key='',
                            default_store='swift', **swift_config)
 
         # add an image

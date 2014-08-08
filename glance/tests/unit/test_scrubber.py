@@ -47,9 +47,7 @@ class TestScrubber(test_utils.BaseTestCase):
         super(TestScrubber, self).tearDown()
 
     def _scrubber_cleanup_with_store_delete_exception(self, ex):
-        fname = lambda: str(uuid.uuid4())
-
-        uri = 'file://some/path/%s' % (fname)
+        uri = 'file://some/path/%s' % uuid.uuid4()
         id = 'helloworldid'
         scrub = scrubber.Scrubber(glance.store)
         scrub.registry = self.mox.CreateMockAnything()
@@ -61,7 +59,7 @@ class TestScrubber(test_utils.BaseTestCase):
             uri).AndRaise(ex)
         self.mox.ReplayAll()
         scrub._scrub_image(eventlet.greenpool.GreenPool(1),
-                           id, [(id, uri)])
+                           id, [(id, '-', uri)])
         self.mox.VerifyAll()
 
         q_path = os.path.join(self.data_dir, id)
