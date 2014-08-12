@@ -95,6 +95,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         db_api.get_engine()
         self.destroy_fixtures()
         self.create_fixtures()
+        # Used to store/track image status changes for post-analysis
+        self.image_status = []
 
     def tearDown(self):
         """Clear the test environment"""
@@ -1217,7 +1219,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        # Verify the status is deleted
+        # Verify the status is 'deleted'
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
         res = req.get_response(self.api)
@@ -1231,7 +1233,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         msg = "Image %s not found." % UUID2
         self.assertIn(msg, res.body)
 
-        # Verify the status is still deleted
+        # Verify the status is still 'deleted'
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
         res = req.get_response(self.api)
@@ -1271,7 +1273,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        # Verify the status is pending_delete
+        # Verify the status is 'pending_delete'
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
         res = req.get_response(self.api)
@@ -1285,7 +1287,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(res.status_int, 403)
         self.assertIn('Forbidden to delete a pending_delete image', res.body)
 
-        # Verify the status is still pending_delete
+        # Verify the status is still 'pending_delete'
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
         res = req.get_response(self.api)
@@ -1295,9 +1297,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_upload_to_image_status_saving(self):
         """Test image upload conflict.
 
-        If an image is uploaded before an existing upload operation completes
-        to the same image, the original image should succeed and the
-        conflicting should fail and any data deleted.
+        If an image is uploaded before an existing upload to the same image
+        completes, the original upload should succeed and the conflicting
+        one should fail and any data be deleted.
         """
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
@@ -1323,9 +1325,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         orig_get_image_metadata = registry.get_image_metadata
         orig_image_get = db_api._image_get
         orig_image_update = db_api._image_update
+        orig_initiate_deletion = upload_utils.initiate_deletion
 
         # this will be used to track what is called and their order.
-        called = []
+        call_sequence = []
         # use this to determine if we are within a db session i.e. atomic
         # operation, that is setting our active state.
         test_status = {'activate_session_started': False}
@@ -1333,15 +1336,24 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         # guard.
         test_status['queued_guard_passed'] = False
 
+        state_changes = []
+
         def mock_image_update(context, values, image_id, purge_props=False,
                               from_state=None):
-            if values.get('status', None) == 'active':
-                # We only expect this state to be entered once.
-                if test_status['activate_session_started']:
-                    raise Exception("target session already started")
 
-                test_status['activate_session_started'] = True
-                called.append('update_active')
+            status = values.get('status')
+            if status:
+                state_changes.append(status)
+                if status == 'active':
+                    # We only expect this state to be entered once.
+                    if test_status['activate_session_started']:
+                        raise Exception("target session already started")
+
+                    test_status['activate_session_started'] = True
+                    call_sequence.append('update_active')
+
+                else:
+                    call_sequence.append('update')
 
             return orig_image_update(context, values, image_id,
                                      purge_props=purge_props,
@@ -1356,7 +1368,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             """
             image = orig_image_get(*args, **kwargs)
             if test_status['activate_session_started']:
-                called.append('image_get_active')
+                call_sequence.append('image_get_active')
                 setattr(image, 'status', 'active')
             else:
                 setattr(image, 'status', 'saving')
@@ -1366,7 +1378,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         def mock_get_image_metadata(*args, **kwargs):
             """Force image status sequence.
             """
-            called.append('get_image_meta')
+            call_sequence.append('get_image_meta')
             meta = orig_get_image_metadata(*args, **kwargs)
             if not test_status['queued_guard_passed']:
                 meta['status'] = 'queued'
@@ -1374,27 +1386,47 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
             return meta
 
+        def mock_initiate_deletion(*args, **kwargs):
+            call_sequence.append('init_del')
+            orig_initiate_deletion(*args, **kwargs)
+
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
         req.headers['Content-Type'] = \
             'application/octet-stream'
         req.body = "chunk00000remainder"
 
-        mpo = mock.patch.object
-        with mpo(upload_utils, 'initiate_deletion') as mock_initiate_deletion:
-            with mpo(registry, 'get_image_metadata', mock_get_image_metadata):
-                with mpo(db_api, '_image_get', mock_image_get):
-                    with mpo(db_api, '_image_update', mock_image_update):
+        with mock.patch.object(upload_utils, 'initiate_deletion') as \
+                mock_init_del:
+            mock_init_del.side_effect = mock_initiate_deletion
+            with mock.patch.object(registry, 'get_image_metadata') as \
+                    mock_get_meta:
+                mock_get_meta.side_effect = mock_get_image_metadata
+                with mock.patch.object(db_api, '_image_get') as mock_db_get:
+                    mock_db_get.side_effect = mock_image_get
+                    with mock.patch.object(db_api, '_image_update') as \
+                            mock_db_update:
+                        mock_db_update.side_effect = mock_image_update
+
+                        # Expect a 409 Conflict.
                         res = req.get_response(self.api)
                         self.assertEqual(res.status_int, 409)
 
                         # Check expected call sequence
                         self.assertEqual(['get_image_meta', 'get_image_meta',
-                                          'update_active', 'image_get_active'],
-                                         called)
+                                          'update', 'update_active',
+                                          'image_get_active',
+                                          'init_del'],
+                                         call_sequence)
 
-                        # Ensure cleanup occurred.
-                        self.assertTrue(mock_initiate_deletion.called)
+                        self.assertTrue(mock_get_meta.called)
+                        self.assertTrue(mock_db_get.called)
+                        self.assertTrue(mock_db_update.called)
+
+                        # Ensure cleanup occured.
+                        self.assertEqual(1, mock_init_del.call_count)
+
+                        self.assertEqual(state_changes, ['saving', 'active'])
 
     def test_register_and_upload(self):
         """
@@ -1443,7 +1475,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 200)
 
-        # Verify the status is queued
+        # Verify the status is 'queued'
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'HEAD'
 
@@ -1453,6 +1485,124 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                         "Did not find required property in headers. "
                         "Got headers: %r" % res.headers)
         self.assertEqual("active", res.headers['x-image-meta-status'])
+
+    def _get_image_status(self, image_id):
+        req = webob.Request.blank("/images/%s" % image_id)
+        req.method = 'HEAD'
+        return req.get_response(self.api)
+
+    def _verify_image_status(self, image_id, status, check_deleted=False,
+                             use_cached=False):
+        if not use_cached:
+            res = self._get_image_status(image_id)
+        else:
+            res = self.image_status.pop(0)
+
+        self.assertEqual(200, res.status_int)
+        self.assertEqual(res.headers['x-image-meta-status'], status)
+        self.assertEqual(res.headers['x-image-meta-deleted'],
+                         str(check_deleted))
+
+    def _upload_safe_kill_common(self, mocks):
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-property-key1': 'value1'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(201, res.status_int)
+        res_body = jsonutils.loads(res.body)['image']
+
+        self.assertTrue('id' in res_body)
+
+        self.image_id = res_body['id']
+        self.assertTrue('/images/%s' %
+                        self.image_id in res.headers['location'])
+
+        # Verify the status is 'queued'
+        self.assertEqual('queued', res_body['status'])
+
+        for m in mocks:
+            m['mock'].side_effect = m['side_effect']
+
+        # Now upload the image file along with some more metadata and
+        # verify original metadata properties are not marked deleted
+        req = webob.Request.blank("/images/%s" % self.image_id)
+        req.method = 'PUT'
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.headers['x-image-meta-property-key2'] = 'value2'
+        req.body = "chunk00000remainder"
+        res = req.get_response(self.api)
+        # We expect 500 since an exception occured during upload.
+        self.assertEqual(500, res.status_int)
+
+    @mock.patch('glance.store.store_add_to_backend')
+    def test_upload_safe_kill(self, mock_store_add_to_backend):
+
+        def mock_store_add_to_backend_w_exception(*args, **kwargs):
+            """Trigger mid-upload failure by raising an exception."""
+            self.image_status.append(self._get_image_status(self.image_id))
+            # Raise an exception to emulate failed upload.
+            raise Exception("== UNIT TEST UPLOAD EXCEPTION ==")
+
+        mocks = [{'mock': mock_store_add_to_backend,
+                 'side_effect': mock_store_add_to_backend_w_exception}]
+
+        self._upload_safe_kill_common(mocks)
+
+        # Check we went from 'saving' -> 'killed'
+        self._verify_image_status(self.image_id, 'saving', use_cached=True)
+        self._verify_image_status(self.image_id, 'killed')
+
+        self.assertEqual(1, mock_store_add_to_backend.call_count)
+
+    @mock.patch('glance.store.store_add_to_backend')
+    def test_upload_safe_kill_deleted(self, mock_store_add_to_backend):
+        test_router_api = router.API(self.mapper)
+        self.api = test_utils.FakeAuthMiddleware(test_router_api,
+                                                 is_admin=True)
+
+        def mock_store_add_to_backend_w_exception(*args, **kwargs):
+            """We now delete the image, assert status is 'deleted' then
+            raise an exception to emulate a failed upload. This will be caught
+            by upload_data_to_store() which will then try to set status to
+            'killed' which will be ignored since the image has been deleted.
+            """
+            # expect 'saving'
+            self.image_status.append(self._get_image_status(self.image_id))
+
+            req = webob.Request.blank("/images/%s" % self.image_id)
+            req.method = 'DELETE'
+            res = req.get_response(self.api)
+            self.assertEqual(200, res.status_int)
+
+            # expect 'deleted'
+            self.image_status.append(self._get_image_status(self.image_id))
+
+            # Raise an exception to make the upload fail.
+            raise Exception("== UNIT TEST UPLOAD EXCEPTION ==")
+
+        mocks = [{'mock': mock_store_add_to_backend,
+                 'side_effect': mock_store_add_to_backend_w_exception}]
+
+        self._upload_safe_kill_common(mocks)
+
+        # Check we went from 'saving' -> 'deleted' -> 'deleted'
+        self._verify_image_status(self.image_id, 'saving', check_deleted=False,
+                                  use_cached=True)
+
+        self._verify_image_status(self.image_id, 'deleted', check_deleted=True,
+                                  use_cached=True)
+
+        self._verify_image_status(self.image_id, 'deleted', check_deleted=True)
+
+        self.assertEqual(1, mock_store_add_to_backend.call_count)
 
     def test_delete_during_image_upload(self):
         req = unit_test_utils.get_fake_request()
@@ -1477,7 +1627,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         image_id = res_body['id']
         self.assertIn('/images/%s' % image_id, res.headers['location'])
 
-        # Verify the status is queued
+        # Verify the status is 'queued'
         self.assertEqual('queued', res_body['status'])
 
         called = {'initiate_deletion': False}
