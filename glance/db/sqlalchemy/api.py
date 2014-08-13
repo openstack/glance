@@ -876,11 +876,12 @@ def _image_locations_set(context, image_id, locations, session=None):
     # NOTE(zhiyan): 1. Remove records from DB for deleted locations
     session = session or get_session()
     query = session.query(models.ImageLocation).filter_by(
-        image_id=image_id).filter_by(
-            deleted=False).filter(~models.ImageLocation.id.in_(
-                [loc['id']
-                 for loc in locations
-                 if loc.get('id')]))
+        image_id=image_id).filter_by(deleted=False)
+
+    loc_ids = [loc['id'] for loc in locations if loc.get('id')]
+    if loc_ids:
+        query = query.filter(~models.ImageLocation.id.in_(loc_ids))
+
     for loc_id in [loc_ref.id for loc_ref in query.all()]:
         image_location_delete(context, image_id, loc_id, 'deleted',
                               session=session)
