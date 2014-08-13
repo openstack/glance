@@ -19,65 +19,65 @@ from glance.registry.api.v1 import members
 
 
 def init(mapper):
-        images_resource = images.create_resource()
+    images_resource = images.create_resource()
 
-        mapper.connect("/",
-                       controller=images_resource,
-                       action="index")
-        mapper.connect("/images",
-                       controller=images_resource,
-                       action="index",
-                       conditions={'method': ['GET']})
-        mapper.connect("/images",
-                       controller=images_resource,
-                       action="create",
-                       conditions={'method': ['POST']})
-        mapper.connect("/images/detail",
-                       controller=images_resource,
-                       action="detail",
-                       conditions={'method': ['GET']})
-        mapper.connect("/images/{id}",
-                       controller=images_resource,
-                       action="show",
-                       conditions=dict(method=["GET"]))
-        mapper.connect("/images/{id}",
-                       controller=images_resource,
-                       action="update",
-                       conditions=dict(method=["PUT"]))
-        mapper.connect("/images/{id}",
-                       controller=images_resource,
-                       action="delete",
-                       conditions=dict(method=["DELETE"]))
+    mapper.connect("/",
+                   controller=images_resource,
+                   action="index")
+    mapper.connect("/images",
+                   controller=images_resource,
+                   action="index",
+                   conditions={'method': ['GET']})
+    mapper.connect("/images",
+                   controller=images_resource,
+                   action="create",
+                   conditions={'method': ['POST']})
+    mapper.connect("/images/detail",
+                   controller=images_resource,
+                   action="detail",
+                   conditions={'method': ['GET']})
+    mapper.connect("/images/{id}",
+                   controller=images_resource,
+                   action="show",
+                   conditions=dict(method=["GET"]))
+    mapper.connect("/images/{id}",
+                   controller=images_resource,
+                   action="update",
+                   conditions=dict(method=["PUT"]))
+    mapper.connect("/images/{id}",
+                   controller=images_resource,
+                   action="delete",
+                   conditions=dict(method=["DELETE"]))
 
-        members_resource = members.create_resource()
+    members_resource = members.create_resource()
 
-        mapper.connect("/images/{image_id}/members",
-                       controller=members_resource,
-                       action="index",
-                       conditions={'method': ['GET']})
-        mapper.connect("/images/{image_id}/members",
-                       controller=members_resource,
-                       action="create",
-                       conditions={'method': ['POST']})
-        mapper.connect("/images/{image_id}/members",
-                       controller=members_resource,
-                       action="update_all",
-                       conditions=dict(method=["PUT"]))
-        mapper.connect("/images/{image_id}/members/{id}",
-                       controller=members_resource,
-                       action="show",
-                       conditions={'method': ['GET']})
-        mapper.connect("/images/{image_id}/members/{id}",
-                       controller=members_resource,
-                       action="update",
-                       conditions={'method': ['PUT']})
-        mapper.connect("/images/{image_id}/members/{id}",
-                       controller=members_resource,
-                       action="delete",
-                       conditions={'method': ['DELETE']})
-        mapper.connect("/shared-images/{id}",
-                       controller=members_resource,
-                       action="index_shared_images")
+    mapper.connect("/images/{image_id}/members",
+                   controller=members_resource,
+                   action="index",
+                   conditions={'method': ['GET']})
+    mapper.connect("/images/{image_id}/members",
+                   controller=members_resource,
+                   action="create",
+                   conditions={'method': ['POST']})
+    mapper.connect("/images/{image_id}/members",
+                   controller=members_resource,
+                   action="update_all",
+                   conditions=dict(method=["PUT"]))
+    mapper.connect("/images/{image_id}/members/{id}",
+                   controller=members_resource,
+                   action="show",
+                   conditions={'method': ['GET']})
+    mapper.connect("/images/{image_id}/members/{id}",
+                   controller=members_resource,
+                   action="update",
+                   conditions={'method': ['PUT']})
+    mapper.connect("/images/{image_id}/members/{id}",
+                   controller=members_resource,
+                   action="delete",
+                   conditions={'method': ['DELETE']})
+    mapper.connect("/shared-images/{id}",
+                   controller=members_resource,
+                   action="index_shared_images")
 
 
 class API(wsgi.Router):
