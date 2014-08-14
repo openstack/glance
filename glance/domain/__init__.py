@@ -351,17 +351,17 @@ class Task(object):
             self._message = six.text_type('')
 
     def _validate_task_status_transition(self, cur_status, new_status):
-            valid_transitions = {
-                'pending': ['processing', 'failure'],
-                'processing': ['success', 'failure'],
-                'success': [],
-                'failure': [],
-            }
+        valid_transitions = {
+            'pending': ['processing', 'failure'],
+            'processing': ['success', 'failure'],
+            'success': [],
+            'failure': [],
+        }
 
-            if new_status in valid_transitions[cur_status]:
-                return True
-            else:
-                return False
+        if new_status in valid_transitions[cur_status]:
+            return True
+        else:
+            return False
 
     def _set_task_status(self, new_status):
         if self._validate_task_status_transition(self.status, new_status):

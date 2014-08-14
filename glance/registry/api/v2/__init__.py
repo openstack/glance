@@ -18,10 +18,10 @@ from glance.registry.api.v2 import rpc
 
 
 def init(mapper):
-        rpc_resource = rpc.create_resource()
-        mapper.connect("/rpc", controller=rpc_resource,
-                       conditions=dict(method=["POST"]),
-                       action="__call__")
+    rpc_resource = rpc.create_resource()
+    mapper.connect("/rpc", controller=rpc_resource,
+                   conditions=dict(method=["POST"]),
+                   action="__call__")
 
 
 class API(wsgi.Router):
