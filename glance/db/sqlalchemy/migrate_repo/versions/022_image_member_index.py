@@ -16,6 +16,7 @@
 import re
 
 from migrate.changeset import UniqueConstraint
+from oslo.db import exception as db_exception
 from sqlalchemy import and_, func, orm
 from sqlalchemy import MetaData, Table
 from sqlalchemy.exc import OperationalError, ProgrammingError
@@ -34,7 +35,7 @@ def upgrade(migrate_engine):
             UniqueConstraint('image_id',
                              name=_get_original_keyname(migrate_engine.name),
                              table=image_members).drop()
-        except (OperationalError, ProgrammingError):
+        except (OperationalError, ProgrammingError, db_exception.DBError):
             UniqueConstraint('image_id',
                              name=_infer_original_keyname(image_members),
                              table=image_members).drop()
