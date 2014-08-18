@@ -18,7 +18,7 @@ import datetime
 import os
 import uuid
 
-import mox
+from mock import patch
 import testtools
 
 from glance.common import client as test_client
@@ -841,14 +841,12 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment."""
         super(TestRegistryV1ClientApi, self).setUp()
-        self.mox = mox.Mox()
         self.context = context.RequestContext()
         reload(rapi)
 
     def tearDown(self):
         """Clear the test environment."""
         super(TestRegistryV1ClientApi, self).tearDown()
-        self.mox.UnsetStubs()
 
     def test_get_registry_client(self):
         actual_client = rapi.get_registry_client(self.context)
@@ -869,13 +867,9 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
 
     def test_configure_registry_client_not_using_use_user_token(self):
         self.config(use_user_token=False)
-        self.mox.StubOutWithMock(rapi, 'configure_registry_admin_creds')
-        rapi.configure_registry_admin_creds()
-
-        self.mox.ReplayAll()
-
-        rapi.configure_registry_client()
-        self.mox.VerifyAll()
+        with patch.object(rapi, 'configure_registry_admin_creds') as mock_rapi:
+            rapi.configure_registry_client()
+            mock_rapi.assert_called_once_with()
 
     def _get_fake_config_creds(self, auth_url='auth_url', strategy='keystone'):
         return {
@@ -927,35 +921,26 @@ class TestRegistryV1ClientRequests(base.IsolatedUnitTest):
 
     def setUp(self):
         super(TestRegistryV1ClientRequests, self).setUp()
-        self.mox = mox.Mox()
 
     def tearDown(self):
         super(TestRegistryV1ClientRequests, self).tearDown()
-        self.mox.UnsetStubs()
 
     def test_do_request_with_identity_headers(self):
         identity_headers = {'foo': 'bar'}
         self.client = rclient.RegistryClient("0.0.0.0",
                                              identity_headers=identity_headers)
 
-        self.mox.StubOutWithMock(test_client.BaseClient, 'do_request')
-        test_client.BaseClient.do_request(
-            "GET", "/images",
-            headers=identity_headers).AndReturn(FakeResponse())
-        self.mox.ReplayAll()
-
-        self.client.do_request("GET", "/images")
-
-        self.mox.VerifyAll()
+        with patch.object(test_client.BaseClient, 'do_request',
+                          return_value=FakeResponse()) as mock_do_request:
+            self.client.do_request("GET", "/images")
+            mock_do_request.assert_called_once_with("GET", "/images",
+                                                    headers=identity_headers)
 
     def test_do_request(self):
         self.client = rclient.RegistryClient("0.0.0.0")
 
-        self.mox.StubOutWithMock(test_client.BaseClient, 'do_request')
-        test_client.BaseClient.do_request("GET", "/images",
-                                          headers={}).AndReturn(FakeResponse())
-        self.mox.ReplayAll()
-
-        self.client.do_request("GET", "/images")
-
-        self.mox.VerifyAll()
+        with patch.object(test_client.BaseClient, 'do_request',
+                          return_value=FakeResponse()) as mock_do_request:
+            self.client.do_request("GET", "/images")
+            mock_do_request.assert_called_once_with("GET", "/images",
+                                                    headers={})

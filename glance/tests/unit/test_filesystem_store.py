@@ -22,7 +22,7 @@ import os
 import uuid
 
 import fixtures
-import mox
+from mock import patch
 from oslo.config import cfg
 import six
 import six.moves.builtins as __builtin__
@@ -370,21 +370,14 @@ class TestStore(base.IsolatedUnitTest):
         path = os.path.join(self.test_dir, image_id)
         image_file = six.StringIO(file_contents)
 
-        m = mox.Mox()
-        m.StubOutWithMock(__builtin__, 'open')
         e = IOError()
         e.errno = errno
-        open(path, 'wb').AndRaise(e)
-        m.ReplayAll()
-
-        try:
+        with patch.object(__builtin__, 'open', side_effect=e) as mock_open:
             self.assertRaises(exception,
                               self.store.add,
                               image_id, image_file, 0)
             self.assertFalse(os.path.exists(path))
-        finally:
-            m.VerifyAll()
-            m.UnsetStubs()
+            mock_open.assert_called_once_with(path, 'wb')
 
     def test_add_storage_full(self):
         """

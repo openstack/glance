@@ -13,7 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mox
+from contextlib import contextmanager
+import mock
+from mock import patch
 
 import webob.exc
 
@@ -29,11 +31,9 @@ class TestUploadUtils(base.StoreClearingUnitTest):
     def setUp(self):
         super(TestUploadUtils, self).setUp()
         self.config(verbose=True, debug=True)
-        self.mox = mox.Mox()
 
     def tearDown(self):
         super(TestUploadUtils, self).tearDown()
-        self.mox.UnsetStubs()
 
     def test_initiate_delete(self):
         req = unit_test_utils.get_fake_request()
@@ -42,13 +42,12 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                     "status": "active"}
         id = unit_test_utils.UUID1
 
-        self.mox.StubOutWithMock(store_utils, "safe_delete_from_backend")
-        store_utils.safe_delete_from_backend(req.context, id, location)
-        self.mox.ReplayAll()
-
-        upload_utils.initiate_deletion(req, location, id)
-
-        self.mox.VerifyAll()
+        with patch.object(store_utils,
+                          "safe_delete_from_backend") as mock_store_utils:
+            upload_utils.initiate_deletion(req, location, id)
+            mock_store_utils.assert_called_once_with(req.context,
+                                                     id,
+                                                     location)
 
     def test_initiate_delete_with_delayed_delete(self):
         self.config(delayed_delete=True)
@@ -58,174 +57,124 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                     "status": "active"}
         id = unit_test_utils.UUID1
 
-        self.mox.StubOutWithMock(store_utils,
-                                 "schedule_delayed_delete_from_backend")
-        ret = store_utils.schedule_delayed_delete_from_backend(req.context, id,
-                                                               location)
-        ret.AndReturn(True)
-        self.mox.ReplayAll()
-
-        upload_utils.initiate_deletion(req, location, id)
-
-        self.mox.VerifyAll()
+        with patch.object(store_utils, "schedule_delayed_delete_from_backend",
+                          return_value=True) as mock_store_utils:
+            upload_utils.initiate_deletion(req, location, id)
+            mock_store_utils.assert_called_once_with(req.context,
+                                                     id,
+                                                     location)
 
     def test_safe_kill(self):
         req = unit_test_utils.get_fake_request()
         id = unit_test_utils.UUID1
 
-        self.mox.StubOutWithMock(registry, "update_image_metadata")
-        registry.update_image_metadata(req.context, id, {'status': 'killed'},
-                                       'saving')
-        self.mox.ReplayAll()
-
-        upload_utils.safe_kill(req, id, 'saving')
-
-        self.mox.VerifyAll()
+        with patch.object(registry, "update_image_metadata") as mock_registry:
+            upload_utils.safe_kill(req, id, 'saving')
+            mock_registry.assert_called_once_with(req.context, id,
+                                                  {'status': 'killed'},
+                                                  from_state='saving')
 
     def test_safe_kill_with_error(self):
         req = unit_test_utils.get_fake_request()
         id = unit_test_utils.UUID1
 
-        self.mox.StubOutWithMock(registry, "update_image_metadata")
-        registry.update_image_metadata(req.context,
-                                       id,
-                                       {'status': 'killed'},
-                                       'saving'
-                                       ).AndRaise(Exception())
-        self.mox.ReplayAll()
+        with patch.object(registry, "update_image_metadata",
+                          side_effect=Exception()) as mock_registry:
+            upload_utils.safe_kill(req, id, 'saving')
+            mock_registry.assert_called_once_with(req.context, id,
+                                                  {'status': 'killed'},
+                                                  from_state='saving')
 
-        upload_utils.safe_kill(req, id, 'saving')
+    @contextmanager
+    def _get_store_and_notifier(self, image_size=10, ext_update_data=None,
+                                ret_checksum="checksum", exc_class=None):
+        location = "file://foo/bar"
+        checksum = "checksum"
+        size = 10
+        update_data = {'checksum': checksum}
+        if ext_update_data is not None:
+            update_data.update(ext_update_data)
+        image_meta = {'id': unit_test_utils.UUID1,
+                      'size': image_size}
+        image_data = "blah"
 
-        self.mox.VerifyAll()
+        store = mock.MagicMock()
+        notifier = mock.MagicMock()
+
+        if exc_class is not None:
+            store.add.side_effect = exc_class
+        else:
+            store.add.return_value = (location, size, ret_checksum, {})
+        yield (location, checksum, image_meta, image_data, store, notifier,
+               update_data)
+
+        store.add.assert_called_once_with(image_meta['id'], mock.ANY,
+                                          image_meta['size'])
 
     def test_upload_data_to_store(self):
         req = unit_test_utils.get_fake_request()
+        with self._get_store_and_notifier(
+            ext_update_data={'size': 10}) as (location, checksum, image_meta,
+                                              image_data, store, notifier,
+                                              update_data):
+            ret = image_meta.update(update_data)
+            with patch.object(registry, 'update_image_metadata',
+                              return_value=ret) as mock_update_image_metadata:
+                actual_meta, location_data = upload_utils.upload_data_to_store(
+                    req, image_meta, image_data, store, notifier)
 
-        location = "file://foo/bar"
-        size = 10
-        checksum = "checksum"
-
-        image_meta = {'id': unit_test_utils.UUID1,
-                      'size': size}
-        image_data = "blah"
-
-        notifier = self.mox.CreateMockAnything()
-        store = self.mox.CreateMockAnything()
-        store.add(
-            image_meta['id'],
-            mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location, size, checksum, {}))
-
-        self.mox.StubOutWithMock(registry, 'update_image_metadata')
-        update_data = {'checksum': checksum,
-                       'size': size}
-        registry.update_image_metadata(req.context, image_meta['id'],
-                                       update_data, from_state='saving'
-                                       ).AndReturn(
-                                           image_meta.update(update_data))
-        self.mox.ReplayAll()
-
-        actual_meta, location_data = upload_utils.upload_data_to_store(
-            req, image_meta, image_data, store, notifier)
-
-        self.mox.VerifyAll()
-
-        self.assertEqual(location_data['url'], location)
-        self.assertEqual(actual_meta, image_meta.update(update_data))
+                self.assertEqual(location_data['url'], location)
+                self.assertEqual(actual_meta, image_meta.update(update_data))
+                mock_update_image_metadata.assert_called_once_with(
+                    req.context, image_meta['id'], update_data,
+                    from_state='saving')
 
     def test_upload_data_to_store_mismatch_size(self):
         req = unit_test_utils.get_fake_request()
 
-        location = "file://foo/bar"
-        size = 10
-        checksum = "checksum"
-
-        image_meta = {'id': unit_test_utils.UUID1,
-                      'size': size + 1}  # Need incorrect size for test
-
-        image_data = "blah"
-
-        notifier = self.mox.CreateMockAnything()
-        store = self.mox.CreateMockAnything()
-        store.add(
-            image_meta['id'],
-            mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location, size, checksum, {}))
-
-        self.mox.StubOutWithMock(registry, "update_image_metadata")
-        update_data = {'checksum': checksum}
-        registry.update_image_metadata(
-            req.context, image_meta['id'],
-            update_data).AndReturn(image_meta.update(update_data))
-        notifier.error('image.upload', mox.IgnoreArg())
-        self.mox.ReplayAll()
-
-        self.assertRaises(webob.exc.HTTPBadRequest,
-                          upload_utils.upload_data_to_store,
-                          req, image_meta, image_data, store, notifier)
-
-        self.mox.VerifyAll()
+        with self._get_store_and_notifier(
+            image_size=11) as (location, checksum, image_meta, image_data,
+                               store, notifier, update_data):
+            ret = image_meta.update(update_data)
+            with patch.object(registry, 'update_image_metadata',
+                              return_value=ret) as mock_update_image_metadata:
+                self.assertRaises(webob.exc.HTTPBadRequest,
+                                  upload_utils.upload_data_to_store,
+                                  req, image_meta, image_data, store,
+                                  notifier)
+                mock_update_image_metadata.assert_called_with(
+                    req.context, image_meta['id'], {'status': 'killed'},
+                    from_state='saving')
 
     def test_upload_data_to_store_mismatch_checksum(self):
         req = unit_test_utils.get_fake_request()
 
-        location = "file://foo/bar"
-        size = 10
-        checksum = "checksum"
-
-        image_meta = {'id': unit_test_utils.UUID1,
-                      'size': size}
-        image_data = "blah"
-
-        notifier = self.mox.CreateMockAnything()
-        store = self.mox.CreateMockAnything()
-        store.add(
-            image_meta['id'],
-            mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location,
-                                           size,
-                                           checksum + "NOT",
-                                           {}))
-
-        self.mox.StubOutWithMock(registry, "update_image_metadata")
-        update_data = {'checksum': checksum}
-        registry.update_image_metadata(
-            req.context, image_meta['id'],
-            update_data).AndReturn(image_meta.update(update_data))
-        notifier.error('image.upload', mox.IgnoreArg())
-        self.mox.ReplayAll()
-
-        self.assertRaises(webob.exc.HTTPBadRequest,
-                          upload_utils.upload_data_to_store,
-                          req, image_meta, image_data, store, notifier)
-
-        self.mox.VerifyAll()
+        with self._get_store_and_notifier(
+            ret_checksum='fake') as (location, checksum, image_meta,
+                                     image_data, store, notifier, update_data):
+            ret = image_meta.update(update_data)
+            with patch.object(registry, "update_image_metadata",
+                              return_value=ret) as mock_update_image_metadata:
+                self.assertRaises(webob.exc.HTTPBadRequest,
+                                  upload_utils.upload_data_to_store,
+                                  req, image_meta, image_data, store,
+                                  notifier)
+                mock_update_image_metadata.assert_called_with(
+                    req.context, image_meta['id'], {'status': 'killed'},
+                    from_state='saving')
 
     def _test_upload_data_to_store_exception(self, exc_class, expected_class):
         req = unit_test_utils.get_fake_request()
 
-        size = 10
-
-        image_meta = {'id': unit_test_utils.UUID1,
-                      'size': size}
-        image_data = "blah"
-
-        notifier = self.mox.CreateMockAnything()
-        store = self.mox.CreateMockAnything()
-        store.add(
-            image_meta['id'],
-            mox.IgnoreArg(),
-            image_meta['size']).AndRaise(exc_class)
-
-        self.mox.StubOutWithMock(upload_utils, "safe_kill")
-        upload_utils.safe_kill(req, image_meta['id'], 'saving')
-        self.mox.ReplayAll()
-
-        self.assertRaises(expected_class,
-                          upload_utils.upload_data_to_store,
-                          req, image_meta, image_data, store, notifier)
-
-        self.mox.VerifyAll()
+        with self._get_store_and_notifier(
+            exc_class=exc_class) as (location, checksum, image_meta,
+                                     image_data, store, notifier, update_data):
+            with patch.object(upload_utils, 'safe_kill') as mock_safe_kill:
+                self.assertRaises(expected_class,
+                                  upload_utils.upload_data_to_store,
+                                  req, image_meta, image_data, store, notifier)
+                mock_safe_kill.assert_called_once_with(
+                    req, image_meta['id'], 'saving')
 
     def _test_upload_data_to_store_exception_with_notify(self,
                                                          exc_class,
@@ -233,31 +182,17 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                                          image_killed=True):
         req = unit_test_utils.get_fake_request()
 
-        size = 10
-
-        image_meta = {'id': unit_test_utils.UUID1,
-                      'size': size}
-        image_data = "blah"
-
-        store = self.mox.CreateMockAnything()
-        store.add(
-            image_meta['id'],
-            mox.IgnoreArg(),
-            image_meta['size']).AndRaise(exc_class)
-
-        if image_killed:
-            self.mox.StubOutWithMock(upload_utils, "safe_kill")
-            upload_utils.safe_kill(req, image_meta['id'], 'saving')
-
-        notifier = self.mox.CreateMockAnything()
-        notifier.error('image.upload', mox.IgnoreArg())
-        self.mox.ReplayAll()
-
-        self.assertRaises(expected_class,
-                          upload_utils.upload_data_to_store,
-                          req, image_meta, image_data, store, notifier)
-
-        self.mox.VerifyAll()
+        with self._get_store_and_notifier(
+            exc_class=exc_class) as (location, checksum, image_meta,
+                                     image_data, store, notifier, update_data):
+            with patch.object(upload_utils, 'safe_kill') as mock_safe_kill:
+                self.assertRaises(expected_class,
+                                  upload_utils.upload_data_to_store,
+                                  req, image_meta, image_data, store,
+                                  notifier)
+                if image_killed:
+                    mock_safe_kill.assert_called_with(req, image_meta['id'],
+                                                      'saving')
 
     def test_upload_data_to_store_duplicate(self):
         """See note in glance.api.v1.upload_utils on why we don't want image to
@@ -311,38 +246,26 @@ class TestUploadUtils(base.StoreClearingUnitTest):
     def test_upload_data_to_store_not_found_after_upload(self):
         req = unit_test_utils.get_fake_request()
 
-        location = "file://foo/bar"
-        size = 10
-        checksum = "checksum"
-
-        image_meta = {'id': unit_test_utils.UUID1,
-                      'size': size}
-        image_data = "blah"
-
-        notifier = self.mox.CreateMockAnything()
-        store = self.mox.CreateMockAnything()
-        store.add(
-            image_meta['id'],
-            mox.IgnoreArg(),
-            image_meta['size']).AndReturn((location, size, checksum, {}))
-
-        self.mox.StubOutWithMock(registry, 'update_image_metadata')
-        update_data = {'checksum': checksum,
-                       'size': size}
-        registry.update_image_metadata(req.context, image_meta['id'],
-                                       update_data, from_state='saving'
-                                       ).AndRaise(exception.NotFound)
-        self.mox.StubOutWithMock(upload_utils, "initiate_deletion")
-        upload_utils.initiate_deletion(req, {'url': location,
-                                             'status': 'active',
-                                             'metadata': {}}, image_meta['id'])
-        self.mox.StubOutWithMock(upload_utils, "safe_kill")
-        upload_utils.safe_kill(req, image_meta['id'], 'saving')
-        notifier.error('image.upload', mox.IgnoreArg())
-        self.mox.ReplayAll()
-
-        self.assertRaises(webob.exc.HTTPPreconditionFailed,
-                          upload_utils.upload_data_to_store,
-                          req, image_meta, image_data, store, notifier)
-
-        self.mox.VerifyAll()
+        with self._get_store_and_notifier(
+            ext_update_data={'size': 10}) as (location, checksum, image_meta,
+                                              image_data, store, notifier,
+                                              update_data):
+            exc = exception.NotFound
+            with patch.object(registry, 'update_image_metadata',
+                              side_effect=exc) as mock_update_image_metadata:
+                with patch.object(upload_utils,
+                                  "initiate_deletion") as mock_initiate_del:
+                    with patch.object(upload_utils,
+                                      "safe_kill") as mock_safe_kill:
+                        self.assertRaises(webob.exc.HTTPPreconditionFailed,
+                                          upload_utils.upload_data_to_store,
+                                          req, image_meta, image_data, store,
+                                          notifier)
+                        mock_update_image_metadata.assert_called_once_with(
+                            req.context, image_meta['id'], update_data,
+                            from_state='saving')
+                        mock_initiate_del.assert_called_once_with(
+                            req, {'url': location, 'status': 'active',
+                                  'metadata': {}}, image_meta['id'])
+                        mock_safe_kill.assert_called_once_with(
+                            req, image_meta['id'], 'saving')
