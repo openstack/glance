@@ -1583,14 +1583,14 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
-        self.assertEqual(['snozz', 'sniff'], tags)
+        self.assertEqual(['sniff', 'snozz'], sorted(tags))
 
         # Image should show the appropriate tags
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
-        self.assertEqual(['snozz', 'sniff'], tags)
+        self.assertEqual(['sniff', 'snozz'], sorted(tags))
 
         # Attempt to tag the image with a duplicate should be ignored
         path = self._url('/v2/images/%s/tags/snozz' % image_id)
@@ -1607,7 +1607,8 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
-        self.assertEqual(['gabe@example.com', 'snozz', 'sniff'], tags)
+        self.assertEqual(['gabe@example.com', 'sniff', 'snozz'],
+                         sorted(tags))
 
         # Query images by single tag
         path = self._url('/v2/images?tag=sniff')
@@ -1650,7 +1651,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
-        self.assertEqual(['snozz', 'sniff'], tags)
+        self.assertEqual(['sniff', 'snozz'], sorted(tags))
 
         # Deleting the same tag should return a 404
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
