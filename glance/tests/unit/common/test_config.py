@@ -17,6 +17,7 @@ import os.path
 import shutil
 
 import fixtures
+import osprofiler.web
 import stubout
 
 from glance.api.middleware import context
@@ -71,7 +72,7 @@ class TestPasteApp(test_utils.BaseTestCase):
         self.assertIsInstance(app, expected_app_type)
 
     def test_load_paste_app(self):
-        expected_middleware = context.UnauthenticatedContextMiddleware
+        expected_middleware = osprofiler.web.WsgiMiddleware
         self._do_test_load_paste_app(expected_middleware)
 
     def test_load_paste_app_paste_config_not_found(self):
@@ -90,7 +91,7 @@ class TestPasteApp(test_utils.BaseTestCase):
     def test_load_paste_app_with_paste_config_file(self):
         paste_config_file = os.path.join(os.getcwd(),
                                          'etc/glance-registry-paste.ini')
-        expected_middleware = context.UnauthenticatedContextMiddleware
+        expected_middleware = osprofiler.web.WsgiMiddleware
         self._do_test_load_paste_app(expected_middleware,
                                      paste_config_file=paste_config_file)
 
