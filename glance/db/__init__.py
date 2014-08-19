@@ -27,6 +27,7 @@ from glance.openstack.common import importutils
 
 
 CONF = cfg.CONF
+CONF.import_opt('image_size_cap', 'glance.common.config')
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
@@ -150,6 +151,8 @@ class ImageRepo(object):
 
     def add(self, image):
         image_values = self._format_image_to_db(image)
+        if image_values['size'] > CONF.image_size_cap:
+            raise exception.ImageSizeLimitExceeded
         # the updated_at value is not set in the _format_image_to_db
         # function since it is specific to image create
         image_values['updated_at'] = image.updated_at
@@ -161,6 +164,8 @@ class ImageRepo(object):
 
     def save(self, image):
         image_values = self._format_image_to_db(image)
+        if image_values['size'] > CONF.image_size_cap:
+            raise exception.ImageSizeLimitExceeded
         try:
             new_values = self.db_api.image_update(self.context,
                                                   image.image_id,
