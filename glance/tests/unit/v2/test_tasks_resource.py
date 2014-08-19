@@ -583,10 +583,15 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         result = {'tasks': task_fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
         output = jsonutils.loads(response.body)
-        self.assertEqual('/v2/tasks?sort_key=id&sort_dir=asc&limit=10',
-                         output['first'])
-        expect_next = '/v2/tasks?sort_key=id&sort_dir=asc&limit=10&marker=%s'
-        self.assertEqual(expect_next % UUID2, output['next'])
+
+        expected_url = '/v2/tasks?limit=10&sort_dir=asc&sort_key=id'
+        self.assertEqual(unit_test_utils.sort_url_by_qs_keys(expected_url),
+                         unit_test_utils.sort_url_by_qs_keys(output['first']))
+
+        expect_next = '/v2/tasks?limit=10&marker=%s&sort_dir=asc&sort_key=id'
+        self.assertEqual(unit_test_utils.sort_url_by_qs_keys(
+                         expect_next % UUID2),
+                         unit_test_utils.sort_url_by_qs_keys(output['next']))
 
     def test_get(self):
         expected = {

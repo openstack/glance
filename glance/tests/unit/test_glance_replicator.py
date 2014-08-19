@@ -23,6 +23,7 @@ import six
 
 from glance.cmd import replicator as glance_replicator
 from glance.openstack.common import jsonutils
+from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
 
 
@@ -73,7 +74,7 @@ class FakeHTTPConnection(object):
                       out_code, out_body, out_headers):
         if not url.startswith('/'):
             url = '/' + url
-
+        url = unit_test_utils.sort_url_by_qs_keys(url)
         hkeys = in_headers.keys()
         hkeys.sort()
         hashable = (method, url, in_body, ' '.join(hkeys))
@@ -86,7 +87,7 @@ class FakeHTTPConnection(object):
 
     def request(self, method, url, body, headers):
         self.count += 1
-
+        url = unit_test_utils.sort_url_by_qs_keys(url)
         hkeys = headers.keys()
         hkeys.sort()
         hashable = (method, url, body, ' '.join(hkeys))

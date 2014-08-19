@@ -27,6 +27,7 @@ from glance.store.location import get_location_from_uri
 import glance.store.vmware_datastore as vm_store
 from glance.store.vmware_datastore import Store
 from glance.tests.unit import base
+from glance.tests.unit import utils as unit_utils
 from glance.tests import utils
 
 
@@ -187,7 +188,8 @@ class TestStore(base.StoreClearingUnitTest):
                 location, size, checksum, _ = self.store.add(expected_image_id,
                                                              image,
                                                              expected_size)
-        self.assertEqual(expected_location, location)
+        self.assertEqual(unit_utils.sort_url_by_qs_keys(expected_location),
+                         unit_utils.sort_url_by_qs_keys(location))
         self.assertEqual(expected_size, size)
         self.assertEqual(expected_checksum, checksum)
 
@@ -216,7 +218,8 @@ class TestStore(base.StoreClearingUnitTest):
                 HttpConn.return_value = FakeHTTPConnection()
                 location, size, checksum, _ = self.store.add(expected_image_id,
                                                              image, 0)
-        self.assertEqual(expected_location, location)
+        self.assertEqual(unit_utils.sort_url_by_qs_keys(expected_location),
+                         unit_utils.sort_url_by_qs_keys(location))
         self.assertEqual(expected_size, size)
         self.assertEqual(expected_checksum, checksum)
 

@@ -2001,8 +2001,9 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             self.deserializer.update(request)
         except webob.exc.HTTPUnsupportedMediaType as e:
             # desired result, but must have correct Accept-Patch header
-            expected = ('application/openstack-images-v2.0-json-patch, '
-                        'application/openstack-images-v2.1-json-patch')
+            accept_patch = ['application/openstack-images-v2.1-json-patch',
+                            'application/openstack-images-v2.0-json-patch']
+            expected = ', '.join(sorted(accept_patch))
             self.assertEqual(e.headers['Accept-Patch'], expected)
         else:
             self.fail('Did not raise HTTPUnsupportedMediaType')
@@ -2644,10 +2645,14 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         result = {'images': self.fixtures, 'next_marker': UUID2}
         self.serializer.index(response, result)
         output = jsonutils.loads(response.body)
-        self.assertEqual('/v2/images?sort_key=id&sort_dir=asc&limit=10',
-                         output['first'])
-        expect_next = '/v2/images?sort_key=id&sort_dir=asc&limit=10&marker=%s'
-        self.assertEqual(expect_next % UUID2, output['next'])
+
+        expected_url = '/v2/images?limit=10&sort_dir=asc&sort_key=id'
+        self.assertEqual(unit_test_utils.sort_url_by_qs_keys(expected_url),
+                         unit_test_utils.sort_url_by_qs_keys(output['first']))
+        expect_next = '/v2/images?limit=10&marker=%s&sort_dir=asc&sort_key=id'
+        self.assertEqual(unit_test_utils.sort_url_by_qs_keys(
+                         expect_next % UUID2),
+                         unit_test_utils.sort_url_by_qs_keys(output['next']))
 
     def test_index_forbidden_get_image_location(self):
         """Make sure the serializer works fine no mater if current user is
@@ -2724,7 +2729,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'status': 'queued',
             'visibility': 'public',
             'protected': False,
-            'tags': ['two', 'one'],
+            'tags': ['one', 'two'],
             'size': 1024,
             'virtual_size': 3072,
             'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
@@ -2742,7 +2747,9 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(response.status_int, 201)
-        self.assertEqual(expected, jsonutils.loads(response.body))
+        actual = jsonutils.loads(response.body)
+        actual['tags'] = sorted(actual['tags'])
+        self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
         self.assertEqual(response.location, '/v2/images/%s' % UUID1)
 
@@ -2811,7 +2818,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
                     u'status': u'queued',
                     u'visibility': u'public',
                     u'protected': False,
-                    u'tags': [u'\u2161', u'\u2160'],
+                    u'tags': [u'\u2160', u'\u2161'],
                     u'size': 1024,
                     u'virtual_size': 3072,
                     u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
@@ -2836,7 +2843,9 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         response = webob.Response(request=request)
         result = {u'images': self.fixtures}
         self.serializer.index(response, result)
-        self.assertEqual(expected, jsonutils.loads(response.body))
+        actual = jsonutils.loads(response.body)
+        actual['images'][0]['tags'] = sorted(actual['images'][0]['tags'])
+        self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
 
     def test_show_full_fixture(self):
@@ -2877,7 +2886,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
             u'status': u'queued',
             u'visibility': u'public',
             u'protected': False,
-            u'tags': [u'\u2161', u'\u2160'],
+            u'tags': [u'\u2160', u'\u2161'],
             u'size': 1024,
             u'virtual_size': 3072,
             u'checksum': u'ca425b88f047ce8ec45ee90e813ada91',
@@ -2897,7 +2906,9 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(response.status_int, 201)
-        self.assertEqual(expected, jsonutils.loads(response.body))
+        actual = jsonutils.loads(response.body)
+        actual['tags'] = sorted(actual['tags'])
+        self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
         self.assertEqual(response.location, '/v2/images/%s' % UUID1)
 

@@ -462,7 +462,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             'application/openstack-images-v2.1-json-patch': 10,
         }
         if request.content_type not in content_types:
-            headers = {'Accept-Patch': ', '.join(content_types.keys())}
+            headers = {'Accept-Patch':
+                       ', '.join(sorted(content_types.keys()))}
             raise webob.exc.HTTPUnsupportedMediaType(headers=headers)
 
         json_schema_version = content_types[request.content_type]

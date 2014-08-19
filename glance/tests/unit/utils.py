@@ -13,6 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib
+import urlparse
+
 from oslo.config import cfg
 
 from glance.common import exception
@@ -37,6 +40,26 @@ USER2 = '0b3b3006-cb76-4517-ae32-51397e22c754'
 USER3 = '2hss8dkl-d8jh-88yd-uhs9-879sdjsd8skd'
 
 BASE_URI = 'http://storeurl.com/container'
+
+
+def sort_url_by_qs_keys(url):
+    #NOTE(kragniz): this only sorts the keys of the query string of a url.
+    # For example, an input of '/v2/tasks?sort_key=id&sort_dir=asc&limit=10'
+    # returns '/v2/tasks?limit=10&sort_dir=asc&sort_key=id'. This is to prevent
+    # non-deterministic ordering of the query string causing problems with unit
+    # tests.
+
+    parsed = urlparse.urlparse(url)
+    queries = urlparse.parse_qsl(parsed.query, True)
+    sorted_query = sorted(queries, key=lambda x: x[0])
+
+    encoded_sorted_query = urllib.urlencode(sorted_query, True)
+
+    url_parts = (parsed.scheme, parsed.netloc, parsed.path,
+                 parsed.params, encoded_sorted_query,
+                 parsed.fragment)
+
+    return urlparse.urlunparse(url_parts)
 
 
 def get_fake_request(path='', method='POST', is_admin=False, user=USER1,

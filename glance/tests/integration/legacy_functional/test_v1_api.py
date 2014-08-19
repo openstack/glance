@@ -1298,7 +1298,7 @@ class TestApiWithFakeAuth(base.ApiTest):
     def test_property_protections(self):
         # Enable property protection
         self.config(property_protection_file=self.property_file)
-        self.setUp()
+        self.init()
 
         CREATE_HEADERS = {
             'X-Image-Meta-Name': 'MyImage',
@@ -1447,7 +1447,7 @@ class TestApiWithFakeAuth(base.ApiTest):
     def test_property_protections_special_chars(self):
         # Enable property protection
         self.config(property_protection_file=self.property_file)
-        self.setUp()
+        self.init()
 
         CREATE_HEADERS = {
             'X-Image-Meta-Name': 'MyImage',
