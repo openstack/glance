@@ -26,6 +26,7 @@ import webob
 from glance.common import rpc
 from glance.common import wsgi
 from glance.common import exception
+from glance.openstack.common import jsonutils
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
@@ -265,16 +266,21 @@ class TestRPCJSONSerializer(test_utils.BaseTestCase):
 
     def test_to_json_with_date_format_value(self):
         fixture = {"date": datetime.datetime(1900, 3, 8, 2)}
-        expected = ('{"date": {"_value": "1900-03-08T02:00:00.000000", '
-                    '"_type": "datetime"}}')
+        expected = {"date": {"_value": "1900-03-08T02:00:00.000000",
+                             "_type": "datetime"}}
         actual = rpc.RPCJSONSerializer().to_json(fixture)
-        self.assertEqual(actual, expected)
+        actual = jsonutils.loads(actual)
+        for k in expected['date']:
+            self.assertEqual(expected['date'][k], actual['date'][k])
 
     def test_to_json_with_more_deep_format(self):
         fixture = {"is_public": True, "name": [{"name1": "test"}]}
-        expected = '{"is_public": true, "name": [{"name1": "test"}]}'
+        expected = {"is_public": True, "name": [{"name1": "test"}]}
         actual = rpc.RPCJSONSerializer().to_json(fixture)
-        self.assertEqual(actual, expected)
+        actual = wsgi.JSONResponseSerializer().to_json(fixture)
+        actual = jsonutils.loads(actual)
+        for k in expected:
+            self.assertEqual(expected[k], actual[k])
 
     def test_default(self):
         fixture = {"key": "value"}

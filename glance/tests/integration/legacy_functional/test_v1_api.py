@@ -17,6 +17,7 @@ import os
 import tempfile
 import testtools
 
+from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 from glance.tests.integration.legacy_functional import base
 from glance.tests.utils import minimal_headers
@@ -1330,7 +1331,7 @@ class TestApiWithFakeAuth(base.ApiTest):
     def test_property_protections(self):
         # Enable property protection
         self.config(property_protection_file=self.property_file)
-        self.setUp()
+        self.init()
 
         CREATE_HEADERS = {
             'X-Image-Meta-Name': 'MyImage',
