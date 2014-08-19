@@ -118,6 +118,9 @@ CONF.import_opt('backend', 'glance.openstack.common.db.api', group='database')
 class ApiTest(test_utils.BaseTestCase):
     def setUp(self):
         super(ApiTest, self).setUp()
+        self.init()
+
+    def init(self):
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self._configure_logging()
         self._setup_database()
