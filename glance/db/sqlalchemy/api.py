@@ -1107,20 +1107,21 @@ def _can_show_deleted(context):
 
 
 def image_tag_set_all(context, image_id, tags):
+    #NOTE(kragniz): tag ordering should match exactly what was provided, so a
+    # subsequent call to image_tag_get_all returns them in the correct order
+
     session = get_session()
-    existing_tags = set(image_tag_get_all(context, image_id, session))
-    tags = set(tags)
+    existing_tags = image_tag_get_all(context, image_id, session)
 
-    tags_to_create = tags - existing_tags
-    #NOTE(bcwaldon): we call 'reversed' here to ensure the ImageTag.id fields
-    # will be populated in the order required to reflect the correct ordering
-    # on a subsequent call to image_tag_get_all
-    for tag in reversed(list(tags_to_create)):
-        image_tag_create(context, image_id, tag, session)
+    tags_created = []
+    for tag in tags:
+        if tag not in tags_created and tag not in existing_tags:
+            tags_created.append(tag)
+            image_tag_create(context, image_id, tag, session)
 
-    tags_to_delete = existing_tags - tags
-    for tag in tags_to_delete:
-        image_tag_delete(context, image_id, tag, session)
+    for tag in existing_tags:
+        if tag not in tags:
+            image_tag_delete(context, image_id, tag, session)
 
 
 def image_tag_create(context, image_id, value, session=None):
