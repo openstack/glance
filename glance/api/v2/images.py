@@ -202,6 +202,11 @@ class ImagesController(object):
                    {'image_id': image_id})
             LOG.info(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.InUseByStore as e:
+            msg = (_LI("Image %s could not be deleted "
+                       "because it is in use: %s") % (image_id, e.msg))
+            LOG.info(msg)
+            raise webob.exc.HTTPConflict(explanation=msg)
 
     def _get_locations_op_pos(self, path_pos, max_pos, allow_max):
         if path_pos is None or max_pos is None:

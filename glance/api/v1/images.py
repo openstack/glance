@@ -1054,6 +1054,14 @@ class Controller(controller.BaseController):
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
+        except exception.InUseByStore as e:
+            msg = (_LI("Image %s could not be deleted because it is in use: "
+                       "%s") % (id, utils.exception_to_str(e)))
+            for line in msg.split('\n'):
+                LOG.info(line)
+            raise HTTPConflict(explanation=msg,
+                               request=req,
+                               content_type="text/plain")
         else:
             self.notifier.info('image.delete', redact_loc(image))
             return Response(body='', status=200)

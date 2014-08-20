@@ -1765,6 +1765,15 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.delete,
                           request, UUID4)
 
+    def test_delete_in_use(self):
+        def fake_safe_delete_from_backend(self, *args, **kwargs):
+            raise exception.InUseByStore()
+        self.stubs.Set(self.store_utils, 'safe_delete_from_backend',
+                       fake_safe_delete_from_backend)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.delete,
+                          request, UUID1)
+
     def test_index_with_invalid_marker(self):
         fake_uuid = str(uuid.uuid4())
         request = unit_test_utils.get_fake_request()
