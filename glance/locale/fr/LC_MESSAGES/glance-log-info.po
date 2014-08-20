@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-06 06:00+0000\n"
+"POT-Creation-Date: 2014-08-20 06:06+0000\n"
 "PO-Revision-Date: 2014-05-28 21:28+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/glance/language/"
@@ -19,6 +19,201 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: glance/scrubber.py:237
+#, python-format
+msgid "%s directory does not exist."
+msgstr ""
+
+#: glance/scrubber.py:416
+#, python-format
+msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
+msgstr ""
+
+#: glance/scrubber.py:430
+msgid "Daemon Shutdown on KeyboardInterrupt"
+msgstr ""
+
+#: glance/scrubber.py:442
+#, python-format
+msgid "Initializing scrubber with configuration: %s"
+msgstr ""
+
+#: glance/scrubber.py:515
+#, python-format
+msgid "Scrubbing image %(id)s from %(count)d locations."
+msgstr ""
+
+#: glance/scrubber.py:538
+#, python-format
+msgid "Image %s has been deleted."
+msgstr ""
+
+#: glance/scrubber.py:590
+#, python-format
+msgid "Getting images deleted before %s"
+msgstr ""
+
+#: glance/api/common.py:161
+#, python-format
+msgid ""
+"User %(user)s attempted to upload an image of unknown size that will exceeed "
+"the quota. %(remaining)d bytes remaining."
+msgstr ""
+
+#: glance/api/common.py:170
+#, python-format
+msgid ""
+"User %(user)s attempted to upload an image of size %(size)d that will "
+"exceeed the quota. %(remaining)d bytes remaining."
+msgstr ""
+
+#: glance/api/middleware/cache.py:61
+msgid "Initialized image cache middleware"
+msgstr ""
+
+#: glance/api/middleware/cache_manage.py:74
+msgid "Initialized image cache management middleware"
+msgstr ""
+
+#: glance/api/middleware/gzip.py:35
+msgid "Initialized gzip middleware"
+msgstr ""
+
+#: glance/api/v1/images.py:703
+msgid "Triggering asynchronous copy from external source"
+msgstr ""
+
+#: glance/api/v1/upload_utils.py:118
+#, python-format
+msgid "Cleaning up %s after exceeding the quota"
+msgstr ""
+
+#: glance/api/v1/upload_utils.py:160
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+
+#: glance/api/v2/images.py:136
+#, python-format
+msgid "Denying attempt to upload image because it exceeds the .quota: %s"
+msgstr ""
+
+#: glance/api/v2/tasks.py:68
+#, python-format
+msgid "Forbidden to create task. Reason: %(reason)s"
+msgstr ""
+
+#: glance/api/v2/tasks.py:106
+#, python-format
+msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
+msgstr ""
+
+#: glance/api/v2/tasks.py:111
+#, python-format
+msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
+msgstr ""
+
+#: glance/cmd/replicator.py:328
+#, python-format
+msgid "Storing: %s"
+msgstr ""
+
+#: glance/cmd/replicator.py:401
+#, python-format
+msgid "Considering: %s"
+msgstr ""
+
+#: glance/cmd/replicator.py:427 glance/cmd/replicator.py:502
+#, python-format
+msgid "Image %s metadata has changed"
+msgstr ""
+
+#: glance/cmd/replicator.py:509
+#, python-format
+msgid "Image %s is being synced"
+msgstr ""
+
+#: glance/cmd/replicator.py:563
+#, python-format
+msgid ""
+"%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
+"is %(slave_value)s)"
+msgstr ""
+
+#: glance/cmd/replicator.py:576
+#, python-format
+msgid "Image %s entirely missing from the destination"
+msgstr ""
+
+#: glance/db/sqlalchemy/api.py:105
+msgid "Attempted to modify image user did not own."
+msgstr ""
+
+#: glance/db/sqlalchemy/migrate_repo/schema.py:98
+#, python-format
+msgid "creating table %(table)s"
+msgstr ""
+
+#: glance/db/sqlalchemy/migrate_repo/schema.py:104
+#, python-format
+msgid "dropping table %(table)s"
+msgstr ""
+
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:70
+msgid ""
+"'metadata_encryption_key' was not specified in the config file or a config "
+"file was not specified. This means that this migration is a NOOP."
+msgstr ""
+
+#: glance/image_cache/__init__.py:68
+#, python-format
+msgid "Image cache loaded driver '%s'."
+msgstr ""
+
+#: glance/image_cache/__init__.py:78 glance/image_cache/__init__.py:97
+msgid "Defaulting to SQLite driver."
+msgstr ""
+
+#: glance/image_cache/prefetcher.py:84
+#, python-format
+msgid "Successfully cached all %d images"
+msgstr ""
+
+#: glance/image_cache/drivers/sqlite.py:413
+#: glance/image_cache/drivers/xattr.py:342
+#, python-format
+msgid "Not queueing image '%s'. Already cached."
+msgstr ""
+
+#: glance/image_cache/drivers/sqlite.py:418
+#: glance/image_cache/drivers/xattr.py:347
+#, python-format
+msgid "Not queueing image '%s'. Already being written to cache"
+msgstr ""
+
+#: glance/image_cache/drivers/sqlite.py:424
+#: glance/image_cache/drivers/xattr.py:353
+#, python-format
+msgid "Not queueing image '%s'. Already queued."
+msgstr ""
+
+#: glance/image_cache/drivers/sqlite.py:442
+#, python-format
+msgid "Removed invalid cache file %s"
+msgstr ""
+
+#: glance/image_cache/drivers/sqlite.py:456
+#, python-format
+msgid "Removed stalled cache file %s"
+msgstr ""
+
+#: glance/image_cache/drivers/xattr.py:399
+#, python-format
+msgid "Reaped %(reaped)s %(entry_type)s cache entries"
+msgstr ""
+
 #: glance/openstack/common/lockutils.py:83
 #, python-format
 msgid "Created lock path: %s"
@@ -29,13 +224,100 @@ msgstr ""
 msgid "Failed to remove file %(file)s"
 msgstr ""
 
-#: glance/openstack/common/db/sqlalchemy/utils.py:379
+#: glance/quota/__init__.py:329
 #, python-format
-msgid "Deleting duplicated row with id: %(id)s from table: %(table)s"
-msgstr "Suppression ligne en double avec l'ID : %(id)s de la table : %(table)s"
+msgid "Cleaning up %s after exceeding the quota."
+msgstr ""
 
-#: glance/store/rbd.py:112 glance/store/rbd.py:120 glance/store/rbd.py:132
-#: glance/store/rbd.py:137
+#: glance/registry/api/v1/images.py:124
+#, python-format
+msgid "Invalid marker. Image %(id)s could not be found."
+msgstr ""
+
+#: glance/registry/api/v1/images.py:129 glance/registry/api/v1/images.py:347
+#: glance/registry/api/v1/images.py:379 glance/registry/api/v1/images.py:501
+#: glance/registry/api/v1/members.py:74 glance/registry/api/v1/members.py:109
+#: glance/registry/api/v1/members.py:227 glance/registry/api/v1/members.py:291
+#, python-format
+msgid "Access denied to image %(id)s but returning 'not found'"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:341 glance/registry/api/v1/images.py:384
+#: glance/registry/api/v1/images.py:489 glance/registry/api/v1/members.py:68
+#: glance/registry/api/v1/members.py:221 glance/registry/api/v1/members.py:285
+#, python-format
+msgid "Image %(id)s not found"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:369
+#, python-format
+msgid "Successfully deleted image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:373
+#, python-format
+msgid "Delete denied for public image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:413
+#, python-format
+msgid "Rejecting image creation request for invalid image id '%(bad_id)s'"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:426
+#, python-format
+msgid "Successfully created image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:480
+#, python-format
+msgid "Updating metadata for image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:495
+#, python-format
+msgid "Update denied for public image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/members.py:116 glance/registry/api/v1/members.py:234
+#: glance/registry/api/v1/members.py:298
+#, python-format
+msgid "User lacks permission to share image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/members.py:127 glance/registry/api/v1/members.py:144
+#: glance/registry/api/v1/members.py:247
+#, python-format
+msgid "Invalid membership association specified for image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/members.py:196
+#, python-format
+msgid "Successfully updated memberships for image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/members.py:269
+#, python-format
+msgid "Successfully updated a membership for image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/members.py:318
+#, python-format
+msgid "Successfully deleted a membership from image %(id)s"
+msgstr ""
+
+#: glance/registry/api/v1/members.py:330
+#, python-format
+msgid "Member %(id)s not found"
+msgstr ""
+
+#: glance/registry/client/v1/client.py:127
+#, python-format
+msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
+msgstr ""
+
+#: glance/store/rbd.py:113 glance/store/rbd.py:121 glance/store/rbd.py:133
+#: glance/store/rbd.py:138
 #, python-format
 msgid "Invalid URI: %s"
 msgstr ""
@@ -52,7 +334,7 @@ msgstr ""
 msgid "Invalid store uri: %s"
 msgstr ""
 
-#: glance/store/s3.py:579
+#: glance/store/s3.py:580
 #, python-format
 msgid ""
 "Multipart complete key=%(obj_name)s UploadId=%(UploadId)s Wrote "
@@ -60,12 +342,16 @@ msgid ""
 "%(checksum_hex)s"
 msgstr ""
 
-#: glance/store/swift.py:299
+#: glance/store/swift.py:302
 #, python-format
 msgid "Invalid store URI: %(reason)s"
 msgstr ""
 
-#: glance/store/swift.py:621
+#: glance/store/swift.py:624
 #, python-format
 msgid "Creating swift container %(container)s"
+msgstr ""
+
+#: glance/store/vmware_datastore.py:315
+msgid "Store session is not authenticated, retry attempt"
 msgstr ""
