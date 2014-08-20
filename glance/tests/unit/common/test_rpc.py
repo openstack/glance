@@ -16,7 +16,6 @@
 #    under the License.
 import datetime
 
-import mox
 from oslo.config import cfg
 import routes
 import webob
@@ -76,9 +75,6 @@ class TestRPCController(base.IsolatedUnitTest):
         self.res = FakeResource()
         self.controller = rpc.Controller()
         self.controller.register(self.res)
-
-        # Mock
-        self.mocker = mox.Mox()
 
     def test_register(self):
         res = FakeResource()

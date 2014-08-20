@@ -24,7 +24,7 @@ import datetime
 import os
 import uuid
 
-import mox
+from mock import patch
 
 from glance.common import config
 from glance.common import exception
@@ -586,23 +586,18 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryV2ClientApi, self).setUp()
-        self.mox = mox.Mox()
         reload(rapi)
 
     def tearDown(self):
         """Clear the test environment"""
         super(TestRegistryV2ClientApi, self).tearDown()
-        self.mox.UnsetStubs()
 
     def test_configure_registry_client_not_using_use_user_token(self):
         self.config(use_user_token=False)
-        self.mox.StubOutWithMock(rapi, 'configure_registry_admin_creds')
-        rapi.configure_registry_admin_creds()
-
-        self.mox.ReplayAll()
-
-        rapi.configure_registry_client()
-        self.mox.VerifyAll()
+        with patch.object(rapi,
+                          'configure_registry_admin_creds') as mock_rapi:
+            rapi.configure_registry_client()
+            mock_rapi.assert_called_once_with()
 
     def _get_fake_config_creds(self, auth_url='auth_url', strategy='keystone'):
         return {
