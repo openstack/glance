@@ -45,7 +45,6 @@ from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
 from glance.store import get_from_backend
 from glance.store import get_known_schemes
-from glance.store import get_known_stores
 from glance.store import get_size_from_backend
 from glance.store import get_store_from_location
 from glance.store import get_store_from_scheme
@@ -489,7 +488,7 @@ class Controller(controller.BaseController):
         """
         location = self._external_source(image_meta, req)
         store = image_meta.get('store')
-        if store and store not in get_known_stores():
+        if store and store not in get_known_schemes():
             msg = _("Required store %s is invalid") % store
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
