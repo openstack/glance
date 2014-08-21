@@ -3,6 +3,7 @@
 # Copyright 2010-2011 OpenStack Foundation
 # Copyright 2012 Justin Santa Barbara
 # Copyright 2013 IBM Corp.
+# Copyright 2015 Mirantis, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -36,8 +37,10 @@ import sqlalchemy
 import sqlalchemy.orm as sa_orm
 import sqlalchemy.sql as sa_sql
 
+from glance import artifacts as ga
 from glance.common import exception
 from glance.common import utils
+from glance.db.sqlalchemy import artifacts
 from glance.db.sqlalchemy.metadef_api import namespace as metadef_namespace_api
 from glance.db.sqlalchemy.metadef_api import object as metadef_object_api
 from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
@@ -1695,3 +1698,58 @@ def metadef_tag_count(context, namespace_name, session=None):
     """Get count of tags for a namespace, raise if ns doesn't exist."""
     session = session or get_session()
     return metadef_tag_api.count(context, namespace_name, session)
+
+
+def artifact_create(context, values, type_name,
+                    type_version=None, session=None):
+    session = session or get_session()
+    artifact = artifacts.create(context, values, session, type_name,
+                                type_version)
+    return artifact
+
+
+def artifact_delete(context, artifact_id, type_name,
+                    type_version=None, session=None):
+    session = session or get_session()
+    artifact = artifacts.delete(context, artifact_id, session, type_name,
+                                type_version)
+    return artifact
+
+
+def artifact_update(context, values, artifact_id, type_name,
+                    type_version=None, session=None):
+    session = session or get_session()
+    artifact = artifacts.update(context, values, artifact_id, session,
+                                type_name, type_version)
+    return artifact
+
+
+def artifact_get(context, artifact_id,
+                 type_name=None,
+                 type_version=None,
+                 show_level=ga.Showlevel.BASIC,
+                 session=None):
+    session = session or get_session()
+    return artifacts.get(context, artifact_id, session, type_name,
+                         type_version, show_level)
+
+
+def artifact_publish(context,
+                     artifact_id,
+                     type_name,
+                     type_version=None,
+                     session=None):
+    session = session or get_session()
+    return artifacts.publish(context,
+                             artifact_id,
+                             session,
+                             type_name,
+                             type_version)
+
+
+def artifact_get_all(context, marker=None, limit=None, sort_keys=None,
+                     sort_dirs=None, filters=None,
+                     show_level=ga.Showlevel.NONE, session=None):
+    session = session or get_session()
+    return artifacts.get_all(context, session, marker, limit, sort_keys,
+                             sort_dirs, filters, show_level)

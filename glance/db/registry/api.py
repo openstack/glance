@@ -1,4 +1,5 @@
 # Copyright 2013 Red Hat, Inc.
+# Copyright 2015 Mirantis, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -32,6 +33,7 @@ import functools
 
 from oslo_log import log as logging
 
+from glance import artifacts
 from glance.registry.client.v2 import api
 
 
@@ -557,3 +559,51 @@ def metadef_tag_delete_namespace_content(
 @_get_client
 def metadef_tag_count(client, namespace_name, session=None):
     return client.metadef_tag_count(namespace_name=namespace_name)
+
+
+@_get_client
+def artifact_create(client, values,
+                    type_name, type_version=None, session=None):
+    return client.artifact_create(values=values,
+                                  type_name=type_name,
+                                  type_version=type_version)
+
+
+@_get_client
+def artifact_update(client, values, artifact_id,
+                    type_name, type_version=None, session=None):
+    return client.artifact_update(values=values, artifact_id=artifact_id,
+                                  type_name=type_name,
+                                  type_version=type_version)
+
+
+@_get_client
+def artifact_delete(client, artifact_id,
+                    type_name, type_version=None, session=None):
+    return client.artifact_delete(artifact_id=artifact_id,
+                                  type_name=type_name,
+                                  type_version=type_version)
+
+
+@_get_client
+def artifact_get(client, artifact_id,
+                 type_name, type_version=None, session=None):
+    return client.artifact_get(artifact_id=artifact_id,
+                               type_name=type_name,
+                               type_version=type_version)
+
+
+@_get_client
+def artifact_get_all(client, marker=None, limit=None, sort_key=None,
+                     sort_dir=None, filters={},
+                     show_level=artifacts.Showlevel.NONE, session=None):
+    return client.artifact_create(marker, limit, sort_key,
+                                  sort_dir, filters, show_level)
+
+
+@_get_client
+def artifact_publish(client, artifact_id,
+                     type_name, type_version=None, session=None):
+    return client.artifact_publish(artifact_id=artifact_id,
+                                   type_name=type_name,
+                                   type_version=type_version)

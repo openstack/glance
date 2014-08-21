@@ -52,6 +52,9 @@ BigInteger = lambda: sqlalchemy.types.BigInteger()
 PickleType = lambda: sqlalchemy.types.PickleType()
 
 
+Numeric = lambda: sqlalchemy.types.Numeric()
+
+
 def from_migration_import(module_name, fromlist):
     """
     Import a migration file and return the module

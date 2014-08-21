@@ -51,7 +51,9 @@ from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 from glance.db.sqlalchemy import models
+from glance.db.sqlalchemy import models_artifacts
 from glance.db.sqlalchemy import models_metadef
+
 from glance import i18n
 
 _ = i18n._
@@ -1495,6 +1497,142 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             self.assertFalse(index_exist('namespace_id',
                              metadef_tags.name, engine))
 
+    def _pre_upgrade_041(self, engine):
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine,
+                          'artifacts')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine,
+                          'artifact_tags')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine,
+                          'artifact_properties')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine,
+                          'artifact_blobs')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine,
+                          'artifact_dependencies')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine,
+                          'artifact_locations')
+
+    def _check_041(self, engine, data):
+        artifacts_indices = [('ix_artifact_name_and_version',
+                              ['name', 'version_prefix', 'version_suffix']),
+                             ('ix_artifact_type',
+                              ['type_name',
+                               'type_version_prefix',
+                               'type_version_suffix']),
+                             ('ix_artifact_state', ['state']),
+                             ('ix_artifact_visibility', ['visibility']),
+                             ('ix_artifact_owner', ['owner'])]
+        artifacts_columns = ['id',
+                             'name',
+                             'type_name',
+                             'type_version_prefix',
+                             'type_version_suffix',
+                             'type_version_meta',
+                             'version_prefix',
+                             'version_suffix',
+                             'version_meta',
+                             'description',
+                             'visibility',
+                             'state',
+                             'owner',
+                             'created_at',
+                             'updated_at',
+                             'deleted_at',
+                             'published_at']
+        self.assert_table(engine, 'artifacts', artifacts_indices,
+                          artifacts_columns)
+
+        tags_indices = [('ix_artifact_tags_artifact_id', ['artifact_id']),
+                        ('ix_artifact_tags_artifact_id_tag_value',
+                         ['artifact_id',
+                          'value'])]
+        tags_columns = ['id',
+                        'artifact_id',
+                        'value',
+                        'created_at',
+                        'updated_at']
+        self.assert_table(engine, 'artifact_tags', tags_indices, tags_columns)
+
+        prop_indices = [
+            ('ix_artifact_properties_artifact_id', ['artifact_id']),
+            ('ix_artifact_properties_name', ['name'])]
+        prop_columns = ['id',
+                        'artifact_id',
+                        'name',
+                        'string_value',
+                        'int_value',
+                        'numeric_value',
+                        'bool_value',
+                        'text_value',
+                        'created_at',
+                        'updated_at',
+                        'position']
+        self.assert_table(engine, 'artifact_properties', prop_indices,
+                          prop_columns)
+
+        blobs_indices = [
+            ('ix_artifact_blobs_artifact_id', ['artifact_id']),
+            ('ix_artifact_blobs_name', ['name'])]
+        blobs_columns = ['id',
+                         'artifact_id',
+                         'size',
+                         'checksum',
+                         'name',
+                         'item_key',
+                         'position',
+                         'created_at',
+                         'updated_at']
+        self.assert_table(engine, 'artifact_blobs', blobs_indices,
+                          blobs_columns)
+
+        dependencies_indices = [
+            ('ix_artifact_dependencies_source_id', ['artifact_source']),
+            ('ix_artifact_dependencies_direct_dependencies',
+             ['artifact_source', 'is_direct']),
+            ('ix_artifact_dependencies_dest_id', ['artifact_dest']),
+            ('ix_artifact_dependencies_origin_id', ['artifact_origin'])]
+        dependencies_columns = ['id',
+                                'artifact_source',
+                                'artifact_dest',
+                                'artifact_origin',
+                                'is_direct',
+                                'position',
+                                'name',
+                                'created_at',
+                                'updated_at']
+        self.assert_table(engine, 'artifact_dependencies',
+                          dependencies_indices,
+                          dependencies_columns)
+
+        locations_indices = [
+            ('ix_artifact_blob_locations_blob_id', ['blob_id'])]
+        locations_columns = ['id',
+                             'blob_id',
+                             'value',
+                             'created_at',
+                             'updated_at',
+                             'position',
+                             'status']
+        self.assert_table(engine, 'artifact_blob_locations', locations_indices,
+                          locations_columns)
+
+    def assert_table(self, engine, table_name, indices, columns):
+        table = db_utils.get_table(engine, table_name)
+        index_data = [(index.name, index.columns.keys()) for index in
+                      table.indexes]
+        column_data = [column.name for column in table.columns]
+        # instead of calling assertItemsEqual, which is not present in py26
+        # asserting equality of lengths and sorted collections
+        self.assertEqual(len(columns), len(column_data))
+        self.assertEqual(sorted(columns), sorted(column_data))
+        self.assertEqual(len(indices), len(index_data))
+        self.assertEqual(sorted(indices), sorted(index_data))
+
 
 class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
                           MigrationsMixin):
@@ -1536,6 +1674,8 @@ class ModelsMigrationSyncMixin(object):
 
     def get_metadata(self):
         for table in models_metadef.BASE_DICT.metadata.sorted_tables:
+            models.BASE.metadata._add_table(table.name, table.schema, table)
+        for table in models_artifacts.BASE.metadata.sorted_tables:
             models.BASE.metadata._add_table(table.name, table.schema, table)
         return models.BASE.metadata
 
