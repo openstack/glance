@@ -19,6 +19,7 @@ import os
 import uuid
 
 from mock import patch
+from oslo.utils import timeutils
 import testtools
 
 from glance.common import client as test_client
@@ -26,7 +27,6 @@ from glance.common import config
 from glance.common import exception
 from glance import context
 from glance.db.sqlalchemy import api as db_api
-from glance.openstack.common import timeutils
 from glance.registry.api.v1.images import Controller as rcontroller
 import glance.registry.client.v1.api as rapi
 from glance.registry.client.v1.api import client as rclient

@@ -40,6 +40,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from oslo.config import cfg
 from oslo.db.sqlalchemy import migration
+from oslo.utils import encodeutils
 
 from glance.common import config
 from glance.common import exception
@@ -49,7 +50,6 @@ from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata
 from glance.openstack.common import gettextutils
 from glance.openstack.common import log
-from glance.openstack.common import strutils
 
 
 CONF = cfg.CONF
@@ -283,9 +283,9 @@ def main():
                 v = getattr(CONF.command, 'action_kwarg_' + k)
                 if v is None:
                     continue
-                func_kwargs[k] = strutils.safe_decode(v)
+                func_kwargs[k] = encodeutils.safe_decode(v)
 
-            func_args = [strutils.safe_decode(arg)
+            func_args = [encodeutils.safe_decode(arg)
                          for arg in CONF.command.action_args]
             return CONF.command.action_fn(*func_args, **func_kwargs)
     except exception.GlanceException as e:

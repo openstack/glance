@@ -38,14 +38,15 @@ import uuid
 import netaddr
 from OpenSSL import crypto
 from oslo.config import cfg
+from oslo.utils import encodeutils
+from oslo.utils import excutils
+from oslo.utils import netutils
+from oslo.utils import strutils
 import six
 from webob import exc
 
 from glance.common import exception
-from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
-from glance.openstack.common import network_utils
-from glance.openstack.common import strutils
 
 CONF = cfg.CONF
 
@@ -622,7 +623,7 @@ def parse_valid_host_port(host_port):
 
     try:
         try:
-            host, port = network_utils.parse_host_port(host_port)
+            host, port = netutils.parse_host_port(host_port)
         except Exception:
             raise ValueError(_('Host and port "%s" is not valid.') % host_port)
 
@@ -658,4 +659,4 @@ def exception_to_str(exc):
         except UnicodeError:
             error = ("Caught '%(exception)s' exception." %
                      {"exception": exc.__class__.__name__})
-    return strutils.safe_encode(error, errors='ignore')
+    return encodeutils.safe_encode(error, errors='ignore')

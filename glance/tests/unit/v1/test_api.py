@@ -23,6 +23,7 @@ import uuid
 import glance_store as store
 import mock
 from oslo.config import cfg
+from oslo.utils import timeutils
 import routes
 import six
 import webob
@@ -37,7 +38,6 @@ import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import jsonutils
-from glance.openstack.common import timeutils
 import glance.registry.client.v1.api as registry
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils

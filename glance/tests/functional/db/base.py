@@ -20,10 +20,10 @@ import datetime
 import uuid
 
 import mock
+from oslo.utils import timeutils
 
 from glance.common import exception
 from glance import context
-from glance.openstack.common import timeutils
 import glance.tests.functional.db as db_tests
 from glance.tests import utils as test_utils
 

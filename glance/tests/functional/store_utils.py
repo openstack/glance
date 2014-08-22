@@ -23,7 +23,7 @@ from __future__ import print_function
 import BaseHTTPServer
 import threading
 
-from glance.openstack.common import units
+from oslo.utils import units
 
 
 FIVE_KB = 5 * units.Ki

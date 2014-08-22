@@ -21,10 +21,10 @@ import os
 import sys
 
 import httplib2
+from oslo.utils import units
 from six.moves import xrange
 
 from glance.openstack.common import jsonutils
-from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.utils import execute
 from glance.tests.utils import minimal_headers

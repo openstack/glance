@@ -25,12 +25,12 @@ import os
 import uuid
 
 from mock import patch
+from oslo.utils import timeutils
 
 from glance.common import config
 from glance.common import exception
 from glance import context
 from glance.db.sqlalchemy import api as db_api
-from glance.openstack.common import timeutils
 from glance.registry.api import v2 as rserver
 import glance.registry.client.v2.api as rapi
 from glance.registry.client.v2.api import client as rclient

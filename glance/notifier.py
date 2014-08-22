@@ -17,14 +17,14 @@
 import glance_store
 from oslo.config import cfg
 from oslo import messaging
+from oslo.utils import excutils
+from oslo.utils import timeutils
 import webob
 
 from glance.common import exception
 from glance.common import utils
 import glance.domain.proxy
-from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
-from glance.openstack.common import timeutils
 
 notifier_opts = [
     cfg.StrOpt('default_publisher_id', default="image.localhost",

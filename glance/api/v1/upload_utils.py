@@ -14,13 +14,13 @@
 #    under the License.
 import glance_store as store_api
 from oslo.config import cfg
+from oslo.utils import excutils
 import webob.exc
 
 from glance.common import exception
 from glance.common import store_utils
 from glance.common import utils
 import glance.db
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry

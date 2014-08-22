@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import glance_store
+from oslo.utils import excutils
 import webob.exc
 
 import glance.api.policy
@@ -22,7 +23,6 @@ from glance.common import wsgi
 import glance.db
 import glance.gateway
 import glance.notifier
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 

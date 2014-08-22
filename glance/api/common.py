@@ -16,12 +16,12 @@
 import re
 
 from oslo.config import cfg
+from oslo.utils import excutils
+from oslo.utils import units
 
 from glance.common import exception
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 from glance.openstack.common import log as logging
-from glance.openstack.common import units
 
 LOG = logging.getLogger(__name__)
 _LE = gettextutils._LE

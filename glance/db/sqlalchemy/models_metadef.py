@@ -17,6 +17,7 @@ SQLAlchemy models for glance metadata schema
 """
 
 from oslo.db.sqlalchemy import models
+from oslo.utils import timeutils
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -27,8 +28,6 @@ from sqlalchemy import Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy import String
 from sqlalchemy import Text
-
-from glance.openstack.common import timeutils
 
 
 class DictionaryBase(models.ModelBase):

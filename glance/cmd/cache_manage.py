@@ -26,6 +26,8 @@ import os
 import sys
 import time
 
+from oslo.utils import timeutils
+
 from glance.common import utils
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
@@ -38,7 +40,6 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from glance.common import exception
 import glance.image_cache.client
-from glance.openstack.common import timeutils
 from glance.version import version_info as version
 
 

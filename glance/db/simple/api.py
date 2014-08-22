@@ -18,11 +18,11 @@ import copy
 import functools
 import uuid
 
+from oslo.utils import timeutils
 import six
 
 from glance.common import exception
 import glance.openstack.common.log as logging
-from glance.openstack.common import timeutils
 
 
 LOG = logging.getLogger(__name__)

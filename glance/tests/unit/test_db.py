@@ -33,7 +33,7 @@ CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
-@mock.patch('glance.openstack.common.importutils.import_module')
+@mock.patch('oslo.utils.importutils.import_module')
 class TestDbUtilities(test_utils.BaseTestCase):
     def setUp(self):
         super(TestDbUtilities, self).setUp()

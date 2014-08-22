@@ -18,11 +18,11 @@ import copy
 
 import glance_store as store
 from oslo.config import cfg
+from oslo.utils import excutils
 
 from glance.common import exception
 from glance.common import utils
 import glance.domain.proxy
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 

@@ -20,14 +20,14 @@ LRU Cache for Image Data
 import hashlib
 
 from oslo.config import cfg
+from oslo.utils import excutils
+from oslo.utils import importutils
+from oslo.utils import units
 
 from glance.common import exception
 from glance.common import utils
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
-from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
-from glance.openstack.common import units
 
 LOG = logging.getLogger(__name__)
 _LE = gettextutils._LE

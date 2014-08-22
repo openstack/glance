@@ -16,11 +16,11 @@ import uuid
 
 import mock
 from mock import patch
+from oslo.utils import units
 import six
 
 from glance.common import exception
 from glance.common import store_utils
-from glance.openstack.common import units
 import glance.quota
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils

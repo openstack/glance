@@ -25,6 +25,7 @@ import subprocess
 
 import fixtures
 from oslo.config import cfg
+from oslo.utils import timeutils
 import six
 import stubout
 import testtools
@@ -38,7 +39,6 @@ from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import jsonutils
-from glance.openstack.common import timeutils
 
 CONF = cfg.CONF
 

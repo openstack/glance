@@ -18,9 +18,10 @@ Simple client class to speak with any RESTful service that implements
 the Glance Registry API
 """
 
+from oslo.utils import excutils
+
 from glance.common.client import BaseClient
 from glance.common import crypt
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging

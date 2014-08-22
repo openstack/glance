@@ -18,13 +18,13 @@ import datetime
 import uuid
 
 import mock
+from oslo.utils import timeutils
 import webob
 
 import glance.api.v2.tasks
 import glance.domain
 import glance.gateway
 from glance.openstack.common import jsonutils
-from glance.openstack.common import timeutils
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils

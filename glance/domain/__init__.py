@@ -19,14 +19,14 @@ import datetime
 import uuid
 
 from oslo.config import cfg
+from oslo.utils import excutils
+from oslo.utils import importutils
+from oslo.utils import timeutils
 import six
 
 from glance.common import exception
 from glance import i18n
-from glance.openstack.common import excutils
-from glance.openstack.common import importutils
 import glance.openstack.common.log as logging
-from glance.openstack.common import timeutils
 
 _LE = i18n._LE
 LOG = logging.getLogger(__name__)

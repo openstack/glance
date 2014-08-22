@@ -20,13 +20,13 @@ import os
 import time
 
 import fixtures
+from oslo.utils import units
 import six
 from six.moves import xrange
 import stubout
 
 from glance.common import exception
 from glance import image_cache
-from glance.openstack.common import units
 # NOTE(bcwaldon): This is imported to load the registry config options
 import glance.registry  # noqa
 from glance.tests import utils as test_utils

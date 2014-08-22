@@ -24,10 +24,10 @@ import tempfile
 import time
 
 import httplib2
+from oslo.utils import units
 from six.moves import xrange
 
 from glance.openstack.common import jsonutils
-from glance.openstack.common import units
 from glance.tests import functional
 from glance.tests.functional.store_utils import get_http_uri
 from glance.tests.functional.store_utils import setup_http

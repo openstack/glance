@@ -16,6 +16,7 @@ import copy
 
 import glance_store as store
 from oslo.config import cfg
+from oslo.utils import excutils
 import six
 
 import glance.api.common
@@ -23,7 +24,6 @@ import glance.common.exception as exception
 from glance.common import utils
 import glance.domain
 import glance.domain.proxy
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 

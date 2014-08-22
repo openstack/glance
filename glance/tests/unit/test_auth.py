@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.utils import timeutils
 import stubout
 import webob
 
@@ -22,7 +23,6 @@ from glance.common import auth
 from glance.common import exception
 import glance.domain
 from glance.openstack.common import jsonutils
-from glance.openstack.common import timeutils
 from glance.tests.unit import utils as unittest_utils
 from glance.tests import utils
 

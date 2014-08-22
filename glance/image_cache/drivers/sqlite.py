@@ -27,10 +27,10 @@ import time
 from eventlet import sleep
 from eventlet import timeout
 from oslo.config import cfg
+from oslo.utils import excutils
 
 from glance.common import exception
 from glance.image_cache.drivers import base
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 

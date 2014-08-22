@@ -25,6 +25,7 @@ import threading
 from oslo.config import cfg
 from oslo.db import exception as db_exception
 from oslo.db.sqlalchemy import session
+from oslo.utils import timeutils
 import osprofiler.sqlalchemy
 from retrying import retry
 import six
@@ -44,7 +45,6 @@ from glance.db.sqlalchemy.metadef_api\
 from glance.db.sqlalchemy import models
 from glance import i18n
 import glance.openstack.common.log as os_logging
-from glance.openstack.common import timeutils
 
 BASE = models.BASE
 sa_logger = None

@@ -15,11 +15,11 @@ import hashlib
 import os
 import tempfile
 
+from oslo.utils import timeutils
+from oslo.utils import units
 import testtools
 
 from glance.openstack.common import jsonutils
-from glance.openstack.common import timeutils
-from glance.openstack.common import units
 from glance.tests.integration.legacy_functional import base
 from glance.tests.utils import minimal_headers
 

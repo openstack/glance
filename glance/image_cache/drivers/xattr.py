@@ -59,12 +59,12 @@ import stat
 import time
 
 from oslo.config import cfg
+from oslo.utils import excutils
 import xattr
 
 from glance.common import exception
 from glance.common import utils
 from glance.image_cache.drivers import base
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 

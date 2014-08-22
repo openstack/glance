@@ -18,6 +18,8 @@ Reference implementation registry server WSGI controller
 """
 
 from oslo.config import cfg
+from oslo.utils import strutils
+from oslo.utils import timeutils
 from webob import exc
 
 from glance.common import exception
@@ -26,8 +28,6 @@ from glance.common import wsgi
 import glance.db
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
-from glance.openstack.common import strutils
-from glance.openstack.common import timeutils
 
 
 LOG = logging.getLogger(__name__)

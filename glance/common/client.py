@@ -40,6 +40,7 @@ try:
 except ImportError:
     SENDFILE_SUPPORTED = False
 
+from oslo.utils import encodeutils
 import six
 import six.moves.urllib.parse as urlparse
 from six.moves import xrange
@@ -48,7 +49,6 @@ from glance.common import auth
 from glance.common import exception
 from glance.common import utils
 import glance.openstack.common.log as logging
-from glance.openstack.common import strutils
 
 LOG = logging.getLogger(__name__)
 
@@ -403,7 +403,7 @@ class BaseClient(object):
                     continue
                 if not isinstance(value, six.string_types):
                     value = str(value)
-                params[key] = strutils.safe_encode(value)
+                params[key] = encodeutils.safe_encode(value)
             query = urlparse.urlencode(params)
         else:
             query = None
@@ -424,7 +424,7 @@ class BaseClient(object):
         :returns: Dictionary with encoded headers'
                   names and values
         """
-        to_str = strutils.safe_encode
+        to_str = encodeutils.safe_encode
         return dict([(to_str(h), to_str(v)) for h, v in
                      six.iteritems(headers)])
 

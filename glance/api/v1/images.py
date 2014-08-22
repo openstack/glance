@@ -23,6 +23,8 @@ import eventlet
 import glance_store as store
 import glance_store.location
 from oslo.config import cfg
+from oslo.utils import excutils
+from oslo.utils import strutils
 import six.moves.urllib.parse as urlparse
 from webob.exc import HTTPBadRequest
 from webob.exc import HTTPConflict
@@ -44,10 +46,8 @@ from glance.common import utils
 from glance.common import wsgi
 from glance.i18n import _LE
 from glance import notifier
-from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
-from glance.openstack.common import strutils
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)

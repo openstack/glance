@@ -20,6 +20,8 @@ import datetime
 import traceback
 
 from oslo.config import cfg
+import oslo.utils.importutils as imp
+from oslo.utils import timeutils
 import six
 from webob import exc
 
@@ -27,9 +29,7 @@ from glance.common import client
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
-import glance.openstack.common.importutils as imp
 import glance.openstack.common.log as logging
-from glance.openstack.common import timeutils
 
 LOG = logging.getLogger(__name__)
 

@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.utils import timeutils
 import sqlalchemy
 from sqlalchemy.schema import (
     Column, ForeignKey, Index, MetaData, Table, UniqueConstraint)  # noqa
@@ -19,7 +20,6 @@ from sqlalchemy.schema import (
 from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, Integer, String, Text, create_tables,
     drop_tables)  # noqa
-from glance.openstack.common import timeutils
 
 
 RESOURCE_TYPES = [u'OS::Glance::Image', u'OS::Cinder::Volume',

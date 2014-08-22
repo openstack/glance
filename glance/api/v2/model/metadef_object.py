@@ -28,7 +28,7 @@ class MetadefObject(types.Base, WSMEModelTransformer):
     properties = wsme.wsattr({types.text: PropertyType}, mandatory=False)
 
     # Not using datetime since time format has to be
-    # in glance.openstack.common.timeutils.isotime() format
+    # in oslo.utils.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 

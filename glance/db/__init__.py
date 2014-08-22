@@ -17,6 +17,7 @@
 #    under the License.
 
 from oslo.config import cfg
+from oslo.utils import importutils
 from wsme.rest.json import fromjson
 from wsme.rest.json import tojson
 
@@ -26,7 +27,6 @@ from glance.common import exception
 from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
-from glance.openstack.common import importutils
 from glance.openstack.common import jsonutils as json
 
 CONF = cfg.CONF
