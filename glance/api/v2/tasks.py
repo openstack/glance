@@ -36,7 +36,7 @@ import glance.openstack.common.log as logging
 import glance.schema
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
+_LW = gettextutils._LW
 
 CONF = cfg.CONF
 CONF.import_opt('task_time_to_live', 'glance.common.config', group='task')
@@ -68,9 +68,9 @@ class TasksController(object):
             task_executor = executor_factory.new_task_executor(req.context)
             new_task.run(task_executor)
         except exception.Forbidden as e:
-            msg = (_LI("Forbidden to create task. Reason: %(reason)s")
+            msg = (_LW("Forbidden to create task. Reason: %(reason)s")
                    % {'reason': utils.exception_to_str(e)})
-            LOG.info(msg)
+            LOG.warn(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return new_task
 
@@ -93,10 +93,10 @@ class TasksController(object):
                 result['next_marker'] = tasks[-1].task_id
         except (exception.NotFound, exception.InvalidSortKey,
                 exception.InvalidFilterRangeValue) as e:
-            LOG.info(utils.exception_to_str(e))
+            LOG.warn(utils.exception_to_str(e))
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.info(utils.exception_to_str(e))
+            LOG.warn(utils.exception_to_str(e))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         result['tasks'] = tasks
         return result
@@ -106,15 +106,15 @@ class TasksController(object):
             task_repo = self.gateway.get_task_repo(req.context)
             task = task_repo.get(task_id)
         except exception.NotFound as e:
-            msg = (_LI("Failed to find task %(task_id)s. Reason: %(reason)s") %
+            msg = (_LW("Failed to find task %(task_id)s. Reason: %(reason)s") %
                    {'task_id': task_id, 'reason': utils.exception_to_str(e)})
-            LOG.info(msg)
+            LOG.warn(msg)
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            msg = (_LI("Forbidden to get task %(task_id)s. Reason:"
+            msg = (_LW("Forbidden to get task %(task_id)s. Reason:"
                        " %(reason)s") %
                    {'task_id': task_id, 'reason': utils.exception_to_str(e)})
-            LOG.info(msg)
+            LOG.warn(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return task
 

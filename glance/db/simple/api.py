@@ -22,10 +22,13 @@ from oslo.utils import timeutils
 import six
 
 from glance.common import exception
+from glance import i18n
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+_LI = i18n._LI
+_LW = i18n._LW
 
 DATA = {
     'images': {},
@@ -47,12 +50,13 @@ INDEX = 0
 def log_call(func):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        LOG.info(_('Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s') %
+        LOG.info(_LI('Calling %(funcname)s: args=%(args)s, '
+                     'kwargs=%(kwargs)s') %
                  {"funcname": func.__name__,
                   "args": args,
                   "kwargs": kwargs})
         output = func(*args, **kwargs)
-        LOG.info(_('Returning %(funcname)s: %(output)s') %
+        LOG.info(_LI('Returning %(funcname)s: %(output)s') %
                  {"funcname": func.__name__,
                   "output": output})
         return output
@@ -341,15 +345,15 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        LOG.info(_('Could not find image %s') % image_id)
+        LOG.warn(_LW('Could not find image %s') % image_id)
         raise exception.NotFound()
 
     if image['deleted'] and not (force_show_deleted or context.show_deleted):
-        LOG.info(_('Unable to get deleted image'))
+        LOG.warn(_LW('Unable to get deleted image'))
         raise exception.NotFound()
 
     if not is_image_visible(context, image):
-        LOG.info(_('Unable to get unowned image'))
+        LOG.warn(_LW('Unable to get unowned image'))
         raise exception.Forbidden("Image not visible to you")
 
     return image
@@ -858,18 +862,19 @@ def _task_get(context, task_id, force_show_deleted=False):
     try:
         task = DATA['tasks'][task_id]
     except KeyError:
-        msg = _('Could not find task %s') % task_id
-        LOG.info(msg)
+        msg = _LW('Could not find task %s') % task_id
+        LOG.warn(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
     if task['deleted'] and not (force_show_deleted or context.show_deleted):
-        msg = _('Unable to get deleted task %s') % task_id
-        LOG.info(msg)
+        msg = _LW('Unable to get deleted task %s') % task_id
+        LOG.warn(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
     if not _is_task_visible(context, task):
         msg = "Forbidding request, task %s is not visible" % task_id
         LOG.debug(msg)
+        msg = _("Forbidding request, task %s is not visible") % task_id
         raise exception.Forbidden(msg)
 
     task_info = _task_info_get(task_id)
@@ -1024,8 +1029,8 @@ def _task_info_get(task_id):
     try:
         task_info = DATA['task_info'][task_id]
     except KeyError:
-        msg = _('Could not find task info %s') % task_id
-        LOG.info(msg)
+        msg = _LW('Could not find task info %s') % task_id
+        LOG.warn(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
     return task_info

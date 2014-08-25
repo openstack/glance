@@ -163,7 +163,7 @@ def check_quota(context, image_size, db_api, image_id=None):
         # exception is when there is no room left at all, thus we know
         # it will not fit
         if remaining <= 0:
-            LOG.info(_LI("User %(user)s attempted to upload an image of"
+            LOG.warn(_LW("User %(user)s attempted to upload an image of"
                          " unknown size that will exceeed the quota."
                          " %(remaining)d bytes remaining.")
                      % {'user': user, 'remaining': remaining})
@@ -172,7 +172,7 @@ def check_quota(context, image_size, db_api, image_id=None):
         return
 
     if image_size > remaining:
-        LOG.info(_LI("User %(user)s attempted to upload an image of size"
+        LOG.warn(_LW("User %(user)s attempted to upload an image of size"
                      " %(size)d that will exceeed the quota. %(remaining)d"
                      " bytes remaining.")
                  % {'user': user, 'size': image_size, 'remaining': remaining})

@@ -254,7 +254,7 @@ class ScrubFileQueue(ScrubQueue):
         :retval a list of image id, location id and uri tuple from scrub queue
         """
         if not os.path.exists(self.scrubber_datadir):
-            LOG.info(_LI("%s directory does not exist.") %
+            LOG.warn(_LW("%s directory does not exist.") %
                      self.scrubber_datadir)
             return []
 

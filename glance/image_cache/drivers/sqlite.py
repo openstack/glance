@@ -329,12 +329,12 @@ class Driver(base.Driver):
                 if os.path.exists(incomplete_path):
                     invalid_path = self.get_image_filepath(image_id, 'invalid')
 
-                    LOG.debug("Fetch of cache file failed (%(e)s), rolling "
-                              "back by moving '%(incomplete_path)s' to "
-                              "'%(invalid_path)s'",
-                              {'e': e,
-                               'incomplete_path': incomplete_path,
-                               'invalid_path': invalid_path})
+                    LOG.warn(_LW("Fetch of cache file failed (%(e)s), rolling "
+                                 "back by moving '%(incomplete_path)s' to "
+                                 "'%(invalid_path)s'") %
+                             {'e': e,
+                              'incomplete_path': incomplete_path,
+                              'invalid_path': invalid_path})
                     os.rename(incomplete_path, invalid_path)
 
                 db.execute("""DELETE FROM cached_images

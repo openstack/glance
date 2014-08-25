@@ -28,6 +28,7 @@ import glance.openstack.common.log as logging
 from glance.registry.api.v1 import images
 
 LOG = logging.getLogger(__name__)
+_LE = gettextutils._LE
 _LI = gettextutils._LI
 
 
@@ -125,10 +126,10 @@ class RegistryClient(BaseClient):
         except Exception as exc:
             with excutils.save_and_reraise_exception():
                 exc_name = exc.__class__.__name__
-                LOG.info(_LI("Registry client request %(method)s %(action)s "
-                             "raised %(exc_name)s"),
-                         {'method': method, 'action': action,
-                          'exc_name': exc_name})
+                LOG.exception(_LE("Registry client request %(method)s "
+                                  "%(action)s raised %(exc_name)s"),
+                              {'method': method, 'action': action,
+                               'exc_name': exc_name})
         return res
 
     def get_images_detailed(self, **kwargs):
