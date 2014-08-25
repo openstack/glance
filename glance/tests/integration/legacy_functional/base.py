@@ -123,6 +123,7 @@ class ApiTest(test_utils.BaseTestCase):
     def init(self):
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self._configure_logging()
+        self._configure_policy()
         self._setup_database()
         self._setup_stores()
         self._setup_property_protection()
@@ -144,6 +145,10 @@ class ApiTest(test_utils.BaseTestCase):
         self._copy_data_file('property-protections.conf', self.test_dir)
         self.property_file = os.path.join(self.test_dir,
                                           'property-protections.conf')
+
+    def _configure_policy(self):
+        policy_file = self._copy_data_file('policy.json', self.test_dir)
+        self.config(policy_file=policy_file)
 
     def _configure_logging(self):
         self.config(default_log_levels=[
