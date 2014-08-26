@@ -28,32 +28,71 @@ class API(wsgi.Router):
 
     def __init__(self, mapper):
         custom_image_properties = images.load_custom_properties()
+        reject_method_resource = wsgi.Resource(wsgi.RejectMethodController())
 
         schemas_resource = schemas.create_resource(custom_image_properties)
         mapper.connect('/schemas/image',
                        controller=schemas_resource,
                        action='image',
                        conditions={'method': ['GET']})
+        mapper.connect('/schemas/image',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
         mapper.connect('/schemas/images',
                        controller=schemas_resource,
                        action='images',
                        conditions={'method': ['GET']})
+        mapper.connect('/schemas/images',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
         mapper.connect('/schemas/member',
                        controller=schemas_resource,
                        action='member',
                        conditions={'method': ['GET']})
+        mapper.connect('/schemas/member',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
         mapper.connect('/schemas/members',
                        controller=schemas_resource,
                        action='members',
                        conditions={'method': ['GET']})
+        mapper.connect('/schemas/members',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
         mapper.connect('/schemas/task',
                        controller=schemas_resource,
                        action='task',
                        conditions={'method': ['GET']})
+        mapper.connect('/schemas/task',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
         mapper.connect('/schemas/tasks',
                        controller=schemas_resource,
                        action='tasks',
                        conditions={'method': ['GET']})
+        mapper.connect('/schemas/tasks',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
 
         images_resource = images.create_resource(custom_image_properties)
         mapper.connect('/images',
@@ -64,6 +103,13 @@ class API(wsgi.Router):
                        controller=images_resource,
                        action='create',
                        conditions={'method': ['POST']})
+        mapper.connect('/images',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST',
+                       conditions={'method': ['PUT', 'DELETE', 'PATCH',
+                                              'HEAD']})
+
         mapper.connect('/images/{image_id}',
                        controller=images_resource,
                        action='update',
@@ -76,6 +122,11 @@ class API(wsgi.Router):
                        controller=images_resource,
                        action='delete',
                        conditions={'method': ['DELETE']})
+        mapper.connect('/images/{image_id}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, PATCH, DELETE',
+                       conditions={'method': ['POST', 'PUT', 'HEAD']})
 
         image_data_resource = image_data.create_resource()
         mapper.connect('/images/{image_id}/file',
@@ -86,6 +137,12 @@ class API(wsgi.Router):
                        controller=image_data_resource,
                        action='upload',
                        conditions={'method': ['PUT']})
+        mapper.connect('/images/{image_id}/file',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, PUT',
+                       conditions={'method': ['POST', 'DELETE', 'PATCH',
+                                              'HEAD']})
 
         image_tags_resource = image_tags.create_resource()
         mapper.connect('/images/{image_id}/tags/{tag_value}',
@@ -96,12 +153,29 @@ class API(wsgi.Router):
                        controller=image_tags_resource,
                        action='delete',
                        conditions={'method': ['DELETE']})
+        mapper.connect('/images/{image_id}/tags/{tag_value}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='PUT, DELETE',
+                       conditions={'method': ['GET', 'POST', 'PATCH',
+                                              'HEAD']})
 
         image_members_resource = image_members.create_resource()
         mapper.connect('/images/{image_id}/members',
                        controller=image_members_resource,
                        action='index',
                        conditions={'method': ['GET']})
+        mapper.connect('/images/{image_id}/members',
+                       controller=image_members_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
+        mapper.connect('/images/{image_id}/members',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST',
+                       conditions={'method': ['PUT', 'DELETE', 'PATCH',
+                                              'HEAD']})
+
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=image_members_resource,
                        action='show',
@@ -110,14 +184,15 @@ class API(wsgi.Router):
                        controller=image_members_resource,
                        action='update',
                        conditions={'method': ['PUT']})
-        mapper.connect('/images/{image_id}/members',
-                       controller=image_members_resource,
-                       action='create',
-                       conditions={'method': ['POST']})
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=image_members_resource,
                        action='delete',
                        conditions={'method': ['DELETE']})
+        mapper.connect('/images/{image_id}/members/{member_id}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, PUT, DELETE',
+                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
 
         tasks_resource = tasks.create_resource()
         mapper.connect('/tasks',
@@ -128,6 +203,13 @@ class API(wsgi.Router):
                        controller=tasks_resource,
                        action='index',
                        conditions={'method': ['GET']})
+        mapper.connect('/tasks',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST',
+                       conditions={'method': ['PUT', 'DELETE', 'PATCH',
+                                              'HEAD']})
+
         mapper.connect('/tasks/{task_id}',
                        controller=tasks_resource,
                        action='get',
@@ -136,5 +218,11 @@ class API(wsgi.Router):
                        controller=tasks_resource,
                        action='delete',
                        conditions={'method': ['DELETE']})
+        mapper.connect('/tasks/{task_id}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, DELETE',
+                       conditions={'method': ['POST', 'PUT', 'PATCH',
+                                              'HEAD']})
 
         super(API, self).__init__(mapper)
