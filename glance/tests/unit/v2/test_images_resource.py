@@ -663,6 +663,14 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, image={}, extra_properties={},
                           tags=tags)
 
+    def test_create_with_duplicate_location(self):
+        request = unit_test_utils.get_fake_request()
+        location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        image = {'name': 'image-1', 'locations': [location, location]}
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.create,
+                          request, image=image, extra_properties={},
+                          tags=[])
+
     def test_update_no_changes(self):
         request = unit_test_utils.get_fake_request()
         output = self.controller.update(request, UUID1, changes=[])
@@ -697,6 +705,16 @@ class TestImagesController(base.IsolatedUnitTest):
         self.controller.delete(request, UUID1)
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.update,
                           request, UUID1, changes=[])
+
+    def test_update_with_too_many_properties(self):
+        self.config(user_storage_quota='1')
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.update,
+                          request, UUID1, changes=changes)
 
     def test_update_replace_base_attribute(self):
         self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})

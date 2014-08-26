@@ -194,6 +194,21 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, str(uuid.uuid4()), 'ABC', 3)
         self.assertTrue(image.delete.called)
 
+    def test_upload_non_existent_image_raises_not_found_exception(self):
+        def fake_save(self):
+            raise exception.NotFound()
+
+        def fake_delete():
+            raise exception.NotFound()
+
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd', locations=['http://example.com/image'])
+        self.image_repo.result = image
+        self.image_repo.save = fake_save
+        image.delete = fake_delete
+        self.assertRaises(webob.exc.HTTPGone, self.controller.upload,
+                          request, str(uuid.uuid4()), 'ABC', 3)
+
     def test_upload_non_existent_image_before_save(self):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = exception.NotFound()
@@ -228,6 +243,13 @@ class TestImagesController(base.StoreClearingUnitTest):
                           self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYYYYY', 7)
 
+    def test_upload_storage_quota_full(self):
+        request = unit_test_utils.get_fake_request()
+        self.image_repo.result = exception.StorageQuotaFull("message")
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.upload,
+                          request, unit_test_utils.UUID1, 'YYYYYYY', 7)
+
     def test_upload_storage_forbidden(self):
         request = unit_test_utils.get_fake_request(user=unit_test_utils.USER2)
         image = FakeImage()
@@ -235,6 +257,13 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.upload,
                           request, unit_test_utils.UUID2, 'YY', 2)
+
+    def test_upload_storage_internal_error(self):
+        request = unit_test_utils.get_fake_request()
+        self.image_repo.result = exception.ServerError()
+        self.assertRaises(exception.ServerError,
+                          self.controller.upload,
+                          request, unit_test_utils.UUID1, 'ABC', 3)
 
     def test_upload_storage_write_denied(self):
         request = unit_test_utils.get_fake_request(user=unit_test_utils.USER3)
