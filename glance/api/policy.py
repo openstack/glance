@@ -446,3 +446,211 @@ class ImageTarget(object):
             return getattr(self.image, key)
         else:
             return self.image.extra_properties[key]
+
+
+#Metadef Namespace classes
+class MetadefNamespaceProxy(glance.domain.proxy.MetadefNamespace):
+
+    def __init__(self, namespace, context, policy):
+        self.namespace_input = namespace
+        self.context = context
+        self.policy = policy
+        super(MetadefNamespaceProxy, self).__init__(namespace)
+
+
+class MetadefNamespaceRepoProxy(glance.domain.proxy.MetadefNamespaceRepo):
+
+    def __init__(self, namespace_repo, context, namespace_policy):
+        self.context = context
+        self.policy = namespace_policy
+        self.namespace_repo = namespace_repo
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefNamespaceRepoProxy,
+              self).__init__(namespace_repo,
+                             namespace_proxy_class=MetadefNamespaceProxy,
+                             namespace_proxy_kwargs=proxy_kwargs)
+
+    def get(self, namespace):
+        self.policy.enforce(self.context, 'get_metadef_namespace', {})
+        return super(MetadefNamespaceRepoProxy, self).get(namespace)
+
+    def list(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'get_metadef_namespaces', {})
+        return super(MetadefNamespaceRepoProxy, self).list(*args, **kwargs)
+
+    def save(self, namespace):
+        self.policy.enforce(self.context, 'modify_metadef_namespace', {})
+        return super(MetadefNamespaceRepoProxy, self).save(namespace)
+
+    def add(self, namespace):
+        self.policy.enforce(self.context, 'add_metadef_namespace', {})
+        return super(MetadefNamespaceRepoProxy, self).add(namespace)
+
+
+class MetadefNamespaceFactoryProxy(
+        glance.domain.proxy.MetadefNamespaceFactory):
+
+    def __init__(self, meta_namespace_factory, context, policy):
+        self.meta_namespace_factory = meta_namespace_factory
+        self.context = context
+        self.policy = policy
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefNamespaceFactoryProxy, self).__init__(
+            meta_namespace_factory,
+            meta_namespace_proxy_class=MetadefNamespaceProxy,
+            meta_namespace_proxy_kwargs=proxy_kwargs)
+
+
+#Metadef Object classes
+class MetadefObjectProxy(glance.domain.proxy.MetadefObject):
+
+    def __init__(self, meta_object, context, policy):
+        self.meta_object = meta_object
+        self.context = context
+        self.policy = policy
+        super(MetadefObjectProxy, self).__init__(meta_object)
+
+
+class MetadefObjectRepoProxy(glance.domain.proxy.MetadefObjectRepo):
+
+    def __init__(self, object_repo, context, object_policy):
+        self.context = context
+        self.policy = object_policy
+        self.object_repo = object_repo
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefObjectRepoProxy,
+              self).__init__(object_repo,
+                             object_proxy_class=MetadefObjectProxy,
+                             object_proxy_kwargs=proxy_kwargs)
+
+    def get(self, namespace, object_name):
+        self.policy.enforce(self.context, 'get_metadef_object', {})
+        return super(MetadefObjectRepoProxy, self).get(namespace, object_name)
+
+    def list(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'get_metadef_objects', {})
+        return super(MetadefObjectRepoProxy, self).list(*args, **kwargs)
+
+    def save(self, meta_object):
+        self.policy.enforce(self.context, 'modify_metadef_object', {})
+        return super(MetadefObjectRepoProxy, self).save(meta_object)
+
+    def add(self, meta_object):
+        self.policy.enforce(self.context, 'add_metadef_object', {})
+        return super(MetadefObjectRepoProxy, self).add(meta_object)
+
+
+class MetadefObjectFactoryProxy(glance.domain.proxy.MetadefObjectFactory):
+
+    def __init__(self, meta_object_factory, context, policy):
+        self.meta_object_factory = meta_object_factory
+        self.context = context
+        self.policy = policy
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefObjectFactoryProxy, self).__init__(
+            meta_object_factory,
+            meta_object_proxy_class=MetadefObjectProxy,
+            meta_object_proxy_kwargs=proxy_kwargs)
+
+
+#Metadef ResourceType classes
+class MetadefResourceTypeProxy(glance.domain.proxy.MetadefResourceType):
+
+    def __init__(self, meta_resource_type, context, policy):
+        self.meta_resource_type = meta_resource_type
+        self.context = context
+        self.policy = policy
+        super(MetadefResourceTypeProxy, self).__init__(meta_resource_type)
+
+
+class MetadefResourceTypeRepoProxy(
+        glance.domain.proxy.MetadefResourceTypeRepo):
+
+    def __init__(self, resource_type_repo, context, resource_type_policy):
+        self.context = context
+        self.policy = resource_type_policy
+        self.resource_type_repo = resource_type_repo
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefResourceTypeRepoProxy, self).__init__(
+            resource_type_repo,
+            resource_type_proxy_class=MetadefResourceTypeProxy,
+            resource_type_proxy_kwargs=proxy_kwargs)
+
+    def list(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'list_metadef_resource_types', {})
+        return super(MetadefResourceTypeRepoProxy, self).list(*args, **kwargs)
+
+    def add(self, resource_type):
+        self.policy.enforce(self.context,
+                            'add_metadef_resource_type_association', {})
+        return super(MetadefResourceTypeRepoProxy, self).add(resource_type)
+
+
+class MetadefResourceTypeFactoryProxy(
+        glance.domain.proxy.MetadefResourceTypeFactory):
+
+    def __init__(self, resource_type_factory, context, policy):
+        self.resource_type_factory = resource_type_factory
+        self.context = context
+        self.policy = policy
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefResourceTypeFactoryProxy, self).__init__(
+            resource_type_factory,
+            resource_type_proxy_class=MetadefResourceTypeProxy,
+            resource_type_proxy_kwargs=proxy_kwargs)
+
+
+#Metadef namespace properties classes
+class MetadefPropertyProxy(glance.domain.proxy.MetadefProperty):
+
+    def __init__(self, namespace_property, context, policy):
+        self.namespace_property = namespace_property
+        self.context = context
+        self.policy = policy
+        super(MetadefPropertyProxy, self).__init__(namespace_property)
+
+
+class MetadefPropertyRepoProxy(glance.domain.proxy.MetadefPropertyRepo):
+
+    def __init__(self, property_repo, context, object_policy):
+        self.context = context
+        self.policy = object_policy
+        self.property_repo = property_repo
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefPropertyRepoProxy, self).__init__(
+            property_repo,
+            property_proxy_class=MetadefPropertyProxy,
+            property_proxy_kwargs=proxy_kwargs)
+
+    def get(self, namespace, property_name):
+        self.policy.enforce(self.context, 'get_metadef_property', {})
+        return super(MetadefPropertyRepoProxy, self).get(namespace,
+                                                         property_name)
+
+    def list(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'get_metadef_properties', {})
+        return super(MetadefPropertyRepoProxy, self).list(
+            *args, **kwargs)
+
+    def save(self, namespace_property):
+        self.policy.enforce(self.context, 'modify_metadef_property', {})
+        return super(MetadefPropertyRepoProxy, self).save(
+            namespace_property)
+
+    def add(self, namespace_property):
+        self.policy.enforce(self.context, 'add_metadef_property', {})
+        return super(MetadefPropertyRepoProxy, self).add(
+            namespace_property)
+
+
+class MetadefPropertyFactoryProxy(glance.domain.proxy.MetadefPropertyFactory):
+
+    def __init__(self, namespace_property_factory, context, policy):
+        self.namespace_property_factory = namespace_property_factory
+        self.context = context
+        self.policy = policy
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefPropertyFactoryProxy, self).__init__(
+            namespace_property_factory,
+            property_proxy_class=MetadefPropertyProxy,
+            property_proxy_kwargs=proxy_kwargs)

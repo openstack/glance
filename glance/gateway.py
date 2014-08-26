@@ -120,3 +120,70 @@ class Gateway(object):
         authorized_task_stub_repo = authorization.TaskStubRepoProxy(
             notifier_task_stub_repo, context)
         return authorized_task_stub_repo
+
+    def get_metadef_namespace_factory(self, context):
+        ns_factory = glance.domain.MetadefNamespaceFactory()
+        policy_ns_factory = policy.MetadefNamespaceFactoryProxy(
+            ns_factory, context, self.policy)
+        authorized_ns_factory = authorization.MetadefNamespaceFactoryProxy(
+            policy_ns_factory, context)
+        return authorized_ns_factory
+
+    def get_metadef_namespace_repo(self, context):
+        ns_repo = glance.db.MetadefNamespaceRepo(context, self.db_api)
+        policy_ns_repo = policy.MetadefNamespaceRepoProxy(
+            ns_repo, context, self.policy)
+        authorized_ns_repo = authorization.MetadefNamespaceRepoProxy(
+            policy_ns_repo, context)
+        return authorized_ns_repo
+
+    def get_metadef_object_factory(self, context):
+        object_factory = glance.domain.MetadefObjectFactory()
+        policy_object_factory = policy.MetadefObjectFactoryProxy(
+            object_factory, context, self.policy)
+        authorized_object_factory = authorization.MetadefObjectFactoryProxy(
+            policy_object_factory, context)
+        return authorized_object_factory
+
+    def get_metadef_object_repo(self, context):
+        object_repo = glance.db.MetadefObjectRepo(context, self.db_api)
+        policy_object_repo = policy.MetadefObjectRepoProxy(
+            object_repo, context, self.policy)
+        authorized_object_repo = authorization.MetadefObjectRepoProxy(
+            policy_object_repo, context)
+        return authorized_object_repo
+
+    def get_metadef_resource_type_factory(self, context):
+        resource_type_factory = glance.domain.MetadefResourceTypeFactory()
+        policy_resource_type_factory = policy.MetadefResourceTypeFactoryProxy(
+            resource_type_factory, context, self.policy)
+        authorized_resource_type_factory = \
+            authorization.MetadefResourceTypeFactoryProxy(
+                policy_resource_type_factory, context)
+        return authorized_resource_type_factory
+
+    def get_metadef_resource_type_repo(self, context):
+        resource_type_repo = glance.db.MetadefResourceTypeRepo(
+            context, self.db_api)
+        policy_object_repo = policy.MetadefResourceTypeRepoProxy(
+            resource_type_repo, context, self.policy)
+        authorized_resource_type_repo = \
+            authorization.MetadefResourceTypeRepoProxy(policy_object_repo,
+                                                       context)
+        return authorized_resource_type_repo
+
+    def get_metadef_property_factory(self, context):
+        prop_factory = glance.domain.MetadefPropertyFactory()
+        policy_prop_factory = policy.MetadefPropertyFactoryProxy(
+            prop_factory, context, self.policy)
+        authorized_prop_factory = authorization.MetadefPropertyFactoryProxy(
+            policy_prop_factory, context)
+        return authorized_prop_factory
+
+    def get_metadef_property_repo(self, context):
+        prop_repo = glance.db.MetadefPropertyRepo(context, self.db_api)
+        policy_prop_repo = policy.MetadefPropertyRepoProxy(
+            prop_repo, context, self.policy)
+        authorized_prop_repo = authorization.MetadefPropertyRepoProxy(
+            policy_prop_repo, context)
+        return authorized_prop_repo

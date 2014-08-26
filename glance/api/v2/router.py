@@ -17,6 +17,10 @@ from glance.api.v2 import image_data
 from glance.api.v2 import image_members
 from glance.api.v2 import image_tags
 from glance.api.v2 import images
+from glance.api.v2 import metadef_namespaces
+from glance.api.v2 import metadef_objects
+from glance.api.v2 import metadef_properties
+from glance.api.v2 import metadef_resource_types
 from glance.api.v2 import schemas
 from glance.api.v2 import tasks
 from glance.common import wsgi
@@ -93,6 +97,256 @@ class API(wsgi.Router):
                        allowed_methods='GET',
                        conditions={'method': ['POST', 'PUT', 'DELETE',
                                               'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/namespace',
+                       controller=schemas_resource,
+                       action='metadef_namespace',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/namespace',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/namespaces',
+                       controller=schemas_resource,
+                       action='metadef_namespaces',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/namespaces',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/resource_type',
+                       controller=schemas_resource,
+                       action='metadef_resource_type',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/resource_type',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/resource_types',
+                       controller=schemas_resource,
+                       action='metadef_resource_types',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/resource_types',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/property',
+                       controller=schemas_resource,
+                       action='metadef_property',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/property',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/properties',
+                       controller=schemas_resource,
+                       action='metadef_properties',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/properties',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/object',
+                       controller=schemas_resource,
+                       action='metadef_object',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/object',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/objects',
+                       controller=schemas_resource,
+                       action='metadef_objects',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/objects',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        # Metadef resource types
+        metadef_resource_types_resource = (
+            metadef_resource_types.create_resource())
+
+        mapper.connect('/metadefs/resource_types',
+                       controller=metadef_resource_types_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/resource_types',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/metadefs/namespaces/{namespace}/resource_types',
+                       controller=metadef_resource_types_resource,
+                       action='show',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/resource_types',
+                       controller=metadef_resource_types_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
+        mapper.connect('/metadefs/namespaces/{namespace}/resource_types',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST',
+                       conditions={'method': ['PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/metadefs/namespaces/{namespace}/resource_types/'
+                       '{resource_type}',
+                       controller=metadef_resource_types_resource,
+                       action='delete',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}/resource_types/'
+                       '{resource_type}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='DELETE',
+                       conditions={'method': ['GET', 'POST', 'PUT',
+                                              'PATCH', 'HEAD']})
+
+        # Metadef Namespaces
+        metadef_namespace_resource = metadef_namespaces.create_resource()
+        mapper.connect('/metadefs/namespaces',
+                       controller=metadef_namespace_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces',
+                       controller=metadef_namespace_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
+        mapper.connect('/metadefs/namespaces',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST',
+                       conditions={'method': ['PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/metadefs/namespaces/{namespace}',
+                       controller=metadef_namespace_resource,
+                       action='show',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}',
+                       controller=metadef_namespace_resource,
+                       action='update',
+                       conditions={'method': ['PUT']})
+        mapper.connect('/metadefs/namespaces/{namespace}',
+                       controller=metadef_namespace_resource,
+                       action='delete',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, PUT, DELETE',
+                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+
+        # Metadef namespace properties
+        metadef_properties_resource = metadef_properties.create_resource()
+        mapper.connect('/metadefs/namespaces/{namespace}/properties',
+                       controller=metadef_properties_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/properties',
+                       controller=metadef_properties_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
+        mapper.connect('/metadefs/namespaces/{namespace}/properties',
+                       controller=metadef_namespace_resource,
+                       action='delete_properties',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}/properties',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST, DELETE',
+                       conditions={'method': ['PUT', 'PATCH', 'HEAD']})
+
+        mapper.connect('/metadefs/namespaces/{namespace}/properties/{'
+                       'property_name}',
+                       controller=metadef_properties_resource,
+                       action='show',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/properties/{'
+                       'property_name}',
+                       controller=metadef_properties_resource,
+                       action='update',
+                       conditions={'method': ['PUT']})
+        mapper.connect('/metadefs/namespaces/{namespace}/properties/{'
+                       'property_name}',
+                       controller=metadef_properties_resource,
+                       action='delete',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}/properties/{'
+                       'property_name}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, PUT, DELETE',
+                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+
+        # Metadef objects
+        metadef_objects_resource = metadef_objects.create_resource()
+        mapper.connect('/metadefs/namespaces/{namespace}/objects',
+                       controller=metadef_objects_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/objects',
+                       controller=metadef_objects_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
+        mapper.connect('/metadefs/namespaces/{namespace}/objects',
+                       controller=metadef_namespace_resource,
+                       action='delete_objects',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}/objects',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST, DELETE',
+                       conditions={'method': ['PUT', 'PATCH', 'HEAD']})
+
+        mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
+                       'object_name}',
+                       controller=metadef_objects_resource,
+                       action='show',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
+                       'object_name}',
+                       controller=metadef_objects_resource,
+                       action='update',
+                       conditions={'method': ['PUT']})
+        mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
+                       'object_name}',
+                       controller=metadef_objects_resource,
+                       action='delete',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
+                       'object_name}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, PUT, DELETE',
+                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
 
         images_resource = images.create_resource(custom_image_properties)
         mapper.connect('/images',

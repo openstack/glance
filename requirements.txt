@@ -24,6 +24,7 @@ oslo.config>=1.4.0.0a3
 stevedore>=0.14
 netaddr>=0.7.6
 keystonemiddleware>=1.0.0
+WSME>=0.6
 # For openstack/common/lockutils
 posix_ipc
 

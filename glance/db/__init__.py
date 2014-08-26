@@ -17,14 +17,17 @@
 #    under the License.
 
 from oslo.config import cfg
+from wsme.rest.json import fromjson
+from wsme.rest.json import tojson
 
+from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.common import crypt
 from glance.common import exception
 from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
 from glance.openstack.common import importutils
-
+from glance.openstack.common import jsonutils as json
 
 CONF = cfg.CONF
 CONF.import_opt('image_size_cap', 'glance.common.config')
@@ -380,3 +383,365 @@ class TaskRepo(object):
             raise exception.NotFound(msg)
         task.updated_at = updated_values['updated_at']
         task.deleted_at = updated_values['deleted_at']
+
+
+class MetadefNamespaceRepo(object):
+
+    def __init__(self, context, db_api):
+        self.context = context
+        self.db_api = db_api
+
+    def _format_namespace_from_db(self, namespace_obj):
+        return glance.domain.MetadefNamespace(
+            namespace_id=namespace_obj['id'],
+            namespace=namespace_obj['namespace'],
+            display_name=namespace_obj['display_name'],
+            description=namespace_obj['description'],
+            owner=namespace_obj['owner'],
+            visibility=namespace_obj['visibility'],
+            protected=namespace_obj['protected'],
+            created_at=namespace_obj['created_at'],
+            updated_at=namespace_obj['updated_at']
+        )
+
+    def _format_namespace_to_db(self, namespace_obj):
+        namespace = {
+            'namespace': namespace_obj.namespace,
+            'display_name': namespace_obj.display_name,
+            'description': namespace_obj.description,
+            'visibility': namespace_obj.visibility,
+            'protected': namespace_obj.protected,
+            'owner': namespace_obj.owner
+        }
+        return namespace
+
+    def add(self, namespace):
+        self.db_api.metadef_namespace_create(
+            self.context,
+            self._format_namespace_to_db(namespace)
+        )
+
+    def get(self, namespace):
+        try:
+            db_api_namespace = self.db_api.metadef_namespace_get(
+                self.context, namespace)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _('Could not find namespace %s') % namespace
+            raise exception.NotFound(msg)
+        return self._format_namespace_from_db(db_api_namespace)
+
+    def list(self, marker=None, limit=None, sort_key='created_at',
+             sort_dir='desc', filters=None):
+        db_namespaces = self.db_api.metadef_namespace_get_all(
+            self.context,
+            marker=marker,
+            limit=limit,
+            sort_key=sort_key,
+            sort_dir=sort_dir,
+            filters=filters
+        )
+        return [self._format_namespace_from_db(namespace_obj)
+                for namespace_obj in db_namespaces]
+
+    def remove(self, namespace):
+        try:
+            self.db_api.metadef_namespace_delete(self.context,
+                                                 namespace.namespace)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified namespace %s could not be found")
+            raise exception.NotFound(msg % namespace.namespace)
+
+    def remove_objects(self, namespace):
+        try:
+            self.db_api.metadef_object_delete_namespace_content(
+                self.context,
+                namespace.namespace
+            )
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified namespace %s could not be found")
+            raise exception.NotFound(msg % namespace.namespace)
+
+    def remove_properties(self, namespace):
+        try:
+            self.db_api.metadef_property_delete_namespace_content(
+                self.context,
+                namespace.namespace
+            )
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified namespace %s could not be found")
+            raise exception.NotFound(msg % namespace.namespace)
+
+    def object_count(self, namespace_name):
+        return self.db_api.metadef_object_count(
+            self.context,
+            namespace_name
+        )
+
+    def property_count(self, namespace_name):
+        return self.db_api.metadef_property_count(
+            self.context,
+            namespace_name
+        )
+
+    def save(self, namespace):
+        try:
+            self.db_api.metadef_namespace_update(
+                self.context, namespace.namespace_id,
+                self._format_namespace_to_db(namespace)
+            )
+        except exception.NotFound as e:
+            raise exception.NotFound(explanation=e.msg)
+        return namespace
+
+
+class MetadefObjectRepo(object):
+
+    def __init__(self, context, db_api):
+        self.context = context
+        self.db_api = db_api
+        self.meta_namespace_repo = MetadefNamespaceRepo(context, db_api)
+
+    def _format_metadef_object_from_db(self, metadata_object,
+                                       namespace_entity):
+        required_str = metadata_object['required']
+        required_list = required_str.split(",") if required_str else []
+
+        # Convert the persisted json schema to a dict of PropertyTypes
+        property_types = {}
+        json_props = json.loads(metadata_object['schema'])
+        for id in json_props:
+            property_types[id] = fromjson(PropertyType, json_props[id])
+
+        return glance.domain.MetadefObject(
+            namespace=namespace_entity,
+            object_id=metadata_object['id'],
+            name=metadata_object['name'],
+            required=required_list,
+            description=metadata_object['description'],
+            properties=property_types,
+            created_at=metadata_object['created_at'],
+            updated_at=metadata_object['updated_at']
+        )
+
+    def _format_metadef_object_to_db(self, metadata_object):
+
+        required_str = (",".join(metadata_object.required) if
+                        metadata_object.required else None)
+
+        # Convert the model PropertyTypes dict to a JSON string
+        properties = metadata_object.properties
+        db_schema = {}
+        if properties:
+            for k, v in properties.items():
+                json_data = tojson(PropertyType, v)
+                db_schema[k] = json_data
+        property_schema = json.dumps(db_schema)
+
+        db_metadata_object = {
+            'name': metadata_object.name,
+            'required': required_str,
+            'description': metadata_object.description,
+            'schema': property_schema
+        }
+        return db_metadata_object
+
+    def add(self, metadata_object):
+        self.db_api.metadef_object_create(
+            self.context,
+            metadata_object.namespace,
+            self._format_metadef_object_to_db(metadata_object)
+        )
+
+    def get(self, namespace, object_name):
+        try:
+            namespace_entity = self.meta_namespace_repo.get(namespace)
+            db_metadata_object = self.db_api.metadef_object_get(
+                self.context,
+                namespace,
+                object_name)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _('Could not find metadata object %s') % object_name
+            raise exception.NotFound(msg)
+        return self._format_metadef_object_from_db(db_metadata_object,
+                                                   namespace_entity)
+
+    def list(self, marker=None, limit=None, sort_key='created_at',
+             sort_dir='desc', filters=None):
+        namespace = filters['namespace']
+        namespace_entity = self.meta_namespace_repo.get(namespace)
+        db_metadata_objects = self.db_api.metadef_object_get_all(
+            self.context, namespace)
+        return [self._format_metadef_object_from_db(metadata_object,
+                                                    namespace_entity)
+                for metadata_object in db_metadata_objects]
+
+    def remove(self, metadata_object):
+        try:
+            self.db_api.metadef_object_delete(
+                self.context,
+                metadata_object.namespace.namespace,
+                metadata_object.name
+            )
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified metadata object %s could not be found")
+            raise exception.NotFound(msg % metadata_object.name)
+
+    def save(self, metadata_object):
+        try:
+            self.db_api.metadef_object_update(
+                self.context, metadata_object.namespace.namespace,
+                metadata_object.object_id,
+                self._format_metadef_object_to_db(metadata_object))
+        except exception.NotFound as e:
+            raise exception.NotFound(explanation=e.msg)
+        return metadata_object
+
+
+class MetadefResourceTypeRepo(object):
+
+    def __init__(self, context, db_api):
+        self.context = context
+        self.db_api = db_api
+        self.meta_namespace_repo = MetadefNamespaceRepo(context, db_api)
+
+    def _format_resource_type_from_db(self, resource_type, namespace):
+        return glance.domain.MetadefResourceType(
+            namespace=namespace,
+            name=resource_type['name'],
+            prefix=resource_type['prefix'],
+            properties_target=resource_type['properties_target'],
+            created_at=resource_type['created_at'],
+            updated_at=resource_type['updated_at']
+        )
+
+    def _format_resource_type_to_db(self, resource_type):
+        db_resource_type = {
+            'name': resource_type.name,
+            'prefix': resource_type.prefix,
+            'properties_target': resource_type.properties_target
+        }
+        return db_resource_type
+
+    def add(self, resource_type):
+        self.db_api.metadef_resource_type_association_create(
+            self.context, resource_type.namespace,
+            self._format_resource_type_to_db(resource_type)
+        )
+
+    def list(self, filters=None):
+        namespace = filters['namespace']
+        if namespace:
+            namespace_entity = self.meta_namespace_repo.get(namespace)
+            db_resource_types = (
+                self.db_api.
+                metadef_resource_type_association_get_all_by_namespace(
+                    self.context,
+                    namespace
+                )
+            )
+            return [self._format_resource_type_from_db(resource_type,
+                                                       namespace_entity)
+                    for resource_type in db_resource_types]
+        else:
+            db_resource_types = (
+                self.db_api.
+                metadef_resource_type_get_all(self.context)
+            )
+            return [glance.domain.MetadefResourceType(
+                namespace=None,
+                name=resource_type['name'],
+                prefix=None,
+                properties_target=None,
+                created_at=resource_type['created_at'],
+                updated_at=resource_type['updated_at']
+            ) for resource_type in db_resource_types]
+
+    def remove(self, resource_type):
+        try:
+            self.db_api.metadef_resource_type_association_delete(
+                self.context, resource_type.namespace.namespace,
+                resource_type.name)
+
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified resource type %s could not be found ")
+            raise exception.NotFound(msg % resource_type.name)
+
+
+class MetadefPropertyRepo(object):
+
+    def __init__(self, context, db_api):
+        self.context = context
+        self.db_api = db_api
+        self.meta_namespace_repo = MetadefNamespaceRepo(context, db_api)
+
+    def _format_metadef_property_from_db(
+            self,
+            property,
+            namespace_entity):
+
+        return glance.domain.MetadefProperty(
+            namespace=namespace_entity,
+            property_id=property['id'],
+            name=property['name'],
+            schema=property['schema']
+        )
+
+    def _format_metadef_property_to_db(self, property):
+
+        db_metadata_object = {
+            'name': property.name,
+            'schema': property.schema
+        }
+        return db_metadata_object
+
+    def add(self, property):
+        self.db_api.metadef_property_create(
+            self.context,
+            property.namespace,
+            self._format_metadef_property_to_db(property)
+        )
+
+    def get(self, namespace, property_name):
+        try:
+            namespace_entity = self.meta_namespace_repo.get(namespace)
+            db_property_type = self.db_api.metadef_property_get(
+                self.context,
+                namespace,
+                property_name
+            )
+        except (exception.NotFound, exception.Forbidden):
+            msg = _('Could not find property %s') % property_name
+            raise exception.NotFound(msg)
+        return self._format_metadef_property_from_db(
+            db_property_type, namespace_entity)
+
+    def list(self, marker=None, limit=None, sort_key='created_at',
+             sort_dir='desc', filters=None):
+        namespace = filters['namespace']
+        namespace_entity = self.meta_namespace_repo.get(namespace)
+
+        db_properties = self.db_api.metadef_property_get_all(
+            self.context, namespace)
+        return (
+            [self._format_metadef_property_from_db(
+                property, namespace_entity) for property in db_properties]
+        )
+
+    def remove(self, property):
+        try:
+            self.db_api.metadef_property_delete(
+                self.context, property.namespace.namespace, property.name)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified property %s could not be found")
+            raise exception.NotFound(msg % property.name)
+
+    def save(self, property):
+        try:
+            self.db_api.metadef_property_update(
+                self.context, property.namespace.namespace,
+                property.property_id,
+                self._format_metadef_property_to_db(property)
+            )
+        except exception.NotFound as e:
+            raise exception.NotFound(explanation=e.msg)
+        return property

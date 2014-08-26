@@ -443,3 +443,136 @@ class TaskFactory(object):
             kwargs.get('result'),
             task_time_to_live
         )
+
+
+class MetadefNamespace(object):
+
+    def __init__(self, namespace_id, namespace, display_name, description,
+                 owner, visibility, protected, created_at, updated_at):
+        self.namespace_id = namespace_id
+        self.namespace = namespace
+        self.display_name = display_name
+        self.description = description
+        self.owner = owner
+        self.visibility = visibility or "private"
+        self.protected = protected or False
+        self.created_at = created_at
+        self.updated_at = updated_at
+
+    def delete(self):
+        if self.protected:
+            raise exception.ProtectedMetadefNamespaceDelete(
+                namespace=self.namespace)
+
+
+class MetadefNamespaceFactory(object):
+
+    def new_namespace(self, namespace, owner, **kwargs):
+        namespace_id = str(uuid.uuid4())
+        created_at = timeutils.utcnow()
+        updated_at = created_at
+        return MetadefNamespace(
+            namespace_id,
+            namespace,
+            kwargs.get('display_name'),
+            kwargs.get('description'),
+            owner,
+            kwargs.get('visibility'),
+            kwargs.get('protected'),
+            created_at,
+            updated_at
+        )
+
+
+class MetadefObject(object):
+
+    def __init__(self, namespace, object_id, name, created_at, updated_at,
+                 required, description, properties):
+        self.namespace = namespace
+        self.object_id = object_id
+        self.name = name
+        self.created_at = created_at
+        self.updated_at = updated_at
+        self.required = required
+        self.description = description
+        self.properties = properties
+
+    def delete(self):
+        if self.namespace.protected:
+            raise exception.ProtectedMetadefObjectDelete(object_name=self.name)
+
+
+class MetadefObjectFactory(object):
+
+    def new_object(self, namespace, name, **kwargs):
+        object_id = str(uuid.uuid4())
+        created_at = timeutils.utcnow()
+        updated_at = created_at
+        return MetadefObject(
+            namespace,
+            object_id,
+            name,
+            created_at,
+            updated_at,
+            kwargs.get('required'),
+            kwargs.get('description'),
+            kwargs.get('properties')
+        )
+
+
+class MetadefResourceType(object):
+
+    def __init__(self, namespace, name, prefix, properties_target,
+                 created_at, updated_at):
+        self.namespace = namespace
+        self.name = name
+        self.prefix = prefix
+        self.properties_target = properties_target
+        self.created_at = created_at
+        self.updated_at = updated_at
+
+    def delete(self):
+        if self.namespace.protected:
+            raise exception.ProtectedMetadefResourceTypeAssociationDelete(
+                resource_type=self.name)
+
+
+class MetadefResourceTypeFactory(object):
+
+    def new_resource_type(self, namespace, name, **kwargs):
+        created_at = timeutils.utcnow()
+        updated_at = created_at
+        return MetadefResourceType(
+            namespace,
+            name,
+            kwargs.get('prefix'),
+            kwargs.get('properties_target'),
+            created_at,
+            updated_at
+        )
+
+
+class MetadefProperty(object):
+
+    def __init__(self, namespace, property_id, name, schema):
+        self.namespace = namespace
+        self.property_id = property_id
+        self.name = name
+        self.schema = schema
+
+    def delete(self):
+        if self.namespace.protected:
+            raise exception.ProtectedMetadefNamespacePropDelete(
+                property_name=self.name)
+
+
+class MetadefPropertyFactory(object):
+
+    def new_namespace_property(self, namespace, name, schema, **kwargs):
+        property_id = str(uuid.uuid4())
+        return MetadefProperty(
+            namespace,
+            property_id,
+            name,
+            schema
+        )

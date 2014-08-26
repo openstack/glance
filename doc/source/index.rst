@@ -81,3 +81,4 @@ Using Glance
 
    glanceapi
    glanceclient
+   glancemetadefcatalogapi

@@ -455,3 +455,356 @@ class TaskStubRepoProxy(glance.domain.proxy.TaskStubRepo):
     def list(self, *args, **kwargs):
         task_stubs = self.task_stub_repo.list(*args, **kwargs)
         return [proxy_task_stub(self.context, t) for t in task_stubs]
+
+
+#Metadef Namespace classes
+def is_namespace_mutable(context, namespace):
+    """Return True if the namespace is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    return namespace.owner == context.owner
+
+
+def proxy_namespace(context, namespace):
+    if is_namespace_mutable(context, namespace):
+        return namespace
+    else:
+        return ImmutableMetadefNamespaceProxy(namespace)
+
+
+class ImmutableMetadefNamespaceProxy(object):
+
+    def __init__(self, base):
+        self.base = base
+        self.resource_name = 'namespace'
+
+    namespace_id = _immutable_attr('base', 'namespace_id')
+    namespace = _immutable_attr('base', 'namespace')
+    display_name = _immutable_attr('base', 'display_name')
+    description = _immutable_attr('base', 'description')
+    owner = _immutable_attr('base', 'owner')
+    visibility = _immutable_attr('base', 'visibility')
+    protected = _immutable_attr('base', 'protected')
+    created_at = _immutable_attr('base', 'created_at')
+    updated_at = _immutable_attr('base', 'updated_at')
+
+    def delete(self):
+        message = _("You are not permitted to delete this namespace.")
+        raise exception.Forbidden(message)
+
+    def save(self):
+        message = _("You are not permitted to update this namespace.")
+        raise exception.Forbidden(message)
+
+
+class MetadefNamespaceProxy(glance.domain.proxy.MetadefNamespace):
+
+    def __init__(self, namespace):
+        self.namespace_input = namespace
+        super(MetadefNamespaceProxy, self).__init__(namespace)
+
+
+class MetadefNamespaceFactoryProxy(
+        glance.domain.proxy.MetadefNamespaceFactory):
+
+    def __init__(self, meta_namespace_factory, context):
+        self.meta_namespace_factory = meta_namespace_factory
+        self.context = context
+        super(MetadefNamespaceFactoryProxy, self).__init__(
+            meta_namespace_factory,
+            meta_namespace_proxy_class=MetadefNamespaceProxy)
+
+    def new_namespace(self, **kwargs):
+        owner = kwargs.pop('owner', self.context.owner)
+
+        if not self.context.is_admin:
+            if owner is None or owner != self.context.owner:
+                message = _("You are not permitted to create namespace "
+                            "owned by '%s'")
+                raise exception.Forbidden(message % (owner))
+
+        return super(MetadefNamespaceFactoryProxy, self).new_namespace(
+            owner=owner, **kwargs)
+
+
+class MetadefNamespaceRepoProxy(glance.domain.proxy.MetadefNamespaceRepo):
+
+    def __init__(self, namespace_repo, context):
+        self.namespace_repo = namespace_repo
+        self.context = context
+        super(MetadefNamespaceRepoProxy, self).__init__(namespace_repo)
+
+    def get(self, namespace):
+        namespace_obj = self.namespace_repo.get(namespace)
+        return proxy_namespace(self.context, namespace_obj)
+
+    def list(self, *args, **kwargs):
+        namespaces = self.namespace_repo.list(*args, **kwargs)
+        return [proxy_namespace(self.context, namespace) for
+                namespace in namespaces]
+
+
+#Metadef Object classes
+def is_object_mutable(context, object):
+    """Return True if the object is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    return object.namespace.owner == context.owner
+
+
+def proxy_object(context, object):
+    if is_object_mutable(context, object):
+        return object
+    else:
+        return ImmutableMetadefObjectProxy(object)
+
+
+class ImmutableMetadefObjectProxy(object):
+
+    def __init__(self, base):
+        self.base = base
+        self.resource_name = 'object'
+
+    object_id = _immutable_attr('base', 'object_id')
+    name = _immutable_attr('base', 'name')
+    required = _immutable_attr('base', 'required')
+    description = _immutable_attr('base', 'description')
+    properties = _immutable_attr('base', 'properties')
+    created_at = _immutable_attr('base', 'created_at')
+    updated_at = _immutable_attr('base', 'updated_at')
+
+    def delete(self):
+        message = _("You are not permitted to delete this object.")
+        raise exception.Forbidden(message)
+
+    def save(self):
+        message = _("You are not permitted to update this object.")
+        raise exception.Forbidden(message)
+
+
+class MetadefObjectProxy(glance.domain.proxy.MetadefObject):
+
+    def __init__(self, meta_object):
+        self.meta_object = meta_object
+        super(MetadefObjectProxy, self).__init__(meta_object)
+
+
+class MetadefObjectFactoryProxy(glance.domain.proxy.MetadefObjectFactory):
+
+    def __init__(self, meta_object_factory, context):
+        self.meta_object_factory = meta_object_factory
+        self.context = context
+        super(MetadefObjectFactoryProxy, self).__init__(
+            meta_object_factory,
+            meta_object_proxy_class=MetadefObjectProxy)
+
+    def new_object(self, **kwargs):
+        owner = kwargs.pop('owner', self.context.owner)
+
+        if not self.context.is_admin:
+            if owner is None or owner != self.context.owner:
+                message = _("You are not permitted to create object "
+                            "owned by '%s'")
+                raise exception.Forbidden(message % (owner))
+
+        return super(MetadefObjectFactoryProxy, self).new_object(**kwargs)
+
+
+class MetadefObjectRepoProxy(glance.domain.proxy.MetadefObjectRepo):
+
+    def __init__(self, object_repo, context):
+        self.object_repo = object_repo
+        self.context = context
+        super(MetadefObjectRepoProxy, self).__init__(object_repo)
+
+    def get(self, namespace, object_name):
+        meta_object = self.object_repo.get(namespace, object_name)
+        return proxy_object(self.context, meta_object)
+
+    def list(self, *args, **kwargs):
+        objects = self.object_repo.list(*args, **kwargs)
+        return [proxy_object(self.context, meta_object) for
+                meta_object in objects]
+
+
+#Metadef ResourceType classes
+def is_meta_resource_type_mutable(context, meta_resource_type):
+    """Return True if the meta_resource_type is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    #(lakshmiS): resource type can exist without an association with
+    # namespace and resource type cannot be created/update/deleted directly(
+    # they have to be associated/de-associated from namespace)
+    if meta_resource_type.namespace:
+        return meta_resource_type.namespace.owner == context.owner
+    else:
+        return False
+
+
+def proxy_meta_resource_type(context, meta_resource_type):
+    if is_meta_resource_type_mutable(context, meta_resource_type):
+        return meta_resource_type
+    else:
+        return ImmutableMetadefResourceTypeProxy(meta_resource_type)
+
+
+class ImmutableMetadefResourceTypeProxy(object):
+
+    def __init__(self, base):
+        self.base = base
+        self.resource_name = 'meta_resource_type'
+
+    namespace = _immutable_attr('base', 'namespace')
+    name = _immutable_attr('base', 'name')
+    prefix = _immutable_attr('base', 'prefix')
+    properties_target = _immutable_attr('base', 'properties_target')
+    created_at = _immutable_attr('base', 'created_at')
+    updated_at = _immutable_attr('base', 'updated_at')
+
+    def delete(self):
+        message = _("You are not permitted to delete this meta_resource_type.")
+        raise exception.Forbidden(message)
+
+
+class MetadefResourceTypeProxy(glance.domain.proxy.MetadefResourceType):
+
+    def __init__(self, meta_resource_type):
+        self.meta_resource_type = meta_resource_type
+        super(MetadefResourceTypeProxy, self).__init__(meta_resource_type)
+
+
+class MetadefResourceTypeFactoryProxy(
+        glance.domain.proxy.MetadefResourceTypeFactory):
+
+    def __init__(self, resource_type_factory, context):
+        self.meta_resource_type_factory = resource_type_factory
+        self.context = context
+        super(MetadefResourceTypeFactoryProxy, self).__init__(
+            resource_type_factory,
+            resource_type_proxy_class=MetadefResourceTypeProxy)
+
+    def new_resource_type(self, **kwargs):
+        owner = kwargs.pop('owner', self.context.owner)
+
+        if not self.context.is_admin:
+            if owner is None or owner != self.context.owner:
+                message = _("You are not permitted to create resource_type "
+                            "owned by '%s'")
+                raise exception.Forbidden(message % (owner))
+
+        return super(MetadefResourceTypeFactoryProxy, self).new_resource_type(
+            **kwargs)
+
+
+class MetadefResourceTypeRepoProxy(
+        glance.domain.proxy.MetadefResourceTypeRepo):
+
+    def __init__(self, meta_resource_type_repo, context):
+        self.meta_resource_type_repo = meta_resource_type_repo
+        self.context = context
+        super(MetadefResourceTypeRepoProxy, self).__init__(
+            meta_resource_type_repo)
+
+    def list(self, *args, **kwargs):
+        meta_resource_types = self.meta_resource_type_repo.list(
+            *args, **kwargs)
+        return [proxy_meta_resource_type(self.context, meta_resource_type) for
+                meta_resource_type in meta_resource_types]
+
+
+#Metadef namespace properties classes
+def is_namespace_property_mutable(context, namespace_property):
+    """Return True if the object is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    return namespace_property.namespace.owner == context.owner
+
+
+def proxy_namespace_property(context, namespace_property):
+    if is_namespace_property_mutable(context, namespace_property):
+        return namespace_property
+    else:
+        return ImmutableMetadefPropertyProxy(namespace_property)
+
+
+class ImmutableMetadefPropertyProxy(object):
+
+    def __init__(self, base):
+        self.base = base
+        self.resource_name = 'namespace_property'
+
+    property_id = _immutable_attr('base', 'property_id')
+    name = _immutable_attr('base', 'name')
+    schema = _immutable_attr('base', 'schema')
+
+    def delete(self):
+        message = _("You are not permitted to delete this property.")
+        raise exception.Forbidden(message)
+
+    def save(self):
+        message = _("You are not permitted to update this property.")
+        raise exception.Forbidden(message)
+
+
+class MetadefPropertyProxy(glance.domain.proxy.MetadefProperty):
+
+    def __init__(self, namespace_property):
+        self.meta_object = namespace_property
+        super(MetadefPropertyProxy, self).__init__(namespace_property)
+
+
+class MetadefPropertyFactoryProxy(glance.domain.proxy.MetadefPropertyFactory):
+
+    def __init__(self, namespace_property_factory, context):
+        self.meta_object_factory = namespace_property_factory
+        self.context = context
+        super(MetadefPropertyFactoryProxy, self).__init__(
+            namespace_property_factory,
+            property_proxy_class=MetadefPropertyProxy)
+
+    def new_namespace_property(self, **kwargs):
+        owner = kwargs.pop('owner', self.context.owner)
+
+        if not self.context.is_admin:
+            if owner is None or owner != self.context.owner:
+                message = _("You are not permitted to create property "
+                            "owned by '%s'")
+                raise exception.Forbidden(message % (owner))
+
+        return super(MetadefPropertyFactoryProxy, self).\
+            new_namespace_property(**kwargs)
+
+
+class MetadefPropertyRepoProxy(glance.domain.proxy.MetadefPropertyRepo):
+
+    def __init__(self, namespace_property_repo, context):
+        self.namespace_property_repo = namespace_property_repo
+        self.context = context
+        super(MetadefPropertyRepoProxy, self).__init__(namespace_property_repo)
+
+    def get(self, namespace, object_name):
+        namespace_property = self.namespace_property_repo.get(namespace,
+                                                              object_name)
+        return proxy_namespace_property(self.context, namespace_property)
+
+    def list(self, *args, **kwargs):
+        namespace_properties = self.namespace_property_repo.list(
+            *args, **kwargs)
+        return [proxy_namespace_property(self.context, namespace_property) for
+                namespace_property in namespace_properties]

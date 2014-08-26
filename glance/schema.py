@@ -22,12 +22,15 @@ from glance.common import utils
 
 class Schema(object):
 
-    def __init__(self, name, properties=None, links=None):
+    def __init__(self, name, properties=None, links=None, required=None,
+                 definitions=None):
         self.name = name
         if properties is None:
             properties = {}
         self.properties = properties
         self.links = links
+        self.required = required
+        self.definitions = definitions
 
     def validate(self, obj):
         try:
@@ -68,6 +71,10 @@ class Schema(object):
             'properties': self.properties,
             'additionalProperties': False,
         }
+        if self.definitions:
+            raw['definitions'] = self.definitions
+        if self.required:
+            raw['required'] = self.required
         if self.links:
             raw['links'] = self.links
         return raw
@@ -77,6 +84,10 @@ class Schema(object):
             'name': self.name,
             'properties': self.properties
         }
+        if self.definitions:
+            minimal['definitions'] = self.definitions
+        if self.required:
+            minimal['required'] = self.required
         return minimal
 
 
@@ -102,7 +113,11 @@ class CollectionSchema(object):
         self.item_schema = item_schema
 
     def raw(self):
-        return {
+        definitions = None
+        if self.item_schema.definitions:
+            definitions = self.item_schema.definitions
+            self.item_schema.definitions = None
+        raw = {
             'name': self.name,
             'properties': {
                 self.name: {
@@ -119,9 +134,18 @@ class CollectionSchema(object):
                 {'rel': 'describedby', 'href': '{schema}'},
             ],
         }
+        if definitions:
+            raw['definitions'] = definitions
+            self.item_schema.definitions = definitions
+
+        return raw
 
     def minimal(self):
-        return {
+        definitions = None
+        if self.item_schema.definitions:
+            definitions = self.item_schema.definitions
+            self.item_schema.definitions = None
+        minimal = {
             'name': self.name,
             'properties': {
                 self.name: {
@@ -134,3 +158,66 @@ class CollectionSchema(object):
                 {'rel': 'describedby', 'href': '{schema}'},
             ],
         }
+        if definitions:
+            minimal['definitions'] = definitions
+            self.item_schema.definitions = definitions
+
+        return minimal
+
+
+class DictCollectionSchema(Schema):
+    def __init__(self, name, item_schema):
+        self.name = name
+        self.item_schema = item_schema
+
+    def raw(self):
+        definitions = None
+        if self.item_schema.definitions:
+            definitions = self.item_schema.definitions
+            self.item_schema.definitions = None
+        raw = {
+            'name': self.name,
+            'properties': {
+                self.name: {
+                    'type': 'object',
+                    'additionalProperties': self.item_schema.raw(),
+                },
+                'first': {'type': 'string'},
+                'next': {'type': 'string'},
+                'schema': {'type': 'string'},
+            },
+            'links': [
+                {'rel': 'first', 'href': '{first}'},
+                {'rel': 'next', 'href': '{next}'},
+                {'rel': 'describedby', 'href': '{schema}'},
+            ],
+        }
+        if definitions:
+            raw['definitions'] = definitions
+            self.item_schema.definitions = definitions
+
+        return raw
+
+    def minimal(self):
+        definitions = None
+        if self.item_schema.definitions:
+            definitions = self.item_schema.definitions
+            self.item_schema.definitions = None
+        minimal = {
+            'name': self.name,
+            'properties': {
+                self.name: {
+                    'type': 'object',
+                    'additionalProperties': self.item_schema.minimal(),
+                },
+                'schema': {'type': 'string'},
+            },
+            'links': [
+                {'rel': 'describedby', 'href': '{schema}'},
+            ],
+        }
+        if definitions:
+            minimal['definitions'] = definitions
+            self.item_schema.definitions = definitions
+
+        return minimal

@@ -15,6 +15,10 @@
 
 from glance.api.v2 import image_members
 from glance.api.v2 import images
+from glance.api.v2 import metadef_namespaces
+from glance.api.v2 import metadef_objects
+from glance.api.v2 import metadef_properties
+from glance.api.v2 import metadef_resource_types
 from glance.api.v2 import tasks
 from glance.common import wsgi
 
@@ -28,6 +32,23 @@ class Controller(object):
         self.member_collection_schema = image_members.get_collection_schema()
         self.task_schema = tasks.get_task_schema()
         self.task_collection_schema = tasks.get_collection_schema()
+
+        #Metadef schemas
+        self.metadef_namespace_schema = metadef_namespaces.get_schema()
+        self.metadef_namespace_collection_schema = \
+            metadef_namespaces.get_collection_schema()
+
+        self.metadef_resource_type_schema = metadef_resource_types.get_schema()
+        self.metadef_resource_type_collection_schema = \
+            metadef_resource_types.get_collection_schema()
+
+        self.metadef_property_schema = metadef_properties.get_schema()
+        self.metadef_property_collection_schema = \
+            metadef_properties.get_collection_schema()
+
+        self.metadef_object_schema = metadef_objects.get_schema()
+        self.metadef_object_collection_schema = \
+            metadef_objects.get_collection_schema()
 
     def image(self, req):
         return self.image_schema.raw()
@@ -46,6 +67,30 @@ class Controller(object):
 
     def tasks(self, req):
         return self.task_collection_schema.minimal()
+
+    def metadef_namespace(self, req):
+        return self.metadef_namespace_schema.raw()
+
+    def metadef_namespaces(self, req):
+        return self.metadef_namespace_collection_schema.raw()
+
+    def metadef_resource_type(self, req):
+        return self.metadef_resource_type_schema.raw()
+
+    def metadef_resource_types(self, req):
+        return self.metadef_resource_type_collection_schema.raw()
+
+    def metadef_property(self, req):
+        return self.metadef_property_schema.raw()
+
+    def metadef_properties(self, req):
+        return self.metadef_property_collection_schema.raw()
+
+    def metadef_object(self, req):
+        return self.metadef_object_schema.raw()
+
+    def metadef_objects(self, req):
+        return self.metadef_object_collection_schema.raw()
 
 
 def create_resource(custom_image_properties=None):
