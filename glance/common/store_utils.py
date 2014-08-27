@@ -19,12 +19,12 @@ from oslo.config import cfg
 
 from glance.common import utils
 import glance.db as db_api
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 from glance import scrubber
 
-_LE = gettextutils._LE
-_LW = gettextutils._LW
+_LE = i18n._LE
+_LW = i18n._LW
 
 LOG = logging.getLogger(__name__)
 

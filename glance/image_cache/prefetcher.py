@@ -21,14 +21,14 @@ import glance_store
 
 from glance.common import exception
 from glance import context
+from glance import i18n
 from glance.image_cache import base
-from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
-_LW = gettextutils._LW
+_LI = i18n._LI
+_LW = i18n._LW
 
 
 class Prefetcher(base.CacheApp):

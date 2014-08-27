@@ -24,12 +24,12 @@ import glance.common.exception as exception
 from glance.common import utils
 import glance.domain
 import glance.domain.proxy
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
+_LI = i18n._LI
 CONF = cfg.CONF
 CONF.import_opt('image_member_quota', 'glance.common.config')
 CONF.import_opt('image_property_quota', 'glance.common.config')

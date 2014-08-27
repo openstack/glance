@@ -29,13 +29,13 @@ from webob import exc
 
 from glance.common import exception
 from glance.common import utils
-from glance.openstack.common import gettextutils
+from glance import i18n
 from glance.openstack.common import log
 
 LOG = log.getLogger(__name__)
-_LI = gettextutils._LI
-_LE = gettextutils._LE
-_LW = gettextutils._LW
+_LI = i18n._LI
+_LE = i18n._LE
+_LW = i18n._LW
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...

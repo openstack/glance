@@ -20,13 +20,13 @@ from oslo.utils import excutils
 from oslo.utils import units
 
 from glance.common import exception
-from glance.openstack.common import gettextutils
+from glance import i18n
 from glance.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
-_LE = gettextutils._LE
-_LI = gettextutils._LI
-_LW = gettextutils._LW
+_LE = i18n._LE
+_LI = i18n._LI
+_LW = i18n._LW
 CONF = cfg.CONF
 
 

@@ -20,11 +20,11 @@ Use gzip compression if the client accepts it.
 import re
 
 from glance.common import wsgi
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
+_LI = i18n._LI
 
 
 class GzipMiddleware(wsgi.Middleware):

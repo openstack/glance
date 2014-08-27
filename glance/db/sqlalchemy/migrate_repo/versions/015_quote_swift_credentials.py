@@ -18,11 +18,11 @@ import sqlalchemy
 
 from glance.common import exception
 from glance.common import utils
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
-_LE = gettextutils._LE
+_LE = i18n._LE
 
 
 def upgrade(migrate_engine):

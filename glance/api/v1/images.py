@@ -44,15 +44,15 @@ from glance.common import exception
 from glance.common import property_utils
 from glance.common import utils
 from glance.common import wsgi
-from glance.i18n import _LE
+from glance import i18n
 from glance import notifier
-from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
-_LW = gettextutils._LW
+_LE = i18n._LE
+_LI = i18n._LI
+_LW = i18n._LW
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 ACTIVE_IMMUTABLE = glance.api.v1.ACTIVE_IMMUTABLE

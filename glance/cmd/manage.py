@@ -48,13 +48,13 @@ from glance.common import utils
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata
-from glance.openstack.common import gettextutils
+from glance import i18n
 from glance.openstack.common import log
 
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
-_LW = gettextutils._LW
+_LW = i18n._LW
 
 
 # Decorators for actions

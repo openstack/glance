@@ -30,13 +30,13 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.gateway
+from glance import i18n
 import glance.notifier
-from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.schema
 
 LOG = logging.getLogger(__name__)
-_LW = gettextutils._LW
+_LW = i18n._LW
 
 CONF = cfg.CONF
 CONF.import_opt('task_time_to_live', 'glance.common.config', group='task')
