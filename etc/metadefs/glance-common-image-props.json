@@ -1,0 +1,42 @@
+{
+    "display_name": "Common Image Properties",
+    "namespace": "OS::Glance:CommonImageProperties",
+    "description": "When adding an image to Glance, you may specify some common image properties that may prove useful to consumers of your image.",
+    "protected": true,
+    "resource_type_associations" : [
+    ],
+    "properties": {
+        "kernel_id": {
+            "title": "Kernel ID",
+            "type": "string",
+            "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+            "description": "ID of image stored in Glance that should be used as the kernel when booting an AMI-style image."
+        },
+        "ramdisk_id": {
+            "title": "Ramdisk ID",
+            "type": "string",
+            "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+            "description": "ID of image stored in Glance that should be used as the ramdisk when booting an AMI-style image."
+        },
+        "instance_uuid": {
+            "title": "Instance ID",
+            "type": "string",
+            "description": "ID of instance used to create this image."
+        },
+        "architecture": {
+            "title": "CPU Architecture",
+            "description": "The CPU architecture that must be supported by the hypervisor. For example, x86_64, arm, or ppc64. Run uname -m to get the architecture of a machine. We strongly recommend using the architecture data vocabulary defined by the libosinfo project for this purpose.",
+            "type": "string"
+        },
+        "os_distro": {
+            "title": "OS Distro",
+            "description": "The common name of the operating system distribution in lowercase (uses the same data vocabulary as the libosinfo project). Specify only a recognized value for this field. Deprecated values are listed to assist you in searching for the recognized value.",
+            "type": "string"
+        },
+        "os_version": {
+            "title": "OS Version",
+            "description": "Operating system version as specified by the distributor. (for example, '11.10')",
+            "type": "string"
+        }
+    }
+}

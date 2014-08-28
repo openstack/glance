@@ -46,6 +46,7 @@ from glance.common import exception
 from glance.common import utils
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import metadata
 from glance.openstack.common import gettextutils
 from glance.openstack.common import log
 from glance.openstack.common import strutils
@@ -138,6 +139,25 @@ class DbCommands(object):
                           version,
                           sanity_check=self._need_sanity_check())
 
+    @args('--path', metavar='<path>', help='Path to the directory where '
+                                           'json metadata files are stored')
+    def load_metadefs(self, path=None):
+        """Load metadefinition json files to database"""
+        metadata.db_load_metadefs(db_api.get_engine(),
+                                  path)
+
+    def unload_metadefs(self):
+        """Unload metadefinitions from database"""
+        metadata.db_unload_metadefs(db_api.get_engine())
+
+    @args('--path', metavar='<path>', help='Path to the directory where '
+                                           'json metadata files should be '
+                                           'saved.')
+    def export_metadefs(self, path=None):
+        """Export metadefinitions data from database to files"""
+        metadata.db_export_metadefs(db_api.get_engine(),
+                                    path)
+
 
 class DbLegacyCommands(object):
     """Class for managing the db using legacy commands"""
@@ -160,6 +180,15 @@ class DbLegacyCommands(object):
     def sync(self, version=None, current_version=None):
         self.command_object.sync(CONF.command.version,
                                  CONF.command.current_version)
+
+    def load_metadefs(self, path=None):
+        self.command_object.load_metadefs(CONF.command.path)
+
+    def unload_metadefs(self):
+        self.command_object.unload_metadefs()
+
+    def export_metadefs(self, path=None):
+        self.command_object.export_metadefs(CONF.command.path)
 
 
 def add_legacy_command_parsers(command_object, subparsers):
@@ -190,6 +219,20 @@ def add_legacy_command_parsers(command_object, subparsers):
     parser.add_argument('version', nargs='?')
     parser.add_argument('current_version', nargs='?')
     parser.set_defaults(action='db_sync')
+
+    parser = subparsers.add_parser('db_load_metadefs')
+    parser.set_defaults(action_fn=legacy_command_object.load_metadefs)
+    parser.add_argument('path', nargs='?')
+    parser.set_defaults(action='db_load_metadefs')
+
+    parser = subparsers.add_parser('db_unload_metadefs')
+    parser.set_defaults(action_fn=legacy_command_object.unload_metadefs)
+    parser.set_defaults(action='db_unload_metadefs')
+
+    parser = subparsers.add_parser('db_export_metadefs')
+    parser.set_defaults(action_fn=legacy_command_object.export_metadefs)
+    parser.add_argument('path', nargs='?')
+    parser.set_defaults(action='db_export_metadefs')
 
 
 def add_command_parsers(subparsers):

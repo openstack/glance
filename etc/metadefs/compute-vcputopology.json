@@ -1,0 +1,54 @@
+{
+    "namespace": "OS::Compute::VirtCPUTopology",
+    "display_name": "Virtual CPU Topology",
+    "description": "This provides the preferred socket/core/thread counts for the virtual CPU instance exposed to guests. This enables the ability to avoid hitting limitations on vCPU topologies that OS vendors place on their products. See also: http://git.openstack.org/cgit/openstack/nova-specs/tree/specs/juno/virt-driver-vcpu-topology.rst",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image",
+            "prefix": "hw_"
+        },
+        {
+            "name": "OS::Cinder::Volume",
+            "prefix": "hw_",
+            "properties_target": "image"
+        },
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "hw:"
+        }
+    ],
+    "properties": {
+        "cpu_sockets": {
+            "title": "vCPU Sockets",
+            "description": "Preferred number of sockets to expose to the guest.",
+            "type": "integer"
+        },
+        "cpu_cores": {
+            "title": "vCPU Cores",
+            "description": "Preferred number of cores to expose to the guest.",
+            "type": "integer"
+        },
+        "cpu_threads": {
+            "title": " vCPU Threads",
+            "description": "Preferred number of threads to expose to the guest.",
+            "type": "integer"
+        },
+        "cpu_maxsockets": {
+            "title": "Max vCPU Sockets",
+            "description": "Maximum number of sockets to expose to the guest.",
+            "type": "integer"
+        },
+        "cpu_maxcores": {
+            "title": "Max vCPU Cores",
+            "description": "Maximum number of cores to expose to the guest.",
+            "type": "integer"
+        },
+        "cpu_maxthreads": {
+            "title": "Max vCPU Threads",
+            "description": "Maximum number of threads to expose to the guest.",
+            "type": "integer"
+        }
+    }
+}

@@ -1,0 +1,4 @@
+This directory contains predefined namespaces for Glance Metadata Definitions
+Catalog. Files from this directory can be loaded into the database using
+db_load_metadefs command for glance-manage. Similarly you can unload the
+definitions using db_unload_metadefs command.
