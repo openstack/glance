@@ -262,3 +262,214 @@ def task_get_all(client, filters=None, marker=None, limit=None,
 def task_create(client, values, session=None):
     """Create a task object"""
     return client.task_create(values=values)
+
+
+# Metadef
+@_get_client
+def metadef_namespace_get_all(
+        client, marker=None, limit=None, sort_key='created_at',
+        sort_dir=None, filters=None, session=None):
+    return client.metadef_namespace_get_all(
+        marker=marker, limit=limit,
+        sort_key=sort_key, sort_dir=sort_dir, filters=filters)
+
+
+@_get_client
+def metadef_namespace_get(client, namespace_name, session=None):
+    return client.metadef_namespace_get(namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_namespace_create(client, values, session=None):
+    return client.metadef_namespace_create(values=values)
+
+
+@_get_client
+def metadef_namespace_update(
+        client, namespace_id, namespace_dict,
+        session=None):
+    return client.metadef_namespace_update(
+        namespace_id=namespace_id, namespace_dict=namespace_dict)
+
+
+@_get_client
+def metadef_namespace_delete(client, namespace_name, session=None):
+    return client.metadef_namespace_delete(
+        namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_object_get_all(client, namespace_name, session=None):
+    return client.metadef_object_get_all(
+        namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_object_get(
+        client,
+        namespace_name, object_name, session=None):
+    return client.metadef_object_get(
+        namespace_name=namespace_name, object_name=object_name)
+
+
+@_get_client
+def metadef_object_create(
+        client,
+        namespace_name, object_dict, session=None):
+    return client.metadef_object_create(
+        namespace_name=namespace_name, object_dict=object_dict)
+
+
+@_get_client
+def metadef_object_update(
+        client,
+        namespace_name, object_id,
+        object_dict, session=None):
+    return client.metadef_object_update(
+        namespace_name=namespace_name, object_id=object_id,
+        object_dict=object_dict)
+
+
+@_get_client
+def metadef_object_delete(
+        client,
+        namespace_name, object_name,
+        session=None):
+    return client.metadef_object_delete(
+        namespace_name=namespace_name, object_name=object_name)
+
+
+@_get_client
+def metadef_object_delete_namespace_content(
+        client,
+        namespace_name, session=None):
+    return client.metadef_object_delete_namespace_content(
+        namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_object_count(
+        client,
+        namespace_name, session=None):
+    return client.metadef_object_count(
+        namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_property_get_all(
+        client,
+        namespace_name, session=None):
+    return client.metadef_property_get_all(
+        namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_property_get(
+        client,
+        namespace_name, property_name,
+        session=None):
+    return client.metadef_property_get(
+        namespace_name=namespace_name, property_name=property_name)
+
+
+@_get_client
+def metadef_property_create(
+        client,
+        namespace_name, property_dict,
+        session=None):
+    return client.metadef_property_create(
+        namespace_name=namespace_name, property_dict=property_dict)
+
+
+@_get_client
+def metadef_property_update(
+        client,
+        namespace_name, property_id,
+        property_dict, session=None):
+    return client.metadef_property_update(
+        namespace_name=namespace_name, property_id=property_id,
+        property_dict=property_dict)
+
+
+@_get_client
+def metadef_property_delete(
+        client,
+        namespace_name, property_name,
+        session=None):
+    return client.metadef_property_delete(
+        namespace_name=namespace_name, property_name=property_name)
+
+
+@_get_client
+def metadef_property_delete_namespace_content(
+        client,
+        namespace_name, session=None):
+    return client.metadef_property_delete_namespace_content(
+        namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_property_count(
+        client,
+        namespace_name, session=None):
+    return client.metadef_property_count(
+        namespace_name=namespace_name)
+
+
+@_get_client
+def metadef_resource_type_create(client, values, session=None):
+    return client.metadef_resource_type_create(values=values)
+
+
+@_get_client
+def metadef_resource_type_get(
+        client,
+        resource_type_name, session=None):
+    return client.metadef_resource_type_get(
+        resource_type_name=resource_type_name)
+
+
+@_get_client
+def metadef_resource_type_get_all(client, session=None):
+    return client.metadef_resource_type_get_all()
+
+
+@_get_client
+def metadef_resource_type_delete(
+        client,
+        resource_type_name, session=None):
+    return client.metadef_resource_type_delete(
+        resource_type_name=resource_type_name)
+
+
+@_get_client
+def metadef_resource_type_association_get(
+        client,
+        namespace_name, resource_type_name,
+        session=None):
+    return client.metadef_resource_type_association_get(
+        namespace_name=namespace_name, resource_type_name=resource_type_name)
+
+
+@_get_client
+def metadef_resource_type_association_create(
+        client,
+        namespace_name, values, session=None):
+    return client.metadef_resource_type_association_create(
+        namespace_name=namespace_name, values=values)
+
+
+@_get_client
+def metadef_resource_type_association_delete(
+        client,
+        namespace_name, resource_type_name, session=None):
+    return client.metadef_resource_type_association_delete(
+        namespace_name=namespace_name, resource_type_name=resource_type_name)
+
+
+@_get_client
+def metadef_resource_type_association_get_all_by_namespace(
+        client,
+        namespace_name, session=None):
+    return client.metadef_resource_type_association_get_all_by_namespace(
+        namespace_name=namespace_name)

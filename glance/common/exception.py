@@ -130,6 +130,31 @@ class ProtectedImageDelete(Forbidden):
     message = _("Image %(image_id)s is protected and cannot be deleted.")
 
 
+class ProtectedMetadefNamespaceDelete(Forbidden):
+    message = _("Metadata definition namespace %(namespace)s is protected"
+                " and cannot be deleted.")
+
+
+class ProtectedMetadefNamespacePropDelete(Forbidden):
+    message = _("Metadata definition property %(property_name)s is protected"
+                " and cannot be deleted.")
+
+
+class ProtectedMetadefObjectDelete(Forbidden):
+    message = _("Metadata definition object %(object_name)s is protected"
+                " and cannot be deleted.")
+
+
+class ProtectedMetadefResourceTypeAssociationDelete(Forbidden):
+    message = _("Metadata definition resource-type-association"
+                " %(resource_type)s is protected and cannot be deleted.")
+
+
+class ProtectedMetadefResourceTypeSystemDelete(Forbidden):
+    message = _("Metadata definition resource-type %(resource_type_name)s is"
+                " a seeded-system type and cannot be deleted.")
+
+
 class Invalid(GlanceException):
     message = _("Data supplied was not valid.")
 
@@ -353,3 +378,74 @@ class InvalidParameterValue(Invalid):
 class InvalidImageStatusTransition(Invalid):
     message = _("Image status transition from %(cur_status)s to"
                 " %(new_status)s is not allowed")
+
+
+class MetadefDuplicateNamespace(Duplicate):
+    message = _("The metadata definition namespace=%(namespace_name)s"
+                " already exists.")
+
+
+class MetadefDuplicateObject(Duplicate):
+    message = _("A metadata definition object with name=%(object_name)s"
+                " already exists in namespace=%(namespace_name)s.")
+
+
+class MetadefDuplicateProperty(Duplicate):
+    message = _("A metadata definition property with name=%(property_name)s"
+                " already exists in namespace=%(namespace_name)s.")
+
+
+class MetadefDuplicateResourceType(Duplicate):
+    message = _("A metadata definition resource-type with"
+                " name=%(resource_type_name)s already exists.")
+
+
+class MetadefDuplicateResourceTypeAssociation(Duplicate):
+    message = _("The metadata definition resource-type association of"
+                " resource-type=%(resource_type_name)s to"
+                " namespace=%(namespace_name)s"
+                " already exists.")
+
+
+class MetadefForbidden(Forbidden):
+    message = _("You are not authorized to complete this action.")
+
+
+class MetadefIntegrityError(Forbidden):
+    message = _("The metadata definition %(record_type)s with"
+                " name=%(record_name)s not deleted."
+                " Other records still refer to it.")
+
+
+class MetadefNamespaceNotFound(NotFound):
+    message = _("Metadata definition namespace=%(namespace_name)s"
+                "was not found.")
+
+
+class MetadefObjectNotFound(NotFound):
+    message = _("The metadata definition object with"
+                " name=%(object_name)s was not found in"
+                " namespace=%(namespace_name)s.")
+
+
+class MetadefPropertyNotFound(NotFound):
+    message = _("The metadata definition property with"
+                " name=%(property_name)s was not found in"
+                " namespace=%(namespace_name)s.")
+
+
+class MetadefResourceTypeNotFound(NotFound):
+    message = _("The metadata definition resource-type with"
+                " name=%(resource_type_name)s, was not found.")
+
+
+class MetadefResourceTypeAssociationNotFound(NotFound):
+    message = _("The metadata definition resource-type association of"
+                " resource-type=%(resource_type_name)s to"
+                " namespace=%(namespace_name)s,"
+                " was not found.")
+
+
+class MetadefRecordNotFound(NotFound):
+    message = _("Metadata definition %(record_type)s record not found"
+                " for id %(id)s.")

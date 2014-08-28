@@ -20,6 +20,7 @@ import glance.db
 from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
+from glance.tests.functional.db import base_metadef
 
 CONF = cfg.CONF
 
@@ -85,3 +86,17 @@ class TestRegistryQuota(base.DriverQuotaTests, FunctionalInitWrapper):
     def tearDown(self):
         self.registry_server.stop()
         super(TestRegistryQuota, self).tearDown()
+
+
+class TestRegistryMetadefDriver(base_metadef.TestMetadefDriver,
+                                base_metadef.MetadefDriverTests,
+                                FunctionalInitWrapper):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestRegistryMetadefDriver, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+    def tearDown(self):
+        self.registry_server.stop()
+        super(TestRegistryMetadefDriver, self).tearDown()
