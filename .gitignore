@@ -25,3 +25,4 @@ doc/source/api
 # IDE files
 .project
 .pydevproject
+.idea
