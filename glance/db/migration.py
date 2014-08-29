@@ -21,8 +21,15 @@
 
 import os
 
+from oslo.config import cfg
+from oslo import db
+
 from glance.common import utils
 from glance.db.sqlalchemy import api as db_api
+
+
+db.options.set_defaults(cfg.CONF)
+
 
 IMPL = utils.LazyPluggable(
     'backend',
@@ -38,9 +45,11 @@ MIGRATE_REPO_PATH = os.path.join(
 )
 
 
-def db_sync(version=None, init_version=0):
+def db_sync(version=None, init_version=0, engine=None):
     """Migrate the database to `version` or the most recent version."""
-    return IMPL.db_sync(engine=db_api.get_engine(),
+    if engine is None:
+        engine = db_api.get_engine()
+    return IMPL.db_sync(engine=engine,
                         abs_path=MIGRATE_REPO_PATH,
                         version=version,
                         init_version=init_version)
