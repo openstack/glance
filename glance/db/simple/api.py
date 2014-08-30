@@ -30,11 +30,18 @@ LOG = logging.getLogger(__name__)
 DATA = {
     'images': {},
     'members': {},
+    'metadef_namespace_resource_types': [],
+    'metadef_namespaces': [],
+    'metadef_objects': [],
+    'metadef_properties': [],
+    'metadef_resource_types': [],
     'tags': {},
     'locations': [],
     'tasks': {},
     'task_info': {}
 }
+
+INDEX = 0
 
 
 def log_call(func):
@@ -57,6 +64,11 @@ def reset():
     DATA = {
         'images': {},
         'members': [],
+        'metadef_namespace_resource_types': [],
+        'metadef_namespaces': [],
+        'metadef_objects': [],
+        'metadef_properties': [],
+        'metadef_resource_types': [],
         'tags': {},
         'locations': [],
         'tasks': {},
@@ -1017,3 +1029,737 @@ def _task_info_get(task_id):
         raise exception.TaskNotFound(task_id=task_id)
 
     return task_info
+
+
+@log_call
+def metadef_namespace_create(context, values):
+    """Create a namespace object"""
+    global DATA
+
+    namespace_values = copy.deepcopy(values)
+    namespace_name = namespace_values.get('namespace')
+    required_attributes = ['namespace', 'owner']
+    allowed_attributes = ['namespace', 'owner', 'display_name', 'description',
+                          'visibility', 'protected']
+
+    for namespace in DATA['metadef_namespaces']:
+        if namespace['namespace'] == namespace_name:
+            msg = ("Can not create the metadata definition namespace. "
+                   "Namespace=%s already exists.") % namespace_name
+            LOG.debug(msg)
+            raise exception.MetadefDuplicateNamespace(
+                namespace_name=namespace_name)
+
+    for key in required_attributes:
+        if key not in namespace_values:
+            raise exception.Invalid('%s is a required attribute' % key)
+
+    incorrect_keys = set(namespace_values.keys()) - set(allowed_attributes)
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
+
+    namespace = _format_namespace(namespace_values)
+    DATA['metadef_namespaces'].append(namespace)
+
+    return namespace
+
+
+@log_call
+def metadef_namespace_update(context, namespace_id, values):
+    """Update a namespace object"""
+    global DATA
+    namespace_values = copy.deepcopy(values)
+
+    namespace = metadef_namespace_get_by_id(context, namespace_id)
+    if namespace['namespace'] != values['namespace']:
+        for db_namespace in DATA['metadef_namespaces']:
+            if db_namespace['namespace'] == values['namespace']:
+                msg = ("Invalid update. It would result in a duplicate"
+                       " metadata definition namespace with the same"
+                       " name of %s"
+                       % values['namespace'])
+                LOG.debug(msg)
+                emsg = (_("Invalid update. It would result in a duplicate"
+                          " metadata definition namespace with the same"
+                          " name of %s")
+                        % values['namespace'])
+                raise exception.MetadefDuplicateNamespace(emsg)
+    DATA['metadef_namespaces'].remove(namespace)
+
+    namespace.update(namespace_values)
+    namespace['updated_at'] = timeutils.utcnow()
+    DATA['metadef_namespaces'].append(namespace)
+
+    return namespace
+
+
+@log_call
+def metadef_namespace_get_by_id(context, namespace_id):
+    """Get a namespace object"""
+    try:
+        namespace = next(namespace for namespace in DATA['metadef_namespaces']
+                         if namespace['id'] == namespace_id)
+    except StopIteration:
+        msg = "No namespace found with id %s" % namespace_id
+        LOG.debug(msg)
+        raise exception.MetadefRecordNotFound(
+            record_type='namespace', id=namespace_id)
+
+    if not _is_namespace_visible(context, namespace):
+        msg = ("Forbidding request, metadata definition namespace=%s"
+               " is not visible.") % namespace.namespace
+        LOG.debug(msg)
+        emsg = _("Forbidding request, metadata definition namespace=%s"
+                 " is not visible.") % namespace.namespace
+        raise exception.MetadefForbidden(emsg)
+
+    return namespace
+
+
+@log_call
+def metadef_namespace_get(context, namespace_name):
+    """Get a namespace object"""
+    try:
+        namespace = next(namespace for namespace in DATA['metadef_namespaces']
+                         if namespace['namespace'] == namespace_name)
+    except StopIteration:
+        msg = "No namespace found with name %s" % namespace_name
+        LOG.debug(msg)
+        raise exception.MetadefNamespaceNotFound(
+            namespace_name=namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    return namespace
+
+
+@log_call
+def metadef_namespace_get_all(context,
+                              marker=None,
+                              limit=None,
+                              sort_key='created_at',
+                              sort_dir='desc',
+                              filters=None):
+    """Get a namespaces list"""
+    resource_types = filters.get('resource_types', []) if filters else []
+    visibility = filters.get('visibility', None) if filters else None
+
+    namespaces = []
+    for namespace in DATA['metadef_namespaces']:
+        if not _is_namespace_visible(context, namespace):
+            continue
+
+        if visibility and namespace['visibility'] != visibility:
+            continue
+
+        if resource_types:
+            for association in DATA['metadef_namespace_resource_types']:
+                if association['namespace_id'] == namespace['id']:
+                    if association['name'] in resource_types:
+                        break
+            else:
+                continue
+
+        namespaces.append(namespace)
+
+    return namespaces
+
+
+@log_call
+def metadef_namespace_delete(context, namespace_name):
+    """Delete a namespace object"""
+    global DATA
+
+    namespace = metadef_namespace_get(context, namespace_name)
+    DATA['metadef_namespaces'].remove(namespace)
+
+    return namespace
+
+
+@log_call
+def metadef_namespace_delete_content(context, namespace_name):
+    """Delete a namespace content"""
+    global DATA
+    namespace = metadef_namespace_get(context, namespace_name)
+    namespace_id = namespace['id']
+
+    objects = []
+
+    for object in DATA['metadef_objects']:
+        if object['namespace_id'] != namespace_id:
+            objects.append(object)
+
+    DATA['metadef_objects'] = objects
+
+    properties = []
+
+    for property in DATA['metadef_objects']:
+        if property['namespace_id'] != namespace_id:
+            properties.append(object)
+
+    DATA['metadef_objects'] = properties
+
+    return namespace
+
+
+@log_call
+def metadef_object_get(context, namespace_name, object_name):
+    """Get a metadef object"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for object in DATA['metadef_objects']:
+        if (object['namespace_id'] == namespace['id'] and
+                object['name'] == object_name):
+            return object
+    else:
+        msg = ("The metadata definition object with name=%(name)s"
+               " was not found in namespace=%(namespace_name)s."
+               % {'name': object_name, 'namespace_name': namespace_name})
+        LOG.debug(msg)
+        raise exception.MetadefObjectNotFound(namespace_name=namespace_name,
+                                              object_name=object_name)
+
+
+@log_call
+def metadef_object_get_by_id(context, namespace_name, object_id):
+    """Get a metadef object"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for object in DATA['metadef_objects']:
+        if (object['namespace_id'] == namespace['id'] and
+                object['id'] == object_id):
+            return object
+    else:
+        msg = ("No metadata definition object found with id %s"
+               % object_id)
+        LOG.debug(msg)
+        raise exception.MetadefRecordNotFound(record_type='object',
+                                              id=object_id)
+
+
+@log_call
+def metadef_object_get_all(context, namespace_name):
+    """Get a metadef objects list"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    objects = []
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for object in DATA['metadef_objects']:
+        if object['namespace_id'] == namespace['id']:
+            objects.append(object)
+
+    return objects
+
+
+@log_call
+def metadef_object_create(context, namespace_name, values):
+    """Create a metadef object"""
+    global DATA
+
+    object_values = copy.deepcopy(values)
+    object_name = object_values['name']
+    required_attributes = ['name']
+    allowed_attributes = ['name', 'description', 'schema', 'required']
+
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    for object in DATA['metadef_objects']:
+        if (object['name'] == object_name and
+                object['namespace_id'] == namespace['id']):
+            msg = ("A metadata definition object with name=%(name)s"
+                   " in namespace=%(namespace_name)s already exists."
+                   % {'name': object_name, 'namespace_name': namespace_name})
+            LOG.debug(msg)
+            raise exception.MetadefDuplicateObject(
+                object_name=object_name, namespace_name=namespace_name)
+
+    for key in required_attributes:
+        if key not in object_values:
+            raise exception.Invalid('%s is a required attribute' % key)
+
+    incorrect_keys = set(object_values.keys()) - set(allowed_attributes)
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
+
+    object_values['namespace_id'] = namespace['id']
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    object = _format_object(object_values)
+    DATA['metadef_objects'].append(object)
+
+    return object
+
+
+@log_call
+def metadef_object_update(context, namespace_name, object_id, values):
+    """Update a metadef object"""
+    global DATA
+
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    object = metadef_object_get_by_id(context, namespace_name, object_id)
+    if object['name'] != values['name']:
+        for db_object in DATA['metadef_objects']:
+            if (db_object['name'] == values['name'] and
+                    db_object['namespace_id'] == namespace['id']):
+                msg = ("Invalid update. It would result in a duplicate"
+                       " metadata definition object with same name=%(name)s "
+                       " in namespace=%(namespace_name)s."
+                       % {'name': object['name'],
+                          'namespace_name': namespace_name})
+                LOG.debug(msg)
+                emsg = (_("Invalid update. It would result in a duplicate"
+                          " metadata definition object with the same"
+                          " name=%(name)s "
+                          " in namespace=%(namespace_name)s.")
+                        % {'name': object['name'],
+                           'namespace_name': namespace_name})
+                raise exception.MetadefDuplicateObject(emsg)
+    DATA['metadef_objects'].remove(object)
+
+    object.update(values)
+    object['updated_at'] = timeutils.utcnow()
+    DATA['metadef_objects'].append(object)
+
+    return object
+
+
+@log_call
+def metadef_object_delete(context, namespace_name, object_name):
+    """Delete a metadef object"""
+    global DATA
+
+    object = metadef_object_get(context, namespace_name, object_name)
+    DATA['metadef_objects'].remove(object)
+
+    return object
+
+
+@log_call
+def metadef_object_count(context, namespace_name):
+    """Get metadef object count in a namespace"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    count = 0
+    for object in DATA['metadef_objects']:
+        if object['namespace_id'] == namespace['id']:
+            count = count + 1
+
+    return count
+
+
+@log_call
+def metadef_property_count(context, namespace_name):
+    """Get properties count in a namespace"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    count = 0
+    for property in DATA['metadef_properties']:
+        if property['namespace_id'] == namespace['id']:
+            count = count + 1
+
+    return count
+
+
+@log_call
+def metadef_property_create(context, namespace_name, values):
+    """Create a metadef property"""
+    global DATA
+
+    property_values = copy.deepcopy(values)
+    property_name = property_values['name']
+    required_attributes = ['name']
+    allowed_attributes = ['name', 'description', 'schema', 'required']
+
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    for property in DATA['metadef_properties']:
+        if (property['name'] == property_name and
+                property['namespace_id'] == namespace['id']):
+            msg = ("Can not create metadata definition property. A property"
+                   " with name=%(name)s already exists in"
+                   " namespace=%(namespace_name)s."
+                   % {'name': property_name,
+                      'namespace_name': namespace_name})
+            LOG.debug(msg)
+            raise exception.MetadefDuplicateProperty(
+                property_name=property_name,
+                namespace_name=namespace_name)
+
+    for key in required_attributes:
+        if key not in property_values:
+            raise exception.Invalid('%s is a required attribute' % key)
+
+    incorrect_keys = set(property_values.keys()) - set(allowed_attributes)
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
+
+    property_values['namespace_id'] = namespace['id']
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    property = _format_property(property_values)
+    DATA['metadef_properties'].append(property)
+
+    return property
+
+
+@log_call
+def metadef_property_update(context, namespace_name, property_id, values):
+    """Update a metadef property"""
+    global DATA
+
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    property = metadef_property_get_by_id(context, namespace_name, property_id)
+    if property['name'] != values['name']:
+        for db_property in DATA['metadef_properties']:
+            if (db_property['name'] == values['name'] and
+                    db_property['namespace_id'] == namespace['id']):
+                msg = ("Invalid update. It would result in a duplicate"
+                       " metadata definition property with the same"
+                       " name=%(name)s"
+                       " in namespace=%(namespace_name)s."
+                       % {'name': property['name'],
+                          'namespace_name': namespace_name})
+                LOG.debug(msg)
+                emsg = (_("Invalid update. It would result in a duplicate"
+                          " metadata definition property with the same"
+                          " name=%(name)s"
+                          " in namespace=%(namespace_name)s.")
+                        % {'name': property['name'],
+                           'namespace_name': namespace_name})
+                raise exception.MetadefDuplicateProperty(emsg)
+    DATA['metadef_properties'].remove(property)
+
+    property.update(values)
+    property['updated_at'] = timeutils.utcnow()
+    DATA['metadef_properties'].append(property)
+
+    return property
+
+
+@log_call
+def metadef_property_get_all(context, namespace_name):
+    """Get a metadef properties list"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    properties = []
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for property in DATA['metadef_properties']:
+        if property['namespace_id'] == namespace['id']:
+            properties.append(property)
+
+    return properties
+
+
+@log_call
+def metadef_property_get_by_id(context, namespace_name, property_id):
+    """Get a metadef property"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for property in DATA['metadef_properties']:
+        if (property['namespace_id'] == namespace['id'] and
+                property['id'] == property_id):
+            return property
+    else:
+        msg = ("No metadata definition property found with id=%s"
+               % property_id)
+        LOG.debug(msg)
+        raise exception.MetadefRecordNotFound(record_type='property',
+                                              id=property_id)
+
+
+@log_call
+def metadef_property_get(context, namespace_name, property_name):
+    """Get a metadef property"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for property in DATA['metadef_properties']:
+        if (property['namespace_id'] == namespace['id'] and
+                property['name'] == property_name):
+            return property
+    else:
+        msg = ("No property found with name=%(name)s in"
+               " namespace=%(namespace_name)s "
+               % {'name': property_name, 'namespace_name': namespace_name})
+        LOG.debug(msg)
+        raise exception.MetadefPropertyNotFound(namespace_name=namespace_name,
+                                                property_name=property_name)
+
+
+@log_call
+def metadef_property_delete(context, namespace_name, property_name):
+    """Delete a metadef property"""
+    global DATA
+
+    property = metadef_property_get(context, namespace_name, property_name)
+    DATA['metadef_properties'].remove(property)
+
+    return property
+
+
+@log_call
+def metadef_resource_type_create(context, values):
+    """Create a metadef resource type"""
+    global DATA
+
+    resource_type_values = copy.deepcopy(values)
+    resource_type_name = resource_type_values['name']
+
+    allowed_attrubites = ['name', 'protected']
+
+    for resource_type in DATA['metadef_resource_types']:
+        if resource_type['name'] == resource_type_name:
+            raise exception.Duplicate()
+
+    incorrect_keys = set(resource_type_values.keys()) - set(allowed_attrubites)
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
+
+    resource_type = _format_resource_type(resource_type_values)
+    DATA['metadef_resource_types'].append(resource_type)
+
+    return resource_type
+
+
+@log_call
+def metadef_resource_type_get_all(context):
+    """List all resource types"""
+    return DATA['metadef_resource_types']
+
+
+@log_call
+def metadef_resource_type_get(context, resource_type_name):
+    """Get a resource type"""
+    try:
+        resource_type = next(resource_type for resource_type in
+                             DATA['metadef_resource_types']
+                             if resource_type['name'] ==
+                             resource_type_name)
+    except StopIteration:
+        msg = "No resource type found with name %s" % resource_type_name
+        LOG.debug(msg)
+        raise exception.MetadefResourceTypeNotFound(
+            resource_type_name=resource_type_name)
+
+    return resource_type
+
+
+@log_call
+def metadef_resource_type_association_create(context, namespace_name,
+                                             values):
+    global DATA
+
+    association_values = copy.deepcopy(values)
+
+    namespace = metadef_namespace_get(context, namespace_name)
+    resource_type_name = association_values['name']
+    resource_type = metadef_resource_type_get(context,
+                                              resource_type_name)
+
+    required_attributes = ['name', 'properties_target', 'prefix']
+    allowed_attributes = copy.deepcopy(required_attributes)
+
+    for association in DATA['metadef_namespace_resource_types']:
+        if (association['namespace_id'] == namespace['id'] and
+                association['resource_type'] == resource_type['id']):
+            msg = ("The metadata definition resource-type association of"
+                   " resource_type=%(resource_type_name)s to"
+                   " namespace=%(namespace_name)s, already exists."
+                   % {'resource_type_name': resource_type_name,
+                      'namespace_name': namespace_name})
+            LOG.debug(msg)
+            raise exception.MetadefDuplicateResourceTypeAssociation(
+                resource_type_name=resource_type_name,
+                namespace_name=namespace_name)
+
+    for key in required_attributes:
+        if key not in association_values:
+            raise exception.Invalid('%s is a required attribute' % key)
+
+    incorrect_keys = set(association_values.keys()) - set(allowed_attributes)
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
+
+    association = _format_association(namespace, resource_type,
+                                      association_values)
+    DATA['metadef_namespace_resource_types'].append(association)
+
+    return association
+
+
+@log_call
+def metadef_resource_type_association_get(context, namespace_name,
+                                          resource_type_name):
+    namespace = metadef_namespace_get(context, namespace_name)
+    resource_type = metadef_resource_type_get(context, resource_type_name)
+
+    for association in DATA['metadef_namespace_resource_types']:
+        if (association['namespace_id'] == namespace['id'] and
+                association['resource_type'] == resource_type['id']):
+            return association
+    else:
+        msg = ("No resource type association found associated with namespace "
+               "%s and resource type %s" % namespace_name, resource_type_name)
+        LOG.debug(msg)
+        raise exception.MetadefResourceTypeAssociationNotFound(
+            resource_type_name=resource_type_name,
+            namespace_name=namespace_name)
+
+
+@log_call
+def metadef_resource_type_association_get_all_by_namespace(context,
+                                                           namespace_name):
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    namespace_resource_types = []
+    for resource_type in DATA['metadef_namespace_resource_types']:
+        if resource_type['namespace_id'] == namespace['id']:
+            namespace_resource_types.append(resource_type)
+
+    return namespace_resource_types
+
+
+@log_call
+def metadef_resource_type_association_delete(context, namespace_name,
+                                             resource_type_name):
+    global DATA
+
+    resource_type = metadef_resource_type_association_get(context,
+                                                          namespace_name,
+                                                          resource_type_name)
+    DATA['metadef_namespace_resource_types'].remove(resource_type)
+
+    return resource_type
+
+
+def _format_association(namespace, resource_type, association_values):
+    association = {
+        'namespace_id': namespace['id'],
+        'resource_type': resource_type['id'],
+        'properties_target': None,
+        'prefix': None,
+        'created_at': timeutils.utcnow(),
+        'updated_at': timeutils.utcnow()
+
+    }
+    association.update(association_values)
+    return association
+
+
+def _format_resource_type(values):
+    dt = timeutils.utcnow()
+    resource_type = {
+        'id': _get_metadef_id(),
+        'name': values['name'],
+        'protected': True,
+        'created_at': dt,
+        'updated_at': dt
+    }
+    resource_type.update(values)
+    return resource_type
+
+
+def _format_property(values):
+    property = {
+        'id': _get_metadef_id(),
+        'namespace_id': None,
+        'name': None,
+        'schema': None
+    }
+    property.update(values)
+    return property
+
+
+def _format_namespace(values):
+    dt = timeutils.utcnow()
+    namespace = {
+        'id': _get_metadef_id(),
+        'namespace': None,
+        'display_name': None,
+        'description': None,
+        'visibility': 'private',
+        'protected': False,
+        'owner': None,
+        'created_at': dt,
+        'updated_at': dt
+    }
+    namespace.update(values)
+    return namespace
+
+
+def _format_object(values):
+    dt = timeutils.utcnow()
+    object = {
+        'id': _get_metadef_id(),
+        'namespace_id': None,
+        'name': None,
+        'description': None,
+        'schema': None,
+        'required': None,
+        'created_at': dt,
+        'updated_at': dt
+    }
+    object.update(values)
+    return object
+
+
+def _is_namespace_visible(context, namespace):
+    """Return true if namespace is visible in this context"""
+    if context.is_admin:
+        return True
+
+    if namespace.get('visibility', '') == 'public':
+        return True
+
+    if namespace['owner'] is None:
+        return True
+
+    if context.owner is not None:
+        if context.owner == namespace['owner']:
+            return True
+
+    return False
+
+
+def _check_namespace_visibility(context, namespace, namespace_name):
+    if not _is_namespace_visible(context, namespace):
+        msg = ("Forbidding request, metadata definition namespace=%s"
+               " not visible." % namespace_name)
+        LOG.debug(msg)
+        emsg = _("Forbidding request, metadata definition namespace=%s"
+                 " not visible.") % namespace_name
+        raise exception.MetadefForbidden(emsg)
+
+
+def _get_metadef_id():
+    global INDEX
+    INDEX += 1
+    return INDEX

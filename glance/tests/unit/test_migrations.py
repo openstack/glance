@@ -1338,3 +1338,125 @@ class TestMigrations(test_utils.BaseTestCase):
     def _post_downgrade_034(self, engine):
         images = get_table(engine, 'images')
         self.assertNotIn('virtual_size', images.c)
+
+    def _pre_upgrade_035(self, engine):
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_namespaces')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_properties')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_objects')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_resource_types')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine,
+                          'metadef_namespace_resource_types')
+
+    def _check_035(self, engine, data):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        # metadef_namespaces
+        table = sqlalchemy.Table("metadef_namespaces", meta, autoload=True)
+        index_namespace = ('ix_namespaces_namespace', ['namespace'])
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in table.indexes]
+        self.assertIn(index_namespace, index_data)
+
+        expected_cols = [u'id',
+                         u'namespace',
+                         u'display_name',
+                         u'description',
+                         u'visibility',
+                         u'protected',
+                         u'owner',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+        # metadef_objects
+        table = sqlalchemy.Table("metadef_objects", meta, autoload=True)
+        index_namespace_id_name = (
+            'ix_objects_namespace_id_name', ['namespace_id', 'name'])
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in table.indexes]
+        self.assertIn(index_namespace_id_name, index_data)
+
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'description',
+                         u'required',
+                         u'schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+         # metadef_properties
+        table = sqlalchemy.Table("metadef_properties", meta, autoload=True)
+        index_namespace_id_name = (
+            'ix_metadef_properties_namespace_id_name',
+            ['namespace_id', 'name'])
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in table.indexes]
+        self.assertIn(index_namespace_id_name, index_data)
+
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+         # metadef_resource_types
+        table = sqlalchemy.Table(
+            "metadef_resource_types", meta, autoload=True)
+        index_resource_types_name = (
+            'ix_metadef_resource_types_name', ['name'])
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in table.indexes]
+        self.assertIn(index_resource_types_name, index_data)
+
+        expected_cols = [u'id',
+                         u'name',
+                         u'protected',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+         # metadef_namespace_resource_types
+        table = sqlalchemy.Table(
+            "metadef_namespace_resource_types", meta, autoload=True)
+        index_ns_res_types_res_type_id_ns_id = (
+            'ix_metadef_ns_res_types_res_type_id_ns_id',
+            ['resource_type_id', 'namespace_id'])
+        index_data = [(idx.name, idx.columns.keys())
+                      for idx in table.indexes]
+        self.assertIn(index_ns_res_types_res_type_id_ns_id, index_data)
+
+        expected_cols = [u'resource_type_id',
+                         u'namespace_id',
+                         u'properties_target',
+                         u'prefix',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+    def _post_downgrade_035(self, engine):
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_namespaces')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_properties')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_objects')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine, 'metadef_resource_types')
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          get_table, engine,
+                          'metadef_namespace_resource_types')
