@@ -148,10 +148,12 @@ class Controller(controller.BaseController):
         else:
             self.prop_enforcer = None
 
-    def _enforce(self, req, action):
+    def _enforce(self, req, action, target=None):
         """Authorize an action against our policies"""
+        if target is None:
+            target = {}
         try:
-            self.policy.enforce(req.context, action, {})
+            self.policy.enforce(req.context, action, target)
         except exception.Forbidden:
             raise HTTPForbidden()
 
@@ -466,9 +468,20 @@ class Controller(controller.BaseController):
 
         :raises HTTPNotFound if image is not available to user
         """
+
         self._enforce(req, 'get_image')
-        self._enforce(req, 'download_image')
-        image_meta = self.get_active_image_meta_or_404(req, id)
+
+        try:
+            image_meta = self.get_active_image_meta_or_404(req, id)
+        except HTTPNotFound:
+            # provision for backward-compatibility breaking issue
+            # catch the 404 exception and raise it after enforcing
+            # the policy
+            with excutils.save_and_reraise_exception():
+                self._enforce(req, 'download_image')
+        else:
+            target = utils.create_mashup_dict(image_meta)
+            self._enforce(req, 'download_image', target=target)
 
         self._enforce_read_protected_props(image_meta, req)
 

@@ -44,10 +44,19 @@ class ImageRepoStub(object):
 
 
 class ImageStub(object):
-    def __init__(self, image_id, visibility='private'):
+    def __init__(self, image_id=None, visibility='private',
+                 container_format='bear', disk_format='raw',
+                 status='active', extra_properties=None):
+
+        if extra_properties is None:
+            extra_properties = {}
+
         self.image_id = image_id
         self.visibility = visibility
-        self.status = 'active'
+        self.container_format = container_format
+        self.disk_format = disk_format
+        self.status = status
+        self.extra_properties = extra_properties
 
     def delete(self):
         self.status = 'deleted'
@@ -294,11 +303,19 @@ class TestImagePolicy(test_utils.BaseTestCase):
         image_factory.new_image(visibility='public')
         self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
 
-    def test_image_get_data(self):
+    def test_image_get_data_policy_enforced_with_target(self):
+        extra_properties = {
+            'test_key': 'test_4321'
+        }
+        image_stub = ImageStub(UUID1, extra_properties=extra_properties)
+        image = glance.api.policy.ImageProxy(image_stub, {}, self.policy)
         self.policy.enforce.side_effect = exception.Forbidden
-        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        glance.api.policy.ImageTarget = mock.Mock()
+        target = glance.api.policy.ImageTarget(image)
+
         self.assertRaises(exception.Forbidden, image.get_data)
-        self.policy.enforce.assert_called_once_with({}, "download_image", {})
+        self.policy.enforce.assert_called_once_with({}, "download_image",
+                                                    target=target)
 
     def test_image_set_data(self):
         self.policy.enforce.side_effect = exception.Forbidden
