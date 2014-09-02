@@ -26,7 +26,6 @@ import migrate
 import sqlalchemy
 
 
-meta = sqlalchemy.MetaData()
 and_ = sqlalchemy.and_
 or_ = sqlalchemy.or_
 
@@ -35,19 +34,21 @@ def upgrade(migrate_engine):
     """
     Call the correct dialect-specific upgrade.
     """
+    meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
     t_images = _get_table('images', meta)
     t_image_members = _get_table('image_members', meta)
     t_image_properties = _get_table('image_properties', meta)
+
     dialect = migrate_engine.url.get_dialect().name
     if dialect == "sqlite":
-        _upgrade_sqlite(t_images, t_image_members, t_image_properties)
+        _upgrade_sqlite(meta, t_images, t_image_members, t_image_properties)
         _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties)
     elif dialect == "ibm_db_sa":
-        _upgrade_db2(t_images, t_image_members, t_image_properties)
+        _upgrade_db2(meta, t_images, t_image_members, t_image_properties)
         _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties)
-        _add_db2_constraints()
+        _add_db2_constraints(meta)
     else:
         _upgrade_other(t_images, t_image_members, t_image_properties, dialect)
 
@@ -56,6 +57,7 @@ def downgrade(migrate_engine):
     """
     Call the correct dialect-specific downgrade.
     """
+    meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
 
     t_images = _get_table('images', meta)
@@ -64,17 +66,17 @@ def downgrade(migrate_engine):
     dialect = migrate_engine.url.get_dialect().name
     if dialect == "sqlite":
         _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
-        _downgrade_sqlite(t_images, t_image_members, t_image_properties)
+        _downgrade_sqlite(meta, t_images, t_image_members, t_image_properties)
     elif dialect == "ibm_db_sa":
-        _remove_db2_constraints()
+        _remove_db2_constraints(meta)
         _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
-        _downgrade_db2(t_images, t_image_members, t_image_properties)
+        _downgrade_db2(meta, t_images, t_image_members, t_image_properties)
     else:
         _downgrade_other(t_images, t_image_members, t_image_properties,
                          dialect)
 
 
-def _upgrade_sqlite(t_images, t_image_members, t_image_properties):
+def _upgrade_sqlite(meta, t_images, t_image_members, t_image_properties):
     """
     Upgrade 011 -> 012 with special SQLite-compatible logic.
     """
@@ -141,10 +143,10 @@ def _upgrade_sqlite(t_images, t_image_members, t_image_properties):
     for command in sql_commands:
         meta.bind.execute(command)
 
-    _sqlite_table_swap(t_image_members, t_image_properties, t_images)
+    _sqlite_table_swap(meta, t_image_members, t_image_properties, t_images)
 
 
-def _upgrade_db2(t_images, t_image_members, t_image_properties):
+def _upgrade_db2(meta, t_images, t_image_members, t_image_properties):
     """
     Upgrade for DB2.
     """
@@ -236,7 +238,7 @@ def _upgrade_db2(t_images, t_image_members, t_image_properties):
     image_properties_backup.rename(name='image_properties')
 
 
-def _add_db2_constraints():
+def _add_db2_constraints(meta):
     # Create the foreign keys
     sql_commands = [
         """ALTER TABLE image_members ADD CONSTRAINT member_image_id
@@ -250,7 +252,7 @@ def _add_db2_constraints():
         meta.bind.execute(command)
 
 
-def _remove_db2_constraints():
+def _remove_db2_constraints(meta):
     # Remove the foreign keys constraints
     sql_commands = [
         """ALTER TABLE image_members DROP CONSTRAINT member_image_id;""",
@@ -260,7 +262,7 @@ def _remove_db2_constraints():
         meta.bind.execute(command)
 
 
-def _downgrade_db2(t_images, t_image_members, t_image_properties):
+def _downgrade_db2(meta, t_images, t_image_members, t_image_properties):
     """
     Downgrade for DB2.
     """
@@ -352,7 +354,7 @@ def _downgrade_db2(t_images, t_image_members, t_image_properties):
     image_properties_old.rename(name='image_properties')
 
 
-def _downgrade_sqlite(t_images, t_image_members, t_image_properties):
+def _downgrade_sqlite(meta, t_images, t_image_members, t_image_properties):
     """
     Downgrade 012 -> 011 with special SQLite-compatible logic.
     """
@@ -419,7 +421,7 @@ def _downgrade_sqlite(t_images, t_image_members, t_image_properties):
     for command in sql_commands:
         meta.bind.execute(command)
 
-    _sqlite_table_swap(t_image_members, t_image_properties, t_images)
+    _sqlite_table_swap(meta, t_image_members, t_image_properties, t_images)
 
 
 def _upgrade_other(t_images, t_image_members, t_image_properties, dialect):
@@ -478,7 +480,7 @@ def _downgrade_other(t_images, t_image_members, t_image_properties, dialect):
         fk.create()
 
 
-def _sqlite_table_swap(t_image_members, t_image_properties, t_images):
+def _sqlite_table_swap(meta, t_image_members, t_image_properties, t_images):
     t_image_members.drop()
     t_image_properties.drop()
     t_images.drop()

@@ -56,6 +56,17 @@ CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
+def index_exist(index, table, engine):
+    inspector = sqlalchemy.inspect(engine)
+    return index in [i['name'] for i in inspector.get_indexes(table)]
+
+
+def unique_constraint_exist(constraint, table, engine):
+    inspector = sqlalchemy.inspect(engine)
+    return constraint in [c['name'] for c in
+                          inspector.get_unique_constraints(table)]
+
+
 class MigrationsMixin(test_migrations.WalkVersionsMixin):
     @property
     def INIT_VERSION(self):
@@ -991,7 +1002,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         image_id = 'fake_id_034'
         temp = dict(deleted=False,
                     created_at=now,
-                    updated_at=now,
                     status='active',
                     is_public=True,
                     min_disk=0,
@@ -1217,6 +1227,114 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                          u'updated_at']
         col_data = [col.name for col in table.columns]
         self.assertEqual(expected_cols, col_data)
+
+    def _check_037(self, engine, data):
+        if engine.name == 'mysql':
+            self.assertFalse(unique_constraint_exist('image_id',
+                                                     'image_properties',
+                                                     engine))
+
+            self.assertTrue(unique_constraint_exist(
+                'ix_image_properties_image_id_name',
+                'image_properties',
+                engine))
+
+        image_members = db_utils.get_table(engine, 'image_members')
+        images = db_utils.get_table(engine, 'images')
+
+        self.assertFalse(image_members.c.status.nullable)
+        self.assertFalse(images.c.protected.nullable)
+
+        now = datetime.datetime.now()
+        temp = dict(
+            deleted=False,
+            created_at=now,
+            status='active',
+            is_public=True,
+            min_disk=0,
+            min_ram=0,
+            id='fake_image_035'
+        )
+        images.insert().values(temp).execute()
+
+        image = (images.select()
+                 .where(images.c.id == 'fake_image_035')
+                 .execute().fetchone())
+
+        self.assertFalse(image['protected'])
+
+        temp = dict(
+            deleted=False,
+            created_at=now,
+            image_id='fake_image_035',
+            member='fake_member',
+            can_share=True,
+            id=3
+        )
+
+        image_members.insert().values(temp).execute()
+
+        image_member = (image_members.select()
+                        .where(image_members.c.id == 3)
+                        .execute().fetchone())
+
+        self.assertEqual('pending', image_member['status'])
+
+    def _post_downgrade_037(self, engine):
+        if engine.name == 'mysql':
+            self.assertTrue(unique_constraint_exist('image_id',
+                                                    'image_properties',
+                                                    engine))
+
+        if engine.name == 'postgresql':
+            self.assertTrue(index_exist('ix_image_properties_image_id_name',
+                                        'image_properties', engine))
+
+            self.assertFalse(unique_constraint_exist(
+                'ix_image_properties_image_id_name',
+                'image_properties',
+                engine))
+
+        image_members = db_utils.get_table(engine, 'image_members')
+        images = db_utils.get_table(engine, 'images')
+
+        self.assertTrue(image_members.c.status.nullable)
+        self.assertTrue(images.c.protected.nullable)
+
+        now = datetime.datetime.now()
+        temp = dict(
+            deleted=False,
+            created_at=now,
+            status='active',
+            is_public=True,
+            min_disk=0,
+            min_ram=0,
+            id='fake_image_035_d'
+        )
+        images.insert().values(temp).execute()
+
+        image = (images.select()
+                 .where(images.c.id == 'fake_image_035_d')
+                 .execute().fetchone())
+
+        self.assertIsNone(image['protected'])
+
+        temp = dict(
+            deleted=False,
+            created_at=now,
+            image_id='fake_image_035_d',
+            member='fake_member',
+            can_share=True,
+            id=4
+        )
+
+        image_members.insert().values(temp).execute()
+
+        image_member = (image_members.select()
+                        .where(image_members.c.id == 4)
+                        .execute().fetchone())
+
+        self.assertIsNone(image_member['status'])
 
 
 class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
