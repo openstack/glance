@@ -100,3 +100,14 @@ class TestRegistryMetadefDriver(base_metadef.TestMetadefDriver,
     def tearDown(self):
         self.registry_server.stop()
         super(TestRegistryMetadefDriver, self).tearDown()
+
+
+class TestTasksDriver(base.TaskTests, FunctionalInitWrapper):
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestTasksDriver, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+    def tearDown(self):
+        self.registry_server.stop()
+        super(TestTasksDriver, self).tearDown()
