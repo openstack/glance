@@ -58,6 +58,21 @@ class TestScriptsUtils(test_utils.BaseTestCase):
         script_utils.set_base_image_properties(properties)
         self.assertIn('disk_format', properties)
         self.assertIn('container_format', properties)
+        self.assertEqual('qcow2', properties['disk_format'])
+        self.assertEqual('bare', properties['container_format'])
+
+    def test_set_base_image_properties_none(self):
+        properties = None
+        script_utils.set_base_image_properties(properties)
+        self.assertIsNone(properties)
+
+    def test_set_base_image_properties_not_empty(self):
+        properties = {'disk_format': 'vmdk', 'container_format': 'bare'}
+        script_utils.set_base_image_properties(properties)
+        self.assertIn('disk_format', properties)
+        self.assertIn('container_format', properties)
+        self.assertEqual('vmdk', properties.get('disk_format'))
+        self.assertEqual('bare', properties.get('container_format'))
 
     def test_validate_location_http(self):
         location = 'http://example.com'

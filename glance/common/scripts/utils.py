@@ -72,13 +72,13 @@ def set_base_image_properties(properties=None):
 
     :param properties: Input dict to set some base properties
     """
-    if properties is not None:
+    if isinstance(properties, dict) and len(properties) == 0:
         # TODO(nikhil): We can make these properties configurable while
         # implementing the pipeline logic for the scripts. The below shown
         # are placeholders to show that the scripts work on 'devstack'
         # environment.
         properties['disk_format'] = 'qcow2'
-        properties['container_format'] = 'ovf'
+        properties['container_format'] = 'bare'
 
 
 def validate_location_uri(location):
