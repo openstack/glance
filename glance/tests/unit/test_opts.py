@@ -135,6 +135,7 @@ class OptsTestCase(utils.BaseTestCase):
             'digest_algorithm',
             'http_keepalive',
             'disabled_notifications',
+            'client_socket_timeout'
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
@@ -184,6 +185,7 @@ class OptsTestCase(utils.BaseTestCase):
             'config_file',
             'digest_algorithm',
             'http_keepalive',
+            'client_socket_timeout'
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
