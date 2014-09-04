@@ -491,9 +491,36 @@ class ArtifactPropertyValueNotFound(NotFound):
     message = _("Property's %(prop)s value has not been found")
 
 
+class ArtifactInvalidProperty(Invalid):
+    message = _("Artifact has no property %(prop)s")
+
+
 class ArtifactInvalidPropertyParameter(Invalid):
     message = _("Cannot use this parameter with the operator %(op)s")
 
 
 class ArtifactInvalidStateTransition(Invalid):
     message = _("Artifact state cannot be changed from %(curr)s to %(to)s")
+
+
+class InvalidArtifactTypePropertyDefinition(Invalid):
+    message = _("Invalid property definition")
+
+
+class InvalidArtifactTypeDefinition(Invalid):
+    message = _("Invalid type definition")
+
+
+class InvalidArtifactPropertyValue(Invalid):
+    message = _("Property '%(name)s' may not have value '%(val)s': %(msg)s")
+
+    def __init__(self, message=None, *args, **kwargs):
+        super(InvalidArtifactPropertyValue, self).__init__(message, *args,
+                                                           **kwargs)
+        self.name = kwargs.get('name')
+        self.value = kwargs.get('val')
+
+
+class UnknownArtifactType(NotFound):
+    message = _("Artifact type with name '%(name)s' and version '%(version)s' "
+                "is not known")
