@@ -21,6 +21,7 @@ import testtools
 from glance.cmd import manage
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import metadata as db_metadata
 
 
 class TestManageBase(testtools.TestCase):
@@ -127,6 +128,42 @@ class TestLegacyManage(TestManageBase):
                                db_migration.MIGRATE_REPO_PATH, '20',
                                sanity_check=False)
 
+    def test_db_metadefs_unload(self):
+        db_metadata.db_unload_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_unload_metadefs'],
+                               db_metadata.db_unload_metadefs,
+                               db_api.get_engine())
+
+    def test_db_metadefs_load(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_load_metadefs'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               None)
+
+    def test_db_metadefs_load_with_specified_path(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_load_metadefs',
+                                '/mock/'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               '/mock/')
+
+    def test_db_metadefs_export(self):
+        db_metadata.db_export_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_export_metadefs'],
+                               db_metadata.db_export_metadefs,
+                               db_api.get_engine(),
+                               None)
+
+    def test_db_metadefs_export_with_specified_path(self):
+        db_metadata.db_export_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_export_metadefs',
+                               '/mock/'],
+                               db_metadata.db_export_metadefs,
+                               db_api.get_engine(),
+                               '/mock/')
+
 
 class TestManage(TestManageBase):
 
@@ -210,3 +247,39 @@ class TestManage(TestManageBase):
                                db_api.get_engine(),
                                db_migration.MIGRATE_REPO_PATH, '20',
                                sanity_check=False)
+
+    def test_db_metadefs_unload(self):
+        db_metadata.db_unload_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'unload_metadefs'],
+                               db_metadata.db_unload_metadefs,
+                               db_api.get_engine())
+
+    def test_db_metadefs_load(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               None)
+
+    def test_db_metadefs_load_with_specified_path(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs',
+                                '--path', '/mock/'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               '/mock/')
+
+    def test_db_metadefs_export(self):
+        db_metadata.db_export_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'export_metadefs'],
+                               db_metadata.db_export_metadefs,
+                               db_api.get_engine(),
+                               None)
+
+    def test_db_metadefs_export_with_specified_path(self):
+        db_metadata.db_export_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'export_metadefs',
+                                '--path', '/mock/'],
+                               db_metadata.db_export_metadefs,
+                               db_api.get_engine(),
+                               '/mock/')

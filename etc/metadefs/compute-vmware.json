@@ -1,0 +1,31 @@
+{
+    "namespace": "OS::Compute::VMwAre",
+    "display_name": "VMware Driver Options",
+    "description": "The VMware compute driver options.  \n\nThese are properties specific to compute drivers.  For a list of all hypervisors, see here: https://wiki.openstack.org/wiki/HypervisorSupportMatrix.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        }
+    ],
+    "properties": {
+        "vmware_adaptertype": {
+            "title": "Disk Adapter Type",
+            "description": "The virtual SCSI or IDE controller used by the hypervisor.",
+            "type": "string",
+            "enum": [
+                "lsiLogic",
+                "busLogic",
+                "ide"
+            ]
+        },
+        "vmware_ostype": {
+            "title": "OS Type",
+            "description": "A VMware GuestID which describes the operating system installed in the image. This value is passed to the hypervisor when creating a virtual machine. If not specified, the key defaults to otherGuest. See thinkvirt.com.",
+            "type": "string",
+            "default": "otherGuest"
+        }
+    },
+    "objects": []
+}

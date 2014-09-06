@@ -1,0 +1,109 @@
+{
+    "namespace": "OS::Compute::Quota",
+    "display_name": "Flavor Quota",
+    "description": "Compute drivers may enable quotas on CPUs available to a VM, disk tuning, bandwidth I/O, and instance VIF traffic control.  See: http://docs.openstack.org/admin-guide-cloud/content/customize-flavors.html",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Flavor"
+        }
+    ],
+    "objects": [
+        {
+            "name": "CPU Limits",
+            "description": "You can configure the CPU limits with control parameters.",
+            "properties": {
+                "quota:cpu_shares": {
+                    "title": "Quota: CPU Shares",
+                    "description": "Specifies the proportional weighted share for the domain. If this element is omitted, the service defaults to the OS provided defaults. There is no unit for the value; it is a relative measure based on the setting of other VMs. For example, a VM configured with value 2048 gets twice as much CPU time as a VM configured with value 1024.",
+                    "type": "integer"
+                },
+                "quota:cpu_period": {
+                    "title": "Quota: CPU Period",
+                    "description": "Specifies the enforcement interval (unit: microseconds) for QEMU and LXC hypervisors. Within a period, each VCPU of the domain is not allowed to consume more than the quota worth of runtime. The value should be in range [1000, 1000000]. A period with value 0 means no value.",
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 1000000
+                },
+                "quota:cpu_quota": {
+                    "title": "Quota: CPU Quota",
+                    "description": "Specifies the maximum allowed bandwidth (unit: microseconds). A domain with a negative-value quota indicates that the domain has infinite bandwidth, which means that it is not bandwidth controlled. The value should be in range [1000, 18446744073709551] or less than 0. A quota with value 0 means no value. You can use this feature to ensure that all vCPUs run at the same speed.",
+                    "type": "integer"
+                }
+            }
+        },
+        {
+            "name": "Disk QoS",
+            "description": "Using disk I/O quotas, you can set maximum disk write to 10 MB per second for a VM user.",
+            "properties": {
+                "quota:disk_read_bytes_sec": {
+                    "title": "Quota: Disk read bytes / sec",
+                    "description": "Sets disk I/O quota for disk read bytes / sec.",
+                    "type": "integer"
+                },
+                "quota:disk_read_iops_sec": {
+                    "title": "Quota: Disk read IOPS / sec",
+                    "description": "Sets disk I/O quota for disk read IOPS / sec.",
+                    "type": "integer"
+                },
+                "quota:disk_write_bytes_sec": {
+                    "title": "Quota: Disk Write Bytes / sec",
+                    "description": "Sets disk I/O quota for disk write bytes / sec.",
+                    "type": "integer"
+                },
+                "quota:disk_write_iops_sec": {
+                    "title": "Quota: Disk Write IOPS / sec",
+                    "description": "Sets disk I/O quota for disk write IOPS / sec.",
+                    "type": "integer"
+                },
+                "quota:disk_total_bytes_sec": {
+                    "title": "Quota: Disk Total Bytes / sec",
+                    "description": "Sets disk I/O quota for total disk bytes / sec.",
+                    "type": "integer"
+                },
+                "quota:disk_total_iops_sec": {
+                    "title": "Quota: Disk Total IOPS / sec",
+                    "description": "Sets disk I/O quota for disk total IOPS / sec.",
+                    "type": "integer"
+                }
+            }
+        },
+        {
+            "name": "Virtual Interface QoS",
+            "description": "Bandwidth QoS tuning for instance virtual interfaces (VIFs) may be specified with these properties. Incoming and outgoing traffic can be shaped independently. If not specified, no quality of service (QoS) is applied on that traffic direction. So, if you want to shape only the network's incoming traffic, use inbound only (and vice versa). The OpenStack Networking service abstracts the physical implementation of the network, allowing plugins to configure and manage physical resources. Virtual Interfaces (VIF) in the logical model are analogous to physical network interface cards (NICs). VIFs are typically owned a managed by an external service; for instance when OpenStack Networking is used for building OpenStack networks, VIFs would be created, owned, and managed in Nova. VIFs are connected to OpenStack Networking networks via ports. A port is analogous to a port on a network switch, and it has an administrative state. When a VIF is attached to a port the OpenStack Networking API creates an attachment object, which specifies the fact that a VIF with a given identifier is plugged into the port.",
+            "properties": {
+                "quota:vif_inbound_average": {
+                    "title": "Quota: VIF Inbound Average",
+                    "description": "Network Virtual Interface (VIF) inbound average in kilobytes per second. Specifies average bit rate on the interface being shaped.",
+                    "type": "integer"
+                },
+                "quota:vif_inbound_burst": {
+                    "title": "Quota: VIF Inbound Burst",
+                    "description": "Network Virtual Interface (VIF) inbound burst in total kilobytes. Specifies the amount of bytes that can be burst at peak speed.",
+                    "type": "integer"
+                },
+                "quota:vif_inbound_peak": {
+                    "title": "Quota: VIF Inbound Peak",
+                    "description": "Network Virtual Interface (VIF) inbound peak in kilobytes per second. Specifies maximum rate at which an interface can receive data.",
+                    "type": "integer"
+                },
+                "quota:vif_outbound_average": {
+                    "title": "Quota: VIF Outbound Average",
+                    "description": "Network Virtual Interface (VIF) outbound average in kilobytes per second. Specifies average bit rate on the interface being shaped.",
+                    "type": "integer"
+                },
+                "quota:vif_outbound_burst": {
+                    "title": "Quota: VIF Outbound Burst",
+                    "description": "Network Virtual Interface (VIF) outbound burst in total kilobytes. Specifies the amount of bytes that can be burst at peak speed.",
+                    "type": "integer"
+                },
+                "quota:vif_outbound_peak": {
+                    "title": "Quota: VIF Outbound Burst",
+                    "description": "Network Virtual Interface (VIF) outbound peak in kilobytes per second. Specifies maximum rate at which an interface can send data.",
+                    "type": "integer"
+                }
+            }
+        }
+    ]
+}

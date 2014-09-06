@@ -1,0 +1,29 @@
+{
+    "namespace": "OS::Compute::XenAPI",
+    "display_name": "XenAPI Driver Options",
+    "description": "The XenAPI compute driver options.  \n\nThese are properties specific to compute drivers.  For a list of all hypervisors, see here: https://wiki.openstack.org/wiki/HypervisorSupportMatrix.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        }
+    ],
+    "properties": {
+        "os_type": {
+            "title": "OS Type",
+            "description": "The operating system installed on the image. The XenAPI driver contains logic that takes different actions depending on the value of the os_type parameter of the image. For example, for os_type=windows images, it creates a FAT32-based swap partition instead of a Linux swap partition, and it limits the injected host name to less than 16 characters.",
+            "type": "string",
+            "enum": [
+                "linux",
+                "windows"
+            ]
+        },
+        "auto_disk_config": {
+            "title": "Disk Adapter Type",
+            "description": "If true, the root partition on the disk is automatically resized before the instance boots. This value is only taken into account by the Compute service when using a Xen-based hypervisor with the XenAPI driver. The Compute service will only attempt to resize if there is a single partition on the image, and only if the partition is in ext3 or ext4 format.",
+            "type": "boolean"
+        }
+    },
+    "objects": []
+}

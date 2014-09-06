@@ -1,0 +1,40 @@
+{
+    "namespace": "OS::Compute::Hypervisor",
+    "display_name": "Hypervisor Selection",
+    "description": "Choose capabilities that should be provided by the Compute Host. This provides the ability to fine tune the harware specification required when a new vm is requested.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        }
+    ],
+    "properties": {
+        "hypervisor_type": {
+            "title": "Hypervisor Type",
+            "description": "The hypervisor type. It may be used by the host properties filter for scheduling. The ImagePropertiesFilter filters compute nodes that satisfy any architecture, hypervisor type, or virtual machine mode properties specified on the instance's image properties. Image properties are contained in the image dictionary in the request_spec.",
+            "type": "string",
+            "enum": [
+                "xen",
+                "qemu",
+                "kvm",
+                "lxc",
+                "uml",
+                "vmware",
+                "hyperv"
+            ]
+        },
+        "vm_mode": {
+            "title": "VM Mode",
+            "description": "The virtual machine mode. This represents the host/guest ABI (application binary interface) used for the virtual machine. It may be used by the host properties filter for scheduling. \n\n hvm — Fully virtualized - This is the virtual machine mode (vm_mode) used by QEMU and KVM. \n\n xen - Xen 3.0 paravirtualized. \n\n uml — User Mode Linux paravirtualized. \n\n exe — Executables in containers. This is the mode used by LXC.",
+            "type": "string",
+            "enum": [
+                "hvm",
+                "xen",
+                "uml",
+                "exe"
+            ]
+        }
+    },
+    "objects": []
+}

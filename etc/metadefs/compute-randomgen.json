@@ -1,0 +1,29 @@
+{
+    "namespace": "OS::Compute::RandomNumberGenerator",
+    "display_name": "Random Number Generator",
+    "description": "If a random-number generator device has been added to the instance through its image properties, the device can be enabled and configured.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Flavor"
+        }
+    ],
+    "properties": {
+        "hw_rng:allowed": {
+            "title": "Random Number Generator Allowed",
+            "description": "",
+            "type": "boolean"
+        },
+        "hw_rng:rate_bytes": {
+            "title": "Random number generator limits.",
+            "description": "Allowed amount of bytes that the guest can read from the host's entropy per period.",
+            "type": "integer"
+        },
+        "hw_rng:rate_period": {
+            "title": "Random number generator read period.",
+            "description": "Duration of the read period in seconds.",
+            "type": "integer"
+        }
+    }
+}
