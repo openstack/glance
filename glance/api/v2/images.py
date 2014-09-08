@@ -73,6 +73,8 @@ class ImagesController(object):
             LOG.info(utils.exception_to_str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
+        except exception.Duplicate as dupex:
+            raise webob.exc.HTTPConflict(explanation=dupex.msg)
 
         return image
 

@@ -641,6 +641,17 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output_log['event_type'], 'image.create')
         self.assertEqual(output_log['payload']['id'], output.image_id)
 
+    def test_create_dup_id(self):
+        request = unit_test_utils.get_fake_request()
+        image = {'image_id': UUID4}
+
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.create,
+                          request,
+                          image=image,
+                          extra_properties={},
+                          tags=[])
+
     def test_create_duplicate_tags(self):
         request = unit_test_utils.get_fake_request()
         tags = ['ping', 'ping']
