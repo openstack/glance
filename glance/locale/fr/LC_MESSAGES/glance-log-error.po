@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-08-20 06:06+0000\n"
+"POT-Creation-Date: 2014-09-09 06:05+0000\n"
 "PO-Revision-Date: 2014-05-28 21:28+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/glance/language/"
@@ -19,29 +19,29 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: glance/location.py:383
+#: glance/location.py:390
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for image %s but all have "
 "failed."
 msgstr ""
 
-#: glance/scrubber.py:147
+#: glance/scrubber.py:149
 #, python-format
 msgid "%s file can not be read."
 msgstr ""
 
-#: glance/scrubber.py:170
+#: glance/scrubber.py:172
 #, python-format
 msgid "%s file can not be wrote."
 msgstr ""
 
-#: glance/scrubber.py:474
+#: glance/scrubber.py:476
 #, python-format
 msgid "Can not %(op)s scrub jobs from queue: %(err)s"
 msgstr ""
 
-#: glance/scrubber.py:575
+#: glance/scrubber.py:577
 #, python-format
 msgid "%s file can not be created."
 msgstr ""
@@ -65,59 +65,115 @@ msgstr ""
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr ""
 
-#: glance/api/middleware/cache.py:136
+#: glance/api/middleware/cache.py:169
 #, python-format
 msgid ""
 "Image cache contained image file for image '%s', however the registry did "
 "not contain metadata for that image!"
 msgstr ""
 
-#: glance/api/middleware/cache.py:234
+#: glance/api/middleware/cache.py:268
 #, python-format
 msgid "could not find %s"
 msgstr ""
 
-#: glance/api/middleware/cache.py:254
+#: glance/api/middleware/cache.py:287
 msgid "Checksum header is missing."
 msgstr ""
 
-#: glance/api/v1/images.py:587
+#: glance/api/v1/images.py:602
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:78
+#: glance/api/v1/upload_utils.py:79
 #, python-format
 msgid "Unable to kill image %(id)s: "
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:239
+#: glance/api/v1/upload_utils.py:240
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:59
+#: glance/api/v2/image_data.py:61
 #, python-format
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:147
+#: glance/api/v2/image_data.py:149
 msgid "Failed to upload image data due to HTTP error"
 msgstr ""
 
-#: glance/api/v2/image_data.py:152
+#: glance/api/v2/image_data.py:154
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 
-#: glance/common/store_utils.py:69
+#: glance/api/v2/metadef_namespaces.py:190
+#, python-format
+msgid "Failed to delete namespace %(namespace)s "
+msgstr ""
+
+#: glance/api/v2/metadef_resource_types.py:126
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:129
+#, python-format
+msgid "Failed to find resource type %(resourcetype)s to delete"
+msgstr ""
+
+#: glance/async/__init__.py:67
+msgid ""
+"This execution of Tasks is not setup. Please consult the project "
+"documentation for more information on the executors available."
+msgstr ""
+
+#: glance/async/__init__.py:71
+msgid "Internal error occurred while trying to process task."
+msgstr ""
+
+#: glance/common/store_utils.py:68
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr ""
 
+#: glance/common/scripts/__init__.py:40
+#, python-format
+msgid ""
+"This task type %(task_type)s is not supported by the current deployment of "
+"Glance. Please refer the documentation provided by OpenStack or your "
+"operator for more information."
+msgstr ""
+
+#: glance/common/scripts/__init__.py:50
+#, python-format
+msgid "Failed to save task %(task_id)s in DB as task_repo is %(task_repo)s"
+msgstr ""
+
+#: glance/common/scripts/utils.py:46
+#, python-format
+msgid "Task not found for task_id %s"
+msgstr ""
+
+#: glance/common/scripts/image_import/main.py:102
+#, python-format
+msgid ""
+"The Image %(image_id)s object being created by this task %(task_id)s, is no "
+"longer in valid status for further processing.image_id"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:126
+#, python-format
+msgid "Json schema files not found in %s. Aborting."
+msgstr ""
+
 #: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:62
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:95
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:96
 #, python-format
 msgid "Invalid store uri for image: %(image_id)s. Details: %(reason)s"
+msgstr ""
+
+#: glance/domain/__init__.py:472
+#, python-format
+msgid "Failed to load the %s executor provided in the config."
 msgstr ""
 
 #: glance/image_cache/__init__.py:268
@@ -180,40 +236,7 @@ msgstr ""
 msgid "Unable to update image %s"
 msgstr ""
 
-#: glance/store/s3.py:124
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:99
 #, python-format
-msgid ""
-"Failed to upload part in S3 partnum=%(pnum)d, size=%(bsize)d, status="
-"%(status)d, reason=%(reason)s"
-msgstr ""
-
-#: glance/store/s3.py:133
-#, python-format
-msgid ""
-"Failed to upload part in S3 partnum=%(pnum)d, size=%(bsize)d due to internal "
-"error: %(err)s"
-msgstr ""
-
-#: glance/store/s3.py:594
-#, python-format
-msgid "Some parts failed to upload to S3. Aborted the object key=%(obj_name)s"
-msgstr ""
-
-#: glance/store/vmware_datastore.py:135
-msgid "Failed to rewind image content"
-msgstr ""
-
-#: glance/store/vmware_datastore.py:361 glance/store/vmware_datastore.py:374
-#, python-format
-msgid "Failed to upload content of image %(image)s"
-msgstr ""
-
-#: glance/store/vmware_datastore.py:439
-#, python-format
-msgid "Failed to delete image %(image)s content."
-msgstr ""
-
-#: glance/store/vmware_datastore.py:459
-#, python-format
-msgid "Failed to access image %(image)s content."
+msgid "Forbidden to create resource type. Reason: %(reason)s"
 msgstr ""

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-08-20 06:06+0000\n"
-"PO-Revision-Date: 2014-08-08 19:13+0000\n"
+"POT-Creation-Date: 2014-09-09 06:05+0000\n"
+"PO-Revision-Date: 2014-09-09 00:42+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "glance/language/en_GB/)\n"
@@ -20,36 +20,36 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: glance/scrubber.py:237
+#: glance/scrubber.py:239
 #, python-format
 msgid "%s directory does not exist."
 msgstr "%s directory does not exist."
 
-#: glance/scrubber.py:416
+#: glance/scrubber.py:418
 #, python-format
 msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
 msgstr "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
 
-#: glance/scrubber.py:430
+#: glance/scrubber.py:432
 msgid "Daemon Shutdown on KeyboardInterrupt"
 msgstr "Daemon Shutdown on KeyboardInterrupt"
 
-#: glance/scrubber.py:442
+#: glance/scrubber.py:444
 #, python-format
 msgid "Initializing scrubber with configuration: %s"
 msgstr "Initializing scrubber with configuration: %s"
 
-#: glance/scrubber.py:515
+#: glance/scrubber.py:517
 #, python-format
 msgid "Scrubbing image %(id)s from %(count)d locations."
 msgstr "Scrubbing image %(id)s from %(count)d locations."
 
-#: glance/scrubber.py:538
+#: glance/scrubber.py:540
 #, python-format
 msgid "Image %s has been deleted."
 msgstr ""
 
-#: glance/scrubber.py:590
+#: glance/scrubber.py:592
 #, python-format
 msgid "Getting images deleted before %s"
 msgstr "Getting images deleted before %s"
@@ -84,16 +84,21 @@ msgstr "Initialised image cache management middleware"
 msgid "Initialized gzip middleware"
 msgstr "Initialised gzip middleware"
 
-#: glance/api/v1/images.py:703
+#: glance/api/v1/images.py:718
 msgid "Triggering asynchronous copy from external source"
 msgstr "Triggering asynchronous copy from external source"
 
-#: glance/api/v1/upload_utils.py:118
+#: glance/api/v1/images.py:1075 glance/api/v2/images.py:206
+#, python-format
+msgid "Image %s could not be deleted because it is in use: %s"
+msgstr ""
+
+#: glance/api/v1/upload_utils.py:119
 #, python-format
 msgid "Cleaning up %s after exceeding the quota"
 msgstr "Cleaning up %s after exceeding the quota"
 
-#: glance/api/v1/upload_utils.py:160
+#: glance/api/v1/upload_utils.py:161
 #, python-format
 msgid ""
 "Image %s could not be found after upload. The image may have been deleted "
@@ -107,20 +112,27 @@ msgstr ""
 msgid "Denying attempt to upload image because it exceeds the .quota: %s"
 msgstr "Denying attempt to upload image because it exceeds the .quota: %s"
 
-#: glance/api/v2/tasks.py:68
+#: glance/api/v2/tasks.py:71
 #, python-format
 msgid "Forbidden to create task. Reason: %(reason)s"
 msgstr "Forbidden to create task. Reason: %(reason)s"
 
-#: glance/api/v2/tasks.py:106
+#: glance/api/v2/tasks.py:109
 #, python-format
 msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
 msgstr "Failed to find task %(task_id)s. Reason: %(reason)s"
 
-#: glance/api/v2/tasks.py:111
+#: glance/api/v2/tasks.py:114
 #, python-format
 msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
 msgstr "Forbidden to get task %(task_id)s. Reason: %(reason)s"
+
+#: glance/async/eventlet_executor.py:50
+#, python-format
+msgid ""
+"Eventlet executor picked up the execution of task ID %(task_id)s of task "
+"type %(task_type)s"
+msgstr ""
 
 #: glance/cmd/replicator.py:328
 #, python-format
@@ -156,9 +168,49 @@ msgstr ""
 msgid "Image %s entirely missing from the destination"
 msgstr "Image %s entirely missing from the destination"
 
-#: glance/db/sqlalchemy/api.py:105
+#: glance/common/scripts/__init__.py:32
+#, python-format
+msgid ""
+"Loading known task scripts for task_id %(task_id)s of type %(task_type)s"
+msgstr ""
+
+#: glance/common/scripts/image_import/main.py:39
+#, python-format
+msgid "Task %(task_id)s beginning import execution."
+msgstr ""
+
+#: glance/common/scripts/image_import/main.py:141
+#, python-format
+msgid "Task %(task_id)s: Got image data uri %(data_uri)s to be imported"
+msgstr ""
+
+#: glance/common/scripts/image_import/main.py:150
+#, python-format
+msgid "Task %(task_id)s: Could not import image file %(image_data)s"
+msgstr ""
+
+#: glance/db/sqlalchemy/api.py:112
 msgid "Attempted to modify image user did not own."
 msgstr "Attempted to modify image user did not own."
+
+#: glance/db/sqlalchemy/metadata.py:197
+#, python-format
+msgid "File %s loaded to database."
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:199
+msgid "Metadata loading finished"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:210
+#, python-format
+msgid "Table %s has been cleared"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:292
+#, python-format
+msgid "Namespace %s saved in %s"
+msgstr ""
 
 #: glance/db/sqlalchemy/migrate_repo/schema.py:98
 #, python-format
@@ -170,7 +222,7 @@ msgstr "creating table %(table)s"
 msgid "dropping table %(table)s"
 msgstr "dropping table %(table)s"
 
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:70
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:71
 msgid ""
 "'metadata_encryption_key' was not specified in the config file or a config "
 "file was not specified. This means that this migration is a NOOP."
@@ -187,7 +239,7 @@ msgstr "Image cache loaded driver '%s'."
 msgid "Defaulting to SQLite driver."
 msgstr "Defaulting to SQLite driver."
 
-#: glance/image_cache/prefetcher.py:84
+#: glance/image_cache/prefetcher.py:86
 #, python-format
 msgid "Successfully cached all %d images"
 msgstr "Successfully cached all %d images"
@@ -235,7 +287,7 @@ msgstr "Created lock path: %s"
 msgid "Failed to remove file %(file)s"
 msgstr "Failed to remove file %(file)s"
 
-#: glance/quota/__init__.py:329
+#: glance/quota/__init__.py:330
 #, python-format
 msgid "Cleaning up %s after exceeding the quota."
 msgstr "Cleaning up %s after exceeding the quota."
@@ -326,48 +378,3 @@ msgstr "Member %(id)s not found"
 #, python-format
 msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
 msgstr "Registry client request %(method)s %(action)s raised %(exc_name)s"
-
-#: glance/store/rbd.py:113 glance/store/rbd.py:121 glance/store/rbd.py:133
-#: glance/store/rbd.py:138
-#, python-format
-msgid "Invalid URI: %s"
-msgstr "Invalid URI: %s"
-
-#: glance/store/s3.py:108
-#, python-format
-msgid ""
-"Uploading upload part in S3 partnum=%(pnum)d, size=%(bsize)d, key=%(key)s, "
-"UploadId=%(UploadId)s"
-msgstr ""
-"Uploading upload part in S3 partnum=%(pnum)d, size=%(bsize)d, key=%(key)s, "
-"UploadId=%(UploadId)s"
-
-#: glance/store/s3.py:206
-#, python-format
-msgid "Invalid store uri: %s"
-msgstr "Invalid store uri: %s"
-
-#: glance/store/s3.py:580
-#, python-format
-msgid ""
-"Multipart complete key=%(obj_name)s UploadId=%(UploadId)s Wrote "
-"%(total_size)d bytes to S3 keynamed %(obj_name)s with checksum "
-"%(checksum_hex)s"
-msgstr ""
-"Multipart complete key=%(obj_name)s UploadId=%(UploadId)s Wrote "
-"%(total_size)d bytes to S3 keynamed %(obj_name)s with checksum "
-"%(checksum_hex)s"
-
-#: glance/store/swift.py:302
-#, python-format
-msgid "Invalid store URI: %(reason)s"
-msgstr "Invalid store URI: %(reason)s"
-
-#: glance/store/swift.py:624
-#, python-format
-msgid "Creating swift container %(container)s"
-msgstr "Creating swift container %(container)s"
-
-#: glance/store/vmware_datastore.py:315
-msgid "Store session is not authenticated, retry attempt"
-msgstr "Store session is not authenticated, retry attempt"
