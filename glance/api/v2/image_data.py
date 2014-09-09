@@ -172,6 +172,7 @@ class ImageDataController(object):
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
+
     def upload(self, request):
         try:
             request.get_content_type(('application/octet-stream',))
@@ -183,13 +184,28 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
+
     def download(self, response, image):
+        offset, chunk_size = 0, None
+        range_val = response.request.get_content_range()
+
+        if range_val:
+            # NOTE(flaper87): if not present, both, start
+            # and stop, will be None.
+            if range_val.start is not None:
+                offset = range_val.start
+
+            if range_val.stop is not None:
+                chunk_size = range_val.stop - offset
+
         response.headers['Content-Type'] = 'application/octet-stream'
+
         try:
             # NOTE(markwash): filesystem store (and maybe others?) cause a
             # problem with the caching middleware if they are not wrapped in
             # an iterator very strange
-            response.app_iter = iter(image.get_data())
+            response.app_iter = iter(image.get_data(offset=offset,
+                                                    chunk_size=chunk_size))
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         #NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5

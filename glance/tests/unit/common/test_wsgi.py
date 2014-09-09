@@ -61,6 +61,20 @@ class RequestTest(test_utils.BaseTestCase):
 
         self.stubs.Set(gettext, 'find', fake_gettext_find)
 
+    def test_content_range(self):
+        request = wsgi.Request.blank('/tests/123')
+        request.headers["Content-Range"] = 'bytes 10-99/*'
+        range_ = request.get_content_range()
+        self.assertEqual(range_.start, 10)
+        self.assertEqual(range_.stop, 100)  # non-inclusive
+        self.assertIsNone(range_.length)
+
+    def test_content_range_invalid(self):
+        request = wsgi.Request.blank('/tests/123')
+        request.headers["Content-Range"] = 'bytes=0-99'
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          request.get_content_range)
+
     def test_content_type_missing(self):
         request = wsgi.Request.blank('/tests/123')
         self.assertRaises(exception.InvalidContentType,

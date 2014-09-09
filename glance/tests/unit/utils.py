@@ -164,7 +164,8 @@ class FakeStoreAPI(object):
             'write': write_tenants,
         }
 
-    def get_from_backend(self, location, context=None):
+    def get_from_backend(self, location, offset=0,
+                         chunk_size=None, context=None):
         try:
             scheme = location[:location.find('/') - 1]
             if scheme == 'unknown':

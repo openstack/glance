@@ -555,6 +555,16 @@ class Request(webob.Request):
         langs = i18n.get_available_languages('glance')
         return self.accept_language.best_match(langs)
 
+    def get_content_range(self):
+        """Return the `Range` in a request."""
+        range_str = self.headers.get('Content-Range')
+        if range_str is not None:
+            range_ = webob.byterange.ContentRange.parse(range_str)
+            if range_ is None:
+                msg = _('Malformed Content-Range header: %s') % range_str
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+            return range_
+
 
 class JSONRequestDeserializer(object):
     def has_body(self, request):

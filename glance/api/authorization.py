@@ -320,8 +320,8 @@ class ImmutableImageProxy(object):
         member_repo = self.base.get_member_repo()
         return ImageMemberRepoProxy(member_repo, self, self.context)
 
-    def get_data(self):
-        return self.base.get_data()
+    def get_data(self, *args, **kwargs):
+        return self.base.get_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
         message = _("You are not permitted to upload data for this image.")

@@ -498,6 +498,41 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_download_random_access(self):
+        self.start_servers(**self.__dict__.copy())
+        # Create another image (with two deployer-defined properties)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-2', 'type': 'kernel',
+                                'bar': 'foo', 'disk_format': 'aki',
+                                'container_format': 'aki', 'xyz': 'abc'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        # Upload data to image
+        image_data = 'Z' * 15
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data=image_data)
+        self.assertEqual(204, response.status_code)
+
+        result_body = ''
+        for x in range(15):
+            # NOTE(flaper87): Read just 1 byte. Content-Range is
+            # 0-indexed and it specifies the first byte to read
+            # and the last byte to read.
+            content_range = 'bytes %s-%s/15' % (x, x)
+            headers = self._headers({'Content-Range': content_range})
+            path = self._url('/v2/images/%s/file' % image_id)
+            response = requests.get(path, headers=headers)
+            result_body += response.text
+
+        self.assertEqual(result_body, image_data)
+
+        self.stop_servers()
+
     def test_download_policy_when_cache_is_not_enabled(self):
 
         rules = {'context_is_admin': 'role:admin', 'default': '',

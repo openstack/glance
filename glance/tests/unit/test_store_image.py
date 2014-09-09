@@ -106,7 +106,8 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(image.get_data(), 'XXX')
 
     def test_image_get_data_from_second_location(self):
-        def fake_get_from_backend(self, location, context=None):
+        def fake_get_from_backend(self, location, offset=0,
+                                  chunk_size=None, context=None):
             if UUID1 in location:
                 raise Exception('not allow download from %s' % location)
             else:

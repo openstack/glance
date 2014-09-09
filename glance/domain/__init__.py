@@ -243,7 +243,7 @@ class Image(object):
         else:
             self.status = 'deleted'
 
-    def get_data(self):
+    def get_data(self, *args, **kwargs):
         raise NotImplementedError()
 
     def set_data(self, data, size=None):
