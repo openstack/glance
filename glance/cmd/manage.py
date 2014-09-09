@@ -52,11 +52,9 @@ from glance.openstack.common import log
 from glance.openstack.common import strutils
 
 
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 _LW = gettextutils._LW
-
-CONF = cfg.CONF
-CONF.import_opt('db_enforce_mysql_charset', 'glance.common.config')
 
 
 # Decorators for actions
@@ -73,15 +71,6 @@ class DbCommands(object):
     def __init__(self):
         pass
 
-    def _need_sanity_check(self):
-        if not CONF.db_enforce_mysql_charset:
-            LOG.warning(_LW('Warning: '
-                            'The db_enforce_mysql_charset option is now '
-                            'deprecated and will be removed in the Juno '
-                            'release. Please migrate DB manually e.g. '
-                            'convert data of all tables to UTF-8 charset.'))
-        return CONF.db_enforce_mysql_charset
-
     def version(self):
         """Print database's current migration level"""
         print(migration.db_version(db_api.get_engine(),
@@ -93,16 +82,14 @@ class DbCommands(object):
         """Upgrade the database's migration level"""
         migration.db_sync(db_api.get_engine(),
                           db_migration.MIGRATE_REPO_PATH,
-                          version,
-                          sanity_check=self._need_sanity_check())
+                          version)
 
     @args('--version', metavar='<version>', help='Database version')
     def downgrade(self, version=None):
         """Downgrade the database's migration level"""
         migration.db_sync(db_api.get_engine(),
                           db_migration.MIGRATE_REPO_PATH,
-                          version,
-                          sanity_check=self._need_sanity_check())
+                          version)
 
     @args('--version', metavar='<version>', help='Database version')
     def version_control(self, version=None):
@@ -125,8 +112,7 @@ class DbCommands(object):
                                          version=current_version)
         migration.db_sync(db_api.get_engine(),
                           db_migration.MIGRATE_REPO_PATH,
-                          version,
-                          sanity_check=self._need_sanity_check())
+                          version)
 
     @args('--path', metavar='<path>', help='Path to the directory where '
                                            'json metadata files are stored')
