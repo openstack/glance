@@ -53,6 +53,8 @@ scrubber_opts = [
                        'clean up the files it uses for taking data. Only '
                        'one server in your deployment should be designated '
                        'the cleanup host.')),
+    cfg.BoolOpt('delayed_delete', default=False,
+                help=_('Turn on/off delayed delete.')),
     cfg.IntOpt('cleanup_scrubber_time', default=86400,
                help=_('Items must have a modified time that is older than '
                       'this value in order to be candidates for cleanup.'))

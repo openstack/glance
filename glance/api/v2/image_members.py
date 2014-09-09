@@ -17,6 +17,8 @@ import copy
 import six
 import webob
 
+import glance_store
+
 from glance.api import policy
 from glance.common import exception
 from glance.common import utils
@@ -27,7 +29,6 @@ import glance.notifier
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 import glance.schema
-import glance.store
 
 
 class ImageMembersController(object):
@@ -36,7 +37,7 @@ class ImageMembersController(object):
         self.db_api = db_api or glance.db.get_api()
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()
-        self.store_api = store_api or glance.store
+        self.store_api = store_api or glance_store
         self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
                                               self.notifier, self.policy)
 

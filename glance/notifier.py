@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import glance_store
 from oslo.config import cfg
 from oslo import messaging
 import webob
@@ -195,12 +196,12 @@ class ImageProxy(glance.domain.proxy.Image):
         self.notifier.info('image.prepare', payload)
         try:
             self.image.set_data(data, size)
-        except exception.StorageFull as e:
+        except glance_store.StorageFull as e:
             msg = (_("Image storage media is full: %s") %
                    utils.exception_to_str(e))
             self.notifier.error('image.upload', msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
-        except exception.StorageWriteDenied as e:
+        except glance_store.StorageWriteDenied as e:
             msg = (_("Insufficient permissions on image storage media: %s")
                    % utils.exception_to_str(e))
             self.notifier.error('image.upload', msg)

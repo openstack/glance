@@ -15,6 +15,7 @@
 
 import datetime
 
+import glance_store
 from oslo.config import cfg
 import webob
 
@@ -101,7 +102,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
                                                                self.policy,
                                                                self.notifier,
                                                                self.store)
-        glance.store.create_stores()
+        glance_store.create_stores()
 
     def _create_images(self):
         self.db.reset()

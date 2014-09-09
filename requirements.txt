@@ -55,3 +55,6 @@ oslo.messaging>=1.4.0.0a3
 
 retrying>=1.2.2 # Apache-2.0
 osprofiler>=0.3.0
+
+# Glance Store
+glance_store>=0.1.1

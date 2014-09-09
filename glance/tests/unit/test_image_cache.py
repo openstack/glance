@@ -17,7 +17,6 @@ from contextlib import contextmanager
 import datetime
 import hashlib
 import os
-import tempfile
 import time
 
 import fixtures
@@ -30,8 +29,6 @@ from glance import image_cache
 from glance.openstack.common import units
 #NOTE(bcwaldon): This is imported to load the registry config options
 import glance.registry  # noqa
-import glance.store.filesystem as fs_store
-import glance.store.s3 as s3_store
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled
 from glance.tests.utils import xattr_writes_supported
@@ -408,44 +405,6 @@ class ImageCacheTestCase(object):
             pass
         # checksum is valid, fake image should be cached:
         self.assertTrue(cache.is_cached(image_id))
-
-    def test_gate_caching_iter_fs_chunked_file(self):
-        """Tests get_caching_iter when using a filesystem ChunkedFile"""
-        image_id = 123
-
-        with tempfile.NamedTemporaryFile() as test_data_file:
-            test_data_file.write(FIXTURE_DATA)
-            test_data_file.seek(0)
-            image = fs_store.ChunkedFile(test_data_file.name)
-            md5 = hashlib.md5()
-            md5.update(FIXTURE_DATA)
-            checksum = md5.hexdigest()
-
-            cache = image_cache.ImageCache()
-            img_iter = cache.get_caching_iter(image_id, checksum, image)
-            for chunk in img_iter:
-                pass
-            # checksum is valid, fake image should be cached:
-            self.assertTrue(cache.is_cached(image_id))
-
-    def test_gate_caching_iter_s3_chunked_file(self):
-        """Tests get_caching_iter when using an S3 ChunkedFile"""
-        image_id = 123
-
-        with tempfile.NamedTemporaryFile() as test_data_file:
-            test_data_file.write(FIXTURE_DATA)
-            test_data_file.seek(0)
-            image = s3_store.ChunkedFile(test_data_file)
-            md5 = hashlib.md5()
-            md5.update(FIXTURE_DATA)
-            checksum = md5.hexdigest()
-
-            cache = image_cache.ImageCache()
-            img_iter = cache.get_caching_iter(image_id, checksum, image)
-            for chunk in img_iter:
-                pass
-            # checksum is valid, fake image should be cached:
-            self.assertTrue(cache.is_cached(image_id))
 
     def test_gate_caching_iter_bad_checksum(self):
         image = "12345678990abcdefghijklmnop"

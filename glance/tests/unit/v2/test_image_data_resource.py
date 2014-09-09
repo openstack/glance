@@ -16,6 +16,7 @@
 import mock
 import uuid
 
+import glance_store
 import six
 import webob
 
@@ -228,7 +229,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_upload_storage_full(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage()
-        image.set_data = Raise(exception.StorageFull)
+        image.set_data = Raise(glance_store.StorageFull)
         self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
                           self.controller.upload,
@@ -268,7 +269,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_upload_storage_write_denied(self):
         request = unit_test_utils.get_fake_request(user=unit_test_utils.USER3)
         image = FakeImage()
-        image.set_data = Raise(exception.StorageWriteDenied)
+        image.set_data = Raise(glance_store.StorageWriteDenied)
         self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPServiceUnavailable,
                           self.controller.upload,
@@ -328,7 +329,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_restore_image_when_upload_failed(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage('fake')
-        image.set_data = Raise(exception.StorageWriteDenied)
+        image.set_data = Raise(glance_store.StorageWriteDenied)
         self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPServiceUnavailable,
                           self.controller.upload,

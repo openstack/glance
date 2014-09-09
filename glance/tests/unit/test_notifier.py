@@ -16,6 +16,7 @@
 
 import datetime
 
+import glance_store
 import mock
 from oslo.config import cfg
 from oslo import messaging
@@ -254,7 +255,7 @@ class TestImageNotifications(utils.BaseTestCase):
         def data_iterator():
             self.notifier.log = []
             yield 'abcde'
-            raise exception.StorageFull('Modern Major General')
+            raise glance_store.StorageFull(message='Modern Major General')
 
         self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
                           self.image_proxy.set_data, data_iterator(), 10)
@@ -304,7 +305,7 @@ class TestImageNotifications(utils.BaseTestCase):
         def data_iterator():
             self.notifier.log = []
             yield 'abcde'
-            raise exception.StorageWriteDenied('The Very Model')
+            raise glance_store.StorageWriteDenied(message='The Very Model')
 
         self.assertRaises(webob.exc.HTTPServiceUnavailable,
                           self.image_proxy.set_data, data_iterator(), 10)

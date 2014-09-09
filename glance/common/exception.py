@@ -72,10 +72,6 @@ class NotFound(GlanceException):
     message = _("An object with the specified identifier was not found.")
 
 
-class UnknownScheme(GlanceException):
-    message = _("Unknown scheme '%(scheme)s' found in URI")
-
-
 class BadStoreUri(GlanceException):
     message = _("The Store URI was malformed.")
 
@@ -89,17 +85,9 @@ class Conflict(GlanceException):
                 "operated on.")
 
 
-class StorageFull(GlanceException):
-    message = _("There is not enough disk space on the image storage media.")
-
-
 class StorageQuotaFull(GlanceException):
     message = _("The size of the data %(image_size)s will exceed the limit. "
                 "%(remaining)s bytes remaining.")
-
-
-class StorageWriteDenied(GlanceException):
-    message = _("Permission to write image storage media denied.")
 
 
 class AuthBadRequest(GlanceException):
@@ -241,35 +229,9 @@ class BadRegistryConnectionConfiguration(GlanceException):
                 "Reason: %(reason)s")
 
 
-class BadStoreConfiguration(GlanceException):
-    message = _("Store %(store_name)s could not be configured correctly. "
-                "Reason: %(reason)s")
-
-
 class BadDriverConfiguration(GlanceException):
     message = _("Driver %(driver_name)s could not be configured correctly. "
                 "Reason: %(reason)s")
-
-
-class StoreDeleteNotSupported(GlanceException):
-    message = _("Deleting images from this store is not supported.")
-
-
-class StoreGetNotSupported(GlanceException):
-    message = _("Getting images from this store is not supported.")
-
-
-class StoreAddNotSupported(GlanceException):
-    message = _("Adding images to this store is not supported.")
-
-
-class StoreAddDisabled(GlanceException):
-    message = _("Configuration for store failed. Adding images to this "
-                "store is disabled.")
-
-
-class StoreNotConfigured(GlanceException):
-    message = _("Store is not configured.")
 
 
 class MaxRedirectsExceeded(GlanceException):

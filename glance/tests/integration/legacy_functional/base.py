@@ -15,6 +15,7 @@ import os.path
 import tempfile
 
 import fixtures
+import glance_store
 from oslo.config import cfg
 from oslo.db import options
 
@@ -23,7 +24,6 @@ from glance.common import config
 from glance.db import migration
 import glance.db.sqlalchemy.api
 import glance.registry.client.v1.client
-import glance.store
 from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 
@@ -112,7 +112,6 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 """
 
 CONF = cfg.CONF
-CONF.import_opt('filesystem_store_datadir', 'glance.store.filesystem')
 
 
 class ApiTest(test_utils.BaseTestCase):
@@ -194,9 +193,14 @@ class ApiTest(test_utils.BaseTestCase):
             atexit.register(_delete_cached_db)
 
     def _setup_stores(self):
+        glance_store.register_opts(CONF)
+        glance_store.register_store_opts(CONF)
+
         image_dir = os.path.join(self.test_dir, "images")
-        self.config(filesystem_store_datadir=image_dir)
-        glance.store.create_stores()
+        self.config(group='glance_store',
+                    filesystem_store_datadir=image_dir)
+
+        glance_store.create_stores()
 
     def _load_paste_app(self, name, flavor, conf):
         conf_file_path = os.path.join(self.test_dir, '%s-paste.ini' % name)

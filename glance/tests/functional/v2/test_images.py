@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import BaseHTTPServer
 import os
 import signal
 import tempfile
@@ -23,13 +24,48 @@ import six
 
 from glance.openstack.common import jsonutils
 from glance.tests import functional
-from glance.tests.functional.store import test_http
 
 
 TENANT1 = str(uuid.uuid4())
 TENANT2 = str(uuid.uuid4())
 TENANT3 = str(uuid.uuid4())
 TENANT4 = str(uuid.uuid4())
+
+
+def get_handler_class(fixture):
+    class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('Content-Length', str(len(fixture)))
+            self.end_headers()
+            self.wfile.write(fixture)
+            return
+
+        def do_HEAD(self):
+            self.send_response(200)
+            self.send_header('Content-Length', str(len(fixture)))
+            self.end_headers()
+            return
+
+        def log_message(*args, **kwargs):
+            # Override this method to prevent debug output from going
+            # to stderr during testing
+            return
+
+    return StaticHTTPRequestHandler
+
+
+def http_server(image_id, image_data):
+    server_address = ('127.0.0.1', 0)
+    handler_class = get_handler_class(image_data)
+    httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
+    port = httpd.socket.getsockname()[1]
+
+    pid = os.fork()
+    if pid == 0:
+        httpd.serve_forever()
+    else:
+        return pid, port
 
 
 class TestImages(functional.FunctionalTest):
@@ -2289,7 +2325,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.foo_image_file.write("foo image file")
         self.foo_image_file.flush()
         self.addCleanup(self.foo_image_file.close)
-        ret = test_http.http_server("foo_image_id", "foo_image")
+        ret = http_server("foo_image_id", "foo_image")
         self.http_server_pid, self.http_port = ret
 
     def tearDown(self):

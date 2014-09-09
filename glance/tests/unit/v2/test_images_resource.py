@@ -14,8 +14,10 @@
 #    under the License.
 
 import datetime
+import os
 import uuid
 
+import glance_store as store
 from oslo.config import cfg
 import six
 import testtools
@@ -25,7 +27,6 @@ import glance.api.v2.images
 from glance.common import exception
 from glance.openstack.common import jsonutils
 import glance.schema
-import glance.store
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
@@ -126,7 +127,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                                                 self.notifier,
                                                                 self.store)
         self.controller.gateway.store_utils = self.store_utils
-        glance.store.create_stores()
+        store.create_stores()
 
     def _create_images(self):
         self.db.reset()
@@ -1270,7 +1271,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           another_request, created_image.image_id, changes)
 
     def test_update_replace_locations(self):
-        self.stubs.Set(glance.store, 'get_size_from_backend',
+        self.stubs.Set(store, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
@@ -1537,7 +1538,7 @@ class TestImagesController(base.IsolatedUnitTest):
         as long as the image has fewer than the limited number of image
         locations after the transaction.
         """
-        self.stubs.Set(glance.store, 'get_size_from_backend',
+        self.stubs.Set(store, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
         self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
@@ -1599,7 +1600,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           self.controller.update, request, UUID1, changes)
 
     def test_update_remove_location(self):
-        self.stubs.Set(glance.store, 'get_size_from_backend',
+        self.stubs.Set(store, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
 
         request = unit_test_utils.get_fake_request()
@@ -1729,7 +1730,9 @@ class TestImagesController(base.IsolatedUnitTest):
         Ensure status of queued image is updated (LP bug #1048851)
         to 'deleted' when delayed_delete isenabled
         """
-        self.config(delayed_delete=True)
+        scrubber_dir = os.path.join(self.test_dir, 'scrubber')
+        self.config(delayed_delete=True, scrubber_datadir=scrubber_dir)
+
         request = unit_test_utils.get_fake_request(is_admin=True)
         image = self.db.image_create(request.context, {'status': 'queued'})
         image_id = image['id']
@@ -1756,7 +1759,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 
     def test_delayed_delete(self):
-        self.config(delayed_delete=True)
+        scrubber_dir = os.path.join(self.test_dir, 'scrubber')
+        self.config(delayed_delete=True, scrubber_datadir=scrubber_dir)
         request = unit_test_utils.get_fake_request()
         self.assertIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 

@@ -16,6 +16,8 @@
 from oslo.config import cfg
 import webob.exc
 
+import glance_store as store_api
+
 from glance.common import exception
 from glance.common import store_utils
 from glance.common import utils
@@ -24,7 +26,6 @@ from glance.openstack.common import excutils
 from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
-import glance.store as store_api
 
 
 CONF = cfg.CONF
@@ -192,7 +193,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                       request=req,
                                       content_type="text/plain")
 
-    except exception.StorageFull as e:
+    except store_api.StorageFull as e:
         msg = _("Image storage media is full: %s") % utils.exception_to_str(e)
         LOG.error(msg)
         safe_kill(req, image_id, 'saving')
@@ -201,7 +202,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                   request=req,
                                                   content_type='text/plain')
 
-    except exception.StorageWriteDenied as e:
+    except store_api.StorageWriteDenied as e:
         msg = (_("Insufficient permissions on image storage media: %s") %
                utils.exception_to_str(e))
         LOG.error(msg)

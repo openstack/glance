@@ -19,13 +19,15 @@ import tempfile
 import uuid
 
 import eventlet
+import glance_store
 import mox
+from oslo.config import cfg
 
 from glance.common import exception
-
 from glance import scrubber
-import glance.store
 from glance.tests import utils as test_utils
+
+CONF = cfg.CONF
 
 
 class TestScrubber(test_utils.BaseTestCase):
@@ -33,8 +35,9 @@ class TestScrubber(test_utils.BaseTestCase):
     def setUp(self):
         self.data_dir = tempfile.mkdtemp()
         self.config(scrubber_datadir=self.data_dir)
-        self.config(default_store='file')
-        glance.store.create_stores()
+        glance_store.register_opts(CONF)
+        glance_store.create_stores()
+        self.config(group='glance_store', default_store='file')
         self.mox = mox.Mox()
         super(TestScrubber, self).setUp()
 
@@ -49,12 +52,12 @@ class TestScrubber(test_utils.BaseTestCase):
     def _scrubber_cleanup_with_store_delete_exception(self, ex):
         uri = 'file://some/path/%s' % uuid.uuid4()
         id = 'helloworldid'
-        scrub = scrubber.Scrubber(glance.store)
+        scrub = scrubber.Scrubber(glance_store)
         scrub.registry = self.mox.CreateMockAnything()
         scrub.registry.get_image(id).AndReturn({'status': 'pending_delete'})
         scrub.registry.update_image(id, {'status': 'deleted'})
-        self.mox.StubOutWithMock(glance.store, "delete_from_backend")
-        glance.store.delete_from_backend(
+        self.mox.StubOutWithMock(glance_store, "delete_from_backend")
+        glance_store.delete_from_backend(
             mox.IgnoreArg(),
             uri).AndRaise(ex)
         self.mox.ReplayAll()
@@ -66,7 +69,7 @@ class TestScrubber(test_utils.BaseTestCase):
         self.assertFalse(os.path.exists(q_path))
 
     def test_store_delete_unsupported_backend_exception(self):
-        ex = glance.store.UnsupportedBackend()
+        ex = glance_store.UnsupportedBackend()
         self._scrubber_cleanup_with_store_delete_exception(ex)
 
     def test_store_delete_notfound_exception(self):

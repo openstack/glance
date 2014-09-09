@@ -13,6 +13,8 @@
 import mock
 import sys
 
+import glance_store as store
+from oslo.config import cfg
 import six
 
 import glance.cmd.api
@@ -24,6 +26,9 @@ import glance.common.wsgi
 import glance.image_cache.cleaner
 import glance.image_cache.pruner
 from glance.tests import utils as test_utils
+
+
+CONF = cfg.CONF
 
 
 class TestGlanceApiCmd(test_utils.BaseTestCase):
@@ -45,6 +50,8 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         self.stderr = six.StringIO()
         sys.stderr = self.stderr
 
+        store.register_opts(CONF)
+
         self.stubs.Set(glance.common.config, 'load_paste_app',
                        self._do_nothing)
         self.stubs.Set(glance.common.wsgi.Server, 'start',
@@ -58,11 +65,11 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         super(TestGlanceApiCmd, self).tearDown()
 
     def test_supported_default_store(self):
-        self.config(default_store='file')
+        self.config(group='glance_store', default_store='file')
         glance.cmd.api.main()
 
     def test_unsupported_default_store(self):
-        self.config(default_store='shouldnotexist')
+        self.config(group='glance_store', default_store='shouldnotexist')
         exit = self.assertRaises(SystemExit, glance.cmd.api.main)
         self.assertEqual(exit.code, 1)
 
