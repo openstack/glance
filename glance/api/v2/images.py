@@ -68,6 +68,7 @@ class ImagesController(object):
         except exception.Invalid as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to create image")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidParameterValue as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
@@ -116,6 +117,7 @@ class ImagesController(object):
                 exception.InvalidFilterRangeValue) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to retrieve images index")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         result['images'] = images
         return result
@@ -125,6 +127,7 @@ class ImagesController(object):
         try:
             return image_repo.get(image_id)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to show image '%s'" % image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -148,6 +151,7 @@ class ImagesController(object):
         except exception.Invalid as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to update image '%s'" % image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidParameterValue as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
@@ -220,6 +224,7 @@ class ImagesController(object):
             image.delete()
             image_repo.remove(image)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to delete image '%s'" % image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             msg = (_("Failed to find image %(image_id)s to delete") %

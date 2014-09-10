@@ -60,6 +60,8 @@ class ResourceTypeController(object):
             resource_types = ResourceTypes()
             resource_types.resource_types = resource_type_list
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to retrieve metadata resource types "
+                      "index")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -80,6 +82,8 @@ class ResourceTypeController(object):
             resource_types = ResourceTypeAssociations()
             resource_types.resource_type_associations = resource_type_list
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to retrieve metadata resource types "
+                      "within '%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -98,6 +102,8 @@ class ResourceTypeController(object):
             rs_type_repo.add(new_resource_type)
 
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to create metadata resource type "
+                      "within '%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -123,6 +129,9 @@ class ResourceTypeController(object):
             if not found:
                 raise exception.NotFound()
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to delete metadata resource type "
+                      "'%s' within '%s' namespace" % (resource_type,
+                                                      namespace))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             msg = (_("Failed to find resource type %(resourcetype)s to "

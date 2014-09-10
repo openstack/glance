@@ -95,6 +95,8 @@ class NamespaceController(object):
                 namespaces.next = namespace_list[-1].namespace
 
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to retrieve metadata namespaces "
+                      "index")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -166,6 +168,7 @@ class NamespaceController(object):
 
         except exception.Forbidden as e:
             self._cleanup_namespace(ns_repo, namespace, namespace_created)
+            LOG.debug("User not permitted to create metadata namespace")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             self._cleanup_namespace(ns_repo, namespace, namespace_created)
@@ -259,6 +262,8 @@ class NamespaceController(object):
                 namespace_detail.tags = tag_list
 
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to show metadata namespace "
+                      "'%s'" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -285,6 +290,8 @@ class NamespaceController(object):
                 wsme_utils._get_value(user_ns.owner) or req.context.owner)
             updated_namespace = namespace_repo.save(ns_obj)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to update metadata namespace "
+                      "'%s'" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -305,6 +312,8 @@ class NamespaceController(object):
             namespace_obj.delete()
             namespace_repo.remove(namespace_obj)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to delete metadata namespace "
+                      "'%s'" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -319,6 +328,8 @@ class NamespaceController(object):
             namespace_obj.delete()
             ns_repo.remove_objects(namespace_obj)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to delete metadata objects "
+                      "within '%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -333,6 +344,8 @@ class NamespaceController(object):
             namespace_obj.delete()
             ns_repo.remove_tags(namespace_obj)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to delete metadata tags "
+                      "within '%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -347,6 +360,8 @@ class NamespaceController(object):
             namespace_obj.delete()
             ns_repo.remove_properties(namespace_obj)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to delete metadata properties "
+                      "within '%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)

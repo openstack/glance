@@ -52,6 +52,7 @@ class ImageActionsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to deactivate image '%s'" % image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidImageStatusTransition as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
@@ -67,6 +68,7 @@ class ImageActionsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to reactivate image '%s'" % image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidImageStatusTransition as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)

@@ -60,6 +60,8 @@ class TagsController(object):
                 **tag_name_as_dict)
             tag_repo.add(new_meta_tag)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to create metadata tag within "
+                      "'%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -85,6 +87,8 @@ class TagsController(object):
             metadef_tags = MetadefTags()
             metadef_tags.tags = tag_list_out
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to create metadata tags within "
+                      "'%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -117,6 +121,8 @@ class TagsController(object):
             metadef_tags = MetadefTags()
             metadef_tags.tags = tag_list
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to retrieve metadata tags "
+                      "within '%s' namespace" % namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -132,6 +138,8 @@ class TagsController(object):
             metadef_tag = meta_tag_repo.get(namespace, tag_name)
             return MetadefTag.to_wsme_model(metadef_tag)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to show metadata tag '%s' "
+                      "within '%s' namespace" % (tag_name, namespace))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -148,6 +156,8 @@ class TagsController(object):
                 metadata_tag.name)
             updated_metadata_tag = meta_repo.save(metadef_tag)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to update metadata tag '%s' "
+                      "within '%s' namespace" % (tag_name, namespace))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -166,6 +176,8 @@ class TagsController(object):
             metadef_tag.delete()
             meta_repo.remove(metadef_tag)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to delete metadata tag '%s' "
+                      "within '%s' namespace" % (tag_name, namespace))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
