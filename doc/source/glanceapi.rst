@@ -14,8 +14,8 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-Using Glance's Public APIs
-==========================
+Using Glance's Image Public APIs
+================================
 
 Glance fully implements versions 1.0, 1.1 and 2.0 of the OpenStack Images API.
 The Images API specification is developed alongside Glance, but is not
