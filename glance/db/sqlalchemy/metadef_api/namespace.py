@@ -86,10 +86,10 @@ def _get(context, namespace_id, session):
             .filter_by(id=namespace_id)
         namespace_rec = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = _LW("Metadata definition namespace not found for id=%s")
-        LOG.warn(msg % namespace_id)
-        raise exc.MetadefRecordNotFound(record_type='namespace',
-                                        id=namespace_id)
+        msg = (_("Metadata definition namespace not found for id=%s")
+               % namespace_id)
+        LOG.warn(msg)
+        raise exc.MetadefNamespaceNotFound(msg)
 
     # Make sure they are allowed to view it.
     if not _is_namespace_visible(context, namespace_rec.as_dict()):

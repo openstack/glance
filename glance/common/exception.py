@@ -406,8 +406,3 @@ class MetadefResourceTypeAssociationNotFound(NotFound):
                 " resource-type=%(resource_type_name)s to"
                 " namespace=%(namespace_name)s,"
                 " was not found.")
-
-
-class MetadefRecordNotFound(NotFound):
-    message = _("Metadata definition %(record_type)s record not found"
-                " for id %(id)s.")
