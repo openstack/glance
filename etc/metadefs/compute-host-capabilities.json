@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::HostCapabilities",
     "display_name": "Compute Host Capabilities",
-    "description": "Capabilities provided by the Compute Host. This provides the ability to fine tune the harware specification required when a new vm is requested.",
+    "description": "Hardware capabilities provided by the compute host. This provides the ability to fine tune the hardware specification required when an instance is requested. The ComputeCapabilitiesFilter should be enabled in the Nova scheduler to use these properties. When enabled, this filter checks that the capabilities provided by the compute host satisfy any extra specifications requested. Only hosts that can provide the requested capabilities will be eligible for hosting the instance.",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [
