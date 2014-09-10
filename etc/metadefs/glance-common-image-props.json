@@ -1,6 +1,6 @@
 {
     "display_name": "Common Image Properties",
-    "namespace": "OS::Glance:CommonImageProperties",
+    "namespace": "OS::Glance::CommonImageProperties",
     "description": "When adding an image to Glance, you may specify some common image properties that may prove useful to consumers of your image.",
     "protected": true,
     "resource_type_associations" : [
