@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.serialization import jsonutils as json
 import wsme
 from wsme.rest.json import fromjson
 from wsme import types
@@ -57,9 +56,8 @@ class Namespace(types.Base, WSMEModelTransformer):
         property_types = {}
         for db_property_type in db_property_types:
             # Convert the persisted json schema to a dict of PropertyTypes
-            json_props = json.loads(db_property_type.schema)
-            property_type = fromjson(PropertyType, json_props)
-
+            property_type = fromjson(
+                PropertyType, db_property_type.schema)
             property_type_name = db_property_type.name
             property_types[property_type_name] = property_type
 
