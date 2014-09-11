@@ -1,0 +1,23 @@
+{
+    "namespace": "OS::Compute::AggregateIoOpsFilter",
+    "display_name": "IO Ops per Host",
+    "description": "Properties related to the Nova scheduler filter AggregateIoOpsFilter. Filters aggregate hosts based on the number of instances currently changing state. Hosts in the aggregate with too many instances changing state will be filtered out. The filter must be enabled in the Nova scheduler to use these properties.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Aggregate"
+        }
+    ],
+    "properties": {
+        "max_io_ops_per_host": {
+            "title": "Maximum IO Operations per Host",
+            "description": "Prevents hosts in the aggregate that have this many or more instances currently in build, resize, snapshot, migrate, rescue or unshelve to be scheduled for new instances.",
+            "type": "integer",
+            "readonly": false,
+            "default": 8,
+            "minimum": 1
+        }
+    },
+    "objects": []
+}
