@@ -264,7 +264,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'marker': UUID3, 'sort_key': 'name',
+            'kwargs': {'marker': UUID3, 'sort_key': ['name'],
                        'sort_dir': 'asc'},
         }]
         req.body = jsonutils.dumps(cmd)
@@ -297,7 +297,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'marker': UUID3, 'sort_key': 'name',
+            'kwargs': {'marker': UUID3, 'sort_key': ['name'],
                        'sort_dir': 'desc'},
         }]
         req.body = jsonutils.dumps(cmd)
@@ -330,7 +330,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'marker': UUID3, 'sort_key': 'disk_format',
+            'kwargs': {'marker': UUID3, 'sort_key': ['disk_format'],
                        'sort_dir': 'asc'},
         }]
         req.body = jsonutils.dumps(cmd)
@@ -363,7 +363,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'marker': UUID3, 'sort_key': 'disk_format',
+            'kwargs': {'marker': UUID3, 'sort_key': ['disk_format'],
                        'sort_dir': 'desc'},
         }]
         req.body = jsonutils.dumps(cmd)
@@ -396,7 +396,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'marker': UUID3, 'sort_key': 'container_format',
+            'kwargs': {'marker': UUID3, 'sort_key': ['container_format'],
                        'sort_dir': 'asc'},
         }]
         req.body = jsonutils.dumps(cmd)
@@ -429,7 +429,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'marker': UUID3, 'sort_key': 'container_format',
+            'kwargs': {'marker': UUID3, 'sort_key': ['container_format'],
                        'sort_dir': 'desc'},
         }]
         req.body = jsonutils.dumps(cmd)
@@ -831,7 +831,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'sort_key': 'name', 'sort_dir': 'asc'}
+            'kwargs': {'sort_key': ['name'], 'sort_dir': 'asc'}
         }]
         req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
@@ -883,7 +883,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'sort_key': 'status', 'sort_dir': 'asc'}
+            'kwargs': {'sort_key': ['status'], 'sort_dir': 'asc'}
         }]
         req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
@@ -934,7 +934,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'sort_key': 'disk_format', 'sort_dir': 'asc'}
+            'kwargs': {'sort_key': ['disk_format'], 'sort_dir': 'asc'}
         }]
         req.body = jsonutils.dumps(cmd)
         res = req.get_response(self.api)
@@ -985,7 +985,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'sort_key': 'container_format',
+            'kwargs': {'sort_key': ['container_format'],
                        'sort_dir': 'desc'}
         }]
         req.body = jsonutils.dumps(cmd)
@@ -1033,7 +1033,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'sort_key': 'size',
+            'kwargs': {'sort_key': ['size'],
                        'sort_dir': 'asc'}
         }]
         req.body = jsonutils.dumps(cmd)
@@ -1088,7 +1088,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'sort_key': 'created_at',
+            'kwargs': {'sort_key': ['created_at'],
                        'sort_dir': 'asc'}
         }]
         req.body = jsonutils.dumps(cmd)
@@ -1143,7 +1143,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.method = "POST"
         cmd = [{
             'command': 'image_get_all',
-            'kwargs': {'sort_key': 'updated_at',
+            'kwargs': {'sort_key': ['updated_at'],
                        'sort_dir': 'desc'}
         }]
         req.body = jsonutils.dumps(cmd)
@@ -1157,6 +1157,94 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(UUID4, images[1]['id'])
         self.assertEqual(UUID2, images[2]['id'])
         self.assertEqual(UUID1, images[3]['id'])
+
+    def test_get_index_sort_multiple_keys(self):
+        """
+        Tests that the registry API returns list of
+        public images sorted by name-size and size-name.
+        """
+        uuid4_time = timeutils.utcnow() + datetime.timedelta(seconds=10)
+        uuid3_time = uuid4_time + datetime.timedelta(seconds=5)
+
+        UUID3 = _gen_uuid()
+        extra_fixture = {'id': UUID3,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 19,
+                         'checksum': None,
+                         'created_at': None,
+                         'updated_at': uuid3_time}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        UUID4 = _gen_uuid()
+        extra_fixture = {'id': UUID4,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'xyz',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': None,
+                         'updated_at': uuid4_time}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        UUID5 = _gen_uuid()
+        extra_fixture = {'id': UUID5,
+                         'status': 'active',
+                         'is_public': True,
+                         'disk_format': 'vhd',
+                         'container_format': 'ovf',
+                         'name': 'asdf',
+                         'size': 20,
+                         'checksum': None,
+                         'created_at': None,
+                         'updated_at': uuid4_time}
+
+        db_api.image_create(self.context, extra_fixture)
+
+        req = webob.Request.blank('/rpc')
+        req.method = "POST"
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'sort_key': ['name', 'size'],
+                       'sort_dir': 'asc'}
+        }]
+        req.body = jsonutils.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(200, res.status_int)
+        res_dict = jsonutils.loads(res.body)[0]
+
+        images = res_dict
+        self.assertEqual(5, len(images))
+        self.assertEqual(UUID3, images[0]['id'])
+        self.assertEqual(UUID5, images[1]['id'])
+        self.assertEqual(UUID1, images[2]['id'])
+        self.assertEqual(UUID2, images[3]['id'])
+        self.assertEqual(UUID4, images[4]['id'])
+
+        cmd = [{
+            'command': 'image_get_all',
+            'kwargs': {'sort_key': ['size', 'name'],
+                       'sort_dir': 'asc'}
+        }]
+        req.body = jsonutils.dumps(cmd)
+        res = req.get_response(self.api)
+        self.assertEqual(200, res.status_int)
+        res_dict = jsonutils.loads(res.body)[0]
+
+        images = res_dict
+        self.assertEqual(5, len(images))
+        self.assertEqual(UUID1, images[0]['id'])
+        self.assertEqual(UUID3, images[1]['id'])
+        self.assertEqual(UUID2, images[2]['id'])
+        self.assertEqual(UUID5, images[3]['id'])
+        self.assertEqual(UUID4, images[4]['id'])
 
     def test_create_image(self):
         """Tests that the registry API creates the image"""

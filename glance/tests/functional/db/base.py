@@ -538,7 +538,7 @@ class DriverTests(object):
                                          'owner': TENANT1})
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
-                                           sort_key='name',
+                                           sort_key=['name'],
                                            sort_dir='desc')
         image_ids = [image['id'] for image in images]
         expected = []
@@ -560,7 +560,7 @@ class DriverTests(object):
                                          'owner': TENANT1})
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
-                                           sort_key='disk_format',
+                                           sort_key=['disk_format'],
                                            sort_dir='desc')
         image_ids = [image['id'] for image in images]
         expected = []
@@ -582,7 +582,7 @@ class DriverTests(object):
                                          'owner': TENANT1})
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
-                                           sort_key='container_format',
+                                           sort_key=['container_format'],
                                            sort_dir='desc')
         image_ids = [image['id'] for image in images]
         expected = []
@@ -604,7 +604,7 @@ class DriverTests(object):
                                          'owner': TENANT1})
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
-                                           sort_key='name',
+                                           sort_key=['name'],
                                            sort_dir='asc')
         image_ids = [image['id'] for image in images]
         expected = [UUID3, UUID2, UUID1]
@@ -626,7 +626,7 @@ class DriverTests(object):
                                          'owner': TENANT1})
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
-                                           sort_key='disk_format',
+                                           sort_key=['disk_format'],
                                            sort_dir='asc')
         image_ids = [image['id'] for image in images]
         expected = [UUID3, UUID2, UUID1]
@@ -648,7 +648,7 @@ class DriverTests(object):
                                          'owner': TENANT1})
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
-                                           sort_key='container_format',
+                                           sort_key=['container_format'],
                                            sort_dir='asc')
         image_ids = [image['id'] for image in images]
         expected = [UUID3, UUID2, UUID1]
@@ -814,7 +814,7 @@ class DriverTests(object):
 
     def test_image_get_all_invalid_sort_key(self):
         self.assertRaises(exception.InvalidSortKey, self.db_api.image_get_all,
-                          self.context, sort_key='blah')
+                          self.context, sort_key=['blah'])
 
     def test_image_get_all_limit_marker(self):
         images = self.db_api.image_get_all(self.context, limit=2)

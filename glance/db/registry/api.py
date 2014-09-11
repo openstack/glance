@@ -118,7 +118,7 @@ def is_image_visible(context, image, status=None):
 
 @_get_client
 def image_get_all(client, filters=None, marker=None, limit=None,
-                  sort_key='created_at', sort_dir='desc',
+                  sort_key=['created_at'], sort_dir='desc',
                   member_status='accepted', is_public=None,
                   admin_as_user=False, return_tag=False):
     """

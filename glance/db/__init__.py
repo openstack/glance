@@ -75,7 +75,7 @@ class ImageRepo(object):
         image = self._format_image_from_db(db_api_image, tags)
         return ImageProxy(image, self.context, self.db_api)
 
-    def list(self, marker=None, limit=None, sort_key='created_at',
+    def list(self, marker=None, limit=None, sort_key=['created_at'],
              sort_dir='desc', filters=None, member_status='accepted'):
         db_api_images = self.db_api.image_get_all(
             self.context, filters=filters, marker=marker, limit=limit,

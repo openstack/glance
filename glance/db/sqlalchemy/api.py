@@ -524,7 +524,7 @@ def _select_images_query(context, image_conditions, admin_as_user,
 
 
 def image_get_all(context, filters=None, marker=None, limit=None,
-                  sort_key='created_at', sort_dir='desc',
+                  sort_key=['created_at'], sort_dir='desc',
                   member_status='accepted', is_public=None,
                   admin_as_user=False, return_tag=False):
     """
@@ -535,7 +535,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                     filters on the image properties attribute
     :param marker: image id after which to start page
     :param limit: maximum number of images to return
-    :param sort_key: image attribute by which results should be sorted
+    :param sort_key: list of image attributes by which results should be sorted
     :param sort_dir: direction in which results should be sorted (asc, desc)
     :param member_status: only return shared images that have this membership
                           status
@@ -585,11 +585,12 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                                   marker,
                                   force_show_deleted=showing_deleted)
 
-    sort_keys = ['created_at', 'id']
-    sort_keys.insert(0, sort_key) if sort_key not in sort_keys else sort_keys
+    for key in ['created_at', 'id']:
+        if key not in sort_key:
+            sort_key.append(key)
 
     query = _paginate_query(query, models.Image, limit,
-                            sort_keys,
+                            sort_key,
                             marker=marker_image,
                             sort_dir=sort_dir)
 
