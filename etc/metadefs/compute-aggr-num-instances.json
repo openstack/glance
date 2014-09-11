@@ -1,0 +1,21 @@
+{
+    "namespace": "OS::Compute::AggregateNumInstancesFilter",
+    "display_name": "Instances per Host",
+    "description": "Properties related to the Nova scheduler filter AggregateNumInstancesFilter. Filters aggregate hosts by the number of running instances on it. Hosts in the aggregate with too many instances will be filtered out. The filter must be enabled in the Nova scheduler to use these properties.",    "visibility": "public",
+    "protected": false,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Aggregate"
+        }
+    ],
+    "properties": {
+        "max_instances_per_host": {
+            "title": "Max Instances Per Host",
+            "description": "Maximum number of instances allowed to run on a host in the aggregate.",
+            "type": "integer",
+            "readonly": false,
+            "minimum": 0
+        }
+    },
+    "objects": []
+}
