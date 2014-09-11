@@ -62,7 +62,7 @@ def _db_namespace_fixture(**kwargs):
 def _db_property_fixture(name, **kwargs):
     property = {
         'name': name,
-        'schema': '{"type": "string", "title": "title"}',
+        'schema': {"type": "string", "title": "title"},
     }
     property.update(kwargs)
     return property
@@ -72,7 +72,7 @@ def _db_object_fixture(name, **kwargs):
     obj = {
         'name': name,
         'description': None,
-        'schema': '{}',
+        'schema': {},
         'required': '[]',
     }
     obj.update(kwargs)

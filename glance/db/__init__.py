@@ -27,7 +27,6 @@ from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
 from glance.openstack.common import importutils
-from glance.openstack.common import jsonutils as json
 
 CONF = cfg.CONF
 CONF.import_opt('image_size_cap', 'glance.common.config')
@@ -508,7 +507,7 @@ class MetadefObjectRepo(object):
 
         # Convert the persisted json schema to a dict of PropertyTypes
         property_types = {}
-        json_props = json.loads(metadata_object['schema'])
+        json_props = metadata_object['schema']
         for id in json_props:
             property_types[id] = fromjson(PropertyType, json_props[id])
 
@@ -535,13 +534,12 @@ class MetadefObjectRepo(object):
             for k, v in properties.items():
                 json_data = tojson(PropertyType, v)
                 db_schema[k] = json_data
-        property_schema = json.dumps(db_schema)
 
         db_metadata_object = {
             'name': metadata_object.name,
             'required': required_str,
             'description': metadata_object.description,
-            'schema': property_schema
+            'schema': db_schema
         }
         return db_metadata_object
 
