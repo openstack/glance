@@ -52,6 +52,7 @@ import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
 _LI = gettextutils._LI
+_LW = gettextutils._LW
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 ACTIVE_IMMUTABLE = glance.api.v1.ACTIVE_IMMUTABLE
@@ -685,10 +686,32 @@ class Controller(controller.BaseController):
         :retval Mapping of updated image data
         """
         location_data = self._upload(req, image_meta)
-        return self._activate(req,
-                              image_meta['id'],
-                              location_data,
-                              from_state='saving') if location_data else None
+        image_id = image_meta['id']
+        LOG.info(_LI("Uploaded data of image %s from request "
+                     "payload successfully.") % image_id)
+
+        if location_data:
+            try:
+                image_meta = self._activate(req,
+                                            image_id,
+                                            location_data,
+                                            from_state='saving')
+            except Exception as e:
+                with excutils.save_and_reraise_exception():
+                    if not isinstance(e, exception.Duplicate):
+                        # NOTE(zhiyan): Delete image data since it has already
+                        # been added to store by above _upload() call.
+                        LOG.warn(_LW("Failed to activate image %s in "
+                                     "registry. About to delete image "
+                                     "bits from store and update status "
+                                     "to 'killed'.") % image_id)
+                        upload_utils.initiate_deletion(req, location_data,
+                                                       image_id)
+                        upload_utils.safe_kill(req, image_id, 'saving')
+        else:
+            image_meta = None
+
+        return image_meta
 
     def _get_size(self, context, image_meta, location):
         # retrieve the image size from remote store (if not provided)
