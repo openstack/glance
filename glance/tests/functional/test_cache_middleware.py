@@ -67,7 +67,7 @@ class BaseCacheMiddlewareTest(object):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
 
@@ -239,7 +239,7 @@ class BaseCacheMiddlewareTest(object):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
 
@@ -364,7 +364,7 @@ class BaseCacheManageMiddlewareTest(object):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], name)
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
         return data['image']['id']
 
     def verify_no_cached_images(self):

@@ -56,7 +56,7 @@ class TestApi(base.ApiTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         # 3. HEAD image
         # Verify image found now
@@ -260,7 +260,7 @@ class TestApi(base.ApiTest):
         self.assertEqual(data['image']['container_format'], 'ovf')
         self.assertEqual(data['image']['disk_format'], 'raw')
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
 
@@ -299,7 +299,7 @@ class TestApi(base.ApiTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         # 5. HEAD /images
         # Verify status is in active
@@ -427,7 +427,7 @@ class TestApi(base.ApiTest):
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
         image_ids.append(data['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
@@ -444,7 +444,7 @@ class TestApi(base.ApiTest):
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
         image_ids.append(data['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
@@ -461,7 +461,7 @@ class TestApi(base.ApiTest):
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are off")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
         image_ids.append(data['image']['id'])
 
         headers = {'Content-Type': 'application/octet-stream',
@@ -476,7 +476,7 @@ class TestApi(base.ApiTest):
         response, content = self.http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['is_public'], False)
+        self.assertFalse(data['image']['is_public'])
         image_ids.append(data['image']['id'])
 
         # 2. GET /images

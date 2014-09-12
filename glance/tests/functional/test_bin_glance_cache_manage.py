@@ -66,7 +66,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], name)
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
         return data['image']['id']
 
     def is_image_cached(self, image_id):

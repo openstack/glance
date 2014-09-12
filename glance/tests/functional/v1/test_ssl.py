@@ -161,7 +161,7 @@ class TestSSL(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
 
@@ -384,7 +384,7 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(data['image']['container_format'], 'ovf')
         self.assertEqual(data['image']['disk_format'], 'raw')
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
 
@@ -430,7 +430,7 @@ class TestSSL(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         # 5. HEAD image
         # Verify status is in active
@@ -709,7 +709,7 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Image!',
@@ -725,7 +725,7 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are on")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Image!',
@@ -741,7 +741,7 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
         self.assertEqual(data['image']['properties']['pants'], "are off")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'My Private Image',
@@ -755,7 +755,7 @@ class TestSSL(functional.FunctionalTest):
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 201)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['is_public'], False)
+        self.assertFalse(data['image']['is_public'])
 
         # 2. GET /images
         # Verify three public images
