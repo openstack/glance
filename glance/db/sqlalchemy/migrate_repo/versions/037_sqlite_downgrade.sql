@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 CREATE TEMPORARY TABLE images_backup (
   id VARCHAR(36) NOT NULL,
   name VARCHAR(255),
@@ -147,4 +145,3 @@ INSERT INTO image_properties (id, image_id, name, value, created_at, updated_at,
   FROM image_properties_backup;
 
 DROP TABLE image_properties_backup;
-COMMIT;

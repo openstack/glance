@@ -1,9 +1,7 @@
-/*
- * This is necessary because SQLite does not support
- * RENAME INDEX or ALTER TABLE CHANGE COLUMN.
- */
-BEGIN TRANSACTION;
-
+--
+-- This is necessary because SQLite does not support
+-- RENAME INDEX or ALTER TABLE CHANGE COLUMN.
+--
 CREATE TEMPORARY TABLE image_properties_backup (
 	id INTEGER NOT NULL,
 	image_id INTEGER NOT NULL,
@@ -44,4 +42,3 @@ SELECT id, image_id, name, value, created_at, updated_at, deleted_at, deleted
 FROM image_properties_backup;
 
 DROP TABLE image_properties_backup;
-COMMIT;

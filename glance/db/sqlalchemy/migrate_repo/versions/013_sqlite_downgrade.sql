@@ -1,9 +1,7 @@
-/*
- * This is necessary because sqlalchemy has various bugs preventing
- * downgrades from working correctly.
- */
-BEGIN TRANSACTION;
-
+--
+-- This is necessary because sqlalchemy has various bugs preventing
+-- downgrades from working correctly.
+--
 CREATE TEMPORARY TABLE images_backup (
 	id VARCHAR(36) NOT NULL,
 	name VARCHAR(255),
@@ -62,4 +60,3 @@ SELECT id, name, size, status, is_public, location, created_at, updated_at, dele
 FROM images_backup;
 
 DROP TABLE images_backup;
-COMMIT;

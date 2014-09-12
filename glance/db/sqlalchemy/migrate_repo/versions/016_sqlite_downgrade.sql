@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 CREATE TEMPORARY TABLE image_members_backup (
     id INTEGER NOT NULL,
     image_id VARCHAR(36) NOT NULL,
@@ -43,4 +41,3 @@ SELECT id, image_id, member, can_share, created_at, updated_at, deleted_at,     
 FROM image_members_backup;
 
 DROP TABLE image_members_backup;
-COMMIT;

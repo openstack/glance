@@ -1,10 +1,10 @@
-/*
- * This file is necessary because MySQL does not support
- * renaming indexes.
- */
+--
+-- This file is necessary because MySQL does not support
+-- renaming indexes.
+--
 DROP INDEX ix_image_properties_image_id_key ON image_properties;
 
-/* Rename the `key` column to `name` */
+-- Rename the `key` column to `name`
 ALTER TABLE image_properties
 CHANGE COLUMN `key` name VARCHAR(255) NOT NULL;
 

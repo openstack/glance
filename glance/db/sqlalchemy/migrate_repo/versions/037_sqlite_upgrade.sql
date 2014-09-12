@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 UPDATE images SET protected = 0 WHERE protected is NULL;
 UPDATE image_members SET status = 'pending' WHERE status is NULL;
 
@@ -160,4 +158,3 @@ INSERT INTO image_properties (id, image_id, name, value, created_at, updated_at,
   FROM image_properties_backup;
 
 DROP TABLE image_properties_backup;
-COMMIT;

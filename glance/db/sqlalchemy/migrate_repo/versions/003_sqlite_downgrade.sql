@@ -1,6 +1,4 @@
-BEGIN;
-
-/* Make changes to the base images table */
+-- Make changes to the base images table
 CREATE TEMPORARY TABLE images_backup (
 	id INTEGER NOT NULL,
 	name VARCHAR(255),
@@ -46,13 +44,11 @@ FROM images_backup;
 
 DROP TABLE images_backup;
 
-/* Re-insert the type values from the temp table */
+-- Re-insert the type values from the temp table
 UPDATE images
 SET type = (SELECT value FROM image_properties WHERE image_id = images.id AND key = 'type')
 WHERE EXISTS (SELECT * FROM image_properties WHERE image_id = images.id AND key = 'type');
 
-/* Remove the type properties from the image_properties table */
+-- Remove the type properties from the image_properties table
 DELETE FROM image_properties
 WHERE key = 'type';
-
-COMMIT;

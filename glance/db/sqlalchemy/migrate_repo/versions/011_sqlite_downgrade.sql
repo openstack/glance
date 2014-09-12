@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 CREATE TEMPORARY TABLE images_backup (
     id INTEGER NOT NULL,
     name VARCHAR(255),
@@ -58,4 +56,3 @@ SELECT id, name, size, status, is_public, location, created_at, updated_at,     
 FROM images_backup;
 
 DROP TABLE images_backup;
-COMMIT;

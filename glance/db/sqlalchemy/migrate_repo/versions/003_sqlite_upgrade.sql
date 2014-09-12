@@ -1,7 +1,5 @@
-BEGIN TRANSACTION;
-
-/* Move type column from base images table
- * to be records in image_properties table */
+-- Move type column from base images table
+-- to be records in image_properties table
 CREATE TEMPORARY TABLE tmp_type_records (id INTEGER NOT NULL, type VARCHAR(30) NOT NULL);
 INSERT INTO tmp_type_records
 SELECT id, type
@@ -15,7 +13,7 @@ FROM tmp_type_records;
 
 DROP TABLE tmp_type_records;
 
-/* Make changes to the base images table */
+-- Make changes to the base images table
 CREATE TEMPORARY TABLE images_backup (
 	id INTEGER NOT NULL,
 	name VARCHAR(255),
@@ -61,4 +59,3 @@ SELECT id, name, size, status, is_public, location, created_at, updated_at, dele
 FROM images_backup;
 
 DROP TABLE images_backup;
-COMMIT;
