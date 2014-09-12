@@ -44,7 +44,6 @@ sys.path = [
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.coverage',
               'sphinx.ext.ifconfig',
-              'sphinx.ext.intersphinx',
               'sphinx.ext.pngmath',
               'sphinx.ext.graphviz',
               'oslosphinx',
@@ -252,8 +251,3 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('http://docs.python.org/', None),
-                       'nova': ('http://nova.openstack.org', None),
-                       'swift': ('http://swift.openstack.org', None)}
