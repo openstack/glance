@@ -16,9 +16,9 @@
 
 import uuid
 
+from oslo.serialization import jsonutils
 import requests
 
-from glance.openstack.common import jsonutils
 from glance.tests import functional
 
 

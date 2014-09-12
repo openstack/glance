@@ -17,6 +17,7 @@
 #    under the License.
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils as json
 from oslo.utils import importutils
 from wsme.rest.json import fromjson
 from wsme.rest.json import tojson
@@ -27,7 +28,6 @@ from glance.common import exception
 from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
-from glance.openstack.common import jsonutils as json
 
 CONF = cfg.CONF
 CONF.import_opt('image_size_cap', 'glance.common.config')

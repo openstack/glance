@@ -21,6 +21,7 @@ SQLAlchemy models for glance data
 import uuid
 
 from oslo.db.sqlalchemy import models
+from oslo.serialization import jsonutils
 from oslo.utils import timeutils
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
@@ -36,8 +37,6 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy import UniqueConstraint
-
-from glance.openstack.common import jsonutils
 
 
 BASE = declarative_base()

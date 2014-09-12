@@ -13,11 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.serialization import jsonutils
 import webob
 
 from glance.api.middleware import version_negotiation
 from glance.api import versions
-from glance.openstack.common import jsonutils
 from glance.tests.unit import base
 
 

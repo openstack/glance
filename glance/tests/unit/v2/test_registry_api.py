@@ -19,6 +19,7 @@ import datetime
 import uuid
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 from oslo.utils import timeutils
 import routes
 import six
@@ -29,7 +30,6 @@ import glance.common.config
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
-from glance.openstack.common import jsonutils
 from glance.registry.api import v2 as rserver
 from glance.tests.unit import base
 from glance.tests import utils as test_utils

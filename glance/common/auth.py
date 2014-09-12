@@ -29,10 +29,10 @@ Keystone (an identity management system).
     http://service_endpoint/
 """
 import httplib2
+from oslo.serialization import jsonutils
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
-from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 
 

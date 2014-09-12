@@ -17,13 +17,13 @@
 import datetime
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 import routes
 import webob
 
 from glance.common import exception
 from glance.common import rpc
 from glance.common import wsgi
-from glance.openstack.common import jsonutils
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
 

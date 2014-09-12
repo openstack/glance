@@ -35,6 +35,7 @@ from eventlet.green import ssl
 import eventlet.greenio
 import eventlet.wsgi
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 import routes
 import routes.middleware
 import six
@@ -45,7 +46,6 @@ from webob import multidict
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
-from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import processutils
 

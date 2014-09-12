@@ -20,6 +20,7 @@ import uuid
 
 import mock
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 from oslo.utils import timeutils
 import routes
 import six
@@ -31,7 +32,6 @@ from glance.common import crypt
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
-from glance.openstack.common import jsonutils
 from glance.registry.api import v1 as rserver
 from glance.tests.unit import base
 from glance.tests import utils as test_utils

@@ -20,10 +20,10 @@ import copy
 import os.path
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 
 from glance.common import exception
 import glance.domain.proxy
-from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 

@@ -17,8 +17,8 @@
 
 
 import httplib2
+from oslo.serialization import jsonutils
 
-from glance.openstack.common import jsonutils
 from glance.tests import functional
 
 

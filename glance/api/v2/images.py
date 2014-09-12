@@ -17,6 +17,7 @@ import re
 
 import glance_store
 from oslo.config import cfg
+from oslo.serialization import jsonutils as json
 from oslo.utils import timeutils
 import six
 import six.moves.urllib.parse as urlparse
@@ -31,7 +32,6 @@ import glance.db
 import glance.gateway
 import glance.notifier
 from glance.openstack.common import gettextutils
-from glance.openstack.common import jsonutils as json
 import glance.openstack.common.log as logging
 import glance.schema
 

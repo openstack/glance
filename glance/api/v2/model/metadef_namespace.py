@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo.serialization import jsonutils as json
 import wsme
 from wsme.rest.json import fromjson
 from wsme import types
@@ -21,7 +22,6 @@ from glance.api.v2.model.metadef_object import MetadefObject
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociation
 from glance.common.wsme_utils import WSMEModelTransformer
-from glance.openstack.common import jsonutils as json
 
 
 class Namespace(types.Base, WSMEModelTransformer):

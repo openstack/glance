@@ -37,6 +37,7 @@ from oslo.config import cfg
 from oslo.db.sqlalchemy import test_base
 from oslo.db.sqlalchemy import test_migrations
 from oslo.db.sqlalchemy import utils as db_utils
+from oslo.serialization import jsonutils
 from oslo.utils import timeutils
 import sqlalchemy
 
@@ -47,7 +48,6 @@ from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 from glance.db.sqlalchemy import models
-from glance.openstack.common import jsonutils
 
 
 CONF = cfg.CONF

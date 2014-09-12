@@ -19,13 +19,13 @@ import uuid
 
 import glance_store as store
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 import six
 import testtools
 import webob
 
 import glance.api.v2.images
 from glance.common import exception
-from glance.openstack.common import jsonutils
 import glance.schema
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils

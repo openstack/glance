@@ -16,10 +16,10 @@
 import httplib
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 import webob.dec
 
 from glance.common import wsgi
-from glance.openstack.common import jsonutils
 
 
 CONF = cfg.CONF

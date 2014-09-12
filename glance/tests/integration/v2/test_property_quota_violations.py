@@ -14,8 +14,8 @@
 #    under the License.
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 
-from glance.openstack.common import jsonutils
 from glance.tests.integration.v2 import base
 
 CONF = cfg.CONF

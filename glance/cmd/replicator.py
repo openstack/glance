@@ -23,11 +23,11 @@ import optparse
 import os
 import sys
 
+from oslo.serialization import jsonutils
 import six.moves.urllib.parse as urlparse
 
 from glance.common import utils
 from glance.openstack.common import gettextutils
-from glance.openstack.common import jsonutils
 from glance.openstack.common import log
 
 LOG = log.getLogger(__name__)

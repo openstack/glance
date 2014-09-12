@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo.serialization import jsonutils as json
 import six
 import webob.exc
 from wsme.rest.json import fromjson
@@ -30,7 +31,6 @@ import glance.db
 import glance.gateway
 from glance import i18n
 import glance.notifier
-from glance.openstack.common import jsonutils as json
 import glance.openstack.common.log as logging
 import glance.schema
 

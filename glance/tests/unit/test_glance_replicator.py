@@ -19,10 +19,10 @@ import UserDict
 import uuid
 
 import fixtures
+from oslo.serialization import jsonutils
 import six
 
 from glance.cmd import replicator as glance_replicator
-from glance.openstack.common import jsonutils
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
 

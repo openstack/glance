@@ -14,12 +14,12 @@
 #    under the License.
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 import webob.exc
 
 from glance.api import policy
 from glance.common import wsgi
 import glance.context
-from glance.openstack.common import jsonutils
 import glance.openstack.common.log as logging
 
 

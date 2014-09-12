@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from oslo.config import cfg
+from oslo.serialization import jsonutils as json
 import six
 import webob.exc
 from wsme.rest.json import fromjson
@@ -30,7 +31,6 @@ from glance.common import wsme_utils
 import glance.db
 from glance import i18n
 import glance.notifier
-from glance.openstack.common import jsonutils as json
 import glance.openstack.common.log as logging
 import glance.schema
 

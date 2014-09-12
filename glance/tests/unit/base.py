@@ -21,8 +21,8 @@ import glance_store as store
 from glance_store import location
 from oslo.config import cfg
 from oslo.db import options
+from oslo.serialization import jsonutils
 
-from glance.openstack.common import jsonutils
 from glance.tests import stubs
 from glance.tests import utils as test_utils
 

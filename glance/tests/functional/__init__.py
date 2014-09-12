@@ -33,12 +33,12 @@ import tempfile
 import time
 
 import fixtures
+from oslo.serialization import jsonutils
 import six.moves.urllib.parse as urlparse
 import testtools
 
 from glance.common import utils
 from glance.db.sqlalchemy import api as db_api
-from glance.openstack.common import jsonutils
 from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 

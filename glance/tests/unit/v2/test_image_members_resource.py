@@ -17,10 +17,10 @@ import datetime
 
 import glance_store
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 import webob
 
 import glance.api.v2.image_members
-from glance.openstack.common import jsonutils
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
