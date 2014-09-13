@@ -23,7 +23,7 @@ iso8601>=0.1.8
 oslo.config>=1.2.0
 
 # For Swift storage backend.
-python-swiftclient>=1.5,<2.0.0
+python-swiftclient>=1.5
 
 # Note you will need gcc buildtools installed and must
 # have installed libxml headers for lxml to be successfully
