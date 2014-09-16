@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::Hypervisor",
     "display_name": "Hypervisor Selection",
-    "description": "Choose capabilities that should be provided by the Compute Host. This provides the ability to fine tune the harware specification required when a new vm is requested.",
+    "description": "OpenStack Compute supports many hypervisors, although most installations use only one hypervisor. For installations with multiple supported hypervisors, you can schedule different hypervisors using the ImagePropertiesFilter. This filters compute nodes that satisfy any architecture, hypervisor type, or virtual machine mode properties specified on the instance's image properties.",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [
@@ -12,21 +12,22 @@
     "properties": {
         "hypervisor_type": {
             "title": "Hypervisor Type",
-            "description": "The hypervisor type. It may be used by the host properties filter for scheduling. The ImagePropertiesFilter filters compute nodes that satisfy any architecture, hypervisor type, or virtual machine mode properties specified on the instance's image properties. Image properties are contained in the image dictionary in the request_spec.",
+            "description": "Hypervisor type required by the image. Used with the ImagePropertiesFilter. \n\n KVM - Kernel-based Virtual Machine. LXC - Linux Containers (through libvirt). QEMU - Quick EMUlator. UML - User Mode Linux. hyperv - Microsoft® hyperv. vmware - VMware® vsphere. Baremetal - physical provisioning. For more information, see: http://docs.openstack.org/trunk/config-reference/content/section_compute-hypervisors.html",
             "type": "string",
             "enum": [
-                "xen",
-                "qemu",
+                "baremetal",
+                "hyperv",
                 "kvm",
                 "lxc",
+                "qemu",
                 "uml",
                 "vmware",
-                "hyperv"
+                "xen"
             ]
         },
         "vm_mode": {
             "title": "VM Mode",
-            "description": "The virtual machine mode. This represents the host/guest ABI (application binary interface) used for the virtual machine. It may be used by the host properties filter for scheduling. \n\n hvm — Fully virtualized - This is the virtual machine mode (vm_mode) used by QEMU and KVM. \n\n xen - Xen 3.0 paravirtualized. \n\n uml — User Mode Linux paravirtualized. \n\n exe — Executables in containers. This is the mode used by LXC.",
+            "description": "The virtual machine mode. This represents the host/guest ABI (application binary interface) used for the virtual machine. Used with the ImagePropertiesFilter. \n\n hvm — Fully virtualized - This is the virtual machine mode (vm_mode) used by QEMU and KVM. \n\n xen - Xen 3.0 paravirtualized. \n\n uml — User Mode Linux paravirtualized. \n\n exe — Executables in containers. This is the mode used by LXC.",
             "type": "string",
             "enum": [
                 "hvm",
