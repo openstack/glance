@@ -712,3 +712,20 @@ def no_4byte_params(f):
         _check_dict(kwargs)
         return f(*args, **kwargs)
     return wrapper
+
+
+def stash_conf_values():
+    """
+    Make a copy of some of the current global CONF's settings.
+    Allows determining if any of these values have changed
+    when the config is reloaded.
+    """
+    conf = {}
+    conf['bind_host'] = CONF.bind_host
+    conf['bind_port'] = CONF.bind_port
+    conf['tcp_keepidle'] = CONF.cert_file
+    conf['backlog'] = CONF.backlog
+    conf['key_file'] = CONF.key_file
+    conf['cert_file'] = CONF.cert_file
+
+    return conf
