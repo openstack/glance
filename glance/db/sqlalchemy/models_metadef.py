@@ -34,7 +34,7 @@ from glance.openstack.common import timeutils
 class DictionaryBase(models.ModelBase):
     metadata = None
 
-    def as_dict(self):
+    def to_dict(self):
         d = {}
         for c in self.__table__.columns:
             d[c.name] = self[c.name]

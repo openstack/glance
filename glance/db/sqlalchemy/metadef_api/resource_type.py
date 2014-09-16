@@ -37,7 +37,7 @@ def get(context, name, session):
         LOG.debug(msg)
         raise exc.MetadefResourceTypeNotFound(resource_type_name=name)
 
-    return resource_type.as_dict()
+    return resource_type.to_dict()
 
 
 def get_all(context, session):
@@ -48,7 +48,7 @@ def get_all(context, session):
 
     resource_types_list = []
     for rt in resource_types:
-        resource_types_list.append(rt.as_dict())
+        resource_types_list.append(rt.to_dict())
 
     return resource_types_list
 
@@ -69,7 +69,7 @@ def create(context, values, session):
         raise exc.MetadefDuplicateResourceType(
             resource_type_name=resource_type.name)
 
-    return resource_type.as_dict()
+    return resource_type.to_dict()
 
 
 def update(context, values, session):
@@ -81,7 +81,7 @@ def update(context, values, session):
     db_rec.update(values.copy())
     db_rec.save(session=session)
 
-    return db_rec.as_dict()
+    return db_rec.to_dict()
 
 
 def delete(context, name, session):
@@ -108,4 +108,4 @@ def delete(context, name, session):
         else:
             raise e
 
-    return db_rec.as_dict()
+    return db_rec.to_dict()
