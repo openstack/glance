@@ -320,6 +320,13 @@ class Controller(object):
         LOG.info(msg)
         return webob.exc.HTTPNoContent()
 
+    def default(self, req, *args, **kwargs):
+        """This will cover the missing 'show' and 'create' actions"""
+        LOG.debug("The method %s is not allowed for this resource" %
+                  req.environ['REQUEST_METHOD'])
+        raise webob.exc.HTTPMethodNotAllowed(
+            headers=[('Allow', 'PUT, DELETE')])
+
     def index_shared_images(self, req, id):
         """
         Retrieves images shared with the given member.

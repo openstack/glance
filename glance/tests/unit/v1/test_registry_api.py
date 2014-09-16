@@ -1767,6 +1767,19 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = req.get_response(api)
         self.assertEqual(res.status_int, 403)
 
+    def test_get_on_image_member(self):
+        """
+        Test GET on image members raises 405 and produces correct Allow headers
+        """
+        self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
+                                                 is_admin=False)
+        uri = '/images/%s/members/123' % UUID1
+        req = webob.Request.blank(uri)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(405, res.status_int)
+        self.assertTrue(('Allow', 'PUT, DELETE') in res.headerlist)
+
     def test_get_images_bad_urls(self):
         """Check that routes collections are not on (LP bug 1185828)"""
         self.get_api_response_ext(404, url='/images/detail.xxx')
