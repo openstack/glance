@@ -190,7 +190,6 @@ class ApiTest(test_utils.BaseTestCase):
 
     def _setup_stores(self):
         glance_store.register_opts(CONF)
-        glance_store.register_store_opts(CONF)
 
         image_dir = os.path.join(self.test_dir, "images")
         self.config(group='glance_store',
