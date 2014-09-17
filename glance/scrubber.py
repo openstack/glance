@@ -138,7 +138,7 @@ class ScrubFileQueue(ScrubQueue):
                 while True:
                     loc_id = f.readline().strip()
                     if loc_id:
-                        lid = unicode(loc_id)
+                        lid = six.text_type(loc_id)
                         loc_ids.append(int(lid) if lid.isdigit() else lid)
                         uris.append(unicode(f.readline().strip()))
                         delete_times.append(int(f.readline().strip()))

@@ -210,9 +210,9 @@ def image_meta_to_http_headers(image_meta):
                 for pk, pv in v.items():
                     if pv is not None:
                         headers["x-image-meta-property-%s"
-                                % pk.lower()] = unicode(pv)
+                                % pk.lower()] = six.text_type(pv)
             else:
-                headers["x-image-meta-%s" % k.lower()] = unicode(v)
+                headers["x-image-meta-%s" % k.lower()] = six.text_type(v)
     return headers
 
 
