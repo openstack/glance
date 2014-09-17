@@ -1,5 +1,4 @@
 *.pyc
-*.swp
 *.log
 .glance-venv
 .venv
@@ -19,6 +18,10 @@ dist
 glance.egg-info
 tests.sqlite
 glance/versioninfo
+
+# Swap files range from .saa to .swp
+*.s[a-w][a-p]
+
 # Files created by doc build
 doc/source/api
 
