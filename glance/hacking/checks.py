@@ -40,6 +40,7 @@ asse_equal_end_with_none_re = re.compile(
     r"(.)*assertEqual\((\w|\.|\'|\"|\[|\])+, None\)")
 asse_equal_start_with_none_re = re.compile(
     r"(.)*assertEqual\(None, (\w|\.|\'|\"|\[|\])+\)")
+unicode_func_re = re.compile(r"(\s|\W|^)unicode\(")
 
 
 def assert_true_instance(logical_line):
@@ -91,8 +92,18 @@ def no_translate_debug_logs(logical_line, filename):
             yield(0, "G319: Don't translate debug level logs")
 
 
+def no_direct_use_of_unicode_function(logical_line):
+    """Check for use of unicode() builtin
+
+    G320
+    """
+    if unicode_func_re.match(logical_line):
+        yield(0, "G320: Use six.text_type() instead of unicode()")
+
+
 def factory(register):
     register(assert_true_instance)
     register(assert_equal_type)
     register(assert_equal_none)
     register(no_translate_debug_logs)
+    register(no_direct_use_of_unicode_function)

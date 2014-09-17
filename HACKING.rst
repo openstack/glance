@@ -15,3 +15,4 @@ glance Specific Commandments
 - [G318] Change assertEqual(A, None) or assertEqual(None, A) by optimal assert like
   assertIsNone(A)
 - [G319] Validate that debug level logs are not translated
+- [G320] For python 3 compatibility, use six.text_type() instead of unicode()
