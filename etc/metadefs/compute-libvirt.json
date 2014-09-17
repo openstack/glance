@@ -54,8 +54,9 @@
         },
         "hw_video_ram": {
             "title": "Max Video Ram",
-            "description": "Maximum RAM for the video image. Used only if a hw_video:ram_max_mb value has been set in the flavor's extra_specs and that value is higher than the value set in hw_video_ram.",
-            "type": "integer"
+            "description": "Maximum RAM (unit: MB) for the video image. Used only if a hw_video:ram_max_mb value has been set in the flavor's extra_specs and that value is higher than the value set in hw_video_ram.",
+            "type": "integer",
+            "minimum": 0
         },
         "os_command_line": {
             "title": "Kernel Command Line",
@@ -64,23 +65,17 @@
         },
         "hw_vif_model": {
             "title": "Virtual Network Interface",
-            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the configured hypervisor. KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, and virtio. VMware: e1000, e1000e, VirtualE1000, VirtualE1000e, VirtualPCNet32, VirtualSriovEthernetCard, and VirtualVmxnet. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
+            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor configuration. libvirt driver options: KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, spapr-vlan, and virtio. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
             "type": "string",
             "enum": [
                 "e1000",
+                "e1000e",
                 "ne2k_pci",
+                "netfront",
                 "pcnet",
                 "rtl8139",
-                "virtio",
-                "e1000",
-                "e1000e",
-                "VirtualE1000",
-                "VirtualE1000e",
-                "VirtualPCNet32",
-                "VirtualSriovEthernetCard",
-                "VirtualVmxnet",
-                "netfront",
-                "ne2k_pci"
+                "spapr-vlan",
+                "virtio"
             ]
         },
         "hw_qemu_guest_agent": {

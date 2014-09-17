@@ -18,13 +18,42 @@
                 "lsiLogic",
                 "busLogic",
                 "ide"
-            ]
+            ],
+            "default" : "lsiLogic"
+        },
+        "vmware_disktype": {
+            "title": "Disk Provisioning Type",
+            "description": "When performing operations such as creating a virtual disk, cloning, or migrating, the disk provisioning type may be specified. Please refer to VMware documentation for more.",
+            "type": "string",
+            "enum": [
+                "thin",
+                "preallocated",
+                "thick",
+                "eagerZeroedThick",
+                "sparse"
+            ],
+            "default" : "preallocated"
         },
         "vmware_ostype": {
             "title": "OS Type",
             "description": "A VMware GuestID which describes the operating system installed in the image. This value is passed to the hypervisor when creating a virtual machine. If not specified, the key defaults to otherGuest. See thinkvirt.com.",
             "type": "string",
             "default": "otherGuest"
+        },
+        "hw_vif_model": {
+            "title": "Virtual Network Interface",
+            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor. VMware driver supported options: e1000, e1000e, VirtualE1000, VirtualE1000e, VirtualPCNet32, VirtualSriovEthernetCard, and VirtualVmxnet.",
+            "type": "string",
+            "enum": [
+                "e1000",
+                "e1000e",
+                "VirtualE1000",
+                "VirtualE1000e",
+                "VirtualPCNet32",
+                "VirtualSriovEthernetCard",
+                "VirtualVmxnet"
+            ],
+            "default" : "e1000"
         }
     },
     "objects": []
