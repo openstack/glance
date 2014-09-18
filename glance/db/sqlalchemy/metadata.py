@@ -24,6 +24,7 @@ from os.path import join
 import re
 
 from oslo.config import cfg
+import six
 import sqlalchemy
 from sqlalchemy.schema import MetaData
 
@@ -175,7 +176,7 @@ def _populate_metadata(meta, metadata_path=None):
             _insert_data_to_db(metadef_namespace_resource_types_tables,
                                values)
 
-        for property, schema in metadata.get('properties', {}).iteritems():
+        for property, schema in six.iteritems(metadata.get('properties', {})):
             values = {
                 'name': property,
                 'namespace_id': namespace_id,
