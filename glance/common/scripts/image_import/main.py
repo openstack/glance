@@ -23,6 +23,7 @@ import six
 from glance.api.v2 import images as v2_api
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
+from glance.common import store_utils
 from glance.common import utils as common_utils
 from glance import i18n
 from glance.openstack.common import lockutils
@@ -92,21 +93,30 @@ def import_image(image_repo, image_factory, task_input, task_id, uri):
     # Image object returned from create_image method does not have appropriate
     # factories wrapped around it.
     image_id = original_image.image_id
-    new_image = image_repo.get(image_id)
-    if new_image.status in ['saving']:
-        new_image.status = 'active'
-        new_image.size = original_image.size
-        new_image.virtual_size = original_image.virtual_size
-        new_image.checksum = original_image.checksum
-    else:
-        msg = _("The Image %(image_id)s object being created by this task "
-                "%(task_id)s, is no longer in valid status for further "
-                "processing.") % {"image_id": new_image.image_id,
-                                  "task_id": task_id}
-        raise exception.Conflict(msg)
-    image_repo.save(new_image)
+    try:
+        new_image = image_repo.get(image_id)
+        if new_image.status == 'saving':
+            new_image.status = 'active'
+            new_image.size = original_image.size
+            new_image.virtual_size = original_image.virtual_size
+            new_image.checksum = original_image.checksum
+        else:
+            msg = _("The Image %(image_id)s object being created by this task "
+                    "%(task_id)s, is no longer in valid status for further "
+                    "processing.") % {"image_id": new_image.image_id,
+                                      "task_id": task_id}
+            raise exception.Conflict(msg)
+        image_repo.save(new_image)
 
-    return image_id
+        return image_id
+    except (exception.Conflict, exception.NotFound):
+        with excutils.save_and_reraise_exception():
+            if original_image.locations:
+                for location in original_image.locations:
+                    store_utils.delete_image_location_from_backend(
+                        original_image.context,
+                        original_image.image_id,
+                        location)
 
 
 def create_image(image_repo, image_factory, image_properties, task_id):
