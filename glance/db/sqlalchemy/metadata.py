@@ -132,9 +132,8 @@ def _populate_metadata(meta, metadata_path=None):
                                                     start=1):
         try:
             file = join(metadata_path, json_schema_file)
-            json_metadata = open(file)
-            metadata = json.load(json_metadata)
-            json_metadata.close()
+            with open(file) as json_file:
+                metadata = json.load(json_file)
         except Exception as e:
             LOG.error(utils.exception_to_str(e))
             continue
@@ -284,10 +283,8 @@ def _export_data_to_file(meta, path):
 
         try:
             file_name = ''.join([path, namespace_file_name, '.json'])
-            json_file = open(file_name, 'w+')
-            json_file.write(json.dumps(values))
-            json_file.close()
-
+            with open(file_name, 'w') as json_file:
+                json_file.write(json.dumps(values))
         except Exception as e:
             LOG.exception(utils.exception_to_str(e))
         LOG.info(_LI("Namespace %s saved in %s"),
