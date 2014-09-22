@@ -18,16 +18,27 @@
 Using Glance's Metadata Definitions Catalog Public APIs
 =======================================================
 
-A common API hosted by the Glance service for vendors, admins, services,
-and users to meaningfully define available key / value pair and tag metadata.
+A common API hosted by the Glance service for vendors, admins, services, and
+users to meaningfully define available key / value pair and tag metadata.
 The intent is to enable better metadata collaboration across artifacts,
 services, and projects for OpenStack users.
 
 This is about the definition of the available metadata that can be used on
-different types of resources (images, artifacts, volumes, flavors,
-aggregates, etc). A definition includes the properties type, its key,
-it's description, and it's constraints. This catalog will not store the
-values for specific instance properties.
+different types of resources (images, artifacts, volumes, flavors, aggregates,
+etc). A definition includes the properties type, its key, it's description,
+and it's constraints. This catalog will not store the values for specific
+instance properties.
+
+For example, a definition of a virtual CPU topology property for number of
+cores will include the key to use, a description, and value constraints like
+requiring it to be an integer. So, a user, potentially through Horizon, would
+be able to search this catalog to list the available properties they can add to
+a flavor or image. They will see the virtual CPU topology property in the list
+and know that it must be an integer. In the Horizon example, when the user adds
+the property, its key and value will be stored in the service that owns that
+resource (Nova for flavors and in Glance for images).
+
+Diagram: https://wiki.openstack.org/w/images/b/bb/Glance-Metadata-API.png
 
 Glance Metadata Definitions Catalog implementation started with API version v2.
 
@@ -56,7 +67,7 @@ has access to. This includes namespaces owned by the user,
 namespaces shared with the user and public namespaces.
 
 We issue a ``GET`` request to ``http://glance.example.com/v2/metadefs/namespaces``
-to retrieve this list of available images.
+to retrieve this list of available namespaces.
 The data is returned as a JSON-encoded mapping in the following format::
 
   {
@@ -65,22 +76,30 @@ The data is returned as a JSON-encoded mapping in the following format::
             "namespace": "MyNamespace",
             "display_name": "My User Friendly Namespace",
             "description": "My description",
-            "property_count": 0,
-            "object_count": 2,
-            "resource_types": [
+            "visibility": "public",
+            "protected": true,
+            "owner": "The Test Owner",
+            "self": "/v2/metadefs/namespaces/MyNamespace",
+            "schema": "/v2/schemas/metadefs/namespace",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z",
+            "resource_type_associations": [
                 {
-                    "name": "OS::Nova::Aggregate"
+                    "name": "OS::Nova::Aggregate",
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "updated_at": "2014-08-28T17:13:06Z"
                 },
                 {
                     "name": "OS::Nova::Flavor",
-                    "prefix": "aggregate_instance_extra_specs:"
+                    "prefix": "aggregate_instance_extra_specs:",
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "updated_at": "2014-08-28T17:13:06Z"
                 }
-            ],
-            "visibility": "public",
-            "protected": true,
-            "owner": "The Test Owner"
+            ]
         }
-    ]
+    ],
+    "first": "/v2/metadefs/namespaces?sort_key=created_at&sort_dir=asc",
+    "schema": "/v2/schemas/metadefs/namespaces"
   }
 
 
@@ -106,7 +125,7 @@ GET resource also accepts additional query parameters:
 
 * ``sort_key=KEY``
 
-  Results will be ordered by the specified image attribute ``KEY``. Accepted
+  Results will be ordered by the specified sort attribute ``KEY``. Accepted
   values include ``namespace``, ``created_at`` (default) and ``updated_at``.
 
 * ``sort_dir=DIR``
@@ -151,21 +170,29 @@ The data is returned as a JSON-encoded mapping in the following format::
     "namespace": "MyNamespace",
     "display_name": "My User Friendly Namespace",
     "description": "My description",
-    "property_count": 2,
-    "object_count": 2,
-    "resource_types": [
+    "visibility": "public",
+    "protected": true,
+    "owner": "The Test Owner",
+    "schema": "/v2/schemas/metadefs/namespace",
+    "resource_type_associations": [
         {
             "name": "OS::Glance::Image",
-            "prefix": "hw_"
+            "prefix": "hw_",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z"
         },
         {
             "name": "OS::Cinder::Volume",
             "prefix": "hw_",
-            "properties_target": "image"
+            "properties_target": "image",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z"
         },
         {
             "name": "OS::Nova::Flavor",
-            "prefix": "filter1:"
+            "prefix": "filter1:",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z"
         }
     ],
     "properties": {
@@ -186,6 +213,11 @@ The data is returned as a JSON-encoded mapping in the following format::
         {
             "name": "object1",
             "description": "my-description",
+            "self": "/v2/metadefs/namespaces/MyNamespace/objects/object1",
+            "schema": "/v2/schemas/metadefs/object",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z",
+            "required": [],
             "properties": {
                 "prop1": {
                     "title": "My object1 property1",
@@ -193,14 +225,17 @@ The data is returned as a JSON-encoded mapping in the following format::
                     "type": "array",
                     "items": {
                         "type": "string"
-                    },
-                    "readonly": false
+                    }
                 }
             }
         },
         {
             "name": "object2",
             "description": "my-description",
+            "self": "/v2/metadefs/namespaces/MyNamespace/objects/object2",
+            "schema": "/v2/schemas/metadefs/object",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z",
             "properties": {
                 "prop1": {
                     "title": "My object2 property1",
@@ -210,10 +245,7 @@ The data is returned as a JSON-encoded mapping in the following format::
                 }
             }
         }
-    ],
-    "visibility": "public",
-    "protected": true,
-    "owner": "The Test Owner"
+    ]
   }
 
 Retrieve available Resource Types
@@ -226,12 +258,35 @@ to retrieve all resource types.
 
 The data is returned as a JSON-encoded mapping in the following format::
 
-  [
-    "OS::Cinder::Volume",
-    "OS::Glance::Image",
-    "OS::Nova::Flavor",
-    "OS::Neutron::Subnet"
-  ]
+  {
+    "resource_types": [
+        {
+            "created_at": "2014-08-28T17:13:04Z",
+            "name": "OS::Glance::Image",
+            "updated_at": "2014-08-28T17:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T17:13:04Z",
+            "name": "OS::Cinder::Volume",
+            "updated_at": "2014-08-28T17:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T17:13:04Z",
+            "name": "OS::Nova::Flavor",
+            "updated_at": "2014-08-28T17:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T17:13:04Z",
+            "name": "OS::Nova::Aggregate",
+            "updated_at": "2014-08-28T17:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T17:13:04Z",
+            "name": "OS::Nova::Instance",
+            "updated_at": "2014-08-28T17:13:04Z"
+        }
+    ]
+  }
 
 
 Retrieve Resource Types associated with a Namespace
@@ -246,19 +301,25 @@ to retrieve resource types.
 The data is returned as a JSON-encoded mapping in the following format::
 
   {
-    "resource_types" : [
+    "resource_type_associations" : [
         {
            "name" : "OS::Glance::Image",
-           "prefix" : "hw_"
+           "prefix" : "hw_",
+           "created_at": "2014-08-28T17:13:04Z",
+           "updated_at": "2014-08-28T17:13:04Z"
         },
         {
            "name" :"OS::Cinder::Volume",
            "prefix" : "hw_",
-           "properties_target" : "image"
+           "properties_target" : "image",
+           "created_at": "2014-08-28T17:13:04Z",
+           "updated_at": "2014-08-28T17:13:04Z"
         },
         {
            "name" : "OS::Nova::Flavor",
-           "prefix" : "hw:"
+           "prefix" : "hw:",
+           "created_at": "2014-08-28T17:13:04Z",
+           "updated_at": "2014-08-28T17:13:04Z"
         }
     ]
   }
@@ -284,8 +345,9 @@ The input data is an JSON-encoded mapping in the following format::
   }
 
 .. note::
-   Optionally properties, objects and resource types could be added in the
-   same input. See GET Namespace output above.
+   Optionally properties, objects and resource type associations could be
+   added in the same input. See GET Namespace output above(input will be
+   similar).
 
 Update Namespace
 ****************
@@ -310,14 +372,36 @@ We issue a ``DELETE`` request to delete an namespace to Glance::
   DELETE http://glance.example.com/v2/metadefs/namespaces/{namespace}
 
 
+Associate Resource Type with Namespace
+**************************************
+
+We want to associate a resource type with an existing namespace
+
+We issue a ``POST`` request to associate resource type to Glance::
+
+  POST http://glance.example.com/v2/metadefs/namespaces/{namespace}/resource_types
+
+The input data is an JSON-encoded mapping in the following format::
+
+   {
+           "name" :"OS::Cinder::Volume",
+           "prefix" : "hw_",
+           "properties_target" : "image",
+           "created_at": "2014-08-28T17:13:04Z",
+           "updated_at": "2014-08-28T17:13:04Z"
+   }
+
+
 Remove Resource Type associated with a Namespace
 ************************************************
+
 We want to de-associate namespace from a resource type
 
 We issue a ``DELETE`` request to de-associate namespace resource type to
 Glance::
 
   DELETE http://glance.example.com/v2//metadefs/namespaces/{namespace}/resource_types/{resource_type}
+
 
 List Objects in Namespace
 *************************
@@ -333,30 +417,41 @@ The data is returned as a JSON-encoded mapping in the following format::
         "objects": [
         {
             "name": "object1",
-            "description": "object1-description",
+            "description": "my-description",
+            "self": "/v2/metadefs/namespaces/MyNamespace/objects/object1",
+            "schema": "/v2/schemas/metadefs/object",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z",
+            "required": [],
             "properties": {
                 "prop1": {
-                    "title": "My Property",
+                    "title": "My object1 property1",
                     "description": "More info here",
-                    "type": "boolean",
-                    "default": true
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
-		{
+        {
             "name": "object2",
-             "description": "object2-description",
+            "description": "my-description",
+            "self": "/v2/metadefs/namespaces/MyNamespace/objects/object2",
+            "schema": "/v2/schemas/metadefs/object",
+            "created_at": "2014-08-28T17:13:06Z",
+            "updated_at": "2014-08-28T17:13:06Z",
             "properties": {
                 "prop1": {
-                    "title": "My Property",
+                    "title": "My object2 property1",
                     "description": "More info here",
-                    "type": "boolean",
-                    "default": true
+                    "type": "integer",
+                    "default": 20
                 }
             }
         }
     ],
-    "schema": "/schema/metadefs/objects"
+    "schema": "/v2/schemas/metadefs/objects"
   }
 
 Add object in a specific namespace
@@ -485,7 +580,7 @@ message. For more info about Accept-Language, please refer http://www.w3.org/Pro
 A typical curl API request will be like below::
 
    curl -i -X GET -H 'Accept-Language: zh' -H 'Content-Type: application/json'
-   http://127.0.0.1:9292/v2/images/aaa
+   http://127.0.0.1:9292/v2/metadefs/namespaces/{namespace}
 
 Then the response will be like the following::
 
