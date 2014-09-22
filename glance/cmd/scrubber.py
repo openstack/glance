@@ -42,19 +42,10 @@ CONF = cfg.CONF
 
 
 def main():
-    CONF.register_cli_opt(
-        cfg.BoolOpt('daemon',
-                    short='D',
-                    default=False,
-                    help='Run as a long-running process. When not '
-                         'specified (the default) run the scrub operation '
-                         'once and then exits. When specified do not exit '
-                         'and run scrub on wakeup_time interval as '
-                         'specified in the config.'))
-    CONF.register_opt(cfg.IntOpt('wakeup_time', default=300))
+    CONF.register_cli_opts(scrubber.scrubber_cmd_cli_opts)
+    CONF.register_opts(scrubber.scrubber_cmd_opts)
 
     try:
-
         config.parse_args()
         log.setup('glance')
 

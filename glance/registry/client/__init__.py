@@ -43,17 +43,31 @@ registry_client_ctx_opts = [
                 help=_('Whether to pass through the user token when '
                        'making requests to the registry.')),
     cfg.StrOpt('admin_user', secret=True,
-               help=_('The administrators user name.')),
+               help=_('The administrators user name. '
+                      'If "use_user_token" is not in effect, then '
+                      'admin credentials can be specified.')),
     cfg.StrOpt('admin_password', secret=True,
-               help=_('The administrators password.')),
+               help=_('The administrators password. '
+                      'If "use_user_token" is not in effect, then '
+                      'admin credentials can be specified.')),
     cfg.StrOpt('admin_tenant_name', secret=True,
-               help=_('The tenant name of the administrative user.')),
+               help=_('The tenant name of the administrative user. '
+                      'If "use_user_token" is not in effect, then '
+                      'admin tenant name can be specified.')),
     cfg.StrOpt('auth_url',
-               help=_('The URL to the keystone service.')),
+               help=_('The URL to the keystone service. '
+                      'If "use_user_token" is not in effect and '
+                      'using keystone auth, then URL of keystone '
+                      'can be specified.')),
     cfg.StrOpt('auth_strategy', default='noauth',
-               help=_('The strategy to use for authentication.')),
+               help=_('The strategy to use for authentication. '
+                      'If "use_user_token" is not in effect, then '
+                      'auth strategy can be specified.')),
     cfg.StrOpt('auth_region',
-               help=_('The region for the authentication service.')),
+               help=_('The region for the authentication service. '
+                      'If "use_user_token" is not in effect and '
+                      'using keystone auth, then region name can '
+                      'be specified.')),
 ]
 
 CONF = cfg.CONF
