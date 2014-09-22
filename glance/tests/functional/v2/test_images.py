@@ -283,7 +283,7 @@ class TestImages(functional.FunctionalTest):
         self.assertNotIn('size', image)
         self.assertNotIn('virtual_size', image)
         self.assertEqual('bar', image['foo'])
-        self.assertEqual(False, image['protected'])
+        self.assertFalse(image['protected'])
         self.assertEqual('kernel', image['type'])
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])

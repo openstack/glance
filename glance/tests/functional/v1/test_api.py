@@ -143,7 +143,7 @@ class TestApi(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         # 3. HEAD image
         # Verify image found now
@@ -406,7 +406,7 @@ class TestApi(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image2")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
         self.assertEqual(data['image']['properties']['distro'], 'Ubuntu')
         self.assertEqual(data['image']['properties']['arch'], 'i386')
         self.assertEqual(data['image']['properties']['foo'], 'bar')
@@ -591,7 +591,7 @@ class TestApi(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         # 1. HEAD image
         # Verify image found now
@@ -670,7 +670,7 @@ class TestApi(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         # 1. HEAD image
         # Verify image found now

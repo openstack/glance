@@ -197,7 +197,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         self.assertEqual(namespace.description, 'desc1')
         self.assertEqual(namespace.display_name, '1')
         self.assertEqual(namespace.owner, TENANT1)
-        self.assertEqual(namespace.protected, True)
+        self.assertTrue(namespace.protected)
         self.assertEqual(namespace.visibility, 'private')
 
     def test_get_namespace_not_found(self):

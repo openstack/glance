@@ -231,7 +231,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         output = output.to_dict()
         self.assertEqual(output['namespace'], NAMESPACE1)
         self.assertEqual(output['owner'], TENANT1)
-        self.assertEqual(output['protected'], True)
+        self.assertTrue(output['protected'])
         self.assertEqual(output['visibility'], 'private')
 
     def test_namespace_show_with_related_resources(self):
@@ -240,7 +240,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         output = output.to_dict()
         self.assertEqual(output['namespace'], NAMESPACE3)
         self.assertEqual(output['owner'], TENANT3)
-        self.assertEqual(output['protected'], False)
+        self.assertFalse(output['protected'])
         self.assertEqual(output['visibility'], 'public')
 
         self.assertEqual(2, len(output['properties']))
@@ -445,10 +445,10 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         namespace.protected = False
         namespace = self.namespace_controller.update(request, namespace,
                                                      NAMESPACE1)
-        self.assertEqual(namespace.protected, False)
+        self.assertFalse(namespace.protected)
 
         namespace = self.namespace_controller.show(request, NAMESPACE1)
-        self.assertEqual(namespace.protected, False)
+        self.assertFalse(namespace.protected)
 
     def test_namespace_update_non_existing(self):
         request = unit_test_utils.get_fake_request()
@@ -475,10 +475,10 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         namespace.protected = False
         namespace = self.namespace_controller.update(request, namespace,
                                                      NAMESPACE2)
-        self.assertEqual(namespace.protected, False)
+        self.assertFalse(namespace.protected)
 
         namespace = self.namespace_controller.show(request, NAMESPACE2)
-        self.assertEqual(namespace.protected, False)
+        self.assertFalse(namespace.protected)
 
     def test_namespace_update_name(self):
         request = unit_test_utils.get_fake_request()

@@ -145,13 +145,13 @@ class DriverTests(object):
         self.assertEqual(0, image['min_ram'])
         self.assertEqual(0, image['min_disk'])
         self.assertIsNone(image['owner'])
-        self.assertEqual(False, image['is_public'])
+        self.assertFalse(image['is_public'])
         self.assertIsNone(image['size'])
         self.assertIsNone(image['checksum'])
         self.assertIsNone(image['disk_format'])
         self.assertEqual([], image['locations'])
-        self.assertEqual(False, image['protected'])
-        self.assertEqual(False, image['deleted'])
+        self.assertFalse(image['protected'])
+        self.assertFalse(image['deleted'])
         self.assertIsNone(image['deleted_at'])
         self.assertEqual([], image['properties'])
         self.assertEqual(image['created_at'], create_time)
@@ -264,13 +264,13 @@ class DriverTests(object):
         # New properties are set
         self.assertTrue('ping' in properties)
         self.assertEqual(properties['ping']['value'], 'pong')
-        self.assertEqual(properties['ping']['deleted'], False)
+        self.assertFalse(properties['ping']['deleted'])
 
         # Original properties still show up, but with deleted=True
         # TODO(markwash): db api should not return deleted properties
         self.assertTrue('foo' in properties)
         self.assertEqual(properties['foo']['value'], 'bar')
-        self.assertEqual(properties['foo']['deleted'], True)
+        self.assertTrue(properties['foo']['deleted'])
 
     def test_image_property_delete(self):
         fixture = {'name': 'ping', 'value': 'pong', 'image_id': UUID1}
@@ -1595,7 +1595,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertEqual(task['input'], {'ping': 'pong'})
         self.assertEqual(task['result'], result)
         self.assertEqual(task['message'], 'This is a error string')
-        self.assertEqual(task['deleted'], False)
+        self.assertFalse(task['deleted'])
         self.assertIsNone(task['deleted_at'])
         self.assertIsNone(task['expires_at'])
         self.assertEqual(task['created_at'], task_values['created_at'])
@@ -1620,7 +1620,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertIsNone(task['input'])
         self.assertIsNone(task['result'])
         self.assertIsNone(task['message'])
-        self.assertEqual(task['deleted'], False)
+        self.assertFalse(task['deleted'])
         self.assertIsNone(task['deleted_at'])
         self.assertIsNone(task['expires_at'])
         self.assertEqual(task['created_at'], task_values['created_at'])
@@ -1631,7 +1631,7 @@ class TaskTests(test_utils.BaseTestCase):
         task = self.db_api.task_create(self.adm_context, task_values)
 
         self.assertIsNotNone(task)
-        self.assertEqual(task['deleted'], False)
+        self.assertFalse(task['deleted'])
         self.assertIsNone(task['deleted_at'])
 
         task_id = task['id']
@@ -1644,7 +1644,7 @@ class TaskTests(test_utils.BaseTestCase):
         task = self.db_api.task_create(self.adm_context, task_values)
 
         self.assertIsNotNone(task)
-        self.assertEqual(task['deleted'], False)
+        self.assertFalse(task['deleted'])
         self.assertIsNone(task['deleted_at'])
 
         task_id = task['id']
@@ -1654,7 +1654,7 @@ class TaskTests(test_utils.BaseTestCase):
                                         force_show_deleted=True)
         self.assertIsNotNone(del_task)
         self.assertEqual(task_id, del_task['id'])
-        self.assertEqual(True, del_task['deleted'])
+        self.assertTrue(del_task['deleted'])
         self.assertIsNotNone(del_task['deleted_at'])
 
 

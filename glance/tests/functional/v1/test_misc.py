@@ -64,7 +64,7 @@ class TestMiscellaneous(functional.FunctionalTest):
                          hashlib.md5(image_data).hexdigest())
         self.assertEqual(data['image']['size'], FIVE_KB)
         self.assertEqual(data['image']['name'], "Image1")
-        self.assertEqual(data['image']['is_public'], True)
+        self.assertTrue(data['image']['is_public'])
 
         # 2. REMOVE the image from the filesystem
         image_path = "%s/images/%s" % (self.test_dir, data['image']['id'])

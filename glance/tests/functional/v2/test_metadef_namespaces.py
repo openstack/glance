@@ -104,7 +104,7 @@ class TestNamespaces(functional.FunctionalTest):
         self.assertNotIn('object', namespace)
         self.assertEqual(TENANT1, namespace['owner'])
         self.assertEqual('private', namespace['visibility'])
-        self.assertEqual(False, namespace['protected'])
+        self.assertFalse(namespace['protected'])
 
         # The namespace should be mutable
         path = self._url('/v2/metadefs/namespaces/%s' % namespace_name)
