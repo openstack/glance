@@ -1946,6 +1946,15 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
                           request)
 
+    def test_create_id_to_image_id(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = jsonutils.dumps({'id': UUID4})
+        output = self.deserializer.create(request)
+        expected = {'image': {'image_id': UUID4},
+                    'extra_properties': {},
+                    'tags': None}
+        self.assertEqual(expected, output)
+
     def test_create_no_body(self):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
@@ -1967,7 +1976,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         })
         output = self.deserializer.create(request)
         properties = {
-            'id': UUID3,
+            'image_id': UUID3,
             'name': 'image-1',
             'visibility': 'public',
             'container_format': 'ami',

@@ -320,7 +320,13 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         tags = properties.pop('tags', None)
         for key in self._base_properties:
             try:
-                image[key] = properties.pop(key)
+                # NOTE(flwang): Instead of changing the _check_unexpected
+                # of ImageFactory. It would be better to do the mapping
+                # at here.
+                if key == 'id':
+                    image['image_id'] = properties.pop(key)
+                else:
+                    image[key] = properties.pop(key)
             except KeyError:
                 pass
         return dict(image=image, extra_properties=properties, tags=tags)
