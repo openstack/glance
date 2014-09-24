@@ -1498,6 +1498,45 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                         "Got headers: %r" % res.headers)
         self.assertEqual("active", res.headers['x-image-meta-status'])
 
+    def test_upload_image_raises_store_disabled(self):
+        """Test that uploading an image file returns HTTTP 410 response"""
+        # create image
+        fs = store.get_store_from_scheme('file')
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-meta-property-key1': 'value1'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(201, res.status_int)
+        res_body = jsonutils.loads(res.body)['image']
+
+        self.assertIn('id', res_body)
+
+        image_id = res_body['id']
+        self.assertIn('/images/%s' % image_id, res.headers['location'])
+
+        # Verify the status is queued
+        self.assertIn('status', res_body)
+        self.assertEqual('queued', res_body['status'])
+
+        # Now upload the image file
+        with mock.patch.object(fs, 'add') as mock_fsstore_add:
+            mock_fsstore_add.side_effect = store.StoreAddDisabled
+            req = webob.Request.blank("/images/%s" % image_id)
+            req.method = 'PUT'
+            req.headers['Content-Type'] = 'application/octet-stream'
+            req.body = "chunk00000remainder"
+            res = req.get_response(self.api)
+            self.assertEqual(410, res.status_int)
+            self._verify_image_status(image_id, 'killed')
+
     def _get_image_status(self, image_id):
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'HEAD'

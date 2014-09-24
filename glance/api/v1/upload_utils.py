@@ -171,6 +171,15 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                    request=req,
                                                    content_type='text/plain')
 
+    except store_api.StoreAddDisabled:
+        msg = _("Error in store configuration. Adding images to store "
+                "is disabled.")
+        LOG.exception(msg)
+        safe_kill(req, image_id, 'saving')
+        notifier.error('image.upload', msg)
+        raise webob.exc.HTTPGone(explanation=msg, request=req,
+                                 content_type='text/plain')
+
     except exception.Duplicate as e:
         msg = u"Attempt to upload duplicate image: %s" % e
         LOG.debug(msg)
