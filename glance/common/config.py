@@ -124,7 +124,7 @@ common_opts = [
                       "all storage systems. A value of 0 means unlimited."
                       "Optional unit can be specified for the value. Accepted "
                       "units are B, KB, MB, GB and TB representing "
-                      "Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes"
+                      "Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes "
                       "respectively. If no unit is specified then Bytes is "
                       "assumed. Note that there should not be any space "
                       "between value and unit and units are case sensitive.")),
