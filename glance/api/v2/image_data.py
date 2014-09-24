@@ -98,6 +98,14 @@ class ImageDataController(object):
             raise webob.exc.HTTPBadRequest(explanation=
                                            utils.exception_to_str(e))
 
+        except glance_store.StoreAddDisabled:
+            msg = _("Error in store configuration. Adding images to store "
+                    "is disabled.")
+            LOG.exception(msg)
+            self._restore(image_repo, image)
+            raise webob.exc.HTTPGone(explanation=msg, request=req,
+                                     content_type='text/plain')
+
         except exception.InvalidImageStatusTransition as e:
             msg = utils.exception_to_str(e)
             LOG.debug(msg)

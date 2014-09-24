@@ -276,6 +276,16 @@ class TestImagesController(base.StoreClearingUnitTest):
                           self.controller.upload,
                           request, unit_test_utils.UUID2, 'YY', 2)
 
+    def test_upload_storage_store_disabled(self):
+        """Test that uploading an image file raises StoreDisabled exception"""
+        request = unit_test_utils.get_fake_request(user=unit_test_utils.USER3)
+        image = FakeImage()
+        image.set_data = Raise(glance_store.StoreAddDisabled)
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPGone,
+                          self.controller.upload,
+                          request, unit_test_utils.UUID2, 'YY', 2)
+
     def _test_upload_download_prepare_notification(self):
         request = unit_test_utils.get_fake_request()
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
