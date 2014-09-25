@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2014.2.dev9.g02dcdc9\n"
+"Project-Id-Version: glance 2014.2.dev42.gb46784e\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-09-09 06:05+0000\n"
+"POT-Creation-Date: 2014-09-25 06:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -125,12 +125,23 @@ msgid ""
 " be candidates for cleanup."
 msgstr ""
 
-#: glance/scrubber.py:553
+#: glance/scrubber.py:65
+msgid "Loop time between checking for new items to schedule for delete."
+msgstr ""
+
+#: glance/scrubber.py:73
+msgid ""
+"Run as a long-running process. When not specified (the default) run the "
+"scrub operation once and then exits. When specified do not exit and run "
+"scrub on wakeup_time interval as specified in the config."
+msgstr ""
+
+#: glance/scrubber.py:570
 #, python-format
 msgid "%s file is not exists."
 msgstr ""
 
-#: glance/scrubber.py:558
+#: glance/scrubber.py:575
 #, python-format
 msgid "%s file contains conflicting cleanup timestamp."
 msgstr ""
@@ -448,7 +459,7 @@ msgstr ""
 msgid "The incoming image is too large: %s"
 msgstr ""
 
-#: glance/api/v2/image_members.py:192 glance/api/v2/images.py:299
+#: glance/api/v2/image_members.py:192 glance/api/v2/images.py:301
 #: glance/api/v2/metadef_namespaces.py:356 glance/api/v2/metadef_objects.py:225
 #: glance/api/v2/metadef_properties.py:157
 #: glance/api/v2/metadef_resource_types.py:145
@@ -472,7 +483,7 @@ msgstr ""
 msgid "An identifier for the image member (tenantId)"
 msgstr ""
 
-#: glance/api/v2/image_members.py:274 glance/api/v2/images.py:674
+#: glance/api/v2/image_members.py:274 glance/api/v2/images.py:682
 msgid "An identifier for the image"
 msgstr ""
 
@@ -488,39 +499,39 @@ msgstr ""
 msgid "The status of this image member"
 msgstr ""
 
-#: glance/api/v2/images.py:160 glance/api/v2/images.py:188
+#: glance/api/v2/images.py:162 glance/api/v2/images.py:190
 #, python-format
 msgid "Property %s does not exist."
 msgstr ""
 
-#: glance/api/v2/images.py:172
+#: glance/api/v2/images.py:174
 #, python-format
 msgid "Property %s already present."
 msgstr ""
 
-#: glance/api/v2/images.py:183
+#: glance/api/v2/images.py:185
 #, python-format
 msgid "Property %s may not be removed."
 msgstr ""
 
-#: glance/api/v2/images.py:201
+#: glance/api/v2/images.py:203
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr ""
 
-#: glance/api/v2/images.py:225
+#: glance/api/v2/images.py:227
 msgid "Cannot replace locations from a non-empty list to a non-empty list."
 msgstr ""
 
-#: glance/api/v2/images.py:249
+#: glance/api/v2/images.py:251
 msgid "Invalid position for adding a location."
 msgstr ""
 
-#: glance/api/v2/images.py:265
+#: glance/api/v2/images.py:267
 msgid "Invalid position for removing a location."
 msgstr ""
 
-#: glance/api/v2/images.py:307 glance/api/v2/images.py:407
+#: glance/api/v2/images.py:309 glance/api/v2/images.py:415
 #: glance/api/v2/metadef_namespaces.py:364 glance/api/v2/metadef_objects.py:289
 #: glance/api/v2/metadef_properties.py:165
 #: glance/api/v2/metadef_resource_types.py:153
@@ -529,171 +540,171 @@ msgstr ""
 msgid "Attribute '%s' is read-only."
 msgstr ""
 
-#: glance/api/v2/images.py:332 glance/api/v2/images.py:354
+#: glance/api/v2/images.py:340 glance/api/v2/images.py:362
 #, python-format
 msgid "Unable to find '%s' in JSON Schema change"
 msgstr ""
 
-#: glance/api/v2/images.py:340
+#: glance/api/v2/images.py:348
 msgid ""
 "Operation objects must contain only one member named \"add\", \"remove\","
 " or \"replace\"."
 msgstr ""
 
-#: glance/api/v2/images.py:345
+#: glance/api/v2/images.py:353
 msgid ""
 "Operation objects must contain exactly one member named \"add\", "
 "\"remove\", or \"replace\"."
 msgstr ""
 
-#: glance/api/v2/images.py:382
+#: glance/api/v2/images.py:390
 #, python-format
 msgid "Pointer `%s` does not start with \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:385
+#: glance/api/v2/images.py:393
 #, python-format
 msgid "Pointer `%s` contains adjacent \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:388
+#: glance/api/v2/images.py:396
 #, python-format
 msgid "Pointer `%s` end with \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:391
+#: glance/api/v2/images.py:399
 #, python-format
 msgid "Pointer `%s` does not contains valid token."
 msgstr ""
 
-#: glance/api/v2/images.py:394
+#: glance/api/v2/images.py:402
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
 msgstr ""
 
-#: glance/api/v2/images.py:400
+#: glance/api/v2/images.py:408
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
 msgstr ""
 
-#: glance/api/v2/images.py:410
+#: glance/api/v2/images.py:418
 #, python-format
 msgid "Attribute '%s' is reserved."
 msgstr ""
 
-#: glance/api/v2/images.py:440
+#: glance/api/v2/images.py:448
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr ""
 
-#: glance/api/v2/images.py:452
+#: glance/api/v2/images.py:460
 msgid "Unrecognized JSON Schema draft version"
 msgstr ""
 
-#: glance/api/v2/images.py:474
+#: glance/api/v2/images.py:482
 msgid "Request body must be a JSON array of operation objects."
 msgstr ""
 
-#: glance/api/v2/images.py:479
+#: glance/api/v2/images.py:487
 msgid "Operations must be JSON objects."
 msgstr ""
 
-#: glance/api/v2/images.py:501 glance/api/v2/metadef_namespaces.py:411
+#: glance/api/v2/images.py:509 glance/api/v2/metadef_namespaces.py:411
 #: glance/api/v2/tasks.py:172 glance/registry/api/v1/images.py:265
 msgid "limit param must be an integer"
 msgstr ""
 
-#: glance/api/v2/images.py:505 glance/api/v2/metadef_namespaces.py:415
+#: glance/api/v2/images.py:513 glance/api/v2/metadef_namespaces.py:415
 #: glance/api/v2/tasks.py:176 glance/registry/api/v1/images.py:268
 msgid "limit param must be positive"
 msgstr ""
 
-#: glance/api/v2/images.py:512 glance/api/v2/metadef_namespaces.py:393
+#: glance/api/v2/images.py:520 glance/api/v2/metadef_namespaces.py:393
 #: glance/api/v2/metadef_objects.py:271 glance/api/v2/tasks.py:142
 #, python-format
 msgid "Invalid sort direction: %s"
 msgstr ""
 
-#: glance/api/v2/images.py:519
+#: glance/api/v2/images.py:527
 #, python-format
 msgid "Invalid status: %s"
 msgstr ""
 
-#: glance/api/v2/images.py:528 glance/api/v2/metadef_namespaces.py:402
+#: glance/api/v2/images.py:536 glance/api/v2/metadef_namespaces.py:402
 #: glance/api/v2/metadef_objects.py:280
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr ""
 
-#: glance/api/v2/images.py:532
+#: glance/api/v2/images.py:540
 msgid "The \"changes-since\" filter is no longer available on v2."
 msgstr ""
 
-#: glance/api/v2/images.py:680
+#: glance/api/v2/images.py:688
 msgid "Descriptive name for the image"
 msgstr ""
 
-#: glance/api/v2/images.py:685
+#: glance/api/v2/images.py:693
 msgid "Status of the image (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:691
+#: glance/api/v2/images.py:699
 msgid "Scope of image accessibility"
 msgstr ""
 
-#: glance/api/v2/images.py:696
+#: glance/api/v2/images.py:704
 msgid "If true, image will not be deletable."
 msgstr ""
 
-#: glance/api/v2/images.py:700
+#: glance/api/v2/images.py:708
 msgid "md5 hash of image contents. (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:705
+#: glance/api/v2/images.py:713
 msgid "Owner of the image"
 msgstr ""
 
-#: glance/api/v2/images.py:710
+#: glance/api/v2/images.py:718
 msgid "Size of image file in bytes (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:714
+#: glance/api/v2/images.py:722
 msgid "Virtual size of image in bytes (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:718
+#: glance/api/v2/images.py:726
 msgid "Format of the container"
 msgstr ""
 
-#: glance/api/v2/images.py:723
+#: glance/api/v2/images.py:731
 msgid "Format of the disk"
 msgstr ""
 
-#: glance/api/v2/images.py:728
+#: glance/api/v2/images.py:736
 msgid "Date and time of image registration (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:736
+#: glance/api/v2/images.py:744
 msgid "Date and time of the last image modification (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:742
+#: glance/api/v2/images.py:750
 msgid "List of strings related to the image"
 msgstr ""
 
-#: glance/api/v2/images.py:750
+#: glance/api/v2/images.py:758
 msgid "URL to access the image file kept in external store (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:755
+#: glance/api/v2/images.py:763
 msgid "Amount of ram (in MB) required to boot image."
 msgstr ""
 
-#: glance/api/v2/images.py:759
+#: glance/api/v2/images.py:767
 msgid "Amount of disk space (in GB) required to boot image."
 msgstr ""
 
-#: glance/api/v2/images.py:789
+#: glance/api/v2/images.py:797
 msgid "A set of URLs to access the image file kept in external store"
 msgstr ""
 
@@ -919,14 +930,6 @@ msgstr ""
 msgid "Suppressed respawn as %(serv)s was %(rsn)s."
 msgstr ""
 
-#: glance/cmd/manage.py:61
-msgid ""
-"DEPRECATED. TO BE REMOVED IN THE JUNO RELEASE. Whether or not to enforce "
-"that all DB tables have charset utf8. If your database tables do not have"
-" charset utf8 you will need to convert before this option is removed. "
-"This option is only relevant if your database engine is MySQL."
-msgstr ""
-
 #: glance/cmd/replicator.py:58
 #, python-format
 msgid ""
@@ -1033,71 +1036,79 @@ msgid ""
 "the eventlet based task executor to perform execution of Glance tasks."
 msgstr ""
 
-#: glance/common/config.py:76
+#: glance/common/config.py:77
+msgid ""
+"DEPRECATED. TO BE REMOVED IN THE JUNO RELEASE. Whether or not to enforce "
+"that all DB tables have charset utf8. If your database tables do not have"
+" charset utf8 you will need to convert before this option is removed. "
+"This option is only relevant if your database engine is MySQL."
+msgstr ""
+
+#: glance/common/config.py:86
 msgid ""
 "Whether to allow users to specify image properties beyond what the image "
 "schema provides"
 msgstr ""
 
-#: glance/common/config.py:79
+#: glance/common/config.py:89
 msgid ""
 "Maximum number of image members per image. Negative values evaluate to "
 "unlimited."
 msgstr ""
 
-#: glance/common/config.py:82
+#: glance/common/config.py:92
 msgid ""
 "Maximum number of properties allowed on an image. Negative values "
 "evaluate to unlimited."
 msgstr ""
 
-#: glance/common/config.py:85
+#: glance/common/config.py:95
 msgid ""
 "Maximum number of tags allowed on an image. Negative values evaluate to "
 "unlimited."
 msgstr ""
 
-#: glance/common/config.py:88
+#: glance/common/config.py:98
 msgid ""
 "Maximum number of locations allowed on an image. Negative values evaluate"
 " to unlimited."
 msgstr ""
 
-#: glance/common/config.py:91
+#: glance/common/config.py:101
 msgid "Python module path of data access API"
 msgstr ""
 
-#: glance/common/config.py:93
+#: glance/common/config.py:103
 msgid ""
 "Default value for the number of items returned by a request if not "
 "specified explicitly in the request"
 msgstr ""
 
-#: glance/common/config.py:96
+#: glance/common/config.py:106
 msgid "Maximum permissible number of items that could be returned by a request"
 msgstr ""
 
-#: glance/common/config.py:99
+#: glance/common/config.py:109
 msgid ""
 "Whether to include the backend image storage location in image "
 "properties. Revealing storage location can be a security risk, so use "
 "this setting with caution!"
 msgstr ""
 
-#: glance/common/config.py:104
+#: glance/common/config.py:114
 msgid ""
 "Whether to include the backend image locations in image properties. "
 "Revealing storage location can be a security risk, so use this setting "
 "with caution!  The overrides show_image_direct_url."
 msgstr ""
 
-#: glance/common/config.py:109
+#: glance/common/config.py:119
 msgid ""
 "Maximum size of image a user can upload in bytes. Defaults to "
 "1099511627776 bytes (1 TB)."
 msgstr ""
 
-#: glance/common/config.py:112
+#: glance/common/config.py:122
 msgid ""
 "Set a system wide quota for every user. This value is the total capacity "
 "that a user can use across all storage systems. A value of 0 means "
@@ -1108,42 +1119,42 @@ msgid ""
 "unit and units are case sensitive."
 msgstr ""
 
-#: glance/common/config.py:122
+#: glance/common/config.py:132
 msgid "Deploy the v1 OpenStack Images API."
 msgstr ""
 
-#: glance/common/config.py:124
+#: glance/common/config.py:134
 msgid "Deploy the v2 OpenStack Images API."
 msgstr ""
 
-#: glance/common/config.py:126
+#: glance/common/config.py:136
 msgid "Deploy the v1 OpenStack Registry API."
 msgstr ""
 
-#: glance/common/config.py:128
+#: glance/common/config.py:138
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr ""
 
-#: glance/common/config.py:130
+#: glance/common/config.py:140
 msgid "The hostname/IP of the pydev process listening for debug connections"
 msgstr ""
 
-#: glance/common/config.py:133
+#: glance/common/config.py:143
 msgid "The port on which a pydev process is listening for connections."
 msgstr ""
 
-#: glance/common/config.py:136
+#: glance/common/config.py:146
 msgid ""
 "Key used for encrypting sensitive metadata while talking to the registry "
 "or database."
 msgstr ""
 
-#: glance/common/config.py:194
+#: glance/common/config.py:205
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr ""
 
-#: glance/common/config.py:233
+#: glance/common/config.py:244
 #, python-format
 msgid ""
 "Unable to load %(app_name)s from configuration file %(conf_file)s.\n"
@@ -2094,7 +2105,7 @@ msgid ""
 "or 'deleted'"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:42
+#: glance/db/sqlalchemy/metadata.py:43
 msgid "Path to the directory where json metadata files are stored"
 msgstr ""
 
@@ -2394,7 +2405,7 @@ msgstr ""
 msgid "Invalid membership association: %s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:314 glance/registry/api/v1/members.py:332
+#: glance/registry/api/v1/members.py:314 glance/registry/api/v1/members.py:339
 msgid "Membership could not be found."
 msgstr ""
 
@@ -2438,27 +2449,39 @@ msgid ""
 msgstr ""
 
 #: glance/registry/client/__init__.py:46
-msgid "The administrators user name."
-msgstr ""
-
-#: glance/registry/client/__init__.py:48
-msgid "The administrators password."
+msgid ""
+"The administrators user name. If \"use_user_token\" is not in effect, "
+"then admin credentials can be specified."
 msgstr ""
 
 #: glance/registry/client/__init__.py:50
-msgid "The tenant name of the administrative user."
-msgstr ""
-
-#: glance/registry/client/__init__.py:52
-msgid "The URL to the keystone service."
+msgid ""
+"The administrators password. If \"use_user_token\" is not in effect, then"
+" admin credentials can be specified."
 msgstr ""
 
 #: glance/registry/client/__init__.py:54
-msgid "The strategy to use for authentication."
+msgid ""
+"The tenant name of the administrative user. If \"use_user_token\" is not "
+"in effect, then admin tenant name can be specified."
 msgstr ""
 
-#: glance/registry/client/__init__.py:56
-msgid "The region for the authentication service."
+#: glance/registry/client/__init__.py:58
+msgid ""
+"The URL to the keystone service. If \"use_user_token\" is not in effect "
+"and using keystone auth, then URL of keystone can be specified."
+msgstr ""
+
+#: glance/registry/client/__init__.py:63
+msgid ""
+"The strategy to use for authentication. If \"use_user_token\" is not in "
+"effect, then auth strategy can be specified."
+msgstr ""
+
+#: glance/registry/client/__init__.py:67
+msgid ""
+"The region for the authentication service. If \"use_user_token\" is not "
+"in effect and using keystone auth, then region name can be specified."
 msgstr ""
 
 #: glance/registry/client/v1/api.py:33
