@@ -64,7 +64,8 @@ IMAGE_META_HEADERS = ['x-image-meta-location', 'x-image-meta-size',
                       'x-image-meta-deleted_at', 'x-image-meta-min_ram',
                       'x-image-meta-min_disk', 'x-image-meta-owner',
                       'x-image-meta-store', 'x-image-meta-id',
-                      'x-image-meta-protected', 'x-image-meta-deleted']
+                      'x-image-meta-protected', 'x-image-meta-deleted',
+                      'x-image-meta-virtual_size']
 
 GLANCE_TEST_SOCKET_FD_STR = 'GLANCE_TEST_SOCKET_FD'
 
@@ -245,18 +246,22 @@ def get_image_meta_from_headers(response):
             result[field_name] = value or None
     result['properties'] = properties
 
-    for key in ('size', 'min_disk', 'min_ram'):
+    for key, nullable in [('size', False), ('min_disk', False),
+                          ('min_ram', False), ('virtual_size', True)]:
         if key in result:
             try:
                 result[key] = int(result[key])
             except ValueError:
-                extra = (_("Cannot convert image %(key)s '%(value)s' "
-                           "to an integer.")
-                         % {'key': key, 'value': result[key]})
-                raise exception.InvalidParameterValue(value=result[key],
-                                                      param=key,
-                                                      extra_msg=extra)
-            if result[key] < 0:
+                if nullable and result[key] == str(None):
+                    result[key] = None
+                else:
+                    extra = (_("Cannot convert image %(key)s '%(value)s' "
+                               "to an integer.")
+                             % {'key': key, 'value': result[key]})
+                    raise exception.InvalidParameterValue(value=result[key],
+                                                          param=key,
+                                                          extra_msg=extra)
+            if result[key] < 0 and result[key] is not None:
                 extra = (_("Image %(key)s must be >= 0 "
                            "('%(value)s' specified).")
                          % {'key': key, 'value': result[key]})
