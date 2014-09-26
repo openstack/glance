@@ -418,6 +418,23 @@ the filesystem storage backend will attempt to create this directory if it does
 not exist. Ensure that the user that ``glance-api`` runs under has write
 permissions to this directory.
 
+* ``filesystem_store_file_perm=PERM_MODE``
+
+Optional. Default: ``0``
+
+Can only be specified in configuration files.
+
+`This option is specific to the filesystem storage backend.`
+
+The required permission value, in octal representation, for the created image file.
+You can use this value to specify the user of the consuming service (such as Nova) as
+the only member of the group that owns the created files. To keep the default value,
+assign a permission value that is less than or equal to 0.  Note that the file owner
+must maintain read permission; if this value removes that permission an error message
+will be logged and the BadStoreConfiguration exception will be raised.  If the Glance
+service has insufficient privileges to change file access permissions, a file will still
+be saved, but a warning message will appear in the Glance log.
+
 Configuring the Filesystem Storage Backend with multiple stores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
