@@ -94,8 +94,8 @@ def validate_location_uri(location):
     # NOTE: file type uri is being avoided for security reasons,
     # see LP bug #942118.
     elif location.startswith("file:///"):
-        msg = ("File based imports are not allowed. Please use a non-local "
-               "source of image data.")
+        msg = _("File based imports are not allowed. Please use a non-local "
+                "source of image data.")
         # NOTE: raise Exception and let the encompassing block save
         # the error msg in the task.message.
         raise StandardError(msg)
@@ -103,16 +103,15 @@ def validate_location_uri(location):
     else:
         #TODO(nikhil): add other supported uris
         supported = ['http', ]
-        msg = ("The given uri is not valid. Please specify a "
-               "valid uri from the following list of supported uri "
-               "%(supported)s" % {'supported': supported})
+        msg = _("The given uri is not valid. Please specify a "
+                "valid uri from the following list of supported uri "
+                "%(supported)s") % {'supported': supported}
         raise urllib2.URLError(msg)
 
 
 def get_image_data_iter(uri):
-    """
-    The scripts are expected to support only over non-local locations of data.
-    Note the absence of file:// for security reasons, see LP bug #942118.
+    """The scripts are expected to support only over non-local locations of
+    data. Note the absence of file:// for security reasons, see LP bug #942118.
     If the above constraint is violated, task should fail.
     """
     # NOTE: Current script supports http location. Other locations

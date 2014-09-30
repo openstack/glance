@@ -99,10 +99,10 @@ def import_image(image_repo, image_factory, task_input, task_id, uri):
         new_image.virtual_size = original_image.virtual_size
         new_image.checksum = original_image.checksum
     else:
-        msg = _LE("The Image %(image_id)s object being created by this task "
-                  "%(task_id)s, is no longer in valid status for further "
-                  "processing." % {"image_id": new_image.image_id,
-                                   "task_id": task_id})
+        msg = _("The Image %(image_id)s object being created by this task "
+                "%(task_id)s, is no longer in valid status for further "
+                "processing.") % {"image_id": new_image.image_id,
+                                  "task_id": task_id}
         raise exception.Conflict(msg)
     image_repo.save(new_image)
 
@@ -120,9 +120,9 @@ def create_image(image_repo, image_factory, image_properties, task_id):
         try:
             properties[key] = image_properties.pop(key)
         except KeyError:
-            msg = _("Task ID %(task_id)s: Ignoring property %(k)s for setting "
-                    "base properties while creating "
-                    "Image.") % {'task_id': task_id, 'k': key}
+            msg = ("Task ID %(task_id)s: Ignoring property %(k)s for setting "
+                   "base properties while creating "
+                   "Image.") % {'task_id': task_id, 'k': key}
             LOG.debug(msg)
 
     # NOTE: get the rest of the properties and pass them as
