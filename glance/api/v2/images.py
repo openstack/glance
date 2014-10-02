@@ -166,14 +166,19 @@ class ImagesController(object):
         path = change['path']
         path_root = path[0]
         value = change['value']
+        json_schema_version = change.get('json_schema_version', 10)
         if path_root == 'locations':
             self._do_add_locations(image, path[1], value)
         else:
-            if (hasattr(image, path_root) or
-                    path_root in image.extra_properties):
+            if ((hasattr(image, path_root) or
+                    path_root in image.extra_properties)
+                    and json_schema_version == 4):
                 msg = _("Property %s already present.")
                 raise webob.exc.HTTPConflict(msg % path_root)
-            image.extra_properties[path_root] = value
+            if hasattr(image, path_root):
+                setattr(image, path_root, value)
+            else:
+                image.extra_properties[path_root] = value
 
     def _do_remove(self, req, image, change):
         path = change['path']
@@ -492,7 +497,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
             # NOTE(zhiyan): the 'path' is a list.
             self._validate_path(op, path)
-            change = {'op': op, 'path': path}
+            change = {'op': op, 'path': path,
+                      'json_schema_version': json_schema_version}
 
             if not op == 'remove':
                 change['value'] = self._get_change_value(raw_change, op)

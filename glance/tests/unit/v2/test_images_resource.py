@@ -1352,14 +1352,47 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.extra_properties['snitch'], 'golden')
         self.assertNotEqual(output.created_at, output.updated_at)
 
-    def test_update_add_base_property(self):
-        self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
+    def test_update_add_base_property_json_schema_version_4(self):
         request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'add', 'path': ['name'], 'value': 'fedora'}]
+        changes = [{
+            'json_schema_version': 4, 'op': 'add',
+            'path': ['name'], 'value': 'fedora'
+        }]
         self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
                           request, UUID1, changes)
 
-    def test_update_add_property_already_present(self):
+    def test_update_add_extra_property_json_schema_version_4(self):
+        self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
+        request = unit_test_utils.get_fake_request()
+        changes = [{
+            'json_schema_version': 4, 'op': 'add',
+            'path': ['foo'], 'value': 'baz'
+        }]
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
+                          request, UUID1, changes)
+
+    def test_update_add_base_property_json_schema_version_10(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [{
+            'json_schema_version': 10, 'op': 'add',
+            'path': ['name'], 'value': 'fedora'
+        }]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(output.name, 'fedora')
+
+    def test_update_add_extra_property_json_schema_version_10(self):
+        self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
+        request = unit_test_utils.get_fake_request()
+        changes = [{
+            'json_schema_version': 10, 'op': 'add',
+            'path': ['foo'], 'value': 'baz'
+        }]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(output.extra_properties, {'foo': 'baz'})
+
+    def test_update_add_property_already_present_json_schema_version_4(self):
         request = unit_test_utils.get_fake_request()
         properties = {'foo': 'bar'}
         self.db.image_update(None, UUID1, {'properties': properties})
@@ -1368,10 +1401,27 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.extra_properties['foo'], 'bar')
 
         changes = [
-            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+            {'json_schema_version': 4, 'op': 'add',
+             'path': ['foo'], 'value': 'baz'},
         ]
         self.assertRaises(webob.exc.HTTPConflict,
                           self.controller.update, request, UUID1, changes)
+
+    def test_update_add_property_already_present_json_schema_version_10(self):
+        request = unit_test_utils.get_fake_request()
+        properties = {'foo': 'bar'}
+        self.db.image_update(None, UUID1, {'properties': properties})
+
+        output = self.controller.show(request, UUID1)
+        self.assertEqual(output.extra_properties['foo'], 'bar')
+
+        changes = [
+            {'json_schema_version': 10, 'op': 'add',
+             'path': ['foo'], 'value': 'baz'},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(output.extra_properties, {'foo': 'baz'})
 
     def test_update_add_locations(self):
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
@@ -2101,18 +2151,28 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = jsonutils.dumps(body)
         output = self.deserializer.update(request)
         expected = {'changes': [
-            {'op': 'replace', 'path': ['name'], 'value': 'fedora'},
-            {'op': 'replace', 'path': ['tags'], 'value': ['king', 'kong']},
-            {'op': 'replace', 'path': ['foo'], 'value': 'bar'},
-            {'op': 'add', 'path': ['bebim'], 'value': 'bap'},
-            {'op': 'remove', 'path': ['sparks']},
-            {'op': 'add', 'path': ['locations', '-'],
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['name'], 'value': 'fedora'},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['tags'], 'value': ['king', 'kong']},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['foo'], 'value': 'bar'},
+            {'json_schema_version': 10, 'op': 'add',
+             'path': ['bebim'], 'value': 'bap'},
+            {'json_schema_version': 10, 'op': 'remove',
+             'path': ['sparks']},
+            {'json_schema_version': 10, 'op': 'add',
+             'path': ['locations', '-'],
              'value': {'url': 'scheme3://path3', 'metadata': {}}},
-            {'op': 'add', 'path': ['locations', '10'],
+            {'json_schema_version': 10, 'op': 'add',
+             'path': ['locations', '10'],
              'value': {'url': 'scheme4://path4', 'metadata': {}}},
-            {'op': 'remove', 'path': ['locations', '2']},
-            {'op': 'replace', 'path': ['locations'], 'value': []},
-            {'op': 'replace', 'path': ['locations'],
+            {'json_schema_version': 10, 'op': 'remove',
+             'path': ['locations', '2']},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['locations'], 'value': []},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['locations'],
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]}
@@ -2139,18 +2199,26 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = jsonutils.dumps(body)
         output = self.deserializer.update(request)
         expected = {'changes': [
-            {'op': 'replace', 'path': ['name'], 'value': 'fedora'},
-            {'op': 'replace', 'path': ['tags'], 'value': ['king', 'kong']},
-            {'op': 'replace', 'path': ['foo'], 'value': 'bar'},
-            {'op': 'add', 'path': ['bebim'], 'value': 'bap'},
-            {'op': 'remove', 'path': ['sparks']},
-            {'op': 'add', 'path': ['locations', '-'],
+            {'json_schema_version': 4, 'op': 'replace',
+             'path': ['name'], 'value': 'fedora'},
+            {'json_schema_version': 4, 'op': 'replace',
+             'path': ['tags'], 'value': ['king', 'kong']},
+            {'json_schema_version': 4, 'op': 'replace',
+             'path': ['foo'], 'value': 'bar'},
+            {'json_schema_version': 4, 'op': 'add',
+             'path': ['bebim'], 'value': 'bap'},
+            {'json_schema_version': 4, 'op': 'remove', 'path': ['sparks']},
+            {'json_schema_version': 4, 'op': 'add',
+             'path': ['locations', '-'],
              'value': {'url': 'scheme3://path3', 'metadata': {}}},
-            {'op': 'add', 'path': ['locations', '10'],
+            {'json_schema_version': 4, 'op': 'add',
+             'path': ['locations', '10'],
              'value': {'url': 'scheme4://path4', 'metadata': {}}},
-            {'op': 'remove', 'path': ['locations', '2']},
-            {'op': 'replace', 'path': ['locations'], 'value': []},
-            {'op': 'replace', 'path': ['locations'],
+            {'json_schema_version': 4, 'op': 'remove',
+             'path': ['locations', '2']},
+            {'json_schema_version': 4, 'op': 'replace',
+             'path': ['locations'], 'value': []},
+            {'json_schema_version': 4, 'op': 'replace', 'path': ['locations'],
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]},
         ]}
@@ -2176,17 +2244,27 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = jsonutils.dumps(body)
         output = self.deserializer.update(request)
         expected = {'changes': [
-            {'op': 'replace', 'path': ['id'], 'value': UUID1},
-            {'op': 'replace', 'path': ['name'], 'value': 'fedora'},
-            {'op': 'replace', 'path': ['visibility'], 'value': 'public'},
-            {'op': 'replace', 'path': ['tags'], 'value': ['king', 'kong']},
-            {'op': 'replace', 'path': ['protected'], 'value': True},
-            {'op': 'replace', 'path': ['container_format'], 'value': 'bare'},
-            {'op': 'replace', 'path': ['disk_format'], 'value': 'raw'},
-            {'op': 'replace', 'path': ['min_ram'], 'value': 128},
-            {'op': 'replace', 'path': ['min_disk'], 'value': 10},
-            {'op': 'replace', 'path': ['locations'], 'value': []},
-            {'op': 'replace', 'path': ['locations'],
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['id'], 'value': UUID1},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['name'], 'value': 'fedora'},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['visibility'], 'value': 'public'},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['tags'], 'value': ['king', 'kong']},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['protected'], 'value': True},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['container_format'], 'value': 'bare'},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['disk_format'], 'value': 'raw'},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['min_ram'], 'value': 128},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['min_disk'], 'value': 10},
+            {'json_schema_version': 10, 'op': 'replace',
+             'path': ['locations'], 'value': []},
+            {'json_schema_version': 10, 'op': 'replace', 'path': ['locations'],
              'value': [{'url': 'scheme5://path5', 'metadata': {}},
                        {'url': 'scheme6://path6', 'metadata': {}}]}
         ]}
@@ -2511,7 +2589,8 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         request.body = jsonutils.dumps(doc)
         output = self.deserializer.update(request)
         expected = {'changes': [
-            {'op': 'add', 'path': ['pants'], 'value': 'off'},
+            {'json_schema_version': 10, 'op': 'add',
+             'path': ['pants'], 'value': 'off'},
         ]}
         self.assertEqual(expected, output)
 
@@ -2575,7 +2654,10 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
         doc = [{'op': 'add', 'path': '/foo', 'value': 'bar'}]
         request.body = jsonutils.dumps(doc)
         output = self.deserializer.update(request)
-        change = {'op': 'add', 'path': ['foo'], 'value': 'bar'}
+        change = {
+            'json_schema_version': 10, 'op': 'add',
+            'path': ['foo'], 'value': 'bar'
+        }
         self.assertEqual(output, {'changes': [change]})
 
 
