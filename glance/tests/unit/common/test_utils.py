@@ -119,9 +119,19 @@ class TestUtils(test_utils.BaseTestCase):
 
     def test_get_meta_from_headers(self):
         resp = webob.Response()
-        resp.headers = {"x-image-meta-name": 'test'}
+        resp.headers = {"x-image-meta-name": 'test',
+                        'x-image-meta-virtual-size': 80}
         result = utils.get_image_meta_from_headers(resp)
-        self.assertEqual({'name': 'test', 'properties': {}}, result)
+        self.assertEqual({'name': 'test', 'properties': {},
+                          'virtual_size': 80}, result)
+
+    def test_get_meta_from_headers_none_virtual_size(self):
+        resp = webob.Response()
+        resp.headers = {"x-image-meta-name": 'test',
+                        'x-image-meta-virtual-size': 'None'}
+        result = utils.get_image_meta_from_headers(resp)
+        self.assertEqual({'name': 'test', 'properties': {},
+                          'virtual_size': None}, result)
 
     def test_get_meta_from_headers_bad_headers(self):
         resp = webob.Response()
