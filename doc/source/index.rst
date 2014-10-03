@@ -17,7 +17,11 @@
 Welcome to Glance's documentation!
 ==================================
 
-The Glance project provides services for discovering, registering, and
+The Glance project provides a service where users can upload and discover
+data assets that are meant to be used with other services. This currently
+includes images and metadata definitions.
+
+Glance image services include discovering, registering, and
 retrieving virtual machine images. Glance has a RESTful API that allows
 querying of VM image metadata as well as retrieval of the actual image.
 
@@ -50,6 +54,7 @@ Concepts
    statuses
    formats
    common-image-properties
+   metadefs-concepts
 
 Installing/Configuring Glance
 =============================
