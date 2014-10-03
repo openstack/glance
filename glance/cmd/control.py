@@ -159,10 +159,12 @@ def do_start(verb, pid_file, server, args):
 
     def launch(pid_file, conf_file=None, capture_output=False, await_time=0):
         args = [server]
-        msg = (_('%(verb)sing %(serv)s') % {'verb': verb, 'serv': server})
         if conf_file:
             args += ['--config-file', conf_file]
-            msg += 'with %s' % conf_file
+            msg = (_('%(verb)sing %(serv)s with %(conf)s') %
+                   {'verb': verb, 'serv': server, 'conf': conf_file})
+        else:
+            msg = (_('%(verb)sing %(serv)s') % {'verb': verb, 'serv': server})
         print(msg)
 
         close_stdio_on_exec()
