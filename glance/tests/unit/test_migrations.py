@@ -1370,3 +1370,46 @@ class TestSqliteMigrations(test_base.DbTestCase,
                            MigrationsMixin):
     def test_walk_versions(self):
         self._walk_versions(True, True)
+
+
+class ModelsMigrationSyncMixin(object):
+
+    def get_metadata(self):
+        return models.BASE.metadata
+
+    def get_engine(self):
+        return self.engine
+
+    def db_sync(self, engine):
+        migration.db_sync(engine=engine)
+
+    def include_object(self, object_, name, type_, reflected, compare_to):
+        # We need to exclude tables that aren't in models.py and table that
+        # contains migrate version
+
+        # TODO(ochuprykov): We need to include this tables back after merge of
+        # models.py and models_metadef.py
+        # (except 'migrate_version')
+        if name in ['migrate_version', 'metadef_objects', 'metadef_namespaces',
+                    'metadef_properties', 'metadef_resource_types',
+                    'metadef_namespace_resource_types'] and type_ == 'table':
+            return False
+        return True
+
+
+class ModelsMigrationsSyncMysql(ModelsMigrationSyncMixin,
+                                test_migrations.ModelsMigrationsSync,
+                                test_base.MySQLOpportunisticTestCase):
+    pass
+
+
+class ModelsMigrationsSyncPostgres(ModelsMigrationSyncMixin,
+                                   test_migrations.ModelsMigrationsSync,
+                                   test_base.PostgreSQLOpportunisticTestCase):
+    pass
+
+
+class ModelsMigrationsSyncSQLite(ModelsMigrationSyncMixin,
+                                 test_migrations.ModelsMigrationsSync,
+                                 test_base.DbTestCase):
+    pass
