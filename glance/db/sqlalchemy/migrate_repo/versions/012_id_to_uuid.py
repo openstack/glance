@@ -456,9 +456,23 @@ def _downgrade_other(t_images, t_image_members, t_image_properties, dialect):
 
     _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
 
-    t_images.c.id.alter(sqlalchemy.Integer(), primary_key=True)
-    t_image_members.c.image_id.alter(sqlalchemy.Integer())
-    t_image_properties.c.image_id.alter(sqlalchemy.Integer())
+    t_images.c.id.alter(primary_key=True)
+    #we have to use raw sql for postgresql as we have errors
+    #if we use alter type on sqlalchemy
+    if dialect == 'postgresql':
+        t_images.bind.execute('''ALTER TABLE images
+                                 ALTER COLUMN id TYPE INTEGER
+                                 USING (id::INTEGER)''')
+        t_images.bind.execute('''ALTER TABLE image_members
+                                 ALTER COLUMN image_id TYPE INTEGER
+                                 USING (image_id::INTEGER)''')
+        t_images.bind.execute('''ALTER TABLE image_properties
+                                 ALTER COLUMN image_id TYPE INTEGER
+                                 USING (image_id::INTEGER)''')
+    else:
+        t_images.c.id.alter(sqlalchemy.Integer())
+        t_image_members.c.image_id.alter(sqlalchemy.Integer())
+        t_image_properties.c.image_id.alter(sqlalchemy.Integer())
 
     for fk in foreign_keys:
         fk.create()
