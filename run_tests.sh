@@ -23,7 +23,7 @@ function usage {
   echo "  --tools-path <dir>          Location of the tools directory"
   echo "                               Default: \$(pwd)"
   echo "  --concurrency <concurrency> How many processes to use when running the tests. A value of 0 autodetects concurrency from your CPU count"
-  echo "                               Default: 1"
+  echo "                               Default: 0"
   echo ""
   echo "Note: with no options specified, the script will try to run the tests in a virtual environment,"
   echo "      If no virtualenv is found, the script will ask if you would like to create one.  If you "
@@ -85,7 +85,7 @@ no_pep8=0
 coverage=0
 debug=0
 update=0
-concurrency=1
+concurrency=0
 
 LANG=en_US.UTF-8
 LANGUAGE=en_US:en
