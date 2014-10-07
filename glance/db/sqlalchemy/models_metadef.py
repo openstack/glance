@@ -68,7 +68,7 @@ class MetadefNamespace(BASE_DICT, GlanceMetadefBase):
                       Index('ix_metadef_namespaces_owner', 'owner'))
 
     id = Column(Integer, primary_key=True, nullable=False)
-    namespace = Column(String(80))
+    namespace = Column(String(80), nullable=False)
     display_name = Column(String(80))
     description = Column(Text())
     visibility = Column(String(32))
