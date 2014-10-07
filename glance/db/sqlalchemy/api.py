@@ -20,6 +20,9 @@
 
 """Defines interface for DB access."""
 
+import functools
+import time
+
 from oslo.config import cfg
 from six.moves import xrange
 import sqlalchemy
@@ -49,6 +52,24 @@ CONF.import_opt('connection', 'glance.openstack.common.db.options',
 
 
 _FACADE = None
+
+
+def _retry_on_deadlock(f):
+    """Decorator to retry a DB API call if Deadlock was received."""
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        while True:
+            try:
+                return f(*args, **kwargs)
+            except db_exception.DBDeadlock:
+                LOG.warn(_("Deadlock detected when running "
+                           "'%(func_name)s': Retrying..."),
+                         dict(func_name=f.__name__))
+                # Retry!
+                time.sleep(0.5)
+                continue
+    functools.update_wrapper(wrapped, f)
+    return wrapped
 
 
 def _create_facade_lazily():
@@ -107,6 +128,7 @@ def image_update(context, image_id, values, purge_props=False,
                          from_state=from_state)
 
 
+@_retry_on_deadlock
 def image_destroy(context, image_id):
     """Destroy the image or raise if it does not exist."""
     session = get_session()

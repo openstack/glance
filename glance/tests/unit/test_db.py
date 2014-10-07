@@ -23,6 +23,7 @@ from glance.common import crypt
 from glance.common import exception
 import glance.context
 import glance.db
+from glance.openstack.common.db import exception as db_exception
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
@@ -679,3 +680,31 @@ class TestTaskRepo(test_utils.BaseTestCase):
         self.assertRaises(exception.NotFound,
                           self.task_repo.get_task_and_details,
                           task.task_id)
+
+
+class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
+
+    def test_raise_deadlock(self):
+
+        class TestException(Exception):
+            pass
+
+        self.attempts = 3
+
+        def _mock_get_session():
+            def _raise_exceptions():
+                self.attempts -= 1
+                if self.attempts <= 0:
+                    raise TestException("Exit")
+                raise db_exception.DBDeadlock("Fake Exception")
+            return _raise_exceptions
+
+        # Test retry on image destroy if db deadlock occurs
+        with mock.patch.object(glance.db.sqlalchemy.api,
+                               'get_session') as sess:
+            sess.side_effect = _mock_get_session()
+
+            try:
+                glance.db.sqlalchemy.api.image_destroy(None, 'fake-id')
+            except TestException:
+                self.assertEqual(sess.call_count, 3)
