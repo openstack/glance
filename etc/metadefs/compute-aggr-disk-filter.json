@@ -1,0 +1,21 @@
+{
+    "namespace": "OS::Compute::AggregateDiskFilter",
+    "display_name": "Disk Allocation per Host",
+    "description": "Properties related to the Nova scheduler filter AggregateDiskFilter. Filters aggregate hosts based on the available disk space compared to the requested disk space. Hosts in the aggregate with not enough usable disk will be filtered out. The filter must be enabled in the Nova scheduler to use these properties.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Aggregate"
+        }
+    ],
+    "properties": {
+        "disk_allocation_ratio": {
+            "title": "Disk Subscription Ratio",
+            "description": "Allows the host to be under and over subscribed for the amount of disk space requested for an instance. A ratio greater than 1.0 allows for over subscription (hosts may have less usable disk space than requested). A ratio less than 1.0 allows for under subscription.",
+            "type": "number",
+            "readonly": false
+        }
+    },
+    "objects": []
+}
