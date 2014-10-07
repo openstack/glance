@@ -134,6 +134,8 @@ def image_update(context, image_id, values, purge_props=False,
                          from_state=from_state)
 
 
+@retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
+       stop_max_attempt_number=50)
 def image_destroy(context, image_id):
     """Destroy the image or raise if it does not exist."""
     session = get_session()
