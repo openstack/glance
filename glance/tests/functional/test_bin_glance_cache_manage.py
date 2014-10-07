@@ -17,10 +17,10 @@
 
 import datetime
 import hashlib
-import httplib2
 import os
 import sys
 
+import httplib2
 from six.moves import xrange
 
 from glance.openstack.common import jsonutils

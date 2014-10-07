@@ -154,8 +154,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         for key in cls._disallowed_properties:
             if key in image:
                 msg = _("Attribute '%s' is read-only.") % key
-                raise webob.exc.HTTPForbidden(explanation=
-                                              utils.exception_to_str(msg))
+                raise webob.exc.HTTPForbidden(
+                    explanation=utils.exception_to_str(msg))
 
     def create(self, request):
         body = self._get_request_body(request)

@@ -160,7 +160,7 @@ class DriverTests(object):
         # Image IDs aren't predictable, but they should be populated
         self.assertTrue(uuid.UUID(image['id']))
 
-        #NOTE(bcwaldon): the tags attribute should not be returned as a part
+        # NOTE(bcwaldon): the tags attribute should not be returned as a part
         # of a core image entity
         self.assertFalse('tags' in image)
 
@@ -435,7 +435,7 @@ class DriverTests(object):
         """Specify a deleted image as a marker if showing deleted images."""
         self.db_api.image_destroy(self.adm_context, UUID3)
         images = self.db_api.image_get_all(self.adm_context, marker=UUID3)
-        #NOTE(bcwaldon): an admin should see all images (deleted or not)
+        # NOTE(bcwaldon): an admin should see all images (deleted or not)
         self.assertEqual(2, len(images))
 
     def test_image_get_all_marker_deleted_showing_deleted(self):
@@ -894,7 +894,8 @@ class DriverTests(object):
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
                                          'is_public': False,
@@ -946,7 +947,8 @@ class DriverTests(object):
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         image = self.db_api.image_create(ctxt1, {'id': UUIDX,
                                                  'status': 'queued',
                                                  'is_public': False,
@@ -976,7 +978,7 @@ class DriverTests(object):
         self.db_api.image_tag_set_all(self.context, UUID1, ['ping', 'pong'])
 
         tags = self.db_api.image_tag_get_all(self.context, UUID1)
-        #NOTE(bcwaldon): tag ordering should match exactly what was provided
+        # NOTE(bcwaldon): tag ordering should match exactly what was provided
         self.assertEqual(['ping', 'pong'], tags)
 
     def test_image_tag_get_all(self):
@@ -1699,7 +1701,7 @@ class TestVisibility(test_utils.BaseTestCase):
                     'is_public': is_public,
                 }
                 fixtures.append(fixture)
-        return [build_image_fixture(**fixture) for fixture in fixtures]
+        return [build_image_fixture(**f) for f in fixtures]
 
     def create_images(self, images):
         for fixture in images:

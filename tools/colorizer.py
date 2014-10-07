@@ -42,18 +42,17 @@
 """Display a subunit stream through a colorized unittest test runner."""
 
 import heapq
-import subunit
 import sys
 import unittest
 
+import subunit
 import testtools
 
 
 class _AnsiColorizer(object):
-    """
-    A colorizer is an object that loosely wraps around a stream, allowing
-    callers to write text to the stream in a particular color.
+    """A colorizer is an object that loosely wraps around a stream.
 
+    That allows callers to write text to the stream in a particular color.
     Colorizer classes must implement C{supported()} and C{write(text, color)}.
     """
     _colors = dict(black=30, red=31, green=32, yellow=33,
@@ -64,9 +63,9 @@ class _AnsiColorizer(object):
 
     @staticmethod
     def supported(stream=sys.stdout):
-        """
-        A method that returns True if the current platform supports
-        coloring terminal output using this method. Returns False otherwise.
+        """Method that checks if the current terminal supports coloring.
+
+        Returns True or False.
         """
         if not stream.isatty():
             return False  # auto color only on TTYs
@@ -86,21 +85,19 @@ class _AnsiColorizer(object):
                 return False
 
     def write(self, text, color):
-        """
-        Write the given text to the stream in the given color.
+        """Write the given text to the stream in the given color.
 
         @param text: Text to be written to the stream.
 
         @param color: A string label for a color. e.g. 'red', 'white'.
+
         """
         color = self._colors[color]
         self.stream.write('\x1b[%s;1m%s\x1b[0m' % (color, text))
 
 
 class _Win32Colorizer(object):
-    """
-    See _AnsiColorizer docstring.
-    """
+    """See _AnsiColorizer docstring."""
     def __init__(self, stream):
         import win32console
         red, green, blue, bold = (win32console.FOREGROUND_RED,
@@ -148,9 +145,7 @@ class _Win32Colorizer(object):
 
 
 class _NullColorizer(object):
-    """
-    See _AnsiColorizer docstring.
-    """
+    """See _AnsiColorizer docstring."""
     def __init__(self, stream):
         self.stream = stream
 

@@ -26,9 +26,9 @@ LOG = logging.getLogger(__name__)
 
 def run_task(task_id, task_type, context,
              task_repo=None, image_repo=None, image_factory=None):
-    #TODO(nikhil): if task_repo is None get new task repo
-    #TODO(nikhil): if image_repo is None get new image repo
-    #TODO(nikhil): if image_factory is None get new image factory
+    # TODO(nikhil): if task_repo is None get new task repo
+    # TODO(nikhil): if image_repo is None get new image repo
+    # TODO(nikhil): if image_factory is None get new image factory
     LOG.info(_LI("Loading known task scripts for task_id %(task_id)s "
                  "of type %(task_type)s"), {'task_id': task_id,
                                             'task_type': task_type})

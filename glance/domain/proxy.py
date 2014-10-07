@@ -221,7 +221,7 @@ class TaskFactory(object):
         return self.task_helper.proxy(t)
 
 
-#Metadef Namespace classes
+# Metadef Namespace classes
 class MetadefNamespaceRepo(object):
     def __init__(self, base,
                  namespace_proxy_class=None, namespace_proxy_kwargs=None):
@@ -294,7 +294,7 @@ class MetadefNamespaceFactory(object):
         return self.meta_namespace_helper.proxy(t)
 
 
-#Metadef object classes
+# Metadef object classes
 class MetadefObjectRepo(object):
     def __init__(self, base,
                  object_proxy_class=None, object_proxy_kwargs=None):
@@ -355,7 +355,7 @@ class MetadefObjectFactory(object):
         return self.meta_object_helper.proxy(t)
 
 
-#Metadef ResourceType classes
+# Metadef ResourceType classes
 class MetadefResourceTypeRepo(object):
     def __init__(self, base, resource_type_proxy_class=None,
                  resource_type_proxy_kwargs=None):
@@ -406,7 +406,7 @@ class MetadefResourceTypeFactory(object):
         return self.resource_type_helper.proxy(t)
 
 
-#Metadef namespace property classes
+# Metadef namespace property classes
 class MetadefPropertyRepo(object):
     def __init__(self, base,
                  property_proxy_class=None, property_proxy_kwargs=None):

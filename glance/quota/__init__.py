@@ -14,10 +14,9 @@
 
 import copy
 
-import six
-
 import glance_store as store
 from oslo.config import cfg
+import six
 
 import glance.api.common
 import glance.common.exception as exception

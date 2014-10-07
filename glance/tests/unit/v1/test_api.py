@@ -38,7 +38,6 @@ from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
-
 import glance.registry.client.v1.api as registry
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
@@ -1406,20 +1405,19 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
-        req.headers['Content-Type'] = \
-            'application/octet-stream'
+        req.headers['Content-Type'] = 'application/octet-stream'
         req.body = "chunk00000remainder"
 
-        with mock.patch.object(upload_utils, 'initiate_deletion') as \
-                mock_init_del:
+        with mock.patch.object(
+                upload_utils, 'initiate_deletion') as mock_init_del:
             mock_init_del.side_effect = mock_initiate_deletion
-            with mock.patch.object(registry, 'get_image_metadata') as \
-                    mock_get_meta:
+            with mock.patch.object(
+                    registry, 'get_image_metadata') as mock_get_meta:
                 mock_get_meta.side_effect = mock_get_image_metadata
                 with mock.patch.object(db_api, '_image_get') as mock_db_get:
                     mock_db_get.side_effect = mock_image_get
-                    with mock.patch.object(db_api, '_image_update') as \
-                            mock_db_update:
+                    with mock.patch.object(
+                            db_api, '_image_update') as mock_db_update:
                         mock_db_update.side_effect = mock_image_update
 
                         # Expect a 409 Conflict.
@@ -3354,7 +3352,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
 
         self.serializer.show(response, self.FIXTURE)
 
-        #just make sure the app_iter is called
+        # just make sure the app_iter is called
         for chunk in response.app_iter:
             pass
 
@@ -3412,7 +3410,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
 
         self.stubs.Set(self.serializer.notifier, 'error', fake_error)
 
-        #expected and actually sent bytes differ
+        # expected and actually sent bytes differ
         glance.api.common.image_send_notification(17, 19, image_meta, req,
                                                   self.serializer.notifier)
 

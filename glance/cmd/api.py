@@ -21,9 +21,10 @@
 Glance API Server
 """
 
-import eventlet
 import os
 import sys
+
+import eventlet
 
 from glance.common import utils
 

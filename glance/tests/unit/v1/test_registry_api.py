@@ -32,7 +32,6 @@ from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
-
 from glance.registry.api import v1 as rserver
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
@@ -1287,8 +1286,8 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.log_image_id = False
 
         def fake_log_info(msg):
-            if 'Successfully created image ' \
-               '0564c64c-3545-4e34-abfb-9d18e5f2f2f9' in msg:
+            if ('Successfully created image '
+               '0564c64c-3545-4e34-abfb-9d18e5f2f2f9' in msg):
                 self.log_image_id = True
         self.stubs.Set(rserver.images.LOG, 'info', fake_log_info)
 
@@ -1940,7 +1939,8 @@ class TestSharability(test_utils.BaseTestCase):
                                        auth_tok='user:%s:admin' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
                                             'is_public': False,
@@ -1955,7 +1955,8 @@ class TestSharability(test_utils.BaseTestCase):
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
                                             'is_public': False,
@@ -1974,7 +1975,8 @@ class TestSharability(test_utils.BaseTestCase):
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
                                             'is_public': False,
@@ -1993,7 +1995,8 @@ class TestSharability(test_utils.BaseTestCase):
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
                                             'is_public': False,
@@ -2018,7 +2021,8 @@ class TestSharability(test_utils.BaseTestCase):
                                        auth_tok='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
                                             'is_public': False,
@@ -2042,7 +2046,8 @@ class TestSharability(test_utils.BaseTestCase):
                                        auth_tok='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         UUIDX = str(uuid.uuid4())
-        #we need private image and context.owner should not match image owner
+        # We need private image and context.owner should not match image
+        # owner
         image = db_api.image_create(ctxt1, {'id': UUIDX,
                                             'status': 'queued',
                                             'is_public': False,

@@ -444,7 +444,7 @@ def replication_load(options, args):
                         updated.append(meta['id'])
                     except ImageAlreadyPresentException:
                         LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE)
-                                  % image_uuid)
+                                  % image_uuid)  # noqa
 
     return updated
 
@@ -515,7 +515,7 @@ def replication_livecopy(options, args):
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
                 except ImageAlreadyPresentException:
-                    LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE) % image['id'])
+                    LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE) % image['id'])  # noqa
 
     return updated
 
@@ -736,10 +736,10 @@ def main():
     try:
         command(options, args)
     except TypeError as e:
-        LOG.error(_LE(command.__doc__) % {'prog': command.__name__})
+        LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
         sys.exit("ERROR: %s" % e)
     except ValueError as e:
-        LOG.error(_LE(command.__doc__) % {'prog': command.__name__})
+        LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
         sys.exit("ERROR: %s" % e)
 
 

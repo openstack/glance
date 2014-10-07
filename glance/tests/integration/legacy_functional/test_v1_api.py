@@ -14,6 +14,7 @@ import datetime
 import hashlib
 import os
 import tempfile
+
 import testtools
 
 from glance.openstack.common import jsonutils

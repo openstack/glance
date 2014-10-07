@@ -20,13 +20,13 @@ Cache driver that uses SQLite to store information about cached images
 from __future__ import absolute_import
 from contextlib import contextmanager
 import os
+import sqlite3
 import stat
 import time
 
 from eventlet import sleep
 from eventlet import timeout
 from oslo.config import cfg
-import sqlite3
 
 from glance.common import exception
 from glance.image_cache.drivers import base
@@ -473,7 +473,7 @@ class Driver(base.Driver):
             items.append((mtime, os.path.basename(path)))
 
         items.sort()
-        return [image_id for (mtime, image_id) in items]
+        return [image_id for (modtime, image_id) in items]
 
     def get_cache_files(self, basepath):
         """

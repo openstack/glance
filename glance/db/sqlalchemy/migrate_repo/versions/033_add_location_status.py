@@ -35,11 +35,10 @@ def upgrade(migrate_engine):
     mapping = {'active': 'active', 'pending_delete': 'pending_delete',
                'deleted': 'deleted', 'killed': 'deleted'}
     for src, dst in six.iteritems(mapping):
-        subq = sqlalchemy.sql.select([images_table.c.id])\
-            .where(images_table.c.status == src)
-        image_locations_table.update(values={'status': dst})\
-            .where(image_locations_table.c.image_id.in_(subq))\
-            .execute()
+        subq = sqlalchemy.sql.select([images_table.c.id]).where(
+            images_table.c.status == src)
+        image_locations_table.update(values={'status': dst}).where(
+            image_locations_table.c.image_id.in_(subq)).execute()
 
 
 def downgrade(migrate_engine):

@@ -237,7 +237,7 @@ def _upgrade_db2(t_images, t_image_members, t_image_properties):
 
 
 def _add_db2_constraints():
-    #Create the foreign keys
+    # Create the foreign keys
     sql_commands = [
         """ALTER TABLE image_members ADD CONSTRAINT member_image_id
             FOREIGN KEY (image_id)
@@ -251,7 +251,7 @@ def _add_db2_constraints():
 
 
 def _remove_db2_constraints():
-    #remove the foreign keys constraints
+    # Remove the foreign keys constraints
     sql_commands = [
         """ALTER TABLE image_members DROP CONSTRAINT member_image_id;""",
         """ALTER TABLE image_properties DROP CONSTRAINT property_image_id;"""
@@ -457,8 +457,8 @@ def _downgrade_other(t_images, t_image_members, t_image_properties, dialect):
     _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties)
 
     t_images.c.id.alter(primary_key=True)
-    #we have to use raw sql for postgresql as we have errors
-    #if we use alter type on sqlalchemy
+    # we have to use raw sql for postgresql as we have errors
+    # if we use alter type on sqlalchemy
     if dialect == 'postgresql':
         t_images.bind.execute('''ALTER TABLE images
                                  ALTER COLUMN id TYPE INTEGER
@@ -536,23 +536,22 @@ def _update_all_ids_to_uuids(t_images, t_image_members, t_image_properties):
         old_id = image["id"]
         new_id = str(uuid.uuid4())
 
-        t_images.update().\
-            where(t_images.c.id == old_id).\
-            values(id=new_id).execute()
+        t_images.update().where(
+            t_images.c.id == old_id).values(id=new_id).execute()
 
-        t_image_members.update().\
-            where(t_image_members.c.image_id == old_id).\
-            values(image_id=new_id).execute()
+        t_image_members.update().where(
+            t_image_members.c.image_id == old_id).values(
+                image_id=new_id).execute()
 
-        t_image_properties.update().\
-            where(t_image_properties.c.image_id == old_id).\
-            values(image_id=new_id).execute()
+        t_image_properties.update().where(
+            t_image_properties.c.image_id == old_id).values(
+                image_id=new_id).execute()
 
-        t_image_properties.update().\
-            where(and_(or_(t_image_properties.c.name == 'kernel_id',
-                           t_image_properties.c.name == 'ramdisk_id'),
-                       t_image_properties.c.value == old_id)).\
-            values(value=new_id).execute()
+        t_image_properties.update().where(
+            and_(or_(t_image_properties.c.name == 'kernel_id',
+                     t_image_properties.c.name == 'ramdisk_id'),
+                 t_image_properties.c.value == old_id)).values(
+                     value=new_id).execute()
 
 
 def _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties):
@@ -563,22 +562,22 @@ def _update_all_uuids_to_ids(t_images, t_image_members, t_image_properties):
     for image in images:
         old_id = image["id"]
 
-        t_images.update().\
-            where(t_images.c.id == old_id).\
-            values(id=str(new_id)).execute()
+        t_images.update().where(
+            t_images.c.id == old_id).values(
+                id=str(new_id)).execute()
 
-        t_image_members.update().\
-            where(t_image_members.c.image_id == old_id).\
-            values(image_id=str(new_id)).execute()
+        t_image_members.update().where(
+            t_image_members.c.image_id == old_id).values(
+                image_id=str(new_id)).execute()
 
-        t_image_properties.update().\
-            where(t_image_properties.c.image_id == old_id).\
-            values(image_id=str(new_id)).execute()
+        t_image_properties.update().where(
+            t_image_properties.c.image_id == old_id).values(
+                image_id=str(new_id)).execute()
 
-        t_image_properties.update().\
-            where(and_(or_(t_image_properties.c.name == 'kernel_id',
-                           t_image_properties.c.name == 'ramdisk_id'),
-                       t_image_properties.c.value == old_id)).\
-            values(value=str(new_id)).execute()
+        t_image_properties.update().where(
+            and_(or_(t_image_properties.c.name == 'kernel_id',
+                     t_image_properties.c.name == 'ramdisk_id'),
+                 t_image_properties.c.value == old_id)).values(
+                     value=str(new_id)).execute()
 
         new_id += 1

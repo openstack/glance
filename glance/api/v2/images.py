@@ -211,7 +211,7 @@ class ImagesController(object):
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.InUseByStore as e:
             msg = (_LI("Image %s could not be deleted "
-                       "because it is in use: %s") % (image_id, e.msg))
+                       "because it is in use: %s") % (image_id, e.msg))  # noqa
             LOG.info(msg)
             raise webob.exc.HTTPConflict(explanation=msg)
 
@@ -246,8 +246,8 @@ class ImagesController(object):
             except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
                 raise webob.exc.HTTPBadRequest(explanation=bse.msg)
             except ValueError as ve:    # update image status failed.
-                raise webob.exc.HTTPBadRequest(explanation=
-                                               utils.exception_to_str(ve))
+                raise webob.exc.HTTPBadRequest(
+                    explanation=utils.exception_to_str(ve))
 
     def _do_add_locations(self, image, path_pos, value):
         pos = self._get_locations_op_pos(path_pos,
@@ -262,8 +262,8 @@ class ImagesController(object):
         except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
             raise webob.exc.HTTPBadRequest(explanation=bse.msg)
         except ValueError as ve:    # update image status failed.
-            raise webob.exc.HTTPBadRequest(explanation=
-                                           utils.exception_to_str(ve))
+            raise webob.exc.HTTPBadRequest(
+                explanation=utils.exception_to_str(ve))
 
     def _do_remove_locations(self, image, path_pos):
         pos = self._get_locations_op_pos(path_pos,
@@ -276,8 +276,8 @@ class ImagesController(object):
             # from the backend store.
             image.locations.pop(pos)
         except Exception as e:
-            raise webob.exc.HTTPInternalServerError(explanation=
-                                                    utils.exception_to_str(e))
+            raise webob.exc.HTTPInternalServerError(
+                explanation=utils.exception_to_str(e))
         if (len(image.locations) == 0) and (image.status == 'active'):
             image.status = 'queued'
 
@@ -312,8 +312,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         for key in cls._disallowed_properties:
             if key in image:
                 msg = _("Attribute '%s' is read-only.") % key
-                raise webob.exc.HTTPForbidden(explanation=
-                                              utils.exception_to_str(msg))
+                raise webob.exc.HTTPForbidden(
+                    explanation=utils.exception_to_str(msg))
 
     def create(self, request):
         body = self._get_request_body(request)
@@ -741,15 +741,15 @@ def get_base_properties():
             'type': 'string',
             'description': _('Date and time of image registration'
                              ' (READ-ONLY)'),
-            #TODO(bcwaldon): our jsonschema library doesn't seem to like the
+            # TODO(bcwaldon): our jsonschema library doesn't seem to like the
             # format attribute, figure out why!
-            #'format': 'date-time',
+            # 'format': 'date-time',
         },
         'updated_at': {
             'type': 'string',
             'description': _('Date and time of the last image modification'
                              ' (READ-ONLY)'),
-            #'format': 'date-time',
+            # 'format': 'date-time',
         },
         'tags': {
             'type': 'array',

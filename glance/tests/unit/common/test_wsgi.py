@@ -15,12 +15,12 @@
 #    under the License.
 
 import datetime
+import gettext
 import socket
 
 from babel import localedata
 import eventlet.patcher
 import fixtures
-import gettext
 import mock
 import routes
 import six

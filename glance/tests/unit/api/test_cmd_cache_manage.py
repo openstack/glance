@@ -90,7 +90,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_queue_image_not_forced_not_confirmed(self,
                                                   mock_client, mock_confirm):
-        #options.forced set to False and queue confirmation set to False.
+        # options.forced set to False and queue confirmation set to False.
 
         mock_confirm.return_value = False
         mock_options = mock.Mock()
@@ -102,7 +102,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_queue_image_not_forced_confirmed(self, mock_client, mock_confirm):
-        #options.forced set to False and queue confirmation set to True.
+        # options.forced set to False and queue confirmation set to True.
 
         mock_confirm.return_value = True
         mock_options = mock.Mock()
@@ -127,7 +127,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     def test_delete_cached_image_not_forced_not_confirmed(self,
                                                           mock_client,
                                                           mock_confirm):
-        #options.forced set to False and delete confirmation set to False.
+        # options.forced set to False and delete confirmation set to False.
 
         mock_confirm.return_value = False
         mock_options = mock.Mock()
@@ -141,7 +141,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_cached_image_not_forced_confirmed(self, mock_client,
                                                       mock_confirm):
-        #options.forced set to False and delete confirmation set to True.
+        # options.forced set to False and delete confirmation set to True.
 
         mock_confirm.return_value = True
         mock_options = mock.Mock()
@@ -163,7 +163,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     def test_delete_cached_images_not_forced_not_confirmed(self,
                                                            mock_client,
                                                            mock_confirm):
-        #options.forced set to False and delete confirmation set to False.
+        # options.forced set to False and delete confirmation set to False.
 
         mock_confirm.return_value = False
         mock_options = mock.Mock()
@@ -177,7 +177,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_cached_images_not_forced_confirmed(self, mock_client,
                                                        mock_confirm):
-        #options.forced set to False and delete confirmation set to True.
+        # options.forced set to False and delete confirmation set to True.
 
         mock_confirm.return_value = True
         mock_options = mock.Mock()
@@ -203,7 +203,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     def test_delete_queued_image_not_forced_not_confirmed(self,
                                                           mock_client,
                                                           mock_confirm):
-        #options.forced set to False and delete confirmation set to False.
+        # options.forced set to False and delete confirmation set to False.
 
         mock_confirm.return_value = False
         mock_options = mock.Mock()
@@ -217,7 +217,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_queued_image_not_forced_confirmed(self, mock_client,
                                                       mock_confirm):
-        #options.forced set to False and delete confirmation set to True.
+        # options.forced set to False and delete confirmation set to True.
 
         mock_confirm.return_value = True
         mock_options = mock.Mock()
@@ -239,7 +239,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     def test_delete_queued_images_not_forced_not_confirmed(self,
                                                            mock_client,
                                                            mock_confirm):
-        #options.forced set to False and delete confirmation set to False.
+        # options.forced set to False and delete confirmation set to False.
 
         mock_confirm.return_value = False
         mock_options = mock.Mock()
@@ -253,7 +253,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_queued_images_not_forced_confirmed(self, mock_client,
                                                        mock_confirm):
-        #options.forced set to False and delete confirmation set to True.
+        # options.forced set to False and delete confirmation set to True.
         mock_confirm.return_value = True
         mock_options = mock.Mock()
         mock_options.force = False

@@ -738,7 +738,7 @@ class TestImages(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
-        #try to populate it with oversized data
+        # try to populate it with oversized data
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
 
@@ -887,7 +887,7 @@ class TestImages(functional.FunctionalTest):
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
-        ## Create an image for role member with extra props
+        # Create an image for role member with extra props
         # Raises 403 since user is not allowed to set 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
@@ -899,7 +899,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(403, response.status_code)
 
-        ## Create an image for role member without 'foo'
+        # Create an image for role member without 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'member'})
@@ -1037,7 +1037,7 @@ class TestImages(functional.FunctionalTest):
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
-        ## Create an image for role member with extra props
+        # Create an image for role member with extra props
         # Raises 403 since user is not allowed to set 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
@@ -1049,7 +1049,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(403, response.status_code)
 
-        ## Create an image for role member without 'foo'
+        # Create an image for role member without 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'member'})

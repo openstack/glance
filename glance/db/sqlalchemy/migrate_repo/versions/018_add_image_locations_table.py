@@ -21,7 +21,7 @@ from glance.db.sqlalchemy.migrate_repo import schema
 def upgrade(migrate_engine):
     meta = sqlalchemy.schema.MetaData(migrate_engine)
 
-    #NOTE(bcwaldon): load the images table for the ForeignKey below
+    # NOTE(bcwaldon): load the images table for the ForeignKey below
     sqlalchemy.Table('images', meta, autoload=True)
 
     image_locations_table = sqlalchemy.Table(

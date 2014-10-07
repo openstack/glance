@@ -238,7 +238,7 @@ class TaskInfo(BASE, models.ModelBase):
 
     task = relationship(Task, backref=backref('info', uselist=False))
 
-    #NOTE(nikhil): input and result are stored as text in the DB.
+    # NOTE(nikhil): input and result are stored as text in the DB.
     # SQLAlchemy marshals the data to/from JSON using custom type
     # JSONEncodedDict. It uses simplejson underneath.
     input = Column(JSONEncodedDict())

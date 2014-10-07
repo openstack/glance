@@ -93,9 +93,11 @@ def image_send_notification(bytes_written, expected_size, image_meta, request,
 
 
 def get_remaining_quota(context, db_api, image_id=None):
-    """
-    This method is called to see if the user is allowed to store an image
-    of the given size in glance based on their quota and current usage.
+    """Method called to see if the user is allowed to store an image.
+
+    Checks if it is allowed based on the given size in glance based on their
+    quota and current usage.
+
     :param context:
     :param db_api:  The db_api in use for this configuration
     :param image_id: The image that will be replaced with this new data size
@@ -103,7 +105,7 @@ def get_remaining_quota(context, db_api, image_id=None):
              None means infinity
     """
 
-    #NOTE(jbresnah) in the future this value will come from a call to
+    # NOTE(jbresnah) in the future this value will come from a call to
     # keystone.
     users_quota = CONF.user_storage_quota
 
@@ -135,9 +137,11 @@ def get_remaining_quota(context, db_api, image_id=None):
 
 
 def check_quota(context, image_size, db_api, image_id=None):
-    """
-    This method is called to see if the user is allowed to store an image
-    of the given size in glance based on their quota and current usage.
+    """Method called to see if the user is allowed to store an image.
+
+    Checks if it is allowed based on the given size in glance based on their
+    quota and current usage.
+
     :param context:
     :param image_size:  The size of the image we hope to store
     :param db_api:  The db_api in use for this configuration
@@ -153,7 +157,7 @@ def check_quota(context, image_size, db_api, image_id=None):
     user = getattr(context, 'user', '<unknown>')
 
     if image_size is None:
-        #NOTE(jbresnah) When the image size is None it means that it is
+        # NOTE(jbresnah) When the image size is None it means that it is
         # not known.  In this case the only time we will raise an
         # exception is when there is no room left at all, thus we know
         # it will not fit

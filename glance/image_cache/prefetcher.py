@@ -16,9 +16,7 @@
 """
 Prefetches images into the Image Cache
 """
-
 import eventlet
-
 import glance_store
 
 from glance.common import exception

@@ -287,8 +287,9 @@ def _export_data_to_file(meta, path):
                 json_file.write(json.dumps(values))
         except Exception as e:
             LOG.exception(utils.exception_to_str(e))
-        LOG.info(_LI("Namespace %s saved in %s"),
-                 namespace_file_name, file_name)
+        msg = _LI("Namespace %(namespace_file_name)s saved in %(file_name)s")
+        LOG.info(msg % {'namespace_file_name': namespace_file_name,
+                        'file_name': file_name})
 
 
 def db_load_metadefs(engine, metadata_path=None):

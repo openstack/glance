@@ -692,7 +692,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertIn('ping', output.tags)
         self.assertIn('pong', output.tags)
         output_logs = self.notifier.get_logs()
-        #NOTE(markwash): don't send a notification if nothing is updated
+        # NOTE(markwash): don't send a notification if nothing is updated
         self.assertEqual(0, len(output_logs))
 
     def test_update_with_bad_min_disk(self):
@@ -848,8 +848,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(resp.container_format, 'bare')
 
     def test_update_remove_property_while_over_limit(self):
-        """
-        Ensure that image properties can be removed.
+        """Ensure that image properties can be removed.
 
         Image properties should be able to be removed as long as the image has
         fewer than the limited number of image properties after the
@@ -879,8 +878,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_add_and_remove_property_under_limit(self):
-        """
-        Ensure that image properties can be removed.
+        """Ensure that image properties can be removed.
 
         Image properties should be able to be added and removed simultaneously
         as long as the image has fewer than the limited number of image
@@ -1132,10 +1130,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           another_request, created_image.image_id, changes)
 
     def test_create_non_protected_prop(self):
-        """
-        Verify property marked with special char '@' is creatable by an unknown
-        role
-        """
+        """Property marked with special char @ creatable by an unknown role"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -1154,10 +1149,7 @@ class TestImagesController(base.IsolatedUnitTest):
                          '2')
 
     def test_read_non_protected_prop(self):
-        """
-        Verify property marked with special char '@' is readable by an unknown
-        role
-        """
+        """Property marked with special char @ readable by an unknown role"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -1170,10 +1162,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.extra_properties['x_all_permitted'], '1')
 
     def test_update_non_protected_prop(self):
-        """
-        Verify property marked with special char '@' is updatable by an unknown
-        role
-        """
+        """Property marked with special char @ updatable by an unknown role"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -1190,10 +1179,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(output.extra_properties['x_all_permitted'], 'baz')
 
     def test_delete_non_protected_prop(self):
-        """
-        Verify property marked with special char '@' is deletable by an unknown
-        role
-        """
+        """Property marked with special char @ deletable by an unknown role"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -1211,9 +1197,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           'x_all_permitted')
 
     def test_create_locked_down_protected_prop(self):
-        """
-        Verify a property protected by special char '!' is creatable by no one
-        """
+        """Property marked with special char ! creatable by no one"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -1230,9 +1214,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           created_image.image_id, changes)
 
     def test_read_locked_down_protected_prop(self):
-        """
-        Verify a property protected by special char '!' is readable by no one
-        """
+        """Property marked with special char ! readable by no one"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['member'])
         image = {'name': 'image-1'}
@@ -1246,9 +1228,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           'x_none_read')
 
     def test_update_locked_down_protected_prop(self):
-        """
-        Verify a property protected by special char '!' is updatable by no one
-        """
+        """Property marked with special char ! updatable by no one"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -1264,9 +1244,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           another_request, created_image.image_id, changes)
 
     def test_delete_locked_down_protected_prop(self):
-        """
-        Verify a property protected by special char '!' is deletable by no one
-        """
+        """Property marked with special char ! deletable by no one"""
         self.set_property_protections()
         request = unit_test_utils.get_fake_request(roles=['admin'])
         image = {'name': 'image-1'}
@@ -1559,8 +1537,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_remove_location_while_over_limit(self):
-        """
-        Ensure that image locations can be removed.
+        """Ensure that image locations can be removed.
 
         Image locations should be able to be removed as long as the image has
         fewer than the limited number of image locations after the
@@ -1592,8 +1569,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_add_and_remove_location_under_limit(self):
-        """
-        Ensure that image locations can be removed.
+        """Ensure that image locations can be removed.
 
         Image locations should be able to be added and removed simultaneously
         as long as the image has fewer than the limited number of image
@@ -1787,9 +1763,9 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(image['status'], 'deleted')
 
     def test_delete_queued_updates_status_delayed_delete(self):
-        """
-        Ensure status of queued image is updated (LP bug #1048851)
-        to 'deleted' when delayed_delete isenabled
+        """Ensure status of queued image is updated (LP bug #1048851).
+
+        Must be set to 'deleted' when delayed_delete isenabled.
         """
         scrubber_dir = os.path.join(self.test_dir, 'scrubber')
         self.config(delayed_delete=True, scrubber_datadir=scrubber_dir)
@@ -2054,13 +2030,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_create_readonly_attributes_forbidden(self):
         bodies = [
-            #{'created_at': ISOTIME},
-            #{'updated_at': ISOTIME},
-            #{'status': 'saving'},
             {'direct_url': 'http://example.com'},
-            #{'size': 10},
-            #{'virtual_size': 10},
-            #{'checksum': 'asdf'},
             {'self': 'http://example.com'},
             {'file': 'http://example.com'},
             {'schema': 'http://example.com'},
@@ -2690,7 +2660,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         super(TestImagesSerializer, self).setUp()
         self.serializer = glance.api.v2.images.ResponseSerializer()
         self.fixtures = [
-            #NOTE(bcwaldon): This first fixture has every property defined
+            # NOTE(bcwaldon): This first fixture has every property defined
             _domain_fixture(UUID1, name='image-1', size=1024,
                             virtual_size=3072, created_at=DATETIME,
                             updated_at=DATETIME, owner=TENANT1,
@@ -2699,7 +2669,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                             min_ram=128, min_disk=10,
                             checksum='ca425b88f047ce8ec45ee90e813ada91'),
 
-            #NOTE(bcwaldon): This second fixture depends on default behavior
+            # NOTE(bcwaldon): This second fixture depends on default behavior
             # and sets most values to None
             _domain_fixture(UUID2, created_at=DATETIME, updated_at=DATETIME),
         ]
@@ -2779,9 +2749,11 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                          unit_test_utils.sort_url_by_qs_keys(output['next']))
 
     def test_index_forbidden_get_image_location(self):
-        """Make sure the serializer works fine no mater if current user is
-        authorized to get image location if the show_multiple_locations is
-        False.
+        """Make sure the serializer works fine.
+
+        No mater if current user is authorized to get image location if the
+        show_multiple_locations is False.
+
         """
         class ImageLocations(object):
             def __len__(self):
@@ -2913,7 +2885,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         super(TestImagesSerializerWithUnicode, self).setUp()
         self.serializer = glance.api.v2.images.ResponseSerializer()
         self.fixtures = [
-            #NOTE(bcwaldon): This first fixture has every property defined
+            # NOTE(bcwaldon): This first fixture has every property defined
             _domain_fixture(UUID1, **{
                 'name': u'OpenStack\u2122-1',
                 'size': 1024,
@@ -3173,8 +3145,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
         self.assertEqual(expected, jsonutils.loads(response.body))
 
     def test_show_invalid_additional_property(self):
-        """Ensure that the serializer passes through invalid additional
-        properties (i.e. non-string) without complaining.
+        """Ensure that the serializer passes
+        through invalid additional properties.
+
+        It must not complains with i.e. non-string.
         """
         serializer = glance.api.v2.images.ResponseSerializer()
         self.fixture.extra_properties['marx'] = 123

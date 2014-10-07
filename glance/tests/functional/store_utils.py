@@ -21,7 +21,7 @@ Utility methods to set testcases up for Swift and/or S3 tests.
 from __future__ import print_function
 
 import BaseHTTPServer
-import thread
+import threading
 
 from glance.openstack.common import units
 
@@ -76,7 +76,7 @@ def setup_http(test):
     def serve_requests(httpd):
         httpd.serve_forever()
 
-    thread.start_new_thread(serve_requests, (remote_server,))
+    threading.Thread(target=serve_requests, args=(remote_server,)).start()
     test.http_server = remote_server
     test.http_ip = remote_ip
     test.http_port = remote_port

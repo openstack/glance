@@ -26,7 +26,7 @@ from glance.openstack.common import jsonutils as json
 
 class Namespace(types.Base, WSMEModelTransformer):
 
-    #Base fields
+    # Base fields
     namespace = wsme.wsattr(types.text, mandatory=True)
     display_name = wsme.wsattr(types.text, mandatory=False)
     description = wsme.wsattr(types.text, mandatory=False)
@@ -34,18 +34,18 @@ class Namespace(types.Base, WSMEModelTransformer):
     protected = wsme.wsattr(bool, mandatory=False)
     owner = wsme.wsattr(types.text, mandatory=False)
 
-    #Not using datetime since time format has to be
-    #in glance.openstack.common.timeutils.isotime() format
+    # Not using datetime since time format has to be
+    # in glance.openstack.common.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 
-    #Contained fields
+    # Contained fields
     resource_type_associations = wsme.wsattr([ResourceTypeAssociation],
                                              mandatory=False)
     properties = wsme.wsattr({types.text: PropertyType}, mandatory=False)
     objects = wsme.wsattr([MetadefObject], mandatory=False)
 
-    #Generated fields
+    # Generated fields
     self = wsme.wsattr(types.text, mandatory=False)
     schema = wsme.wsattr(types.text, mandatory=False)
 
@@ -70,7 +70,7 @@ class Namespaces(types.Base, WSMEModelTransformer):
 
     namespaces = wsme.wsattr([Namespace], mandatory=False)
 
-    #Pagination
+    # Pagination
     next = wsme.wsattr(types.text, mandatory=False)
     schema = wsme.wsattr(types.text, mandatory=True)
     first = wsme.wsattr(types.text, mandatory=True)

@@ -29,7 +29,6 @@ Keystone (an identity management system).
     http://service_endpoint/
 """
 import httplib2
-
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception

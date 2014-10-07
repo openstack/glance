@@ -549,8 +549,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
-        self.registry_port, registry_sock = \
-            test_utils.get_unused_port_and_socket()
+        self.registry_port, reg_sock = test_utils.get_unused_port_and_socket()
 
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
@@ -572,7 +571,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.registry_server = RegistryServer(self.test_dir,
                                               self.registry_port,
-                                              sock=registry_sock)
+                                              sock=reg_sock)
 
         self.scrubber_daemon = ScrubberDaemon(self.test_dir)
 

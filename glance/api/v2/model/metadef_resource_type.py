@@ -24,8 +24,8 @@ class ResourceTypeAssociation(types.Base, WSMEModelTransformer):
     prefix = wsme.wsattr(types.text, mandatory=False)
     properties_target = wsme.wsattr(types.text, mandatory=False)
 
-    #Not using datetime since time format has to be
-    #in glance.openstack.common.timeutils.isotime() format
+    # Not using datetime since time format has to be
+    # in glance.openstack.common.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 
@@ -45,8 +45,8 @@ class ResourceTypeAssociations(types.Base, WSMEModelTransformer):
 class ResourceType(types.Base, WSMEModelTransformer):
     name = wsme.wsattr(types.text, mandatory=True)
 
-    #Not using datetime since time format has to be
-    #in glance.openstack.common.timeutils.isotime() format
+    # Not using datetime since time format has to be
+    # in glance.openstack.common.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 

@@ -49,6 +49,7 @@ from glance.db.sqlalchemy import models
 from glance.openstack.common import jsonutils
 from glance.openstack.common import timeutils
 
+
 CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
@@ -118,7 +119,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         self._create_unversioned_001_db(self.migrate_engine)
 
         old_version = migration.INIT_VERSION
-        #we must start from version 1
+        # we must start from version 1
         migration.INIT_VERSION = 1
         self.addCleanup(setattr, migration, 'INIT_VERSION', old_version)
 
@@ -319,9 +320,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         uuids = {}
         for name in ('kernel', 'ramdisk', 'normal'):
             image_name = '%s migration 012 test' % name
-            rows = images.select()\
-                         .where(images.c.name == image_name)\
-                         .execute().fetchall()
+            rows = images.select().where(
+                images.c.name == image_name).execute().fetchall()
 
             self.assertEqual(len(rows), 1)
 
@@ -331,19 +331,16 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             uuids[name] = row['id']
 
         # Find all image_members to ensure image_id has been updated
-        results = image_members.select()\
-                               .where(image_members.c.image_id ==
-                                      uuids['normal'])\
-                               .execute().fetchall()
+        results = image_members.select().where(
+            image_members.c.image_id == uuids['normal']).execute().fetchall()
         self.assertEqual(len(results), 1)
 
         # Find all image_properties to ensure image_id has been updated
         # as well as ensure kernel_id and ramdisk_id values have been
         # updated too
-        results = image_properties.select()\
-                                  .where(image_properties.c.image_id ==
-                                         uuids['normal'])\
-                                  .execute().fetchall()
+        results = image_properties.select().where(
+            image_properties.c.image_id == uuids['normal']
+        ).execute().fetchall()
         self.assertEqual(len(results), 2)
         for row in results:
             self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
@@ -363,9 +360,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         ids = {}
         for name in ('kernel', 'ramdisk', 'normal'):
             image_name = '%s migration 012 test' % name
-            rows = images.select()\
-                         .where(images.c.name == image_name)\
-                         .execute().fetchall()
+            rows = images.select().where(
+                images.c.name == image_name).execute().fetchall()
             self.assertEqual(len(rows), 1)
 
             row = rows[0]
@@ -374,19 +370,15 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             ids[name] = row['id']
 
         # Find all image_members to ensure image_id has been updated
-        results = image_members.select()\
-                               .where(image_members.c.image_id ==
-                                      ids['normal'])\
-                               .execute().fetchall()
+        results = image_members.select().where(
+            image_members.c.image_id == ids['normal']).execute().fetchall()
         self.assertEqual(len(results), 1)
 
         # Find all image_properties to ensure image_id has been updated
         # as well as ensure kernel_id and ramdisk_id values have been
         # updated too
-        results = image_properties.select()\
-                                  .where(image_properties.c.image_id ==
-                                         ids['normal'])\
-                                  .execute().fetchall()
+        results = image_properties.select().where(
+            image_properties.c.image_id == ids['normal']).execute().fetchall()
         self.assertEqual(len(results), 2)
         for row in results:
             self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
@@ -622,7 +614,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         }
         data = [
             {'id': 'fake-19-1', 'location': 'http://glance.example.com'},
-            #NOTE(bcwaldon): images with a location of None should
+            # NOTE(bcwaldon): images with a location of None should
             # not be migrated
             {'id': 'fake-19-2', 'location': None},
         ]
@@ -670,8 +662,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
     def _check_026(self, engine, data):
         image_locations = db_utils.get_table(engine, 'image_locations')
-        results = image_locations.select()\
-            .where(image_locations.c.image_id == data).execute()
+        results = image_locations.select().where(
+            image_locations.c.image_id == data).execute()
 
         r = list(results)
         self.assertEqual(len(r), 1)
@@ -756,8 +748,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         image_id = data[1]
         image_locations = db_utils.get_table(engine, 'image_locations')
 
-        records = image_locations.select().\
-            where(image_locations.c.image_id == image_id).execute().fetchall()
+        records = image_locations.select().where(
+            image_locations.c.image_id == image_id).execute().fetchall()
 
         for r in records:
             d = jsonutils.loads(r['meta_data'])
@@ -768,8 +760,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         image_locations = db_utils.get_table(engine, 'image_locations')
 
-        records = image_locations.select().\
-            where(image_locations.c.image_id == image_id).execute().fetchall()
+        records = image_locations.select().where(
+            image_locations.c.image_id == image_id).execute().fetchall()
 
         for r in records:
             md = r['meta_data']
@@ -855,9 +847,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
     def _check_031(self, engine, image_id):
         locations_table = db_utils.get_table(engine, 'image_locations')
-        result = locations_table.select()\
-                                .where(locations_table.c.image_id == image_id)\
-                                .execute().fetchall()
+        result = locations_table.select().where(
+            locations_table.c.image_id == image_id).execute().fetchall()
 
         locations = set([(x['value'], x['meta_data']) for x in result])
         actual_locations = set([
@@ -980,8 +971,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                        'deleted', 'pending_delete', 'deleted']
 
         for (idx, image_id) in enumerate(data):
-            results = image_locations.select()\
-                .where(image_locations.c.image_id == image_id).execute()
+            results = image_locations.select().where(
+                image_locations.c.image_id == image_id).execute()
             r = list(results)
             self.assertEqual(len(r), 1)
             self.assertIn('status', r[0])
@@ -1074,7 +1065,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         col_data = [col.name for col in table.columns]
         self.assertEqual(expected_cols, col_data)
 
-         # metadef_properties
+        # metadef_properties
         table = sqlalchemy.Table("metadef_properties", meta, autoload=True)
         index_namespace_id_name = (
             'ix_metadef_properties_namespace_id_name',
@@ -1092,7 +1083,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         col_data = [col.name for col in table.columns]
         self.assertEqual(expected_cols, col_data)
 
-         # metadef_resource_types
+        # metadef_resource_types
         table = sqlalchemy.Table(
             "metadef_resource_types", meta, autoload=True)
         index_resource_types_name = (
@@ -1109,7 +1100,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         col_data = [col.name for col in table.columns]
         self.assertEqual(expected_cols, col_data)
 
-         # metadef_namespace_resource_types
+        # metadef_namespace_resource_types
         table = sqlalchemy.Table(
             "metadef_namespace_resource_types", meta, autoload=True)
         index_ns_res_types_res_type_id_ns_id = (

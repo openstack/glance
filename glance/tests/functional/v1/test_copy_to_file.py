@@ -20,10 +20,10 @@ based storage backend.
 """
 
 import hashlib
-import httplib2
 import tempfile
 import time
 
+import httplib2
 from six.moves import xrange
 
 from glance.openstack.common import jsonutils

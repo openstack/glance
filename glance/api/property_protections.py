@@ -39,8 +39,8 @@ class ProtectedImageFactoryProxy(glance.domain.proxy.ImageFactory):
                 extra_properties[key] = extra_props[key]
             else:
                 raise exception.ReservedProperty(property=key)
-        return super(ProtectedImageFactoryProxy, self).\
-            new_image(extra_properties=extra_properties, **kwargs)
+        return super(ProtectedImageFactoryProxy, self).new_image(
+            extra_properties=extra_properties, **kwargs)
 
 
 class ProtectedImageRepoProxy(glance.domain.proxy.Repo):

@@ -423,6 +423,6 @@ class TestMetadefRepo(test_utils.BaseTestCase):
                           object)
 
     def test_list_resource_type(self):
-        resource_type = self.resource_type_repo.list(filters=
-                                                     {'namespace': NAMESPACE1})
+        resource_type = self.resource_type_repo.list(
+            filters={'namespace': NAMESPACE1})
         self.assertEqual(len(resource_type), 0)

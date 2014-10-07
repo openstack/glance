@@ -159,7 +159,7 @@ class TestMetadefObjects(functional.FunctionalTest):
             "schema": "v2/schemas/metadefs/object"
         }
 
-        #Simple key values
+        # Simple key values
         checked_values = set([
             u'name',
             u'description',
@@ -167,7 +167,7 @@ class TestMetadefObjects(functional.FunctionalTest):
         for key, value in expected_metadata_object.items():
             if(key in checked_values):
                 self.assertEqual(metadata_object[key], value, key)
-        #Complex key values - properties
+        # Complex key values - properties
         for key, value in \
                 expected_metadata_object["properties"]['property2'].items():
             self.assertEqual(

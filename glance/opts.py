@@ -23,12 +23,6 @@ __all__ = [
 import copy
 import itertools
 
-from glance.openstack.common import gettextutils
-
-# TODO(zhiyan): Remove translation from in-line
-# help message of option definition code.
-gettextutils.install('glance', lazy=False)
-
 import glance.api.middleware.context
 import glance.api.policy
 import glance.common.config
@@ -40,12 +34,17 @@ import glance.common.wsgi
 import glance.image_cache
 import glance.image_cache.drivers.sqlite
 import glance.notifier
+from glance.openstack.common import gettextutils
 import glance.openstack.common.lockutils
 import glance.openstack.common.log
 import glance.registry
 import glance.registry.client
 import glance.registry.client.v1.api
 import glance.scrubber
+
+# TODO(zhiyan): Remove translation from in-line
+# help message of option definition code.
+gettextutils.install('glance', lazy=False)
 
 
 _global_opt_lists = [

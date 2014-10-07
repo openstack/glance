@@ -12,11 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+import glance_store as store_api
 from oslo.config import cfg
 import webob.exc
-
-import glance_store as store_api
 
 from glance.common import exception
 from glance.common import store_utils
@@ -233,7 +231,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                   content_type='text/plain')
 
     except webob.exc.HTTPError:
-        #NOTE(bcwaldon): Ideally, we would just call 'raise' here,
+        # NOTE(bcwaldon): Ideally, we would just call 'raise' here,
         # but something in the above function calls is affecting the
         # exception context and we must explicitly re-raise the
         # caught exception.

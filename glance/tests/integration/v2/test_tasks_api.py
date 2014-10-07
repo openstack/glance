@@ -157,7 +157,7 @@ class TestTasksApi(base.ApiTest):
         data = json.loads(content)
         self.assertIsNotNone(data)
         self.assertEqual(1, len(data['tasks']))
-        #NOTE(venkatesh) find a way to get expected_keys from tasks controller
+        # NOTE(venkatesh) find a way to get expected_keys from tasks controller
         expected_keys = set(['id', 'type', 'owner', 'status',
                              'created_at', 'updated_at', 'self', 'schema'])
         task = data['tasks'][0]

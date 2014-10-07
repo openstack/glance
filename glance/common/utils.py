@@ -38,9 +38,8 @@ import uuid
 import netaddr
 from OpenSSL import crypto
 from oslo.config import cfg
-from webob import exc
-
 import six
+from webob import exc
 
 from glance.common import exception
 from glance.openstack.common import excutils

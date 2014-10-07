@@ -12,9 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import urllib2
 
 import mock
-import urllib2
 
 from glance.common import exception
 from glance.common.scripts import utils as script_utils

@@ -209,7 +209,7 @@ def _image_format(image_id, **values):
             image['locations'].append(location_ref)
             DATA['locations'].append(location_ref)
 
-    #NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
+    # NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
     properties = values.pop('properties', {})
     properties = [{'name': k,
                    'value': v,

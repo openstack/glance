@@ -15,10 +15,10 @@
 
 import abc
 import calendar
-import eventlet
 import os
 import time
 
+import eventlet
 from oslo.config import cfg
 import six
 
@@ -125,6 +125,7 @@ class ScrubQueue(object):
     @abc.abstractmethod
     def has_image(self, image_id):
         """Returns whether the queue contains an image or not.
+
         :param image_id: The opaque image identifier
 
         :retval a boolean value to inform including or not
