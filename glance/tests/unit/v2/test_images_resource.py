@@ -3255,3 +3255,19 @@ class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
         expected = ['mark']
         actual = schema.properties['container_format']['enum']
         self.assertEqual(expected, actual)
+
+
+class TestImageSchemaDeterminePropertyBasis(test_utils.BaseTestCase):
+    def test_custom_property_marked_as_non_base(self):
+        self.config(allow_additional_image_properties=False)
+        custom_image_properties = {
+            'pants': {
+                'type': 'string',
+            },
+        }
+        schema = glance.api.v2.images.get_schema(custom_image_properties)
+        self.assertFalse(schema.properties['pants'].get('is_base', True))
+
+    def test_base_property_marked_as_base(self):
+        schema = glance.api.v2.images.get_schema()
+        self.assertTrue(schema.properties['disk_format'].get('is_base', True))

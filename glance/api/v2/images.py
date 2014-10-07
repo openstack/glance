@@ -815,7 +815,11 @@ def get_schema(custom_properties=None):
         schema = glance.schema.PermissiveSchema('image', properties, links)
     else:
         schema = glance.schema.Schema('image', properties)
-    schema.merge_properties(custom_properties or {})
+
+    if custom_properties:
+        for property_value in custom_properties.values():
+            property_value['is_base'] = False
+        schema.merge_properties(custom_properties)
     return schema
 
 
