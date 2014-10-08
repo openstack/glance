@@ -47,17 +47,17 @@ class NamespacePropertiesController(object):
                                               policy_enforcer=self.policy)
 
     def _to_dict(self, model_property_type):
-        # Convert the model PropertyTypes dict to a JSON string
-        json_data = tojson(PropertyType, model_property_type)
+        # Convert the model PropertyTypes dict to a JSON encoding
         db_property_type_dict = dict()
-        db_property_type_dict['schema'] = json.dumps(json_data)
+        db_property_type_dict['schema'] = tojson(
+            PropertyType, model_property_type)
         db_property_type_dict['name'] = model_property_type.name
         return db_property_type_dict
 
     def _to_model(self, db_property_type):
         # Convert the persisted json schema to a dict of PropertyTypes
-        json_props = json.loads(db_property_type.schema)
-        property_type = fromjson(PropertyType, json_props)
+        property_type = fromjson(
+            PropertyType, db_property_type.schema)
         property_type.name = db_property_type.name
         return property_type
 

@@ -28,6 +28,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import String
 from sqlalchemy import Text
 
+from glance.db.sqlalchemy.models import JSONEncodedDict
 from glance.openstack.common import timeutils
 
 
@@ -88,7 +89,7 @@ class MetadefObject(BASE_DICT, GlanceMetadefBase):
     name = Column(String(80), nullable=False)
     description = Column(Text())
     required = Column(Text())
-    schema = Column(Text(), default={})
+    schema = Column(JSONEncodedDict(), default={})
 
 
 class MetadefProperty(BASE_DICT, GlanceMetadefBase):
@@ -102,7 +103,7 @@ class MetadefProperty(BASE_DICT, GlanceMetadefBase):
     namespace_id = Column(Integer(), ForeignKey('metadef_namespaces.id'),
                           nullable=False)
     name = Column(String(80), nullable=False)
-    schema = Column(Text(), default={})
+    schema = Column(JSONEncodedDict(), default={})
 
 
 class MetadefNamespaceResourceType(BASE_DICT, GlanceMetadefBase):

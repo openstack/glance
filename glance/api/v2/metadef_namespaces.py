@@ -171,9 +171,8 @@ class NamespaceController(object):
 
     def _to_property_dict(self, name, value):
         # Convert the model PropertyTypes dict to a JSON string
-        json_data = tojson(PropertyType, value)
         db_property_type_dict = dict()
-        db_property_type_dict['schema'] = json.dumps(json_data)
+        db_property_type_dict['schema'] = tojson(PropertyType, value)
         db_property_type_dict['name'] = name
         return db_property_type_dict
 

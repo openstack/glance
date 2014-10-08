@@ -21,7 +21,6 @@ from glance.api.v2.model.metadef_object import MetadefObject
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociation
 from glance.common.wsme_utils import WSMEModelTransformer
-from glance.openstack.common import jsonutils as json
 
 
 class Namespace(types.Base, WSMEModelTransformer):
@@ -57,9 +56,8 @@ class Namespace(types.Base, WSMEModelTransformer):
         property_types = {}
         for db_property_type in db_property_types:
             # Convert the persisted json schema to a dict of PropertyTypes
-            json_props = json.loads(db_property_type.schema)
-            property_type = fromjson(PropertyType, json_props)
-
+            property_type = fromjson(
+                PropertyType, db_property_type.schema)
             property_type_name = db_property_type.name
             property_types[property_type_name] = property_type
 
