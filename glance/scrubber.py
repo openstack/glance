@@ -549,7 +549,7 @@ class Scrubber(object):
 
         try:
             LOG.debug("Deleting URI from image %s." % image_id)
-            self.store_api.delete_from_backend(self.admin_context, uri)
+            self.store_api.delete_from_backend(uri, self.admin_context)
             if loc_id != '-':
                 db_api.get_api().image_location_delete(self.admin_context,
                                                        image_id,
