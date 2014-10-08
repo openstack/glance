@@ -58,8 +58,8 @@ class TestScrubber(test_utils.BaseTestCase):
         scrub.registry.update_image(id, {'status': 'deleted'})
         self.mox.StubOutWithMock(glance_store, "delete_from_backend")
         glance_store.delete_from_backend(
-            mox.IgnoreArg(),
-            uri).AndRaise(ex)
+            uri,
+            mox.IgnoreArg()).AndRaise(ex)
         self.mox.ReplayAll()
         scrub._scrub_image(eventlet.greenpool.GreenPool(1),
                            id, [(id, '-', uri)])
