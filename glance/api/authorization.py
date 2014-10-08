@@ -723,6 +723,10 @@ class MetadefResourceTypeRepoProxy(
         return [proxy_meta_resource_type(self.context, meta_resource_type) for
                 meta_resource_type in meta_resource_types]
 
+    def get(self, *args, **kwargs):
+        meta_resource_type = self.meta_resource_type_repo.get(*args, **kwargs)
+        return proxy_meta_resource_type(self.context, meta_resource_type)
+
 
 # Metadef namespace properties classes
 def is_namespace_property_mutable(context, namespace_property):

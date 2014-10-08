@@ -55,15 +55,22 @@ class TestNamespaceProperties(functional.FunctionalTest):
         path = self._url('/v2/metadefs/namespaces')
         headers = self._headers({'content-type': 'application/json'})
         namespace_name = 'MyNamespace'
+        resource_type_name = 'MyResourceType'
+        resource_type_prefix = 'MyPrefix'
         data = jsonutils.dumps({
             "namespace": namespace_name,
             "display_name": "My User Friendly Namespace",
             "description": "My description",
             "visibility": "public",
             "protected": False,
-            "owner": "The Test Owner"
-        }
-        )
+            "owner": "The Test Owner",
+            "resource_type_associations": [
+                {
+                    "name": resource_type_name,
+                    "prefix": resource_type_prefix
+                }
+            ]
+        })
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 
@@ -94,6 +101,30 @@ class TestNamespaceProperties(functional.FunctionalTest):
         # Get the property created above
         path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
                          (namespace_name, property_name))
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        property_object = jsonutils.loads(response.text)
+        self.assertEqual("integer", property_object['type'])
+        self.assertEqual("property1", property_object['title'])
+        self.assertEqual("property1 description", property_object[
+            'description'])
+        self.assertEqual('100', property_object['default'])
+        self.assertEqual(100, property_object['minimum'])
+        self.assertEqual(30000369, property_object['maximum'])
+
+        # Get the property with specific resource type association
+        path = self._url('/v2/metadefs/namespaces/%s/properties/%s%s' % (
+            namespace_name, property_name, '='.join(['?resource_type',
+                                                    resource_type_name])))
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(404, response.status_code)
+
+        # Get the property with prefix and specific resource type association
+        property_name_with_prefix = ''.join([resource_type_prefix,
+                                            property_name])
+        path = self._url('/v2/metadefs/namespaces/%s/properties/%s%s' % (
+            namespace_name, property_name_with_prefix, '='.join([
+                '?resource_type', resource_type_name])))
         response = requests.get(path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         property_object = jsonutils.loads(response.text)
