@@ -580,6 +580,10 @@ class MetadefResourceTypeRepoProxy(
         self.policy.enforce(self.context, 'list_metadef_resource_types', {})
         return super(MetadefResourceTypeRepoProxy, self).list(*args, **kwargs)
 
+    def get(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'get_metadef_resource_type', {})
+        return super(MetadefResourceTypeRepoProxy, self).get(*args, **kwargs)
+
     def add(self, resource_type):
         self.policy.enforce(self.context,
                             'add_metadef_resource_type_association', {})

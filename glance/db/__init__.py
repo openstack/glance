@@ -626,6 +626,19 @@ class MetadefResourceTypeRepo(object):
             self._format_resource_type_to_db(resource_type)
         )
 
+    def get(self, resource_type, namespace):
+        namespace_entity = self.meta_namespace_repo.get(namespace)
+        db_resource_type = (
+            self.db_api.
+            metadef_resource_type_association_get(
+                self.context,
+                namespace,
+                resource_type
+            )
+        )
+        return self._format_resource_type_from_db(db_resource_type,
+                                                  namespace_entity)
+
     def list(self, filters=None):
         namespace = filters['namespace']
         if namespace:

@@ -367,6 +367,10 @@ class MetadefResourceTypeRepo(object):
         self.base.add(self.resource_type_proxy_helper.unproxy(
             meta_resource_type))
 
+    def get(self, *args, **kwargs):
+        resource_type = self.base.get(*args, **kwargs)
+        return self.resource_type_proxy_helper.proxy(resource_type)
+
     def list(self, *args, **kwargs):
         resource_types = self.base.list(*args, **kwargs)
         return [self.resource_type_proxy_helper.proxy(resource_type)
