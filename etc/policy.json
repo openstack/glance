@@ -41,6 +41,7 @@
     "add_metadef_object":"",
 
     "list_metadef_resource_types":"",
+    "get_metadef_resource_type":"",
     "add_metadef_resource_type_association":"",
 
     "get_metadef_property":"",

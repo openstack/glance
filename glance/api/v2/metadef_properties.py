@@ -79,8 +79,24 @@ class NamespacePropertiesController(object):
             raise webob.exc.HTTPInternalServerError()
         return namespace_properties
 
-    def show(self, req, namespace, property_name):
+    def show(self, req, namespace, property_name, filters=None):
         try:
+            if filters and filters['resource_type']:
+                rs_repo = self.gateway.get_metadef_resource_type_repo(
+                    req.context)
+                db_resource_type = rs_repo.get(filters['resource_type'],
+                                               namespace)
+                prefix = db_resource_type.prefix
+                if prefix and property_name.startswith(prefix):
+                    property_name = property_name[len(prefix):]
+                else:
+                    msg = (_("Property %(property_name)s does not start "
+                             "with the expected resource type association "
+                             "prefix of '%(prefix)s'.")
+                           % {'property_name': property_name,
+                              'prefix': prefix})
+                    raise exception.NotFound(msg)
+
             prop_repo = self.gateway.get_metadef_property_repo(req.context)
             db_property = prop_repo.get(namespace, property_name)
             property = self._to_model(db_property)
@@ -184,6 +200,13 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         property_type = fromjson(PropertyType, body)
         return dict(property_type=property_type)
+
+    def show(self, request):
+        params = request.params.copy()
+        query_params = {
+            'filters': params
+        }
+        return query_params
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
