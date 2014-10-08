@@ -1091,11 +1091,11 @@ class Controller(controller.BaseController):
         :param request: The WSGI/Webob Request object
         :param scheme: The backend store scheme
 
-        :raises HTTPNotFound if store does not exist
+        :raises HTTPBadRequest if store does not exist
         """
         try:
             return store.get_store_from_scheme(scheme)
-        except exception.UnknownScheme:
+        except store.UnknownScheme:
             msg = "Store for scheme %s not found" % scheme
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
