@@ -1101,10 +1101,10 @@ def metadef_namespace_get_by_id(context, namespace_id):
         namespace = next(namespace for namespace in DATA['metadef_namespaces']
                          if namespace['id'] == namespace_id)
     except StopIteration:
-        msg = "No namespace found with id %s" % namespace_id
-        LOG.debug(msg)
-        raise exception.MetadefRecordNotFound(
-            record_type='namespace', id=namespace_id)
+        msg = (_("Metadata definition namespace not found for id=%s")
+               % namespace_id)
+        LOG.warn(msg)
+        raise exception.MetadefNamespaceNotFound(msg)
 
     if not _is_namespace_visible(context, namespace):
         msg = ("Forbidding request, metadata definition namespace=%s"
@@ -1235,11 +1235,10 @@ def metadef_object_get_by_id(context, namespace_name, object_id):
                 object['id'] == object_id):
             return object
     else:
-        msg = ("No metadata definition object found with id %s"
+        msg = (_("Metadata definition object not found for id=%s")
                % object_id)
-        LOG.debug(msg)
-        raise exception.MetadefRecordNotFound(record_type='object',
-                                              id=object_id)
+        LOG.warn(msg)
+        raise exception.MetadefObjectNotFound(msg)
 
 
 @log_call
@@ -1266,7 +1265,7 @@ def metadef_object_create(context, namespace_name, values):
     object_values = copy.deepcopy(values)
     object_name = object_values['name']
     required_attributes = ['name']
-    allowed_attributes = ['name', 'description', 'schema', 'required']
+    allowed_attributes = ['name', 'description', 'json_schema', 'required']
 
     namespace = metadef_namespace_get(context, namespace_name)
 
@@ -1384,7 +1383,7 @@ def metadef_property_create(context, namespace_name, values):
     property_values = copy.deepcopy(values)
     property_name = property_values['name']
     required_attributes = ['name']
-    allowed_attributes = ['name', 'description', 'schema', 'required']
+    allowed_attributes = ['name', 'description', 'json_schema', 'required']
 
     namespace = metadef_namespace_get(context, namespace_name)
 
@@ -1485,11 +1484,10 @@ def metadef_property_get_by_id(context, namespace_name, property_id):
                 property['id'] == property_id):
             return property
     else:
-        msg = ("No metadata definition property found with id=%s"
+        msg = (_("Metadata definition property not found for id=%s")
                % property_id)
-        LOG.debug(msg)
-        raise exception.MetadefRecordNotFound(record_type='property',
-                                              id=property_id)
+        LOG.warn(msg)
+        raise exception.MetadefPropertyNotFound(msg)
 
 
 @log_call
@@ -1692,7 +1690,7 @@ def _format_property(values):
         'id': _get_metadef_id(),
         'namespace_id': None,
         'name': None,
-        'schema': None
+        'json_schema': None
     }
     property.update(values)
     return property
@@ -1722,7 +1720,7 @@ def _format_object(values):
         'namespace_id': None,
         'name': None,
         'description': None,
-        'schema': None,
+        'json_schema': None,
         'required': None,
         'created_at': dt,
         'updated_at': dt

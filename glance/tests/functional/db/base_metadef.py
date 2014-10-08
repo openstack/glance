@@ -60,7 +60,7 @@ def build_object_fixture(**kwargs):
         'name': u'test-object-name',
         'description': u'test-object-description',
         'required': u'fake-required-properties-list',
-        'schema': u'{fake-schema}'
+        'json_schema': u'{fake-schema}'
     }
     object.update(kwargs)
     return object
@@ -71,7 +71,7 @@ def build_property_fixture(**kwargs):
     property = {
         'namespace_id': 1,
         'name': u'test-property-name',
-        'schema': u'{fake-schema}'
+        'json_schema': u'{fake-schema}'
     }
     property.update(kwargs)
     return property
@@ -244,7 +244,7 @@ class MetadefPropertyTests(object):
         self.assertEqual(len(found), 2)
 
     def test_property_update(self):
-        delta = {'name': u'New-name', 'schema': u'new-schema'}
+        delta = {'name': u'New-name', 'json_schema': u'new-schema'}
 
         fixture_ns = build_namespace_fixture()
         created_ns = self.db_api.metadef_namespace_create(
@@ -263,7 +263,7 @@ class MetadefPropertyTests(object):
             self.context, created_ns['namespace'],
             created_prop['id'], delta_dict)
         self.assertEqual(delta['name'], updated['name'])
-        self.assertEqual(delta['schema'], updated['schema'])
+        self.assertEqual(delta['json_schema'], updated['json_schema'])
 
     def test_property_delete(self):
         fixture_ns = build_namespace_fixture()
@@ -354,7 +354,7 @@ class MetadefObjectTests(object):
         self.assertEqual(len(found), 2)
 
     def test_object_update(self):
-        delta = {'name': u'New-name', 'schema': u'new-schema',
+        delta = {'name': u'New-name', 'json_schema': u'new-schema',
                  'required': u'new-required'}
 
         fixture_ns = build_namespace_fixture()
@@ -374,7 +374,7 @@ class MetadefObjectTests(object):
             self.context, created_ns['namespace'],
             created_object['id'], delta_dict)
         self.assertEqual(delta['name'], updated['name'])
-        self.assertEqual(delta['schema'], updated['schema'])
+        self.assertEqual(delta['json_schema'], updated['json_schema'])
 
     def test_object_delete(self):
         fixture_ns = build_namespace_fixture()
