@@ -1,0 +1,21 @@
+{
+    "namespace": "OS::Compute::GuestShutdownBehavior",
+    "display_name": "Shutdown Behavior",
+    "description": "These properties allow modifying the shutdown behavior for stop, rescue, resize, and shelve operations.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        }
+    ],
+    "properties": {
+        "os_shutdown_timeout": {
+            "title": "Shutdown timeout",
+            "description": "By default, guests will be given 60 seconds to perform a graceful shutdown. After that, the VM is powered off.  This property allows overriding the amount of time (unit: seconds) to allow a guest OS to cleanly shut down before power off. A value of 0 (zero) means the guest will be powered off immediately with no opportunity for guest OS clean-up.",
+            "type": "integer",
+            "minimum": 0
+        }
+    },
+    "objects": []
+}
