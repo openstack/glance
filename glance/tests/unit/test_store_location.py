@@ -50,11 +50,11 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             image1 = FakeImageProxy()
             locations = glance.location.StoreLocations(image1, [])
             locations.insert(0, loc2)
-            self.assertEqual(image1.size, 1)
+            self.assertEqual(1, image1.size)
 
             # Test for set_attr of _locations_proxy
             image2 = FakeImageProxy()
             locations = glance.location.StoreLocations(image2, [loc1])
             locations[0] = loc2
             self.assertIn(loc2, locations)
-            self.assertEqual(image2.size, 1)
+            self.assertEqual(1, image2.size)

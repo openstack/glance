@@ -65,8 +65,8 @@ class RequestTest(test_utils.BaseTestCase):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Content-Range"] = 'bytes 10-99/*'
         range_ = request.get_content_range()
-        self.assertEqual(range_.start, 10)
-        self.assertEqual(range_.stop, 100)  # non-inclusive
+        self.assertEqual(10, range_.start)
+        self.assertEqual(100, range_.stop)  # non-inclusive
         self.assertIsNone(range_.length)
 
     def test_content_range_invalid(self):
@@ -380,7 +380,7 @@ class JSONResponseSerializerTest(test_utils.BaseTestCase):
         fixture = set(["foo"])
         expected = '["foo"]'
         actual = wsgi.JSONResponseSerializer().to_json(fixture)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_default(self):
         fixture = {"key": "value"}

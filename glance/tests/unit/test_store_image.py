@@ -92,10 +92,10 @@ class TestStoreImage(utils.BaseTestCase):
         image = glance.location.ImageProxy(self.image_stub, {},
                                            self.store_api, self.store_utils)
         location = image.locations[0]
-        self.assertEqual(image.status, 'active')
+        self.assertEqual('active', image.status)
         self.store_api.get_from_backend(location['url'], context={})
         image.delete()
-        self.assertEqual(image.status, 'deleted')
+        self.assertEqual('deleted', image.status)
         self.assertRaises(glance_store.NotFound,
                           self.store_api.get_from_backend, location['url'], {})
 
@@ -140,7 +140,7 @@ class TestStoreImage(utils.BaseTestCase):
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', 4)
-        self.assertEqual(image.size, 4)
+        self.assertEqual(4, image.size)
         # NOTE(markwash): FakeStore returns image_id for location
         self.assertEqual(UUID2, image.locations[0]['url'])
         self.assertEqual('Z', image.checksum)
@@ -173,7 +173,7 @@ class TestStoreImage(utils.BaseTestCase):
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', None)
-        self.assertEqual(image.size, 4)
+        self.assertEqual(4, image.size)
         # NOTE(markwash): FakeStore returns image_id for location
         self.assertEqual(UUID2, image.locations[0]['url'])
         self.assertEqual('Z', image.checksum)

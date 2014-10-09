@@ -156,10 +156,10 @@ class TestSSL(functional.FunctionalTest):
                                           body=image_data)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
@@ -195,22 +195,22 @@ class TestSSL(functional.FunctionalTest):
             'content-type': 'application/octet-stream'}
 
         for expected_key, expected_value in expected_image_headers.items():
-            self.assertEqual(response[expected_key], expected_value,
+            self.assertEqual(expected_value, response[expected_key],
                              "For key '%s' expected header value '%s'. "
                              "Got '%s'" % (expected_key,
                                            expected_value,
                                            response[expected_key]))
 
         for expected_key, expected_value in expected_std_headers.items():
-            self.assertEqual(response[expected_key], expected_value,
+            self.assertEqual(expected_value, response[expected_key],
                              "For key '%s' expected header value '%s'. "
                              "Got '%s'" % (expected_key,
                                            expected_value,
                                            response[expected_key]))
 
         self.assertEqual("*" * FIVE_KB, content)
-        self.assertEqual(hashlib.md5(content).hexdigest(),
-                         hashlib.md5("*" * FIVE_KB).hexdigest())
+        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                         hashlib.md5(content).hexdigest())
 
         # 5. GET /images
         # Verify no public images
@@ -379,10 +379,10 @@ class TestSSL(functional.FunctionalTest):
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         self.assertIsNone(data['image']['checksum'])
-        self.assertEqual(data['image']['size'], 0)
-        self.assertEqual(data['image']['container_format'], 'ovf')
-        self.assertEqual(data['image']['disk_format'], 'raw')
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(0, data['image']['size'])
+        self.assertEqual('ovf', data['image']['container_format'])
+        self.assertEqual('raw', data['image']['disk_format'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
@@ -425,10 +425,10 @@ class TestSSL(functional.FunctionalTest):
                                           body=image_data)
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         # 5. HEAD image
@@ -506,7 +506,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         # 1. GET /images with no Accept: header
         # Verify version choices returned.
@@ -514,7 +514,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         # 2. GET /v1/images with no Accept: header
         # Verify empty images list returned.
@@ -522,7 +522,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(200, response.status)
-        self.assertEqual(content, images_json)
+        self.assertEqual(images_json, content)
 
         # 3. GET / with Accept: unknown header
         # Verify version choices returned. Verify message in API log about
@@ -532,7 +532,7 @@ class TestSSL(functional.FunctionalTest):
         headers = {'Accept': 'unknown'}
         response, content = https.request(path, 'GET', headers=headers)
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
         self.assertTrue('Unknown version. Returning version choices'
                         in open(self.api_server.log_file).read())
 
@@ -543,7 +543,7 @@ class TestSSL(functional.FunctionalTest):
         headers = {'Accept': 'application/vnd.openstack.images-v1'}
         response, content = https.request(path, 'GET', headers=headers)
         self.assertEqual(200, response.status)
-        self.assertEqual(content, images_json)
+        self.assertEqual(images_json, content)
 
         # 5. GET /images with a Accept: application/vnd.openstack.compute-v1
         # header. Verify version choices returned. Verify message in API log
@@ -553,7 +553,7 @@ class TestSSL(functional.FunctionalTest):
         headers = {'Accept': 'application/vnd.openstack.compute-v1'}
         response, content = https.request(path, 'GET', headers=headers)
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
         self.assertTrue('Unknown version. Returning version choices'
                         in open(self.api_server.log_file).read())
 
@@ -563,7 +563,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(200, response.status)
-        self.assertEqual(content, images_json)
+        self.assertEqual(images_json, content)
 
         # 7. GET /v1.a/images with no Accept: header
         # Verify versions list returned
@@ -571,7 +571,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         # 8. GET /va.1/images with no Accept: header
         # Verify version choices returned
@@ -579,7 +579,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         # 9. GET /versions with no Accept: header
         # Verify version choices returned
@@ -587,7 +587,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         # 10. GET /versions with a Accept: application/vnd.openstack.images-v1
         # header. Verify version choices returned.
@@ -596,7 +596,7 @@ class TestSSL(functional.FunctionalTest):
         headers = {'Accept': 'application/vnd.openstack.images-v1'}
         response, content = https.request(path, 'GET', headers=headers)
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         # 11. GET /v1/versions with no Accept: header
         # Verify 404 returned
@@ -618,7 +618,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         # 13. GET /images with a Accept: application/vnd.openstack.compute-v3
         # header. Verify version choices returned. Verify message in API log
@@ -628,7 +628,7 @@ class TestSSL(functional.FunctionalTest):
         headers = {'Accept': 'application/vnd.openstack.images-v3'}
         response, content = https.request(path, 'GET', headers=headers)
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
         self.assertTrue('Unknown version. Returning version choices'
                         in open(self.api_server.log_file).read())
 
@@ -638,7 +638,7 @@ class TestSSL(functional.FunctionalTest):
         https = httplib2.Http(disable_ssl_certificate_validation=True)
         response, content = https.request(path, 'GET')
         self.assertEqual(300, response.status)
-        self.assertEqual(content, versions_json)
+        self.assertEqual(versions_json, content)
 
         self.stop_servers()
 
@@ -707,7 +707,7 @@ class TestSSL(functional.FunctionalTest):
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['properties']['pants'], "are on")
+        self.assertEqual("are on", data['image']['properties']['pants'])
         self.assertTrue(data['image']['is_public'])
 
         headers = {'Content-Type': 'application/octet-stream',
@@ -723,7 +723,7 @@ class TestSSL(functional.FunctionalTest):
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['properties']['pants'], "are on")
+        self.assertEqual("are on", data['image']['properties']['pants'])
         self.assertTrue(data['image']['is_public'])
 
         headers = {'Content-Type': 'application/octet-stream',
@@ -739,7 +739,7 @@ class TestSSL(functional.FunctionalTest):
         response, content = https.request(path, 'POST', headers=headers)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['properties']['pants'], "are off")
+        self.assertEqual("are off", data['image']['properties']['pants'])
         self.assertTrue(data['image']['is_public'])
 
         headers = {'Content-Type': 'application/octet-stream',

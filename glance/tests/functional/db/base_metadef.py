@@ -132,7 +132,7 @@ class MetadefNamespaceTests(object):
         found = self.db_api.\
             metadef_namespace_get_all(self.context, filters=rt_filters,
                                       sort_key='created_at')
-        self.assertEqual(len(found), 1)
+        self.assertEqual(1, len(found))
         for item in found:
             self._assert_saved_fields(ns_fixture, item)
 
@@ -142,7 +142,7 @@ class MetadefNamespaceTests(object):
 
         created = self.db_api.metadef_namespace_create(self.context, fixture)
         self.assertIsNotNone(created['namespace'])
-        self.assertEqual(created['namespace'], fixture['namespace'])
+        self.assertEqual(fixture['namespace'], created['namespace'])
         delta_dict = copy.deepcopy(created)
         delta_dict.update(delta.copy())
 
@@ -241,7 +241,7 @@ class MetadefPropertyTests(object):
 
         found = self.db_api.\
             metadef_property_get_all(self.context, ns_created['namespace'])
-        self.assertEqual(len(found), 2)
+        self.assertEqual(2, len(found))
 
     def test_property_update(self):
         delta = {'name': u'New-name', 'json_schema': u'new-schema'}
@@ -408,7 +408,7 @@ class MetadefResourceTypeTests(object):
             self.context)
 
         test_len = len(resource_types_orig) + 1
-        self.assertEqual(len(resource_types), test_len)
+        self.assertEqual(test_len, len(resource_types))
 
 
 class MetadefResourceTypeAssociationTests(object):
@@ -464,7 +464,7 @@ class MetadefResourceTypeAssociationTests(object):
         found = self.db_api.\
             metadef_resource_type_association_get_all_by_namespace(
                 self.context, ns_created['namespace'])
-        self.assertEqual(len(found), 1)
+        self.assertEqual(1, len(found))
         for item in found:
             self._assert_saved_fields(fixture, item)
 

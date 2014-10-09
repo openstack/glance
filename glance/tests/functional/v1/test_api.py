@@ -139,10 +139,10 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image_id = data['image']['id']
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         # 3. HEAD image
@@ -176,14 +176,14 @@ class TestApi(functional.FunctionalTest):
             'content-type': 'application/octet-stream'}
 
         for expected_key, expected_value in expected_image_headers.items():
-            self.assertEqual(response[expected_key], expected_value,
+            self.assertEqual(expected_value, response[expected_key],
                              "For key '%s' expected header value '%s'. "
                              "Got '%s'" % (expected_key,
                                            expected_value,
                                            response[expected_key]))
 
         for expected_key, expected_value in expected_std_headers.items():
-            self.assertEqual(response[expected_key], expected_value,
+            self.assertEqual(expected_value, response[expected_key],
                              "For key '%s' expected header value '%s'. "
                              "Got '%s'" % (expected_key,
                                            expected_value,
@@ -402,14 +402,14 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image2_id = data['image']['id']
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image2")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image2", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
-        self.assertEqual(data['image']['properties']['distro'], 'Ubuntu')
-        self.assertEqual(data['image']['properties']['arch'], 'i386')
-        self.assertEqual(data['image']['properties']['foo'], 'bar')
+        self.assertEqual('Ubuntu', data['image']['properties']['distro'])
+        self.assertEqual('i386', data['image']['properties']['arch'])
+        self.assertEqual('bar', data['image']['properties']['foo'])
 
         # 19. HEAD image2
         # Verify image2 found now
@@ -587,10 +587,10 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image_id = data['image']['id']
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         # 1. HEAD image
@@ -666,10 +666,10 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image_id = data['image']['id']
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         # 1. HEAD image

@@ -1578,9 +1578,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             res = self.image_status.pop(0)
 
         self.assertEqual(200, res.status_int)
-        self.assertEqual(res.headers['x-image-meta-status'], status)
-        self.assertEqual(res.headers['x-image-meta-deleted'],
-                         str(check_deleted))
+        self.assertEqual(status, res.headers['x-image-meta-status'])
+        self.assertEqual(str(check_deleted),
+                         res.headers['x-image-meta-deleted'])
 
     def _upload_safe_kill_common(self, mocks):
         fixture_headers = {'x-image-meta-store': 'file',
@@ -2532,7 +2532,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['X-Auth-Token'] = 'user:tenant:_member_'
         req.headers['min_ram'] = '1024M'
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 403)
+        self.assertEqual(403, res.status_int)
 
     def test_show_image_restricted_download_for_custom_property(self):
         rules = {
@@ -2545,7 +2545,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['X-Auth-Token'] = 'user:tenant:_member_'
         req.headers['x_test_key'] = 'test_1234'
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 403)
+        self.assertEqual(403, res.status_int)
 
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
@@ -2558,7 +2558,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'GET'
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 404, res.body)
+        self.assertEqual(404, res.status_int, res.body)
 
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'HEAD'
@@ -2753,7 +2753,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'GET'
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, res.status_int)
 
     def test_get_image_members_not_existing(self):
         """
@@ -2938,7 +2938,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.body = jsonutils.dumps(dict(memberships=fixture))
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, res.status_int)
 
     def test_replace_members_allowed_by_policy(self):
         rules = {"modify_member": '@'}
@@ -2953,7 +2953,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.body = jsonutils.dumps(dict(memberships=fixture))
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNoContent.code)
+        self.assertEqual(webob.exc.HTTPNoContent.code, res.status_int)
 
     def test_add_member_unauthorized(self):
         """
@@ -3027,7 +3027,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, res.status_int)
 
     def test_add_member_allowed_by_policy(self):
         rules = {"modify_member": '@'}
@@ -3038,7 +3038,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNoContent.code)
+        self.assertEqual(webob.exc.HTTPNoContent.code, res.status_int)
 
     def test_get_members_of_deleted_image_raises_404(self):
         """
@@ -3053,7 +3053,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'GET'
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertEqual(webob.exc.HTTPNotFound.code, res.status_int)
         self.assertIn(
             'Image with identifier %s has been deleted.' % UUID2, res.body)
 
@@ -3072,7 +3072,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'DELETE'
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertEqual(webob.exc.HTTPNotFound.code, res.status_int)
         self.assertIn(
             'Image with identifier %s has been deleted.' % UUID2, res.body)
 
@@ -3099,7 +3099,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.content_type = 'application/json'
         req.body = jsonutils.dumps(dict(memberships=fixture))
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertEqual(webob.exc.HTTPNotFound.code, res.status_int)
         self.assertIn(
             'Image with identifier %s has been deleted.' % UUID2, res.body)
 
@@ -3161,7 +3161,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         # Assert the member list was not changed
         memb_list = jsonutils.loads(res.body)['members']
-        self.assertEqual(memb_list, original_members)
+        self.assertEqual(original_members, memb_list)
 
     def test_replace_members_of_image_unlimited(self):
         self.config(image_member_quota=-1)
@@ -3182,7 +3182,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
 
         memb_list = jsonutils.loads(res.body)['members']
-        self.assertEqual(memb_list, fixture)
+        self.assertEqual(fixture, memb_list)
 
     def test_create_member_to_deleted_image_raises_404(self):
         """
@@ -3199,7 +3199,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.method = 'PUT'
 
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
+        self.assertEqual(webob.exc.HTTPNotFound.code, res.status_int)
         self.assertIn(
             'Image with identifier %s has been deleted.' % UUID2, res.body)
 
@@ -3274,10 +3274,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
         req.method = 'PUT'
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNoContent.code)
+        self.assertEqual(webob.exc.HTTPNoContent.code, res.status_int)
         req.method = 'DELETE'
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNoContent.code)
+        self.assertEqual(webob.exc.HTTPNoContent.code, res.status_int)
 
     def test_delete_member_forbidden_by_policy(self):
         rules = {"delete_member": '!', "modify_member": '@'}
@@ -3287,10 +3287,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank('/images/%s/members/pattieblack' % UUID2)
         req.method = 'PUT'
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPNoContent.code)
+        self.assertEqual(webob.exc.HTTPNoContent.code, res.status_int)
         req.method = 'DELETE'
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, res.status_int)
 
 
 class TestImageSerializer(base.IsolatedUnitTest):
@@ -3385,8 +3385,8 @@ class TestImageSerializer(base.IsolatedUnitTest):
         self.serializer.meta(response, FIXTURE)
         self.assertNotEqual(type(FIXTURE['image_meta']['name']),
                             type(response.headers['x-image-meta-name']))
-        self.assertEqual(response.headers['x-image-meta-name'].decode('utf-8'),
-                         FIXTURE['image_meta']['name'])
+        self.assertEqual(FIXTURE['image_meta']['name'],
+                         response.headers['x-image-meta-name'].decode('utf-8'))
         for key, value in six.iteritems(exp_headers):
             self.assertEqual(value, response.headers[key])
 
@@ -3491,7 +3491,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         tmp_image_meta = glance.api.v1.images.redact_loc(image_meta)
 
         self.assertEqual(image_meta, copy_image_meta)
-        self.assertEqual(tmp_image_meta, redacted_image_meta)
+        self.assertEqual(redacted_image_meta, tmp_image_meta)
 
     def test_noop_redact_location(self):
         """Check no-op location redaction does not change original metadata"""
@@ -3501,8 +3501,8 @@ class TestImageSerializer(base.IsolatedUnitTest):
         tmp_image_meta = glance.api.v1.images.redact_loc(image_meta)
 
         self.assertEqual(image_meta, copy_image_meta)
-        self.assertEqual(tmp_image_meta, redacted_image_meta)
-        self.assertEqual(image_meta, redacted_image_meta)
+        self.assertEqual(redacted_image_meta, tmp_image_meta)
+        self.assertEqual(redacted_image_meta, image_meta)
 
 
 class TestFilterValidator(base.IsolatedUnitTest):
@@ -3602,7 +3602,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
             another_request.headers[k] = v
         another_request.get_response(self.api)
         output = another_request.get_response(self.api)
-        self.assertEqual(output.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, output.status_int)
         self.assertIn("Property '%s' is protected" %
                       "x_owner_foo", output.body)
 
@@ -3795,7 +3795,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
-        self.assertEqual(output.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, output.status_int)
         self.assertIn("Property '%s' is protected" %
                       "x_owner_foo", output.body)
 
@@ -3814,7 +3814,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
-        self.assertEqual(output.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, output.status_int)
         self.assertIn("Property '%s' is protected" %
                       "x_owner_foo", output.body)
 
@@ -3831,7 +3831,7 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         for k, v in six.iteritems(headers):
             another_request.headers[k] = v
         output = another_request.get_response(self.api)
-        self.assertEqual(output.status_int, webob.exc.HTTPForbidden.code)
+        self.assertEqual(webob.exc.HTTPForbidden.code, output.status_int)
         self.assertIn("Property '%s' is protected" %
                       "spl_update_only_prop", output.body)
 

@@ -193,12 +193,12 @@ class TestMetadefRepo(test_utils.BaseTestCase):
 
     def test_get_namespace(self):
         namespace = self.namespace_repo.get(NAMESPACE1)
-        self.assertEqual(namespace.namespace, NAMESPACE1)
-        self.assertEqual(namespace.description, 'desc1')
-        self.assertEqual(namespace.display_name, '1')
-        self.assertEqual(namespace.owner, TENANT1)
+        self.assertEqual(NAMESPACE1, namespace.namespace)
+        self.assertEqual('desc1', namespace.description)
+        self.assertEqual('1', namespace.display_name)
+        self.assertEqual(TENANT1, namespace.owner)
         self.assertTrue(namespace.protected)
-        self.assertEqual(namespace.visibility, 'private')
+        self.assertEqual('private', namespace.visibility)
 
     def test_get_namespace_not_found(self):
         fake_namespace = "fake_namespace"
@@ -234,10 +234,10 @@ class TestMetadefRepo(test_utils.BaseTestCase):
                                           visibility='public',
                                           protected=True,
                                           owner=TENANT1)
-        self.assertEqual(namespace['namespace'], 'added_namespace')
+        self.assertEqual('added_namespace', namespace['namespace'])
         self.db.metadef_namespace_create(None, namespace)
         retrieved_namespace = self.namespace_repo.get(namespace['namespace'])
-        self.assertEqual(retrieved_namespace.namespace, 'added_namespace')
+        self.assertEqual('added_namespace', retrieved_namespace.namespace)
 
     def test_save_namespace(self):
         namespace = self.namespace_repo.get(NAMESPACE1)
@@ -245,8 +245,8 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         namespace.description = 'save_desc'
         self.namespace_repo.save(namespace)
         namespace = self.namespace_repo.get(NAMESPACE1)
-        self.assertEqual(namespace.display_name, 'save_name')
-        self.assertEqual(namespace.description, 'save_desc')
+        self.assertEqual('save_name', namespace.display_name)
+        self.assertEqual('save_desc', namespace.description)
 
     def test_remove_namespace(self):
         namespace = self.namespace_repo.get(NAMESPACE1)
@@ -265,8 +265,8 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_get_property(self):
         property = self.property_repo.get(NAMESPACE1, PROPERTY1)
         namespace = self.namespace_repo.get(NAMESPACE1)
-        self.assertEqual(property.name, PROPERTY1)
-        self.assertEqual(property.namespace.namespace, namespace.namespace)
+        self.assertEqual(PROPERTY1, property.name)
+        self.assertEqual(namespace.namespace, property.namespace.namespace)
 
     def test_get_property_not_found(self):
         exc = self.assertRaises(exception.NotFound,
@@ -296,18 +296,18 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         # property_factory when property primary key in DB
         # will be changed from Integer to UUID
         property = _db_property_fixture(name='added_property')
-        self.assertEqual(property['name'], 'added_property')
+        self.assertEqual('added_property', property['name'])
         self.db.metadef_property_create(self.context, NAMESPACE1, property)
         retrieved_property = self.property_repo.get(NAMESPACE1,
                                                     'added_property')
-        self.assertEqual(retrieved_property.name, 'added_property')
+        self.assertEqual('added_property', retrieved_property.name)
 
     def test_add_property_namespace_forbidden(self):
         # NOTE(pawel-koniszewski): Change db_property_fixture to
         # property_factory when property primary key in DB
         # will be changed from Integer to UUID
         property = _db_property_fixture(name='added_property')
-        self.assertEqual(property['name'], 'added_property')
+        self.assertEqual('added_property', property['name'])
         self.assertRaises(exception.Forbidden, self.db.metadef_property_create,
                           self.context, NAMESPACE3, property)
 
@@ -316,7 +316,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         # property_factory when property primary key in DB
         # will be changed from Integer to UUID
         property = _db_property_fixture(name='added_property')
-        self.assertEqual(property['name'], 'added_property')
+        self.assertEqual('added_property', property['name'])
         self.assertRaises(exception.NotFound, self.db.metadef_property_create,
                           self.context, 'not_a_namespace', property)
 
@@ -325,8 +325,8 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         property.schema = '{"save": "schema"}'
         self.property_repo.save(property)
         property = self.property_repo.get(NAMESPACE1, PROPERTY1)
-        self.assertEqual(property.name, PROPERTY1)
-        self.assertEqual(property.schema, '{"save": "schema"}')
+        self.assertEqual(PROPERTY1, property.name)
+        self.assertEqual('{"save": "schema"}', property.schema)
 
     def test_remove_property(self):
         property = self.property_repo.get(NAMESPACE1, PROPERTY1)
@@ -344,11 +344,11 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_get_object(self):
         object = self.object_repo.get(NAMESPACE1, OBJECT1)
         namespace = self.namespace_repo.get(NAMESPACE1)
-        self.assertEqual(object.name, OBJECT1)
-        self.assertEqual(object.description, 'desc1')
-        self.assertEqual(object.required, ['[]'])
-        self.assertEqual(object.properties, {})
-        self.assertEqual(object.namespace.namespace, namespace.namespace)
+        self.assertEqual(OBJECT1, object.name)
+        self.assertEqual('desc1', object.description)
+        self.assertEqual(['[]'], object.required)
+        self.assertEqual({}, object.properties)
+        self.assertEqual(namespace.namespace, object.namespace.namespace)
 
     def test_get_object_not_found(self):
         exc = self.assertRaises(exception.NotFound, self.object_repo.get,
@@ -375,18 +375,18 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         # object_factory when object primary key in DB
         # will be changed from Integer to UUID
         object = _db_object_fixture(name='added_object')
-        self.assertEqual(object['name'], 'added_object')
+        self.assertEqual('added_object', object['name'])
         self.db.metadef_object_create(self.context, NAMESPACE1, object)
         retrieved_object = self.object_repo.get(NAMESPACE1,
                                                 'added_object')
-        self.assertEqual(retrieved_object.name, 'added_object')
+        self.assertEqual('added_object', retrieved_object.name)
 
     def test_add_object_namespace_forbidden(self):
         # NOTE(pawel-koniszewski): Change db_object_fixture to
         # object_factory when object primary key in DB
         # will be changed from Integer to UUID
         object = _db_object_fixture(name='added_object')
-        self.assertEqual(object['name'], 'added_object')
+        self.assertEqual('added_object', object['name'])
         self.assertRaises(exception.Forbidden, self.db.metadef_object_create,
                           self.context, NAMESPACE3, object)
 
@@ -395,7 +395,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         # object_factory when object primary key in DB
         # will be changed from Integer to UUID
         object = _db_object_fixture(name='added_object')
-        self.assertEqual(object['name'], 'added_object')
+        self.assertEqual('added_object', object['name'])
         self.assertRaises(exception.NotFound, self.db.metadef_object_create,
                           self.context, 'not-a-namespace', object)
 
@@ -405,9 +405,9 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         object.description = 'save_desc'
         self.object_repo.save(object)
         object = self.object_repo.get(NAMESPACE1, OBJECT1)
-        self.assertEqual(object.name, OBJECT1)
-        self.assertEqual(object.required, ['save_req'])
-        self.assertEqual(object.description, 'save_desc')
+        self.assertEqual(OBJECT1, object.name)
+        self.assertEqual(['save_req'], object.required)
+        self.assertEqual('save_desc', object.description)
 
     def test_remove_object(self):
         object = self.object_repo.get(NAMESPACE1, OBJECT1)
@@ -425,4 +425,4 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_list_resource_type(self):
         resource_type = self.resource_type_repo.list(
             filters={'namespace': NAMESPACE1})
-        self.assertEqual(len(resource_type), 0)
+        self.assertEqual(0, len(resource_type))

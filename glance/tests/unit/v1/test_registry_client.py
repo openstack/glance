@@ -775,7 +775,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         # Verify one less image
         new_num_images = len(self.client.get_images())
 
-        self.assertEqual(new_num_images, orig_num_images - 1)
+        self.assertEqual(orig_num_images - 1, new_num_images)
 
     def test_delete_image_not_existing(self):
         """Check that one cannot delete non-existing image."""

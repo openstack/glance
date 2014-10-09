@@ -62,10 +62,10 @@ class BaseCacheMiddlewareTest(object):
                                          body=image_data)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
@@ -234,10 +234,10 @@ class BaseCacheMiddlewareTest(object):
                                          body=image_data)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
@@ -359,10 +359,10 @@ class BaseCacheManageMiddlewareTest(object):
                                          body=image_data)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], name)
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual(name, data['image']['name'])
         self.assertTrue(data['image']['is_public'])
         return data['image']['id']
 
@@ -541,7 +541,7 @@ class BaseCacheManageMiddlewareTest(object):
                                                   ids[x])
             http = httplib2.Http()
             response, content = http.request(path, 'GET')
-            self.assertEqual(response.status, 200,
+            self.assertEqual(200, response.status,
                              "Failed to find image %s" % ids[x])
 
         # Verify images now in cache

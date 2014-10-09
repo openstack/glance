@@ -150,7 +150,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Image list should now have one entry
         path = self._url('/v2/images')
@@ -158,7 +158,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image_id)
+        self.assertEqual(image_id, images[0]['id'])
 
         # Create another image (with two deployer-defined properties)
         path = self._url('/v2/images')
@@ -210,7 +210,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Image list should now have two entries
         path = self._url('/v2/images')
@@ -565,7 +565,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in six.iteritems(expected_image):
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Upload data to image
         path = self._url('/v2/images/%s/file' % image_id)
@@ -630,7 +630,7 @@ class TestImages(functional.FunctionalTest):
         }
 
         for key, value in six.iteritems(expected_image):
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Upload data to image
         path = self._url('/v2/images/%s/file' % image_id)
@@ -696,7 +696,7 @@ class TestImages(functional.FunctionalTest):
         }
 
         for key, value in six.iteritems(expected_image):
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, value, key)
 
         # Upload data to image
         path = self._url('/v2/images/%s/file' % image_id)
@@ -926,7 +926,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Create an image for role spl_role with extra props
         path = self._url('/v2/images')
@@ -1074,7 +1074,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Create an image for role spl_role with extra props
         path = self._url('/v2/images')
@@ -1213,7 +1213,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
@@ -1241,7 +1241,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Verify both admin and unknown role can read properties marked with
         # '@'
@@ -1490,7 +1490,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
@@ -1518,7 +1518,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
         for key, value in expected_image.items():
-            self.assertEqual(image[key], value, key)
+            self.assertEqual(value, image[key], key)
 
         # Verify both admin and unknown role can read properties marked with
         # '@'
@@ -2024,76 +2024,76 @@ class TestImages(functional.FunctionalTest):
             if visibility is not None:
                 path += '?visibility=%s' % visibility
             response = requests.get(path, headers=headers)
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(200, response.status_code)
             return jsonutils.loads(response.text)['images']
 
         # 1. Known user sees public and their own images
         images = list_images('tenant1')
-        self.assertEqual(len(images), 5)
+        self.assertEqual(5, len(images))
         for image in images:
             self.assertTrue(image['visibility'] == 'public'
                             or 'tenant1' in image['name'])
 
         # 2. Known user, visibility=public, sees all public images
         images = list_images('tenant1', visibility='public')
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
         for image in images:
-            self.assertEqual(image['visibility'], 'public')
+            self.assertEqual('public', image['visibility'])
 
         # 3. Known user, visibility=private, sees only their private image
         images = list_images('tenant1', visibility='private')
-        self.assertEqual(len(images), 1)
+        self.assertEqual(1, len(images))
         image = images[0]
-        self.assertEqual(image['visibility'], 'private')
+        self.assertEqual('private', image['visibility'])
         self.assertTrue('tenant1' in image['name'])
 
         # 4. Unknown user sees only public images
         images = list_images('none')
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
         for image in images:
-            self.assertEqual(image['visibility'], 'public')
+            self.assertEqual('public', image['visibility'])
 
         # 5. Unknown user, visibility=public, sees only public images
         images = list_images('none', visibility='public')
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
         for image in images:
-            self.assertEqual(image['visibility'], 'public')
+            self.assertEqual('public', image['visibility'])
 
         # 6. Unknown user, visibility=private, sees no images
         images = list_images('none', visibility='private')
-        self.assertEqual(len(images), 0)
+        self.assertEqual(0, len(images))
 
         # 7. Unknown admin sees all images
         images = list_images('none', role='admin')
-        self.assertEqual(len(images), 8)
+        self.assertEqual(8, len(images))
 
         # 8. Unknown admin, visibility=public, shows only public images
         images = list_images('none', role='admin', visibility='public')
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
         for image in images:
-            self.assertEqual(image['visibility'], 'public')
+            self.assertEqual('public', image['visibility'])
 
         # 9. Unknown admin, visibility=private, sees only private images
         images = list_images('none', role='admin', visibility='private')
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
         for image in images:
-            self.assertEqual(image['visibility'], 'private')
+            self.assertEqual('private', image['visibility'])
 
         # 10. Known admin sees all images
         images = list_images('admin', role='admin')
-        self.assertEqual(len(images), 8)
+        self.assertEqual(8, len(images))
 
         # 11. Known admin, visibility=public, sees all public images
         images = list_images('admin', role='admin', visibility='public')
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
         for image in images:
-            self.assertEqual(image['visibility'], 'public')
+            self.assertEqual('public', image['visibility'])
 
         # 12. Known admin, visibility=private, sees all private images
         images = list_images('admin', role='admin', visibility='private')
-        self.assertEqual(len(images), 4)
+        self.assertEqual(4, len(images))
         for image in images:
-            self.assertEqual(image['visibility'], 'private')
+            self.assertEqual('private', image['visibility'])
 
         self.stop_servers()
 
@@ -2110,7 +2110,7 @@ class TestImages(functional.FunctionalTest):
         # Returned image entity should have a generated id and status
         image = jsonutils.loads(response.text)
         image_id = image['id']
-        self.assertEqual(image['status'], 'queued')
+        self.assertEqual('queued', image['status'])
         self.assertNotIn('size', image)
         self.assertNotIn('virtual_size', image)
 
@@ -2133,7 +2133,7 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertEqual(image['size'], 6)
+        self.assertEqual(6, image['size'])
 
 
 class TestImagesWithRegistry(TestImages):
@@ -2439,9 +2439,9 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertTrue('locations' in image)
-        self.assertEqual(image['locations'], values)
+        self.assertEqual(values, image['locations'])
         self.assertTrue('direct_url' in image)
-        self.assertEqual(image['direct_url'], values[0]['url'])
+        self.assertEqual(values[0]['url'], image['direct_url'])
 
         self.stop_servers()
 
@@ -2500,9 +2500,9 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertTrue('locations' in image)
-        self.assertEqual(image['locations'], values)
+        self.assertEqual(values, image['locations'])
         self.assertTrue('direct_url' in image)
-        self.assertEqual(image['direct_url'], values[0]['url'])
+        self.assertEqual(values[0]['url'], image['direct_url'])
 
         self.stop_servers()
 
@@ -2680,9 +2680,9 @@ class TestImageMembers(functional.FunctionalTest):
         response = requests.get(path, headers=get_header('tenant1'))
         self.assertEqual(200, response.status_code)
         body = jsonutils.loads(response.text)
-        self.assertEqual(body['status'], 'pending')
-        self.assertEqual(body['image_id'], image_fixture[1]['id'])
-        self.assertEqual(body['member_id'], TENANT3)
+        self.assertEqual('pending', body['status'])
+        self.assertEqual(image_fixture[1]['id'], body['image_id'])
+        self.assertEqual(TENANT3, body['member_id'])
 
         # Tenant 3, who is the member can get status of its own status
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
@@ -2690,9 +2690,9 @@ class TestImageMembers(functional.FunctionalTest):
         response = requests.get(path, headers=get_header(TENANT3))
         self.assertEqual(200, response.status_code)
         body = jsonutils.loads(response.text)
-        self.assertEqual(body['status'], 'pending')
-        self.assertEqual(body['image_id'], image_fixture[1]['id'])
-        self.assertEqual(body['member_id'], TENANT3)
+        self.assertEqual('pending', body['status'])
+        self.assertEqual(image_fixture[1]['id'], body['image_id'])
+        self.assertEqual(TENANT3, body['member_id'])
 
         # Tenant 2, who not the owner cannot get status of image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
