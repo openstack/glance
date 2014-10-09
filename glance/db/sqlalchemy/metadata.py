@@ -283,7 +283,6 @@ def _export_data_to_file(meta, path):
             'description': namespace['description'],
             'visibility': namespace['visibility'],
             'protected': namespace['protected'],
-            'owner': namespace['owner'],
             'resource_type_associations': [],
             'properties': {},
             'objects': [],
@@ -303,7 +302,9 @@ def _export_data_to_file(meta, path):
                                    namespace_resource_type['resource_type_id'])
             resource_types.append({
                 'name': resource_type['name'],
-                'protected': resource_type['protected']
+                'prefix': namespace_resource_type['prefix'],
+                'properties_target': namespace_resource_type[
+                    'properties_target']
             })
         values.update({
             'resource_type_associations': resource_types
