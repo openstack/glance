@@ -507,7 +507,7 @@ class MetadefObjectRepo(object):
 
         # Convert the persisted json schema to a dict of PropertyTypes
         property_types = {}
-        json_props = metadata_object['schema']
+        json_props = metadata_object['json_schema']
         for id in json_props:
             property_types[id] = fromjson(PropertyType, json_props[id])
 
@@ -539,7 +539,7 @@ class MetadefObjectRepo(object):
             'name': metadata_object.name,
             'required': required_str,
             'description': metadata_object.description,
-            'schema': db_schema
+            'json_schema': db_schema
         }
         return db_metadata_object
 
@@ -694,14 +694,14 @@ class MetadefPropertyRepo(object):
             namespace=namespace_entity,
             property_id=property['id'],
             name=property['name'],
-            schema=property['schema']
+            schema=property['json_schema']
         )
 
     def _format_metadef_property_to_db(self, property):
 
         db_metadata_object = {
             'name': property.name,
-            'schema': property.schema
+            'json_schema': property.schema
         }
         return db_metadata_object
 

@@ -1265,7 +1265,7 @@ def metadef_object_create(context, namespace_name, values):
     object_values = copy.deepcopy(values)
     object_name = object_values['name']
     required_attributes = ['name']
-    allowed_attributes = ['name', 'description', 'schema', 'required']
+    allowed_attributes = ['name', 'description', 'json_schema', 'required']
 
     namespace = metadef_namespace_get(context, namespace_name)
 
@@ -1383,7 +1383,7 @@ def metadef_property_create(context, namespace_name, values):
     property_values = copy.deepcopy(values)
     property_name = property_values['name']
     required_attributes = ['name']
-    allowed_attributes = ['name', 'description', 'schema', 'required']
+    allowed_attributes = ['name', 'description', 'json_schema', 'required']
 
     namespace = metadef_namespace_get(context, namespace_name)
 
@@ -1690,7 +1690,7 @@ def _format_property(values):
         'id': _get_metadef_id(),
         'namespace_id': None,
         'name': None,
-        'schema': None
+        'json_schema': None
     }
     property.update(values)
     return property
@@ -1720,7 +1720,7 @@ def _format_object(values):
         'namespace_id': None,
         'name': None,
         'description': None,
-        'schema': None,
+        'json_schema': None,
         'required': None,
         'created_at': dt,
         'updated_at': dt

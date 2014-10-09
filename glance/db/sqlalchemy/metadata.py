@@ -200,7 +200,7 @@ def _populate_metadata(meta, metadata_path=None):
             values = {
                 'name': property,
                 'namespace_id': namespace_id,
-                'schema': json.dumps(schema),
+                'json_schema': json.dumps(schema),
                 'created_at': timeutils.utcnow()
             }
             _insert_data_to_db(metadef_properties_table, values)
@@ -210,7 +210,7 @@ def _populate_metadata(meta, metadata_path=None):
                 'name': object.get('name', None),
                 'description': object.get('description', None),
                 'namespace_id': namespace_id,
-                'schema': json.dumps(object.get('properties', None)),
+                'json_schema': json.dumps(object.get('properties', None)),
                 'created_at': timeutils.utcnow()
             }
             _insert_data_to_db(metadef_objects_table, values)
@@ -287,7 +287,7 @@ def _export_data_to_file(meta, path):
             objects.append({
                 "name": object['name'],
                 "description": object['description'],
-                "properties": json.loads(object['schema'])
+                "properties": json.loads(object['json_schema'])
             })
         values.update({
             'objects': objects
@@ -296,7 +296,7 @@ def _export_data_to_file(meta, path):
         properties = {}
         for property in db_properties:
             properties.update({
-                property['name']: json.loads(property['schema'])
+                property['name']: json.loads(property['json_schema'])
             })
         values.update({
             'properties': properties
