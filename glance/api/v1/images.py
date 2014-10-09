@@ -417,17 +417,20 @@ class Controller(controller.BaseController):
         """
         External sources (as specified via the location or copy-from headers)
         are supported only over non-local store types, i.e. S3, Swift, HTTP.
-        Note the absence of file:// for security reasons, see LP bug #942118.
+        Note the absence of 'file://' for security reasons, see LP bug #942118.
+        'swift+config://' is also absent for security reasons, see LP bug
+        #1334196.
         If the above constraint is violated, we reject with 400 "Bad Request".
         """
         if source:
             pieces = urlparse.urlparse(source)
             schemes = [scheme for scheme in store.get_known_schemes()
-                       if scheme != 'file']
+                       if scheme != 'file' and scheme != 'swift+config']
             for scheme in schemes:
                 if pieces.scheme == scheme:
                     return source
-            msg = "External sourcing not supported for store %s" % source
+            msg = ("External sourcing not supported for "
+                   "store '%s'" % pieces.scheme)
             LOG.debug(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
@@ -743,18 +746,17 @@ class Controller(controller.BaseController):
             self.pool.spawn_n(self._upload_and_activate, req, image_meta)
         else:
             if location:
-                try:
-                    store.validate_location(location, context=req.context)
-                except store.BadStoreUri as bse:
-                    raise HTTPBadRequest(explanation=bse.msg,
-                                         request=req)
-
                 self._validate_image_for_activation(req, image_id, image_meta)
                 image_size_meta = image_meta.get('size')
                 if image_size_meta:
-                    image_size_store = store.get_size_from_backend(
-                        location,
-                        context=req.context)
+                    try:
+                        image_size_store = store.get_size_from_backend(
+                            location, req.context)
+                    except (store.BadStoreUri, store.UnknownScheme) as e:
+                        LOG.debug(utils.exception_to_str(e))
+                        raise HTTPBadRequest(explanation=e.msg,
+                                             request=req,
+                                             content_type="text/plain")
                     # NOTE(zhiyan): A returned size of zero usually means
                     # the driver encountered an error. In this case the
                     # size provided by the client will be used as-is.

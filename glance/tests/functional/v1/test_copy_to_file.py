@@ -250,7 +250,33 @@ class TestCopyToFile(functional.FunctionalTest):
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 400, content)
 
-        expected = 'External sourcing not supported for store ' + copy_from
+        expected = 'External sourcing not supported for store \'file\''
+        msg = 'expected "%s" in "%s"' % (expected, content)
+        self.assertTrue(expected in content, msg)
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_copy_from_swift_config(self):
+        """
+        Ensure we can't copy from swift+config
+        """
+        self.cleanup()
+
+        self.start_servers(**self.__dict__.copy())
+
+        # POST /images with public image copied from file (to file)
+        headers = {'X-Image-Meta-Name': 'copied',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Glance-API-Copy-From': 'swift+config://xxx'}
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(response.status, 400, content)
+
+        expected = 'External sourcing not supported for store \'swift+config\''
         msg = 'expected "%s" in "%s"' % (expected, content)
         self.assertTrue(expected in content, msg)
 
