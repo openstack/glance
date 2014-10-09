@@ -195,6 +195,13 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                     mock_safe_kill.assert_called_with(req, image_meta['id'],
                                                       'saving')
 
+    def test_upload_data_to_store_raises_store_disabled(self):
+        """Test StoreDisabled exception is raised while uploading data"""
+        self._test_upload_data_to_store_exception_with_notify(
+            glance_store.StoreAddDisabled,
+            webob.exc.HTTPGone,
+            image_killed=True)
+
     def test_upload_data_to_store_duplicate(self):
         """See note in glance.api.v1.upload_utils on why we don't want image to
         be deleted in this case.
