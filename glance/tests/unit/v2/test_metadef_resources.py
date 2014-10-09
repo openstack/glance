@@ -38,6 +38,7 @@ NAMESPACE6 = 'Namespace6'
 PROPERTY1 = 'Property1'
 PROPERTY2 = 'Property2'
 PROPERTY3 = 'Property3'
+PROPERTY4 = 'Property4'
 
 OBJECT1 = 'Object1'
 OBJECT2 = 'Object2'
@@ -46,11 +47,14 @@ OBJECT3 = 'Object3'
 RESOURCE_TYPE1 = 'ResourceType1'
 RESOURCE_TYPE2 = 'ResourceType2'
 RESOURCE_TYPE3 = 'ResourceType3'
+RESOURCE_TYPE4 = 'ResourceType4'
 
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
 TENANT3 = '5a3e60e8-cfa9-4a9e-a90a-62b42cea92b8'
 TENANT4 = 'c6c87f25-8a94-47ed-8c83-053c25f42df4'
+
+PREFIX1 = 'pref'
 
 
 def _db_namespace_fixture(namespace, **kwargs):
@@ -146,6 +150,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
             (NAMESPACE3, _db_property_fixture(PROPERTY1)),
             (NAMESPACE3, _db_property_fixture(PROPERTY2)),
             (NAMESPACE1, _db_property_fixture(PROPERTY1)),
+            (NAMESPACE6, _db_property_fixture(PROPERTY4)),
         ]
         [self.db.metadef_property_create(req.context, namespace, property)
          for namespace, property in self.properties]
@@ -165,6 +170,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.resource_types = [
             _db_resource_type_fixture(RESOURCE_TYPE1),
             _db_resource_type_fixture(RESOURCE_TYPE2),
+            _db_resource_type_fixture(RESOURCE_TYPE4),
         ]
         [self.db.metadef_resource_type_create(req.context, resource_type)
          for resource_type in self.resource_types]
@@ -176,6 +182,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
             (NAMESPACE3, _db_namespace_resource_type_fixture(RESOURCE_TYPE1)),
             (NAMESPACE2, _db_namespace_resource_type_fixture(RESOURCE_TYPE1)),
             (NAMESPACE2, _db_namespace_resource_type_fixture(RESOURCE_TYPE2)),
+            (NAMESPACE6, _db_namespace_resource_type_fixture(RESOURCE_TYPE4,
+                                                             prefix=PREFIX1)),
         ]
         [self.db.metadef_resource_type_association_create(req.context,
                                                           namespace,
@@ -525,6 +533,25 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         output = self.property_controller.show(request, NAMESPACE3, PROPERTY1)
         self.assertEqual(output.name, PROPERTY1)
+
+    def test_property_show_specific_resource_type(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.property_controller.show(
+            request, NAMESPACE6, ''.join([PREFIX1, PROPERTY4]),
+            filters={'resource_type': RESOURCE_TYPE4})
+        self.assertEqual(output.name, PROPERTY4)
+
+    def test_property_show_prefix_mismatch(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.property_controller.show, request, NAMESPACE6,
+                          PROPERTY4, filters={'resource_type': RESOURCE_TYPE4})
+
+    def test_property_show_non_existing_resource_type(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.property_controller.show, request, NAMESPACE2,
+                          PROPERTY1, filters={'resource_type': 'test'})
 
     def test_property_show_non_existing(self):
         request = unit_test_utils.get_fake_request()
@@ -958,10 +985,10 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         output = self.rt_controller.index(request)
 
-        self.assertEqual(2, len(output.resource_types))
+        self.assertEqual(3, len(output.resource_types))
         actual = set([type.name for type in
                       output.resource_types])
-        expected = set([RESOURCE_TYPE1, RESOURCE_TYPE2])
+        expected = set([RESOURCE_TYPE1, RESOURCE_TYPE2, RESOURCE_TYPE4])
         self.assertEqual(actual, expected)
 
     def test_resource_type_show(self):
