@@ -89,7 +89,7 @@ class MetadefObject(BASE_DICT, GlanceMetadefBase):
     name = Column(String(80), nullable=False)
     description = Column(Text())
     required = Column(Text())
-    schema = Column(JSONEncodedDict(), default={})
+    json_schema = Column(JSONEncodedDict(), default={})
 
 
 class MetadefProperty(BASE_DICT, GlanceMetadefBase):
@@ -103,7 +103,7 @@ class MetadefProperty(BASE_DICT, GlanceMetadefBase):
     namespace_id = Column(Integer(), ForeignKey('metadef_namespaces.id'),
                           nullable=False)
     name = Column(String(80), nullable=False)
-    schema = Column(JSONEncodedDict(), default={})
+    json_schema = Column(JSONEncodedDict(), default={})
 
 
 class MetadefNamespaceResourceType(BASE_DICT, GlanceMetadefBase):

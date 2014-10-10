@@ -1460,3 +1460,87 @@ class TestMigrations(test_utils.BaseTestCase):
         self.assertRaises(sqlalchemy.exc.NoSuchTableError,
                           get_table, engine,
                           'metadef_namespace_resource_types')
+
+    def _pre_upgrade_036(self, engine):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        # metadef_objects
+        table = sqlalchemy.Table("metadef_objects", meta, autoload=True)
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'description',
+                         u'required',
+                         u'schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+        # metadef_properties
+        table = sqlalchemy.Table("metadef_properties", meta, autoload=True)
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+    def _check_036(self, engine, data):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        # metadef_objects
+        table = sqlalchemy.Table("metadef_objects", meta, autoload=True)
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'description',
+                         u'required',
+                         u'json_schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+        # metadef_properties
+        table = sqlalchemy.Table("metadef_properties", meta, autoload=True)
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'json_schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+    def _post_downgrade_036(self, engine):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        # metadef_objects
+        table = sqlalchemy.Table("metadef_objects", meta, autoload=True)
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'description',
+                         u'required',
+                         u'schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+        # metadef_properties
+        table = sqlalchemy.Table("metadef_properties", meta, autoload=True)
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'schema',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
