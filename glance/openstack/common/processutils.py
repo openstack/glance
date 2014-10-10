@@ -18,7 +18,7 @@ System-level utilities and helper functions.
 """
 
 import errno
-import logging as stdlib_logging
+import logging
 import multiprocessing
 import os
 import random
@@ -27,10 +27,10 @@ import signal
 
 from eventlet.green import subprocess
 from eventlet import greenthread
+from oslo.utils import strutils
 import six
 
-from glance.openstack.common.gettextutils import _
-from glance.openstack.common import log as logging
+from glance.openstack.common._i18n import _
 
 
 LOG = logging.getLogger(__name__)
@@ -115,8 +115,7 @@ def execute(*cmd, **kwargs):
                             execute this command. Defaults to false.
     :type shell:            boolean
     :param loglevel:        log level for execute commands.
-    :type loglevel:         int.  (Should be stdlib_logging.DEBUG or
-                            stdlib_logging.INFO)
+    :type loglevel:         int.  (Should be logging.DEBUG or logging.INFO)
     :returns:               (stdout, stderr) from process execution
     :raises:                :class:`UnknownArgumentError` on
                             receiving unknown arguments
@@ -132,7 +131,7 @@ def execute(*cmd, **kwargs):
     run_as_root = kwargs.pop('run_as_root', False)
     root_helper = kwargs.pop('root_helper', '')
     shell = kwargs.pop('shell', False)
-    loglevel = kwargs.pop('loglevel', stdlib_logging.DEBUG)
+    loglevel = kwargs.pop('loglevel', logging.DEBUG)
 
     if isinstance(check_exit_code, bool):
         ignore_exit_code = not check_exit_code
@@ -141,8 +140,7 @@ def execute(*cmd, **kwargs):
         check_exit_code = [check_exit_code]
 
     if kwargs:
-        raise UnknownArgumentError(_('Got unknown keyword args '
-                                     'to utils.execute: %r') % kwargs)
+        raise UnknownArgumentError(_('Got unknown keyword args: %r') % kwargs)
 
     if run_as_root and hasattr(os, 'geteuid') and os.geteuid() != 0:
         if not root_helper:
@@ -152,12 +150,12 @@ def execute(*cmd, **kwargs):
         cmd = shlex.split(root_helper) + list(cmd)
 
     cmd = map(str, cmd)
+    sanitized_cmd = strutils.mask_password(' '.join(cmd))
 
     while attempts > 0:
         attempts -= 1
         try:
-            LOG.log(loglevel, 'Running cmd (subprocess): %s',
-                    ' '.join(logging.mask_password(cmd)))
+            LOG.log(loglevel, _('Running cmd (subprocess): %s'), sanitized_cmd)
             _PIPE = subprocess.PIPE  # pylint: disable=E1101
 
             if os.name == 'nt':
@@ -194,16 +192,18 @@ def execute(*cmd, **kwargs):
             LOG.log(loglevel, 'Result was %s' % _returncode)
             if not ignore_exit_code and _returncode not in check_exit_code:
                 (stdout, stderr) = result
+                sanitized_stdout = strutils.mask_password(stdout)
+                sanitized_stderr = strutils.mask_password(stderr)
                 raise ProcessExecutionError(exit_code=_returncode,
-                                            stdout=stdout,
-                                            stderr=stderr,
-                                            cmd=' '.join(cmd))
+                                            stdout=sanitized_stdout,
+                                            stderr=sanitized_stderr,
+                                            cmd=sanitized_cmd)
             return result
         except ProcessExecutionError:
             if not attempts:
                 raise
             else:
-                LOG.log(loglevel, '%r failed. Retrying.', cmd)
+                LOG.log(loglevel, _('%r failed. Retrying.'), sanitized_cmd)
                 if delay_on_retry:
                     greenthread.sleep(random.randint(20, 200) / 100.0)
         finally:
@@ -242,7 +242,8 @@ def trycmd(*args, **kwargs):
 
 def ssh_execute(ssh, cmd, process_input=None,
                 addl_env=None, check_exit_code=True):
-    LOG.debug('Running cmd (SSH): %s', cmd)
+    sanitized_cmd = strutils.mask_password(cmd)
+    LOG.debug('Running cmd (SSH): %s', sanitized_cmd)
     if addl_env:
         raise InvalidArgumentError(_('Environment not supported over SSH'))
 
@@ -256,7 +257,10 @@ def ssh_execute(ssh, cmd, process_input=None,
     # NOTE(justinsb): This seems suspicious...
     # ...other SSH clients have buffering issues with this approach
     stdout = stdout_stream.read()
+    sanitized_stdout = strutils.mask_password(stdout)
     stderr = stderr_stream.read()
+    sanitized_stderr = strutils.mask_password(stderr)
+
     stdin_stream.close()
 
     exit_status = channel.recv_exit_status()
@@ -266,11 +270,11 @@ def ssh_execute(ssh, cmd, process_input=None,
         LOG.debug('Result was %s' % exit_status)
         if check_exit_code and exit_status != 0:
             raise ProcessExecutionError(exit_code=exit_status,
-                                        stdout=stdout,
-                                        stderr=stderr,
-                                        cmd=cmd)
+                                        stdout=sanitized_stdout,
+                                        stderr=sanitized_stderr,
+                                        cmd=sanitized_cmd)
 
-    return (stdout, stderr)
+    return (sanitized_stdout, sanitized_stderr)
 
 
 def get_worker_count():
