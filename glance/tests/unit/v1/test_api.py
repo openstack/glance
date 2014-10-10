@@ -2606,6 +2606,22 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(403, res.status_int)
 
+    def test_download_service_unavailable(self):
+        """Test image download returns HTTPServiceUnavailable."""
+        image_fixture = self.FIXTURES[1]
+        image_fixture.update({'location': 'http://netloc/path/to/file.tar.gz'})
+        request = webob.Request.blank("/images/%s" % UUID2)
+        request.context = self.context
+
+        image_controller = glance.api.v1.images.Controller()
+        with mock.patch.object(image_controller,
+                               'get_active_image_meta_or_404'
+                               ) as mocked_get_image:
+            mocked_get_image.return_value = image_fixture
+            self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                              image_controller.show,
+                              request, mocked_get_image)
+
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'
