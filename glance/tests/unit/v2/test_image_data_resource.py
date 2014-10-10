@@ -471,6 +471,25 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
                           self.serializer.download,
                           response, image)
 
+    def test_download_not_found(self):
+        """Test image download returns HTTPNotFound.
+
+        Make sure that serializer returns 404 not found error in case of
+        image is not available at specified location.
+        """
+        with mock.patch.object(glance.api.policy.ImageProxy,
+                               'get_data') as mock_get_data:
+            mock_get_data.side_effect = glance_store.NotFound()
+
+            request = wsgi.Request.blank('/')
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=iter('ZZZ'))
+            image.get_data = mock_get_data
+            self.assertRaises(webob.exc.HTTPNotFound,
+                              self.serializer.download,
+                              response, image)
+
     def test_upload(self):
         request = webob.Request.blank('/')
         request.environ = {}
