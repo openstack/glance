@@ -50,9 +50,7 @@ an example for ``authtoken``::
 
   [filter:authtoken]
   paste.filter_factory = keystonemiddleware.auth_token:filter_factory
-  auth_host = 127.0.0.1
-  auth_port = 35357
-  auth_protocol = http
+  identity_uri = http://127.0.0.1:35357
   admin_user = glance_admin
   admin_tenant_name = service_admins
   admin_password = password1234
@@ -61,10 +59,9 @@ The actual values for these variables will need to be set depending on
 your situation.  For more information, please refer to the Keystone
 documentation on the ``auth_token`` middleware, but in short:
 
-* Those variables beginning with ``auth_`` point to the Keystone 
-  Admin service.  This information is used by the middleware to actually 
-  query Keystone about the validity of the
-  authentication tokens.
+* The ``identity_uri`` variable points to the Keystone Admin service.
+  This information is used by the middleware to actually query Keystone about
+  the validity of the authentication tokens.
 * The admin auth credentials (``admin_user``, ``admin_tenant_name``,
   ``admin_password``) will be used to retrieve an admin token. That
   token will be used to authorize user tokens behind the scenes.
