@@ -459,7 +459,7 @@ class Controller(controller.BaseController):
 
             image_data, image_size = src_store.get(loc, context=context)
 
-        except exception.NotFound as e:
+        except store.NotFound as e:
             raise HTTPNotFound(explanation=e.msg)
         image_size = int(image_size) if image_size else None
         return image_data, image_size
@@ -721,7 +721,7 @@ class Controller(controller.BaseController):
         try:
             return (image_meta.get('size', 0) or
                     store.get_size_from_backend(location, context=context))
-        except (exception.NotFound, store.BadStoreUri) as e:
+        except (store.NotFound, store.BadStoreUri) as e:
             LOG.debug(e)
             raise HTTPBadRequest(explanation=e.msg, content_type="text/plain")
 
