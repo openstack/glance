@@ -32,6 +32,7 @@ class TestManageBase(testtools.TestCase):
         def clear_conf():
             manage.CONF.reset()
             manage.CONF.unregister_opt(manage.command_opt)
+        clear_conf()
         self.addCleanup(clear_conf)
 
         self.patcher = mock.patch('glance.db.sqlalchemy.api.get_engine')
@@ -40,6 +41,12 @@ class TestManageBase(testtools.TestCase):
 
     def _main_test_helper(self, argv, func_name=None, *exp_args, **exp_kwargs):
         self.useFixture(fixtures.MonkeyPatch('sys.argv', argv))
+
+        def setup(product_name, version='unknown'):
+            pass
+
+        self.useFixture(fixtures.MonkeyPatch(
+            'glance.openstack.common.log.setup', setup))
         manage.main()
         func_name.assert_called_once_with(*exp_args, **exp_kwargs)
 
