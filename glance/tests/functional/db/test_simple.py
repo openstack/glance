@@ -30,7 +30,9 @@ def reset_db(db_api):
     db_api.reset()
 
 
-class TestSimpleDriver(base.TestDriver, base.DriverTests):
+class TestSimpleDriver(base.TestDriver,
+                       base.DriverTests,
+                       base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -38,7 +40,8 @@ class TestSimpleDriver(base.TestDriver, base.DriverTests):
         self.addCleanup(db_tests.reset)
 
 
-class TestSimpleQuota(base.DriverQuotaTests):
+class TestSimpleQuota(base.DriverQuotaTests,
+                      base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -46,7 +49,9 @@ class TestSimpleQuota(base.DriverQuotaTests):
         self.addCleanup(db_tests.reset)
 
 
-class TestSimpleVisibility(base.TestVisibility, base.VisibilityTests):
+class TestSimpleVisibility(base.TestVisibility,
+                           base.VisibilityTests,
+                           base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -55,7 +60,8 @@ class TestSimpleVisibility(base.TestVisibility, base.VisibilityTests):
 
 
 class TestSimpleMembershipVisibility(base.TestMembershipVisibility,
-                                     base.MembershipVisibilityTests):
+                                     base.MembershipVisibilityTests,
+                                     base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -63,7 +69,8 @@ class TestSimpleMembershipVisibility(base.TestMembershipVisibility,
         self.addCleanup(db_tests.reset)
 
 
-class TestSimpleTask(base.TaskTests):
+class TestSimpleTask(base.TaskTests,
+                     base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)

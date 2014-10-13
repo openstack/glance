@@ -17,7 +17,6 @@ from oslo.config import cfg
 from oslo.db import options
 
 import glance.db
-from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
 from glance.tests.functional.db import base_metadef
@@ -35,7 +34,7 @@ def reset_db(db_api):
     pass
 
 
-class FunctionalInitWrapper(functional.FunctionalTest):
+class FunctionalInitWrapper(base.FunctionalInitWrapper):
 
     def setUp(self):
         # NOTE(flaper87): We need to start the

@@ -24,7 +24,6 @@ import copy
 import itertools
 
 import glance.api.middleware.context
-import glance.api.policy
 import glance.api.versions
 import glance.common.config
 import glance.common.location_strategy
@@ -37,6 +36,7 @@ import glance.image_cache.drivers.sqlite
 import glance.notifier
 import glance.openstack.common.lockutils
 import glance.openstack.common.log
+import glance.openstack.common.policy
 import glance.registry
 import glance.registry.client
 import glance.registry.client.v1.api
@@ -50,7 +50,6 @@ _global_opt_lists = [
 _api_opts = [
     (None, list(itertools.chain(*(_global_opt_lists + [
         glance.api.middleware.context.context_opts,
-        glance.api.policy.policy_opts,
         glance.api.versions.versions_opts,
         glance.common.config.common_opts,
         glance.common.location_strategy.location_strategy_opts,
@@ -67,6 +66,7 @@ _api_opts = [
         glance.registry.client.registry_client_opts,
         glance.registry.client.v1.api.registry_client_ctx_opts,
         glance.openstack.common.lockutils.util_opts,
+        glance.openstack.common.policy.policy_opts,
         glance.scrubber.scrubber_opts])))),
     ('image_format', glance.common.config.image_format_opts),
     ('task', glance.common.config.task_opts),
@@ -77,18 +77,18 @@ _api_opts = [
 _registry_opts = [
     (None, list(itertools.chain(*(_global_opt_lists + [
         glance.api.middleware.context.context_opts,
-        glance.api.policy.policy_opts,
         glance.common.config.common_opts,
         glance.common.wsgi.bind_opts,
         glance.common.wsgi.socket_opts,
-        glance.common.wsgi.eventlet_opts])))),
+        glance.common.wsgi.eventlet_opts,
+        glance.openstack.common.policy.policy_opts])))),
     ('paste_deploy', glance.common.config.paste_deploy_opts)
 ]
 _scrubber_opts = [
     (None, list(itertools.chain(*(_global_opt_lists + [
-        glance.api.policy.policy_opts,
         glance.common.config.common_opts,
         glance.openstack.common.lockutils.util_opts,
+        glance.openstack.common.policy.policy_opts,
         glance.scrubber.scrubber_opts,
         glance.scrubber.scrubber_cmd_opts,
         glance.scrubber.scrubber_cmd_cli_opts,
@@ -97,8 +97,8 @@ _scrubber_opts = [
 ]
 _cache_opts = [
     (None, list(itertools.chain(*(_global_opt_lists + [
-        glance.api.policy.policy_opts,
         glance.common.config.common_opts,
+        glance.openstack.common.policy.policy_opts,
         glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,
         glance.registry.registry_addr_opts,

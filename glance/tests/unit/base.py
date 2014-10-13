@@ -14,9 +14,7 @@
 #    under the License.
 
 import os
-import shutil
 
-import fixtures
 import glance_store as store
 from glance_store import location
 from oslo.config import cfg
@@ -61,14 +59,11 @@ class IsolatedUnitTest(StoreClearingUnitTest):
 
     def setUp(self):
         super(IsolatedUnitTest, self).setUp()
-        self.test_dir = self.useFixture(fixtures.TempDir()).path
-        policy_file = self._copy_data_file('policy.json', self.test_dir)
         options.set_defaults(CONF, connection='sqlite://',
                              sqlite_db='glance.sqlite')
 
         self.config(verbose=False,
                     debug=False,
-                    policy_file=policy_file,
                     lock_path=os.path.join(self.test_dir))
 
         self.config(default_store='filesystem',
@@ -83,12 +78,6 @@ class IsolatedUnitTest(StoreClearingUnitTest):
         # clear context left-over from any previous test executions
         if hasattr(local.store, 'context'):
             delattr(local.store, 'context')
-
-    def _copy_data_file(self, file_name, dst_dir):
-        src_file_name = os.path.join('glance/tests/etc', file_name)
-        shutil.copy(src_file_name, dst_dir)
-        dst_file_name = os.path.join(dst_dir, file_name)
-        return dst_file_name
 
     def set_policy_rules(self, rules):
         fap = open(CONF.policy_file, 'w')
