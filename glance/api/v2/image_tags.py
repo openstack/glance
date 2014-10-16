@@ -21,7 +21,13 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.gateway
+from glance import i18n
 import glance.notifier
+import glance.openstack.common.log as logging
+
+
+LOG = logging.getLogger(__name__)
+_ = i18n._
 
 
 class Controller(object):
@@ -41,12 +47,19 @@ class Controller(object):
             image = image_repo.get(image_id)
             image.tags.add(tag_value)
             image_repo.save(image)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotFound:
+            msg = _("Image %s not found") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = _("Not allowed to update tags for image %s.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
         except exception.ImageTagLimitExceeded as e:
-            raise webob.exc.HTTPRequestEntityTooLarge(explanation=e.msg)
+            msg = (_("Image tag limit exceeded for image %(id)s: %(e)s:")
+                   % {"id": image_id, "e": utils.exception_to_str(e)})
+            LOG.warning(msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
 
     @utils.mutating
     def delete(self, req, image_id, tag_value):
@@ -57,10 +70,14 @@ class Controller(object):
                 raise webob.exc.HTTPNotFound()
             image.tags.remove(tag_value)
             image_repo.save(image)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotFound:
+            msg = _("Image %s not found") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = _("Not allowed to delete tags for image %s.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
