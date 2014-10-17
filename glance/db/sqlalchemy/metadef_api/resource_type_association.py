@@ -105,7 +105,7 @@ def _create_association(
             resource_type_name=resource_type_name,
             namespace_name=namespace_name)
 
-    return namespace_resource_type_rec.as_dict()
+    return namespace_resource_type_rec.to_dict()
 
 
 def _delete(context, namespace_name, resource_type_name,
@@ -117,7 +117,7 @@ def _delete(context, namespace_name, resource_type_name,
     session.delete(db_rec)
     session.flush()
 
-    return db_rec.as_dict()
+    return db_rec.to_dict()
 
 
 def get(context, namespace_name, resource_type_name, session):

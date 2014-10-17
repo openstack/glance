@@ -67,7 +67,7 @@ def get_all(context, namespace_name, session):
 
     md_objects_list = []
     for obj in md_objects:
-        md_objects_list.append(obj.as_dict())
+        md_objects_list.append(obj.to_dict())
     return md_objects_list
 
 
@@ -89,13 +89,13 @@ def create(context, namespace_name, values, session):
         raise exc.MetadefDuplicateObject(
             object_name=md_object.name, namespace_name=namespace_name)
 
-    return md_object.as_dict()
+    return md_object.to_dict()
 
 
 def get(context, namespace_name, name, session):
     md_object = _get_by_name(context, namespace_name, name, session)
 
-    return md_object.as_dict()
+    return md_object.to_dict()
 
 
 def update(context, namespace_name, object_id, values, session):
@@ -120,7 +120,7 @@ def update(context, namespace_name, object_id, values, session):
                 % {'name': md_object.name, 'namespace_name': namespace_name})
         raise exc.MetadefDuplicateObject(emsg)
 
-    return md_object.as_dict()
+    return md_object.to_dict()
 
 
 def delete(context, namespace_name, object_name, session):
@@ -130,7 +130,7 @@ def delete(context, namespace_name, object_name, session):
     session.delete(md_object)
     session.flush()
 
-    return md_object.as_dict()
+    return md_object.to_dict()
 
 
 def delete_namespace_content(context, namespace_id, session):

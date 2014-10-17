@@ -92,7 +92,7 @@ def _get(context, namespace_id, session):
         raise exc.MetadefNamespaceNotFound(msg)
 
     # Make sure they are allowed to view it.
-    if not _is_namespace_visible(context, namespace_rec.as_dict()):
+    if not _is_namespace_visible(context, namespace_rec.to_dict()):
         msg = ("Forbidding request, metadata definition namespace=%s"
                " is not visible.") % namespace_rec.namespace
         LOG.debug(msg)
@@ -116,7 +116,7 @@ def _get_by_name(context, name, session):
         raise exc.MetadefNamespaceNotFound(namespace_name=name)
 
     # Make sure they are allowed to view it.
-    if not _is_namespace_visible(context, namespace_rec.as_dict()):
+    if not _is_namespace_visible(context, namespace_rec.to_dict()):
         msg = ("Forbidding request, metadata definition namespace=%s"
                " not visible." % name)
         LOG.debug(msg)
@@ -210,13 +210,13 @@ def get_all(context, session, marker=None, limit=None,
         namespaces = _get_all(
             context, session, filters, marker, limit, sort_key, sort_dir)
 
-    return map(lambda ns: ns.as_dict(), namespaces)
+    return map(lambda ns: ns.to_dict(), namespaces)
 
 
 def get(context, name, session):
     """Get a namespace by name, raise if not found"""
     namespace_rec = _get_by_name(context, name, session)
-    return namespace_rec.as_dict()
+    return namespace_rec.to_dict()
 
 
 def create(context, values, session):
@@ -235,7 +235,7 @@ def create(context, values, session):
         raise exc.MetadefDuplicateNamespace(
             namespace_name=namespace_name)
 
-    return namespace.as_dict()
+    return namespace.to_dict()
 
 
 def update(context, namespace_id, values, session):
@@ -257,7 +257,7 @@ def update(context, namespace_id, values, session):
                 % values['namespace'])
         raise exc.MetadefDuplicateNamespace(emsg)
 
-    return namespace_rec.as_dict()
+    return namespace_rec.to_dict()
 
 
 def delete(context, name, session):
@@ -277,7 +277,7 @@ def delete(context, name, session):
         else:
             raise e
 
-    return namespace_rec.as_dict()
+    return namespace_rec.to_dict()
 
 
 def delete_cascade(context, name, session):
@@ -304,4 +304,4 @@ def delete_cascade(context, name, session):
             else:
                 raise e
 
-    return namespace_rec.as_dict()
+    return namespace_rec.to_dict()
