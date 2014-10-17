@@ -27,8 +27,14 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.gateway
+from glance import i18n
 import glance.notifier
+import glance.openstack.common.log as logging
 import glance.schema
+
+
+LOG = logging.getLogger(__name__)
+_ = i18n._
 
 
 class ImageMembersController(object):
@@ -68,14 +74,25 @@ class ImageMembersController(object):
             member_repo.add(new_member)
 
             return new_member
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.Duplicate as e:
-            raise webob.exc.HTTPConflict(explanation=e.msg)
+        except exception.NotFound:
+            msg = _("Image %s not found") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = _("Not allowed to create members for image %s.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
+        except exception.Duplicate:
+            msg = _("Member %(member_id)s is duplicated for image "
+                    "%(image_id)s") % {"member_id": member_id,
+                                       "image_id": image_id}
+            LOG.warning(msg)
+            raise webob.exc.HTTPConflict(explanation=msg)
         except exception.ImageMemberLimitExceeded as e:
-            raise webob.exc.HTTPRequestEntityTooLarge(explanation=e.msg)
+            msg = (_("Image member limit exceeded for image %(id)s: %(e)s:")
+                   % {"id": image_id, "e": utils.exception_to_str(e)})
+            LOG.warning(msg)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
 
     @utils.mutating
     def update(self, req, image_id, member_id, status):
@@ -101,13 +118,18 @@ class ImageMembersController(object):
             member.status = status
             member_repo.save(member)
             return member
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotFound:
+            msg = _("Image %s not found") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = _("Not allowed to update members for image %s.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
         except ValueError as e:
-            raise webob.exc.HTTPBadRequest(
-                explanation=utils.exception_to_str(e))
+            msg = _("Incorrect request: %s") % utils.exception_to_str(e)
+            LOG.warning(msg)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
 
     def index(self, req, image_id):
         """
@@ -134,10 +156,14 @@ class ImageMembersController(object):
             for member in member_repo.list():
                 members.append(member)
             return dict(members=members)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotFound:
+            msg = _("Image %s not found") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = _("Not allowed to list members for image %s.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
 
     def show(self, req, image_id, member_id):
         """
@@ -159,8 +185,10 @@ class ImageMembersController(object):
             member_repo = image.get_member_repo()
             member = member_repo.get(member_id)
             return member
-        except (exception.NotFound, exception.Forbidden) as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("Image %s not found") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
 
     @utils.mutating
     def delete(self, req, image_id, member_id):
@@ -175,10 +203,14 @@ class ImageMembersController(object):
             member = member_repo.get(member_id)
             member_repo.remove(member)
             return webob.Response(body='', status=204)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotFound:
+            msg = _("Image %s not found") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = _("Not allowed to delete members for image %s.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
