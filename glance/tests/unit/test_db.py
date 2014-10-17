@@ -714,3 +714,13 @@ class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
                 api._image_update(None, {}, 'fake-id')
             except TestException:
                 self.assertEqual(sess.call_count, 3)
+
+        # Test retry on image destroy if db deadlock occurs
+        self.attempts = 3
+        with mock.patch.object(api, 'get_session') as sess:
+            sess.side_effect = _mock_get_session()
+
+            try:
+                api.image_destroy(None, 'fake-id')
+            except TestException:
+                self.assertEqual(sess.call_count, 3)
