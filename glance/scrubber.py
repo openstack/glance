@@ -344,6 +344,30 @@ class ScrubDBQueue(ScrubQueue):
         else:
             return False
 
+    def _get_images_page(self, marker):
+        filters = {'deleted': True,
+                   'is_public': 'none',
+                   'status': 'pending_delete'}
+
+        if marker:
+            return self.registry.get_images_detailed(filters=filters,
+                                                     marker=marker)
+        else:
+            return self.registry.get_images_detailed(filters=filters)
+
+    def _get_all_images(self):
+        """Generator to fetch all appropriate images, paging as needed."""
+
+        marker = None
+        while True:
+            images = self._get_images_page(marker)
+            if len(images) == 0:
+                break
+            marker = images[-1]['id']
+
+            for image in images:
+                yield image
+
     def _walk_all_locations(self, remove=False):
         """Returns a list of image id and location tuple from scrub queue.
 
@@ -351,11 +375,9 @@ class ScrubDBQueue(ScrubQueue):
 
         :retval a list of image id, location id and uri tuple from scrub queue
         """
-        filters = {'deleted': True,
-                   'is_public': 'none',
-                   'status': 'pending_delete'}
         ret = []
-        for image in self.registry.get_images_detailed(filters=filters):
+
+        for image in self._get_all_images():
             deleted_at = image.get('deleted_at')
             if not deleted_at:
                 continue
