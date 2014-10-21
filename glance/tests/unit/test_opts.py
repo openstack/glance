@@ -146,6 +146,7 @@ class OptsTestCase(utils.BaseTestCase):
             'config_file',
             'public_endpoint',
             'digest_algorithm',
+            'http_keepalive',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
@@ -207,6 +208,7 @@ class OptsTestCase(utils.BaseTestCase):
             'flavor',
             'config_file',
             'digest_algorithm',
+            'http_keepalive',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
