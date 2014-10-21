@@ -222,3 +222,16 @@ here::
   $> sudo glance-control registry restart etc/glance-registry.conf
   Stopping glance-registry  pid: 17611  signal: 15
   Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance-registry.conf
+
+Reloading a server
+-------------------
+
+You can reload a server with the ``glance-control`` program, as demonstrated
+here::
+
+  $> sudo glance-control api reload
+  Reloading glance-api (pid 18506) with signal(1)
+
+A reload sends a SIGHUP signal to the master process and causes new configuration
+settings to be picked up without any interruption to the running service (provided
+neither bind_host or bind_port has changed).

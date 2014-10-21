@@ -54,6 +54,7 @@ CONF = cfg.CONF
 ALL_COMMANDS = ['start', 'status', 'stop', 'shutdown', 'restart',
                 'reload', 'force-reload']
 ALL_SERVERS = ['api', 'registry', 'scrubber']
+RELOAD_SERVERS = ['glance-api', 'glance-registry']
 GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-registry',
                              'glance-scrubber']
 MAX_DESCRIPTORS = 32768
@@ -242,6 +243,28 @@ def get_pid_file(server, pid_file):
     return pid_file
 
 
+def do_reload(pid_file, server):
+    if server not in RELOAD_SERVERS:
+        msg = (_('Reload of %(serv)s not supported') % {'serv': server})
+        sys.exit(msg)
+
+    pid = None
+    if os.path.exists(pid_file):
+        with open(pid_file, 'r') as pidfile:
+            pid = int(pidfile.read().strip())
+    else:
+        msg = (_('Server %(serv)s is stopped') % {'serv': server})
+        sys.exit(msg)
+
+    sig = signal.SIGHUP
+    try:
+        print(_('Reloading %(serv)s (pid %(pid)s) with signal(%(sig)s)')
+              % {'serv': server, 'pid': pid, 'sig': sig})
+        os.kill(pid, sig)
+    except OSError:
+        print(_("Process %d not running") % pid)
+
+
 def do_stop(server, args, graceful=False):
     if graceful and server in GRACEFUL_SHUTDOWN_SERVERS:
         sig = signal.SIGHUP
@@ -383,8 +406,7 @@ def main():
 
     if CONF.server.command in ('reload', 'force-reload'):
         for server in CONF.server.servers:
-            do_stop(server, CONF.server.args, graceful=True)
             pid_file = get_pid_file(server, CONF.pid_file)
-            do_start('Restart', pid_file, server, CONF.server.args)
+            do_reload(pid_file, server)
 
     sys.exit(exitcode)
