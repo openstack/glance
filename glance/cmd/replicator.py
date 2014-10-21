@@ -19,14 +19,15 @@
 from __future__ import print_function
 
 import httplib
-import optparse
 import os
 import sys
 
+from oslo.config import cfg
 from oslo.serialization import jsonutils
 import six.moves.urllib.parse as urlparse
 from webob import exc
 
+from glance.common import config
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
@@ -37,6 +38,49 @@ _ = i18n._
 _LI = i18n._LI
 _LE = i18n._LE
 _LW = i18n._LW
+
+
+# NOTE: positional arguments <args> will be parsed before <command> until
+# this bug is corrected https://bugs.launchpad.net/oslo.config/+bug/1392428
+cli_opts = [
+    cfg.IntOpt('chunksize',
+               short='c',
+               default=65536,
+               help="Amount of data to transfer per HTTP write."),
+    cfg.StrOpt('dontreplicate',
+               short='D',
+               default=('created_at date deleted_at location updated_at'),
+               help="List of fields to not replicate."),
+    cfg.BoolOpt('metaonly',
+                short='m',
+                default=False,
+                help="Only replicate metadata, not images."),
+    cfg.StrOpt('token',
+               short='t',
+               default='',
+               help=("Pass in your authentication token if you have "
+                     "one. If you use this option the same token is "
+                     "used for both the master and the slave.")),
+    cfg.StrOpt('mastertoken',
+               short='M',
+               default='',
+               help=("Pass in your authentication token if you have "
+                     "one. This is the token used for the master.")),
+    cfg.StrOpt('slavetoken',
+               short='S',
+               default='',
+               help=("Pass in your authentication token if you have "
+                     "one. This is the token used for the slave.")),
+    cfg.StrOpt('command',
+               positional=True,
+               help="Command to be given to replicator"),
+    cfg.ListOpt('args',
+                positional=True,
+                help="Arguments for the command"),
+]
+
+CONF = cfg.CONF
+CONF.register_cli_opts(cli_opts)
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -608,36 +652,6 @@ def _image_present(client, image_uuid):
     return 'status' in headers
 
 
-def parse_options(parser, cli_args):
-    """Returns the parsed CLI options, command to run and its arguments, merged
-    with any same-named options found in a configuration file
-
-    parser: the option parser
-    cli_args: the arguments passed on the command line
-
-    Returns: a tuple of (the parsed options, the command, the command name)
-    """
-    if not cli_args:
-        cli_args.append('-h')  # Show options in usage output...
-
-    (options, args) = parser.parse_args(cli_args)
-
-    # HACK(sirp): Make the parser available to the print_help method
-    # print_help is a command, so it only accepts (options, args); we could
-    # one-off have it take (parser, options, args), however, for now, I think
-    # this little hack will suffice
-    options.__parser = parser
-
-    if not args:
-        parser.print_usage()
-        sys.exit(0)
-
-    command_name = args.pop(0)
-    command = lookup_command(parser, command_name)
-
-    return (options, command, args)
-
-
 def print_help(options, args):
     """Print help specific to a command.
 
@@ -647,18 +661,14 @@ def print_help(options, args):
     if len(args) != 1:
         print(COMMANDS)
         sys.exit(1)
-
-    parser = options.__parser
     command_name = args.pop()
-    command = lookup_command(parser, command_name)
-
+    command = lookup_command(command_name)
     print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
 
 
-def lookup_command(parser, command_name):
+def lookup_command(command_name):
     """Lookup a command.
 
-    parser: the command parser
     command_name: the command name
 
     Returns: a method which implements that command
@@ -678,7 +688,6 @@ def lookup_command(parser, command_name):
     try:
         command = commands[command_name]
     except KeyError:
-        parser.print_usage()
         sys.exit(_("Unknown command: %s") % command_name)
 
     return command
@@ -687,59 +696,28 @@ def lookup_command(parser, command_name):
 def main():
     """The main function."""
 
-    usage = """
-%%prog <command> [options] [args]
-
-%s
-""" % COMMANDS
-
-    oparser = optparse.OptionParser(usage=usage.strip())
-
-    # Options
-    oparser.add_option('-c', '--chunksize', action="store", default=65536,
-                       help="Amount of data to transfer per HTTP write.")
-    oparser.add_option('-d', '--debug', action="store_true", default=False,
-                       help="Print debugging information.")
-    oparser.add_option('-D', '--dontreplicate', action="store",
-                       default=('created_at date deleted_at location '
-                                'updated_at'),
-                       help="List of fields to not replicate.")
-    oparser.add_option('-m', '--metaonly', action="store_true", default=False,
-                       help="Only replicate metadata, not images.")
-    oparser.add_option('-l', '--logfile', action="store", default='',
-                       help="Path of file to log to.")
-    oparser.add_option('-s', '--syslog', action="store_true", default=False,
-                       help="Log to syslog instead of a file.")
-    oparser.add_option('-t', '--token', action="store", default='',
-                       help=("Pass in your authentication token if you have "
-                             "one. If you use this option the same token is "
-                             "used for both the master and the slave."))
-    oparser.add_option('-M', '--mastertoken', action="store", default='',
-                       help=("Pass in your authentication token if you have "
-                             "one. This is the token used for the master."))
-    oparser.add_option('-S', '--slavetoken', action="store", default='',
-                       help=("Pass in your authentication token if you have "
-                             "one. This is the token used for the slave."))
-    oparser.add_option('-v', '--verbose', action="store_true", default=False,
-                       help="Print more verbose output.")
-
-    (options, command, args) = parse_options(oparser, sys.argv[1:])
+    try:
+        config.parse_args()
+    except RuntimeError as e:
+        sys.exit("ERROR: %s" % utils.exception_to_str(e))
 
     # Setup logging
     log.setup('glance')
 
-    if options.token:
-        options.slavetoken = options.token
-        options.mastertoken = options.token
+    if CONF.token:
+        CONF.slavetoken = CONF.token
+        CONF.mastertoken = CONF.token
+
+    command = lookup_command(CONF.command)
 
     try:
-        command(options, args)
+        command(CONF, CONF.args)
     except TypeError as e:
         LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
-        sys.exit("ERROR: %s" % e)
+        sys.exit("ERROR: %s" % utils.exception_to_str(e))
     except ValueError as e:
         LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
-        sys.exit("ERROR: %s" % e)
+        sys.exit("ERROR: %s" % utils.exception_to_str(e))
 
 
 if __name__ == '__main__':
