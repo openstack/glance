@@ -1331,3 +1331,14 @@ glance-registry service separately, by default they place at
 to make profiling work as designed operator needs to make those values of HMAC
 key be consistent for all services in your deployment. Without HMAC key the
 profiling will not be triggered even profiling feature is enabled.
+
+Configuring http_keepalive option
+----------------------------------
+
+* ``http_keepalive=<True|False>``
+
+If False, server will return the header "Connection: close", If True, server
+will return "Connection: Keep-Alive" in its responses. In order to close the
+client socket connection explicitly after the response is sent and read
+successfully by the client, you simply have to set this option to False when
+you create a wsgi server.

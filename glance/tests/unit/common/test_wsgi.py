@@ -466,6 +466,28 @@ class ServerTest(test_utils.BaseTestCase):
         actual = wsgi.Server(threads=1).create_pool()
         self.assertIsInstance(actual, eventlet.greenpool.GreenPool)
 
+    @mock.patch.object(wsgi, 'get_socket')
+    def test_http_keepalive(self, mock_get_socket):
+        fake_socket = 'fake_socket'
+        mock_get_socket.return_value = 'fake_socket'
+        self.config(http_keepalive=False)
+        self.config(workers=0)
+
+        server = wsgi.Server(threads=1)
+        # mocking eventlet.wsgi server method to check it is called with
+        # configured 'http_keepalive' value.
+        with mock.patch.object(eventlet.wsgi,
+                               'server') as mock_server:
+            fake_application = "fake-application"
+            server.start(fake_application, 0)
+            server.wait()
+            mock_server.assert_called_once_with(fake_socket,
+                                                fake_application,
+                                                log=mock.ANY,
+                                                debug=False,
+                                                custom_pool=server.pool,
+                                                keepalive=False)
+
 
 class TestHelpers(test_utils.BaseTestCase):
 
