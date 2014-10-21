@@ -238,3 +238,16 @@ class TestReload(functional.FunctionalTest):
         response = requests.get(path)
         self.assertEqual(300, response.status_code)
         del response
+
+        # Test logging configuration change
+        # This recycles the existing socket
+        conf_dir = os.path.join(self.test_dir, 'etc')
+        log_file = conf_dir + 'new.log'
+        self.assertFalse(os.path.exists(log_file))
+        set_config_value(self._conffile('api'), 'log_file', log_file)
+        cmd = "kill -HUP %s" % self._get_parent('api')
+        execute(cmd, raise_error=True)
+        msg = 'No new log file created'
+        for _ in self.ticker(msg):
+            if os.path.exists(log_file):
+                break

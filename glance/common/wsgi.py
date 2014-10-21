@@ -392,6 +392,10 @@ class Server(object):
         os.killpg(self.pgid, signal.SIGHUP)
         self.stale_children = self.children
         self.children = set()
+
+        # Ensure any logging config changes are picked up
+        logging.setup(CONF, 'glance')
+
         self.configure(old_conf, has_changed)
         self.start_wsgi()
 
