@@ -67,6 +67,49 @@ class VersionsTest(base.IsolatedUnitTest):
         ]
         self.assertEqual(expected, results)
 
+    def test_get_version_list_public_endpoint(self):
+        req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
+        req.accept = 'application/json'
+        self.config(bind_host='127.0.0.1', bind_port=9292,
+                    public_endpoint='https://example.com:9292')
+        res = versions.Controller().index(req)
+        self.assertEqual(300, res.status_int)
+        self.assertEqual('application/json', res.content_type)
+        results = jsonutils.loads(res.body)['versions']
+        expected = [
+            {
+                'id': 'v2.2',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v2/'}],
+            },
+            {
+                'id': 'v2.1',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v2/'}],
+            },
+            {
+                'id': 'v2.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v2/'}],
+            },
+            {
+                'id': 'v1.1',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v1/'}],
+            },
+            {
+                'id': 'v1.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v1/'}],
+            },
+        ]
+        self.assertEqual(expected, results)
+
 
 class VersionNegotiationTest(base.IsolatedUnitTest):
 
