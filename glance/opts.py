@@ -25,6 +25,7 @@ import itertools
 
 import glance.api.middleware.context
 import glance.api.policy
+import glance.api.versions
 import glance.common.config
 import glance.common.location_strategy
 import glance.common.location_strategy.store_type
@@ -55,6 +56,7 @@ _api_opts = [
     (None, list(itertools.chain(*(_global_opt_lists + [
         glance.api.middleware.context.context_opts,
         glance.api.policy.policy_opts,
+        glance.api.versions.versions_opts,
         glance.common.config.common_opts,
         glance.common.location_strategy.location_strategy_opts,
         glance.common.property_utils.property_opts,

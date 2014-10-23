@@ -1331,3 +1331,15 @@ glance-registry service separately, by default they place at
 to make profiling work as designed operator needs to make those values of HMAC
 key be consistent for all services in your deployment. Without HMAC key the
 profiling will not be triggered even profiling feature is enabled.
+
+Configuring Glance public endpoint
+----------------------------------
+
+When Glance API service is ran dehind a proxy, operator probably need to
+configure a proper public endpoint to versions URL instead of use host owned
+which run service really. Glance allows configure a public endpoint URL to
+represent the proxy's URL.
+
+* ``public_endpoint=<None|URL>``
+
+Optional. Default: ``None``
