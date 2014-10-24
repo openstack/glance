@@ -37,7 +37,8 @@ class TestStore(base.StoreClearingUnitTest):
         self.store.chunk_size = 2
         self.called_commands_actual = []
         self.called_commands_expected = []
-        self.store_specs = {'image': 'fake_image',
+        self.store_specs = {'pool': 'fake_pool',
+                            'image': 'fake_image',
                             'snapshot': 'fake_snapshot'}
         self.location = StoreLocation(self.store_specs)
         # Provide enough data to get more than one chunk iteration.
@@ -99,7 +100,7 @@ class TestStore(base.StoreClearingUnitTest):
             self.called_commands_actual.append('remove')
 
         self.stubs.Set(mock_rbd.RBD, 'remove', _fake_remove)
-        self.store._delete_image(self.location)
+        self.store._delete_image('fake_pool', self.location)
         self.called_commands_expected = ['remove']
 
     def test__delete_image_w_snap(self):
@@ -115,7 +116,8 @@ class TestStore(base.StoreClearingUnitTest):
         self.stubs.Set(mock_rbd.RBD, 'remove', _fake_remove)
         self.stubs.Set(mock_rbd.Image, 'unprotect_snap', _fake_unprotect_snap)
         self.stubs.Set(mock_rbd.Image, 'remove_snap', _fake_remove_snap)
-        self.store._delete_image(self.location, snapshot_name='snap')
+        self.store._delete_image('fake_pool', self.location,
+                                 snapshot_name='snap')
 
         self.called_commands_expected = ['unprotect_snap', 'remove_snap',
                                          'remove']
@@ -127,7 +129,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         self.stubs.Set(mock_rbd.Image, 'unprotect_snap', _fake_unprotect_snap)
         self.assertRaises(exception.NotFound, self.store._delete_image,
-                          self.location, snapshot_name='snap')
+                          'fake_pool', self.location, snapshot_name='snap')
 
         self.called_commands_expected = ['unprotect_snap']
 
@@ -138,7 +140,7 @@ class TestStore(base.StoreClearingUnitTest):
 
         self.stubs.Set(mock_rbd.RBD, 'remove', _fake_remove)
         self.assertRaises(exception.NotFound, self.store._delete_image,
-                          self.location, snapshot_name='snap')
+                          'fake_pool', self.location, snapshot_name='snap')
 
         self.called_commands_expected = ['remove']
 
