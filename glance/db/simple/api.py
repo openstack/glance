@@ -22,9 +22,9 @@ from oslo.utils import timeutils
 import six
 
 from glance.common import exception
+from glance.common import utils
 from glance import i18n
 import glance.openstack.common.log as logging
-
 
 LOG = logging.getLogger(__name__)
 _ = i18n._
@@ -94,6 +94,7 @@ def _get_session():
     return DATA
 
 
+@utils.no_4byte_params
 def _image_location_format(image_id, value, meta_data, status, deleted=False):
     dt = timeutils.utcnow()
     return {
@@ -179,6 +180,20 @@ def _task_info_format(task_id, **values):
     return task_info
 
 
+@utils.no_4byte_params
+def _image_update(image, values, properties):
+    # NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
+    properties = [{'name': k,
+                   'value': v,
+                   'image_id': image['id'],
+                   'deleted': False} for k, v in properties.items()]
+    if 'properties' not in image.keys():
+        image['properties'] = []
+    image['properties'].extend(properties)
+    image.update(values)
+    return image
+
+
 def _image_format(image_id, **values):
     dt = timeutils.utcnow()
     image = {
@@ -214,16 +229,7 @@ def _image_format(image_id, **values):
             image['locations'].append(location_ref)
             DATA['locations'].append(location_ref)
 
-    # NOTE(bcwaldon): store properties as a list to match sqlalchemy driver
-    properties = values.pop('properties', {})
-    properties = [{'name': k,
-                   'value': v,
-                   'image_id': image_id,
-                   'deleted': False} for k, v in properties.items()]
-    image['properties'] = properties
-
-    image.update(values)
-    return image
+    return _image_update(image, values, values.pop('properties', {}))
 
 
 def _filter_images(images, filters, context,
@@ -488,6 +494,7 @@ def image_member_delete(context, member_id):
 
 
 @log_call
+@utils.no_4byte_params
 def image_location_add(context, image_id, location):
     deleted = location['status'] in ('deleted', 'pending_delete')
     location_ref = _image_location_format(image_id,
@@ -501,6 +508,7 @@ def image_location_add(context, image_id, location):
 
 
 @log_call
+@utils.no_4byte_params
 def image_location_update(context, image_id, location):
     loc_id = location.get('id')
     if loc_id is None:
@@ -659,13 +667,8 @@ def image_update(context, image_id, image_values, purge_props=False,
             # this matches weirdness in the sqlalchemy api
             prop['deleted'] = True
 
-    # add in any completely new properties
-    image['properties'].extend([{'name': k, 'value': v,
-                                 'image_id': image_id, 'deleted': False}
-                                for k, v in new_properties.items()])
-
     image['updated_at'] = timeutils.utcnow()
-    image.update(image_values)
+    _image_update(image, image_values, new_properties)
     DATA['images'][image_id] = image
     return _normalize_locations(copy.deepcopy(image))
 
@@ -724,6 +727,7 @@ def image_tag_set_all(context, image_id, values):
 
 
 @log_call
+@utils.no_4byte_params
 def image_tag_create(context, image_id, value):
     global DATA
     DATA['tags'][image_id].append(value)

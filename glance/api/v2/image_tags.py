@@ -55,6 +55,10 @@ class Controller(object):
             msg = _("Not allowed to update tags for image %s.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
+        except exception.Invalid as e:
+            msg = _("Could not update image: %s") % utils.exception_to_str(e)
+            LOG.warning(msg)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.ImageTagLimitExceeded as e:
             msg = (_("Image tag limit exceeded for image %(id)s: %(e)s:")
                    % {"id": image_id, "e": utils.exception_to_str(e)})

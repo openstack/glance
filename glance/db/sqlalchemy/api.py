@@ -35,6 +35,7 @@ import sqlalchemy.orm as sa_orm
 import sqlalchemy.sql as sa_sql
 
 from glance.common import exception
+from glance.common import utils
 from glance.db.sqlalchemy.metadef_api import namespace as metadef_namespace_api
 from glance.db.sqlalchemy.metadef_api import object as metadef_object_api
 from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
@@ -663,6 +664,7 @@ def _update_values(image_ref, values):
 
 @retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
        stop_max_attempt_number=50)
+@utils.no_4byte_params
 def _image_update(context, values, image_id, purge_props=False,
                   from_state=None):
     """
@@ -773,6 +775,7 @@ def _image_update(context, values, image_id, purge_props=False,
     return image_get(context, image_ref.id)
 
 
+@utils.no_4byte_params
 def image_location_add(context, image_id, location, session=None):
     deleted = location['status'] in ('deleted', 'pending_delete')
     delete_time = timeutils.utcnow() if deleted else None
@@ -786,6 +789,7 @@ def image_location_add(context, image_id, location, session=None):
     location_ref.save(session=session)
 
 
+@utils.no_4byte_params
 def image_location_update(context, image_id, location, session=None):
     loc_id = location.get('id')
     if loc_id is None:
@@ -874,6 +878,7 @@ def _image_locations_delete_all(context, image_id,
                               delete_time=delete_time, session=session)
 
 
+@utils.no_4byte_params
 def _set_properties_for_image(context, image_ref, properties,
                               purge_props=False, session=None):
     """
@@ -1126,6 +1131,7 @@ def image_tag_set_all(context, image_id, tags):
             image_tag_delete(context, image_id, tag, session)
 
 
+@utils.no_4byte_params
 def image_tag_create(context, image_id, value, session=None):
     """Create an image tag."""
     session = session or get_session()
