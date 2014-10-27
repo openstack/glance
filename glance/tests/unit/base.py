@@ -23,6 +23,7 @@ from oslo.config import cfg
 from oslo.db import options
 from oslo.serialization import jsonutils
 
+from glance.openstack.common import local
 from glance.tests import stubs
 from glance.tests import utils as test_utils
 
@@ -78,6 +79,10 @@ class IsolatedUnitTest(StoreClearingUnitTest):
         stubs.stub_out_registry_and_store_server(self.stubs,
                                                  self.test_dir,
                                                  registry=self.registry)
+
+        # clear context left-over from any previous test executions
+        if hasattr(local.store, 'context'):
+            delattr(local.store, 'context')
 
     def _copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)

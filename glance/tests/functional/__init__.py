@@ -82,6 +82,7 @@ class Server(object):
         self.process_pid = None
         self.server_module = None
         self.stop_kill = False
+        self.use_user_token = False
 
     def write_conf(self, **kwargs):
         """
@@ -317,6 +318,7 @@ cert_file = %(cert_file)s
 metadata_encryption_key = %(metadata_encryption_key)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
+use_user_token = %(use_user_token)s
 log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
 delayed_delete = %(delayed_delete)s
