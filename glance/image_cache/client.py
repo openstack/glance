@@ -123,7 +123,7 @@ def get_client(host, port=None, timeout=None, use_ssl=False, username=None,
         port=port,
         timeout=timeout,
         use_ssl=use_ssl,
-        auth_tok=auth_token or
+        auth_token=auth_token or
         os.getenv('OS_TOKEN'),
         creds=creds,
         insecure=insecure)
