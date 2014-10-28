@@ -163,7 +163,7 @@ class BaseClient(object):
     )
 
     def __init__(self, host, port=None, timeout=None, use_ssl=False,
-                 auth_tok=None, creds=None, doc_root=None, key_file=None,
+                 auth_token=None, creds=None, doc_root=None, key_file=None,
                  cert_file=None, ca_file=None, insecure=False,
                  configure_via_auth=True):
         """
@@ -173,7 +173,7 @@ class BaseClient(object):
         :param port: The port where service resides
         :param timeout: Connection timeout.
         :param use_ssl: Should we use HTTPS?
-        :param auth_tok: The auth token to pass to the server
+        :param auth_token: The auth token to pass to the server
         :param creds: The credentials to pass to the auth plugin
         :param doc_root: Prefix for all URLs we request from host
         :param key_file: Optional PEM-formatted file that contains the private
@@ -207,7 +207,7 @@ class BaseClient(object):
         if timeout == 0:
             self.timeout = None
         self.use_ssl = use_ssl
-        self.auth_tok = auth_tok
+        self.auth_token = auth_token
         self.creds = creds or {}
         self.connection = None
         self.configure_via_auth = configure_via_auth
@@ -285,21 +285,6 @@ class BaseClient(object):
 
         return connect_kwargs
 
-    def set_auth_token(self, auth_tok):
-        """
-        Updates the authentication token for this client connection.
-        """
-        # FIXME(sirp): Nova image/glance.py currently calls this. Since this
-        # method isn't really doing anything useful[1], we should go ahead and
-        # rip it out, first in Nova, then here. Steps:
-        #
-        #       1. Change auth_tok in Glance to auth_token
-        #       2. Change image/glance.py in Nova to use client.auth_token
-        #       3. Remove this method
-        #
-        # [1] http://mail.python.org/pipermail/tutor/2003-October/025932.html
-        self.auth_tok = auth_tok
-
     def configure_from_url(self, url):
         """
         Setups the connection based on the given url.
@@ -357,7 +342,7 @@ class BaseClient(object):
         if not auth_plugin.is_authenticated or force_reauth:
             auth_plugin.authenticate()
 
-        self.auth_tok = auth_plugin.auth_token
+        self.auth_token = auth_plugin.auth_token
 
         management_url = auth_plugin.management_url
         if management_url and self.configure_via_auth:
@@ -376,7 +361,7 @@ class BaseClient(object):
         :param params: Key/value pairs to use in query string
         :returns: HTTP response object
         """
-        if not self.auth_tok:
+        if not self.auth_token:
             self._authenticate()
 
         url = self._construct_url(action, params)
@@ -461,8 +446,8 @@ class BaseClient(object):
             headers = self._encode_headers(headers or {})
             headers.update(osprofiler.web.get_trace_id_headers())
 
-            if 'x-auth-token' not in headers and self.auth_tok:
-                headers['x-auth-token'] = self.auth_tok
+            if 'x-auth-token' not in headers and self.auth_token:
+                headers['x-auth-token'] = self.auth_token
 
             c = connection_type(url.hostname, url.port, **self.connect_kwargs)
 

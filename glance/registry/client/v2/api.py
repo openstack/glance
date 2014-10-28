@@ -103,7 +103,7 @@ def get_registry_client(cxt):
     global _CLIENT_CREDS, _CLIENT_KWARGS, _CLIENT_HOST, _CLIENT_PORT
     kwargs = _CLIENT_KWARGS.copy()
     if CONF.use_user_token:
-        kwargs['auth_tok'] = cxt.auth_tok
+        kwargs['auth_token'] = cxt.auth_token
     if _CLIENT_CREDS:
         kwargs['creds'] = _CLIENT_CREDS
     return client.RegistryClient(_CLIENT_HOST, _CLIENT_PORT, **kwargs)

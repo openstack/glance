@@ -87,9 +87,9 @@ class TestMetadefDriver(test_utils.BaseTestCase):
         config.parse_args(args=[])
         context_cls = context.RequestContext
         self.adm_context = context_cls(is_admin=True,
-                                       auth_tok='user:user:admin')
+                                       auth_token='user:user:admin')
         self.context = context_cls(is_admin=False,
-                                   auth_tok='user:user:user')
+                                   auth_token='user:user:user')
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
 

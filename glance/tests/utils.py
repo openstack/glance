@@ -480,12 +480,12 @@ class FakeAuthMiddleware(wsgi.Middleware):
         self.is_admin = is_admin
 
     def process_request(self, req):
-        auth_tok = req.headers.get('X-Auth-Token')
+        auth_token = req.headers.get('X-Auth-Token')
         user = None
         tenant = None
         roles = []
-        if auth_tok:
-            user, tenant, role = auth_tok.split(':')
+        if auth_token:
+            user, tenant, role = auth_token.split(':')
             if tenant.lower() == 'none':
                 tenant = None
             roles = [role]
@@ -498,7 +498,7 @@ class FakeAuthMiddleware(wsgi.Middleware):
             'tenant': tenant,
             'roles': roles,
             'is_admin': self.is_admin,
-            'auth_tok': auth_tok,
+            'auth_token': auth_token,
         }
 
         req.context = context.RequestContext(**kwargs)
