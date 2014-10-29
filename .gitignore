@@ -26,3 +26,6 @@ doc/source/api
 .project
 .pydevproject
 .idea
+.e4p
+.eric5project/
+.issues/
