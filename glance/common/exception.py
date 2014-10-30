@@ -163,6 +163,10 @@ class InvalidFilterRangeValue(Invalid):
     message = _("Unable to filter using the specified range.")
 
 
+class InvalidOptionValue(Invalid):
+    message = _("Invalid value for option %(option)s: %(value)s")
+
+
 class ReadonlyProperty(Forbidden):
     message = _("Attribute '%(property)s' is read-only.")
 

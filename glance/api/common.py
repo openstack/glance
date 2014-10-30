@@ -115,10 +115,11 @@ def get_remaining_quota(context, db_api, image_id=None):
     match = pattern.match(users_quota)
 
     if not match:
-        LOG.warn(_LW("Invalid value for option user_storage_quota: "
-                     "%(users_quota)s")
-                 % {'users_quota': users_quota})
-        return None
+        LOG.error(_LE("Invalid value for option user_storage_quota: "
+                      "%(users_quota)s")
+                  % {'users_quota': users_quota})
+        raise exception.InvalidOptionValue(option='user_storage_quota',
+                                           value=users_quota)
 
     quota_value, quota_unit = (match.groups())[0:2]
     # fall back to Bytes if user specified anything other than
@@ -128,7 +129,7 @@ def get_remaining_quota(context, db_api, image_id=None):
     users_quota = int(quota_value) * factor
 
     if users_quota <= 0:
-        return None
+        return
 
     usage = db_api.user_get_storage_usage(context,
                                           context.owner,
