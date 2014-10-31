@@ -1995,7 +1995,10 @@ class TestImages(functional.FunctionalTest):
         self.cleanup()
         self.api_server.deployment_flavor = 'fakeauth'
         self.registry_server.deployment_flavor = 'fakeauth'
-        self.start_servers(**self.__dict__.copy())
+
+        kwargs = self.__dict__.copy()
+        kwargs['use_user_token'] = True
+        self.start_servers(**kwargs)
 
         owners = ['admin', 'tenant1', 'tenant2', 'none']
         visibilities = ['public', 'private']
