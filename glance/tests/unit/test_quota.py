@@ -434,6 +434,12 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.assertNotIn('foo', self.base_image.extra_properties)
         self.assertEqual('ham', self.base_image.extra_properties['spam'])
 
+    def test_invalid_quota_config_parameter(self):
+        self.config(user_storage_quota='foo')
+        location = {"url": "file:///fake.img.tar.gz", "metadata": {}}
+        self.assertRaises(exception.InvalidOptionValue,
+                          self.image.locations.append, location)
+
     def test_exceed_quota_during_patch_operation(self):
         self._quota_exceed_setup()
         self.image.extra_properties['frob'] = 'baz'
