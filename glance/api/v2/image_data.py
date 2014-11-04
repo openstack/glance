@@ -169,6 +169,10 @@ class ImageDataController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
+            if image.status == 'deactivated':
+                msg = _('The requested image has been deactivated. '
+                        'Image data download is forbidden.')
+                raise exception.Forbidden(message=msg)
             if not image.locations:
                 raise exception.ImageDataNotFound()
         except exception.ImageDataNotFound as e:

@@ -58,7 +58,7 @@ _LW = i18n._LW
 
 
 STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
-            'deleted']
+            'deleted', 'deactivated']
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
@@ -159,16 +159,21 @@ def image_destroy(context, image_id):
 
         _image_tag_delete_all(context, image_id, delete_time, session)
 
-    return _normalize_locations(image_ref)
+    return _normalize_locations(context, image_ref)
 
 
-def _normalize_locations(image, force_show_deleted=False):
+def _normalize_locations(context, image, force_show_deleted=False):
     """
     Generate suitable dictionary list for locations field of image.
 
     We don't need to set other data fields of location record which return
     from image query.
     """
+
+    if image['status'] == 'deactivated' and not context.is_admin:
+        # Locations are not returned for a deactivated image for non-admin user
+        image['locations'] = []
+        return image
 
     if force_show_deleted:
         locations = image['locations']
@@ -191,7 +196,7 @@ def _normalize_tags(image):
 def image_get(context, image_id, session=None, force_show_deleted=False):
     image = _image_get(context, image_id, session=session,
                        force_show_deleted=force_show_deleted)
-    image = _normalize_locations(image.to_dict(),
+    image = _normalize_locations(context, image.to_dict(),
                                  force_show_deleted=force_show_deleted)
     return image
 
@@ -616,7 +621,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     images = []
     for image in query.all():
         image_dict = image.to_dict()
-        image_dict = _normalize_locations(image_dict,
+        image_dict = _normalize_locations(context, image_dict,
                                           force_show_deleted=showing_deleted)
         if return_tag:
             image_dict = _normalize_tags(image_dict)

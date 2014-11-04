@@ -165,6 +165,20 @@ class ImageProxy(glance.domain.proxy.Image):
         self.policy.enforce(self.context, 'delete_image', {})
         return self.image.delete()
 
+    def deactivate(self):
+        LOG.debug('Attempting deactivate')
+        target = ImageTarget(self.image)
+        self.policy.enforce(self.context, 'deactivate', target=target)
+        LOG.debug('Deactivate allowed, continue')
+        self.image.deactivate()
+
+    def reactivate(self):
+        LOG.debug('Attempting reactivate')
+        target = ImageTarget(self.image)
+        self.policy.enforce(self.context, 'reactivate', target=target)
+        LOG.debug('Reactivate allowed, continue')
+        self.image.reactivate()
+
     def get_data(self, *args, **kwargs):
         target = ImageTarget(self.image)
         self.policy.enforce(self.context, 'download_image',

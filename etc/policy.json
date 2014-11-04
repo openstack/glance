@@ -30,6 +30,9 @@
     "add_task": "",
     "modify_task": "",
 
+    "deactivate": "",
+    "reactivate": "",
+
     "get_metadef_namespace": "",
     "get_metadef_namespaces":"",
     "modify_metadef_namespace":"",

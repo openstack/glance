@@ -40,6 +40,10 @@ digraph {
   "active" -> "queued" [label="remove location*"];
   "active" -> "pending_delete" [label="delayed delete"];
   "active" -> "deleted" [label="delete"];
+  "active" -> "deactivated" [label="deactivate"];
+
+  "deactivated" -> "active" [label="reactivate"];
+  "deactivated" -> "deleted" [label="delete"];
 
   "killed" -> "deleted" [label="delete"];
 

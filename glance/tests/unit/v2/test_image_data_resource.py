@@ -110,6 +110,16 @@ class TestImagesController(base.StoreClearingUnitTest):
         image = self.controller.download(request, unit_test_utils.UUID1)
         self.assertEqual('abcd', image.image_id)
 
+    def test_download_deactivated(self):
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd',
+                          status='deactivated',
+                          locations=[{'url': 'http://example.com/image',
+                                      'metadata': {}, 'status': 'active'}])
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
+                          request, str(uuid.uuid4()))
+
     def test_download_no_location(self):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = FakeImage('abcd')

@@ -107,10 +107,11 @@ class Image(object):
         # can be retried.
         'queued': ('saving', 'active', 'deleted'),
         'saving': ('active', 'killed', 'deleted', 'queued'),
-        'active': ('queued', 'pending_delete', 'deleted'),
+        'active': ('queued', 'pending_delete', 'deleted', 'deactivated'),
         'killed': ('deleted',),
         'pending_delete': ('deleted',),
         'deleted': (),
+        'deactivated': ('active', 'deleted'),
     }
 
     def __init__(self, image_id, status, created_at, updated_at, **kwargs):
@@ -245,6 +246,34 @@ class Image(object):
             self.status = 'pending_delete'
         else:
             self.status = 'deleted'
+
+    def deactivate(self):
+        if self.status == 'active':
+            self.status = 'deactivated'
+        elif self.status == 'deactivated':
+            # Noop if already deactive
+            pass
+        else:
+            msg = ("Not allowed to deactivate image in status '%s'"
+                   % self.status)
+            LOG.debug(msg)
+            msg = (_("Not allowed to deactivate image in status '%s'")
+                   % self.status)
+            raise exception.Forbidden(message=msg)
+
+    def reactivate(self):
+        if self.status == 'deactivated':
+            self.status = 'active'
+        elif self.status == 'active':
+            # Noop if already active
+            pass
+        else:
+            msg = ("Not allowed to reactivate image in status '%s'"
+                   % self.status)
+            LOG.debug(msg)
+            msg = (_("Not allowed to reactivate image in status '%s'")
+                   % self.status)
+            raise exception.Forbidden(message=msg)
 
     def get_data(self, *args, **kwargs):
         raise NotImplementedError()
