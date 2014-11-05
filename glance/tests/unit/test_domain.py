@@ -22,8 +22,10 @@ from oslo_config import cfg
 import oslo_utils.importutils
 from oslo_utils import timeutils
 
+from glance.artifacts import domain as artifacts_domain
 import glance.async
 from glance.async import taskflow_executor
+from glance.common.artifacts import definitions
 from glance.common import exception
 from glance import domain
 import glance.tests.utils as test_utils
@@ -569,3 +571,22 @@ class TestTaskExecutorFactory(test_utils.BaseTestCase):
         # NOTE(flaper87): "eventlet" executor. short name to avoid > 79.
         te_evnt = task_executor_factory.new_task_executor(context)
         self.assertIsInstance(te_evnt, taskflow_executor.TaskExecutor)
+
+
+class TestArtifact(definitions.ArtifactType):
+    prop1 = definitions.Dict()
+    prop2 = definitions.Integer(min_value=10)
+
+
+class TestArtifactTypeFactory(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestArtifactTypeFactory, self).setUp()
+        context = mock.Mock(owner='me')
+        self.factory = artifacts_domain.ArtifactFactory(context, TestArtifact)
+
+    def test_new_artifact_min_params(self):
+        artifact = self.factory.new_artifact("foo", "1.0.0-alpha")
+        self.assertEqual('creating', artifact.state)
+        self.assertEqual('me', artifact.owner)
+        self.assertTrue(artifact.id is not None)
