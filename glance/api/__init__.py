@@ -24,4 +24,6 @@ def root_app_factory(loader, global_conf, **local_conf):
         del local_conf['/v1']
     if not CONF.enable_v2_api:
         del local_conf['/v2']
+    if not CONF.enable_v3_api:
+        del local_conf['/v3']
     return paste.urlmap.urlmap_factory(loader, global_conf, **local_conf)

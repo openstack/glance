@@ -35,6 +35,12 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
+                'status': 'EXPERIMENTAL',
+                'id': 'v3.0',
+                'links': [{'href': 'http://127.0.0.1:9292/v3/',
+                           'rel': 'self'}],
+            },
+            {
                 'id': 'v2.3',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self',
@@ -83,6 +89,12 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [
+            {
+                'status': 'EXPERIMENTAL',
+                'id': 'v3.0',
+                'links': [{'href': 'https://example.com:9292/v3/',
+                           'rel': 'self'}],
+            },
             {
                 'id': 'v2.3',
                 'status': 'CURRENT',
@@ -170,12 +182,22 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
+    def test_request_url_v3(self):
+        request = webob.Request.blank('/v3/artifacts')
+        self.middleware.process_request(request)
+        self.assertEqual('/v3/artifacts', request.path_info)
+
+    def test_request_url_v3_0(self):
+        request = webob.Request.blank('/v3.0/artifacts')
+        self.middleware.process_request(request)
+        self.assertEqual('/v3/artifacts', request.path_info)
+
     def test_request_url_v2_3_unsupported(self):
         request = webob.Request.blank('/v2.3/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v3_unsupported(self):
-        request = webob.Request.blank('/v3/images')
+    def test_request_url_v4_unsupported(self):
+        request = webob.Request.blank('/v4/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)

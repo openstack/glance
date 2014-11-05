@@ -86,6 +86,8 @@ class VersionNegotiationFilter(wsgi.Middleware):
             major_version = 1
         elif subject in ('v2', 'v2.0', 'v2.1', 'v2.2') and CONF.enable_v2_api:
             major_version = 2
+        elif subject in ('v3', 'v3.0') and CONF.enable_v3_api:
+            major_version = 3
         else:
             raise ValueError()
 

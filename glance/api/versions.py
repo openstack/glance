@@ -56,6 +56,9 @@ class Controller(object):
             }
 
         version_objs = []
+        if CONF.enable_v3_api:
+            version_objs.append(
+                build_version_object(3.0, 'v3', 'EXPERIMENTAL'))
         if CONF.enable_v2_api:
             version_objs.extend([
                 build_version_object(2.3, 'v2', 'CURRENT'),
