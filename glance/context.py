@@ -29,12 +29,12 @@ class RequestContext(object):
 
     user_idt_format = '{user} {tenant} {domain} {user_domain} {p_domain}'
 
-    def __init__(self, auth_tok=None, user=None, tenant=None, roles=None,
+    def __init__(self, auth_token=None, user=None, tenant=None, roles=None,
                  is_admin=False, read_only=False, show_deleted=False,
                  owner_is_tenant=True, service_catalog=None,
                  policy_enforcer=None, domain=None, user_domain=None,
                  project_domain=None):
-        self.auth_tok = auth_tok
+        self.auth_token = auth_token
         self.user = user
         self.tenant = tenant
         self.roles = roles or []
@@ -80,7 +80,7 @@ class RequestContext(object):
             'is_admin': self.is_admin,
             'read_deleted': self.show_deleted,
             'roles': self.roles,
-            'auth_token': self.auth_tok,
+            'auth_token': self.auth_token,
             'service_catalog': self.service_catalog,
             'user_identity': user_idt
         }

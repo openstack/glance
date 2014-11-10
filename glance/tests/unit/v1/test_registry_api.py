@@ -1933,10 +1933,10 @@ class TestSharability(test_utils.BaseTestCase):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_tok='user:%s:user' % TENANT1,
+                                       auth_token='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=True, user=TENANT2,
-                                       auth_tok='user:%s:admin' % TENANT2,
+                                       auth_token='user:%s:admin' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
         # We need private image and context.owner should not match image
@@ -1952,7 +1952,7 @@ class TestSharability(test_utils.BaseTestCase):
     def test_is_image_sharable_owner_can_share(self):
         TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_tok='user:%s:user' % TENANT1,
+                                       auth_token='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         UUIDX = str(uuid.uuid4())
         # We need private image and context.owner should not match image
@@ -1969,10 +1969,10 @@ class TestSharability(test_utils.BaseTestCase):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_tok='user:%s:user' % TENANT1,
+                                       auth_token='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
-                                       auth_tok='user:%s:user' % TENANT2,
+                                       auth_token='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
         # We need private image and context.owner should not match image
@@ -1989,10 +1989,10 @@ class TestSharability(test_utils.BaseTestCase):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_tok='user:%s:user' % TENANT1,
+                                       auth_token='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
-                                       auth_tok='user:%s:user' % TENANT2,
+                                       auth_token='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
         # We need private image and context.owner should not match image
@@ -2015,10 +2015,10 @@ class TestSharability(test_utils.BaseTestCase):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_tok='user:%s:user' % TENANT1,
+                                       auth_token='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
-                                       auth_tok='user:%s:user' % TENANT2,
+                                       auth_token='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
         # We need private image and context.owner should not match image
@@ -2040,10 +2040,10 @@ class TestSharability(test_utils.BaseTestCase):
     def test_is_image_sharable_owner_is_none(self):
         TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_tok='user:%s:user' % TENANT1,
+                                       auth_token='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         ctxt2 = context.RequestContext(is_admin=False, tenant=None,
-                                       auth_tok='user:%s:user' % TENANT1,
+                                       auth_token='user:%s:user' % TENANT1,
                                        owner_is_tenant=True)
         UUIDX = str(uuid.uuid4())
         # We need private image and context.owner should not match image

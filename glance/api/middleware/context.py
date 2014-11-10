@@ -118,7 +118,7 @@ class ContextMiddleware(BaseContextMiddleware):
             'tenant': req.headers.get('X-Tenant-Id'),
             'roles': roles,
             'is_admin': CONF.admin_role.strip().lower() in roles,
-            'auth_tok': req.headers.get('X-Auth-Token', deprecated_token),
+            'auth_token': req.headers.get('X-Auth-Token', deprecated_token),
             'owner_is_tenant': CONF.owner_is_tenant,
             'service_catalog': service_catalog,
             'policy_enforcer': self.policy_enforcer,

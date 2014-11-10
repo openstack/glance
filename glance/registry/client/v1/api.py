@@ -123,7 +123,7 @@ def get_registry_client(cxt):
     global _METADATA_ENCRYPTION_KEY
     kwargs = _CLIENT_KWARGS.copy()
     if CONF.use_user_token:
-        kwargs['auth_tok'] = cxt.auth_tok
+        kwargs['auth_token'] = cxt.auth_token
     if _CLIENT_CREDS:
         kwargs['creds'] = _CLIENT_CREDS
 
