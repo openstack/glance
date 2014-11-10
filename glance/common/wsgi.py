@@ -49,6 +49,7 @@ from glance import i18n
 import glance.openstack.common.log as logging
 from glance.openstack.common import processutils
 
+_ = i18n._
 
 bind_opts = [
     cfg.StrOpt('bind_host', default='0.0.0.0',

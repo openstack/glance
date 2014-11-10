@@ -33,10 +33,12 @@ from oslo.serialization import jsonutils
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
+from glance import i18n
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 
 class BaseStrategy(object):

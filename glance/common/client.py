@@ -48,9 +48,11 @@ from six.moves import xrange
 from glance.common import auth
 from glance.common import exception
 from glance.common import utils
+from glance import i18n
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 # common chunk size for get and put
 CHUNKSIZE = 65536

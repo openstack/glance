@@ -23,10 +23,10 @@ from glance import i18n
 import glance.openstack.common.log as logging
 from glance import scrubber
 
+LOG = logging.getLogger(__name__)
+_ = i18n._
 _LE = i18n._LE
 _LW = i18n._LW
-
-LOG = logging.getLogger(__name__)
 
 store_utils_opts = [
     cfg.BoolOpt('use_user_token', default=True,

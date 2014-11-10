@@ -22,10 +22,12 @@ from glance.api.v1 import controller
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
+from glance import i18n
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 CONF = cfg.CONF
 CONF.import_opt('image_member_quota', 'glance.common.config')
 

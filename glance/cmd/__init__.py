@@ -16,4 +16,3 @@
 from glance import i18n
 
 i18n.enable_lazy()
-i18n.install('glance')

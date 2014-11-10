@@ -35,6 +35,7 @@ from glance.image_cache.drivers import base
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 _LE = i18n._LE
 _LI = i18n._LI
 _LW = i18n._LW

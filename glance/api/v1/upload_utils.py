@@ -28,6 +28,7 @@ import glance.registry.client.v1.api as registry
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
+_ = i18n._
 _LE = i18n._LE
 _LI = i18n._LI
 _LW = i18n._LW

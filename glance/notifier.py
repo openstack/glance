@@ -24,7 +24,10 @@ import webob
 from glance.common import exception
 from glance.common import utils
 import glance.domain.proxy
+from glance import i18n
 import glance.openstack.common.log as logging
+
+_ = i18n._
 
 notifier_opts = [
     cfg.StrOpt('default_publisher_id', default="image.localhost",

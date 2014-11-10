@@ -18,6 +18,9 @@ import six
 
 from glance.common import exception
 from glance.common import utils
+from glance import i18n
+
+_ = i18n._
 
 
 class Schema(object):

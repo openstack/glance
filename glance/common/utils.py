@@ -46,11 +46,13 @@ import six
 from webob import exc
 
 from glance.common import exception
+from glance import i18n
 import glance.openstack.common.log as logging
 
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 FEATURE_BLACKLIST = ['content-length', 'content-type', 'x-image-meta-size']
 

@@ -29,6 +29,7 @@ import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 _LI = i18n._LI
 CONF = cfg.CONF
 CONF.import_opt('image_member_quota', 'glance.common.config')

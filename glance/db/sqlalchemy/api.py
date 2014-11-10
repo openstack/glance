@@ -49,6 +49,7 @@ import glance.openstack.common.log as os_logging
 BASE = models.BASE
 sa_logger = None
 LOG = os_logging.getLogger(__name__)
+_ = i18n._
 _LI = i18n._LI
 _LW = i18n._LW
 

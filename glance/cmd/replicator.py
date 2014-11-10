@@ -33,6 +33,7 @@ from glance import i18n
 from glance.openstack.common import log
 
 LOG = log.getLogger(__name__)
+_ = i18n._
 _LI = i18n._LI
 _LE = i18n._LE
 _LW = i18n._LW

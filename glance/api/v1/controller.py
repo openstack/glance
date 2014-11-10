@@ -17,11 +17,13 @@ import glance_store as store
 import webob.exc
 
 from glance.common import exception
+from glance import i18n
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 
 class BaseController(object):

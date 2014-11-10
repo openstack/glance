@@ -19,6 +19,9 @@ Registry API
 
 from oslo.config import cfg
 
+from glance import i18n
+
+_ = i18n._
 
 registry_addr_opts = [
     cfg.StrOpt('registry_host', default='0.0.0.0',
