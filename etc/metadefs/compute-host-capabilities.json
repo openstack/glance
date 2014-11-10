@@ -11,7 +11,7 @@
         },
         {
             "name": "OS::Nova::Aggregate",
-            "prefix": "aggregate_instance_extra_spec:"
+            "prefix": "aggregate_instance_extra_specs:"
         }
     ],
     "properties": {
