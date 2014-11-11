@@ -859,8 +859,9 @@ class TestStoreAddToBackend(utils.BaseTestCase):
 
     def _bad_metadata(self, in_metadata):
         mstore = self.mox.CreateMockAnything()
-        mstore.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
-            (self.location, self.size, self.checksum, in_metadata))
+        mstore.add(self.image_id, mox.IgnoreArg(),
+                   self.size, context=None).AndReturn(
+                       (self.location, self.size, self.checksum, in_metadata))
         mstore.__str__ = lambda: "hello"
         mstore.__unicode__ = lambda: "hello"
 
@@ -877,8 +878,9 @@ class TestStoreAddToBackend(utils.BaseTestCase):
     def _good_metadata(self, in_metadata):
 
         mstore = self.mox.CreateMockAnything()
-        mstore.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
-            (self.location, self.size, self.checksum, in_metadata))
+        mstore.add(self.image_id, mox.IgnoreArg(),
+                   self.size, context=None).AndReturn(
+                       (self.location, self.size, self.checksum, in_metadata))
 
         self.mox.ReplayAll()
         (location,
@@ -935,8 +937,9 @@ class TestStoreAddToBackend(utils.BaseTestCase):
 
     def test_bad_metadata_not_dict(self):
         store = self.mox.CreateMockAnything()
-        store.add(self.image_id, mox.IgnoreArg(), self.size).AndReturn(
-            (self.location, self.size, self.checksum, []))
+        store.add(self.image_id, mox.IgnoreArg(),
+                  self.size, context=None).AndReturn(
+                      (self.location, self.size, self.checksum, []))
         store.__str__ = lambda: "hello"
         store.__unicode__ = lambda: "hello"
 
