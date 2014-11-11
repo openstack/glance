@@ -25,7 +25,9 @@ import sys
 
 from oslo.serialization import jsonutils
 import six.moves.urllib.parse as urlparse
+from webob import exc
 
+from glance.common import exception
 from glance.common import utils
 from glance.openstack.common import gettextutils
 from glance.openstack.common import log
@@ -60,22 +62,6 @@ IMAGE_ALREADY_PRESENT_MESSAGE = _('The image %s is already present on '
                                   'not find it. This indicates that we '
                                   'do not have permissions to see all '
                                   'the images on the slave server.')
-
-
-class AuthenticationException(Exception):
-    pass
-
-
-class ImageAlreadyPresentException(Exception):
-    pass
-
-
-class ServerErrorException(Exception):
-    pass
-
-
-class UploadException(Exception):
-    pass
 
 
 class ImageService(object):
@@ -121,14 +107,25 @@ class ImageService(object):
                      'status': code_description,
                      'headers': repr(headers)})
 
-        if code in [400, 500]:
-            raise ServerErrorException(response.read())
+        if code == 400:
+            raise exc.HTTPBadRequest(
+                explanation=response.read())
 
-        if code in [401, 403]:
-            raise AuthenticationException(response.read())
+        if code == 500:
+            raise exc.HTTPInternalServerError(
+                explanation=response.read())
+
+        if code == 401:
+            raise exc.HTTPUnauthorized(
+                explanation=response.read())
+
+        if code == 403:
+            raise exc.HTTPForbidden(
+                explanation=response.read())
 
         if code == 409:
-            raise ImageAlreadyPresentException(response.read())
+            raise exc.HTTPConflict(
+                explanation=response.read())
 
         if ignore_result_body:
             # NOTE: because we are pipelining requests through a single HTTP
@@ -442,7 +439,7 @@ def replication_load(options, args):
                         headers, body = client.add_image(meta, img_file)
                         _check_upload_response_headers(headers, body)
                         updated.append(meta['id'])
-                    except ImageAlreadyPresentException:
+                    except exc.HTTPConflict:
                         LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE)
                                   % image_uuid)  # noqa
 
@@ -514,7 +511,7 @@ def replication_livecopy(options, args):
                                                            image_response)
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
-                except ImageAlreadyPresentException:
+                except exc.HTTPConflict:
                     LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE) % image['id'])  # noqa
 
     return updated
@@ -594,7 +591,7 @@ def _check_upload_response_headers(headers, body):
                 return
 
         except Exception:
-            raise UploadException('Image upload problem: %s' % body)
+            raise exception.UploadException(body)
 
 
 def _image_present(client, image_uuid):

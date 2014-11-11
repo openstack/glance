@@ -106,6 +106,10 @@ class NotAuthenticated(GlanceException):
     message = _("You are not authenticated.")
 
 
+class UploadException(GlanceException):
+    message = _('Image upload problem: %s')
+
+
 class Forbidden(GlanceException):
     message = _("You are not authorized to complete this action.")
 

@@ -21,8 +21,10 @@ import uuid
 import fixtures
 from oslo.serialization import jsonutils
 import six
+import webob
 
 from glance.cmd import replicator as glance_replicator
+from glance.common import exception
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
 
@@ -124,12 +126,11 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
     def test_rest_errors(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
 
-        for code, exc in [(400, glance_replicator.ServerErrorException),
-                          (401, glance_replicator.AuthenticationException),
-                          (403, glance_replicator.AuthenticationException),
-                          (409,
-                           glance_replicator.ImageAlreadyPresentException),
-                          (500, glance_replicator.ServerErrorException)]:
+        for code, exc in [(400, webob.exc.HTTPBadRequest),
+                          (401, webob.exc.HTTPUnauthorized),
+                          (403, webob.exc.HTTPForbidden),
+                          (409, webob.exc.HTTPConflict),
+                          (500, webob.exc.HTTPInternalServerError)]:
             c.conn.prime_request('GET',
                                  ('v1/images/'
                                   '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'), '',
@@ -552,7 +553,7 @@ class ReplicationUtilitiesTestCase(test_utils.BaseTestCase):
                                                          jsonutils.dumps(d))
 
         self.assertRaises(
-            glance_replicator.UploadException,
+            exception.UploadException,
             glance_replicator._check_upload_response_headers, {}, None)
 
     def test_image_present(self):
