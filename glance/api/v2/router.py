@@ -21,6 +21,7 @@ from glance.api.v2 import metadef_namespaces
 from glance.api.v2 import metadef_objects
 from glance.api.v2 import metadef_properties
 from glance.api.v2 import metadef_resource_types
+from glance.api.v2 import metadef_tags
 from glance.api.v2 import schemas
 from glance.api.v2 import tasks
 from glance.common import wsgi
@@ -186,6 +187,28 @@ class API(wsgi.Router):
                        conditions={'method': ['POST', 'PUT', 'DELETE',
                                               'PATCH', 'HEAD']})
 
+        mapper.connect('/schemas/metadefs/tag',
+                       controller=schemas_resource,
+                       action='metadef_tag',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/tag',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
+        mapper.connect('/schemas/metadefs/tags',
+                       controller=schemas_resource,
+                       action='metadef_tags',
+                       conditions={'method': ['GET']})
+        mapper.connect('/schemas/metadefs/tags',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
+
         # Metadef resource types
         metadef_resource_types_resource = (
             metadef_resource_types.create_resource())
@@ -343,6 +366,48 @@ class API(wsgi.Router):
                        conditions={'method': ['DELETE']})
         mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
                        'object_name}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, PUT, DELETE',
+                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+
+        # Metadef tags
+        metadef_tags_resource = metadef_tags.create_resource()
+        mapper.connect('/metadefs/namespaces/{namespace}/tags',
+                       controller=metadef_tags_resource,
+                       action='index',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags',
+                       controller=metadef_tags_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags',
+                       controller=metadef_tags_resource,
+                       action='create_tags',
+                       conditions={'method': ['PUT']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags',
+                       controller=metadef_namespace_resource,
+                       action='delete_tags',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET, POST, PUT, DELETE',
+                       conditions={'method': ['PATCH', 'HEAD']})
+
+        mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
+                       controller=metadef_tags_resource,
+                       action='show',
+                       conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
+                       controller=metadef_tags_resource,
+                       action='update',
+                       conditions={'method': ['PUT']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
+                       controller=metadef_tags_resource,
+                       action='delete',
+                       conditions={'method': ['DELETE']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET, PUT, DELETE',

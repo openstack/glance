@@ -77,6 +77,23 @@ def build_property_fixture(**kwargs):
     return property
 
 
+def build_tag_fixture(**kwargs):
+    # Full testing of required and schema done via rest api tests
+    tag = {
+        'namespace_id': 1,
+        'name': u'test-tag-name',
+    }
+    tag.update(kwargs)
+    return tag
+
+
+def build_tags_fixture(tag_name_list):
+    tag_list = []
+    for tag_name in tag_name_list:
+        tag_list.append({'name': tag_name})
+    return tag_list
+
+
 class TestMetadefDriver(test_utils.BaseTestCase):
 
     """Test Driver class for Metadef tests."""
@@ -469,10 +486,117 @@ class MetadefResourceTypeAssociationTests(object):
             self._assert_saved_fields(fixture, item)
 
 
+class MetadefTagTests(object):
+
+    def test_tag_create(self):
+        fixture = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture, created_ns)
+
+        fixture_tag = build_tag_fixture(namespace_id=created_ns['id'])
+        created_tag = self.db_api.metadef_tag_create(
+            self.context, created_ns['namespace'], fixture_tag)
+        self._assert_saved_fields(fixture_tag, created_tag)
+
+    def test_tag_create_tags(self):
+        fixture = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture, created_ns)
+
+        tags = build_tags_fixture(['Tag1', 'Tag2', 'Tag3'])
+        created_tags = self.db_api.metadef_tag_create_tags(
+            self.context, created_ns['namespace'], tags)
+        actual = set([tag['name'] for tag in created_tags])
+        expected = set(['Tag1', 'Tag2', 'Tag3'])
+        self.assertEqual(expected, actual)
+
+    def test_tag_get(self):
+        fixture_ns = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture_ns)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture_ns, created_ns)
+
+        fixture_tag = build_tag_fixture(namespace_id=created_ns['id'])
+        created_tag = self.db_api.metadef_tag_create(
+            self.context, created_ns['namespace'], fixture_tag)
+
+        found_tag = self.db_api.metadef_tag_get(
+            self.context, created_ns['namespace'], created_tag['name'])
+        self._assert_saved_fields(fixture_tag, found_tag)
+
+    def test_tag_get_all(self):
+        ns_fixture = build_namespace_fixture()
+        ns_created = self.db_api.metadef_namespace_create(self.context,
+                                                          ns_fixture)
+        self.assertIsNotNone(ns_created, "Could not create a namespace.")
+        self._assert_saved_fields(ns_fixture, ns_created)
+
+        fixture1 = build_tag_fixture(namespace_id=ns_created['id'])
+        created_tag1 = self.db_api.metadef_tag_create(
+            self.context, ns_created['namespace'], fixture1)
+        self.assertIsNotNone(created_tag1, "Could not create tag 1.")
+
+        fixture2 = build_tag_fixture(namespace_id=ns_created['id'],
+                                     name='test-tag-2')
+        created_tag2 = self.db_api.metadef_tag_create(
+            self.context, ns_created['namespace'], fixture2)
+        self.assertIsNotNone(created_tag2, "Could not create tag 2.")
+
+        found = self.db_api.metadef_tag_get_all(
+            self.context, ns_created['namespace'], sort_key='created_at')
+        self.assertEqual(2, len(found))
+
+    def test_tag_update(self):
+        delta = {'name': u'New-name'}
+
+        fixture_ns = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture_ns)
+        self.assertIsNotNone(created_ns['namespace'])
+
+        tag_fixture = build_tag_fixture(namespace_id=created_ns['id'])
+        created_tag = self.db_api.metadef_tag_create(
+            self.context, created_ns['namespace'], tag_fixture)
+        self.assertIsNotNone(created_tag, "Could not create a tag.")
+
+        delta_dict = {}
+        delta_dict.update(delta.copy())
+
+        updated = self.db_api.metadef_tag_update(
+            self.context, created_ns['namespace'],
+            created_tag['id'], delta_dict)
+        self.assertEqual(delta['name'], updated['name'])
+
+    def test_tag_delete(self):
+        fixture_ns = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(
+            self.context, fixture_ns)
+        self.assertIsNotNone(created_ns['namespace'])
+
+        tag_fixture = build_tag_fixture(namespace_id=created_ns['id'])
+        created_tag = self.db_api.metadef_tag_create(
+            self.context, created_ns['namespace'], tag_fixture)
+        self.assertIsNotNone(created_tag, "Could not create a tag.")
+
+        self.db_api.metadef_tag_delete(
+            self.context, created_ns['namespace'], created_tag['name'])
+
+        self.assertRaises(exception.NotFound,
+                          self.db_api.metadef_tag_get,
+                          self.context, created_ns['namespace'],
+                          created_tag['name'])
+
+
 class MetadefDriverTests(MetadefNamespaceTests,
                          MetadefResourceTypeTests,
                          MetadefResourceTypeAssociationTests,
                          MetadefPropertyTests,
-                         MetadefObjectTests):
+                         MetadefObjectTests,
+                         MetadefTagTests):
     # collection class
     pass

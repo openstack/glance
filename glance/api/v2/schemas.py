@@ -19,6 +19,7 @@ from glance.api.v2 import metadef_namespaces
 from glance.api.v2 import metadef_objects
 from glance.api.v2 import metadef_properties
 from glance.api.v2 import metadef_resource_types
+from glance.api.v2 import metadef_tags
 from glance.api.v2 import tasks
 from glance.common import wsgi
 
@@ -49,6 +50,10 @@ class Controller(object):
         self.metadef_object_schema = metadef_objects.get_schema()
         self.metadef_object_collection_schema = \
             metadef_objects.get_collection_schema()
+
+        self.metadef_tag_schema = metadef_tags.get_schema()
+        self.metadef_tag_collection_schema = (
+            metadef_tags.get_collection_schema())
 
     def image(self, req):
         return self.image_schema.raw()
@@ -91,6 +96,12 @@ class Controller(object):
 
     def metadef_objects(self, req):
         return self.metadef_object_collection_schema.raw()
+
+    def metadef_tag(self, req):
+        return self.metadef_tag_schema.raw()
+
+    def metadef_tags(self, req):
+        return self.metadef_tag_collection_schema.raw()
 
 
 def create_resource(custom_image_properties=None):

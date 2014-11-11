@@ -71,6 +71,10 @@ def get_metadef_objects_table(meta):
     return sqlalchemy.Table('metadef_objects', meta, autoload=True)
 
 
+def get_metadef_tags_table(meta):
+    return sqlalchemy.Table('metadef_tags', meta, autoload=True)
+
+
 def _get_resource_type_id(meta, name):
     resource_types_table = get_metadef_resource_types_table(meta)
     return resource_types_table.select().\
@@ -106,6 +110,14 @@ def _get_objects(meta, namespace_id):
         execute().fetchall()
 
 
+def _get_tags(meta, namespace_id):
+    tags_table = get_metadef_tags_table(meta)
+    return (
+        tags_table.select().
+        where(tags_table.c.namespace_id == namespace_id).
+        execute().fetchall())
+
+
 def _populate_metadata(meta, metadata_path=None):
     if not metadata_path:
         metadata_path = CONF.metadata_source_path
@@ -122,6 +134,7 @@ def _populate_metadata(meta, metadata_path=None):
     metadef_namespace_resource_types_tables =\
         get_metadef_namespace_resource_types_table(meta)
     metadef_objects_table = get_metadef_objects_table(meta)
+    metadef_tags_table = get_metadef_tags_table(meta)
     metadef_properties_table = get_metadef_properties_table(meta)
     metadef_resource_types_table = get_metadef_resource_types_table(meta)
 
@@ -208,13 +221,23 @@ def _populate_metadata(meta, metadata_path=None):
 
         for object in metadata.get('objects', []):
             values = {
-                'name': object.get('name', None),
+                'name': object.get('name'),
                 'description': object.get('description', None),
                 'namespace_id': namespace_id,
                 'json_schema': json.dumps(object.get('properties', None)),
                 'created_at': timeutils.utcnow()
             }
             _insert_data_to_db(metadef_objects_table, values)
+
+        for tag in metadata.get('tags', []):
+            timeutils_utcnow = timeutils.utcnow()
+            values = {
+                'name': tag.get('name'),
+                'namespace_id': namespace_id,
+                'created_at': timeutils_utcnow,
+                'updated_at': timeutils_utcnow
+            }
+            _insert_data_to_db(metadef_tags_table, values)
 
         LOG.info(_LI("File %s loaded to database."), file)
 
@@ -224,6 +247,7 @@ def _populate_metadata(meta, metadata_path=None):
 def _clear_metadata(meta):
     metadef_tables = [get_metadef_properties_table(meta),
                       get_metadef_objects_table(meta),
+                      get_metadef_tags_table(meta),
                       get_metadef_namespace_resource_types_table(meta),
                       get_metadef_namespaces_table(meta)]
 
@@ -262,13 +286,15 @@ def _export_data_to_file(meta, path):
             'owner': namespace['owner'],
             'resource_type_associations': [],
             'properties': {},
-            'objects': []
+            'objects': [],
+            'tags': []
         }
 
         namespace_resource_types = _get_namespace_resource_types(meta,
                                                                  namespace_id)
         db_objects = _get_objects(meta, namespace_id)
         db_properties = _get_properties(meta, namespace_id)
+        db_tags = _get_tags(meta, namespace_id)
 
         resource_types = []
         for namespace_resource_type in namespace_resource_types:
@@ -301,6 +327,15 @@ def _export_data_to_file(meta, path):
             })
         values.update({
             'properties': properties
+        })
+
+        tags = []
+        for tag in db_tags:
+            tags.append({
+                "name": tag['name']
+            })
+        values.update({
+            'tags': tags
         })
 
         try:

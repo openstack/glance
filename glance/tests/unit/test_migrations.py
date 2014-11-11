@@ -1336,6 +1336,28 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         self.assertIsNone(image_member['status'])
 
+    def _pre_upgrade_038(self, engine):
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine, 'metadef_tags')
+
+    def _check_038(self, engine, data):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        # metadef_tags
+        table = sqlalchemy.Table("metadef_tags", meta, autoload=True)
+        expected_cols = [u'id',
+                         u'namespace_id',
+                         u'name',
+                         u'created_at',
+                         u'updated_at']
+        col_data = [col.name for col in table.columns]
+        self.assertEqual(expected_cols, col_data)
+
+    def _post_downgrade_038(self, engine):
+        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
+                          db_utils.get_table, engine, 'metadef_tags')
+
 
 class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
                           MigrationsMixin):
@@ -1392,6 +1414,7 @@ class ModelsMigrationSyncMixin(object):
         # (except 'migrate_version')
         if name in ['migrate_version', 'metadef_objects', 'metadef_namespaces',
                     'metadef_properties', 'metadef_resource_types',
+                    'metadef_tags',
                     'metadef_namespace_resource_types'] and type_ == 'table':
             return False
         return True

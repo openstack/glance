@@ -26,6 +26,7 @@ from glance.api.v2.model.metadef_namespace import Namespaces
 from glance.api.v2.model.metadef_object import MetadefObject
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociation
+from glance.api.v2.model.metadef_tag import MetadefTag
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -54,6 +55,7 @@ class NamespaceController(object):
                                               policy_enforcer=self.policy)
         self.ns_schema_link = '/v2/schemas/metadefs/namespace'
         self.obj_schema_link = '/v2/schemas/metadefs/object'
+        self.tag_schema_link = '/v2/schemas/metadefs/tag'
 
     def index(self, req, marker=None, limit=None, sort_key='created_at',
               sort_dir='desc', filters=None):
@@ -112,10 +114,11 @@ class NamespaceController(object):
             namespace_created = True
 
             # Create Resource Types
-            rs_factory = (
-                self.gateway.get_metadef_resource_type_factory(req.context))
-            rs_repo = self.gateway.get_metadef_resource_type_repo(req.context)
             if namespace.resource_type_associations:
+                rs_factory = (self.gateway.get_metadef_resource_type_factory(
+                    req.context))
+                rs_repo = self.gateway.get_metadef_resource_type_repo(
+                    req.context)
                 for resource_type in namespace.resource_type_associations:
                     new_resource = rs_factory.new_resource_type(
                         namespace=namespace.namespace,
@@ -123,22 +126,34 @@ class NamespaceController(object):
                     rs_repo.add(new_resource)
 
             # Create Objects
-            object_factory = self.gateway.get_metadef_object_factory(
-                req.context)
-            object_repo = self.gateway.get_metadef_object_repo(req.context)
-
             if namespace.objects:
+                object_factory = self.gateway.get_metadef_object_factory(
+                    req.context)
+                object_repo = self.gateway.get_metadef_object_repo(
+                    req.context)
                 for metadata_object in namespace.objects:
                     new_meta_object = object_factory.new_object(
                         namespace=namespace.namespace,
                         **metadata_object.to_dict())
                     object_repo.add(new_meta_object)
 
+            # Create Tags
+            if namespace.tags:
+                tag_factory = self.gateway.get_metadef_tag_factory(
+                    req.context)
+                tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+                for metadata_tag in namespace.tags:
+                    new_meta_tag = tag_factory.new_tag(
+                        namespace=namespace.namespace,
+                        **metadata_tag.to_dict())
+                    tag_repo.add(new_meta_tag)
+
             # Create Namespace Properties
-            prop_factory = (
-                self.gateway.get_metadef_property_factory(req.context))
-            prop_repo = self.gateway.get_metadef_property_repo(req.context)
             if namespace.properties:
+                prop_factory = (self.gateway.get_metadef_property_factory(
+                    req.context))
+                prop_repo = self.gateway.get_metadef_property_repo(
+                    req.context)
                 for (name, value) in namespace.properties.items():
                     new_property_type = (
                         prop_factory.new_namespace_property(
@@ -165,6 +180,7 @@ class NamespaceController(object):
         new_namespace.objects = namespace.objects
         new_namespace.resource_type_associations = (
             namespace.resource_type_associations)
+        new_namespace.tags = namespace.tags
         return Namespace.to_wsme_model(new_namespace,
                                        get_namespace_href(new_namespace),
                                        self.ns_schema_link)
@@ -232,6 +248,14 @@ class NamespaceController(object):
                 namespace_detail = self._prefix_property_name(
                     namespace_detail, filters['resource_type'])
 
+            # Get tags
+            tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+            db_metatag_list = tag_repo.list(filters=ns_filters)
+            tag_list = [MetadefTag(**{'name': db_metatag.name})
+                        for db_metatag in db_metatag_list]
+            if tag_list:
+                namespace_detail.tags = tag_list
+
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
@@ -291,6 +315,20 @@ class NamespaceController(object):
             namespace_obj = ns_repo.get(namespace)
             namespace_obj.delete()
             ns_repo.remove_objects(namespace_obj)
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except Exception as e:
+            LOG.error(utils.exception_to_str(e))
+            raise webob.exc.HTTPInternalServerError()
+
+    def delete_tags(self, req, namespace):
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
+        try:
+            namespace_obj = ns_repo.get(namespace)
+            namespace_obj.delete()
+            ns_repo.remove_tags(namespace_obj)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
@@ -700,7 +738,18 @@ def _get_base_properties():
                     },
                 }
             }
-        }
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
     }
 
 
@@ -730,6 +779,12 @@ def get_namespace_href(namespace):
 def get_object_href(namespace_name, metadef_object):
         base_href = ('/v2/metadefs/namespaces/%s/objects/%s' %
                      (namespace_name, metadef_object.name))
+        return base_href
+
+
+def get_tag_href(namespace_name, metadef_tag):
+        base_href = ('/v2/metadefs/namespaces/%s/tags/%s' %
+                     (namespace_name, metadef_tag.name))
         return base_href
 
 

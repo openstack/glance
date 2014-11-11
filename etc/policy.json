@@ -47,6 +47,12 @@
     "get_metadef_property":"",
     "get_metadef_properties":"",
     "modify_metadef_property":"",
-    "add_metadef_property":""
+    "add_metadef_property":"",
+
+    "get_metadef_tag":"",
+    "get_metadef_tags":"",
+    "modify_metadef_tag":"",
+    "add_metadef_tag":"",
+    "add_metadef_tags":""
 
 }

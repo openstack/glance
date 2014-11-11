@@ -255,6 +255,11 @@ class MetadefNamespaceRepo(object):
         result = self.base.remove_properties(base_item)
         return self.namespace_proxy_helper.proxy(result)
 
+    def remove_tags(self, item):
+        base_item = self.namespace_proxy_helper.unproxy(item)
+        result = self.base.remove_tags(base_item)
+        return self.namespace_proxy_helper.proxy(result)
+
     def save(self, item):
         base_item = self.namespace_proxy_helper.unproxy(item)
         result = self.base.save(base_item)
@@ -464,3 +469,68 @@ class MetadefPropertyFactory(object):
     def new_namespace_property(self, **kwargs):
         t = self.base.new_namespace_property(**kwargs)
         return self.meta_object_helper.proxy(t)
+
+
+# Metadef tag classes
+class MetadefTagRepo(object):
+    def __init__(self, base,
+                 tag_proxy_class=None, tag_proxy_kwargs=None):
+        self.base = base
+        self.tag_proxy_helper = Helper(tag_proxy_class,
+                                       tag_proxy_kwargs)
+
+    def get(self, namespace, name):
+        meta_tag = self.base.get(namespace, name)
+        return self.tag_proxy_helper.proxy(meta_tag)
+
+    def add(self, meta_tag):
+        self.base.add(self.tag_proxy_helper.unproxy(meta_tag))
+
+    def add_tags(self, meta_tags):
+        tags_list = []
+        for meta_tag in meta_tags:
+            tags_list.append(self.tag_proxy_helper.unproxy(meta_tag))
+        self.base.add_tags(tags_list)
+
+    def list(self, *args, **kwargs):
+        tags = self.base.list(*args, **kwargs)
+        return [self.tag_proxy_helper.proxy(meta_tag) for meta_tag
+                in tags]
+
+    def remove(self, item):
+        base_item = self.tag_proxy_helper.unproxy(item)
+        result = self.base.remove(base_item)
+        return self.tag_proxy_helper.proxy(result)
+
+    def save(self, item):
+        base_item = self.tag_proxy_helper.unproxy(item)
+        result = self.base.save(base_item)
+        return self.tag_proxy_helper.proxy(result)
+
+
+class MetadefTag(object):
+    def __init__(self, base):
+        self.base = base
+
+    namespace = _proxy('base', 'namespace')
+    tag_id = _proxy('base', 'tag_id')
+    name = _proxy('base', 'name')
+    created_at = _proxy('base', 'created_at')
+    updated_at = _proxy('base', 'updated_at')
+
+    def delete(self):
+        self.base.delete()
+
+
+class MetadefTagFactory(object):
+    def __init__(self,
+                 base,
+                 meta_tag_proxy_class=None,
+                 meta_tag_proxy_kwargs=None):
+        self.meta_tag_helper = Helper(meta_tag_proxy_class,
+                                      meta_tag_proxy_kwargs)
+        self.base = base
+
+    def new_tag(self, **kwargs):
+        t = self.base.new_tag(**kwargs)
+        return self.meta_tag_helper.proxy(t)

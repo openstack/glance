@@ -815,3 +815,88 @@ class MetadefPropertyRepoProxy(glance.domain.proxy.MetadefPropertyRepo):
             *args, **kwargs)
         return [proxy_namespace_property(self.context, namespace_property) for
                 namespace_property in namespace_properties]
+
+
+# Metadef Tag classes
+def is_tag_mutable(context, tag):
+    """Return True if the tag is mutable in this context."""
+    if context.is_admin:
+        return True
+
+    if context.owner is None:
+        return False
+
+    return tag.namespace.owner == context.owner
+
+
+def proxy_tag(context, tag):
+    if is_tag_mutable(context, tag):
+        return tag
+    else:
+        return ImmutableMetadefTagProxy(tag)
+
+
+class ImmutableMetadefTagProxy(object):
+
+    def __init__(self, base):
+        self.base = base
+        self.resource_name = 'tag'
+
+    tag_id = _immutable_attr('base', 'tag_id')
+    name = _immutable_attr('base', 'name')
+    created_at = _immutable_attr('base', 'created_at')
+    updated_at = _immutable_attr('base', 'updated_at')
+
+    def delete(self):
+        message = _("You are not permitted to delete this tag.")
+        raise exception.Forbidden(message)
+
+    def save(self):
+        message = _("You are not permitted to update this tag.")
+        raise exception.Forbidden(message)
+
+
+class MetadefTagProxy(glance.domain.proxy.MetadefTag):
+
+    def __init__(self, meta_tag):
+        super(MetadefTagProxy, self).__init__(meta_tag)
+
+
+class MetadefTagFactoryProxy(glance.domain.proxy.MetadefTagFactory):
+
+    def __init__(self, meta_tag_factory, context):
+        self.meta_tag_factory = meta_tag_factory
+        self.context = context
+        super(MetadefTagFactoryProxy, self).__init__(
+            meta_tag_factory,
+            meta_tag_proxy_class=MetadefTagProxy)
+
+    def new_tag(self, **kwargs):
+        owner = kwargs.pop('owner', self.context.owner)
+        if not self.context.is_admin:
+            if owner is None:
+                message = _("Owner must be specified to create a tag.")
+                raise exception.Forbidden(message)
+            elif owner != self.context.owner:
+                message = _("You are not permitted to create a tag"
+                            " in the namespace owned by '%s'")
+                raise exception.Forbidden(message % (owner))
+
+        return super(MetadefTagFactoryProxy, self).new_tag(**kwargs)
+
+
+class MetadefTagRepoProxy(glance.domain.proxy.MetadefTagRepo):
+
+    def __init__(self, tag_repo, context):
+        self.tag_repo = tag_repo
+        self.context = context
+        super(MetadefTagRepoProxy, self).__init__(tag_repo)
+
+    def get(self, namespace, tag_name):
+        meta_tag = self.tag_repo.get(namespace, tag_name)
+        return proxy_tag(self.context, meta_tag)
+
+    def list(self, *args, **kwargs):
+        tags = self.tag_repo.list(*args, **kwargs)
+        return [proxy_tag(self.context, meta_tag) for
+                meta_tag in tags]
