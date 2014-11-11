@@ -110,7 +110,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                update_data)
 
         store.add.assert_called_once_with(image_meta['id'], mock.ANY,
-                                          image_meta['size'])
+                                          image_meta['size'], context=mock.ANY)
 
     def test_upload_data_to_store(self):
         req = unit_test_utils.get_fake_request()
