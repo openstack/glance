@@ -2549,6 +2549,18 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(res.status_int, 403)
 
+    def test_show_image_download_without_restricted_policy(self):
+        rules = {"context_is_admin": "role:admin",
+                 "default": "",
+                 "restricted":
+                 "not ('test_key':%(x_test_key)s and role:_member_)",
+                 "download_image": "role:admin or rule:restricted"}
+        self.set_policy_rules(rules)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        req.headers['X-Auth-Token'] = 'user:tenant:_member_'
+        res = req.get_response(self.api)
+        self.assertEqual(res.status_int, 200)
+
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'

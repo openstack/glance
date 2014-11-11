@@ -591,6 +591,71 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_download_image_with_no_restricted_property_set_to_image(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "restricted":
+            "not ('test_key':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'member'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Returned image entity
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'private',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+
+        for key, value in six.iteritems(expected_image):
+            self.assertEqual(image[key], value, key)
+
+        # Upload data to image
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(204, response.status_code)
+
+        # Get an image
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream',
+                                 'X-Roles': '_member_'})
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        # Image Deletion should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # This image should be no longer be directly accessible
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(404, response.status_code)
+
+        self.stop_servers()
+
     def test_download_image_not_allowed_using_restricted_policy(self):
 
         rules = {

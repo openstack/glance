@@ -565,6 +565,76 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         actual = cache_filter.process_request(request)
         self.assertTrue(actual)
 
+    def test_v1_process_request_download_without_restricted_property(self):
+        """
+        Test process_request for v1 api where _member_ role able to
+        download the image if restricted property is not added to the image.
+        """
+        image_id = 'test1'
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {
+                'id': image_id,
+                'name': 'fake_image',
+                'status': 'active',
+                'created_at': '',
+                'min_disk': '10G',
+                'min_ram': '1024M',
+                'protected': False,
+                'locations': '',
+                'checksum': 'c1234',
+                'owner': '',
+                'disk_format': 'raw',
+                'container_format': 'bare',
+                'size': '123456789',
+                'virtual_size': '123456789',
+                'is_public': 'public',
+                'deleted': False,
+                'updated_at': ''
+            }
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['_member_'])
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+        actual = cache_filter.process_request(request)
+        self.assertTrue(actual)
+
+    def test_v2_process_request_download_without_restricted_property(self):
+        """
+        Test process_request for v2 api where member role able to
+        download the image if restricted property is not added to the image.
+        """
+        image_id = 'test1'
+
+        def fake_get_v2_image_metadata(*args, **kwargs):
+            image = ImageStub(image_id)
+            request.environ['api.cache.image'] = image
+            return glance.api.policy.ImageTarget(image)
+
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext(roles=['_member_'])
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+        actual = cache_filter.process_request(request)
+        self.assertTrue(actual)
+
 
 class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
     def test_process_v1_DELETE_response(self):
@@ -827,6 +897,87 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
 
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext(roles=['member'])
+        resp = webob.Response(request=request)
+        actual = cache_filter.process_response(resp)
+        self.assertEqual(actual, resp)
+
+    def test_v1_process_response_download_without_restricted_property(self):
+        """
+        Test process_response for v1 api where _member_ role able to
+        download the image if restricted property is not added to the image.
+        """
+        image_id = 'test1'
+
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET', 'v1')
+
+        def fake_get_v1_image_metadata(*args, **kwargs):
+            return {
+                'id': image_id,
+                'name': 'fake_image',
+                'status': 'active',
+                'created_at': '',
+                'min_disk': '10G',
+                'min_ram': '1024M',
+                'protected': False,
+                'locations': '',
+                'checksum': 'c1234',
+                'owner': '',
+                'disk_format': 'raw',
+                'container_format': 'bare',
+                'size': '123456789',
+                'virtual_size': '123456789',
+                'is_public': 'public',
+                'deleted': False,
+                'updated_at': ''
+            }
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request.context = context.RequestContext(roles=['_member_'])
+        resp = webob.Response(request=request)
+        actual = cache_filter.process_response(resp)
+        self.assertEqual(actual, resp)
+
+    def test_v2_process_response_download_without_restricted_property(self):
+        """
+        Test process_response for v2 api where member role able to
+        download the image if restricted property is not added to the image.
+        """
+        image_id = 'test1'
+
+        def fake_fetch_request_info(*args, **kwargs):
+            return ('test1', 'GET', 'v2')
+
+        def fake_get_v2_image_metadata(*args, **kwargs):
+            image = ImageStub(image_id)
+            request.environ['api.cache.image'] = image
+            return glance.api.policy.ImageTarget(image)
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        cache_filter._fetch_request_info = fake_fetch_request_info
+        cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
+
+        rules = {
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+        self.set_policy_rules(rules)
+        cache_filter.policy = glance.api.policy.Enforcer()
+
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext(roles=['_member_'])
         resp = webob.Response(request=request)
         actual = cache_filter.process_response(resp)
         self.assertEqual(actual, resp)

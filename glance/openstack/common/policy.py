@@ -774,8 +774,12 @@ class GenericCheck(Check):
             role:compute:admin
         """
 
-        # TODO(termie): do dict inspection via dot syntax
-        match = self.match % target
+        try:
+            match = self.match % target
+        except KeyError:
+            # While doing GenericCheck if key not
+            # present in Target return false
+            return False
 
         try:
             # Try to interpret self.kind as a literal
