@@ -42,6 +42,7 @@ import osprofiler.notifier
 import osprofiler.web
 
 from glance.common import config
+from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
 from glance.openstack.common import log
@@ -72,7 +73,7 @@ def main():
                      default_port=9191)
         server.wait()
     except RuntimeError as e:
-        sys.exit("ERROR: %s" % e)
+        sys.exit("ERROR: %s" % utils.exception_to_str(e))
 
 
 if __name__ == '__main__':
