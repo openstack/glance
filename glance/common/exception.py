@@ -452,6 +452,24 @@ class InvalidVersion(Invalid):
     message = _("Version is invalid: %(reason)s")
 
 
+class InvalidArtifactTypePropertyDefinition(Invalid):
+    message = _("Invalid property definition")
+
+
+class InvalidArtifactTypeDefinition(Invalid):
+    message = _("Invalid type definition")
+
+
+class InvalidArtifactPropertyValue(Invalid):
+    message = _("Property '%(name)s' may not have value '%(val)s': %(msg)s")
+
+    def __init__(self, message=None, *args, **kwargs):
+        super(InvalidArtifactPropertyValue, self).__init__(message, *args,
+                                                           **kwargs)
+        self.name = kwargs.get('name')
+        self.value = kwargs.get('val')
+
+
 class ArtifactNotFound(NotFound):
     message = _("Artifact with id=%(id)s was not found")
 
@@ -499,28 +517,23 @@ class ArtifactInvalidPropertyParameter(Invalid):
     message = _("Cannot use this parameter with the operator %(op)s")
 
 
-class ArtifactInvalidStateTransition(Invalid):
-    message = _("Artifact state cannot be changed from %(curr)s to %(to)s")
+class ArtifactLoadError(GlanceException):
+    message = _("Cannot load artifact '%(name)s'")
 
 
-class InvalidArtifactTypePropertyDefinition(Invalid):
-    message = _("Invalid property definition")
+class ArtifactNonMatchingTypeName(ArtifactLoadError):
+    message = _(
+        "Plugin name '%(plugin)s' should match artifact typename '%(name)s'")
 
 
-class InvalidArtifactTypeDefinition(Invalid):
-    message = _("Invalid type definition")
-
-
-class InvalidArtifactPropertyValue(Invalid):
-    message = _("Property '%(name)s' may not have value '%(val)s': %(msg)s")
-
-    def __init__(self, message=None, *args, **kwargs):
-        super(InvalidArtifactPropertyValue, self).__init__(message, *args,
-                                                           **kwargs)
-        self.name = kwargs.get('name')
-        self.value = kwargs.get('val')
+class ArtifactPluginNotFound(NotFound):
+    message = _("No plugin for '%(name)s' has been loaded")
 
 
 class UnknownArtifactType(NotFound):
     message = _("Artifact type with name '%(name)s' and version '%(version)s' "
                 "is not known")
+
+
+class ArtifactInvalidStateTransition(Invalid):
+    message = _("Artifact state cannot be changed from %(curr)s to %(to)s")

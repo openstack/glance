@@ -14,6 +14,8 @@
 
 import datetime
 
+import mock
+
 from glance.common.artifacts import declarative
 import glance.common.artifacts.definitions as defs
 from glance.common.artifacts import serialization
@@ -1072,15 +1074,16 @@ class TestSerialization(test_utils.BaseTestCase):
                 ]
             }
         }
+        plugins_dict = {'SerTestType': [SerTestType],
+                        'ArtifactType': [defs.ArtifactType]}
 
-        art = serialization.deserialize_from_db(db_dict,
-                                                {
-                                                    'SerTestType': {
-                                                        '1.0': SerTestType},
-                                                    'ArtifactType': {
-                                                        '1.0':
-                                                            defs.ArtifactType}
-                                                })
+        def _retrieve_plugin(name, version):
+            return next((p for p in plugins_dict.get(name, [])
+                        if version and p.version == version),
+                        plugins_dict.get(name, [None])[0])
+        plugins = mock.Mock()
+        plugins.get_class_by_typename = _retrieve_plugin
+        art = serialization.deserialize_from_db(db_dict, plugins)
         self.assertEqual('123', art.id)
         self.assertEqual('11.2', art.version)
         self.assertIsNone(art.description)
