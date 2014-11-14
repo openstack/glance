@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.serialization import jsonutils as json
+from oslo.serialization import jsonutils
 import six
 import webob.exc
-from wsme.rest.json import fromjson
-from wsme.rest.json import tojson
+from wsme.rest import json
 
 from glance.api import policy
 from glance.api.v2 import metadef_namespaces as namespaces
@@ -49,14 +48,14 @@ class NamespacePropertiesController(object):
     def _to_dict(self, model_property_type):
         # Convert the model PropertyTypes dict to a JSON encoding
         db_property_type_dict = dict()
-        db_property_type_dict['schema'] = tojson(
+        db_property_type_dict['schema'] = json.tojson(
             PropertyType, model_property_type)
         db_property_type_dict['name'] = model_property_type.name
         return db_property_type_dict
 
     def _to_model(self, db_property_type):
         # Convert the persisted json schema to a dict of PropertyTypes
-        property_type = fromjson(
+        property_type = json.fromjson(
             PropertyType, db_property_type.schema)
         property_type.name = db_property_type.name
         return property_type
@@ -188,7 +187,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             self.schema.validate(body)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        property_type = fromjson(PropertyType, body)
+        property_type = json.fromjson(PropertyType, body)
         return dict(property_type=property_type)
 
     def update(self, request):
@@ -198,7 +197,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             self.schema.validate(body)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        property_type = fromjson(PropertyType, body)
+        property_type = json.fromjson(PropertyType, body)
         return dict(property_type=property_type)
 
     def show(self, request):
@@ -215,14 +214,14 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.schema = schema
 
     def show(self, response, result):
-        property_type_json = tojson(PropertyType, result)
-        body = json.dumps(property_type_json, ensure_ascii=False)
+        property_type_json = json.tojson(PropertyType, result)
+        body = jsonutils.dumps(property_type_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def index(self, response, result):
-        property_type_json = tojson(PropertyTypes, result)
-        body = json.dumps(property_type_json, ensure_ascii=False)
+        property_type_json = json.tojson(PropertyTypes, result)
+        body = jsonutils.dumps(property_type_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 

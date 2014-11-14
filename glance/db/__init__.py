@@ -18,8 +18,7 @@
 
 from oslo.config import cfg
 from oslo.utils import importutils
-from wsme.rest.json import fromjson
-from wsme.rest.json import tojson
+from wsme.rest import json
 
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.common import crypt
@@ -509,7 +508,7 @@ class MetadefObjectRepo(object):
         property_types = {}
         json_props = metadata_object['json_schema']
         for id in json_props:
-            property_types[id] = fromjson(PropertyType, json_props[id])
+            property_types[id] = json.fromjson(PropertyType, json_props[id])
 
         return glance.domain.MetadefObject(
             namespace=namespace_entity,
@@ -532,7 +531,7 @@ class MetadefObjectRepo(object):
         db_schema = {}
         if properties:
             for k, v in properties.items():
-                json_data = tojson(PropertyType, v)
+                json_data = json.tojson(PropertyType, v)
                 db_schema[k] = json_data
 
         db_metadata_object = {
