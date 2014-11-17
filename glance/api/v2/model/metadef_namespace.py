@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import wsme
-from wsme.rest.json import fromjson
+from wsme.rest import json
 from wsme import types
 
 from glance.api.v2.model.metadef_object import MetadefObject
@@ -56,7 +56,7 @@ class Namespace(types.Base, WSMEModelTransformer):
         property_types = {}
         for db_property_type in db_property_types:
             # Convert the persisted json schema to a dict of PropertyTypes
-            property_type = fromjson(
+            property_type = json.fromjson(
                 PropertyType, db_property_type.schema)
             property_type_name = db_property_type.name
             property_types[property_type_name] = property_type

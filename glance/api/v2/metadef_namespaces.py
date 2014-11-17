@@ -14,12 +14,11 @@
 # limitations under the License.
 
 from oslo.config import cfg
-from oslo.serialization import jsonutils as json
+from oslo.serialization import jsonutils
 import six
 import six.moves.urllib.parse as urlparse
 import webob.exc
-from wsme.rest.json import fromjson
-from wsme.rest.json import tojson
+from wsme.rest import json
 
 from glance.api import policy
 from glance.api.v2.model.metadef_namespace import Namespace
@@ -172,7 +171,7 @@ class NamespaceController(object):
     def _to_property_dict(self, name, value):
         # Convert the model PropertyTypes dict to a JSON string
         db_property_type_dict = dict()
-        db_property_type_dict['schema'] = tojson(PropertyType, value)
+        db_property_type_dict['schema'] = json.tojson(PropertyType, value)
         db_property_type_dict['name'] = name
         return db_property_type_dict
 
@@ -430,7 +429,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             self.schema.validate(body)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        namespace = fromjson(Namespace, body)
+        namespace = json.fromjson(Namespace, body)
         return dict(namespace=namespace)
 
     def update(self, request):
@@ -440,7 +439,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             self.schema.validate(body)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        namespace = fromjson(Namespace, body)
+        namespace = json.fromjson(Namespace, body)
         return dict(user_ns=namespace)
 
 
@@ -450,12 +449,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.schema = schema
 
     def create(self, response, namespace):
-        ns_json = tojson(Namespace, namespace)
+        ns_json = json.tojson(Namespace, namespace)
         response = self.__render(ns_json, response, 201)
         response.location = get_namespace_href(namespace)
 
     def show(self, response, namespace):
-        ns_json = tojson(Namespace, namespace)
+        ns_json = json.tojson(Namespace, namespace)
         response = self.__render(ns_json, response)
 
     def index(self, response, result):
@@ -471,11 +470,11 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             next_query = urlparse.urlencode(params)
             result.next = '/v2/metadefs/namespaces?%s' % next_query
 
-        ns_json = tojson(Namespaces, result)
+        ns_json = json.tojson(Namespaces, result)
         response = self.__render(ns_json, response)
 
     def update(self, response, namespace):
-        ns_json = tojson(Namespace, namespace)
+        ns_json = json.tojson(Namespace, namespace)
         response = self.__render(ns_json, response, 200)
 
     def delete(self, response, result):
@@ -488,7 +487,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 204
 
     def __render(self, json_data, response, response_status=None):
-        body = json.dumps(json_data, ensure_ascii=False)
+        body = jsonutils.dumps(json_data, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
         if response_status:

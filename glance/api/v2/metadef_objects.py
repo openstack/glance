@@ -14,11 +14,10 @@
 # limitations under the License.
 
 from oslo.config import cfg
-from oslo.serialization import jsonutils as json
+from oslo.serialization import jsonutils
 import six
 import webob.exc
-from wsme.rest.json import fromjson
-from wsme.rest.json import tojson
+from wsme.rest import json
 
 from glance.api import policy
 from glance.api.v2 import metadef_namespaces as namespaces
@@ -233,7 +232,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             self.schema.validate(body)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        metadata_object = fromjson(MetadefObject, body)
+        metadata_object = json.fromjson(MetadefObject, body)
         return dict(metadata_object=metadata_object)
 
     def update(self, request):
@@ -243,7 +242,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             self.schema.validate(body)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        metadata_object = fromjson(MetadefObject, body)
+        metadata_object = json.fromjson(MetadefObject, body)
         return dict(metadata_object=metadata_object)
 
     def index(self, request):
@@ -300,8 +299,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.show(response, metadata_object)
 
     def show(self, response, metadata_object):
-        metadata_object_json = tojson(MetadefObject, metadata_object)
-        body = json.dumps(metadata_object_json, ensure_ascii=False)
+        metadata_object_json = json.tojson(MetadefObject, metadata_object)
+        body = jsonutils.dumps(metadata_object_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
@@ -311,8 +310,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def index(self, response, result):
         result.schema = "v2/schemas/metadefs/objects"
-        metadata_objects_json = tojson(MetadefObjects, result)
-        body = json.dumps(metadata_objects_json, ensure_ascii=False)
+        metadata_objects_json = json.tojson(MetadefObjects, result)
+        body = jsonutils.dumps(metadata_objects_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 

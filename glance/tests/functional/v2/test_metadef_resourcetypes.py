@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.serialization import jsonutils as json
+from oslo.serialization import jsonutils
 import six
 import webob.exc
-from wsme.rest.json import fromjson
-from wsme.rest.json import tojson
+from wsme.rest import json
 
 from glance.api import policy
 from glance.api.v2.model.metadef_resource_type import ResourceType
@@ -164,7 +163,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             self.schema.validate(body)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        resource_type = fromjson(ResourceTypeAssociation, body)
+        resource_type = json.fromjson(ResourceTypeAssociation, body)
         return dict(resource_type=resource_type)
 
 
@@ -174,21 +173,21 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.schema = schema
 
     def show(self, response, result):
-        resource_type_json = tojson(ResourceTypeAssociations, result)
-        body = json.dumps(resource_type_json, ensure_ascii=False)
+        resource_type_json = json.tojson(ResourceTypeAssociations, result)
+        body = jsonutils.dumps(resource_type_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def index(self, response, result):
-        resource_type_json = tojson(ResourceTypes, result)
-        body = json.dumps(resource_type_json, ensure_ascii=False)
+        resource_type_json = json.tojson(ResourceTypes, result)
+        body = jsonutils.dumps(resource_type_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def create(self, response, result):
-        resource_type_json = tojson(ResourceTypeAssociation, result)
+        resource_type_json = json.tojson(ResourceTypeAssociation, result)
         response.status_int = 201
-        body = json.dumps(resource_type_json, ensure_ascii=False)
+        body = jsonutils.dumps(resource_type_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
