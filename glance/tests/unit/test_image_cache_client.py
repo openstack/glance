@@ -78,13 +78,19 @@ class GetClientTestCase(utils.BaseTestCase):
     def setUp(self):
         super(GetClientTestCase, self).setUp()
         self.host = 'test_host'
+        self.env = os.environ.copy()
+        os.environ.clear()
+
+    def tearDown(self):
+        os.environ = self.env
+        super(GetClientTestCase, self).tearDown()
 
     def test_get_client_host_only(self):
         expected_creds = {
             'username': None,
             'password': None,
             'tenant': None,
-            'auth_url': os.getenv('OS_AUTH_URL'),
+            'auth_url': None,
             'strategy': 'noauth',
             'region': None
         }
