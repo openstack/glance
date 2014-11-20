@@ -146,9 +146,8 @@ class MetadefNamespaceTests(object):
         self.assertIsNotNone(created, "Could not create an association.")
 
         rt_filters = {'resource_types': fixture['name']}
-        found = self.db_api.\
-            metadef_namespace_get_all(self.context, filters=rt_filters,
-                                      sort_key='created_at')
+        found = self.db_api.metadef_namespace_get_all(
+            self.context, filters=rt_filters, sort_key='created_at')
         self.assertEqual(1, len(found))
         for item in found:
             self._assert_saved_fields(ns_fixture, item)
@@ -256,8 +255,8 @@ class MetadefPropertyTests(object):
             self.context, ns_created['namespace'], fixture2)
         self.assertIsNotNone(created_p2, "Could not create a property.")
 
-        found = self.db_api.\
-            metadef_property_get_all(self.context, ns_created['namespace'])
+        found = self.db_api.metadef_property_get_all(
+            self.context, ns_created['namespace'])
         self.assertEqual(2, len(found))
 
     def test_property_update(self):
@@ -366,8 +365,8 @@ class MetadefObjectTests(object):
             self.context, ns_created['namespace'], fixture2)
         self.assertIsNotNone(created_o2, "Could not create an object.")
 
-        found = self.db_api.\
-            metadef_object_get_all(self.context, ns_created['namespace'])
+        found = self.db_api.metadef_object_get_all(
+            self.context, ns_created['namespace'])
         self.assertEqual(len(found), 2)
 
     def test_object_update(self):
@@ -478,9 +477,9 @@ class MetadefResourceTypeAssociationTests(object):
             self.context, ns_created['namespace'], fixture)
         self.assertIsNotNone(created, "Could not create an association.")
 
-        found = self.db_api.\
-            metadef_resource_type_association_get_all_by_namespace(
-                self.context, ns_created['namespace'])
+        found = (
+            self.db_api.metadef_resource_type_association_get_all_by_namespace(
+                self.context, ns_created['namespace']))
         self.assertEqual(1, len(found))
         for item in found:
             self._assert_saved_fields(fixture, item)

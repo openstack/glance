@@ -36,20 +36,20 @@ class Controller(object):
 
         # Metadef schemas
         self.metadef_namespace_schema = metadef_namespaces.get_schema()
-        self.metadef_namespace_collection_schema = \
-            metadef_namespaces.get_collection_schema()
+        self.metadef_namespace_collection_schema = (
+            metadef_namespaces.get_collection_schema())
 
         self.metadef_resource_type_schema = metadef_resource_types.get_schema()
-        self.metadef_resource_type_collection_schema = \
-            metadef_resource_types.get_collection_schema()
+        self.metadef_resource_type_collection_schema = (
+            metadef_resource_types.get_collection_schema())
 
         self.metadef_property_schema = metadef_properties.get_schema()
-        self.metadef_property_collection_schema = \
-            metadef_properties.get_collection_schema()
+        self.metadef_property_collection_schema = (
+            metadef_properties.get_collection_schema())
 
         self.metadef_object_schema = metadef_objects.get_schema()
-        self.metadef_object_collection_schema = \
-            metadef_objects.get_collection_schema()
+        self.metadef_object_collection_schema = (
+            metadef_objects.get_collection_schema())
 
         self.metadef_tag_schema = metadef_tags.get_schema()
         self.metadef_tag_collection_schema = (

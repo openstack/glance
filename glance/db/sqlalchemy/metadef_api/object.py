@@ -30,8 +30,7 @@ _ = i18n._
 
 def _get(context, object_id, session):
     try:
-        query = session.query(models.MetadefObject)\
-            .filter_by(id=object_id)
+        query = session.query(models.MetadefObject).filter_by(id=object_id)
         metadef_object = query.one()
     except sa_orm.exc.NoResultFound:
         msg = (_("Metadata definition object not found for id=%s")
@@ -45,8 +44,8 @@ def _get(context, object_id, session):
 def _get_by_name(context, namespace_name, name, session):
     namespace = namespace_api.get(context, namespace_name, session)
     try:
-        query = session.query(models.MetadefObject)\
-            .filter_by(name=name, namespace_id=namespace['id'])
+        query = session.query(models.MetadefObject).filter_by(
+            name=name, namespace_id=namespace['id'])
         metadef_object = query.one()
     except sa_orm.exc.NoResultFound:
         msg = ("The metadata definition object with name=%(name)s"
@@ -61,8 +60,8 @@ def _get_by_name(context, namespace_name, name, session):
 
 def get_all(context, namespace_name, session):
     namespace = namespace_api.get(context, namespace_name, session)
-    query = session.query(models.MetadefObject)\
-        .filter_by(namespace_id=namespace['id'])
+    query = session.query(models.MetadefObject).filter_by(
+        namespace_id=namespace['id'])
     md_objects = query.all()
 
     md_objects_list = []
@@ -137,8 +136,8 @@ def delete_namespace_content(context, namespace_id, session):
     """Use this def only if the ns for the id has been verified as visible"""
 
     count = 0
-    query = session.query(models.MetadefObject)\
-        .filter_by(namespace_id=namespace_id)
+    query = session.query(models.MetadefObject).filter_by(
+        namespace_id=namespace_id)
     count = query.delete(synchronize_session='fetch')
     return count
 
@@ -152,6 +151,6 @@ def count(context, namespace_name, session):
     """Get the count of objects for a namespace, raise if ns not found"""
     namespace = namespace_api.get(context, namespace_name, session)
 
-    query = session.query(func.count(models.MetadefObject.id))\
-        .filter_by(namespace_id=namespace['id'])
+    query = session.query(func.count(models.MetadefObject.id)).filter_by(
+        namespace_id=namespace['id'])
     return query.scalar()

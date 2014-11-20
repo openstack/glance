@@ -172,8 +172,8 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                     req.context, image_meta['id'], update_data,
                     from_state='saving')
                 # 'check_quota' is called two times
-                check_quota_call_count =\
-                    mock_check_quota.target.check_quota.call_count
+                check_quota_call_count = (
+                    mock_check_quota.target.check_quota.call_count)
                 self.assertEqual(2, check_quota_call_count)
 
     def test_upload_data_to_store_mismatch_size(self):

@@ -18,12 +18,9 @@ from oslo_log import log as logging
 import sqlalchemy.orm as sa_orm
 
 from glance.common import exception as exc
-from glance.db.sqlalchemy.metadef_api\
-    import namespace as namespace_api
-from glance.db.sqlalchemy.metadef_api\
-    import resource_type as resource_type_api
-from glance.db.sqlalchemy.metadef_api\
-    import utils as metadef_utils
+from glance.db.sqlalchemy.metadef_api import namespace as namespace_api
+from glance.db.sqlalchemy.metadef_api import resource_type as resource_type_api
+from glance.db.sqlalchemy.metadef_api import utils as metadef_utils
 from glance.db.sqlalchemy import models_metadef as models
 
 LOG = logging.getLogger(__name__)
@@ -65,9 +62,8 @@ def _get(context, namespace_name, resource_type_name,
 
     # visibility check assumed done in calling routine via namespace_get
     try:
-        query = session.query(models.MetadefNamespaceResourceType).\
-            filter_by(namespace_id=namespace_id,
-                      resource_type_id=resource_type_id)
+        query = session.query(models.MetadefNamespaceResourceType).filter_by(
+            namespace_id=namespace_id, resource_type_id=resource_type_id)
         db_rec = query.one()
     except sa_orm.exc.NoResultFound:
         msg = ("The metadata definition resource-type association of"
@@ -211,7 +207,7 @@ def delete_namespace_content(context, namespace_id, session):
     """Use this def only if the ns for the id has been verified as visible"""
 
     count = 0
-    query = session.query(models.MetadefNamespaceResourceType)\
-        .filter_by(namespace_id=namespace_id)
+    query = session.query(models.MetadefNamespaceResourceType).filter_by(
+        namespace_id=namespace_id)
     count = query.delete(synchronize_session='fetch')
     return count

@@ -170,8 +170,8 @@ class TestMetadefObjects(functional.FunctionalTest):
             if(key in checked_values):
                 self.assertEqual(metadata_object[key], value, key)
         # Complex key values - properties
-        for key, value in \
-                expected_metadata_object["properties"]['property2'].items():
+        for key, value in (
+                expected_metadata_object["properties"]['property2'].items()):
             self.assertEqual(
                 metadata_object["properties"]["property2"][key],
                 value, key

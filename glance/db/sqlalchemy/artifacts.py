@@ -224,16 +224,18 @@ def _get(context, artifact_id, session, type_name=None, type_version=None,
     _set_version_fields(values)
     try:
         if show_level == ga.Showlevel.NONE:
-            query = session.query(models.Artifact) \
-                .options(joinedload(models.Artifact.tags)) \
-                .filter_by(**values)
+            query = (
+                session.query(models.Artifact).
+                options(joinedload(models.Artifact.tags)).
+                filter_by(**values))
         else:
-            query = session.query(models.Artifact) \
-                .options(joinedload(models.Artifact.properties)) \
-                .options(joinedload(models.Artifact.tags)) \
-                .options(joinedload(models.Artifact.blobs).
-                         joinedload(models.ArtifactBlob.locations)) \
-                .filter_by(**values)
+            query = (
+                session.query(models.Artifact).
+                options(joinedload(models.Artifact.properties)).
+                options(joinedload(models.Artifact.tags)).
+                options(joinedload(models.Artifact.blobs).
+                        joinedload(models.ArtifactBlob.locations)).
+                filter_by(**values))
 
         artifact = query.one()
     except orm.exc.NoResultFound:
@@ -354,12 +356,11 @@ def _do_paginate_query(query, sort_keys=None, sort_dirs=None,
         else:
             # sort by custom property
             prop_type = current_sort_key[1] + "_value"
-            query = query.join(models.ArtifactProperty).\
-                filter(
-                    models.ArtifactProperty.name == current_sort_key[0]).\
-                order_by(
-                    sort_dir_func(getattr(models.ArtifactProperty,
-                                          prop_type)))
+            query = (
+                query.join(models.ArtifactProperty).
+                filter(models.ArtifactProperty.name == current_sort_key[0]).
+                order_by(sort_dir_func(getattr(models.ArtifactProperty,
+                                               prop_type))))
 
     # Add pagination
     if marker is not None:
@@ -409,15 +410,17 @@ def _do_artifacts_query(context, session, show_level=ga.Showlevel.NONE):
               {'is_admin': context.is_admin, 'owner': context.owner})
 
     if show_level == ga.Showlevel.NONE:
-        query = session.query(models.Artifact) \
-            .options(joinedload(models.Artifact.tags))
+        query = session.query(models.Artifact).options(
+            joinedload(models.Artifact.tags))
     elif show_level == ga.Showlevel.BASIC:
-        query = session.query(models.Artifact) \
-            .options(joinedload(models.Artifact.properties)
-                     .defer(models.ArtifactProperty.text_value)) \
-            .options(joinedload(models.Artifact.tags)) \
-            .options(joinedload(models.Artifact.blobs).
-                     joinedload(models.ArtifactBlob.locations))
+        query = (
+            session.query(models.Artifact).
+            options(joinedload(
+                models.Artifact.properties).
+                defer(models.ArtifactProperty.text_value)).
+            options(joinedload(models.Artifact.tags)).
+            options(joinedload(models.Artifact.blobs).
+                    joinedload(models.ArtifactBlob.locations)))
     else:
         # other show_levels aren't supported
         msg = _LW("Show level %s is not supported in this "
@@ -677,8 +680,8 @@ def _do_transitive_dependencies(artifact, session):
     deps_to_update = []
     for dependency in artifact.dependencies:
         depvalue = dependency.artifact_dest
-        transitdeps = session.query(models.ArtifactDependency). \
-            filter_by(artifact_source=depvalue).all()
+        transitdeps = session.query(models.ArtifactDependency).filter_by(
+            artifact_source=depvalue).all()
         for transitdep in transitdeps:
             if not transitdep.is_direct:
                 # transitive dependencies are already created

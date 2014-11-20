@@ -22,7 +22,6 @@ from glance.api.v2 import metadef_objects as objects
 from glance.api.v2 import metadef_properties as properties
 from glance.api.v2 import metadef_resource_types as resource_types
 from glance.api.v2 import metadef_tags as tags
-import glance.api.v2.model.metadef_namespace
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 
@@ -120,7 +119,7 @@ def _db_tags_fixture(tag_names=None):
         tag_names = [TAG1, TAG2, TAG3]
 
     for tag_name in tag_names:
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
+        tag = tags.MetadefTag()
         tag.name = tag_name
         tag_list.append(tag)
     return tag_list
@@ -326,17 +325,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_show_with_property_prefix(self):
         request = unit_test_utils.get_fake_request()
-        rt = glance.api.v2.model.metadef_resource_type.\
-            ResourceTypeAssociation()
+        rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE2
         rt.prefix = 'pref'
         rt = self.rt_controller.create(request, rt, NAMESPACE3)
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT3
         object.required = []
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY2
         property.type = 'string'
         property.title = 'title'
@@ -597,7 +595,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_namespace_create(self):
         request = unit_test_utils.get_fake_request()
 
-        namespace = glance.api.v2.model.metadef_namespace.Namespace()
+        namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
         namespace = self.namespace_controller.create(request, namespace)
         self.assertEqual(NAMESPACE4, namespace.namespace)
@@ -610,7 +608,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_namespace_create_different_owner(self):
         request = unit_test_utils.get_fake_request()
 
-        namespace = glance.api.v2.model.metadef_namespace.Namespace()
+        namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
         namespace.owner = TENANT4
         self.assertRaises(webob.exc.HTTPForbidden,
@@ -620,7 +618,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_namespace_create_different_owner_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
 
-        namespace = glance.api.v2.model.metadef_namespace.Namespace()
+        namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
         namespace.owner = TENANT4
         namespace = self.namespace_controller.create(request, namespace)
@@ -634,22 +632,22 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_namespace_create_with_related_resources(self):
         request = unit_test_utils.get_fake_request()
 
-        namespace = glance.api.v2.model.metadef_namespace.Namespace()
+        namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
 
-        prop1 = glance.api.v2.model.metadef_property_type.PropertyType()
+        prop1 = properties.PropertyType()
         prop1.type = 'string'
         prop1.title = 'title'
-        prop2 = glance.api.v2.model.metadef_property_type.PropertyType()
+        prop2 = properties.PropertyType()
         prop2.type = 'string'
         prop2.title = 'title'
         namespace.properties = {PROPERTY1: prop1, PROPERTY2: prop2}
 
-        object1 = glance.api.v2.model.metadef_object.MetadefObject()
+        object1 = objects.MetadefObject()
         object1.name = OBJECT1
         object1.required = []
         object1.properties = {}
-        object2 = glance.api.v2.model.metadef_object.MetadefObject()
+        object2 = objects.MetadefObject()
         object2.name = OBJECT2
         object2.required = []
         object2.properties = {}
@@ -728,7 +726,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_namespace_create_conflict(self):
         request = unit_test_utils.get_fake_request()
 
-        namespace = glance.api.v2.model.metadef_namespace.Namespace()
+        namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE1
 
         self.assertRaises(webob.exc.HTTPConflict,
@@ -752,7 +750,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_namespace_update_non_existing(self):
         request = unit_test_utils.get_fake_request()
 
-        namespace = glance.api.v2.model.metadef_namespace.Namespace()
+        namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.update, request, namespace,
@@ -762,7 +760,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_namespace_update_non_visible(self):
         request = unit_test_utils.get_fake_request()
 
-        namespace = glance.api.v2.model.metadef_namespace.Namespace()
+        namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE2
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.update, request, namespace,
@@ -936,7 +934,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_create(self):
         request = unit_test_utils.get_fake_request()
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY2
         property.type = 'string'
         property.title = 'title'
@@ -957,7 +955,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_create_with_operators(self):
         request = unit_test_utils.get_fake_request()
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY2
         property.type = 'string'
         property.title = 'title'
@@ -979,7 +977,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_create_conflict(self):
         request = unit_test_utils.get_fake_request()
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY1
         property.type = 'string'
         property.title = 'title'
@@ -992,7 +990,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_create_non_visible_namespace(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2)
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY1
         property.type = 'string'
         property.title = 'title'
@@ -1006,7 +1004,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
                                                    is_admin=True)
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY2
         property.type = 'string'
         property.title = 'title'
@@ -1028,7 +1026,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_create_non_existing_namespace(self):
         request = unit_test_utils.get_fake_request()
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY1
         property.type = 'string'
         property.title = 'title'
@@ -1110,7 +1108,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_update_non_existing(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY1
         property.type = 'string'
         property.title = 'title'
@@ -1123,7 +1121,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_update_namespace_non_existing(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
 
-        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property = properties.PropertyType()
         property.name = PROPERTY1
         property.type = 'string'
         property.title = 'title'
@@ -1239,7 +1237,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_create(self):
         request = unit_test_utils.get_fake_request()
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT2
         object.required = []
         object.properties = {}
@@ -1259,7 +1257,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_create_conflict(self):
         request = unit_test_utils.get_fake_request()
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT1
         object.required = []
         object.properties = {}
@@ -1272,7 +1270,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_create_non_existing_namespace(self):
         request = unit_test_utils.get_fake_request()
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = PROPERTY1
         object.required = []
         object.properties = {}
@@ -1285,7 +1283,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_create_non_visible_namespace(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2)
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT1
         object.required = []
         object.properties = {}
@@ -1299,7 +1297,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
                                                    is_admin=True)
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT2
         object.required = []
         object.properties = {}
@@ -1318,7 +1316,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_create_missing_properties(self):
         request = unit_test_utils.get_fake_request()
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT2
         object.required = []
         object = self.object_controller.create(request, object, NAMESPACE1)
@@ -1385,7 +1383,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_update_non_existing(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT1
         object.required = []
         object.properties = {}
@@ -1398,7 +1396,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_update_namespace_non_existing(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
 
-        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object = objects.MetadefObject()
         object.name = OBJECT1
         object.required = []
         object.properties = {}
@@ -1513,8 +1511,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_resource_type_association_create(self):
         request = unit_test_utils.get_fake_request()
 
-        rt = glance.api.v2.model.metadef_resource_type.\
-            ResourceTypeAssociation()
+        rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE2
         rt.prefix = 'pref'
         rt = self.rt_controller.create(request, rt, NAMESPACE1)
@@ -1532,8 +1529,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_resource_type_association_create_conflict(self):
         request = unit_test_utils.get_fake_request()
 
-        rt = glance.api.v2.model.metadef_resource_type.\
-            ResourceTypeAssociation()
+        rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE1
         rt.prefix = 'pref'
         self.assertRaises(webob.exc.HTTPConflict, self.rt_controller.create,
@@ -1543,8 +1539,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_resource_type_association_create_non_existing_namespace(self):
         request = unit_test_utils.get_fake_request()
 
-        rt = glance.api.v2.model.metadef_resource_type.\
-            ResourceTypeAssociation()
+        rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE1
         rt.prefix = 'pref'
         self.assertRaises(webob.exc.HTTPNotFound, self.rt_controller.create,
@@ -1554,8 +1549,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_resource_type_association_create_non_existing_resource_type(self):
         request = unit_test_utils.get_fake_request()
 
-        rt = glance.api.v2.model.metadef_resource_type.\
-            ResourceTypeAssociation()
+        rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE3
         rt.prefix = 'pref'
         self.assertRaises(webob.exc.HTTPNotFound, self.rt_controller.create,
@@ -1565,8 +1559,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_resource_type_association_create_non_visible_namespace(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2)
 
-        rt = glance.api.v2.model.metadef_resource_type.\
-            ResourceTypeAssociation()
+        rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE2
         rt.prefix = 'pref'
         self.assertRaises(webob.exc.HTTPForbidden, self.rt_controller.create,
@@ -1577,8 +1570,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
                                                    is_admin=True)
 
-        rt = glance.api.v2.model.metadef_resource_type.\
-            ResourceTypeAssociation()
+        rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE2
         rt.prefix = 'pref'
         rt = self.rt_controller.create(request, rt, NAMESPACE1)
@@ -1710,7 +1702,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_tag_create_tags(self):
         request = unit_test_utils.get_fake_request()
 
-        metadef_tags = glance.api.v2.model.metadef_tag.MetadefTags()
+        metadef_tags = tags.MetadefTags()
         metadef_tags.tags = _db_tags_fixture()
         output = self.tag_controller.create_tags(
             request, metadef_tags, NAMESPACE1)
@@ -1730,7 +1722,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_tag_create_duplicate_tags(self):
         request = unit_test_utils.get_fake_request()
 
-        metadef_tags = glance.api.v2.model.metadef_tag.MetadefTags()
+        metadef_tags = tags.MetadefTags()
         metadef_tags.tags = _db_tags_fixture([TAG4, TAG5, TAG4])
         self.assertRaises(
             webob.exc.HTTPConflict,
@@ -1741,7 +1733,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_tag_create_duplicate_with_pre_existing_tags(self):
         request = unit_test_utils.get_fake_request()
 
-        metadef_tags = glance.api.v2.model.metadef_tag.MetadefTags()
+        metadef_tags = tags.MetadefTags()
         metadef_tags.tags = _db_tags_fixture([TAG1, TAG2, TAG3])
         output = self.tag_controller.create_tags(
             request, metadef_tags, NAMESPACE1)
@@ -1758,7 +1750,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
             ]
         )
 
-        metadef_tags = glance.api.v2.model.metadef_tag.MetadefTags()
+        metadef_tags = tags.MetadefTags()
         metadef_tags.tags = _db_tags_fixture([TAG4, TAG5, TAG4])
         self.assertRaises(
             webob.exc.HTTPConflict,
@@ -1847,7 +1839,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_tag_update_non_existing(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
 
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
+        tag = tags.MetadefTag()
         tag.name = TAG1
 
         self.assertRaises(webob.exc.HTTPNotFound,
@@ -1858,7 +1850,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_tag_update_namespace_non_existing(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
 
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
+        tag = tags.MetadefTag()
         tag.name = TAG1
 
         self.assertRaises(webob.exc.HTTPNotFound,

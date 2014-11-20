@@ -133,8 +133,8 @@ def stub_out_registry_and_store_server(stubs, base_dir, **kwargs):
         def endheaders(self):
             hl = [i.lower() for i in self.req.headers.keys()]
             assert not ('content-length' in hl and
-                        'transfer-encoding' in hl), \
-                'Content-Length and Transfer-Encoding are mutually exclusive'
+                        'transfer-encoding' in hl), (
+                'Content-Length and Transfer-Encoding are mutually exclusive')
 
         def send(self, data):
             # send() is called during chunked-transfer encoding, and

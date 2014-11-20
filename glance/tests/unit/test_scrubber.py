@@ -97,10 +97,10 @@ class TestScrubDBQueue(test_utils.BaseTestCase):
                 return pager()
             return mock_get_images_detailed
 
-        with patch.object(scrub_queue.registry, 'get_images_detailed') \
-                as _mock_get_images_detailed:
-            _mock_get_images_detailed.side_effect = \
-                make_get_images_detailed(image_pager)
+        with patch.object(scrub_queue.registry, 'get_images_detailed') as (
+                _mock_get_images_detailed):
+            _mock_get_images_detailed.side_effect = (
+                make_get_images_detailed(image_pager))
             actual = list(scrub_queue._get_all_images())
 
         self.assertEqual(images, actual)
@@ -115,10 +115,10 @@ class TestScrubDBQueue(test_utils.BaseTestCase):
                 return pager()
             return mock_get_images_detailed
 
-        with patch.object(scrub_queue.registry, 'get_images_detailed') \
-                as _mock_get_images_detailed:
-            _mock_get_images_detailed.side_effect = \
-                make_get_images_detailed(image_pager)
+        with patch.object(scrub_queue.registry, 'get_images_detailed') as (
+                _mock_get_images_detailed):
+            _mock_get_images_detailed.side_effect = (
+                make_get_images_detailed(image_pager))
             actual = list(scrub_queue._get_all_images())
 
         self.assertEqual(images, actual)

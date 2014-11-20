@@ -29,8 +29,7 @@ def get(context, name, session):
     """Get a resource type, raise if not found"""
 
     try:
-        query = session.query(models.MetadefResourceType)\
-            .filter_by(name=name)
+        query = session.query(models.MetadefResourceType).filter_by(name=name)
         resource_type = query.one()
     except sa_orm.exc.NoResultFound:
         msg = "No metadata definition resource-type found with name %s" % name

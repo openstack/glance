@@ -86,8 +86,8 @@ class TestCacheMiddlewareRequestStashCacheInfo(testtools.TestCase):
         self.request.environ['api.cache.image_id'] = 'asdf'
         self.request.environ['api.cache.method'] = 'GET'
         self.request.environ['api.cache.version'] = 'v2'
-        (image_id, method, version) = \
-            self.middleware._fetch_request_info(self.request)
+        (image_id, method, version) = self.middleware._fetch_request_info(
+            self.request)
         self.assertEqual('asdf', image_id)
         self.assertEqual('GET', method)
         self.assertEqual('v2', version)

@@ -114,8 +114,8 @@ class RegistryClient(BaseClient):
             kwargs['headers'] = kwargs.get('headers', {})
             kwargs['headers'].update(self.identity_headers or {})
             if self._passed_request_id:
-                kwargs['headers']['X-Openstack-Request-ID'] = \
-                    self._passed_request_id
+                kwargs['headers']['X-Openstack-Request-ID'] = (
+                    self._passed_request_id)
             res = super(RegistryClient, self).do_request(method,
                                                          action,
                                                          **kwargs)

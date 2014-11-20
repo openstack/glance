@@ -140,8 +140,8 @@ class TestMetadefRepo(test_utils.BaseTestCase):
                                                        self.db)
         self.tag_repo = glance.db.MetadefTagRepo(self.context,
                                                  self.db)
-        self.resource_type_repo = glance.db.\
-            MetadefResourceTypeRepo(self.context, self.db)
+        self.resource_type_repo = glance.db.MetadefResourceTypeRepo(
+            self.context, self.db)
         self.namespace_factory = glance.domain.MetadefNamespaceFactory()
         self.property_factory = glance.domain.MetadefPropertyFactory()
         self.object_factory = glance.domain.MetadefObjectFactory()

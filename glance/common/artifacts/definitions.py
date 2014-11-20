@@ -347,11 +347,11 @@ class Dict(declarative.DictAttributeDefinition,
         :param min_properties: minimum allowed amount of properties in the dict
         :param max_properties: maximum allowed amount of properties in the dict
         """
-        declarative.DictAttributeDefinition. \
-            __init__(self,
-                     properties=properties,
-                     min_properties=min_properties,
-                     max_properties=max_properties)
+        declarative.DictAttributeDefinition.__init__(
+            self,
+            properties=properties,
+            min_properties=min_properties,
+            max_properties=max_properties)
         declarative.PropertyDefinition.__init__(self, **kwargs)
 
 

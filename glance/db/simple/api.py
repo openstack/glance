@@ -1994,9 +1994,9 @@ def _artifact_get(context, artifact_id, type_name,
                   type_version=None):
     try:
         artifact = DATA['artifacts'][artifact_id]
-        if artifact['type_name'] != type_name or\
+        if (artifact['type_name'] != type_name or
                 (type_version is not None and
-                 artifact['type_version'] != type_version):
+                 artifact['type_version'] != type_version)):
             raise KeyError
     except KeyError:
         LOG.info(_LI('Could not find artifact %s') % artifact_id)

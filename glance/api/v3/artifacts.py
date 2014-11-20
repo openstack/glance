@@ -627,20 +627,20 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
         if sort_key in self._available_sort_keys:
             return sort_key, None
         elif type_version is None:
-            msg = _('Invalid sort key: %(sort_key)s. '
-                    'If type version is not set it must be one of'
-                    ' the following: %(available)s.') % \
-                {'sort_key': sort_key,
-                 'available': ', '.join(self._available_sort_keys)}
+            msg = (_('Invalid sort key: %(sort_key)s. '
+                     'If type version is not set it must be one of'
+                     ' the following: %(available)s.') %
+                   {'sort_key': sort_key,
+                    'available': ', '.join(self._available_sort_keys)})
             raise webob.exc.HTTPBadRequest(explanation=msg)
         prop_type = artifact_type.metadata.attributes.all.get(sort_key)
         if prop_type is None or prop_type.DB_TYPE not in ['string',
                                                           'numeric',
                                                           'int',
                                                           'bool']:
-            msg = _('Invalid sort key: %(sort_key)s. '
-                    'You cannot sort by this property') % \
-                {'sort_key': sort_key}
+            msg = (_('Invalid sort key: %(sort_key)s. '
+                     'You cannot sort by this property') %
+                   {'sort_key': sort_key})
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
         return sort_key, prop_type.DB_TYPE
@@ -732,9 +732,9 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
 
         query_params = dict()
 
-        query_params['sort_keys'], query_params['sort_dirs'] = \
+        query_params['sort_keys'], query_params['sort_dirs'] = (
             self._get_sorting_params(params, res['artifact_type'],
-                                     res['type_version'])
+                                     res['type_version']))
 
         if marker is not None:
             query_params['marker'] = marker

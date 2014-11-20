@@ -82,8 +82,8 @@ def _get(context, namespace_id, session):
     """Get a namespace by id, raise if not found"""
 
     try:
-        query = session.query(models.MetadefNamespace)\
-            .filter_by(id=namespace_id)
+        query = session.query(models.MetadefNamespace).filter_by(
+            id=namespace_id)
         namespace_rec = query.one()
     except sa_orm.exc.NoResultFound:
         msg = (_("Metadata definition namespace not found for id=%s")
@@ -107,8 +107,8 @@ def _get_by_name(context, name, session):
     """Get a namespace by name, raise if not found"""
 
     try:
-        query = session.query(models.MetadefNamespace)\
-            .filter_by(namespace=name)
+        query = session.query(models.MetadefNamespace).filter_by(
+            namespace=name)
         namespace_rec = query.one()
     except sa_orm.exc.NoResultFound:
         msg = "Metadata definition namespace=%s was not found." % name

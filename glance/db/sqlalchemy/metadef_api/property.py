@@ -31,8 +31,7 @@ _ = i18n._
 def _get(context, property_id, session):
 
     try:
-        query = session.query(models.MetadefProperty)\
-            .filter_by(id=property_id)
+        query = session.query(models.MetadefProperty).filter_by(id=property_id)
         property_rec = query.one()
 
     except sa_orm.exc.NoResultFound:
@@ -49,8 +48,8 @@ def _get_by_name(context, namespace_name, name, session):
 
     namespace = namespace_api.get(context, namespace_name, session)
     try:
-        query = session.query(models.MetadefProperty)\
-            .filter_by(name=name, namespace_id=namespace['id'])
+        query = session.query(models.MetadefProperty).filter_by(
+            name=name, namespace_id=namespace['id'])
         property_rec = query.one()
 
     except sa_orm.exc.NoResultFound:
@@ -73,8 +72,8 @@ def get(context, namespace_name, name, session):
 
 def get_all(context, namespace_name, session):
     namespace = namespace_api.get(context, namespace_name, session)
-    query = session.query(models.MetadefProperty)\
-        .filter_by(namespace_id=namespace['id'])
+    query = session.query(models.MetadefProperty).filter_by(
+        namespace_id=namespace['id'])
     properties = query.all()
 
     properties_list = []
@@ -148,8 +147,8 @@ def delete_namespace_content(context, namespace_id, session):
     """Use this def only if the ns for the id has been verified as visible"""
 
     count = 0
-    query = session.query(models.MetadefProperty)\
-        .filter_by(namespace_id=namespace_id)
+    query = session.query(models.MetadefProperty).filter_by(
+        namespace_id=namespace_id)
     count = query.delete(synchronize_session='fetch')
     return count
 
@@ -164,6 +163,6 @@ def count(context, namespace_name, session):
 
     namespace = namespace_api.get(context, namespace_name, session)
 
-    query = session.query(func.count(models.MetadefProperty.id))\
-        .filter_by(namespace_id=namespace['id'])
+    query = session.query(func.count(models.MetadefProperty.id)).filter_by(
+        namespace_id=namespace['id'])
     return query.scalar()

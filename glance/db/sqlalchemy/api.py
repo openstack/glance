@@ -41,13 +41,13 @@ from glance import artifacts as ga
 from glance.common import exception
 from glance.common import utils
 from glance.db.sqlalchemy import artifacts
+from glance.db.sqlalchemy.metadef_api import (resource_type
+                                              as metadef_resource_type_api)
+from glance.db.sqlalchemy.metadef_api import (resource_type_association
+                                              as metadef_association_api)
 from glance.db.sqlalchemy.metadef_api import namespace as metadef_namespace_api
 from glance.db.sqlalchemy.metadef_api import object as metadef_object_api
 from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
-from glance.db.sqlalchemy.metadef_api\
-    import resource_type as metadef_resource_type_api
-from glance.db.sqlalchemy.metadef_api\
-    import resource_type_association as metadef_association_api
 from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
 from glance import i18n
@@ -1472,8 +1472,8 @@ def metadef_namespace_update(context, namespace_id, namespace_dict,
                              session=None):
     """Update a namespace or raise if it does not exist or not visible"""
     session = session or get_session()
-    return metadef_namespace_api.\
-        update(context, namespace_id, namespace_dict, session)
+    return metadef_namespace_api.update(
+        context, namespace_id, namespace_dict, session)
 
 
 def metadef_namespace_delete(context, namespace_name, session=None):
@@ -1638,8 +1638,8 @@ def metadef_resource_type_association_delete(
 def metadef_resource_type_association_get_all_by_namespace(
         context, namespace_name, session=None):
     session = session or get_session()
-    return metadef_association_api.\
-        get_all_by_namespace(context, namespace_name, session)
+    return metadef_association_api.get_all_by_namespace(
+        context, namespace_name, session)
 
 
 def metadef_tag_get_all(

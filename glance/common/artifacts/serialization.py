@@ -282,8 +282,8 @@ def _process_blobs_for_client(artifact, result):
             "prop": blob_attr.name
         }
         if position is not None:
-            template = "/artifacts/%(type)s/v%(version)s/" \
-                "%(id)s/%(prop)s/%(position)s/download"
+            template = ("/artifacts/%(type)s/v%(version)s/"
+                        "%(id)s/%(prop)s/%(position)s/download")
             format_dict["position"] = position
 
         return template % format_dict

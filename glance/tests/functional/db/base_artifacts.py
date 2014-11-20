@@ -283,9 +283,9 @@ class ArtifactTests(object):
                                           TYPE_NAME, TYPE_VERSION)
         self.assertIsNotNone(res)
 
-        created = self.db_api. \
-            artifact_get(self.context, res['id'], TYPE_NAME, TYPE_VERSION,
-                         show_level=ga.Showlevel.DIRECT)
+        created = self.db_api.artifact_get(
+            self.context, res['id'], TYPE_NAME, TYPE_VERSION,
+            show_level=ga.Showlevel.DIRECT)
         bd_dependencies = created['dependencies']
         self.assertEqual(1, len(bd_dependencies))
         # now try to update artifact with the same dependency
@@ -306,9 +306,9 @@ class ArtifactTests(object):
                                           TYPE_NAME, TYPE_VERSION)
         self.assertIsNotNone(res)
 
-        created = self.db_api. \
-            artifact_get(self.context, res['id'], TYPE_NAME, TYPE_VERSION,
-                         show_level=ga.Showlevel.DIRECT)
+        created = self.db_api.artifact_get(
+            self.context, res['id'], TYPE_NAME, TYPE_VERSION,
+            show_level=ga.Showlevel.DIRECT)
         bd_dependencies = created['dependencies']
         self.assertEqual(1, len(bd_dependencies))
 
@@ -317,9 +317,9 @@ class ArtifactTests(object):
             res['id'], TYPE_NAME, TYPE_VERSION
         )
 
-        res = self.db_api. \
-            artifact_get(self.context, res['id'], TYPE_NAME, TYPE_VERSION,
-                         show_level=ga.Showlevel.TRANSITIVE)
+        res = self.db_api.artifact_get(
+            self.context, res['id'], TYPE_NAME, TYPE_VERSION,
+            show_level=ga.Showlevel.TRANSITIVE)
         self.assertIsNotNone(res.pop('created_at'))
         self.assertIsNotNone(res.pop('updated_at'))
 
@@ -332,8 +332,8 @@ class ArtifactTests(object):
         self.assertIsNotNone(tags)
         self.assertEqual(set(['gugugu', 'lalala']), set(tags))
 
-        tags = res['dependencies']['new->2'][0]['dependencies']['2->1'][0]\
-            .pop('tags', None)
+        tags = (res['dependencies']['new->2'][0]['dependencies']['2->1'][0].
+                pop('tags', None))
         self.assertIsNotNone(tags)
         self.assertEqual(set(['gugugu', 'lalala']), set(tags))
 
@@ -560,9 +560,8 @@ class ArtifactTests(object):
 
         self.assertRaises(KeyError, lambda: artifacts[0]['properties'])
 
-        artifacts = self.db_api. \
-            artifact_get_all(self.context,
-                             show_level=ga.Showlevel.BASIC)
+        artifacts = self.db_api.artifact_get_all(
+            self.context, show_level=ga.Showlevel.BASIC)
         self.assertEqual(2, len(artifacts))
         self.assertEqual(4, len(artifacts[0]['properties']))
 

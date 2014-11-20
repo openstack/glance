@@ -97,35 +97,39 @@ def _get_resource_type(meta, resource_type_id):
 
 
 def _get_namespace_resource_types(meta, namespace_id):
-    namespace_resource_types_table =\
-        get_metadef_namespace_resource_types_table(meta)
-    return namespace_resource_types_table.select().\
-        where(namespace_resource_types_table.c.namespace_id == namespace_id).\
-        execute().fetchall()
+    namespace_resource_types_table = (
+        get_metadef_namespace_resource_types_table(meta))
+    return (
+        namespace_resource_types_table.select().
+        where(namespace_resource_types_table.c.namespace_id == namespace_id).
+        execute().fetchall())
 
 
 def _get_namespace_resource_type_by_ids(meta, namespace_id, rt_id):
-    namespace_resource_types_table =\
-        get_metadef_namespace_resource_types_table(meta)
-    return namespace_resource_types_table.select().\
+    namespace_resource_types_table = (
+        get_metadef_namespace_resource_types_table(meta))
+    return (
+        namespace_resource_types_table.select().
         where(and_(
             namespace_resource_types_table.c.namespace_id == namespace_id,
-            namespace_resource_types_table.c.resource_type_id == rt_id)).\
-        execute().fetchone()
+            namespace_resource_types_table.c.resource_type_id == rt_id)).
+        execute().fetchone())
 
 
 def _get_properties(meta, namespace_id):
     properties_table = get_metadef_properties_table(meta)
-    return properties_table.select().\
-        where(properties_table.c.namespace_id == namespace_id).\
-        execute().fetchall()
+    return (
+        properties_table.select().
+        where(properties_table.c.namespace_id == namespace_id).
+        execute().fetchall())
 
 
 def _get_objects(meta, namespace_id):
     objects_table = get_metadef_objects_table(meta)
-    return objects_table.select().\
-        where(objects_table.c.namespace_id == namespace_id).\
-        execute().fetchall()
+    return (
+        objects_table.select().
+        where(objects_table.c.namespace_id == namespace_id).
+        execute().fetchall())
 
 
 def _get_tags(meta, namespace_id):
@@ -399,9 +403,8 @@ def _export_data_to_file(meta, path):
 
         resource_types = []
         for namespace_resource_type in namespace_resource_types:
-            resource_type =\
-                _get_resource_type(meta,
-                                   namespace_resource_type['resource_type_id'])
+            resource_type = _get_resource_type(
+                meta, namespace_resource_type['resource_type_id'])
             resource_types.append({
                 'name': resource_type['name'],
                 'prefix': namespace_resource_type['prefix'],
