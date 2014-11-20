@@ -254,7 +254,8 @@ class Server(object):
         self.sock = get_socket(default_port)
 
         os.umask(0o27)  # ensure files are created with the correct privileges
-        self.logger = logging.getLogger('glance.wsgi.server')
+        self._logger = logging.getLogger("eventlet.wsgi.server")
+        self._wsgi_logger = logging.WritableLogger(self._logger)
 
         if CONF.workers == 0:
             # Useful for profiling, test, debug etc.
@@ -262,7 +263,7 @@ class Server(object):
             self.pool.spawn_n(self._single_run, self.application, self.sock)
             return
         else:
-            self.logger.info(_("Starting %d workers") % CONF.workers)
+            LOG.info(_("Starting %d workers") % CONF.workers)
             signal.signal(signal.SIGTERM, kill_children)
             signal.signal(signal.SIGINT, kill_children)
             signal.signal(signal.SIGHUP, hup)
@@ -277,14 +278,13 @@ class Server(object):
             try:
                 pid, status = os.wait()
                 if os.WIFEXITED(status) or os.WIFSIGNALED(status):
-                    self.logger.info(_('Removing dead child %s') % pid)
+                    LOG.info(_('Removing dead child %s') % pid)
                     self.children.remove(pid)
                     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
-                        self.logger.error(_('Not respawning child %d, cannot '
-                                            'recover from termination') % pid)
+                        LOG.error(_('Not respawning child %d, cannot '
+                                    'recover from termination') % pid)
                         if not self.children:
-                            self.logger.info(
-                                _('All workers have terminated. Exiting'))
+                            LOG.info(_('All workers have terminated. Exiting'))
                             self.running = False
                     else:
                         self.run_child()
@@ -292,11 +292,11 @@ class Server(object):
                 if err.errno not in (errno.EINTR, errno.ECHILD):
                     raise
             except KeyboardInterrupt:
-                self.logger.info(_('Caught keyboard interrupt. Exiting.'))
+                LOG.info(_('Caught keyboard interrupt. Exiting.'))
                 break
         eventlet.greenio.shutdown_safe(self.sock)
         self.sock.close()
-        self.logger.debug('Exited')
+        LOG.debug('Exited')
 
     def wait(self):
         """Wait until all servers have completed running."""
@@ -318,12 +318,12 @@ class Server(object):
             # and is respawned unnecessarily as a result
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.run_server()
-            self.logger.info(_('Child %d exiting normally') % os.getpid())
+            LOG.info(_('Child %d exiting normally') % os.getpid())
             # self.pool.waitall() has been called by run_server, so
             # its safe to exit here
             sys.exit(0)
         else:
-            self.logger.info(_('Started child %s') % pid)
+            LOG.info(_('Started child %s') % pid)
             self.children.append(pid)
 
     def run_server(self):
@@ -337,7 +337,7 @@ class Server(object):
         try:
             eventlet.wsgi.server(self.sock,
                                  self.application,
-                                 log=logging.WritableLogger(self.logger),
+                                 log=self._wsgi_logger,
                                  custom_pool=self.pool,
                                  debug=False)
         except socket.error as err:
@@ -347,9 +347,9 @@ class Server(object):
 
     def _single_run(self, application, sock):
         """Start a WSGI server in a new green thread."""
-        self.logger.info(_("Starting single process server"))
+        LOG.info(_("Starting single process server"))
         eventlet.wsgi.server(sock, application, custom_pool=self.pool,
-                             log=logging.WritableLogger(self.logger),
+                             log=self._wsgi_logger,
                              debug=False)
 
 
