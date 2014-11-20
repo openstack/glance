@@ -1335,7 +1335,7 @@ profiling will not be triggered even profiling feature is enabled.
 Configuring Glance public endpoint
 ----------------------------------
 
-When Glance API service is ran dehind a proxy, operator probably need to
+When Glance API service is ran behind a proxy, operator probably need to
 configure a proper public endpoint to versions URL instead of use host owned
 which run service really. Glance allows configure a public endpoint URL to
 represent the proxy's URL.
