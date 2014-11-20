@@ -18,6 +18,7 @@ import os
 import uuid
 
 import glance_store as store
+import mock
 from oslo.config import cfg
 from oslo.serialization import jsonutils
 import six
@@ -26,6 +27,7 @@ import webob
 
 import glance.api.v2.images
 from glance.common import exception
+from glance import domain
 import glance.schema
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
@@ -682,6 +684,38 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.create,
                           request, image=image, extra_properties={},
                           tags=[])
+
+    def test_create_unexpected_property(self):
+        request = unit_test_utils.get_fake_request()
+        image_properties = {'unexpected': 'unexpected'}
+        image = {'name': 'image-1'}
+        with mock.patch.object(domain.ImageFactory, 'new_image',
+                               side_effect=TypeError):
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.controller.create, request, image=image,
+                              extra_properties=image_properties, tags=[])
+
+    def test_create_reserved_property(self):
+        request = unit_test_utils.get_fake_request()
+        image_properties = {'reserved': 'reserved'}
+        image = {'name': 'image-1'}
+        with mock.patch.object(domain.ImageFactory, 'new_image',
+                               side_effect=exception.ReservedProperty(
+                                   property='reserved')):
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.controller.create, request, image=image,
+                              extra_properties=image_properties, tags=[])
+
+    def test_create_readonly_property(self):
+        request = unit_test_utils.get_fake_request()
+        image_properties = {'readonly': 'readonly'}
+        image = {'name': 'image-1'}
+        with mock.patch.object(domain.ImageFactory, 'new_image',
+                               side_effect=exception.ReadonlyProperty(
+                                   property='readonly')):
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.controller.create, request, image=image,
+                              extra_properties=image_properties, tags=[])
 
     def test_update_no_changes(self):
         request = unit_test_utils.get_fake_request()

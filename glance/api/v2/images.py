@@ -75,6 +75,14 @@ class ImagesController(object):
                 explanation=e.msg, request=req, content_type='text/plain')
         except exception.Duplicate as dupex:
             raise webob.exc.HTTPConflict(explanation=dupex.msg)
+        except exception.ReservedProperty as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.ReadonlyProperty as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except TypeError as e:
+            LOG.debug(utils.exception_to_str(e))
+            raise webob.exc.HTTPBadRequest(
+                explanation=utils.exception_to_str(e))
 
         return image
 
