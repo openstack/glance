@@ -713,3 +713,55 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(response.status, 404)
 
         self.stop_servers()
+
+    def test_download_image_with_no_restricted_property_set_to_image(self):
+        """
+        We test the following sequential series of actions:
+
+        0. POST /images with public image named Image1
+        and no custom properties
+        - Verify 201 returned
+        1. GET image
+        2. DELETE image1
+        - Delete the newly added image
+        """
+        self.cleanup()
+        rules = {"context_is_admin": "role:admin",
+                 "default": "",
+                 "restricted":
+                 "not ('test_key':%(x_test_key)s and role:_member_)",
+                 "download_image": "role:admin or rule:restricted"}
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        image_data = "*" * FIVE_KB
+        headers = minimal_headers('Image1')
+        headers.update({'X-Roles': 'member'})
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(201, response.status)
+        data = jsonutils.loads(content)
+        image_id = data['image']['id']
+        self.assertEqual(data['image']['checksum'],
+                         hashlib.md5(image_data).hexdigest())
+        self.assertEqual(data['image']['size'], FIVE_KB)
+        self.assertEqual(data['image']['name'], "Image1")
+        self.assertTrue(data['image']['is_public'])
+
+        # 1. GET image
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(200, response.status)
+
+        # 2. DELETE image1
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(200, response.status)
+
+        self.stop_servers()
