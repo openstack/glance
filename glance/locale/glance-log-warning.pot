@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev27.gc0fd20a\n"
+"Project-Id-Version: glance 2015.1.dev128.g3f0b479\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-07 06:03+0000\n"
+"POT-Creation-Date: 2014-11-21 06:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,22 +17,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: glance/scrubber.py:216
+#: glance/scrubber.py:217
 #, python-format
 msgid "Failed to find image to delete: %s"
 msgstr ""
 
-#: glance/scrubber.py:559
+#: glance/scrubber.py:582
 #, python-format
 msgid "Unable to delete URI from image %s."
 msgstr ""
 
-#: glance/api/common.py:116
+#: glance/api/v1/images.py:707
 #, python-format
-msgid "Invalid value for option user_storage_quota: %(users_quota)s"
+msgid ""
+"Failed to activate image %s in registry. About to delete image bits from "
+"store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:846
+#: glance/api/v2/images.py:854
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
@@ -44,37 +46,22 @@ msgstr ""
 msgid "Failed to delete image %s in store from URI"
 msgstr ""
 
-#: glance/common/scripts/image_import/main.py:147
+#: glance/common/scripts/image_import/main.py:157
 #, python-format
 msgid "Task %(task_id)s failed with exception %(error)s"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:72
+#: glance/db/sqlalchemy/api.py:71
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:320
+#: glance/db/sqlalchemy/api.py:321
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:218
+#: glance/db/sqlalchemy/metadata.py:239
 #, python-format
 msgid "Duplicate entry for values: %s"
-msgstr ""
-
-#: glance/db/sqlalchemy/metadef_api/namespace.py:89
-#, python-format
-msgid "Metadata definition namespace not found for id=%s"
-msgstr ""
-
-#: glance/db/sqlalchemy/metadef_api/object.py:37
-#, python-format
-msgid "Metadata definition object not found for id %s"
-msgstr ""
-
-#: glance/db/sqlalchemy/metadef_api/property.py:39
-#, python-format
-msgid "Metadata definition property not found for id=%s"
 msgstr ""
 
 #: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:91
@@ -96,17 +83,17 @@ msgid ""
 "'%(config_err)s"
 msgstr ""
 
-#: glance/image_cache/prefetcher.py:49
+#: glance/image_cache/prefetcher.py:47
 #, python-format
 msgid "Image '%s' is not active. Not caching."
 msgstr ""
 
-#: glance/image_cache/prefetcher.py:54
+#: glance/image_cache/prefetcher.py:52
 #, python-format
 msgid "No metadata found for image '%s'"
 msgstr ""
 
-#: glance/image_cache/prefetcher.py:82
+#: glance/image_cache/prefetcher.py:80
 msgid "Failed to successfully cache all images in queue."
 msgstr ""
 
@@ -119,17 +106,5 @@ msgstr ""
 #: glance/image_cache/drivers/xattr.py:446
 #, python-format
 msgid "Cached image file '%s' doesn't exist, unable to delete"
-msgstr ""
-
-#: glance/openstack/common/network_utils.py:146
-msgid "tcp_keepidle not available on your system"
-msgstr ""
-
-#: glance/openstack/common/network_utils.py:153
-msgid "tcp_keepintvl not available on your system"
-msgstr ""
-
-#: glance/openstack/common/network_utils.py:160
-msgid "tcp_keepknt not available on your system"
 msgstr ""
 

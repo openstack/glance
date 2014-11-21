@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-07 06:03+0000\n"
-"PO-Revision-Date: 2014-09-30 17:17+0000\n"
+"POT-Creation-Date: 2014-11-21 06:05+0000\n"
+"PO-Revision-Date: 2014-11-03 10:00+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Korean (Korea) (http://www.transifex.com/projects/p/glance/"
 "language/ko_KR/)\n"
@@ -29,22 +29,22 @@ msgstr ""
 "Glance는 모든 활성화 된 위치에서 %s 이미지에 대한 데이터를 수집하려 했으나 모"
 "두 실패했습니다."
 
-#: glance/scrubber.py:166
+#: glance/scrubber.py:167
 #, python-format
 msgid "%s file can not be read."
 msgstr "%s 파일을 읽을 수 없습니다."
 
-#: glance/scrubber.py:189
+#: glance/scrubber.py:190
 #, python-format
 msgid "%s file can not be wrote."
 msgstr "%s 파일에 쓸 수 없습니다."
 
-#: glance/scrubber.py:493
+#: glance/scrubber.py:516
 #, python-format
 msgid "Can not %(op)s scrub jobs from queue: %(err)s"
 msgstr "큐에 있는 %(op)s 스크럽 작업을 수행할 수 없음: %(err)s"
 
-#: glance/scrubber.py:594
+#: glance/scrubber.py:617
 #, python-format
 msgid "%s file can not be created."
 msgstr "%s 파일을 만들 수 없습니다."
@@ -70,6 +70,11 @@ msgstr ""
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr "image.send notification 중 에러 발생 : %(err)s"
 
+#: glance/api/common.py:118
+#, python-format
+msgid "Invalid value for option user_storage_quota: %(users_quota)s"
+msgstr ""
+
 #: glance/api/middleware/cache.py:169
 #, python-format
 msgid ""
@@ -88,41 +93,41 @@ msgstr "%s 를 찾을 수 없음"
 msgid "Checksum header is missing."
 msgstr "Checksum header 없음"
 
-#: glance/api/v1/images.py:602
+#: glance/api/v1/images.py:606
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr "외부 소스 '%(scheme)s' 로부터 이미지 복사 실패 : %(image)s"
 
-#: glance/api/v1/upload_utils.py:79
+#: glance/api/v1/upload_utils.py:77
 #, python-format
 msgid "Unable to kill image %(id)s: "
 msgstr "이미지 %(id)s 를 kill 할 수 없음:"
 
-#: glance/api/v1/upload_utils.py:240
+#: glance/api/v1/upload_utils.py:248
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr "이미지 %s를 업로드 하는 도중 HTTP 에러 수신"
 
-#: glance/api/v2/image_data.py:61
+#: glance/api/v2/image_data.py:59
 #, python-format
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr "이미지 %(image_id)s를 복구할 수 없음 : %(e)s"
 
-#: glance/api/v2/image_data.py:149
+#: glance/api/v2/image_data.py:155
 msgid "Failed to upload image data due to HTTP error"
 msgstr "HTTP 에러로 인해 이미지 데이터 업로드 실패"
 
-#: glance/api/v2/image_data.py:154
+#: glance/api/v2/image_data.py:160
 msgid "Failed to upload image data due to internal error"
 msgstr "내부 에러로 인해 이미지 데이터 업로드 실패"
 
-#: glance/api/v2/metadef_namespaces.py:190
+#: glance/api/v2/metadef_namespaces.py:188
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr "네임스페이스 삭제 실패 %(namespace)s"
 
-#: glance/api/v2/metadef_resource_types.py:126
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:129
+#: glance/api/v2/metadef_resource_types.py:125
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:128
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
 msgstr "삭제하기 위한 리소스 타입 %(resourcetype)s 검색 실패"
@@ -165,7 +170,7 @@ msgstr ""
 msgid "Task not found for task_id %s"
 msgstr "task_id %s에 대한 작업을 찾을 수 없음"
 
-#: glance/db/sqlalchemy/metadata.py:127
+#: glance/db/sqlalchemy/metadata.py:128
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
 msgstr "%s에서 Json 스키마 파일을 찾을 수 없음. 중단."
@@ -207,17 +212,7 @@ msgstr ""
 "지원하지 않습니다. fstab을 수정하거나 user_xattr 옵션을 디바이스 하우징 캐시 "
 "디렉터리의 적합한 행에 추가하기 바랍니다."
 
-#: glance/openstack/common/excutils.py:76
-#, python-format
-msgid "Original exception being dropped: %s"
-msgstr "기존 예외가 삭제됨: %s"
-
-#: glance/openstack/common/excutils.py:105
-#, python-format
-msgid "Unexpected exception occurred %d time(s)... retrying."
-msgstr "예기치 않은 예외 %d 번 발생하였습니다... 다시 시도중."
-
-#: glance/openstack/common/lockutils.py:120
+#: glance/openstack/common/lockutils.py:117
 #, python-format
 msgid "Could not release the acquired lock `%s`"
 msgstr "획득한 `%s` 잠금을 해제할 수 없음"
@@ -246,7 +241,7 @@ msgstr "이미지 %s를 생성할 수 없음"
 msgid "Unable to update image %s"
 msgstr "이미지 %s를 업데이트 할 수 없음"
 
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:99
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:98
 #, python-format
 msgid "Forbidden to create resource type. Reason: %(reason)s"
 msgstr "리소스타입 생성이 금지됨. 이유: %(reason)s"
