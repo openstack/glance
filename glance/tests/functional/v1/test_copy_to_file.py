@@ -65,7 +65,7 @@ class TestCopyToFile(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(response.status, 201, content)
+        self.assertEqual(201, response.status, content)
         data = jsonutils.loads(content)
 
         original_image_id = data['image']['id']
@@ -81,7 +81,7 @@ class TestCopyToFile(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201, content)
+        self.assertEqual(201, response.status, content)
         data = jsonutils.loads(content)
 
         copy_image_id = data['image']['id']
@@ -177,11 +177,11 @@ class TestCopyToFile(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 201, content)
+        self.assertEqual(201, response.status, content)
         data = jsonutils.loads(content)
 
         copy_image_id = data['image']['id']
-        self.assertEqual(data['image']['status'], 'queued', content)
+        self.assertEqual('queued', data['image']['status'], content)
 
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               copy_image_id)
@@ -202,7 +202,7 @@ class TestCopyToFile(functional.FunctionalTest):
         # GET image and make sure image content is as expected
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(response.status, 200 if exists else 404)
+        self.assertEqual(200 if exists else 404, response.status)
 
         if exists:
             self.assertEqual(str(FIVE_KB), response['content-length'])
@@ -248,7 +248,7 @@ class TestCopyToFile(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 400, content)
+        self.assertEqual(400, response.status, content)
 
         expected = 'External sourcing not supported for store \'file\''
         msg = 'expected "%s" in "%s"' % (expected, content)
@@ -274,7 +274,7 @@ class TestCopyToFile(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(response.status, 400, content)
+        self.assertEqual(400, response.status, content)
 
         expected = 'External sourcing not supported for store \'swift+config\''
         msg = 'expected "%s" in "%s"' % (expected, content)

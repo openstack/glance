@@ -74,9 +74,9 @@ class TestCacheMiddlewareRequestStashCacheInfo(testtools.TestCase):
 
     def test_stash_cache_request_info(self):
         self.middleware._stash_request_info(self.request, 'asdf', 'GET', 'v2')
-        self.assertEqual(self.request.environ['api.cache.image_id'], 'asdf')
-        self.assertEqual(self.request.environ['api.cache.method'], 'GET')
-        self.assertEqual(self.request.environ['api.cache.version'], 'v2')
+        self.assertEqual('asdf', self.request.environ['api.cache.image_id'])
+        self.assertEqual('GET', self.request.environ['api.cache.method'])
+        self.assertEqual('v2', self.request.environ['api.cache.version'])
 
     def test_fetch_cache_request_info(self):
         self.request.environ['api.cache.image_id'] = 'asdf'

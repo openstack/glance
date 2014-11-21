@@ -74,7 +74,7 @@ class TestTasksApi(base.ApiTest):
                                              headers=minimal_task_headers())
             content_dict = json.loads(content)
 
-            self.assertEqual(res.status, 200)
+            self.assertEqual(200, res.status)
             res_tasks = content_dict['tasks']
             if len(res_tasks) != 0:
                 for task in res_tasks:
@@ -521,7 +521,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(
             path, 'POST', headers=minimal_task_headers(task_owner),
             body=body_content)
-        self.assertEqual(response.status, 201)
+        self.assertEqual(201, response.status)
 
         data = json.loads(content)
         task_id = data['id']
@@ -532,7 +532,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path,
                                               'DELETE',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 405)
+        self.assertEqual(405, response.status)
         self.assertEqual('GET', response.webob_resp.headers.get('Allow'))
         self.assertEqual(('GET',), response.webob_resp.allow)
         self.assertEqual(('GET',), response.allow)
@@ -543,7 +543,7 @@ class TestTasksApi(base.ApiTest):
         response, content = self.http.request(path,
                                               'GET',
                                               headers=minimal_task_headers())
-        self.assertEqual(response.status, 200)
+        self.assertEqual(200, response.status)
         self.assertIsNotNone(content)
 
         # NOTE(nikhil): wait for all task executions to finish before exiting

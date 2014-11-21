@@ -311,8 +311,8 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertEqual(image.updated_at, image.created_at)
         self.image_repo.add(image)
         retreived_image = self.image_repo.get(image.image_id)
-        self.assertEqual(retreived_image.name, 'added image')
-        self.assertEqual(retreived_image.updated_at, image.updated_at)
+        self.assertEqual('added image', retreived_image.name)
+        self.assertEqual(image.updated_at, retreived_image.updated_at)
 
     def test_save_image(self):
         image = self.image_repo.get(UUID1)
@@ -375,8 +375,8 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.assertNotEqual(db_data['locations'], ['foo', 'bar'])
         decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key, l['url'])
                                for l in db_data['locations']]
-        self.assertEqual(decrypted_locations,
-                         [l['url'] for l in self.foo_bar_location])
+        self.assertEqual([l['url'] for l in self.foo_bar_location],
+                         decrypted_locations)
 
     def test_encrypt_locations_on_save(self):
         image = self.image_factory.new_image(UUID1)
@@ -387,8 +387,8 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.assertNotEqual(db_data['locations'], ['foo', 'bar'])
         decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key, l['url'])
                                for l in db_data['locations']]
-        self.assertEqual(decrypted_locations,
-                         [l['url'] for l in self.foo_bar_location])
+        self.assertEqual([l['url'] for l in self.foo_bar_location],
+                         decrypted_locations)
 
     def test_decrypt_locations_on_get(self):
         url_loc = ['ping', 'pong']
@@ -407,7 +407,7 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.assertIn('id', image.locations[1])
         image.locations[0].pop('id')
         image.locations[1].pop('id')
-        self.assertEqual(image.locations, orig_locations)
+        self.assertEqual(orig_locations, image.locations)
 
     def test_decrypt_locations_on_list(self):
         url_loc = ['ping', 'pong']
@@ -426,7 +426,7 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.assertIn('id', image.locations[1])
         image.locations[0].pop('id')
         image.locations[1].pop('id')
-        self.assertEqual(image.locations, orig_locations)
+        self.assertEqual(orig_locations, image.locations)
 
 
 class TestImageMemberRepo(test_utils.BaseTestCase):
@@ -493,10 +493,10 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.image_member_repo.add(image_member)
         retreived_image_member = self.image_member_repo.get(TENANT4)
         self.assertIsNotNone(retreived_image_member.id)
-        self.assertEqual(retreived_image_member.image_id,
-                         image_member.image_id)
-        self.assertEqual(retreived_image_member.member_id,
-                         image_member.member_id)
+        self.assertEqual(image_member.image_id,
+                         retreived_image_member.image_id)
+        self.assertEqual(image_member.member_id,
+                         retreived_image_member.member_id)
         self.assertEqual('pending', retreived_image_member.status)
 
     def test_add_duplicate_image_member(self):
@@ -507,10 +507,10 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         self.image_member_repo.add(image_member)
         retreived_image_member = self.image_member_repo.get(TENANT4)
         self.assertIsNotNone(retreived_image_member.id)
-        self.assertEqual(retreived_image_member.image_id,
-                         image_member.image_id)
-        self.assertEqual(retreived_image_member.member_id,
-                         image_member.member_id)
+        self.assertEqual(image_member.image_id,
+                         retreived_image_member.image_id)
+        self.assertEqual(image_member.member_id,
+                         retreived_image_member.member_id)
         self.assertEqual('pending', retreived_image_member.status)
 
         self.assertRaises(exception.Duplicate, self.image_member_repo.add,
@@ -680,7 +680,7 @@ class TestTaskRepo(test_utils.BaseTestCase):
         current_update_time = task.updated_at
         self.assertTrue(current_update_time > original_update_time)
         task = self.task_repo.get(UUID1)
-        self.assertEqual(task.updated_at, current_update_time)
+        self.assertEqual(current_update_time, task.updated_at)
 
     def test_remove_task(self):
         task = self.task_repo.get(UUID1)
@@ -713,7 +713,7 @@ class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
             try:
                 api._image_update(None, {}, 'fake-id')
             except TestException:
-                self.assertEqual(sess.call_count, 3)
+                self.assertEqual(3, sess.call_count)
 
         # Test retry on image destroy if db deadlock occurs
         self.attempts = 3
@@ -723,4 +723,4 @@ class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
             try:
                 api.image_destroy(None, 'fake-id')
             except TestException:
-                self.assertEqual(sess.call_count, 3)
+                self.assertEqual(3, sess.call_count)

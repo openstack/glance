@@ -62,10 +62,10 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
                                          body=image_data)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], name)
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual(name, data['image']['name'])
         self.assertTrue(data['image']['is_public'])
         return data['image']['id']
 

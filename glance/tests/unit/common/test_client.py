@@ -70,7 +70,7 @@ class TestClient(testtools.TestCase):
         headers = {"test": u'ni\xf1o'}
         resp = self.client.do_request('GET', '/v1/images/detail',
                                       headers=headers)
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_http_encoding_params(self):
         httplib.HTTPConnection.request(
@@ -88,4 +88,4 @@ class TestClient(testtools.TestCase):
         params = {"test": u'ni\xf1o'}
         resp = self.client.do_request('GET', '/v1/images/detail',
                                       params=params)
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)

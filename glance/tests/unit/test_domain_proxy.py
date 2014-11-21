@@ -60,9 +60,9 @@ class TestProxyRepoPlain(test_utils.BaseTestCase):
         self.fake_repo.result = base_result
         method = getattr(self.proxy_repo, name)
         proxy_result = method(*args, **kwargs)
-        self.assertEqual(proxy_result, base_result)
-        self.assertEqual(self.fake_repo.args, args)
-        self.assertEqual(self.fake_repo.kwargs, kwargs)
+        self.assertEqual(base_result, proxy_result)
+        self.assertEqual(args, self.fake_repo.args)
+        self.assertEqual(kwargs, self.fake_repo.kwargs)
 
     def test_get(self):
         self._test_method('get', 'snarf', 'abcd')
@@ -93,11 +93,11 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         method = getattr(self.proxy_repo, name)
         proxy_result = method(*args, **kwargs)
         self.assertIsInstance(proxy_result, FakeProxy)
-        self.assertEqual(proxy_result.base, base_result)
+        self.assertEqual(base_result, proxy_result.base)
         self.assertEqual(0, len(proxy_result.args))
         self.assertEqual({'a': 1}, proxy_result.kwargs)
-        self.assertEqual(self.fake_repo.args, args)
-        self.assertEqual(self.fake_repo.kwargs, kwargs)
+        self.assertEqual(args, self.fake_repo.args)
+        self.assertEqual(kwargs, self.fake_repo.kwargs)
 
     def test_get(self):
         self.fake_repo.result = 'snarf'

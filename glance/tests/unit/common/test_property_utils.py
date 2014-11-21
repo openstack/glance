@@ -197,7 +197,7 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
         configuration file
         """
         self.rules_checker = property_utils.PropertyRules(self.policy)
-        self.assertEqual(property_utils.CONFIG.sections(), CONFIG_SECTIONS)
+        self.assertEqual(CONFIG_SECTIONS, property_utils.CONFIG.sections())
 
     def test_property_rules_loaded_in_order(self):
         """

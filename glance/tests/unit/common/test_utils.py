@@ -425,14 +425,14 @@ class TestUtils(test_utils.BaseTestCase):
                 raise UnicodeError()
 
         ret = utils.exception_to_str(Exception('error message'))
-        self.assertEqual(ret, 'error message')
+        self.assertEqual('error message', ret)
 
         ret = utils.exception_to_str(Exception('\xa5 error message'))
-        self.assertEqual(ret, ' error message')
+        self.assertEqual(' error message', ret)
 
         ret = utils.exception_to_str(FakeException('\xa5 error message'))
-        self.assertEqual(ret, "Caught '%(exception)s' exception." %
-                         {'exception': 'FakeException'})
+        self.assertEqual("Caught '%(exception)s' exception." %
+                         {'exception': 'FakeException'}, ret)
 
 
 class UUIDTestCase(test_utils.BaseTestCase):

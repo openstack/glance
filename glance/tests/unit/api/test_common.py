@@ -141,5 +141,5 @@ class TestMalformedRequest(test_utils.BaseTestCase):
         """Test Glance redirects /v# to /v#/ with correct Location header"""
         req = webob.Request.blank('/v1.1')
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, webob.exc.HTTPFound.code)
+        self.assertEqual(webob.exc.HTTPFound.code, res.status_int)
         self.assertEqual('http://localhost/v1/', res.location)

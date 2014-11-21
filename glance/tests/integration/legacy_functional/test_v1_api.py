@@ -53,10 +53,10 @@ class TestApi(base.ApiTest):
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         image_id = data['image']['id']
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         # 3. HEAD image
@@ -86,14 +86,14 @@ class TestApi(base.ApiTest):
             'content-type': 'application/octet-stream'}
 
         for expected_key, expected_value in expected_image_headers.items():
-            self.assertEqual(response[expected_key], expected_value,
+            self.assertEqual(expected_value, response[expected_key],
                              "For key '%s' expected header value '%s'. "
                              "Got '%s'" % (expected_key,
                                            expected_value,
                                            response[expected_key]))
 
         for expected_key, expected_value in expected_std_headers.items():
-            self.assertEqual(response[expected_key], expected_value,
+            self.assertEqual(expected_value, response[expected_key],
                              "For key '%s' expected header value '%s'. "
                              "Got '%s'" % (expected_key,
                                            expected_value,
@@ -257,10 +257,10 @@ class TestApi(base.ApiTest):
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
         self.assertIsNone(data['image']['checksum'])
-        self.assertEqual(data['image']['size'], 0)
-        self.assertEqual(data['image']['container_format'], 'ovf')
-        self.assertEqual(data['image']['disk_format'], 'raw')
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(0, data['image']['size'])
+        self.assertEqual('ovf', data['image']['container_format'])
+        self.assertEqual('raw', data['image']['disk_format'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         image_id = data['image']['id']
@@ -296,10 +296,10 @@ class TestApi(base.ApiTest):
                                               body=image_data)
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['checksum'],
-                         hashlib.md5(image_data).hexdigest())
-        self.assertEqual(data['image']['size'], FIVE_KB)
-        self.assertEqual(data['image']['name'], "Image1")
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
         self.assertTrue(data['image']['is_public'])
 
         # 5. HEAD /images
@@ -427,7 +427,7 @@ class TestApi(base.ApiTest):
         response, content = self.http.request(path, 'POST', headers=headers)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['properties']['pants'], "are on")
+        self.assertEqual("are on", data['image']['properties']['pants'])
         self.assertTrue(data['image']['is_public'])
         image_ids.append(data['image']['id'])
 
@@ -444,7 +444,7 @@ class TestApi(base.ApiTest):
         response, content = self.http.request(path, 'POST', headers=headers)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['properties']['pants'], "are on")
+        self.assertEqual("are on", data['image']['properties']['pants'])
         self.assertTrue(data['image']['is_public'])
         image_ids.append(data['image']['id'])
 
@@ -461,7 +461,7 @@ class TestApi(base.ApiTest):
         response, content = self.http.request(path, 'POST', headers=headers)
         self.assertEqual(201, response.status)
         data = jsonutils.loads(content)
-        self.assertEqual(data['image']['properties']['pants'], "are off")
+        self.assertEqual("are off", data['image']['properties']['pants'])
         self.assertTrue(data['image']['is_public'])
         image_ids.append(data['image']['id'])
 
@@ -773,8 +773,8 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)['images']
         self.assertEqual(2, len(data))
-        self.assertEqual(data[0]['id'], images[0]['id'])
-        self.assertEqual(data[1]['id'], images[1]['id'])
+        self.assertEqual(images[0]['id'], data[0]['id'])
+        self.assertEqual(images[1]['id'], data[1]['id'])
 
         # 4. GET /images with marker
         # Verify only two images were returned
@@ -784,8 +784,8 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)['images']
         self.assertEqual(2, len(data))
-        self.assertEqual(data[0]['id'], images[1]['id'])
-        self.assertEqual(data[1]['id'], images[2]['id'])
+        self.assertEqual(images[1]['id'], data[0]['id'])
+        self.assertEqual(images[2]['id'], data[1]['id'])
 
         # 5. GET /images with marker and limit
         # Verify only one image was returned with the correct id
@@ -795,7 +795,7 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)['images']
         self.assertEqual(1, len(data))
-        self.assertEqual(data[0]['id'], images[2]['id'])
+        self.assertEqual(images[2]['id'], data[0]['id'])
 
         # 6. GET /images/detail with marker and limit
         # Verify only one image was returned with the correct id
@@ -805,7 +805,7 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)['images']
         self.assertEqual(1, len(data))
-        self.assertEqual(data[0]['id'], images[2]['id'])
+        self.assertEqual(images[2]['id'], data[0]['id'])
 
         # DELETE images
         for image_id in image_ids:
@@ -869,9 +869,9 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(3, len(data['images']))
-        self.assertEqual(data['images'][0]['id'], image_ids[2])
-        self.assertEqual(data['images'][1]['id'], image_ids[1])
-        self.assertEqual(data['images'][2]['id'], image_ids[0])
+        self.assertEqual(image_ids[2], data['images'][0]['id'])
+        self.assertEqual(image_ids[1], data['images'][1]['id'])
+        self.assertEqual(image_ids[0], data['images'][2]['id'])
 
         # 3. GET /images sorted by name asc
         params = 'sort_key=name&sort_dir=asc'
@@ -880,9 +880,9 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(3, len(data['images']))
-        self.assertEqual(data['images'][0]['id'], image_ids[1])
-        self.assertEqual(data['images'][1]['id'], image_ids[0])
-        self.assertEqual(data['images'][2]['id'], image_ids[2])
+        self.assertEqual(image_ids[1], data['images'][0]['id'])
+        self.assertEqual(image_ids[0], data['images'][1]['id'])
+        self.assertEqual(image_ids[2], data['images'][2]['id'])
 
         # 4. GET /images sorted by size desc
         params = 'sort_key=size&sort_dir=desc'
@@ -891,9 +891,9 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(3, len(data['images']))
-        self.assertEqual(data['images'][0]['id'], image_ids[0])
-        self.assertEqual(data['images'][1]['id'], image_ids[2])
-        self.assertEqual(data['images'][2]['id'], image_ids[1])
+        self.assertEqual(image_ids[0], data['images'][0]['id'])
+        self.assertEqual(image_ids[2], data['images'][1]['id'])
+        self.assertEqual(image_ids[1], data['images'][2]['id'])
 
         # 5. GET /images sorted by size desc with a marker
         params = 'sort_key=size&sort_dir=desc&marker=%s' % image_ids[0]
@@ -902,8 +902,8 @@ class TestApi(base.ApiTest):
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(2, len(data['images']))
-        self.assertEqual(data['images'][0]['id'], image_ids[2])
-        self.assertEqual(data['images'][1]['id'], image_ids[1])
+        self.assertEqual(image_ids[2], data['images'][0]['id'])
+        self.assertEqual(image_ids[1], data['images'][1]['id'])
 
         # 6. GET /images sorted by name asc with a marker
         params = 'sort_key=name&sort_dir=asc&marker=%s' % image_ids[2]
