@@ -19,27 +19,44 @@
 
 """Metadata setup commands."""
 
-from glance.common import utils
+import threading
+
+from oslo.config import cfg
+from oslo import db
+from stevedore import driver
+
 from glance.db.sqlalchemy import api as db_api
 
-IMPL = utils.LazyPluggable(
-    'backend',
-    config_group='database',
-    sqlalchemy='glance.db.sqlalchemy.metadata')
+
+_IMPL = None
+_LOCK = threading.Lock()
+
+db.options.set_defaults(cfg.CONF)
+
+
+def get_backend():
+    global _IMPL
+    if _IMPL is None:
+        with _LOCK:
+            if _IMPL is None:
+                _IMPL = driver.DriverManager(
+                    "glance.database.metadata_backend",
+                    cfg.CONF.database.backend).driver
+    return _IMPL
 
 
 def load_metadefs():
     """Read metadefinition files and insert data into the database"""
-    return IMPL.db_load_metadefs(engine=db_api.get_engine(),
-                                 metadata_path=None)
+    return get_backend().db_load_metadefs(engine=db_api.get_engine(),
+                                          metadata_path=None)
 
 
 def unload_metadefs():
     """Unload metadefinitions from database"""
-    return IMPL.db_unload_metadefs(engine=db_api.get_engine())
+    return get_backend().db_unload_metadefs(engine=db_api.get_engine())
 
 
 def export_metadefs():
     """Export metadefinitions from database to files"""
-    return IMPL.db_export_metadefs(engine=db_api.get_engine(),
-                                   metadata_path=None)
+    return get_backend().db_export_metadefs(engine=db_api.get_engine(),
+                                            metadata_path=None)
