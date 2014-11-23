@@ -26,11 +26,9 @@
             "description": "When performing operations such as creating a virtual disk, cloning, or migrating, the disk provisioning type may be specified. Please refer to VMware documentation for more.",
             "type": "string",
             "enum": [
-                "thin",
-                "preallocated",
-                "thick",
-                "eagerZeroedThick",
-                "sparse"
+                "streamOptimized",
+                "sparse",
+                "preallocated"
             ],
             "default" : "preallocated"
         },
