@@ -5,6 +5,10 @@ pbr>=0.6,<1.0
 # package to get the right headers...
 greenlet>=0.3.2
 
+# For VMware storage backed. Listed early to ensure its transitive eventlet
+# dependency  on eventlet is satisifed.
+oslo.vmware>=0.2                        # Apache-2.0
+
 # < 0.8.0/0.8 does not work, see https://bugs.launchpad.net/bugs/1153983
 SQLAlchemy>=0.7.8,!=0.9.5,<=0.9.99
 anyjson>=0.3.3
@@ -25,9 +29,6 @@ stevedore>=0.14
 
 # For Swift storage backend.
 python-swiftclient>=1.6
-
-# For VMware storage backed.
-oslo.vmware>=0.2                        # Apache-2.0
 
 # For paste.util.template used in keystone.common.template
 Paste
