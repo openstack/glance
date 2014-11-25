@@ -74,6 +74,7 @@ class ImageFactory(object):
                   min_disk=0, min_ram=0, protected=False, owner=None,
                   disk_format=None, container_format=None,
                   extra_properties=None, tags=None, **other_args):
+        extra_properties = extra_properties or {}
         self._check_readonly(other_args)
         self._check_unexpected(other_args)
         self._check_reserved(extra_properties)
@@ -90,7 +91,7 @@ class ImageFactory(object):
                      min_ram=min_ram, protected=protected,
                      owner=owner, disk_format=disk_format,
                      container_format=container_format,
-                     extra_properties=extra_properties, tags=tags)
+                     extra_properties=extra_properties, tags=tags or [])
 
 
 class Image(object):
@@ -105,8 +106,8 @@ class Image(object):
         'queued': ('saving', 'active', 'deleted'),
         'saving': ('active', 'killed', 'deleted', 'queued'),
         'active': ('queued', 'pending_delete', 'deleted'),
-        'killed': ('deleted'),
-        'pending_delete': ('deleted'),
+        'killed': ('deleted',),
+        'pending_delete': ('deleted',),
         'deleted': (),
     }
 
@@ -127,9 +128,9 @@ class Image(object):
         self._container_format = kwargs.pop('container_format', None)
         self.size = kwargs.pop('size', None)
         self.virtual_size = kwargs.pop('virtual_size', None)
-        extra_properties = kwargs.pop('extra_properties', None) or {}
+        extra_properties = kwargs.pop('extra_properties', {})
         self.extra_properties = ExtraProperties(extra_properties)
-        self.tags = kwargs.pop('tags', None) or []
+        self.tags = kwargs.pop('tags', [])
         if kwargs:
             message = _("__init__() got unexpected keyword argument '%s'")
             raise TypeError(message % kwargs.keys()[0])

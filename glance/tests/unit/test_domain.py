@@ -159,6 +159,13 @@ class TestImage(test_utils.BaseTestCase):
         self.image.status = 'saving'
         self.assertEqual('saving', self.image.status)
 
+    def test_set_incorrect_status(self):
+        self.image.status = 'saving'
+        self.image.status = 'killed'
+        self.assertRaises(
+            exception.InvalidImageStatusTransition,
+            setattr, self.image, 'status', 'delet')
+
     def test_status_saving_without_disk_format(self):
         self.image.disk_format = None
         self.assertRaises(ValueError, setattr,
