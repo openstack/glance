@@ -15,6 +15,10 @@
 
 from oslo.config import cfg
 
+from glance import i18n
+
+_ = i18n._
+
 registry_client_opts = [
     cfg.StrOpt('registry_client_protocol', default='http',
                help=_('The protocol to use for communication with the '

@@ -25,6 +25,7 @@ from glance import i18n
 import glance.openstack.common.log as os_logging
 
 LOG = os_logging.getLogger(__name__)
+_ = i18n._
 _LW = i18n._LW
 
 

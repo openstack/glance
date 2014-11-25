@@ -23,6 +23,7 @@ from oslo.config import cfg
 
 import glance.api.policy
 from glance.common import exception
+from glance import i18n
 from glance.openstack.common import log as logging
 from glance.openstack.common import policy
 
@@ -30,6 +31,7 @@ from glance.openstack.common import policy
 # we must set manually for compatibility with py26
 CONFIG = ConfigParser.SafeConfigParser(dict_type=OrderedDict)
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 property_opts = [
     cfg.StrOpt('property_protection_file',

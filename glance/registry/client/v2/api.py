@@ -22,10 +22,12 @@ import os
 from oslo.config import cfg
 
 from glance.common import exception
+from glance import i18n
 import glance.openstack.common.log as logging
 from glance.registry.client.v2 import client
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 CONF = cfg.CONF
 _registry_client = 'glance.registry.client'

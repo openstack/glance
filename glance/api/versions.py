@@ -20,7 +20,9 @@ from oslo.serialization import jsonutils
 import webob.dec
 
 from glance.common import wsgi
+from glance import i18n
 
+_ = i18n._
 
 versions_opts = [
     cfg.StrOpt('public_endpoint', default=None,

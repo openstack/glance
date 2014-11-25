@@ -19,6 +19,10 @@
 import six
 import six.moves.urllib.parse as urlparse
 
+from glance import i18n
+
+_ = i18n._
+
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
 
 

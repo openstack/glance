@@ -20,9 +20,11 @@ import webob.exc
 from glance.api import policy
 from glance.common import wsgi
 import glance.context
+from glance import i18n
 from glance.openstack.common import local
 import glance.openstack.common.log as logging
 
+_ = i18n._
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True,

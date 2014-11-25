@@ -19,6 +19,10 @@ from oslo.config import cfg
 import six
 import six.moves.urllib.parse as urlparse
 
+from glance import i18n
+
+_ = i18n._
+
 store_type_opts = [
     cfg.ListOpt("store_type_preference",
                 default=[],

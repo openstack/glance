@@ -44,7 +44,9 @@ from oslo.utils import units
 from six.moves import xrange
 
 from glance.common import config
+from glance import i18n
 
+_ = i18n._
 
 CONF = cfg.CONF
 

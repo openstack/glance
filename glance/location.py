@@ -26,7 +26,7 @@ import glance.domain.proxy
 from glance import i18n
 import glance.openstack.common.log as logging
 
-
+_ = i18n._
 _LE = i18n._LE
 
 CONF = cfg.CONF

@@ -28,6 +28,7 @@ from glance.common import exception
 from glance import i18n
 import glance.openstack.common.log as logging
 
+_ = i18n._
 _LE = i18n._LE
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

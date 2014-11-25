@@ -48,7 +48,9 @@ from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 from glance.db.sqlalchemy import models
+from glance import i18n
 
+_ = i18n._
 
 CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')

@@ -36,6 +36,7 @@ import glance.openstack.common.log as logging
 import glance.schema
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 _LW = i18n._LW
 
 CONF = cfg.CONF

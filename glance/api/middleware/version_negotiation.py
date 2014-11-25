@@ -29,7 +29,7 @@ import glance.openstack.common.log as logging
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
-
+_ = i18n._
 _LW = i18n._LW
 
 

@@ -29,7 +29,7 @@ import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 
 LOG = logging.getLogger(__name__)
-
+_ = i18n._
 _LI = i18n._LI
 _LW = i18n._LW
 

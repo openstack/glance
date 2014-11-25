@@ -21,7 +21,10 @@ except ImportError:
 from oslo.config import cfg
 
 from glance.common import exception
+from glance import i18n
 from glance.openstack.common import log as logging
+
+_ = i18n._
 
 swift_opts = [
     cfg.StrOpt('default_swift_reference',

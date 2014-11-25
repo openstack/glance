@@ -29,9 +29,11 @@ from glance.common import client
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
+from glance import i18n
 import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 
 rpc_opts = [

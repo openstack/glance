@@ -18,7 +18,10 @@ import copy
 from oslo.config import cfg
 import stevedore
 
+from glance import i18n
 import glance.openstack.common.log as logging
+
+_ = i18n._
 
 location_strategy_opts = [
     cfg.StrOpt('location_strategy', default='location_order',

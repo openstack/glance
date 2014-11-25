@@ -30,10 +30,11 @@ from glance.openstack.common import lockutils
 import glance.openstack.common.log as logging
 
 
+LOG = logging.getLogger(__name__)
+_ = i18n._
 _LE = i18n._LE
 _LI = i18n._LI
 _LW = i18n._LW
-LOG = logging.getLogger(__name__)
 
 
 def run(t_id, context, task_repo, image_repo, image_factory):

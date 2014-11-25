@@ -22,10 +22,12 @@ from oslo.config import cfg
 from glance.common import rpc
 from glance.common import wsgi
 import glance.db
+from glance import i18n
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 
 CONF = cfg.CONF
 
