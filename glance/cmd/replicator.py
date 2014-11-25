@@ -35,6 +35,7 @@ from glance.openstack.common import log
 LOG = log.getLogger(__name__)
 _LI = gettextutils._LI
 _LE = gettextutils._LE
+_LW = gettextutils._LW
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -557,7 +558,7 @@ def replication_compare(options, args):
 
             for key in image:
                 if image[key] != headers.get(key, None):
-                    LOG.info(_LI('%(image_id)s: field %(key)s differs '
+                    LOG.warn(_LW('%(image_id)s: field %(key)s differs '
                                  '(source is %(master_value)s, destination '
                                  'is %(slave_value)s)')
                              % {'image_id': image['id'],
@@ -570,7 +571,7 @@ def replication_compare(options, args):
                               % {'image_id': image['id']})
 
         elif image['status'] == 'active':
-            LOG.info(_LI('Image %s entirely missing from the destination')
+            LOG.warn(_LW('Image %s entirely missing from the destination')
                      % image['id'])
             differences[image['id']] = 'missing'
 

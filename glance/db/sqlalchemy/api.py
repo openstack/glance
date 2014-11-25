@@ -108,7 +108,7 @@ def clear_db_env():
 
 def _check_mutate_authorization(context, image_ref):
     if not is_image_mutable(context, image_ref):
-        LOG.info(_LI("Attempted to modify image user did not own."))
+        LOG.warn(_LW("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
         if image_ref.is_public:
             exc_class = exception.ForbiddenPublicImage

@@ -125,8 +125,8 @@ class ResourceTypeController(object):
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
-            msg = (_LE("Failed to find resource type %(resourcetype)s to "
-                       "delete") % {'resourcetype': resource_type})
+            msg = (_("Failed to find resource type %(resourcetype)s to "
+                     "delete") % {'resourcetype': resource_type})
             LOG.error(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except Exception as e:

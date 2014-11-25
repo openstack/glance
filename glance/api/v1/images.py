@@ -177,7 +177,7 @@ class Controller(controller.BaseController):
                      "image properties. Attempted: %(num)s, Maximum: "
                      "%(quota)s") % {'num': len(props),
                                      'quota': CONF.image_property_quota})
-            LOG.info(msg)
+            LOG.warn(msg)
             raise HTTPRequestEntityTooLarge(explanation=msg,
                                             request=req,
                                             content_type="text/plain")
@@ -195,8 +195,8 @@ class Controller(controller.BaseController):
             for key in create_props:
                 if (self.prop_enforcer.check_property_rules(
                         key, 'create', req.context) is False):
-                    msg = "Property '%s' is protected" % key
-                    LOG.debug(msg)
+                    msg = _("Property '%s' is protected") % key
+                    LOG.warn(msg)
                     raise HTTPForbidden(explanation=msg,
                                         request=req,
                                         content_type="text/plain")
@@ -239,8 +239,8 @@ class Controller(controller.BaseController):
                         key, 'update', req.context) is False and
                         image_meta['properties'][key] !=
                         orig_meta['properties'][key]) or not has_read):
-                    msg = "Property '%s' is protected" % key
-                    LOG.debug(msg)
+                    msg = _("Property '%s' is protected") % key
+                    LOG.warn(msg)
                     raise HTTPForbidden(explanation=msg,
                                         request=req,
                                         content_type="text/plain")
@@ -273,8 +273,8 @@ class Controller(controller.BaseController):
                         'properties'][key]
                 elif (self.prop_enforcer.check_property_rules(
                         key, 'delete', req.context) is False):
-                    msg = "Property '%s' is protected" % key
-                    LOG.debug(msg)
+                    msg = _("Property '%s' is protected") % key
+                    LOG.warn(msg)
                     raise HTTPForbidden(explanation=msg,
                                         request=req,
                                         content_type="text/plain")
@@ -564,8 +564,7 @@ class Controller(controller.BaseController):
         except exception.Invalid as e:
             msg = (_("Failed to reserve image. Got error: %s") %
                    utils.exception_to_str(e))
-            for line in msg.split('\n'):
-                LOG.debug(line)
+            LOG.exception(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -762,12 +761,12 @@ class Controller(controller.BaseController):
                     # size provided by the client will be used as-is.
                     if (image_size_store and
                             image_size_store != image_size_meta):
-                        msg = ("Provided image size must match the stored "
-                               "image size. (provided size: %(ps)d, "
-                               "stored size: %(ss)d)" % {
-                                   "ps": image_size_meta,
-                                   "ss": image_size_store})
-                        LOG.debug(msg)
+                        msg = (_("Provided image size must match the stored"
+                                 " image size. (provided size: %(ps)d, "
+                                 "stored size: %(ss)d)") %
+                               {"ps": image_size_meta,
+                                "ss": image_size_store})
+                        LOG.warn(msg)
                         raise HTTPConflict(explanation=msg,
                                            request=req,
                                            content_type="text/plain")
@@ -986,23 +985,23 @@ class Controller(controller.BaseController):
                                  request=req,
                                  content_type="text/plain")
         except exception.NotFound as e:
-            msg = (_("Failed to find image to update: %s") %
-                   utils.exception_to_str(e))
-            for line in msg.split('\n'):
-                LOG.info(line)
-            raise HTTPNotFound(explanation=msg,
+            msg = _("Failed to find image to update: %s")
+            lmsg = "Failed to find image to update: %s"
+            e_str = utils.exception_to_str(e)
+            LOG.debug(lmsg % e_str)
+            raise HTTPNotFound(explanation=msg % e_str,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden as e:
-            msg = (_("Forbidden to update image: %s") %
-                   utils.exception_to_str(e))
-            for line in msg.split('\n'):
-                LOG.info(line)
-            raise HTTPForbidden(explanation=msg,
+            msg = _("Forbidden to update image: %s")
+            lmsg = "Forbidden to update image: %s"
+            e_str = utils.exception_to_str(e)
+            LOG.debug(lmsg % e_str)
+            raise HTTPForbidden(explanation=msg % e_str,
                                 request=req,
                                 content_type="text/plain")
         except (exception.Conflict, exception.Duplicate) as e:
-            LOG.info(utils.exception_to_str(e))
+            LOG.warn(utils.exception_to_str(e))
             raise HTTPConflict(body='Image operation conflicts',
                                request=req,
                                content_type='text/plain')
@@ -1083,24 +1082,21 @@ class Controller(controller.BaseController):
         except exception.NotFound as e:
             msg = (_("Failed to find image to delete: %s") %
                    utils.exception_to_str(e))
-            for line in msg.split('\n'):
-                LOG.info(line)
+            LOG.warn(msg)
             raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden as e:
             msg = (_("Forbidden to delete image: %s") %
                    utils.exception_to_str(e))
-            for line in msg.split('\n'):
-                LOG.info(line)
+            LOG.warn(msg)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
         except exception.InUseByStore as e:
-            msg = (_LI("Image %s could not be deleted because it is in use: "
-                       "%s") % (id, utils.exception_to_str(e)))  # noqa
-            for line in msg.split('\n'):
-                LOG.info(line)
+            msg = (_("Image %(id)s could not be deleted because it is in use: "
+                     "%(exc)s") % {"id": id, "exc": utils.exception_to_str(e)})
+            LOG.warn(msg)
             raise HTTPConflict(explanation=msg,
                                request=req,
                                content_type="text/plain")

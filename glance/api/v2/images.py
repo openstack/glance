@@ -36,7 +36,6 @@ import glance.openstack.common.log as logging
 import glance.schema
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
 _LW = gettextutils._LW
 
 CONF = cfg.CONF
@@ -70,7 +69,7 @@ class ImagesController(object):
         except exception.InvalidParameterValue as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.LimitExceeded as e:
-            LOG.info(utils.exception_to_str(e))
+            LOG.warn(utils.exception_to_str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
         except exception.Duplicate as dupex:
@@ -143,13 +142,13 @@ class ImagesController(object):
         except exception.InvalidParameterValue as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.StorageQuotaFull as e:
-            msg = (_LI("Denying attempt to upload image because it exceeds the"
-                       " .quota: %s") % utils.exception_to_str(e))
-            LOG.info(msg)
+            msg = (_("Denying attempt to upload image because it exceeds the"
+                     " .quota: %s") % utils.exception_to_str(e))
+            LOG.warn(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')
         except exception.LimitExceeded as e:
-            LOG.info(utils.exception_to_str(e))
+            LOG.exception(utils.exception_to_str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
 
@@ -215,12 +214,14 @@ class ImagesController(object):
         except exception.NotFound as e:
             msg = (_("Failed to find image %(image_id)s to delete") %
                    {'image_id': image_id})
-            LOG.info(msg)
+            LOG.warn(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.InUseByStore as e:
-            msg = (_LI("Image %s could not be deleted "
-                       "because it is in use: %s") % (image_id, e.msg))  # noqa
-            LOG.info(msg)
+            msg = (_("Image %(id)s could not be deleted "
+                     "because it is in use: %(exc)s") %
+                   {"id": image_id,
+                    "exc": e.msg})
+            LOG.warn(msg)
             raise webob.exc.HTTPConflict(explanation=msg)
 
     def _get_locations_op_pos(self, path_pos, max_pos, allow_max):

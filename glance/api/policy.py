@@ -24,10 +24,14 @@ from oslo.serialization import jsonutils
 
 from glance.common import exception
 import glance.domain.proxy
+from glance import i18n
 import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 
 LOG = logging.getLogger(__name__)
+
+_LI = i18n._LI
+_LW = i18n._LW
 
 policy_opts = [
     cfg.StrOpt('policy_file', default='policy.json',
@@ -93,7 +97,7 @@ class Enforcer(object):
         if policy_file:
             return policy_file
         else:
-            LOG.warn(_('Unable to find policy file'))
+            LOG.warn(_LW('Unable to find policy file'))
             return None
 
     def _read_policy_file(self):
@@ -103,7 +107,7 @@ class Enforcer(object):
         """
         mtime = os.path.getmtime(self.policy_path)
         if not self.policy_file_contents or mtime != self.policy_file_mtime:
-            LOG.debug("Loading policy from %s" % self.policy_path)
+            LOG.info(_LI("Loading policy from %s") % self.policy_path)
             with open(self.policy_path) as fap:
                 raw_contents = fap.read()
                 rules_dict = jsonutils.loads(raw_contents)

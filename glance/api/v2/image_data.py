@@ -74,8 +74,9 @@ class ImageDataController(object):
                 image_repo.save(image)
             except exception.NotFound as e:
                 msg = (_("Image %(id)s could not be found after upload."
-                         "The image may have been deleted during the upload: "
-                         "%(error)s Cleaning up the chunks uploaded") %
+                         "The image may have been deleted during the "
+                         "upload: %(error)s Cleaning up the chunks "
+                         "uploaded") %
                        {'id': image_id,
                         'error': utils.exception_to_str(e)})
                 LOG.warn(msg)
@@ -106,7 +107,7 @@ class ImageDataController(object):
 
         except exception.InvalidImageStatusTransition as e:
             msg = utils.exception_to_str(e)
-            LOG.debug(msg)
+            LOG.exception(msg)
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
         except exception.Forbidden as e:
