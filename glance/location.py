@@ -23,11 +23,11 @@ from oslo.utils import excutils
 from glance.common import exception
 from glance.common import utils
 import glance.domain.proxy
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 
 
-_LE = gettextutils._LE
+_LE = i18n._LE
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)

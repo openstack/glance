@@ -23,13 +23,13 @@ from oslo.utils import excutils
 
 from glance.common.client import BaseClient
 from glance.common import crypt
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 from glance.registry.api.v1 import images
 
 LOG = logging.getLogger(__name__)
-_LE = gettextutils._LE
-_LI = gettextutils._LI
+_LE = i18n._LE
+_LI = i18n._LI
 
 
 class RegistryClient(BaseClient):

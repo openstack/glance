@@ -19,12 +19,12 @@ Various conveniences used for migration scripts
 
 import sqlalchemy.types
 
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
+_LI = i18n._LI
 
 
 String = lambda length: sqlalchemy.types.String(

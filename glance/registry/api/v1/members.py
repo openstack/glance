@@ -19,13 +19,13 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
-from glance.openstack.common import gettextutils
+from glance import i18n
 import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
-_LW = gettextutils._LW
+_LI = i18n._LI
+_LW = i18n._LW
 
 
 class Controller(object):

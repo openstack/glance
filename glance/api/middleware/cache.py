@@ -33,16 +33,16 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
+from glance import i18n
 from glance import image_cache
 from glance import notifier
-from glance.openstack.common import gettextutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
-_LI = gettextutils._LI
-_LE = gettextutils._LE
-_LW = gettextutils._LW
+_LI = i18n._LI
+_LE = i18n._LE
+_LW = i18n._LW
 
 PATTERNS = {
     ('v1', 'GET'): re.compile(r'^/v1/images/([^\/]+)$'),
