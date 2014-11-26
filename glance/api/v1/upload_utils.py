@@ -103,7 +103,8 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
              image_meta['id'],
              utils.CooperativeReader(image_data),
              image_meta['size'],
-             store)
+             store,
+             context=req.context)
 
         location_data = {'url': uri,
                          'metadata': location_metadata,
