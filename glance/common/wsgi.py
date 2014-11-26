@@ -88,9 +88,9 @@ eventlet_opts = [
 ]
 
 profiler_opts = [
-    cfg.BoolOpt("enabled", default=True,
+    cfg.BoolOpt("enabled", default=False,
                 help=_('If False fully disable profiling feature.')),
-    cfg.BoolOpt("trace_sqlalchemy", default=True,
+    cfg.BoolOpt("trace_sqlalchemy", default=False,
                 help=_("If False doesn't trace SQL requests."))
 ]
 
