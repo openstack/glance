@@ -97,3 +97,15 @@ class TestPasteApp(test_utils.BaseTestCase):
 
     def test_get_path_non_exist(self):
         self.assertRaises(RuntimeError, config._get_deployment_config_file)
+
+
+class TestDefaultConfig(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestDefaultConfig, self).setUp()
+        self.CONF = config.cfg.CONF
+        self.CONF.import_group('profiler', 'glance.common.wsgi')
+
+    def test_osprofiler_disabled(self):
+        self.assertFalse(self.CONF.profiler.enabled)
+        self.assertFalse(self.CONF.profiler.trace_sqlalchemy)
