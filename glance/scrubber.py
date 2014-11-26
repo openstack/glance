@@ -320,10 +320,10 @@ class ScrubDBQueue(ScrubQueue):
     def __init__(self):
         super(ScrubDBQueue, self).__init__()
         admin_tenant_name = CONF.admin_tenant_name
-        admin_token = self.registry.auth_tok
+        admin_token = self.registry.auth_token
         self.admin_context = context.RequestContext(user=CONF.admin_user,
                                                     tenant=admin_tenant_name,
-                                                    auth_tok=admin_token)
+                                                    auth_token=admin_token)
 
     def add_location(self, image_id, location, user_context=None):
         """Adding image location to scrub queue.
@@ -476,10 +476,10 @@ class Scrubber(object):
         # Here we create a request context with credentials to support
         # delayed delete when using multi-tenant backend storage
         admin_tenant = CONF.admin_tenant_name
-        auth_token = self.registry.auth_tok
+        auth_token = self.registry.auth_token
         self.admin_context = context.RequestContext(user=CONF.admin_user,
                                                     tenant=admin_tenant,
-                                                    auth_tok=auth_token)
+                                                    auth_token=auth_token)
 
         (self.file_queue, self.db_queue) = get_scrub_queues()
 

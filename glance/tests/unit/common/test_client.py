@@ -33,7 +33,7 @@ class TestClient(testtools.TestCase):
 
         self.endpoint = 'example.com'
         self.client = client.BaseClient(self.endpoint, port=9191,
-                                        auth_tok=u'abc123')
+                                        auth_token=u'abc123')
 
     def tearDown(self):
         super(TestClient, self).tearDown()
