@@ -477,7 +477,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         """
         with mock.patch.object(glance.api.policy.ImageProxy,
                                'get_data') as mock_get_data:
-            mock_get_data.side_effect = glance_store.NotFound()
+            mock_get_data.side_effect = glance_store.NotFound(image="image")
 
             request = wsgi.Request.blank('/')
             response = webob.Response()
