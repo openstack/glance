@@ -14,12 +14,12 @@
 #    under the License.
 
 import eventlet
+from oslo.concurrency import lockutils
 from oslo.config import cfg
 
 import glance.async
 import glance.common.scripts as scripts
 from glance import i18n
-from glance.openstack.common import lockutils
 import glance.openstack.common.log as logging
 
 

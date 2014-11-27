@@ -17,6 +17,7 @@ import os
 
 import glance_store as store
 from glance_store import location
+from oslo.concurrency import lockutils
 from oslo.config import cfg
 from oslo.db import options
 from oslo.serialization import jsonutils
@@ -61,10 +62,10 @@ class IsolatedUnitTest(StoreClearingUnitTest):
         super(IsolatedUnitTest, self).setUp()
         options.set_defaults(CONF, connection='sqlite://',
                              sqlite_db='glance.sqlite')
+        lockutils.set_defaults(os.path.join(self.test_dir))
 
         self.config(verbose=False,
-                    debug=False,
-                    lock_path=os.path.join(self.test_dir))
+                    debug=False)
 
         self.config(default_store='filesystem',
                     filesystem_store_datadir=os.path.join(self.test_dir),

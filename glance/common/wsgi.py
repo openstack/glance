@@ -34,6 +34,7 @@ from eventlet.green import socket
 from eventlet.green import ssl
 import eventlet.greenio
 import eventlet.wsgi
+from oslo.concurrency import processutils
 from oslo.config import cfg
 from oslo.serialization import jsonutils
 import routes
@@ -47,7 +48,7 @@ from glance.common import exception
 from glance.common import utils
 from glance import i18n
 import glance.openstack.common.log as logging
-from glance.openstack.common import processutils
+
 
 _ = i18n._
 
