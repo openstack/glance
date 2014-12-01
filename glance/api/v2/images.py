@@ -700,7 +700,7 @@ def get_base_properties():
                         '-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$'),
         },
         'name': {
-            'type': 'string',
+            'type': ['null', 'string'],
             'description': _('Descriptive name for the image'),
             'maxLength': 255,
         },
@@ -720,32 +720,32 @@ def get_base_properties():
             'description': _('If true, image will not be deletable.'),
         },
         'checksum': {
-            'type': 'string',
+            'type': ['null', 'string'],
             'description': _('md5 hash of image contents. (READ-ONLY)'),
             'maxLength': 32,
         },
         'owner': {
-            'type': 'string',
+            'type': ['null', 'string'],
             'description': _('Owner of the image'),
             'maxLength': 255,
         },
         'size': {
-            'type': 'integer',
+            'type': ['null', 'integer'],
             'description': _('Size of image file in bytes (READ-ONLY)'),
         },
         'virtual_size': {
-            'type': 'integer',
+            'type': ['null', 'integer'],
             'description': _('Virtual size of image in bytes (READ-ONLY)'),
         },
         'container_format': {
-            'type': 'string',
+            'type': ['null', 'string'],
             'description': _('Format of the container'),
-            'enum': CONF.image_format.container_formats,
+            'enum': [None] + CONF.image_format.container_formats,
         },
         'disk_format': {
-            'type': 'string',
+            'type': ['null', 'string'],
             'description': _('Format of the disk'),
-            'enum': CONF.image_format.disk_formats,
+            'enum': [None] + CONF.image_format.disk_formats,
         },
         'created_at': {
             'type': 'string',
