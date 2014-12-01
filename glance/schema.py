@@ -45,7 +45,7 @@ class Schema(object):
     def filter(self, obj):
         filtered = {}
         for key, value in six.iteritems(obj):
-            if self._filter_func(self.properties, key) and value is not None:
+            if self._filter_func(self.properties, key):
                 filtered[key] = value
         return filtered
 

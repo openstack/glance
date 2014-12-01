@@ -2743,6 +2743,16 @@ class TestImagesSerializer(test_utils.BaseTestCase):
                     'self': '/v2/images/%s' % UUID2,
                     'file': '/v2/images/%s/file' % UUID2,
                     'schema': '/v2/schemas/image',
+                    'size': None,
+                    'name': None,
+                    'owner': None,
+                    'min_ram': None,
+                    'min_disk': None,
+                    'checksum': None,
+                    'disk_format': None,
+                    'virtual_size': None,
+                    'container_format': None,
+
                 },
             ],
             'first': '/v2/images',
@@ -2847,6 +2857,15 @@ class TestImagesSerializer(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
+            'size': None,
+            'name': None,
+            'owner': None,
+            'min_ram': None,
+            'min_disk': None,
+            'checksum': None,
+            'disk_format': None,
+            'virtual_size': None,
+            'container_format': None,
         }
         response = webob.Response()
         self.serializer.show(response, self.fixtures[1])
@@ -3113,6 +3132,10 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
+            'min_ram': None,
+            'min_disk': None,
+            'disk_format': None,
+            'container_format': None,
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
@@ -3137,6 +3160,10 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
+            'min_ram': None,
+            'min_disk': None,
+            'disk_format': None,
+            'container_format': None,
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
@@ -3173,6 +3200,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
             'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
+            'min_ram': None,
+            'min_disk': None,
+            'disk_format': None,
+            'container_format': None,
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
@@ -3203,6 +3234,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
             'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
+            'min_ram': None,
+            'min_disk': None,
+            'disk_format': None,
+            'container_format': None,
         }
         response = webob.Response()
         serializer.show(response, self.fixture)
@@ -3227,6 +3262,10 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'self': '/v2/images/%s' % UUID2,
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
+            'min_ram': None,
+            'min_disk': None,
+            'disk_format': None,
+            'container_format': None,
         }
         response = webob.Response()
         serializer.show(response, self.fixture)

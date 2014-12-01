@@ -132,6 +132,9 @@ class TestImages(functional.FunctionalTest):
             u'disk_format',
             u'container_format',
             u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
         ])
         self.assertEqual(checked_keys, set(image.keys()))
         expected_image = {
@@ -192,6 +195,9 @@ class TestImages(functional.FunctionalTest):
             u'disk_format',
             u'container_format',
             u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
         ])
         self.assertEqual(checked_keys, set(image.keys()))
         expected_image = {
@@ -279,9 +285,9 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual(image_id, image['id'])
-        self.assertFalse('checksum' in image)
-        self.assertNotIn('size', image)
-        self.assertNotIn('virtual_size', image)
+        self.assertIsNone(image['checksum'])
+        self.assertIsNone(image['size'])
+        self.assertIsNone(image['virtual_size'])
         self.assertEqual('bar', image['foo'])
         self.assertFalse(image['protected'])
         self.assertEqual('kernel', image['type'])
@@ -456,8 +462,8 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code, response.text)
         image = jsonutils.loads(response.text)
-        self.assertNotIn('size', image)
-        self.assertNotIn('virtual_size', image)
+        self.assertIsNone(image['size'])
+        self.assertIsNone(image['virtual_size'])
         self.assertEqual('queued', image['status'])
 
         # Deletion should work. Deleting image-1
@@ -2111,8 +2117,8 @@ class TestImages(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         image_id = image['id']
         self.assertEqual('queued', image['status'])
-        self.assertNotIn('size', image)
-        self.assertNotIn('virtual_size', image)
+        self.assertIsNone(image['size'])
+        self.assertIsNone(image['virtual_size'])
 
         file_path = os.path.join(self.test_dir, 'fake_image')
         with open(file_path, 'w') as fap:
