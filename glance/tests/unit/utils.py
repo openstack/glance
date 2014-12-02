@@ -172,7 +172,7 @@ class FakeStoreAPI(object):
                 raise store.UnknownScheme(scheme=scheme)
             return self.data[location]
         except KeyError:
-            raise store.NotFound()
+            raise store.NotFound(image=location)
 
     def get_size_from_backend(self, location, context=None):
         return self.get_from_backend(location, context=context)[1]
