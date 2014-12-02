@@ -676,3 +676,20 @@ class MetadefTagFactoryProxy(glance.domain.proxy.MetadefTagFactory):
             meta_tag_factory,
             meta_tag_proxy_class=MetadefTagProxy,
             meta_tag_proxy_kwargs=proxy_kwargs)
+
+
+# Catalog Search classes
+class CatalogSearchRepoProxy(object):
+
+    def __init__(self, search_repo, context, search_policy):
+        self.context = context
+        self.policy = search_policy
+        self.search_repo = search_repo
+
+    def search(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'catalog_search', {})
+        return self.search_repo.search(*args, **kwargs)
+
+    def index(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'catalog_index', {})
+        return self.search_repo.index(*args, **kwargs)
