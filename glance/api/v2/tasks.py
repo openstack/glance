@@ -330,11 +330,11 @@ _TASK_SCHEMA = {
     },
     "input": {
         "description": _("The parameters required by task, JSON blob"),
-        "type": "object"
+        "type": ["null", "object"],
     },
     "result": {
         "description": _("The result of current task, JSON blob"),
-        "type": "object",
+        "type": ["null", "object"],
     },
     "owner": {
         "description": _("An identifier for the owner of this task"),
@@ -348,7 +348,7 @@ _TASK_SCHEMA = {
     "expires_at": {
         "description": _("Datetime when this resource would be"
                          " subject to removal"),
-        "type": "string"
+        "type": ["null", "string"]
     },
     "created_at": {
         "description": _("Datetime when this resource was created"),
