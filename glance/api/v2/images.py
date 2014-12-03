@@ -65,6 +65,8 @@ class ImagesController(object):
             image_repo.add(image)
         except exception.DuplicateLocation as dup:
             raise webob.exc.HTTPBadRequest(explanation=dup.msg)
+        except exception.Invalid as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidParameterValue as e:
@@ -138,6 +140,8 @@ class ImagesController(object):
                 image_repo.save(image)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except exception.Invalid as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.InvalidParameterValue as e:

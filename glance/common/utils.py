@@ -627,3 +627,49 @@ def exception_to_str(exc):
             error = ("Caught '%(exception)s' exception." %
                      {"exception": exc.__class__.__name__})
     return encodeutils.safe_encode(error, errors='ignore')
+
+
+try:
+    REGEX_4BYTE_UNICODE = re.compile(u'[\U00010000-\U0010ffff]')
+except re.error:
+    # UCS-2 build case
+    REGEX_4BYTE_UNICODE = re.compile(u'[\uD800-\uDBFF][\uDC00-\uDFFF]')
+
+
+def no_4byte_params(f):
+    """
+    Checks that no 4 byte unicode characters are allowed
+    in dicts' keys/values and string's parameters
+    """
+    def wrapper(*args, **kwargs):
+
+        def _is_match(some_str):
+            return (isinstance(some_str, unicode) and
+                    REGEX_4BYTE_UNICODE.findall(some_str) != [])
+
+        def _check_dict(data_dict):
+            # a dict of dicts has to be checked recursively
+            for key, value in data_dict.iteritems():
+                if isinstance(value, dict):
+                    _check_dict(value)
+                else:
+                    if _is_match(key):
+                        msg = _("Property names can't contain 4 byte unicode.")
+                        raise exception.Invalid(msg)
+                    if _is_match(value):
+                        msg = (_("%s can't contain 4 byte unicode characters.")
+                               % key.title())
+                        raise exception.Invalid(msg)
+
+        for data_dict in [arg for arg in args if isinstance(arg, dict)]:
+            _check_dict(data_dict)
+        # now check args for str values
+        for arg in args:
+            if _is_match(arg):
+                msg = _("Param values can't contain 4 byte unicode.")
+                raise exception.Invalid(msg)
+        # check kwargs as well, as params are passed as kwargs via
+        # registry calls
+        _check_dict(kwargs)
+        return f(*args, **kwargs)
+    return wrapper

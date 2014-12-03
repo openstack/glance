@@ -1306,6 +1306,85 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         for k, v in six.iteritems(fixture):
             self.assertEqual(v, res_dict[k])
 
+    def _send_request(self, command, kwargs, method):
+        req = webob.Request.blank('/rpc')
+        req.method = method
+        cmd = [{'command': command, 'kwargs': kwargs}]
+        req.body = jsonutils.dumps(cmd)
+        res = req.get_response(self.api)
+        res_dict = jsonutils.loads(res.body)[0]
+        return res.status_int, res_dict
+
+    def _expect_fail(self, command, kwargs, error_cls, method='POST'):
+        # on any exception status_int is always 200, so have to check _error
+        # dict
+        code, res_dict = self._send_request(command, kwargs, method)
+        self.assertTrue('_error' in res_dict)
+        self.assertEqual(error_cls, res_dict['_error']['cls'])
+        return res_dict
+
+    def _expect_ok(self, command, kwargs, method, expected_status=200):
+        code, res_dict = self._send_request(command, kwargs)
+        self.assertEqual(expected_status, code)
+        return res_dict
+
+    def test_create_image_bad_name(self):
+        fixture = {'name': u'A bad name \U0001fff2', 'status': 'queued'}
+        self._expect_fail('image_create',
+                          {'values': fixture},
+                          'glance.common.exception.Invalid')
+
+    def test_create_image_bad_location(self):
+        fixture = {'status': 'queued',
+                   'locations': [{'url': u'file:///tmp/tests/\U0001fee2',
+                                  'metadata': {},
+                                  'status': 'active'}]}
+        self._expect_fail('image_create',
+                          {'values': fixture},
+                          'glance.common.exception.Invalid')
+
+    def test_create_image_bad_property(self):
+        fixture = {'status': 'queued',
+                   'properties': {'ok key': u' bad value \U0001f2aa'}}
+        self._expect_fail('image_create',
+                          {'values': fixture},
+                          'glance.common.exception.Invalid')
+        fixture = {'status': 'queued',
+                   'properties': {u'invalid key \U00010020': 'ok value'}}
+        self._expect_fail('image_create',
+                          {'values': fixture},
+                          'glance.common.exception.Invalid')
+
+    def test_update_image_bad_tag(self):
+        self._expect_fail('image_tag_create',
+                          {'value': u'\U0001fff2', 'image_id': UUID2},
+                          'glance.common.exception.Invalid')
+
+    def test_update_image_bad_name(self):
+        fixture = {'name': u'A bad name \U0001fff2'}
+        self._expect_fail('image_update',
+                          {'values': fixture, 'image_id': UUID1},
+                          'glance.common.exception.Invalid')
+
+    def test_update_image_bad_location(self):
+        fixture = {'locations':
+                   [{'url': u'file:///tmp/glance-tests/\U0001fee2',
+                     'metadata': {},
+                     'status': 'active'}]}
+        self._expect_fail('image_update',
+                          {'values': fixture, 'image_id': UUID1},
+                          'glance.common.exception.Invalid')
+
+    def test_update_bad_property(self):
+        fixture = {'properties': {'ok key': u' bad value \U0001f2aa'}}
+        self._expect_fail('image_update',
+                          {'values': fixture, 'image_id': UUID2},
+                          'glance.common.exception.Invalid')
+        fixture = {'properties': {u'invalid key \U00010020': 'ok value'}}
+        self._expect_fail('image_update',
+                          {'values': fixture, 'image_id': UUID2},
+                          'glance.common.exception.Invalid')
+
     def test_delete_image(self):
         """Tests that the registry API deletes the image"""
 
