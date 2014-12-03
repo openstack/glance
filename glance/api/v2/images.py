@@ -334,7 +334,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         image = {}
         properties = body
-        tags = properties.pop('tags', None)
+        tags = properties.pop('tags', [])
         for key in self._base_properties:
             try:
                 # NOTE(flwang): Instead of changing the _check_unexpected

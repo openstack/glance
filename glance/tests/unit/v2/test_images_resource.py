@@ -2008,7 +2008,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.body = jsonutils.dumps({})
         output = self.deserializer.create(request)
-        expected = {'image': {}, 'extra_properties': {}, 'tags': None}
+        expected = {'image': {}, 'extra_properties': {}, 'tags': []}
         self.assertEqual(expected, output)
 
     def test_create_invalid_id(self):
@@ -2023,7 +2023,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         output = self.deserializer.create(request)
         expected = {'image': {'image_id': UUID4},
                     'extra_properties': {},
-                    'tags': None}
+                    'tags': []}
         self.assertEqual(expected, output)
 
     def test_create_no_body(self):
@@ -2576,7 +2576,7 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
         expected = {
             'image': {'name': 'image-1'},
             'extra_properties': {'pants': 'on'},
-            'tags': None,
+            'tags': [],
         }
         self.assertEqual(expected, output)
 
@@ -2621,7 +2621,7 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
         output = self.deserializer.create(request)
         expected = {'image': {},
                     'extra_properties': {'foo': 'bar'},
-                    'tags': None}
+                    'tags': []}
         self.assertEqual(expected, output)
 
     def test_create_with_numeric_property(self):
