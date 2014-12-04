@@ -92,6 +92,7 @@ class TestTasks(functional.FunctionalTest):
                             u'self',
                             u'status',
                             u'type',
+                            u'result',
                             u'updated_at'])
         self.assertEqual(checked_keys, set(task.keys()))
         expected_task = {
