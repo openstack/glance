@@ -35,7 +35,9 @@ else:
     sys.exit(%d)
 """
 
-eventlet_no_dns = script % ('fake', '', 'yes', '', 1, 0)
+eventlet_no_dns = script % ('fake', 'import eventlet', 'foo', 'not', 1, 0)
+
+no_eventlet_no_dns = script % ('fake', '', 'foo', '', 1, 0)
 
 no_eventlet_no_greendns = script % ('dns', '', 'yes', '', 1, 0)
 
@@ -48,8 +50,13 @@ eventlet_greendns = script % ('dns', 'import eventlet', 'no', 'not', 0, 1)
 
 class IPv6ServerTest(test_utils.BaseTestCase):
 
+    def test_no_evnetlet_no_dnspython(self):
+        """Test eventlet not imported and dnspython not installed"""
+        rc = subprocess.call(['python', '-c', no_eventlet_no_dns])
+        self.assertEqual(0, rc)
+
     def test_evnetlet_no_dnspython(self):
-        """Test eventlet imported but dnspython not installed"""
+        """Test eventlet pre-imported but dnspython not installed"""
         rc = subprocess.call(['python', '-c', eventlet_no_dns])
         self.assertEqual(0, rc)
 
