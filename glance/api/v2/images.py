@@ -298,16 +298,20 @@ class ImagesController(object):
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
-    _disallowed_properties = ['direct_url', 'self', 'file', 'schema']
-    _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
+    _disallowed_properties = ('direct_url', 'self', 'file', 'schema')
+    _readonly_properties = ('created_at', 'updated_at', 'status', 'checksum',
                             'size', 'virtual_size', 'direct_url', 'self',
-                            'file', 'schema']
-    _reserved_properties = ['owner', 'is_public', 'location', 'deleted',
-                            'deleted_at']
-    _base_properties = ['checksum', 'created_at', 'container_format',
+                            'file', 'schema')
+    _reserved_properties = ('owner', 'is_public', 'location', 'deleted',
+                            'deleted_at')
+    _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'virtual_size', 'status', 'tags',
-                        'updated_at', 'visibility', 'protected']
+                        'updated_at', 'visibility', 'protected')
+    _available_sort_keys = ('name', 'status', 'container_format',
+                            'disk_format', 'size', 'id', 'created_at',
+                            'updated_at')
+
     _path_depth_limits = {'locations': {'add': 2, 'remove': 2, 'replace': 1}}
 
     def __init__(self, schema=None):
@@ -535,6 +539,16 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return limit
 
+    def _validate_sort_key(self, sort_key):
+        if sort_key not in self._available_sort_keys:
+            msg = _('Invalid sort key: %(sort_key)s. '
+                    'It must be one of the following: %(available)s.') % \
+                {'sort_key': sort_key,
+                 'available': ', '.join(self._available_sort_keys)}
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        return sort_key
+
     def _validate_sort_dir(self, sort_dir):
         if sort_dir not in ['asc', 'desc']:
             msg = _('Invalid sort direction: %s') % sort_dir
@@ -577,7 +591,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             tags.append(params.pop('tag').strip())
 
         query_params = {
-            'sort_key': params.pop('sort_key', 'created_at'),
+            'sort_key': self._validate_sort_key(
+                params.pop('sort_key', 'created_at')),
             'sort_dir': self._validate_sort_dir(sort_dir),
             'filters': self._get_filters(params),
             'member_status': self._validate_member_status(member_status),
