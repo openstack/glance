@@ -51,6 +51,8 @@ import glance.openstack.common.log as logging
 
 
 _ = i18n._
+_LE = i18n._LE
+_LI = i18n._LI
 
 bind_opts = [
     cfg.StrOpt('bind_host', default='0.0.0.0',
@@ -265,7 +267,7 @@ class Server(object):
             self.pool.spawn_n(self._single_run, self.application, self.sock)
             return
         else:
-            LOG.info(_("Starting %d workers") % CONF.workers)
+            LOG.info(_LI("Starting %d workers") % CONF.workers)
             signal.signal(signal.SIGTERM, kill_children)
             signal.signal(signal.SIGINT, kill_children)
             signal.signal(signal.SIGHUP, hup)
@@ -280,13 +282,14 @@ class Server(object):
             try:
                 pid, status = os.wait()
                 if os.WIFEXITED(status) or os.WIFSIGNALED(status):
-                    LOG.info(_('Removing dead child %s') % pid)
+                    LOG.info(_LI('Removing dead child %s') % pid)
                     self.children.remove(pid)
                     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
-                        LOG.error(_('Not respawning child %d, cannot '
-                                    'recover from termination') % pid)
+                        LOG.error(_LE('Not respawning child %d, cannot '
+                                      'recover from termination') % pid)
                         if not self.children:
-                            LOG.info(_('All workers have terminated. Exiting'))
+                            LOG.info(_LI('All workers have terminated. '
+                                         'Exiting'))
                             self.running = False
                     else:
                         self.run_child()
@@ -294,7 +297,7 @@ class Server(object):
                 if err.errno not in (errno.EINTR, errno.ECHILD):
                     raise
             except KeyboardInterrupt:
-                LOG.info(_('Caught keyboard interrupt. Exiting.'))
+                LOG.info(_LI('Caught keyboard interrupt. Exiting.'))
                 break
         eventlet.greenio.shutdown_safe(self.sock)
         self.sock.close()
@@ -320,12 +323,12 @@ class Server(object):
             # and is respawned unnecessarily as a result
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.run_server()
-            LOG.info(_('Child %d exiting normally') % os.getpid())
+            LOG.info(_LI('Child %d exiting normally') % os.getpid())
             # self.pool.waitall() has been called by run_server, so
             # its safe to exit here
             sys.exit(0)
         else:
-            LOG.info(_('Started child %s') % pid)
+            LOG.info(_LI('Started child %s') % pid)
             self.children.append(pid)
 
     def run_server(self):
@@ -349,7 +352,7 @@ class Server(object):
 
     def _single_run(self, application, sock):
         """Start a WSGI server in a new green thread."""
-        LOG.info(_("Starting single process server"))
+        LOG.info(_LI("Starting single process server"))
         eventlet.wsgi.server(sock, application, custom_pool=self.pool,
                              log=self._wsgi_logger,
                              debug=False)
