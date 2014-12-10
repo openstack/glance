@@ -22,7 +22,7 @@
 import threading
 
 from oslo.config import cfg
-from oslo import db
+from oslo.db import options as db_options
 from stevedore import driver
 
 from glance.db.sqlalchemy import api as db_api
@@ -31,7 +31,7 @@ from glance.db.sqlalchemy import api as db_api
 _IMPL = None
 _LOCK = threading.Lock()
 
-db.options.set_defaults(cfg.CONF)
+db_options.set_defaults(cfg.CONF)
 
 
 def get_backend():
