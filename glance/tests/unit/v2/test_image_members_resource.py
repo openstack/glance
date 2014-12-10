@@ -101,6 +101,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
             self.policy,
             self.notifier,
             self.store)
+        glance_store.register_opts(CONF)
         glance_store.create_stores()
 
     def _create_images(self):

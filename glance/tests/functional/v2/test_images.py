@@ -541,7 +541,13 @@ class TestImages(functional.FunctionalTest):
 
     def test_download_policy_when_cache_is_not_enabled(self):
 
-        rules = {'context_is_admin': 'role:admin', 'default': '',
+        rules = {'context_is_admin': 'role:admin',
+                 'default': '',
+                 'add_image': '',
+                 'get_image': '',
+                 'modify_image': '',
+                 'upload_image': '',
+                 'delete_image': '',
                  'download_image': '!'}
         self.set_policy_rules(rules)
         self.start_servers(**self.__dict__.copy())
@@ -602,6 +608,11 @@ class TestImages(functional.FunctionalTest):
         rules = {
             "context_is_admin": "role:admin",
             "default": "",
+            "add_image": "",
+            "get_image": "",
+            "modify_image": "",
+            "upload_image": "",
+            "delete_image": "",
             "restricted":
             "not ('aki':%(container_format)s and role:_member_)",
             "download_image": "role:admin or rule:restricted"
@@ -668,6 +679,12 @@ class TestImages(functional.FunctionalTest):
         rules = {
             "context_is_admin": "role:admin",
             "default": "",
+            "add_image": "",
+            "get_image": "",
+            "modify_image": "",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
             "restricted":
             "not ('aki':%(container_format)s and role:_member_)",
             "download_image": "role:admin or rule:restricted"

@@ -35,6 +35,7 @@ import webob
 from glance.common import config
 from glance.common import exception
 from glance.common import property_utils
+from glance.common import utils
 from glance.common import wsgi
 from glance import context
 from glance.db.sqlalchemy import api as db_api
@@ -56,11 +57,19 @@ class BaseTestCase(testtools.TestCase):
         self.stubs = stubout.StubOutForTesting()
         self.stubs.Set(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
         self.test_dir = self.useFixture(fixtures.TempDir()).path
+        self.conf_dir = os.path.join(self.test_dir, 'etc')
+        utils.safe_mkdirs(self.conf_dir)
+        self.set_policy()
 
     def tearDown(self):
         self.stubs.UnsetAll()
         self.stubs.SmartUnsetAll()
         super(BaseTestCase, self).tearDown()
+
+    def set_policy(self):
+        conf_file = "policy.json"
+        self.policy_file = self._copy_data_file(conf_file, self.conf_dir)
+        self.config(policy_file=self.policy_file)
 
     def set_property_protections(self, use_policies=False):
         self.unset_property_protections()

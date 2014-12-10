@@ -24,6 +24,7 @@ from oslo.utils import timeutils
 
 from glance.common import exception
 from glance import context
+from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests import utils as test_utils
 
@@ -76,6 +77,13 @@ def build_task_fixture(**kwargs):
     }
     task.update(kwargs)
     return task
+
+
+class FunctionalInitWrapper(functional.FunctionalTest):
+
+    def setUp(self):
+        super(FunctionalInitWrapper, self).setUp()
+        self.config(policy_file=self.policy_file)
 
 
 class TestDriver(test_utils.BaseTestCase):

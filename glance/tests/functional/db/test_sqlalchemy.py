@@ -45,7 +45,9 @@ def reset_db_metadef(db_api):
     metadef_models.register_models(db_api.get_engine())
 
 
-class TestSqlAlchemyDriver(base.TestDriver, base.DriverTests):
+class TestSqlAlchemyDriver(base.TestDriver,
+                           base.DriverTests,
+                           base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -74,7 +76,9 @@ class TestSqlAlchemyDriver(base.TestDriver, base.DriverTests):
                           self.context, 'fake_owner_id', image_id)
 
 
-class TestSqlAlchemyVisibility(base.TestVisibility, base.VisibilityTests):
+class TestSqlAlchemyVisibility(base.TestVisibility,
+                               base.VisibilityTests,
+                               base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -83,7 +87,8 @@ class TestSqlAlchemyVisibility(base.TestVisibility, base.VisibilityTests):
 
 
 class TestSqlAlchemyMembershipVisibility(base.TestMembershipVisibility,
-                                         base.MembershipVisibilityTests):
+                                         base.MembershipVisibilityTests,
+                                         base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -91,7 +96,8 @@ class TestSqlAlchemyMembershipVisibility(base.TestMembershipVisibility,
         self.addCleanup(db_tests.reset)
 
 
-class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
+class TestSqlAlchemyDBDataIntegrity(base.TestDriver,
+                                    base.FunctionalInitWrapper):
     """Test class for checking the data integrity in the database.
 
     Helpful in testing scenarios specific to the sqlalchemy api.
@@ -129,7 +135,8 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
         self.db_api.image_get_all(self.context, sort_key='name')
 
 
-class TestSqlAlchemyTask(base.TaskTests):
+class TestSqlAlchemyTask(base.TaskTests,
+                         base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -137,7 +144,8 @@ class TestSqlAlchemyTask(base.TaskTests):
         self.addCleanup(db_tests.reset)
 
 
-class TestSqlAlchemyQuota(base.DriverQuotaTests):
+class TestSqlAlchemyQuota(base.DriverQuotaTests,
+                          base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -146,7 +154,8 @@ class TestSqlAlchemyQuota(base.DriverQuotaTests):
 
 
 class TestMetadefSqlAlchemyDriver(base_metadef.TestMetadefDriver,
-                                  base_metadef.MetadefDriverTests):
+                                  base_metadef.MetadefDriverTests,
+                                  base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db_metadef)
