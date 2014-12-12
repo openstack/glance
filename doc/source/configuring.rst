@@ -565,6 +565,41 @@ If set to True enables multi-tenant storage mode which causes Glance images
 to be stored in tenant specific Swift accounts. When set to False Glance
 stores all images in a single Swift account.
 
+* ``swift_store_multiple_containers_seed``
+
+Optional. Default: ``0``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Swift storage backend.`
+
+When set to 0, a single-tenant store will only use one container to store all
+images. When set to an integer value between 1 and 32, a single-tenant store
+will use multiple containers to store images, and this value will determine
+how many characters from an image UUID are checked when determining what
+container to place the image in. The maximum number of containers that will be
+created is approximately equal to 16^N. This setting is used only when
+swift_store_multi_tentant is disabled.
+
+Example: if this config option is set to 3 and
+swift_store_container = 'glance', then an image with UUID
+'fdae39a1-bac5-4238-aba4-69bcc726e848' would be placed in the container
+'glance_fda'. All dashes in the UUID are included when creating the container
+name but do not count toward the character limit, so in this example with N=10
+the container name would be 'glance_fdae39a1-ba'.
+
+When choosing the value for swift_store_multiple_containers_seed, deployers
+should discuss a suitable value with their swift operations team. The authors
+of this option recommend that large scale deployments use a value of '2',
+which will create a maximum of ~256 containers. Choosing a higher number than
+this, even in extremely large scale deployments, may not have any positive
+impact on performance and could lead to a large number of empty, unused
+containers. The largest of deployments could notice an increase in performance
+if swift rate limits are throttling on single container. Note: If dynamic
+container creation is turned off, any value for this configuration option
+higher than '1' may be unreasonable as the deployer would have to manually
+create each container.
+
 * ``swift_store_admin_tenants``
 
 Can only be specified in configuration files.
