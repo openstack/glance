@@ -470,11 +470,16 @@ class TestSSL(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         versions = {'versions': [{
-            "id": "v2.2",
+            "id": "v2.3",
             "status": "CURRENT",
             "links": [{
                 "rel": "self",
                 "href": "https://127.0.0.1:%d/v2/" % self.api_port}]},
+            {"id": "v2.2",
+             "status": "SUPPORTED",
+             "links": [{
+                 "rel": "self",
+                 "href": "https://127.0.0.1:%d/v2/" % self.api_port}]},
             {"id": "v2.1",
              "status": "SUPPORTED",
              "links": [{
