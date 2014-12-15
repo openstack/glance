@@ -14,9 +14,9 @@
 #    under the License.
 
 import urllib
-import urlparse
 
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.common import wsgi
@@ -187,6 +187,12 @@ class FakeStoreAPI(object):
 
     def check_location_metadata(self, val, key=''):
         glance.store.check_location_metadata(val)
+
+    def validate_external_location(self, uri):
+        if uri and urlparse.urlparse(uri).scheme:
+            return glance.store.validate_external_location(uri)
+        else:
+            return True
 
 
 class FakePolicyEnforcer(object):

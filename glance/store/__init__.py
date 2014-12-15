@@ -19,6 +19,7 @@ import sys
 
 from oslo.config import cfg
 import six
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.common import utils
@@ -421,6 +422,24 @@ def set_acls(context, location_uri, public=False, read_tenants=[],
         LOG.debug(_("Skipping store.set_acls... not implemented."))
 
 
+def validate_external_location(uri):
+    """
+    Validate if URI of external location are supported.
+
+    Only over non-local store types are OK, i.e. S3, Swift,
+    HTTP. Note the absence of 'file://' for security reasons,
+    see LP bug #942118, 1400966, 'swift+config://' is also
+    absent for security reasons, see LP bug #1334196.
+
+    :param uri: The URI of external image location.
+    :return: Whether given URI of external image location are OK.
+    """
+    pieces = urlparse.urlparse(uri)
+    valid_schemes = [scheme for scheme in get_known_schemes()
+                     if scheme != 'file' and scheme != 'swift+config']
+    return pieces.scheme in valid_schemes
+
+
 class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, image_repo, context, store_api):
@@ -453,22 +472,23 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
 
 def _check_location_uri(context, store_api, uri):
-    """
-    Check if an image location uri is valid.
+    """Check if an image location is valid.
 
     :param context: Glance request context
     :param store_api: store API module
     :param uri: location's uri string
     """
+
     is_ok = True
     try:
-        size = store_api.get_size_from_backend(context, uri)
         # NOTE(zhiyan): Some stores return zero when it catch exception
-        is_ok = size > 0
+        is_ok = (store_api.validate_external_location(uri) and
+                 store_api.get_size_from_backend(context, uri) > 0)
     except (exception.UnknownScheme, exception.NotFound):
         is_ok = False
     if not is_ok:
-        raise exception.BadStoreUri(_('Invalid location: %s') % uri)
+        reason = _('Invalid location')
+        raise exception.BadStoreUri(message=reason)
 
 
 def _check_image_location(context, store_api, location):

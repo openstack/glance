@@ -21,7 +21,6 @@ import copy
 
 import eventlet
 from oslo.config import cfg
-import six.moves.urllib.parse as urlparse
 from webob.exc import HTTPBadRequest
 from webob.exc import HTTPConflict
 from webob.exc import HTTPForbidden
@@ -48,6 +47,7 @@ from glance.store import get_known_schemes
 from glance.store import get_size_from_backend
 from glance.store import get_store_from_location
 from glance.store import get_store_from_scheme
+from glance.store import validate_external_location
 
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
@@ -404,23 +404,19 @@ class Controller(controller.BaseController):
     @staticmethod
     def _validate_source(source, req):
         """
-        External sources (as specified via the location or copy-from headers)
-        are supported only over non-local store types, i.e. S3, Swift, HTTP.
-        Note the absence of file:// for security reasons, see LP bug #942118.
-        If the above constraint is violated, we reject with 400 "Bad Request".
+        To validate if external sources (as specified via the location
+        or copy-from headers) are supported. Otherwise we reject
+        with 400 "Bad Request".
         """
         if source:
-            pieces = urlparse.urlparse(source)
-            schemes = [scheme for scheme in get_known_schemes()
-                       if scheme != 'file']
-            for scheme in schemes:
-                if pieces.scheme == scheme:
-                    return source
-            msg = _("External sourcing not supported for store %s") % source
-            LOG.debug(msg)
-            raise HTTPBadRequest(explanation=msg,
-                                 request=req,
-                                 content_type="text/plain")
+            if validate_external_location(source):
+                return source
+            else:
+                msg = _("External source are not supported: '%s'") % source
+                LOG.debug(msg)
+                raise HTTPBadRequest(explanation=msg,
+                                     request=req,
+                                     content_type="text/plain")
 
     @staticmethod
     def _copy_from(req):

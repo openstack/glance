@@ -24,6 +24,7 @@ import glance.store.s3
 import glance.store.swift
 import glance.store.vmware_datastore
 from glance.tests.unit import base
+from glance.tests.unit import utils
 
 
 class TestStoreLocation(base.StoreClearingUnitTest):
@@ -488,11 +489,14 @@ class TestStoreLocation(base.StoreClearingUnitTest):
                               ctx,
                               store)
 
+    class FakeImageProxy(object):
+        size = None
+        context = None
+
+        def __init__(self, store_api):
+            self.store_api = store_api
+
     def test_add_location_for_image_without_size(self):
-        class FakeImageProxy():
-            size = None
-            context = None
-            store_api = mock.Mock()
 
         def fake_get_size_from_backend(context, uri):
             return 1
@@ -504,14 +508,31 @@ class TestStoreLocation(base.StoreClearingUnitTest):
             loc2 = {'url': 'file:///fake2.img.tar.gz', 'metadata': {}}
 
             # Test for insert location
-            image1 = FakeImageProxy()
+            image1 = TestStoreLocation.FakeImageProxy(mock.Mock())
             locations = glance.store.StoreLocations(image1, [])
             locations.insert(0, loc2)
             self.assertEqual(image1.size, 1)
 
             # Test for set_attr of _locations_proxy
-            image2 = FakeImageProxy()
+            image2 = TestStoreLocation.FakeImageProxy(mock.Mock())
             locations = glance.store.StoreLocations(image2, [loc1])
             locations[0] = loc2
             self.assertTrue(loc2 in locations)
             self.assertEqual(image2.size, 1)
+
+    def test_add_location_with_restricted_sources(self):
+
+        loc1 = {'url': 'file:///fake1.img.tar.gz', 'metadata': {}}
+        loc2 = {'url': 'swift+config:///xxx', 'metadata': {}}
+
+        # Test for insert location
+        image1 = TestStoreLocation.FakeImageProxy(utils.FakeStoreAPI())
+        locations = glance.store.StoreLocations(image1, [])
+        self.assertRaises(exception.BadStoreUri, locations.insert, 0, loc1)
+        self.assertNotIn(loc1, locations)
+
+        # Test for set_attr of _locations_proxy
+        image2 = TestStoreLocation.FakeImageProxy(utils.FakeStoreAPI())
+        locations = glance.store.StoreLocations(image2, [loc1])
+        self.assertRaises(exception.BadStoreUri, locations.insert, 0, loc2)
+        self.assertNotIn(loc2, locations)
