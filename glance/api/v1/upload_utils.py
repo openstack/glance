@@ -159,8 +159,8 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                         from_state='saving')
 
         except exception.NotFound as e:
-            msg = _LI("Image %s could not be found after upload. The image may"
-                      " have been deleted during the upload.") % image_id
+            msg = _("Image %s could not be found after upload. The image may"
+                    " have been deleted during the upload.") % image_id
             LOG.info(msg)
 
             # NOTE(jculp): we need to clean up the datastore if an image
@@ -184,8 +184,9 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                  content_type='text/plain')
 
     except exception.Duplicate as e:
-        msg = u"Attempt to upload duplicate image: %s" % e
-        LOG.debug(msg)
+        msg = (_("Attempt to upload duplicate image: %s") %
+               utils.exception_to_str(e))
+        LOG.warn(msg)
         # NOTE(dosaboy): do not delete the image since it is likely that this
         # conflict is a result of another concurrent upload that will be
         # successful.
@@ -195,8 +196,9 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                      content_type="text/plain")
 
     except exception.Forbidden as e:
-        msg = u"Forbidden upload attempt: %s" % e
-        LOG.debug(msg)
+        msg = (_("Forbidden upload attempt: %s") %
+               utils.exception_to_str(e))
+        LOG.warn(msg)
         safe_kill(req, image_id, 'saving')
         notifier.error('image.upload', msg)
         raise webob.exc.HTTPForbidden(explanation=msg,

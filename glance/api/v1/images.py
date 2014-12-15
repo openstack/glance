@@ -425,7 +425,7 @@ class Controller(controller.BaseController):
                 return source
             else:
                 msg = _("External source are not supported: '%s'") % source
-                LOG.debug(msg)
+                LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,
                                      content_type="text/plain")
@@ -514,8 +514,8 @@ class Controller(controller.BaseController):
         location = self._external_source(image_meta, req)
         scheme = image_meta.get('store')
         if scheme and scheme not in store.get_known_schemes():
-            msg = "Required store %s is invalid" % scheme
-            LOG.debug(msg)
+            msg = _("Required store %s is invalid") % scheme
+            LOG.warn(msg)
             raise HTTPBadRequest(explanation=msg,
                                  content_type='text/plain')
 
@@ -526,8 +526,8 @@ class Controller(controller.BaseController):
             try:
                 backend = store.get_store_from_location(location)
             except store.BadStoreUri:
-                msg = "Invalid location %s" % location
-                LOG.debug(msg)
+                msg = _("Invalid location %s") % location
+                LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,
                                      content_type="text/plain")
@@ -549,9 +549,9 @@ class Controller(controller.BaseController):
             self.notifier.info("image.create", redact_loc(image_meta))
             return image_meta
         except exception.Duplicate:
-            msg = ("An image with identifier %s already exists" %
+            msg = (_("An image with identifier %s already exists") %
                    image_meta['id'])
-            LOG.debug(msg)
+            LOG.warn(msg)
             raise HTTPConflict(explanation=msg,
                                request=req,
                                content_type="text/plain")
@@ -563,8 +563,8 @@ class Controller(controller.BaseController):
                                  request=req,
                                  content_type="text/plain")
         except exception.Forbidden:
-            msg = "Forbidden to reserve image."
-            LOG.debug(msg)
+            msg = _("Forbidden to reserve image.")
+            LOG.warn(msg)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
@@ -607,8 +607,8 @@ class Controller(controller.BaseController):
                 req.get_content_type(('application/octet-stream',))
             except exception.InvalidContentType:
                 upload_utils.safe_kill(req, image_meta['id'], 'queued')
-                msg = "Content-Type must be application/octet-stream"
-                LOG.debug(msg)
+                msg = _("Content-Type must be application/octet-stream")
+                LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg)
 
             image_data = req.body_file
@@ -663,9 +663,9 @@ class Controller(controller.BaseController):
                           {'id': image_id, 'location': image_meta['location']})
                 upload_utils.initiate_deletion(req, location_data, image_id)
         except exception.Invalid as e:
-            msg = ("Failed to activate image. Got error: %s" %
+            msg = (_("Failed to activate image. Got error: %s") %
                    utils.exception_to_str(e))
-            LOG.debug(msg)
+            LOG.warn(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -723,8 +723,8 @@ class Controller(controller.BaseController):
         location = image_meta.get('location')
         sources = filter(lambda x: x, (copy_from, location, image_data))
         if len(sources) >= 2:
-            msg = "It's invalid to provide multiple image sources."
-            LOG.debug(msg)
+            msg = _("It's invalid to provide multiple image sources.")
+            LOG.warn(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
@@ -925,8 +925,8 @@ class Controller(controller.BaseController):
                 self.update_store_acls(req, id, orig_or_updated_loc,
                                        public=is_public)
             except store.BadStoreUri:
-                msg = "Invalid location %s" % location
-                LOG.debug(msg)
+                msg = _("Invalid location %s") % location
+                LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,
                                      content_type="text/plain")
@@ -972,31 +972,29 @@ class Controller(controller.BaseController):
                                                  image_data)
 
         except exception.Invalid as e:
-            msg = ("Failed to update image metadata. Got error: %s" %
+            msg = (_("Failed to update image metadata. Got error: %s") %
                    utils.exception_to_str(e))
-            LOG.debug(msg)
+            LOG.warn(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
         except exception.NotFound as e:
-            msg = _("Failed to find image to update: %s")
-            lmsg = "Failed to find image to update: %s"
-            e_str = utils.exception_to_str(e)
-            LOG.debug(lmsg % e_str)
-            raise HTTPNotFound(explanation=msg % e_str,
+            msg = (_("Failed to find image to update: %s") %
+                   utils.exception_to_str(e))
+            LOG.warn(msg)
+            raise HTTPNotFound(explanation=msg,
                                request=req,
                                content_type="text/plain")
         except exception.Forbidden as e:
-            msg = _("Forbidden to update image: %s")
-            lmsg = "Forbidden to update image: %s"
-            e_str = utils.exception_to_str(e)
-            LOG.debug(lmsg % e_str)
-            raise HTTPForbidden(explanation=msg % e_str,
+            msg = (_("Forbidden to update image: %s") %
+                   utils.exception_to_str(e))
+            LOG.warn(msg)
+            raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
         except (exception.Conflict, exception.Duplicate) as e:
             LOG.warn(utils.exception_to_str(e))
-            raise HTTPConflict(body='Image operation conflicts',
+            raise HTTPConflict(body=_('Image operation conflicts'),
                                request=req,
                                content_type='text/plain')
         else:
@@ -1027,20 +1025,22 @@ class Controller(controller.BaseController):
 
         image = self.get_image_meta_or_404(req, id)
         if image['protected']:
-            msg = "Image is protected"
-            LOG.debug(msg)
+            msg = _("Image is protected")
+            LOG.warn(msg)
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
 
         if image['status'] == 'pending_delete':
-            msg = "Forbidden to delete a %s image." % image['status']
-            LOG.debug(msg)
-            raise HTTPForbidden(explanation=msg, request=req,
+            msg = (_("Forbidden to delete a %s image.") %
+                   image['status'])
+            LOG.warn(msg)
+            raise HTTPForbidden(explanation=msg,
+                                request=req,
                                 content_type="text/plain")
         elif image['status'] == 'deleted':
-            msg = "Image %s not found." % id
-            LOG.debug(msg)
+            msg = _("Image %s not found.") % id
+            LOG.warn(msg)
             raise HTTPNotFound(explanation=msg, request=req,
                                content_type="text/plain")
 
@@ -1111,8 +1111,8 @@ class Controller(controller.BaseController):
         try:
             return store.get_store_from_scheme(scheme)
         except store.UnknownScheme:
-            msg = "Store for scheme %s not found" % scheme
-            LOG.debug(msg)
+            msg = _("Store for scheme %s not found") % scheme
+            LOG.warn(msg)
             raise HTTPBadRequest(explanation=msg,
                                  request=request,
                                  content_type='text/plain')
