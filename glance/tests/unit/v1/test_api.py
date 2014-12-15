@@ -2622,6 +2622,21 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                               image_controller.show,
                               request, mocked_get_image)
 
+    @mock.patch('glance_store._drivers.filesystem.Store.get')
+    def test_show_image_store_get_not_support(self, m_get):
+        m_get.side_effect = store.StoreGetNotSupported()
+        req = webob.Request.blank("/images/%s" % UUID2)
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    @mock.patch('glance_store._drivers.filesystem.Store.get')
+    def test_show_image_store_random_get_not_support(self, m_get):
+        m_get.side_effect = store.StoreRandomGetNotSupported(chunk_size=0,
+                                                             offset=0)
+        req = webob.Request.blank("/images/%s" % UUID2)
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
     def test_delete_image(self):
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'

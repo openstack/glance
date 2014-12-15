@@ -458,6 +458,9 @@ class Controller(controller.BaseController):
             raise HTTPServiceUnavailable(explanation=e.msg)
         except store.NotFound as e:
             raise HTTPNotFound(explanation=e.msg)
+        except (store.StoreGetNotSupported,
+                store.StoreRandomGetNotSupported) as e:
+            raise HTTPBadRequest(explanation=e.msg)
         image_size = int(image_size) if image_size else None
         return image_data, image_size
 
