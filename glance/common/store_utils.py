@@ -16,6 +16,7 @@ import sys
 
 import glance_store as store_api
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 
 from glance.common import utils
 import glance.db as db_api
@@ -119,3 +120,24 @@ def delete_image_location_from_backend(context, image_id, location):
         # such as uploading process failure then we can't use
         # location status mechanism to support image pending delete.
         safe_delete_from_backend(context, image_id, location)
+
+
+def validate_external_location(uri):
+    """
+    Validate if URI of external location are supported.
+
+    Only over non-local store types are OK, i.e. S3, Swift,
+    HTTP. Note the absence of 'file://' for security reasons,
+    see LP bug #942118, 1400966, 'swift+config://' is also
+    absent for security reasons, see LP bug #1334196.
+
+    :param uri: The URI of external image location.
+    :return: Whether given URI of external image location are OK.
+    """
+
+    # TODO(zhiyan): This function could be moved to glance_store.
+
+    pieces = urlparse.urlparse(uri)
+    valid_schemes = [scheme for scheme in store_api.get_known_schemes()
+                     if scheme != 'file' and scheme != 'swift+config']
+    return pieces.scheme in valid_schemes

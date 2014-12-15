@@ -418,7 +418,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
-        self.assertIn('External sourcing not supported', res.body)
+        self.assertIn('External source are not supported', res.body)
 
     def test_create_with_location_bad_store_uri(self):
         fixture_headers = {
@@ -1005,7 +1005,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             res = req.get_response(self.api)
             self.assertEqual(res.status_int, 409)
 
-    def test_add_location_with_invalid_location(self):
+    def test_add_location_with_invalid_location_on_conflict_image_size(self):
         """Tests creates an image from location and conflict image size"""
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
@@ -1013,6 +1013,36 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F',
                            'x-image-meta-size': '1'}
+
+        req = webob.Request.blank("/images")
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_add_location_with_invalid_location_on_restricted_sources(self):
+        """Tests creates an image from location and restricted sources"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-location': 'file:///etc/passwd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
+
+        req = webob.Request.blank("/images")
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.method = 'POST'
+        for k, v in fixture_headers.iteritems():
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-location': 'swift+config://xxx',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
 
         req = webob.Request.blank("/images")
         req.headers['Content-Type'] = 'application/octet-stream'
@@ -1030,6 +1060,34 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F',
                            'x-image-meta-location': 'http://a/b/c.tar.gz'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_add_copy_from_with_restricted_sources(self):
+        """Tests creates an image from copy-from with restricted sources"""
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-glance-api-copy-from': 'file:///etc/passwd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-glance-api-copy-from': 'swift+config://xxx',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
