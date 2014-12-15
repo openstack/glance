@@ -15,6 +15,7 @@
 
 """Common utilities used in testing"""
 
+import BaseHTTPServer
 import errno
 import functools
 import os
@@ -411,6 +412,41 @@ def minimal_add_command(port, name, suffix='', public=True):
     return ("bin/glance --port=%d add %s"
             " disk_format=raw container_format=ovf"
             " name=%s %s" % (port, visibility, name, suffix))
+
+
+def start_http_server(image_id, image_data):
+    def _get_http_handler_class(fixture):
+        class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.send_header('Content-Length', str(len(fixture)))
+                self.end_headers()
+                self.wfile.write(fixture)
+                return
+
+            def do_HEAD(self):
+                self.send_response(200)
+                self.send_header('Content-Length', str(len(fixture)))
+                self.end_headers()
+                return
+
+            def log_message(self, *args, **kwargs):
+                # Override this method to prevent debug output from going
+                # to stderr during testing
+                return
+
+        return StaticHTTPRequestHandler
+
+    server_address = ('127.0.0.1', 0)
+    handler_class = _get_http_handler_class(image_data)
+    httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
+    port = httpd.socket.getsockname()[1]
+
+    pid = os.fork()
+    if pid == 0:
+        httpd.serve_forever()
+    else:
+        return pid, port
 
 
 class RegistryAPIMixIn(object):
