@@ -91,6 +91,12 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
     image_size = image_meta.get('size')
 
     try:
+        # By default image_data will be passed as CooperativeReader object.
+        # But if 'user_storage_quota' is enabled and 'remaining' is not None
+        # then it will be passed as object of LimitingReader to
+        # 'store_add_to_backend' method.
+        image_data = utils.CooperativeReader(image_data)
+
         remaining = glance.api.common.check_quota(
             req.context, image_size, db_api, image_id=image_id)
         if remaining is not None:
@@ -101,7 +107,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
          checksum,
          location_metadata) = store_api.store_add_to_backend(
              image_meta['id'],
-             utils.CooperativeReader(image_data),
+             image_data,
              image_meta['size'],
              store,
              context=req.context)
