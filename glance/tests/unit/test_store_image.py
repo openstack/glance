@@ -17,6 +17,7 @@ import mox
 
 from glance.common import exception
 import glance.location
+from glance.tests.unit import base as unit_test_base
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils
 
@@ -759,7 +760,7 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.assertEqual([TENANT2], acls['read'])
 
 
-class TestImageFactory(utils.BaseTestCase):
+class TestImageFactory(unit_test_base.StoreClearingUnitTest):
 
     def setUp(self):
         super(TestImageFactory, self).setUp()
