@@ -17,6 +17,7 @@ __all__ = [
     'run',
 ]
 
+from oslo.concurrency import lockutils
 from oslo.utils import excutils
 import six
 
@@ -26,7 +27,6 @@ from glance.common.scripts import utils as script_utils
 from glance.common import store_utils
 from glance.common import utils as common_utils
 from glance import i18n
-from glance.openstack.common import lockutils
 import glance.openstack.common.log as logging
 
 

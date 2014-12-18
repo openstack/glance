@@ -34,7 +34,6 @@ import glance.common.wsgi
 import glance.image_cache
 import glance.image_cache.drivers.sqlite
 import glance.notifier
-import glance.openstack.common.lockutils
 import glance.openstack.common.log
 import glance.openstack.common.policy
 import glance.registry
@@ -65,7 +64,6 @@ _api_opts = [
         glance.registry.client.registry_client_ctx_opts,
         glance.registry.client.registry_client_opts,
         glance.registry.client.v1.api.registry_client_ctx_opts,
-        glance.openstack.common.lockutils.util_opts,
         glance.openstack.common.policy.policy_opts,
         glance.scrubber.scrubber_opts])))),
     ('image_format', glance.common.config.image_format_opts),
@@ -87,7 +85,6 @@ _registry_opts = [
 _scrubber_opts = [
     (None, list(itertools.chain(*(_global_opt_lists + [
         glance.common.config.common_opts,
-        glance.openstack.common.lockutils.util_opts,
         glance.openstack.common.policy.policy_opts,
         glance.scrubber.scrubber_opts,
         glance.scrubber.scrubber_cmd_opts,

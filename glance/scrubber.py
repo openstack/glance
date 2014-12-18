@@ -19,6 +19,7 @@ import os
 import time
 
 import eventlet
+from oslo.concurrency import lockutils
 from oslo.config import cfg
 import six
 
@@ -28,7 +29,6 @@ from glance.common import utils
 from glance import context
 import glance.db as db_api
 from glance import i18n
-from glance.openstack.common import lockutils
 import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
