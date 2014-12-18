@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-21 06:05+0000\n"
-"PO-Revision-Date: 2014-11-13 09:34+0000\n"
-"Last-Translator: Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>\n"
+"POT-Creation-Date: 2014-12-18 06:06+0000\n"
+"PO-Revision-Date: 2014-12-10 14:35+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "glance/language/pt_BR/)\n"
 "Language: pt_BR\n"
@@ -20,17 +20,40 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: glance/scrubber.py:217
+#: glance/scrubber.py:218
 #, python-format
 msgid "Failed to find image to delete: %s"
 msgstr "Falha ao encontrar imagem para excluir: %s"
 
-#: glance/scrubber.py:582
+#: glance/scrubber.py:258
+#, python-format
+msgid "%s directory does not exist."
+msgstr "Diretório %s não existe."
+
+#: glance/scrubber.py:583
 #, python-format
 msgid "Unable to delete URI from image %s."
 msgstr "Não foi possível excluir URI da imagem %s."
 
-#: glance/api/v1/images.py:707
+#: glance/api/common.py:167
+#, python-format
+msgid ""
+"User %(user)s attempted to upload an image of unknown size that will exceed "
+"the quota. %(remaining)d bytes remaining."
+msgstr ""
+
+#: glance/api/common.py:176
+#, python-format
+msgid ""
+"User %(user)s attempted to upload an image of size %(size)d that will exceed "
+"the quota. %(remaining)d bytes remaining."
+msgstr ""
+
+#: glance/api/middleware/version_negotiation.py:67
+msgid "Unknown version. Returning version choices."
+msgstr "Versão desconhecida. Retornando opções de versão."
+
+#: glance/api/v1/images.py:700
 #, python-format
 msgid ""
 "Failed to activate image %s in registry. About to delete image bits from "
@@ -39,7 +62,7 @@ msgstr ""
 "Falha ao ativar imagem %s no registro. Prestes a excluir bits de imagem do "
 "armazenamento e atualizar status para 'encerrado'."
 
-#: glance/api/v2/images.py:854
+#: glance/api/v2/images.py:860
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
@@ -48,35 +71,96 @@ msgstr ""
 "Não foi possível localizar o arquivo de propriedades de esquema %s. "
 "Continuando sem propriedades customizadas"
 
-#: glance/common/store_utils.py:62
+#: glance/api/v2/tasks.py:72
+#, python-format
+msgid "Forbidden to create task. Reason: %(reason)s"
+msgstr "Proibido criar tarefa. Razão: %(reason)s"
+
+#: glance/api/v2/tasks.py:110
+#, python-format
+msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
+msgstr "Falha ao encontrar tarefa %(task_id)s. Razão: %(reason)s"
+
+#: glance/api/v2/tasks.py:115
+#, python-format
+msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
+msgstr "Proibido obter tarefa %(task_id)s. Razão: %(reason)s"
+
+#: glance/cmd/replicator.py:562
+#, python-format
+msgid ""
+"%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
+"is %(slave_value)s)"
+msgstr ""
+"%(image_id)s: campo %(key)s difere (origem é %(master_value)s, destino é "
+"%(slave_value)s)"
+
+#: glance/cmd/replicator.py:575
+#, python-format
+msgid "Image %s entirely missing from the destination"
+msgstr "Imagem %s faltando inteiramente no destino"
+
+#: glance/common/store_utils.py:63
 #, python-format
 msgid "Failed to delete image %s in store from URI"
 msgstr "Falha ao excluir imagem %s no armazenamento da URI"
 
-#: glance/common/scripts/image_import/main.py:157
+#: glance/common/scripts/image_import/main.py:158
 #, python-format
 msgid "Task %(task_id)s failed with exception %(error)s"
 msgstr "Tarefa %(task_id)s falhou com exceção %(error)s"
 
-#: glance/db/sqlalchemy/api.py:71
+#: glance/db/simple/api.py:355
+#, python-format
+msgid "Could not find image %s"
+msgstr "Não foi possível localizar a imagem %s"
+
+#: glance/db/simple/api.py:359
+msgid "Unable to get deleted image"
+msgstr "Não é possível obter a imagem excluída"
+
+#: glance/db/simple/api.py:363
+msgid "Unable to get unowned image"
+msgstr "Não é possível obter a imagem não possuída"
+
+#: glance/db/simple/api.py:870
+#, python-format
+msgid "Could not find task %s"
+msgstr ""
+
+#: glance/db/simple/api.py:875
+#, python-format
+msgid "Unable to get deleted task %s"
+msgstr ""
+
+#: glance/db/simple/api.py:1037
+#, python-format
+msgid "Could not find task info %s"
+msgstr ""
+
+#: glance/db/sqlalchemy/api.py:73
 msgid "Deadlock detected. Retrying..."
 msgstr "Conflito detectado. Tentando novamente..."
 
-#: glance/db/sqlalchemy/api.py:321
+#: glance/db/sqlalchemy/api.py:113
+msgid "Attempted to modify image user did not own."
+msgstr "Tentou modificar o usuário da imagem não de sua propriedade."
+
+#: glance/db/sqlalchemy/api.py:323
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr "ID não em sort_keys; sort_keys é exclusivo?"
 
-#: glance/db/sqlalchemy/metadata.py:239
+#: glance/db/sqlalchemy/metadata.py:240
 #, python-format
 msgid "Duplicate entry for values: %s"
 msgstr "Entrada duplicada para valores: %s"
 
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:91
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:92
 #, python-format
 msgid "Failed to decrypt location value for image %(image_id)s"
 msgstr "Falha ao descriptografar valor do local para imagem %(image_id)s"
 
-#: glance/image_cache/__init__.py:71
+#: glance/image_cache/__init__.py:72
 #, python-format
 msgid ""
 "Image cache driver '%(driver_name)s' failed to load. Got error: "
@@ -85,7 +169,7 @@ msgstr ""
 "O driver de cache de imagem '%(driver_name)s' falhou ao ser carregado. Erro "
 "obtido: '%(import_err)s."
 
-#: glance/image_cache/__init__.py:92
+#: glance/image_cache/__init__.py:93
 #, python-format
 msgid ""
 "Image cache driver '%(driver_module)s' failed to configure. Got error: "
@@ -108,13 +192,56 @@ msgstr "Nenhum metadado localizado para a imagem '%s'"
 msgid "Failed to successfully cache all images in queue."
 msgstr "Falha ao armazenar em cache com êxito todas as imagens da fila."
 
-#: glance/image_cache/drivers/sqlite.py:458
+#: glance/image_cache/drivers/sqlite.py:333
+#, python-format
+msgid ""
+"Fetch of cache file failed (%(e)s), rolling back by moving "
+"'%(incomplete_path)s' to '%(invalid_path)s'"
+msgstr ""
+"Falha na busca do arquivo de cache (%(e)s), recuperando ao mover "
+"'%(incomplete_path)s' para '%(invalid_path)s'"
+
+#: glance/image_cache/drivers/sqlite.py:459
 #, python-format
 msgid "Failed to delete file %(path)s. Got error: %(e)s"
 msgstr "Falha ao excluir arquivo %(path)s. Erro recebido: %(e)s"
 
-#: glance/image_cache/drivers/sqlite.py:495
+#: glance/image_cache/drivers/sqlite.py:496
 #: glance/image_cache/drivers/xattr.py:446
 #, python-format
 msgid "Cached image file '%s' doesn't exist, unable to delete"
 msgstr "O arquivo de imagem em cache '%s' não existe; não é possível excluir"
+
+#: glance/openstack/common/policy.py:262
+#, python-format
+msgid "Can not find policy directory: %s"
+msgstr ""
+
+#: glance/registry/api/v1/images.py:126
+#, python-format
+msgid "Invalid marker. Image %(id)s could not be found."
+msgstr "Marcador Inválido. Imagem %(id)s não pôde ser encontrada."
+
+#: glance/registry/api/v1/images.py:131 glance/registry/api/v1/members.py:76
+#: glance/registry/api/v1/members.py:111 glance/registry/api/v1/members.py:229
+#: glance/registry/api/v1/members.py:293
+#, python-format
+msgid "Access denied to image %(id)s but returning 'not found'"
+msgstr "Acesso negado à imagem %(id)s, mas retornando 'não localizado'"
+
+#: glance/registry/api/v1/members.py:118 glance/registry/api/v1/members.py:236
+#: glance/registry/api/v1/members.py:300
+#, python-format
+msgid "User lacks permission to share image %(id)s"
+msgstr "O usuário não tem permissão para compartilhar a imagem %(id)s"
+
+#: glance/registry/api/v1/members.py:129 glance/registry/api/v1/members.py:146
+#: glance/registry/api/v1/members.py:249
+#, python-format
+msgid "Invalid membership association specified for image %(id)s"
+msgstr "Associação de membro inválida especificada para a imagem %(id)s"
+
+#: glance/registry/api/v1/members.py:339
+#, python-format
+msgid "Member %(id)s not found"
+msgstr "Membro %(id)s não localizado"

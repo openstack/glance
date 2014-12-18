@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-21 06:05+0000\n"
-"PO-Revision-Date: 2014-11-03 10:00+0000\n"
+"POT-Creation-Date: 2014-12-18 06:06+0000\n"
+"PO-Revision-Date: 2014-12-10 14:52+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/glance/language/"
 "fr/)\n"
@@ -20,34 +20,34 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: glance/location.py:390
+#: glance/location.py:403
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for image %s but all have "
 "failed."
 msgstr ""
 
-#: glance/scrubber.py:167
+#: glance/scrubber.py:168
 #, python-format
 msgid "%s file can not be read."
 msgstr "Le fichier %s ne peut pas etre lu."
 
-#: glance/scrubber.py:190
+#: glance/scrubber.py:191
 #, python-format
 msgid "%s file can not be wrote."
 msgstr "Le fichier %s ne peut pas etre écrit."
 
-#: glance/scrubber.py:516
+#: glance/scrubber.py:517
 #, python-format
 msgid "Can not %(op)s scrub jobs from queue: %(err)s"
 msgstr ""
 
-#: glance/scrubber.py:617
+#: glance/scrubber.py:618
 #, python-format
 msgid "%s file can not be created."
 msgstr "Le fichier %s ne peut pas etre créé"
 
-#: glance/api/common.py:53
+#: glance/api/common.py:54
 #, python-format
 msgid ""
 "An error occurred reading from backend storage for image %(image_id)s: "
@@ -56,7 +56,7 @@ msgstr ""
 "Une erreur s'est produite pendant le stockage backend de l'image "
 "%(image_id)s : %(err)s "
 
-#: glance/api/common.py:59
+#: glance/api/common.py:60
 #, python-format
 msgid ""
 "Backend storage for image %(image_id)s disconnected after writing only "
@@ -65,15 +65,15 @@ msgstr ""
 "Le stockage d'arrière plan pour l'image %(image_id)s s'est déconnecté après "
 "l'écriture de seulement %(bytes_written)d octets "
 
-#: glance/api/common.py:90
+#: glance/api/common.py:91
 #, python-format
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr "Une erreur s'est produite lors de la notification image.send : %(err)s"
 
-#: glance/api/common.py:118
+#: glance/api/common.py:119
 #, python-format
 msgid "Invalid value for option user_storage_quota: %(users_quota)s"
-msgstr ""
+msgstr "Valeur invalide pour l'option user_storage_quota: %(users_quota)s"
 
 #: glance/api/middleware/cache.py:169
 #, python-format
@@ -93,47 +93,41 @@ msgstr "impossible de trouver %s"
 msgid "Checksum header is missing."
 msgstr "L'en-tête de total de contrôle est manquant."
 
-#: glance/api/v1/images.py:606
+#: glance/api/v1/images.py:599
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr ""
 "Echec de copie depuis la source externe '%(scheme)s' pour l'image: %(image)s"
 
-#: glance/api/v1/upload_utils.py:77
+#: glance/api/v1/upload_utils.py:79
 #, python-format
 msgid "Unable to kill image %(id)s: "
 msgstr "Impossible de supprimer l'image %(id)s :"
 
-#: glance/api/v1/upload_utils.py:248
+#: glance/api/v1/upload_utils.py:251
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr "Une erreur HTTP a été reçu lors du chargement de l'image %s"
 
-#: glance/api/v2/image_data.py:59
+#: glance/api/v2/image_data.py:60
 #, python-format
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr "Impossible de restaurer l'image %(image_id)s: %(e)s"
 
-#: glance/api/v2/image_data.py:155
+#: glance/api/v2/image_data.py:157
 msgid "Failed to upload image data due to HTTP error"
 msgstr ""
 "Echec de téléchargement des données de l'image en raison d'une erreur HTTP"
 
-#: glance/api/v2/image_data.py:160
+#: glance/api/v2/image_data.py:162
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 "Echec de téléchargement des données de l'image en raison d'une erreur interne"
 
-#: glance/api/v2/metadef_namespaces.py:188
+#: glance/api/v2/metadef_namespaces.py:189
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr "Echec lors de la suppresion du namespace %(namespace)s"
-
-#: glance/api/v2/metadef_resource_types.py:125
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:128
-#, python-format
-msgid "Failed to find resource type %(resourcetype)s to delete"
-msgstr "Echec pour trouver le type de ressource %(resourcetype)s a supprimer"
 
 #: glance/async/__init__.py:67
 msgid ""
@@ -145,7 +139,7 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr "Erreur interne s'est produite lors du traitement de la tâche ."
 
-#: glance/common/store_utils.py:68
+#: glance/common/store_utils.py:69
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr "Echec de supprésion de l'image %(image_id)s depuis le magasin: %(exc)s"
@@ -163,35 +157,35 @@ msgstr ""
 msgid "Failed to save task %(task_id)s in DB as task_repo is %(task_repo)s"
 msgstr ""
 
-#: glance/common/scripts/utils.py:46
+#: glance/common/scripts/utils.py:47
 #, python-format
 msgid "Task not found for task_id %s"
 msgstr "Tache non trouvé pour  task_id %s"
 
-#: glance/db/sqlalchemy/metadata.py:128
+#: glance/db/sqlalchemy/metadata.py:129
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
-msgstr ""
+msgstr "Fichier du schéma Json non trouvé dans %s. Abandon."
 
-#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:62
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:96
+#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:63
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:97
 #, python-format
 msgid "Invalid store uri for image: %(image_id)s. Details: %(reason)s"
 msgstr "uri magasin non valide pour image: %(image_id)s. Details: %(reason)s"
 
-#: glance/domain/__init__.py:472
+#: glance/domain/__init__.py:474
 #, python-format
 msgid "Failed to load the %s executor provided in the config."
 msgstr ""
 
-#: glance/image_cache/__init__.py:268
+#: glance/image_cache/__init__.py:269
 #, python-format
 msgid ""
 "Exception encountered while tee'ing image '%(image_id)s' into cache: "
 "%(error)s. Continuing with response."
 msgstr ""
 
-#: glance/image_cache/drivers/sqlite.py:397
+#: glance/image_cache/drivers/sqlite.py:398
 #, python-format
 msgid "Error executing SQLite call. Got error: %s"
 msgstr "Erreur lors de l'exécution de l'appel SQLite. Erreur obtenue : %s"
@@ -214,31 +208,46 @@ msgstr ""
 msgid "Could not release the acquired lock `%s`"
 msgstr "Impossible de libérer le verrou acquis `%s`"
 
-#: glance/registry/api/v1/images.py:134
+#: glance/openstack/common/policy.py:550 glance/openstack/common/policy.py:830
+#, python-format
+msgid "Failed to understand rule %s"
+msgstr "Échec de compréhension de la règle %s"
+
+#: glance/openstack/common/policy.py:560
+#, python-format
+msgid "No handler for matches of kind %s"
+msgstr "Aucun gestionnaire pour ce type de correspondance %s"
+
+#: glance/registry/api/v1/images.py:136
 msgid "Unable to get images"
 msgstr "Impossible d'obtenir les images."
 
-#: glance/registry/api/v1/images.py:352
+#: glance/registry/api/v1/images.py:354
 #, python-format
 msgid "Unable to show image %s"
 msgstr "Impossible d'afficher l'image %s"
 
-#: glance/registry/api/v1/images.py:388
+#: glance/registry/api/v1/images.py:390
 #, python-format
 msgid "Unable to delete image %s"
 msgstr "Impossible de supprimer l'image %s"
 
-#: glance/registry/api/v1/images.py:440
+#: glance/registry/api/v1/images.py:442
 #, python-format
 msgid "Unable to create image %s"
 msgstr "Impossible de créer l'image %s"
 
-#: glance/registry/api/v1/images.py:513
+#: glance/registry/api/v1/images.py:515
 #, python-format
 msgid "Unable to update image %s"
 msgstr "Impossible de mettre à jour l'image %s"
 
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:98
+#: glance/registry/client/v1/client.py:129
+#, python-format
+msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
+msgstr "Demande client de registre %(method)s %(action)s produite %(exc_name)s"
+
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:99
 #, python-format
 msgid "Forbidden to create resource type. Reason: %(reason)s"
 msgstr "Creation du type de ressource refuse. Raison: %(reason)s "
