@@ -62,7 +62,7 @@ COMMANDS
         it first if necessary.
 
 OPTIONS
-========
+=======
 
   **General Options**
 
@@ -73,3 +73,17 @@ OPTIONS
         `here <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html?highlight=engine#sqlalchemy.create_engine>`_
 
   .. include:: footer.rst
+
+CONFIGURATION
+=============
+
+The following paths are searched for a ``glance-manage.conf`` file in the
+following order:
+
+* ``~/.glance``
+* ``~/``
+* ``/etc/glance``
+* ``/etc``
+
+All options set in ``glance-manage.conf`` override those set in
+``glance-registry.conf`` and ``glance-api.conf``.

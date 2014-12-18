@@ -127,6 +127,20 @@ The numeric prefixes in the example above are only necessary if a specific
 parse ordering is required (i.e. if an individual config option set in an
 earlier fragment is overridden in a later fragment).
 
+Note that ``glance-manage`` currently loads configuration from three files:
+
+* ``glance-registry.conf``
+* ``glance-api.conf``
+* and the newly created ``glance-manage.conf``
+
+By default ``glance-manage.conf`` only specifies a custom logging file but
+other configuration options for ``glance-manage`` should be migrated in there.
+**Warning**: Options set in ``glance-manage.conf`` will override options of
+the same section and name set in the other two. Similarly, options in
+``glance-api.conf`` will override options set in ``glance-registry.conf``.
+This tool is planning to stop loading ``glance-registry.conf`` and
+``glance-api.conf`` in a future cycle.
+
 Configuring Server Startup Options
 ----------------------------------
 
@@ -366,7 +380,7 @@ Optional. Default: ``file``
 Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, ``sheepdog``, 
+Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, ``sheepdog``,
 ``cinder`` or ``vsphere``).
 
 Configuring Glance Image Size Limit
@@ -1199,7 +1213,7 @@ to be run via cron on a regular basis. See more about this executable in
 Configuring the Glance Registry
 -------------------------------
 
-There are a number of configuration options in Glance that control how 
+There are a number of configuration options in Glance that control how
 this registry server operates. These configuration options are specified in the
 ``glance-registry.conf`` config file in the section ``[DEFAULT]``.
 
