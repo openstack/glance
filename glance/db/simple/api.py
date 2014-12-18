@@ -39,6 +39,7 @@ DATA = {
     'metadef_objects': [],
     'metadef_properties': [],
     'metadef_resource_types': [],
+    'metadef_tags': [],
     'tags': {},
     'locations': [],
     'tasks': {},
@@ -74,6 +75,7 @@ def reset():
         'metadef_objects': [],
         'metadef_properties': [],
         'metadef_resource_types': [],
+        'metadef_tags': [],
         'tags': {},
         'locations': [],
         'tasks': {},
@@ -1668,6 +1670,200 @@ def metadef_resource_type_association_delete(context, namespace_name,
     return resource_type
 
 
+@log_call
+def metadef_tag_get(context, namespace_name, name):
+    """Get a metadef tag"""
+    namespace = metadef_namespace_get(context, namespace_name)
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for tag in DATA['metadef_tags']:
+        if (tag['namespace_id'] == namespace['id'] and
+                tag['name'] == name):
+            return tag
+    else:
+        msg = ("The metadata definition tag with name=%(name)s"
+               " was not found in namespace=%(namespace_name)s."
+               % {'name': name, 'namespace_name': namespace_name})
+        LOG.debug(msg)
+        raise exception.MetadefTagNotFound(name=name,
+                                           namespace_name=namespace_name)
+
+
+@log_call
+def metadef_tag_get_by_id(context, namespace_name, id):
+    """Get a metadef tag"""
+    namespace = metadef_namespace_get(context, namespace_name)
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    for tag in DATA['metadef_tags']:
+        if (tag['namespace_id'] == namespace['id'] and
+                tag['id'] == id):
+            return tag
+    else:
+        msg = (_("Metadata definition tag not found for id=%s") % id)
+        LOG.warn(msg)
+        raise exception.MetadefTagNotFound(msg)
+
+
+@log_call
+def metadef_tag_get_all(context, namespace_name, filters=None, marker=None,
+                        limit=None, sort_key='created_at', sort_dir=None,
+                        session=None):
+    """Get a metadef tags list"""
+
+    namespace = metadef_namespace_get(context, namespace_name)
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    tags = []
+    for tag in DATA['metadef_tags']:
+        if tag['namespace_id'] == namespace['id']:
+            tags.append(tag)
+
+    return tags
+
+
+@log_call
+def metadef_tag_create(context, namespace_name, values):
+    """Create a metadef tag"""
+    global DATA
+
+    tag_values = copy.deepcopy(values)
+    tag_name = tag_values['name']
+    required_attributes = ['name']
+    allowed_attributes = ['name']
+
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    for tag in DATA['metadef_tags']:
+        if (tag['name'] == tag_name and
+                tag['namespace_id'] == namespace['id']):
+            msg = ("A metadata definition tag with name=%(name)s"
+                   " in namespace=%(namespace_name)s already exists."
+                   % {'name': tag_name, 'namespace_name': namespace_name})
+            LOG.debug(msg)
+            raise exception.MetadefDuplicateTag(
+                name=tag_name, namespace_name=namespace_name)
+
+    for key in required_attributes:
+        if key not in tag_values:
+            raise exception.Invalid('%s is a required attribute' % key)
+
+    incorrect_keys = set(tag_values.keys()) - set(allowed_attributes)
+    if incorrect_keys:
+        raise exception.Invalid(
+            'The keys %s are not valid' % str(incorrect_keys))
+
+    tag_values['namespace_id'] = namespace['id']
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    tag = _format_tag(tag_values)
+    DATA['metadef_tags'].append(tag)
+    return tag
+
+
+@log_call
+def metadef_tag_create_tags(context, namespace_name, tag_list):
+    """Create a metadef tag"""
+    global DATA
+
+    namespace = metadef_namespace_get(context, namespace_name)
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    required_attributes = ['name']
+    allowed_attributes = ['name']
+    data_tag_list = []
+    tag_name_list = []
+    for tag_value in tag_list:
+        tag_values = copy.deepcopy(tag_value)
+        tag_name = tag_values['name']
+
+        for key in required_attributes:
+            if key not in tag_values:
+                raise exception.Invalid('%s is a required attribute' % key)
+
+        incorrect_keys = set(tag_values.keys()) - set(allowed_attributes)
+        if incorrect_keys:
+            raise exception.Invalid(
+                'The keys %s are not valid' % str(incorrect_keys))
+
+        if tag_name in tag_name_list:
+            msg = ("A metadata definition tag with name=%(name)s"
+                   " in namespace=%(namespace_name)s already exists."
+                   % {'name': tag_name, 'namespace_name': namespace_name})
+            LOG.debug(msg)
+            raise exception.MetadefDuplicateTag(
+                name=tag_name, namespace_name=namespace_name)
+        else:
+            tag_name_list.append(tag_name)
+
+        tag_values['namespace_id'] = namespace['id']
+        data_tag_list.append(_format_tag(tag_values))
+
+    DATA['metadef_tags'] = []
+    for tag in data_tag_list:
+        DATA['metadef_tags'].append(tag)
+
+    return data_tag_list
+
+
+@log_call
+def metadef_tag_update(context, namespace_name, id, values):
+    """Update a metadef tag"""
+    global DATA
+
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    tag = metadef_tag_get_by_id(context, namespace_name, id)
+    if tag['name'] != values['name']:
+        for db_tag in DATA['metadef_tags']:
+            if (db_tag['name'] == values['name'] and
+                    db_tag['namespace_id'] == namespace['id']):
+                msg = ("Invalid update. It would result in a duplicate"
+                       " metadata definition tag with same name=%(name)s "
+                       " in namespace=%(namespace_name)s."
+                       % {'name': tag['name'],
+                          'namespace_name': namespace_name})
+                LOG.debug(msg)
+                raise exception.MetadefDuplicateTag(
+                    name=tag['name'], namespace_name=namespace_name)
+
+    DATA['metadef_tags'].remove(tag)
+
+    tag.update(values)
+    tag['updated_at'] = timeutils.utcnow()
+    DATA['metadef_tags'].append(tag)
+    return tag
+
+
+@log_call
+def metadef_tag_delete(context, namespace_name, name):
+    """Delete a metadef tag"""
+    global DATA
+
+    tags = metadef_tag_get(context, namespace_name, name)
+    DATA['metadef_tags'].remove(tags)
+
+    return tags
+
+
+@log_call
+def metadef_tag_count(context, namespace_name):
+    """Get metadef tag count in a namespace"""
+    namespace = metadef_namespace_get(context, namespace_name)
+
+    _check_namespace_visibility(context, namespace, namespace_name)
+
+    count = 0
+    for tag in DATA['metadef_tags']:
+        if tag['namespace_id'] == namespace['id']:
+            count = count + 1
+
+    return count
+
+
 def _format_association(namespace, resource_type, association_values):
     association = {
         'namespace_id': namespace['id'],
@@ -1737,6 +1933,19 @@ def _format_object(values):
     }
     object.update(values)
     return object
+
+
+def _format_tag(values):
+    dt = timeutils.utcnow()
+    tag = {
+        'id': _get_metadef_id(),
+        'namespace_id': None,
+        'name': None,
+        'created_at': dt,
+        'updated_at': dt
+    }
+    tag.update(values)
+    return tag
 
 
 def _is_namespace_visible(context, namespace):

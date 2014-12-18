@@ -287,6 +287,8 @@ def delete_cascade(context, name, session):
     namespace_rec = _get_by_name(context, name, session)
     with session.begin():
         try:
+            metadef_api.tag.delete_namespace_content(
+                context, namespace_rec.id, session)
             metadef_api.object.delete_namespace_content(
                 context, namespace_rec.id, session)
             metadef_api.property.delete_namespace_content(

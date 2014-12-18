@@ -151,6 +151,11 @@ class ProtectedMetadefResourceTypeSystemDelete(Forbidden):
                 " a seeded-system type and cannot be deleted.")
 
 
+class ProtectedMetadefTagDelete(Forbidden):
+    message = _("Metadata definition tag %(tag_name)s is protected"
+                " and cannot be deleted.")
+
+
 class Invalid(GlanceException):
     message = _("Data supplied was not valid.")
 
@@ -381,6 +386,11 @@ class MetadefDuplicateResourceTypeAssociation(Duplicate):
                 " already exists.")
 
 
+class MetadefDuplicateTag(Duplicate):
+    message = _("A metadata tag with name=%(name)s"
+                " already exists in namespace=%(namespace_name)s.")
+
+
 class MetadefForbidden(Forbidden):
     message = _("You are not authorized to complete this action.")
 
@@ -418,3 +428,9 @@ class MetadefResourceTypeAssociationNotFound(NotFound):
                 " resource-type=%(resource_type_name)s to"
                 " namespace=%(namespace_name)s,"
                 " was not found.")
+
+
+class MetadefTagNotFound(NotFound):
+    message = _("The metadata definition tag with"
+                " name=%(name)s was not found in"
+                " namespace=%(namespace_name)s.")

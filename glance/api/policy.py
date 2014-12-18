@@ -594,3 +594,58 @@ class MetadefPropertyFactoryProxy(glance.domain.proxy.MetadefPropertyFactory):
             namespace_property_factory,
             property_proxy_class=MetadefPropertyProxy,
             property_proxy_kwargs=proxy_kwargs)
+
+
+# Metadef Tag classes
+class MetadefTagProxy(glance.domain.proxy.MetadefTag):
+
+    def __init__(self, meta_tag, context, policy):
+        self.context = context
+        self.policy = policy
+        super(MetadefTagProxy, self).__init__(meta_tag)
+
+
+class MetadefTagRepoProxy(glance.domain.proxy.MetadefTagRepo):
+
+    def __init__(self, tag_repo, context, tag_policy):
+        self.context = context
+        self.policy = tag_policy
+        self.tag_repo = tag_repo
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefTagRepoProxy,
+              self).__init__(tag_repo,
+                             tag_proxy_class=MetadefTagProxy,
+                             tag_proxy_kwargs=proxy_kwargs)
+
+    def get(self, namespace, tag_name):
+        self.policy.enforce(self.context, 'get_metadef_tag', {})
+        return super(MetadefTagRepoProxy, self).get(namespace, tag_name)
+
+    def list(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'get_metadef_tags', {})
+        return super(MetadefTagRepoProxy, self).list(*args, **kwargs)
+
+    def save(self, meta_tag):
+        self.policy.enforce(self.context, 'modify_metadef_tag', {})
+        return super(MetadefTagRepoProxy, self).save(meta_tag)
+
+    def add(self, meta_tag):
+        self.policy.enforce(self.context, 'add_metadef_tag', {})
+        return super(MetadefTagRepoProxy, self).add(meta_tag)
+
+    def add_tags(self, meta_tags):
+        self.policy.enforce(self.context, 'add_metadef_tags', {})
+        return super(MetadefTagRepoProxy, self).add_tags(meta_tags)
+
+
+class MetadefTagFactoryProxy(glance.domain.proxy.MetadefTagFactory):
+
+    def __init__(self, meta_tag_factory, context, policy):
+        self.meta_tag_factory = meta_tag_factory
+        self.context = context
+        self.policy = policy
+        proxy_kwargs = {'context': self.context, 'policy': self.policy}
+        super(MetadefTagFactoryProxy, self).__init__(
+            meta_tag_factory,
+            meta_tag_proxy_class=MetadefTagProxy,
+            meta_tag_proxy_kwargs=proxy_kwargs)

@@ -189,3 +189,19 @@ class Gateway(object):
         authorized_prop_repo = authorization.MetadefPropertyRepoProxy(
             policy_prop_repo, context)
         return authorized_prop_repo
+
+    def get_metadef_tag_factory(self, context):
+        tag_factory = glance.domain.MetadefTagFactory()
+        policy_tag_factory = policy.MetadefTagFactoryProxy(
+            tag_factory, context, self.policy)
+        authorized_tag_factory = authorization.MetadefTagFactoryProxy(
+            policy_tag_factory, context)
+        return authorized_tag_factory
+
+    def get_metadef_tag_repo(self, context):
+        tag_repo = glance.db.MetadefTagRepo(context, self.db_api)
+        policy_tag_repo = policy.MetadefTagRepoProxy(
+            tag_repo, context, self.policy)
+        authorized_tag_repo = authorization.MetadefTagRepoProxy(
+            policy_tag_repo, context)
+        return authorized_tag_repo

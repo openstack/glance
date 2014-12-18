@@ -43,6 +43,7 @@ from glance.db.sqlalchemy.metadef_api\
     import resource_type as metadef_resource_type_api
 from glance.db.sqlalchemy.metadef_api\
     import resource_type_association as metadef_association_api
+from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
 from glance import i18n
 import glance.openstack.common.log as os_logging
@@ -1627,3 +1628,66 @@ def metadef_resource_type_association_get_all_by_namespace(
     session = session or get_session()
     return metadef_association_api.\
         get_all_by_namespace(context, namespace_name, session)
+
+
+def metadef_tag_get_all(
+        context, namespace_name, filters=None, marker=None, limit=None,
+        sort_key=None, sort_dir=None, session=None):
+    """Get metadata-schema tags or raise if none exist."""
+    session = session or get_session()
+    return metadef_tag_api.get_all(
+        context, namespace_name, session,
+        filters, marker, limit, sort_key, sort_dir)
+
+
+def metadef_tag_get(context, namespace_name, name, session=None):
+    """Get a metadata-schema tag or raise if it does not exist."""
+    session = session or get_session()
+    return metadef_tag_api.get(
+        context, namespace_name, name, session)
+
+
+def metadef_tag_create(context, namespace_name, tag_dict,
+                       session=None):
+    """Create a metadata-schema tag or raise if it already exists."""
+    session = session or get_session()
+    return metadef_tag_api.create(
+        context, namespace_name, tag_dict, session)
+
+
+def metadef_tag_create_tags(context, namespace_name, tag_list,
+                            session=None):
+    """Create a metadata-schema tag or raise if it already exists."""
+    session = get_session()
+    return metadef_tag_api.create_tags(
+        context, namespace_name, tag_list, session)
+
+
+def metadef_tag_update(context, namespace_name, id, tag_dict,
+                       session=None):
+    """Update an tag or raise if it does not exist or not visible."""
+    session = session or get_session()
+    return metadef_tag_api.update(
+        context, namespace_name, id, tag_dict, session)
+
+
+def metadef_tag_delete(context, namespace_name, name,
+                       session=None):
+    """Delete an tag or raise if namespace or tag doesn't exist."""
+    session = session or get_session()
+    return metadef_tag_api.delete(
+        context, namespace_name, name, session)
+
+
+def metadef_tag_delete_namespace_content(
+        context, namespace_name, session=None):
+    """Delete an tag or raise if namespace or tag doesn't exist."""
+    session = session or get_session()
+    return metadef_tag_api.delete_by_namespace_name(
+        context, namespace_name, session)
+
+
+def metadef_tag_count(context, namespace_name, session=None):
+    """Get count of tags for a namespace, raise if ns doesn't exist."""
+    session = session or get_session()
+    return metadef_tag_api.count(context, namespace_name, session)

@@ -472,6 +472,16 @@ class MetadefNamespaceRepo(object):
             msg = _("The specified namespace %s could not be found")
             raise exception.NotFound(msg % namespace.namespace)
 
+    def remove_tags(self, namespace):
+        try:
+            self.db_api.metadef_tag_delete_namespace_content(
+                self.context,
+                namespace.namespace
+            )
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified namespace %s could not be found")
+            raise exception.NotFound(msg % namespace.namespace)
+
     def object_count(self, namespace_name):
         return self.db_api.metadef_object_count(
             self.context,
@@ -758,3 +768,92 @@ class MetadefPropertyRepo(object):
         except exception.NotFound as e:
             raise exception.NotFound(explanation=e.msg)
         return property
+
+
+class MetadefTagRepo(object):
+
+    def __init__(self, context, db_api):
+        self.context = context
+        self.db_api = db_api
+        self.meta_namespace_repo = MetadefNamespaceRepo(context, db_api)
+
+    def _format_metadef_tag_from_db(self, metadata_tag,
+                                    namespace_entity):
+        return glance.domain.MetadefTag(
+            namespace=namespace_entity,
+            tag_id=metadata_tag['id'],
+            name=metadata_tag['name'],
+            created_at=metadata_tag['created_at'],
+            updated_at=metadata_tag['updated_at']
+        )
+
+    def _format_metadef_tag_to_db(self, metadata_tag):
+        db_metadata_tag = {
+            'name': metadata_tag.name
+        }
+        return db_metadata_tag
+
+    def add(self, metadata_tag):
+        self.db_api.metadef_tag_create(
+            self.context,
+            metadata_tag.namespace,
+            self._format_metadef_tag_to_db(metadata_tag)
+        )
+
+    def add_tags(self, metadata_tags):
+        tag_list = []
+        namespace = None
+        for metadata_tag in metadata_tags:
+            tag_list.append(self._format_metadef_tag_to_db(metadata_tag))
+            if namespace is None:
+                namespace = metadata_tag.namespace
+
+        self.db_api.metadef_tag_create_tags(
+            self.context, namespace, tag_list)
+
+    def get(self, namespace, name):
+        try:
+            namespace_entity = self.meta_namespace_repo.get(namespace)
+            db_metadata_tag = self.db_api.metadef_tag_get(
+                self.context,
+                namespace,
+                name)
+        except (exception.NotFound, exception.Forbidden):
+            msg = _('Could not find metadata tag %s') % name
+            raise exception.NotFound(msg)
+        return self._format_metadef_tag_from_db(db_metadata_tag,
+                                                namespace_entity)
+
+    def list(self, marker=None, limit=None, sort_key='created_at',
+             sort_dir='desc', filters=None):
+        namespace = filters['namespace']
+        namespace_entity = self.meta_namespace_repo.get(namespace)
+
+        db_metadata_tag = self.db_api.metadef_tag_get_all(
+            self.context, namespace, filters, marker, limit, sort_key,
+            sort_dir)
+
+        return [self._format_metadef_tag_from_db(metadata_tag,
+                                                 namespace_entity)
+                for metadata_tag in db_metadata_tag]
+
+    def remove(self, metadata_tag):
+        try:
+            self.db_api.metadef_tag_delete(
+                self.context,
+                metadata_tag.namespace.namespace,
+                metadata_tag.name
+            )
+        except (exception.NotFound, exception.Forbidden):
+            msg = _("The specified metadata tag %s could not be found")
+            raise exception.NotFound(msg % metadata_tag.name)
+
+    def save(self, metadata_tag):
+        try:
+            self.db_api.metadef_tag_update(
+                self.context, metadata_tag.namespace.namespace,
+                metadata_tag.tag_id,
+                self._format_metadef_tag_to_db(metadata_tag))
+        except exception.NotFound as e:
+            raise exception.NotFound(explanation=e.msg)
+        return metadata_tag

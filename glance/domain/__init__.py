@@ -606,3 +606,32 @@ class MetadefPropertyFactory(object):
             name,
             schema
         )
+
+
+class MetadefTag(object):
+
+    def __init__(self, namespace, tag_id, name, created_at, updated_at):
+        self.namespace = namespace
+        self.tag_id = tag_id
+        self.name = name
+        self.created_at = created_at
+        self.updated_at = updated_at
+
+    def delete(self):
+        if self.namespace.protected:
+            raise exception.ProtectedMetadefTagDelete(tag_name=self.name)
+
+
+class MetadefTagFactory(object):
+
+    def new_tag(self, namespace, name, **kwargs):
+        tag_id = str(uuid.uuid4())
+        created_at = timeutils.utcnow()
+        updated_at = created_at
+        return MetadefTag(
+            namespace,
+            tag_id,
+            name,
+            created_at,
+            updated_at
+        )

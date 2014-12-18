@@ -20,6 +20,7 @@ from wsme import types
 from glance.api.v2.model.metadef_object import MetadefObject
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociation
+from glance.api.v2.model.metadef_tag import MetadefTag
 from glance.common.wsme_utils import WSMEModelTransformer
 
 
@@ -43,6 +44,7 @@ class Namespace(types.Base, WSMEModelTransformer):
                                              mandatory=False)
     properties = wsme.wsattr({types.text: PropertyType}, mandatory=False)
     objects = wsme.wsattr([MetadefObject], mandatory=False)
+    tags = wsme.wsattr([MetadefTag], mandatory=False)
 
     # Generated fields
     self = wsme.wsattr(types.text, mandatory=False)
