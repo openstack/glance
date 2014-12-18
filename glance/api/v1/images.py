@@ -23,7 +23,6 @@ import eventlet
 import glance_store as store
 import glance_store.location
 from oslo.config import cfg
-import six.moves.urllib.parse as urlparse
 from webob.exc import HTTPBadRequest
 from webob.exc import HTTPConflict
 from webob.exc import HTTPForbidden
@@ -40,6 +39,7 @@ from glance.api.v1 import filters
 from glance.api.v1 import upload_utils
 from glance.common import exception
 from glance.common import property_utils
+from glance.common import store_utils
 from glance.common import utils
 from glance.common import wsgi
 from glance.i18n import _LE
@@ -415,26 +415,19 @@ class Controller(controller.BaseController):
     @staticmethod
     def _validate_source(source, req):
         """
-        External sources (as specified via the location or copy-from headers)
-        are supported only over non-local store types, i.e. S3, Swift, HTTP.
-        Note the absence of 'file://' for security reasons, see LP bug #942118.
-        'swift+config://' is also absent for security reasons, see LP bug
-        #1334196.
-        If the above constraint is violated, we reject with 400 "Bad Request".
+        To validate if external sources (as specified via the location
+        or copy-from headers) are supported. Otherwise we reject
+        with 400 "Bad Request".
         """
         if source:
-            pieces = urlparse.urlparse(source)
-            schemes = [scheme for scheme in store.get_known_schemes()
-                       if scheme != 'file' and scheme != 'swift+config']
-            for scheme in schemes:
-                if pieces.scheme == scheme:
-                    return source
-            msg = ("External sourcing not supported for "
-                   "store '%s'" % pieces.scheme)
-            LOG.debug(msg)
-            raise HTTPBadRequest(explanation=msg,
-                                 request=req,
-                                 content_type="text/plain")
+            if store_utils.validate_external_location(source):
+                return source
+            else:
+                msg = _("External source are not supported: '%s'") % source
+                LOG.debug(msg)
+                raise HTTPBadRequest(explanation=msg,
+                                     request=req,
+                                     content_type="text/plain")
 
     @staticmethod
     def _copy_from(req):

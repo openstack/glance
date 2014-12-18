@@ -250,7 +250,7 @@ class TestCopyToFile(functional.FunctionalTest):
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 400, content)
 
-        expected = 'External sourcing not supported for store \'file\''
+        expected = 'External source are not supported: \'%s\'' % copy_from
         msg = 'expected "%s" in "%s"' % (expected, content)
         self.assertTrue(expected in content, msg)
 
@@ -276,7 +276,7 @@ class TestCopyToFile(functional.FunctionalTest):
         response, content = http.request(path, 'POST', headers=headers)
         self.assertEqual(response.status, 400, content)
 
-        expected = 'External sourcing not supported for store \'swift+config\''
+        expected = 'External source are not supported: \'swift+config://xxx\''
         msg = 'expected "%s" in "%s"' % (expected, content)
         self.assertTrue(expected in content, msg)
 

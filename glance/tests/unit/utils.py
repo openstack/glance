@@ -14,12 +14,13 @@
 #    under the License.
 
 import urllib
-import urlparse
 
 import glance_store as store
 from oslo.config import cfg
+import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
+from glance.common import store_utils
 from glance.common import wsgi
 import glance.context
 import glance.db.simple.api as simple_db
@@ -134,6 +135,12 @@ class FakeStoreUtils(object):
                                                       location)
         else:
             self.safe_delete_from_backend(context, image_id, location)
+
+    def validate_external_location(self, uri):
+        if uri and urlparse.urlparse(uri).scheme:
+            return store_utils.validate_external_location(uri)
+        else:
+            return True
 
 
 class FakeStoreAPI(object):

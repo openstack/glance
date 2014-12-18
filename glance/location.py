@@ -66,18 +66,20 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         return result
 
 
-def _check_location_uri(context, store_api, uri):
+def _check_location_uri(context, store_api, store_utils, uri):
     """Check if an image location is valid.
 
     :param context: Glance request context
     :param store_api: store API module
+    :param store_utils: store utils module
     :param uri: location's uri string
     """
+
     is_ok = True
     try:
-        size = store_api.get_size_from_backend(uri, context=context)
         # NOTE(zhiyan): Some stores return zero when it catch exception
-        is_ok = size > 0
+        is_ok = (store_utils.validate_external_location(uri) and
+                 store_api.get_size_from_backend(uri, context=context) > 0)
     except (store.UnknownScheme, store.NotFound):
         is_ok = False
     if not is_ok:
@@ -85,8 +87,8 @@ def _check_location_uri(context, store_api, uri):
         raise exception.BadStoreUri(message=reason)
 
 
-def _check_image_location(context, store_api, location):
-    _check_location_uri(context, store_api, location['url'])
+def _check_image_location(context, store_api, store_utils, location):
+    _check_location_uri(context, store_api, store_utils, location['url'])
     store_api.check_location_metadata(location['metadata'])
 
 
@@ -122,6 +124,7 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
     def __init__(self, factory, context, store_api, store_utils):
         self.context = context
         self.store_api = store_api
+        self.store_utils = store_utils
         proxy_kwargs = {'context': context, 'store_api': store_api,
                         'store_utils': store_utils}
         super(ImageFactoryProxy, self).__init__(factory,
@@ -131,7 +134,10 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
     def new_image(self, **kwargs):
         locations = kwargs.get('locations', [])
         for loc in locations:
-            _check_image_location(self.context, self.store_api, loc)
+            _check_image_location(self.context,
+                                  self.store_api,
+                                  self.store_utils,
+                                  loc)
             loc['status'] = 'active'
             if _count_duplicated_locations(locations, loc) > 1:
                 raise exception.DuplicateLocation(location=loc['url'])
@@ -169,7 +175,9 @@ class StoreLocations(collections.MutableSequence):
 
     def insert(self, i, location):
         _check_image_location(self.image_proxy.context,
-                              self.image_proxy.store_api, location)
+                              self.image_proxy.store_api,
+                              self.image_proxy.store_utils,
+                              location)
         location['status'] = 'active'
         if _count_duplicated_locations(self.value, location) > 0:
             raise exception.DuplicateLocation(location=location['url'])
@@ -214,7 +222,9 @@ class StoreLocations(collections.MutableSequence):
 
     def __setitem__(self, i, location):
         _check_image_location(self.image_proxy.context,
-                              self.image_proxy.store_api, location)
+                              self.image_proxy.store_api,
+                              self.image_proxy.store_utils,
+                              location)
         location['status'] = 'active'
         self.value.__setitem__(i, location)
         _set_image_size(self.image_proxy.context,
@@ -303,7 +313,9 @@ def _locations_proxy(target, attr):
                                           '%s') % ori_value)
             # NOTE(zhiyan): Check locations are all valid.
             for location in value:
-                _check_image_location(self.context, self.store_api,
+                _check_image_location(self.context,
+                                      self.store_api,
+                                      self.store_utils,
                                       location)
                 location['status'] = 'active'
                 if _count_duplicated_locations(value, location) > 1:
