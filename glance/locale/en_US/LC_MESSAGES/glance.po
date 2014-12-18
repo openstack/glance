@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-21 06:05+0000\n"
+"POT-Creation-Date: 2014-12-18 06:06+0000\n"
 "PO-Revision-Date: 2013-04-10 10:09+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en_US <LL@li.org>\n"
@@ -17,98 +17,98 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: glance/location.py:84
+#: glance/location.py:87
 msgid "Invalid location"
 msgstr ""
 
-#: glance/location.py:296
+#: glance/location.py:307
 msgid "Invalid locations"
 msgstr ""
 
-#: glance/location.py:302
+#: glance/location.py:313
 #, python-format
 msgid "Original locations is not empty: %s"
 msgstr ""
 
-#: glance/location.py:373 glance/common/exception.py:340
+#: glance/location.py:386 glance/common/exception.py:344
 msgid "No image data could be found"
 msgstr "No image data could be found"
 
-#: glance/location.py:385
+#: glance/location.py:398
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr ""
 
-#: glance/notifier.py:183
+#: glance/notifier.py:186
 #, python-format
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr "An error occurred during image.send notification: %(err)s"
 
-#: glance/notifier.py:200 glance/api/v1/upload_utils.py:205
-#: glance/api/v2/image_data.py:122
+#: glance/notifier.py:203 glance/api/v1/upload_utils.py:207
+#: glance/api/v2/image_data.py:124
 #, python-format
 msgid "Image storage media is full: %s"
 msgstr "Image storage media is full: %s"
 
-#: glance/notifier.py:205 glance/api/v1/upload_utils.py:214
-#: glance/api/v2/image_data.py:146
+#: glance/notifier.py:208 glance/api/v1/upload_utils.py:217
+#: glance/api/v2/image_data.py:148
 #, python-format
 msgid "Insufficient permissions on image storage media: %s"
 msgstr "Insufficient permissions on image storage media: %s"
 
-#: glance/notifier.py:210
+#: glance/notifier.py:213
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:217
+#: glance/notifier.py:220
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:224
+#: glance/notifier.py:227
 #, python-format
 msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:230
+#: glance/notifier.py:233
 #, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have "
 "been deleted during the upload: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:238
+#: glance/notifier.py:241
 #, python-format
 msgid ""
 "Failed to upload image data for image %(image_id)s due to HTTP error: "
 "%(error)s"
 msgstr ""
 
-#: glance/notifier.py:245
+#: glance/notifier.py:248
 #, python-format
 msgid ""
 "Failed to upload image data for image %(image_id)s due to internal error:"
 " %(error)s"
 msgstr ""
 
-#: glance/schema.py:62
+#: glance/schema.py:65
 #, python-format
 msgid "custom properties (%(props)s) conflict with base properties"
 msgstr "custom properties (%(props)s) conflict with base properties"
 
-#: glance/scrubber.py:44
+#: glance/scrubber.py:45
 msgid ""
 "Directory that the scrubber will use to track information about what to "
 "delete. Make sure this is set in glance-api.conf and glance-"
 "scrubber.conf."
 msgstr ""
 
-#: glance/scrubber.py:49
+#: glance/scrubber.py:50
 msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "The amount of time in seconds to delay before performing a delete."
 
-#: glance/scrubber.py:52
+#: glance/scrubber.py:53
 msgid ""
 "A boolean that determines if the scrubber should clean up the files it "
 "uses for taking data. Only one server in your deployment should be "
@@ -118,11 +118,11 @@ msgstr ""
 "uses for taking data. Only one server in your deployment should be "
 "designated the cleanup host."
 
-#: glance/scrubber.py:57
+#: glance/scrubber.py:58
 msgid "Turn on/off delayed delete."
 msgstr "Turn on/off delayed delete."
 
-#: glance/scrubber.py:59
+#: glance/scrubber.py:60
 msgid ""
 "Items must have a modified time that is older than this value in order to"
 " be candidates for cleanup."
@@ -130,171 +130,159 @@ msgstr ""
 "Items must have a modified time that is older than this value in order to"
 " be candidates for cleanup."
 
-#: glance/scrubber.py:65
+#: glance/scrubber.py:66
 msgid "Loop time between checking for new items to schedule for delete."
 msgstr ""
 
-#: glance/scrubber.py:73
+#: glance/scrubber.py:74
 msgid ""
 "Run as a long-running process. When not specified (the default) run the "
 "scrub operation once and then exits. When specified do not exit and run "
 "scrub on wakeup_time interval as specified in the config."
 msgstr ""
 
-#: glance/scrubber.py:593
+#: glance/scrubber.py:594
 #, python-format
 msgid "%s file is not exists."
 msgstr ""
 
-#: glance/scrubber.py:598
+#: glance/scrubber.py:599
 #, python-format
 msgid "%s file contains conflicting cleanup timestamp."
 msgstr ""
 
-#: glance/api/authorization.py:129 glance/api/authorization.py:140
+#: glance/api/authorization.py:132 glance/api/authorization.py:143
 #, python-format
 msgid "You cannot get image member for %s"
 msgstr "You cannot get image member for %s"
 
-#: glance/api/authorization.py:148
+#: glance/api/authorization.py:151
 #, python-format
 msgid "You cannot delete image member for %s"
 msgstr "You cannot delete image member for %s"
 
-#: glance/api/authorization.py:157
+#: glance/api/authorization.py:160
 #, python-format
 msgid "You cannot add image member for %s"
 msgstr "You cannot add image member for %s"
 
-#: glance/api/authorization.py:166
+#: glance/api/authorization.py:169
 #, python-format
 msgid "You cannot update image member %s"
 msgstr "You cannot update image member %s"
 
-#: glance/api/authorization.py:185
+#: glance/api/authorization.py:188
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "You are not permitted to create images owned by '%s'."
 
-#: glance/api/authorization.py:203
+#: glance/api/authorization.py:206
 msgid "You are not permitted to create image members for the image."
 msgstr "You are not permitted to create image members for the image."
 
-#: glance/api/authorization.py:208 glance/api/authorization.py:399
+#: glance/api/authorization.py:211 glance/api/authorization.py:402
 msgid "Public images do not have members."
 msgstr "Public images do not have members."
 
-#: glance/api/authorization.py:224
+#: glance/api/authorization.py:227
 #, python-format
 msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
 msgstr ""
 
-#: glance/api/authorization.py:234
+#: glance/api/authorization.py:237
 msgid "You are not permitted to modify locations for this image."
 msgstr "You are not permitted to modify locations for this image."
 
-#: glance/api/authorization.py:258
+#: glance/api/authorization.py:261
 #, python-format
 msgid "You are not permitted to modify '%s' on this image."
 msgstr "You are not permitted to modify '%s' on this image."
 
-#: glance/api/authorization.py:262
+#: glance/api/authorization.py:265
 msgid "You are not permitted to modify this image."
 msgstr "You are not permitted to modify this image."
 
-#: glance/api/authorization.py:275
+#: glance/api/authorization.py:278
 msgid "You are not permitted to modify tags on this image."
 msgstr "You are not permitted to modify tags on this image."
 
-#: glance/api/authorization.py:316
+#: glance/api/authorization.py:319
 msgid "You are not permitted to delete this image."
 msgstr "You are not permitted to delete this image."
 
-#: glance/api/authorization.py:327
+#: glance/api/authorization.py:330
 msgid "You are not permitted to upload data for this image."
 msgstr "You are not permitted to upload data for this image."
 
-#: glance/api/authorization.py:364 glance/api/authorization.py:368
-#: glance/api/authorization.py:372
+#: glance/api/authorization.py:367 glance/api/authorization.py:371
+#: glance/api/authorization.py:375
 msgid "You are not permitted to set status on this task."
 msgstr ""
 
-#: glance/api/authorization.py:431
+#: glance/api/authorization.py:434
 #, python-format
 msgid "You are not permitted to create this task with owner as: %s"
 msgstr ""
 
-#: glance/api/authorization.py:496
+#: glance/api/authorization.py:499
 msgid "You are not permitted to delete this namespace."
 msgstr ""
 
-#: glance/api/authorization.py:500
+#: glance/api/authorization.py:503
 msgid "You are not permitted to update this namespace."
 msgstr ""
 
-#: glance/api/authorization.py:526
+#: glance/api/authorization.py:529
 #, python-format
 msgid "You are not permitted to create namespace owned by '%s'"
 msgstr ""
 
-#: glance/api/authorization.py:585
+#: glance/api/authorization.py:588
 msgid "You are not permitted to delete this object."
 msgstr ""
 
-#: glance/api/authorization.py:589
+#: glance/api/authorization.py:592
 msgid "You are not permitted to update this object."
 msgstr ""
 
-#: glance/api/authorization.py:614
+#: glance/api/authorization.py:617
 #, python-format
 msgid "You are not permitted to create object owned by '%s'"
 msgstr ""
 
-#: glance/api/authorization.py:677
+#: glance/api/authorization.py:680
 msgid "You are not permitted to delete this meta_resource_type."
 msgstr ""
 
-#: glance/api/authorization.py:703
+#: glance/api/authorization.py:706
 #, python-format
 msgid "You are not permitted to create resource_type owned by '%s'"
 msgstr ""
 
-#: glance/api/authorization.py:761
+#: glance/api/authorization.py:764
 msgid "You are not permitted to delete this property."
 msgstr ""
 
-#: glance/api/authorization.py:765
+#: glance/api/authorization.py:768
 msgid "You are not permitted to update this property."
 msgstr ""
 
-#: glance/api/authorization.py:790
+#: glance/api/authorization.py:793
 #, python-format
 msgid "You are not permitted to create property owned by '%s'"
 msgstr ""
 
-#: glance/api/common.py:64
+#: glance/api/common.py:65
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
 msgstr "Corrupt image download for image %(image_id)s"
 
-#: glance/api/policy.py:34
-msgid "The location of the policy file."
-msgstr "The location of the policy file."
-
-#: glance/api/policy.py:36
-msgid "The default policy to use."
-msgstr "The default policy to use."
-
-#: glance/api/policy.py:96
-msgid "Unable to find policy file"
-msgstr "Unable to find policy file"
-
-#: glance/api/policy.py:220 glance/quota/__init__.py:354
+#: glance/api/policy.py:156 glance/quota/__init__.py:355
 #, python-format
 msgid "Invalid locations: %s"
 msgstr ""
 
-#: glance/api/versions.py:27
+#: glance/api/versions.py:29
 msgid ""
 "Public url to use for versions endpoint. The default is None, which will "
 "use the request's host_url attribute to populate the URL base. If Glance "
@@ -302,7 +290,7 @@ msgid ""
 "the proxy's URL."
 msgstr ""
 
-#: glance/api/middleware/context.py:29
+#: glance/api/middleware/context.py:31
 msgid ""
 "When true, this option sets the owner of an image to be the tenant. "
 "Otherwise, the owner of the  image will be the authenticated user issuing"
@@ -312,11 +300,11 @@ msgstr ""
 "Otherwise, the owner of the  image will be the authenticated user issuing"
 " the request."
 
-#: glance/api/middleware/context.py:34
+#: glance/api/middleware/context.py:36
 msgid "Role used to identify an authenticated user as administrator."
 msgstr "Role used to identify an authenticated user as administrator."
 
-#: glance/api/middleware/context.py:37
+#: glance/api/middleware/context.py:39
 msgid ""
 "Allow unauthenticated users to access the API with read-only privileges. "
 "This only applies when using ContextMiddleware."
@@ -324,40 +312,40 @@ msgstr ""
 "Allow unauthenticated users to access the API with read-only privileges. "
 "This only applies when using ContextMiddleware."
 
-#: glance/api/middleware/context.py:57
+#: glance/api/middleware/context.py:59
 msgid "Unable to retrieve request id from context"
 msgstr "Unable to retrieve request id from context"
 
-#: glance/api/middleware/context.py:114
+#: glance/api/middleware/context.py:116
 msgid "Invalid service catalog json."
 msgstr "Invalid service catalog json."
 
-#: glance/api/middleware/version_negotiation.py:41
+#: glance/api/middleware/version_negotiation.py:44
 #, python-format
 msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
 msgstr "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
 
-#: glance/api/v1/controller.py:83
+#: glance/api/v1/controller.py:85
 #, python-format
 msgid "Store for image_id not found: %s"
 msgstr "Store for image_id not found: %s"
 
-#: glance/api/v1/images.py:75
+#: glance/api/v1/images.py:76
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr ""
 
-#: glance/api/v1/images.py:80
+#: glance/api/v1/images.py:81
 #, python-format
 msgid "Invalid container format '%s' for image."
 msgstr ""
 
-#: glance/api/v1/images.py:85
+#: glance/api/v1/images.py:86
 #, python-format
 msgid "Image name too long: %d"
 msgstr "Image name too long: %d"
 
-#: glance/api/v1/images.py:96
+#: glance/api/v1/images.py:97
 msgid ""
 "Invalid mix of disk and container formats. When setting a disk or "
 "container format to one of 'aki', 'ari', or 'ami', the container and disk"
@@ -367,86 +355,109 @@ msgstr ""
 "container format to one of 'aki', 'ari', or 'ami', the container and disk"
 " formats must match."
 
-#: glance/api/v1/images.py:176
+#: glance/api/v1/images.py:177
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(num)s, Maximum: %(quota)s"
 msgstr ""
 
-#: glance/api/v1/images.py:339
+#: glance/api/v1/images.py:199 glance/api/v1/images.py:243
+#: glance/api/v1/images.py:277
+#, python-format
+msgid "Property '%s' is protected"
+msgstr ""
+
+#: glance/api/v1/images.py:340
 msgid "This operation is currently not permitted on Glance images details."
 msgstr ""
 
-#: glance/api/v1/images.py:390
+#: glance/api/v1/images.py:391
 #, python-format
 msgid "Bad value passed to filter %(filter)s got %(val)s"
 msgstr ""
 
-#: glance/api/v1/images.py:565
+#: glance/api/v1/images.py:427
+#, python-format
+msgid "External source are not supported: '%s'"
+msgstr ""
+
+#: glance/api/v1/images.py:559
 #, python-format
 msgid "Failed to reserve image. Got error: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:889
+#: glance/api/v1/images.py:758
+#, python-format
+msgid ""
+"Provided image size must match the stored image size. (provided size: "
+"%(ps)d, stored size: %(ss)d)"
+msgstr ""
+
+#: glance/api/v1/images.py:882
 msgid "Forbidden to update deleted image."
 msgstr "Forbidden to update deleted image."
 
-#: glance/api/v1/images.py:900
+#: glance/api/v1/images.py:893
 #, python-format
 msgid "Forbidden to modify '%s' of active image."
 msgstr ""
 
-#: glance/api/v1/images.py:918
+#: glance/api/v1/images.py:911
 msgid "Cannot upload to an unqueued image"
 msgstr "Cannot upload to an unqueued image"
 
-#: glance/api/v1/images.py:942
+#: glance/api/v1/images.py:935
 msgid "Attempted to update Location field for an image not in queued status."
 msgstr "Attempted to update Location field for an image not in queued status."
 
-#: glance/api/v1/images.py:989
+#: glance/api/v1/images.py:982
 #, python-format
 msgid "Failed to find image to update: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:997
+#: glance/api/v1/images.py:990
 #, python-format
 msgid "Forbidden to update image: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1084
+#: glance/api/v1/images.py:1077
 #, python-format
 msgid "Failed to find image to delete: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1092
+#: glance/api/v1/images.py:1084
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1163 glance/api/v1/upload_utils.py:224
+#: glance/api/v1/images.py:1091 glance/api/v2/images.py:225
+#, python-format
+msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
+msgstr ""
+
+#: glance/api/v1/images.py:1153 glance/api/v1/upload_utils.py:227
 #, python-format
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr "Denying attempt to upload image larger than %d bytes."
 
-#: glance/api/v1/members.py:40 glance/registry/api/v1/members.py:34
+#: glance/api/v1/members.py:42 glance/registry/api/v1/members.py:36
 msgid "No authenticated user"
 msgstr "No authenticated user"
 
-#: glance/api/v1/members.py:52
+#: glance/api/v1/members.py:54
 #, python-format
 msgid "Image with identifier %s has been deleted."
 msgstr ""
 
-#: glance/api/v1/members.py:116 glance/common/exception.py:290
+#: glance/api/v1/members.py:118 glance/common/exception.py:294
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image members for "
 "this image. Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:126
+#: glance/api/v1/upload_utils.py:128
 #, python-format
 msgid ""
 "Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded "
@@ -455,33 +466,37 @@ msgstr ""
 "Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded "
 "image (%(actual)s) did not match. Setting image status to 'killed'."
 
-#: glance/api/v1/upload_utils.py:176 glance/api/v2/image_data.py:100
+#: glance/api/v1/upload_utils.py:178 glance/api/v2/image_data.py:102
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:234
+#: glance/api/v1/upload_utils.py:237 glance/api/v2/images.py:150
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the .quota: %s"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:263
+#: glance/api/v1/upload_utils.py:258
+msgid "Client disconnected before sending all data to backend"
+msgstr ""
+
+#: glance/api/v1/upload_utils.py:266
 #, python-format
 msgid "Failed to upload image %s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:76
+#: glance/api/v2/image_data.py:77
 #, python-format
 msgid ""
 "Image %(id)s could not be found after upload.The image may have been "
 "deleted during the upload: %(error)s Cleaning up the chunks uploaded"
 msgstr ""
 
-#: glance/api/v2/image_data.py:130
+#: glance/api/v2/image_data.py:132
 #, python-format
 msgid "Image exceeds the storage quota: %s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:138
+#: glance/api/v2/image_data.py:140
 #, python-format
 msgid "The incoming image is too large: %s"
 msgstr ""
@@ -489,7 +504,7 @@ msgstr ""
 #: glance/api/v2/image_members.py:78 glance/api/v2/image_members.py:122
 #: glance/api/v2/image_members.py:160 glance/api/v2/image_members.py:189
 #: glance/api/v2/image_members.py:207 glance/api/v2/image_tags.py:51
-#: glance/api/v2/image_tags.py:74
+#: glance/api/v2/image_tags.py:78
 #, python-format
 msgid "Image %s not found"
 msgstr ""
@@ -529,11 +544,11 @@ msgstr ""
 msgid "Not allowed to delete members for image %s."
 msgstr ""
 
-#: glance/api/v2/image_members.py:224 glance/api/v2/images.py:314
-#: glance/api/v2/metadef_namespaces.py:354 glance/api/v2/metadef_objects.py:224
-#: glance/api/v2/metadef_properties.py:172
-#: glance/api/v2/metadef_resource_types.py:144
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:147
+#: glance/api/v2/image_members.py:224 glance/api/v2/images.py:320
+#: glance/api/v2/metadef_namespaces.py:355 glance/api/v2/metadef_objects.py:225
+#: glance/api/v2/metadef_properties.py:173
+#: glance/api/v2/metadef_resource_types.py:145
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:148
 msgid "Body expected in request."
 msgstr "Body expected in request."
 
@@ -553,7 +568,7 @@ msgstr "Status not specified"
 msgid "An identifier for the image member (tenantId)"
 msgstr "An identifier for the image member (tenantId)"
 
-#: glance/api/v2/image_members.py:306 glance/api/v2/images.py:696
+#: glance/api/v2/image_members.py:306 glance/api/v2/images.py:702
 msgid "An identifier for the image"
 msgstr "An identifier for the image"
 
@@ -576,61 +591,66 @@ msgstr ""
 
 #: glance/api/v2/image_tags.py:59
 #, python-format
+msgid "Could not update image: %s"
+msgstr ""
+
+#: glance/api/v2/image_tags.py:63
+#, python-format
 msgid "Image tag limit exceeded for image %(id)s: %(e)s:"
 msgstr ""
 
-#: glance/api/v2/image_tags.py:78
+#: glance/api/v2/image_tags.py:82
 #, python-format
 msgid "Not allowed to delete tags for image %s."
 msgstr ""
 
-#: glance/api/v2/images.py:170 glance/api/v2/images.py:203
+#: glance/api/v2/images.py:174 glance/api/v2/images.py:207
 #, python-format
 msgid "Property %s does not exist."
 msgstr "Property %s does not exist."
 
-#: glance/api/v2/images.py:184
+#: glance/api/v2/images.py:188
 #, python-format
 msgid "Property %s already present."
 msgstr "Property %s already present."
 
-#: glance/api/v2/images.py:198
+#: glance/api/v2/images.py:202
 #, python-format
 msgid "Property %s may not be removed."
 msgstr "Property %s may not be removed."
 
-#: glance/api/v2/images.py:216
+#: glance/api/v2/images.py:220
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr ""
 
-#: glance/api/v2/images.py:240
+#: glance/api/v2/images.py:246
 msgid "Cannot replace locations from a non-empty list to a non-empty list."
 msgstr ""
 
-#: glance/api/v2/images.py:264
+#: glance/api/v2/images.py:270
 msgid "Invalid position for adding a location."
 msgstr ""
 
-#: glance/api/v2/images.py:280
+#: glance/api/v2/images.py:286
 msgid "Invalid position for removing a location."
 msgstr ""
 
-#: glance/api/v2/images.py:322 glance/api/v2/images.py:428
-#: glance/api/v2/metadef_namespaces.py:362 glance/api/v2/metadef_objects.py:288
-#: glance/api/v2/metadef_properties.py:180
-#: glance/api/v2/metadef_resource_types.py:152
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:155
+#: glance/api/v2/images.py:328 glance/api/v2/images.py:434
+#: glance/api/v2/metadef_namespaces.py:363 glance/api/v2/metadef_objects.py:289
+#: glance/api/v2/metadef_properties.py:181
+#: glance/api/v2/metadef_resource_types.py:153
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:156
 #, python-format
 msgid "Attribute '%s' is read-only."
 msgstr ""
 
-#: glance/api/v2/images.py:353 glance/api/v2/images.py:375
+#: glance/api/v2/images.py:359 glance/api/v2/images.py:381
 #, python-format
 msgid "Unable to find '%s' in JSON Schema change"
 msgstr "Unable to find '%s' in JSON Schema change"
 
-#: glance/api/v2/images.py:361
+#: glance/api/v2/images.py:367
 msgid ""
 "Operation objects must contain only one member named \"add\", \"remove\","
 " or \"replace\"."
@@ -638,7 +658,7 @@ msgstr ""
 "Operation objects must contain only one member named \"add\", \"remove\","
 " or \"replace\"."
 
-#: glance/api/v2/images.py:366
+#: glance/api/v2/images.py:372
 msgid ""
 "Operation objects must contain exactly one member named \"add\", "
 "\"remove\", or \"replace\"."
@@ -646,214 +666,220 @@ msgstr ""
 "Operation objects must contain exactly one member named \"add\", "
 "\"remove\", or \"replace\"."
 
-#: glance/api/v2/images.py:403
+#: glance/api/v2/images.py:409
 #, python-format
 msgid "Pointer `%s` does not start with \"/\"."
 msgstr "Pointer `%s` does not start with \"/\"."
 
-#: glance/api/v2/images.py:406
+#: glance/api/v2/images.py:412
 #, python-format
 msgid "Pointer `%s` contains adjacent \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:409
+#: glance/api/v2/images.py:415
 #, python-format
 msgid "Pointer `%s` end with \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:412
+#: glance/api/v2/images.py:418
 #, python-format
 msgid "Pointer `%s` does not contains valid token."
 msgstr ""
 
-#: glance/api/v2/images.py:415
+#: glance/api/v2/images.py:421
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
 msgstr "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
 
-#: glance/api/v2/images.py:421
+#: glance/api/v2/images.py:427
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
 msgstr "Operation \"%s\" requires a member named \"value\"."
 
-#: glance/api/v2/images.py:431
+#: glance/api/v2/images.py:437
 #, python-format
 msgid "Attribute '%s' is reserved."
 msgstr ""
 
-#: glance/api/v2/images.py:461
+#: glance/api/v2/images.py:467
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr ""
 
-#: glance/api/v2/images.py:473
+#: glance/api/v2/images.py:479
 msgid "Unrecognized JSON Schema draft version"
 msgstr "Unrecognized JSON Schema draft version"
 
-#: glance/api/v2/images.py:495
+#: glance/api/v2/images.py:501
 msgid "Request body must be a JSON array of operation objects."
 msgstr "Request body must be a JSON array of operation objects."
 
-#: glance/api/v2/images.py:500
+#: glance/api/v2/images.py:506
 msgid "Operations must be JSON objects."
 msgstr "Operations must be JSON objects."
 
-#: glance/api/v2/images.py:523 glance/api/v2/metadef_namespaces.py:409
-#: glance/api/v2/tasks.py:172 glance/registry/api/v1/images.py:265
+#: glance/api/v2/images.py:529 glance/api/v2/metadef_namespaces.py:410
+#: glance/api/v2/tasks.py:173 glance/registry/api/v1/images.py:267
 msgid "limit param must be an integer"
 msgstr "limit param must be an integer"
 
-#: glance/api/v2/images.py:527 glance/api/v2/metadef_namespaces.py:413
-#: glance/api/v2/tasks.py:176 glance/registry/api/v1/images.py:268
+#: glance/api/v2/images.py:533 glance/api/v2/metadef_namespaces.py:414
+#: glance/api/v2/tasks.py:177 glance/registry/api/v1/images.py:270
 msgid "limit param must be positive"
 msgstr "limit param must be positive"
 
-#: glance/api/v2/images.py:534 glance/api/v2/metadef_namespaces.py:391
-#: glance/api/v2/metadef_objects.py:270 glance/api/v2/tasks.py:142
+#: glance/api/v2/images.py:540 glance/api/v2/metadef_namespaces.py:392
+#: glance/api/v2/metadef_objects.py:271 glance/api/v2/tasks.py:143
 #, python-format
 msgid "Invalid sort direction: %s"
 msgstr "Invalid sort direction: %s"
 
-#: glance/api/v2/images.py:541
+#: glance/api/v2/images.py:547
 #, python-format
 msgid "Invalid status: %s"
 msgstr "Invalid status: %s"
 
-#: glance/api/v2/images.py:550 glance/api/v2/metadef_namespaces.py:400
-#: glance/api/v2/metadef_objects.py:279
+#: glance/api/v2/images.py:556 glance/api/v2/metadef_namespaces.py:401
+#: glance/api/v2/metadef_objects.py:280
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr "Invalid visibility value: %s"
 
-#: glance/api/v2/images.py:554
+#: glance/api/v2/images.py:560
 msgid "The \"changes-since\" filter is no longer available on v2."
 msgstr ""
 
-#: glance/api/v2/images.py:702
+#: glance/api/v2/images.py:708
 msgid "Descriptive name for the image"
 msgstr "Descriptive name for the image"
 
-#: glance/api/v2/images.py:707
+#: glance/api/v2/images.py:713
 msgid "Status of the image (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:713
+#: glance/api/v2/images.py:719
 msgid "Scope of image accessibility"
 msgstr "Scope of image accessibility"
 
-#: glance/api/v2/images.py:718
+#: glance/api/v2/images.py:724
 msgid "If true, image will not be deletable."
 msgstr "If true, image will not be deletable."
 
-#: glance/api/v2/images.py:722
+#: glance/api/v2/images.py:728
 msgid "md5 hash of image contents. (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:727
+#: glance/api/v2/images.py:733
 msgid "Owner of the image"
 msgstr ""
 
-#: glance/api/v2/images.py:732
+#: glance/api/v2/images.py:738
 msgid "Size of image file in bytes (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:736
+#: glance/api/v2/images.py:742
 msgid "Virtual size of image in bytes (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:740
+#: glance/api/v2/images.py:746
 msgid "Format of the container"
 msgstr ""
 
-#: glance/api/v2/images.py:745
+#: glance/api/v2/images.py:751
 msgid "Format of the disk"
 msgstr ""
 
-#: glance/api/v2/images.py:750
+#: glance/api/v2/images.py:756
 msgid "Date and time of image registration (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:758
+#: glance/api/v2/images.py:764
 msgid "Date and time of the last image modification (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:764
+#: glance/api/v2/images.py:770
 msgid "List of strings related to the image"
 msgstr "List of strings related to the image"
 
-#: glance/api/v2/images.py:772
+#: glance/api/v2/images.py:778
 msgid "URL to access the image file kept in external store (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:777
+#: glance/api/v2/images.py:783
 msgid "Amount of ram (in MB) required to boot image."
 msgstr "Amount of ram (in MB) required to boot image."
 
-#: glance/api/v2/images.py:781
+#: glance/api/v2/images.py:787
 msgid "Amount of disk space (in GB) required to boot image."
 msgstr "Amount of disk space (in GB) required to boot image."
 
-#: glance/api/v2/images.py:811
+#: glance/api/v2/images.py:817
 msgid "A set of URLs to access the image file kept in external store"
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:616
+#: glance/api/v2/metadef_namespaces.py:617
 msgid "The unique namespace text."
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:621
+#: glance/api/v2/metadef_namespaces.py:622
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:627
+#: glance/api/v2/metadef_namespaces.py:628
 msgid "Provides a user friendly description of the namespace."
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:633
+#: glance/api/v2/metadef_namespaces.py:634
 msgid "Scope of namespace accessibility."
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:638
+#: glance/api/v2/metadef_namespaces.py:639
 msgid "If true, namespace will not be deletable."
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:642
+#: glance/api/v2/metadef_namespaces.py:643
 msgid "Owner of the namespace."
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:647
+#: glance/api/v2/metadef_namespaces.py:648
 msgid "Date and time of namespace creation (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:653
+#: glance/api/v2/metadef_namespaces.py:654
 msgid "Date and time of the last namespace modification (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/metadef_objects.py:183
+#: glance/api/v2/metadef_objects.py:184
 msgid "Date and time of object creation (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/metadef_objects.py:189
+#: glance/api/v2/metadef_objects.py:190
 msgid "Date and time of the last object modification (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/metadef_properties.py:92
+#: glance/api/v2/metadef_properties.py:93
 #, python-format
 msgid ""
 "Property %(property_name)s does not start with the expected resource type"
 " association prefix of '%(prefix)s'."
 msgstr ""
 
-#: glance/api/v2/metadef_resource_types.py:198
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:202
+#: glance/api/v2/metadef_resource_types.py:126
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:129
+#, python-format
+msgid "Failed to find resource type %(resourcetype)s to delete"
+msgstr ""
+
+#: glance/api/v2/metadef_resource_types.py:199
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:203
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
 "possible: "
 "http://docs.openstack.org/developer/heat/template_guide/openstack.html"
 msgstr ""
 
-#: glance/api/v2/metadef_resource_types.py:206
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:210
+#: glance/api/v2/metadef_resource_types.py:207
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:211
 msgid ""
 "Specifies the prefix to use for the given resource type. Any properties "
 "in the namespace should be prefixed with this prefix when being applied "
@@ -861,8 +887,8 @@ msgid ""
 "colon :)."
 msgstr ""
 
-#: glance/api/v2/metadef_resource_types.py:215
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:219
+#: glance/api/v2/metadef_resource_types.py:216
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:220
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  "
 "For example, Cinder allows user and image metadata on volumes. Only the "
@@ -870,130 +896,144 @@ msgid ""
 "This property allows a namespace target to remove the ambiguity."
 msgstr ""
 
-#: glance/api/v2/metadef_resource_types.py:226
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:230
+#: glance/api/v2/metadef_resource_types.py:227
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:231
 msgid "Date and time of resource type association (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/metadef_resource_types.py:232
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:236
+#: glance/api/v2/metadef_resource_types.py:233
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:237
 msgid ""
 "Date and time of the last resource type association modification (READ-"
 "ONLY)"
 msgstr ""
 
-#: glance/api/v2/tasks.py:122
+#: glance/api/v2/tasks.py:123
 msgid ""
 "This operation is currently not permitted on Glance Tasks. They are auto "
 "deleted after reaching the time based on their expires_at property."
 msgstr ""
 
-#: glance/api/v2/tasks.py:136
+#: glance/api/v2/tasks.py:137
 msgid "Body expected in request"
 msgstr ""
 
-#: glance/api/v2/tasks.py:151
+#: glance/api/v2/tasks.py:152
 #, python-format
 msgid "Invalid status value: %s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:157
+#: glance/api/v2/tasks.py:158
 #, python-format
 msgid "Invalid type value: %s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:164 glance/registry/api/v1/images.py:277
+#: glance/api/v2/tasks.py:165 glance/registry/api/v1/images.py:279
 msgid "Invalid marker format"
 msgstr "Invalid marker format"
 
-#: glance/api/v2/tasks.py:185
+#: glance/api/v2/tasks.py:186
 #, python-format
 msgid "Task '%s' is required"
 msgstr ""
 
-#: glance/api/v2/tasks.py:308
+#: glance/api/v2/tasks.py:309
 msgid "An identifier for the task"
 msgstr ""
 
-#: glance/api/v2/tasks.py:309
+#: glance/api/v2/tasks.py:310
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0"
 "-9a-fA-F]){12}$"
 msgstr ""
 
-#: glance/api/v2/tasks.py:314
+#: glance/api/v2/tasks.py:315
 msgid "The type of task represented by this content"
 msgstr ""
 
-#: glance/api/v2/tasks.py:321
+#: glance/api/v2/tasks.py:322
 msgid "The current status of this task"
 msgstr ""
 
-#: glance/api/v2/tasks.py:331
+#: glance/api/v2/tasks.py:332
 msgid "The parameters required by task, JSON blob"
 msgstr ""
 
-#: glance/api/v2/tasks.py:335
+#: glance/api/v2/tasks.py:336
 msgid "The result of current task, JSON blob"
 msgstr ""
 
-#: glance/api/v2/tasks.py:339
+#: glance/api/v2/tasks.py:340
 msgid "An identifier for the owner of this task"
 msgstr ""
 
-#: glance/api/v2/tasks.py:343
+#: glance/api/v2/tasks.py:344
 msgid ""
 "Human-readable informative message only included when appropriate "
 "(usually on failure)"
 msgstr ""
 
-#: glance/api/v2/tasks.py:348
+#: glance/api/v2/tasks.py:349
 msgid "Datetime when this resource would be subject to removal"
 msgstr ""
 
-#: glance/api/v2/tasks.py:353
+#: glance/api/v2/tasks.py:354
 msgid "Datetime when this resource was created"
 msgstr ""
 
-#: glance/api/v2/tasks.py:357
+#: glance/api/v2/tasks.py:358
 msgid "Datetime when this resource was updated"
 msgstr ""
 
-#: glance/cmd/control.py:102
+#: glance/cmd/__init__.py:41
+#, python-format
+msgid ""
+"It appears that the eventlet module has been imported prior to setting "
+"%s='yes'. It is currently necessary to disable eventlet.greendns if using"
+" ipv6 since eventlet.greendns currently breaks with ipv6 addresses. "
+"Please ensure that eventlet is not imported prior to this being set."
+msgstr ""
+
+#: glance/cmd/control.py:104
 #, python-format
 msgid "%(serv)s appears to already be running: %(pid)s"
 msgstr ""
 
-#: glance/cmd/control.py:106
+#: glance/cmd/control.py:108
 #, python-format
 msgid "Removing stale pid file %s"
 msgstr ""
 
-#: glance/cmd/control.py:115
+#: glance/cmd/control.py:117
 msgid "Unable to increase file descriptor limit.  Running as non-root?"
 msgstr ""
 
-#: glance/cmd/control.py:160
+#: glance/cmd/control.py:164
+#, python-format
+msgid "%(verb)sing %(serv)s with %(conf)s"
+msgstr ""
+
+#: glance/cmd/control.py:167
 #, python-format
 msgid "%(verb)sing %(serv)s"
 msgstr ""
 
-#: glance/cmd/control.py:175
+#: glance/cmd/control.py:179
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
 msgstr ""
 
-#: glance/cmd/control.py:206
+#: glance/cmd/control.py:210
 #, python-format
 msgid "%(serv)s (pid %(pid)s) is running..."
 msgstr ""
 
-#: glance/cmd/control.py:209
+#: glance/cmd/control.py:213
 #, python-format
 msgid "%s is stopped"
 msgstr ""
 
-#: glance/cmd/control.py:225
+#: glance/cmd/control.py:229
 #, python-format
 msgid ""
 "Unable to create pid file %(pid)s.  Running as non-root?\n"
@@ -1001,32 +1041,32 @@ msgid ""
 "  %(file)s %(server)s stop --pid-file %(fb)s"
 msgstr ""
 
-#: glance/cmd/control.py:255
+#: glance/cmd/control.py:259
 #, python-format
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr ""
 
-#: glance/cmd/control.py:259
+#: glance/cmd/control.py:263
 #, python-format
 msgid "Process %d not running"
 msgstr ""
 
-#: glance/cmd/control.py:266
+#: glance/cmd/control.py:270
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
 
-#: glance/cmd/control.py:269
+#: glance/cmd/control.py:273
 #, python-format
 msgid "%s is already stopped"
 msgstr ""
 
-#: glance/cmd/control.py:346
+#: glance/cmd/control.py:350
 #, python-format
 msgid "Suppressed respawn as %(serv)s was %(rsn)s."
 msgstr ""
 
-#: glance/cmd/replicator.py:60
+#: glance/cmd/replicator.py:62
 #, python-format
 msgid ""
 "The image %s is already present on the slave, but our check for it did "
@@ -1034,38 +1074,38 @@ msgid ""
 "the images on the slave server."
 msgstr ""
 
-#: glance/cmd/replicator.py:280 glance/cmd/replicator.py:312
-#: glance/cmd/replicator.py:384 glance/cmd/replicator.py:460
-#: glance/cmd/replicator.py:531
+#: glance/cmd/replicator.py:282 glance/cmd/replicator.py:314
+#: glance/cmd/replicator.py:386 glance/cmd/replicator.py:462
+#: glance/cmd/replicator.py:533
 msgid "Too few arguments."
 msgstr ""
 
-#: glance/cmd/replicator.py:296
+#: glance/cmd/replicator.py:298
 #, python-format
 msgid "Total size is %(size)d bytes across %(img_count)d images"
 msgstr ""
 
-#: glance/cmd/replicator.py:680
+#: glance/cmd/replicator.py:682
 #, python-format
 msgid "Unknown command: %s"
 msgstr ""
 
-#: glance/common/auth.py:185 glance/common/auth.py:225
+#: glance/common/auth.py:187 glance/common/auth.py:227
 #, python-format
 msgid "Unexpected response: %s"
 msgstr "Unexpected response: %s"
 
-#: glance/common/auth.py:253
+#: glance/common/auth.py:255
 #, python-format
 msgid "Unknown auth strategy '%s'"
 msgstr "Unknown auth strategy '%s'"
 
-#: glance/common/auth.py:274
+#: glance/common/auth.py:276
 #, python-format
 msgid "Encountered service with no \"type\": %s"
 msgstr "Encountered service with no \"type\": %s"
 
-#: glance/common/client.py:242
+#: glance/common/client.py:244
 msgid ""
 "You have selected to use SSL in connecting, and you have supplied a cert,"
 " however you have failed to supply either a key_file parameter or set the"
@@ -1075,7 +1115,7 @@ msgstr ""
 " however you have failed to supply either a key_file parameter or set the"
 " GLANCE_CLIENT_KEY_FILE environ variable"
 
-#: glance/common/client.py:250
+#: glance/common/client.py:252
 msgid ""
 "You have selected to use SSL in connecting, and you have supplied a key, "
 "however you have failed to supply either a cert_file parameter or set the"
@@ -1085,27 +1125,27 @@ msgstr ""
 "however you have failed to supply either a cert_file parameter or set the"
 " GLANCE_CLIENT_CERT_FILE environ variable"
 
-#: glance/common/client.py:259
+#: glance/common/client.py:261
 #, python-format
 msgid "The key file you specified %s does not exist"
 msgstr "The key file you specified %s does not exist"
 
-#: glance/common/client.py:266
+#: glance/common/client.py:268
 #, python-format
 msgid "The cert file you specified %s does not exist"
 msgstr "The cert file you specified %s does not exist"
 
-#: glance/common/client.py:273
+#: glance/common/client.py:275
 #, python-format
 msgid "The CA file you specified %s does not exist"
 msgstr "The CA file you specified %s does not exist"
 
-#: glance/common/client.py:397
+#: glance/common/client.py:399
 #, python-format
 msgid "Constructed URL: %s"
 msgstr "Constructed URL: %s"
 
-#: glance/common/config.py:34
+#: glance/common/config.py:37
 msgid ""
 "Partial name of a pipeline in your paste configuration file with the "
 "service name removed. For example, if your paste section name is "
@@ -1115,33 +1155,33 @@ msgstr ""
 "service name removed. For example, if your paste section name is "
 "[pipeline:glance-api-keystone] use the value \"keystone\""
 
-#: glance/common/config.py:40
+#: glance/common/config.py:43
 msgid "Name of the paste configuration file."
 msgstr "Name of the paste configuration file."
 
-#: glance/common/config.py:45
+#: glance/common/config.py:48
 msgid "Supported values for the 'container_format' image attribute"
 msgstr ""
 
-#: glance/common/config.py:52
+#: glance/common/config.py:55
 msgid "Supported values for the 'disk_format' image attribute"
 msgstr ""
 
-#: glance/common/config.py:60
+#: glance/common/config.py:63
 msgid "Time in hours for which a task lives after, either succeeding or failing"
 msgstr ""
 
-#: glance/common/config.py:66
+#: glance/common/config.py:69
 msgid "Specifies which task executor to be used to run the task scripts."
 msgstr ""
 
-#: glance/common/config.py:70
+#: glance/common/config.py:73
 msgid ""
 "Specifies the maximum number of eventlet threads which can be spun up by "
 "the eventlet based task executor to perform execution of Glance tasks."
 msgstr ""
 
-#: glance/common/config.py:77
+#: glance/common/config.py:80
 msgid ""
 "DEPRECATED. TO BE REMOVED IN THE JUNO RELEASE. Whether or not to enforce "
 "that all DB tables have charset utf8. If your database tables do not have"
@@ -1149,7 +1189,7 @@ msgid ""
 "This option is only relevant if your database engine is MySQL."
 msgstr ""
 
-#: glance/common/config.py:86
+#: glance/common/config.py:89
 msgid ""
 "Whether to allow users to specify image properties beyond what the image "
 "schema provides"
@@ -1157,35 +1197,35 @@ msgstr ""
 "Whether to allow users to specify image properties beyond what the image "
 "schema provides"
 
-#: glance/common/config.py:89
+#: glance/common/config.py:92
 msgid ""
 "Maximum number of image members per image. Negative values evaluate to "
 "unlimited."
 msgstr ""
 
-#: glance/common/config.py:92
+#: glance/common/config.py:95
 msgid ""
 "Maximum number of properties allowed on an image. Negative values "
 "evaluate to unlimited."
 msgstr ""
 
-#: glance/common/config.py:95
+#: glance/common/config.py:98
 msgid ""
 "Maximum number of tags allowed on an image. Negative values evaluate to "
 "unlimited."
 msgstr ""
 
-#: glance/common/config.py:98
+#: glance/common/config.py:101
 msgid ""
 "Maximum number of locations allowed on an image. Negative values evaluate"
 " to unlimited."
 msgstr ""
 
-#: glance/common/config.py:101
+#: glance/common/config.py:104
 msgid "Python module path of data access API"
 msgstr "Python module path of data access API"
 
-#: glance/common/config.py:103
+#: glance/common/config.py:106
 msgid ""
 "Default value for the number of items returned by a request if not "
 "specified explicitly in the request"
@@ -1193,25 +1233,25 @@ msgstr ""
 "Default value for the number of items returned by a request if not "
 "specified explicitly in the request"
 
-#: glance/common/config.py:106
+#: glance/common/config.py:109
 msgid "Maximum permissible number of items that could be returned by a request"
 msgstr "Maximum permissible number of items that could be returned by a request"
 
-#: glance/common/config.py:109
+#: glance/common/config.py:112
 msgid ""
 "Whether to include the backend image storage location in image "
 "properties. Revealing storage location can be a security risk, so use "
 "this setting with caution!"
 msgstr ""
 
-#: glance/common/config.py:114
+#: glance/common/config.py:117
 msgid ""
 "Whether to include the backend image locations in image properties. "
 "Revealing storage location can be a security risk, so use this setting "
 "with caution!  The overrides show_image_direct_url."
 msgstr ""
 
-#: glance/common/config.py:119
+#: glance/common/config.py:122
 msgid ""
 "Maximum size of image a user can upload in bytes. Defaults to "
 "1099511627776 bytes (1 TB)."
@@ -1219,7 +1259,7 @@ msgstr ""
 "Maximum size of image a user can upload in bytes. Defaults to "
 "1099511627776 bytes (1 TB)."
 
-#: glance/common/config.py:122
+#: glance/common/config.py:125
 msgid ""
 "Set a system wide quota for every user. This value is the total capacity "
 "that a user can use across all storage systems. A value of 0 means "
@@ -1230,31 +1270,31 @@ msgid ""
 "unit and units are case sensitive."
 msgstr ""
 
-#: glance/common/config.py:132
+#: glance/common/config.py:135
 msgid "Deploy the v1 OpenStack Images API."
 msgstr ""
 
-#: glance/common/config.py:134
+#: glance/common/config.py:137
 msgid "Deploy the v2 OpenStack Images API."
 msgstr ""
 
-#: glance/common/config.py:136
+#: glance/common/config.py:139
 msgid "Deploy the v1 OpenStack Registry API."
 msgstr ""
 
-#: glance/common/config.py:138
+#: glance/common/config.py:141
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr ""
 
-#: glance/common/config.py:140
+#: glance/common/config.py:143
 msgid "The hostname/IP of the pydev process listening for debug connections"
 msgstr "The hostname/IP of the pydev process listening for debug connections"
 
-#: glance/common/config.py:143
+#: glance/common/config.py:146
 msgid "The port on which a pydev process is listening for connections."
 msgstr "The port on which a pydev process is listening for connections."
 
-#: glance/common/config.py:146
+#: glance/common/config.py:149
 msgid ""
 "Key used for encrypting sensitive metadata while talking to the registry "
 "or database."
@@ -1262,12 +1302,12 @@ msgstr ""
 "Key used for encrypting sensitive metadata while talking to the registry "
 "or database."
 
-#: glance/common/config.py:205
+#: glance/common/config.py:208
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr ""
 
-#: glance/common/config.py:244
+#: glance/common/config.py:247
 #, python-format
 msgid ""
 "Unable to load %(app_name)s from configuration file %(conf_file)s.\n"
@@ -1276,16 +1316,16 @@ msgstr ""
 "Unable to load %(app_name)s from configuration file %(conf_file)s.\n"
 "Got: %(e)r"
 
-#: glance/common/exception.py:38
+#: glance/common/exception.py:42
 msgid "An unknown exception occurred"
 msgstr "An unknown exception occurred"
 
-#: glance/common/exception.py:63
+#: glance/common/exception.py:67
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "Missing required credential: %(required)s"
 
-#: glance/common/exception.py:67
+#: glance/common/exception.py:71
 #, python-format
 msgid ""
 "Incorrect auth strategy, expected \"%(expected)s\" but received "
@@ -1294,146 +1334,146 @@ msgstr ""
 "Incorrect auth strategy, expected \"%(expected)s\" but received "
 "\"%(received)s\""
 
-#: glance/common/exception.py:72
+#: glance/common/exception.py:76
 msgid "An object with the specified identifier was not found."
 msgstr "An object with the specified identifier was not found."
 
-#: glance/common/exception.py:76
+#: glance/common/exception.py:80
 msgid "The Store URI was malformed."
 msgstr "The Store URI was malformed."
 
-#: glance/common/exception.py:80
+#: glance/common/exception.py:84
 msgid "An object with the same identifier already exists."
 msgstr "An object with the same identifier already exists."
 
-#: glance/common/exception.py:84
+#: glance/common/exception.py:88
 msgid "An object with the same identifier is currently being operated on."
 msgstr ""
 
-#: glance/common/exception.py:89
+#: glance/common/exception.py:93
 #, python-format
 msgid ""
 "The size of the data %(image_size)s will exceed the limit. %(remaining)s "
 "bytes remaining."
 msgstr ""
 
-#: glance/common/exception.py:94
+#: glance/common/exception.py:98
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr "Connect error/bad request to Auth service at URL %(url)s."
 
-#: glance/common/exception.py:98
+#: glance/common/exception.py:102
 #, python-format
 msgid "Auth service at URL %(url)s not found."
 msgstr "Auth service at URL %(url)s not found."
 
-#: glance/common/exception.py:102
+#: glance/common/exception.py:106
 msgid "Authorization failed."
 msgstr "Authorization failed."
 
-#: glance/common/exception.py:106
+#: glance/common/exception.py:110
 msgid "You are not authenticated."
 msgstr "You are not authenticated."
 
-#: glance/common/exception.py:110
+#: glance/common/exception.py:114
 #, python-format
 msgid "Image upload problem: %s"
 msgstr ""
 
-#: glance/common/exception.py:114 glance/common/exception.py:118
-#: glance/common/exception.py:381
+#: glance/common/exception.py:118 glance/common/exception.py:122
+#: glance/common/exception.py:385
 msgid "You are not authorized to complete this action."
 msgstr "You are not authorized to complete this action."
 
-#: glance/common/exception.py:122
+#: glance/common/exception.py:126
 #, python-format
 msgid "Image %(image_id)s is protected and cannot be deleted."
 msgstr "Image %(image_id)s is protected and cannot be deleted."
 
-#: glance/common/exception.py:126
+#: glance/common/exception.py:130
 #, python-format
 msgid ""
 "Metadata definition namespace %(namespace)s is protected and cannot be "
 "deleted."
 msgstr ""
 
-#: glance/common/exception.py:131
+#: glance/common/exception.py:135
 #, python-format
 msgid ""
 "Metadata definition property %(property_name)s is protected and cannot be"
 " deleted."
 msgstr ""
 
-#: glance/common/exception.py:136
+#: glance/common/exception.py:140
 #, python-format
 msgid ""
 "Metadata definition object %(object_name)s is protected and cannot be "
 "deleted."
 msgstr ""
 
-#: glance/common/exception.py:141
+#: glance/common/exception.py:145
 #, python-format
 msgid ""
 "Metadata definition resource-type-association %(resource_type)s is "
 "protected and cannot be deleted."
 msgstr ""
 
-#: glance/common/exception.py:146
+#: glance/common/exception.py:150
 #, python-format
 msgid ""
 "Metadata definition resource-type %(resource_type_name)s is a seeded-"
 "system type and cannot be deleted."
 msgstr ""
 
-#: glance/common/exception.py:151
+#: glance/common/exception.py:155
 msgid "Data supplied was not valid."
 msgstr "Data supplied was not valid."
 
-#: glance/common/exception.py:155
+#: glance/common/exception.py:159
 msgid "Sort key supplied was not valid."
 msgstr "Sort key supplied was not valid."
 
-#: glance/common/exception.py:159
+#: glance/common/exception.py:163
 msgid "Invalid configuration in property protection file."
 msgstr ""
 
-#: glance/common/exception.py:163
+#: glance/common/exception.py:167
 msgid "Invalid configuration in glance-swift conf file."
 msgstr ""
 
-#: glance/common/exception.py:167
+#: glance/common/exception.py:171
 msgid "Unable to filter using the specified range."
 msgstr "Unable to filter using the specified range."
 
-#: glance/common/exception.py:171
+#: glance/common/exception.py:175
 #, python-format
 msgid "Invalid value for option %(option)s: %(value)s"
 msgstr ""
 
-#: glance/common/exception.py:175
+#: glance/common/exception.py:179
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
 msgstr "Attribute '%(property)s' is read-only."
 
-#: glance/common/exception.py:179
+#: glance/common/exception.py:183
 #, python-format
 msgid "Attribute '%(property)s' is reserved."
 msgstr "Attribute '%(property)s' is reserved."
 
-#: glance/common/exception.py:183
+#: glance/common/exception.py:187
 #, python-format
 msgid "Redirecting to %(uri)s for authorization."
 msgstr "Redirecting to %(uri)s for authorization."
 
-#: glance/common/exception.py:187
+#: glance/common/exception.py:191
 msgid "There was an error connecting to a server"
 msgstr "There was an error connecting to a server"
 
-#: glance/common/exception.py:191
+#: glance/common/exception.py:195
 msgid "There was an error configuring the client."
 msgstr "There was an error configuring the client."
 
-#: glance/common/exception.py:195
+#: glance/common/exception.py:199
 #, python-format
 msgid ""
 "The request returned a 302 Multiple Choices. This generally means that "
@@ -1448,7 +1488,7 @@ msgstr ""
 "The body of response returned:\n"
 "%(body)s"
 
-#: glance/common/exception.py:201
+#: glance/common/exception.py:205
 #, python-format
 msgid ""
 "The request returned a 413 Request Entity Too Large. This generally means"
@@ -1463,17 +1503,17 @@ msgstr ""
 "The response body:\n"
 "%(body)s"
 
-#: glance/common/exception.py:212
+#: glance/common/exception.py:216
 msgid ""
 "The request returned 503 Service Unavailable. This generally occurs on "
 "service overload or other transient outage."
 msgstr ""
 
-#: glance/common/exception.py:223
+#: glance/common/exception.py:227
 msgid "The request returned 500 Internal Server Error."
 msgstr "The request returned 500 Internal Server Error."
 
-#: glance/common/exception.py:227
+#: glance/common/exception.py:231
 #, python-format
 msgid ""
 "The request returned an unexpected status: %(status)s.\n"
@@ -1486,17 +1526,17 @@ msgstr ""
 "The response body:\n"
 "%(body)s"
 
-#: glance/common/exception.py:232
+#: glance/common/exception.py:236
 #, python-format
 msgid "Invalid content type %(content_type)s"
 msgstr "Invalid content type %(content_type)s"
 
-#: glance/common/exception.py:236
+#: glance/common/exception.py:240
 #, python-format
 msgid "Registry was not configured correctly on API server. Reason: %(reason)s"
 msgstr "Registry was not configured correctly on API server. Reason: %(reason)s"
 
-#: glance/common/exception.py:241
+#: glance/common/exception.py:245
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: "
@@ -1505,20 +1545,20 @@ msgstr ""
 "Driver %(driver_name)s could not be configured correctly. Reason: "
 "%(reason)s"
 
-#: glance/common/exception.py:246
+#: glance/common/exception.py:250
 #, python-format
 msgid "Maximum redirects (%(redirects)s) was exceeded."
 msgstr "Maximum redirects (%(redirects)s) was exceeded."
 
-#: glance/common/exception.py:250
+#: glance/common/exception.py:254
 msgid "Received invalid HTTP redirect."
 msgstr "Received invalid HTTP redirect."
 
-#: glance/common/exception.py:254
+#: glance/common/exception.py:258
 msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "Response from Keystone does not contain a Glance endpoint."
 
-#: glance/common/exception.py:258
+#: glance/common/exception.py:262
 #, python-format
 msgid ""
 "Multiple 'image' service matches for region %(region)s. This generally "
@@ -1527,27 +1567,27 @@ msgstr ""
 "Multiple 'image' service matches for region %(region)s. This generally "
 "means that a region is required and you have not supplied one."
 
-#: glance/common/exception.py:264
+#: glance/common/exception.py:268
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
 msgstr "Server worker creation failed: %(reason)s."
 
-#: glance/common/exception.py:268
+#: glance/common/exception.py:272
 #, python-format
 msgid "Unable to load schema: %(reason)s"
 msgstr "Unable to load schema: %(reason)s"
 
-#: glance/common/exception.py:272
+#: glance/common/exception.py:276
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
 msgstr "Provided object does not match schema '%(schema)s': %(reason)s"
 
-#: glance/common/exception.py:277
+#: glance/common/exception.py:281
 #, python-format
 msgid "Provided header feature is unsupported: %(feature)s"
 msgstr "Provided header feature is unsupported: %(feature)s"
 
-#: glance/common/exception.py:281
+#: glance/common/exception.py:285
 msgid ""
 "The image cannot be deleted because it is in use through the backend "
 "store outside of Glance."
@@ -1555,104 +1595,104 @@ msgstr ""
 "The image cannot be deleted because it is in use through the backend "
 "store outside of Glance."
 
-#: glance/common/exception.py:286
+#: glance/common/exception.py:290
 msgid "The provided image is too large."
 msgstr "The provided image is too large."
 
-#: glance/common/exception.py:296
+#: glance/common/exception.py:300
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
 
-#: glance/common/exception.py:301
+#: glance/common/exception.py:305
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image tags. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
 
-#: glance/common/exception.py:306
+#: glance/common/exception.py:310
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image locations. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
 
-#: glance/common/exception.py:311
+#: glance/common/exception.py:315
 #, python-format
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
 msgstr ""
 
-#: glance/common/exception.py:315
-msgid "An unknown task exception occurred"
-msgstr ""
-
 #: glance/common/exception.py:319
-#, python-format
-msgid "Task with the given id %(task_id)s was not found"
+msgid "An unknown task exception occurred"
 msgstr ""
 
 #: glance/common/exception.py:323
 #, python-format
-msgid "Provided status of task is unsupported: %(status)s"
+msgid "Task with the given id %(task_id)s was not found"
 msgstr ""
 
 #: glance/common/exception.py:327
 #, python-format
-msgid "Provided type of task is unsupported: %(type)s"
+msgid "Provided status of task is unsupported: %(status)s"
 msgstr ""
 
 #: glance/common/exception.py:331
 #, python-format
+msgid "Provided type of task is unsupported: %(type)s"
+msgstr ""
+
+#: glance/common/exception.py:335
+#, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
 msgstr ""
 
-#: glance/common/exception.py:336
+#: glance/common/exception.py:340
 #, python-format
 msgid "The location %(location)s already exists"
 msgstr ""
 
-#: glance/common/exception.py:344
+#: glance/common/exception.py:348
 #, python-format
 msgid "Invalid value '%(value)s' for parameter '%(param)s': %(extra_msg)s"
 msgstr ""
 
-#: glance/common/exception.py:349
+#: glance/common/exception.py:353
 #, python-format
 msgid ""
 "Image status transition from %(cur_status)s to %(new_status)s is not "
 "allowed"
 msgstr ""
 
-#: glance/common/exception.py:354
+#: glance/common/exception.py:358
 #, python-format
 msgid "The metadata definition namespace=%(namespace_name)s already exists."
 msgstr ""
 
-#: glance/common/exception.py:359
+#: glance/common/exception.py:363
 #, python-format
 msgid ""
 "A metadata definition object with name=%(object_name)s already exists in "
 "namespace=%(namespace_name)s."
 msgstr ""
 
-#: glance/common/exception.py:364
+#: glance/common/exception.py:368
 #, python-format
 msgid ""
 "A metadata definition property with name=%(property_name)s already exists"
 " in namespace=%(namespace_name)s."
 msgstr ""
 
-#: glance/common/exception.py:369
+#: glance/common/exception.py:373
 #, python-format
 msgid ""
 "A metadata definition resource-type with name=%(resource_type_name)s "
 "already exists."
 msgstr ""
 
-#: glance/common/exception.py:374
+#: glance/common/exception.py:378
 #, python-format
 msgid ""
 "The metadata definition resource-type association of resource-"
@@ -1660,40 +1700,40 @@ msgid ""
 "exists."
 msgstr ""
 
-#: glance/common/exception.py:385
+#: glance/common/exception.py:389
 #, python-format
 msgid ""
 "The metadata definition %(record_type)s with name=%(record_name)s not "
 "deleted. Other records still refer to it."
 msgstr ""
 
-#: glance/common/exception.py:391
+#: glance/common/exception.py:395
 #, python-format
 msgid "Metadata definition namespace=%(namespace_name)swas not found."
 msgstr ""
 
-#: glance/common/exception.py:396
+#: glance/common/exception.py:400
 #, python-format
 msgid ""
 "The metadata definition object with name=%(object_name)s was not found in"
 " namespace=%(namespace_name)s."
 msgstr ""
 
-#: glance/common/exception.py:402
+#: glance/common/exception.py:406
 #, python-format
 msgid ""
 "The metadata definition property with name=%(property_name)s was not "
 "found in namespace=%(namespace_name)s."
 msgstr ""
 
-#: glance/common/exception.py:408
+#: glance/common/exception.py:412
 #, python-format
 msgid ""
 "The metadata definition resource-type with name=%(resource_type_name)s, "
 "was not found."
 msgstr ""
 
-#: glance/common/exception.py:413
+#: glance/common/exception.py:417
 #, python-format
 msgid ""
 "The metadata definition resource-type association of resource-"
@@ -1701,143 +1741,143 @@ msgid ""
 "found."
 msgstr ""
 
-#: glance/common/property_utils.py:36
+#: glance/common/property_utils.py:38
 msgid "The location of the property protection file."
 msgstr ""
 
-#: glance/common/property_utils.py:39
+#: glance/common/property_utils.py:41
 msgid ""
 "This config value indicates whether \"roles\" or \"policies\" are used in"
 " the property protection file."
 msgstr ""
 
-#: glance/common/property_utils.py:74
+#: glance/common/property_utils.py:76
 #, python-format
 msgid "Couldn't find property protection file %(file)s: %(error)s."
 msgstr ""
 
-#: glance/common/property_utils.py:81
+#: glance/common/property_utils.py:83
 #, python-format
 msgid ""
 "Invalid value '%s' for 'property_protection_rule_format'. The permitted "
 "values are 'roles' and 'policies'"
 msgstr ""
 
-#: glance/common/property_utils.py:100
+#: glance/common/property_utils.py:102
 #, python-format
 msgid ""
 "Multiple policies '%s' not allowedfor a given operation. Policies can be "
 "combined in the policy file"
 msgstr ""
 
-#: glance/common/property_utils.py:113
+#: glance/common/property_utils.py:115
 #, python-format
 msgid ""
 "Malformed property protection rule in [%(prop)s] %(op)s=%(perm)s: '@' and"
 " '!' are mutually exclusive"
 msgstr ""
 
-#: glance/common/property_utils.py:126
+#: glance/common/property_utils.py:128
 #, python-format
 msgid ""
 "Property protection on operation %(operation)s for rule %(rule)s is not "
 "found. No role will be allowed to perform this operation."
 msgstr ""
 
-#: glance/common/property_utils.py:138
+#: glance/common/property_utils.py:140
 #, python-format
 msgid "Encountered a malformed property protection rule %(rule)s: %(error)s."
 msgstr ""
 
-#: glance/common/rpc.py:140
+#: glance/common/rpc.py:142
 msgid "Request must be a list of commands"
 msgstr ""
 
-#: glance/common/rpc.py:145
+#: glance/common/rpc.py:147
 #, python-format
 msgid "Bad Command: %s"
 msgstr ""
 
-#: glance/common/rpc.py:152
+#: glance/common/rpc.py:154
 #, python-format
 msgid "Wrong command structure: %s"
 msgstr ""
 
-#: glance/common/rpc.py:161
+#: glance/common/rpc.py:163
 msgid "Command not found"
 msgstr ""
 
-#: glance/common/rpc.py:183
+#: glance/common/rpc.py:185
 #, python-format
 msgid ""
 "RPC Call Error: %(val)s\n"
 "%(tb)s"
 msgstr ""
 
-#: glance/common/store_utils.py:33 glance/registry/client/__init__.py:43
+#: glance/common/store_utils.py:34 glance/registry/client/__init__.py:47
 msgid ""
 "Whether to pass through the user token when making requests to the "
 "registry."
 msgstr ""
 
-#: glance/common/swift_store_utils.py:29
+#: glance/common/swift_store_utils.py:32
 msgid ""
 "The reference to the default swift account/backing store parameters to "
 "use for adding new images."
 msgstr ""
 
-#: glance/common/swift_store_utils.py:32
+#: glance/common/swift_store_utils.py:35
 msgid ""
 "The address where the Swift authentication service is "
 "listening.(deprecated)"
 msgstr ""
 
-#: glance/common/swift_store_utils.py:35
+#: glance/common/swift_store_utils.py:38
 msgid ""
 "The user to authenticate against the Swift authentication service "
 "(deprecated)"
 msgstr ""
 
-#: glance/common/swift_store_utils.py:38
+#: glance/common/swift_store_utils.py:41
 msgid ""
 "Auth key for the user authenticating against the Swift authentication "
 "service. (deprecated)"
 msgstr ""
 
-#: glance/common/swift_store_utils.py:41
+#: glance/common/swift_store_utils.py:44
 msgid "The config file that has the swift account(s)configs."
 msgstr ""
 
-#: glance/common/swift_store_utils.py:83
+#: glance/common/swift_store_utils.py:86
 #, python-format
 msgid "swift config file %(conf_file)s:%(exc)s not found"
 msgstr ""
 
-#: glance/common/swift_store_utils.py:97
+#: glance/common/swift_store_utils.py:100
 msgid "Invalid format of swift store configcfg"
 msgstr ""
 
-#: glance/common/utils.py:112
+#: glance/common/utils.py:114
 #, python-format
 msgid "Error: cooperative_iter exception %s"
 msgstr "Error: cooperative_iter exception %s"
 
-#: glance/common/utils.py:244
+#: glance/common/utils.py:246
 #, python-format
 msgid "Bad header: %(header_name)s"
 msgstr ""
 
-#: glance/common/utils.py:258
+#: glance/common/utils.py:260
 #, python-format
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr ""
 
-#: glance/common/utils.py:265
+#: glance/common/utils.py:267
 #, python-format
 msgid "Image %(key)s must be >= 0 ('%(value)s' specified)."
 msgstr ""
 
-#: glance/common/utils.py:459
+#: glance/common/utils.py:461
 msgid ""
 "Error setting up the debug environment.  Verify that the option "
 "pydev_worker_debug_host is pointing to a valid hostname or IP on which a "
@@ -1845,43 +1885,43 @@ msgid ""
 "pydev_worker_debug_port."
 msgstr ""
 
-#: glance/common/utils.py:494
+#: glance/common/utils.py:496
 #, python-format
 msgid ""
 "There is a problem with your %(error_key_name)s %(error_filename)s.  "
 "Please verify it.  Error: %(ioe)s"
 msgstr ""
 
-#: glance/common/utils.py:501
+#: glance/common/utils.py:503
 #, python-format
 msgid ""
 "There is a problem with your %(error_key_name)s %(error_filename)s.  "
 "Please verify it. OpenSSL error: %(ce)s"
 msgstr ""
 
-#: glance/common/utils.py:515
+#: glance/common/utils.py:517
 #, python-format
 msgid ""
 "There is a problem with your key pair.  Please verify that cert "
 "%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
 msgstr ""
 
-#: glance/common/utils.py:593
+#: glance/common/utils.py:595
 #, python-format
 msgid "Host and port \"%s\" is not valid."
 msgstr ""
 
-#: glance/common/utils.py:596
+#: glance/common/utils.py:598
 #, python-format
 msgid "Port \"%s\" is not valid."
 msgstr ""
 
-#: glance/common/utils.py:605
+#: glance/common/utils.py:607
 #, python-format
 msgid "Host \"%s\" is not valid."
 msgstr ""
 
-#: glance/common/utils.py:608
+#: glance/common/utils.py:610
 #, python-format
 msgid ""
 "%s Please specify a host:port pair, where host is an IPv4 address, IPv6 "
@@ -1889,7 +1929,20 @@ msgid ""
 "brackets separately from the port (i.e., \"[fe80::a:b:c]:9876\")."
 msgstr ""
 
-#: glance/common/wsgi.py:55
+#: glance/common/utils.py:657
+msgid "Property names can't contain 4 byte unicode."
+msgstr ""
+
+#: glance/common/utils.py:660
+#, python-format
+msgid "%s can't contain 4 byte unicode characters."
+msgstr ""
+
+#: glance/common/utils.py:669
+msgid "Param values can't contain 4 byte unicode."
+msgstr ""
+
+#: glance/common/wsgi.py:56
 msgid ""
 "Address to bind the server.  Useful when selecting a particular network "
 "interface."
@@ -1897,55 +1950,55 @@ msgstr ""
 "Address to bind the server.  Useful when selecting a particular network "
 "interface."
 
-#: glance/common/wsgi.py:58
+#: glance/common/wsgi.py:59
 msgid "The port on which the server will listen."
 msgstr "The port on which the server will listen."
 
-#: glance/common/wsgi.py:63
+#: glance/common/wsgi.py:64
 msgid "The backlog value that will be used when creating the TCP listener socket."
 msgstr "The backlog value that will be used when creating the TCP listener socket."
 
-#: glance/common/wsgi.py:66
+#: glance/common/wsgi.py:67
 msgid ""
 "The value for the socket option TCP_KEEPIDLE.  This is the time in "
 "seconds that the connection must be idle before TCP starts sending "
 "keepalive probes."
 msgstr ""
 
-#: glance/common/wsgi.py:69
+#: glance/common/wsgi.py:70
 msgid "CA certificate file to use to verify connecting clients."
 msgstr "CA certificate file to use to verify connecting clients."
 
-#: glance/common/wsgi.py:71
+#: glance/common/wsgi.py:72
 msgid "Certificate file to use when starting API server securely."
 msgstr "Certificate file to use when starting API server securely."
 
-#: glance/common/wsgi.py:73
+#: glance/common/wsgi.py:74
 msgid "Private key file to use when starting API server securely."
 msgstr "Private key file to use when starting API server securely."
 
-#: glance/common/wsgi.py:79
+#: glance/common/wsgi.py:80
 msgid ""
 "The number of child process workers that will be created to service "
 "requests. The default will be equal to the number of CPUs available."
 msgstr ""
 
-#: glance/common/wsgi.py:83
+#: glance/common/wsgi.py:84
 msgid ""
 "Maximum line size of message headers to be accepted. max_header_line may "
 "need to be increased when using large tokens (typically those generated "
 "by the Keystone v3 API with big service catalogs"
 msgstr ""
 
-#: glance/common/wsgi.py:91
+#: glance/common/wsgi.py:92
 msgid "If False fully disable profiling feature."
 msgstr ""
 
-#: glance/common/wsgi.py:93
+#: glance/common/wsgi.py:94
 msgid "If False doesn't trace SQL requests."
 msgstr ""
 
-#: glance/common/wsgi.py:139
+#: glance/common/wsgi.py:140
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
 "key_file option value in your configuration file"
@@ -1953,88 +2006,88 @@ msgstr ""
 "When running server in SSL mode, you must specify both a cert_file and "
 "key_file option value in your configuration file"
 
-#: glance/common/wsgi.py:177
+#: glance/common/wsgi.py:178
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
 
-#: glance/common/wsgi.py:200
+#: glance/common/wsgi.py:201
 msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
 msgstr ""
 
-#: glance/common/wsgi.py:266
+#: glance/common/wsgi.py:267
 #, python-format
 msgid "Starting %d workers"
 msgstr "Starting %d workers"
 
-#: glance/common/wsgi.py:281
+#: glance/common/wsgi.py:282
 #, python-format
 msgid "Removing dead child %s"
 msgstr "Removing dead child %s"
 
-#: glance/common/wsgi.py:284
+#: glance/common/wsgi.py:285
 #, python-format
 msgid "Not respawning child %d, cannot recover from termination"
 msgstr "Not respawning child %d, cannot recover from termination"
 
-#: glance/common/wsgi.py:287
+#: glance/common/wsgi.py:288
 msgid "All workers have terminated. Exiting"
 msgstr "All workers have terminated. Exiting"
 
-#: glance/common/wsgi.py:295
+#: glance/common/wsgi.py:296
 msgid "Caught keyboard interrupt. Exiting."
 msgstr "Caught keyboard interrupt. Exiting."
 
-#: glance/common/wsgi.py:321
+#: glance/common/wsgi.py:322
 #, python-format
 msgid "Child %d exiting normally"
 msgstr "Child %d exiting normally"
 
-#: glance/common/wsgi.py:326
+#: glance/common/wsgi.py:327
 #, python-format
 msgid "Started child %s"
 msgstr "Started child %s"
 
-#: glance/common/wsgi.py:350
+#: glance/common/wsgi.py:351
 msgid "Starting single process server"
 msgstr "Starting single process server"
 
-#: glance/common/wsgi.py:563
+#: glance/common/wsgi.py:564
 #, python-format
 msgid "Malformed Content-Range header: %s"
 msgstr ""
 
-#: glance/common/wsgi.py:590
+#: glance/common/wsgi.py:591
 msgid "Malformed JSON in request body."
 msgstr "Malformed JSON in request body."
 
-#: glance/common/location_strategy/__init__.py:25
+#: glance/common/location_strategy/__init__.py:28
 msgid ""
 "This value sets what strategy will be used to determine the image "
 "location order. Currently two strategies are packaged with Glance "
 "'location_order' and 'store_type'."
 msgstr ""
 
-#: glance/common/location_strategy/__init__.py:52
+#: glance/common/location_strategy/__init__.py:55
 #, python-format
 msgid ""
 "%(strategy)s is registered as a module twice. %(module)s is not being "
 "used."
 msgstr ""
 
-#: glance/common/location_strategy/__init__.py:61
+#: glance/common/location_strategy/__init__.py:64
 #, python-format
 msgid "Failed to load location strategy module %(module)s: %(e)s"
 msgstr ""
 
-#: glance/common/location_strategy/__init__.py:76
+#: glance/common/location_strategy/__init__.py:79
 #, python-format
 msgid ""
 "Invalid location_strategy option: %(name)s. The valid strategy option(s) "
 "is(are): %(strategies)s"
 msgstr ""
 
-#: glance/common/location_strategy/store_type.py:25
+#: glance/common/location_strategy/store_type.py:29
 msgid ""
 "The store names to use to get store preference order. The name must be "
 "registered by one of the stores defined by the 'known_stores' config "
@@ -2043,248 +2096,220 @@ msgid ""
 "option."
 msgstr ""
 
-#: glance/common/scripts/utils.py:63
+#: glance/common/scripts/utils.py:64
 #, python-format
 msgid "Input does not contain '%(key)s' field"
 msgstr ""
 
-#: glance/common/scripts/utils.py:89
+#: glance/common/scripts/utils.py:90
 #, python-format
 msgid "Invalid location: %s"
 msgstr ""
 
-#: glance/common/scripts/utils.py:97
+#: glance/common/scripts/utils.py:98
 msgid ""
 "File based imports are not allowed. Please use a non-local source of "
 "image data."
 msgstr ""
 
-#: glance/common/scripts/utils.py:106
+#: glance/common/scripts/utils.py:107
 #, python-format
 msgid ""
 "The given uri is not valid. Please specify a valid uri from the following"
 " list of supported uri %(supported)s"
 msgstr ""
 
-#: glance/common/scripts/image_import/main.py:104
+#: glance/common/scripts/image_import/main.py:105
 #, python-format
 msgid ""
 "The Image %(image_id)s object being created by this task %(task_id)s, is "
 "no longer in valid status for further processing."
 msgstr ""
 
-#: glance/db/__init__.py:69 glance/db/__init__.py:176 glance/db/__init__.py:188
+#: glance/db/__init__.py:72 glance/db/__init__.py:179 glance/db/__init__.py:191
 #, python-format
 msgid "No image found with ID %s"
 msgstr ""
 
-#: glance/db/__init__.py:247
+#: glance/db/__init__.py:250
 #, python-format
 msgid ""
 "The target member %(member_id)s is already associated with image "
 "%(image_id)s."
 msgstr ""
 
-#: glance/db/__init__.py:264
+#: glance/db/__init__.py:267
 #, python-format
 msgid "The specified member %s could not be found"
 msgstr ""
 
-#: glance/db/__init__.py:342 glance/db/__init__.py:363
-#: glance/db/__init__.py:380 glance/db/simple/api.py:861
+#: glance/db/__init__.py:345 glance/db/__init__.py:366
+#: glance/db/__init__.py:383
 #, python-format
 msgid "Could not find task %s"
 msgstr ""
 
-#: glance/db/__init__.py:427
+#: glance/db/__init__.py:430
 #, python-format
 msgid "Could not find namespace %s"
 msgstr ""
 
-#: glance/db/__init__.py:449 glance/db/__init__.py:459
-#: glance/db/__init__.py:469
+#: glance/db/__init__.py:452 glance/db/__init__.py:462
+#: glance/db/__init__.py:472
 #, python-format
 msgid "The specified namespace %s could not be found"
 msgstr ""
 
-#: glance/db/__init__.py:560
+#: glance/db/__init__.py:563
 #, python-format
 msgid "Could not find metadata object %s"
 msgstr ""
 
-#: glance/db/__init__.py:583
+#: glance/db/__init__.py:586
 #, python-format
 msgid "The specified metadata object %s could not be found"
 msgstr ""
 
-#: glance/db/__init__.py:676
+#: glance/db/__init__.py:679
 #, python-format
 msgid "The specified resource type %s could not be found "
 msgstr ""
 
-#: glance/db/__init__.py:723
+#: glance/db/__init__.py:726
 #, python-format
 msgid "Could not find property %s"
 msgstr ""
 
-#: glance/db/__init__.py:745
+#: glance/db/__init__.py:748
 #, python-format
 msgid "The specified property %s could not be found"
 msgstr ""
 
-#: glance/db/simple/api.py:50
-#, python-format
-msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
-msgstr "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
-
-#: glance/db/simple/api.py:55
-#, python-format
-msgid "Returning %(funcname)s: %(output)s"
-msgstr "Returning %(funcname)s: %(output)s"
-
-#: glance/db/simple/api.py:273 glance/db/sqlalchemy/api.py:455
+#: glance/db/simple/api.py:284 glance/db/sqlalchemy/api.py:457
 msgid "Unable to filter on a range with a non-numeric value."
 msgstr "Unable to filter on a range with a non-numeric value."
 
-#: glance/db/simple/api.py:344
-#, python-format
-msgid "Could not find image %s"
-msgstr "Could not find image %s"
-
-#: glance/db/simple/api.py:348
-msgid "Unable to get deleted image"
-msgstr "Unable to get deleted image"
-
-#: glance/db/simple/api.py:352
-msgid "Unable to get unowned image"
-msgstr "Unable to get unowned image"
-
-#: glance/db/simple/api.py:444 glance/db/sqlalchemy/api.py:1087
+#: glance/db/simple/api.py:455 glance/db/sqlalchemy/api.py:1093
 msgid "Image id is required."
 msgstr ""
 
-#: glance/db/simple/api.py:502 glance/db/sqlalchemy/api.py:791
+#: glance/db/simple/api.py:515 glance/db/sqlalchemy/api.py:796
 #, python-format
 msgid "The location data has an invalid ID: %d"
 msgstr ""
 
-#: glance/db/simple/api.py:522 glance/db/simple/api.py:548
-#: glance/db/sqlalchemy/api.py:811 glance/db/sqlalchemy/api.py:837
+#: glance/db/simple/api.py:535 glance/db/simple/api.py:561
+#: glance/db/sqlalchemy/api.py:816 glance/db/sqlalchemy/api.py:842
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr ""
 
-#: glance/db/simple/api.py:532
+#: glance/db/simple/api.py:545
 msgid ""
 "The status of deleted image location can only be set to 'pending_delete' "
 "or 'deleted'."
 msgstr ""
 
-#: glance/db/simple/api.py:866
+#: glance/db/simple/api.py:882
 #, python-format
-msgid "Unable to get deleted task %s"
+msgid "Forbidding request, task %s is not visible"
 msgstr ""
 
-#: glance/db/simple/api.py:989
+#: glance/db/simple/api.py:999
 msgid "Task does not exist"
 msgstr ""
 
-#: glance/db/simple/api.py:1027
-#, python-format
-msgid "Could not find task info %s"
-msgstr ""
-
-#: glance/db/simple/api.py:1083
-#: glance/db/sqlalchemy/metadef_api/namespace.py:255
+#: glance/db/simple/api.py:1093
+#: glance/db/sqlalchemy/metadef_api/namespace.py:256
 #, python-format
 msgid ""
 "Invalid update. It would result in a duplicate metadata definition "
 "namespace with the same name of %s"
 msgstr ""
 
-#: glance/db/simple/api.py:1104
-#: glance/db/sqlalchemy/metadef_api/namespace.py:89
+#: glance/db/simple/api.py:1114
+#: glance/db/sqlalchemy/metadef_api/namespace.py:90
 #, python-format
 msgid "Metadata definition namespace not found for id=%s"
 msgstr ""
 
-#: glance/db/simple/api.py:1113
-#: glance/db/sqlalchemy/metadef_api/namespace.py:99
+#: glance/db/simple/api.py:1123
+#: glance/db/sqlalchemy/metadef_api/namespace.py:100
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
 msgstr ""
 
-#: glance/db/simple/api.py:1238
+#: glance/db/simple/api.py:1248
 #, python-format
 msgid "Metadata definition object not found for id=%s"
 msgstr ""
 
-#: glance/db/simple/api.py:1321
+#: glance/db/simple/api.py:1331
 #, python-format
 msgid ""
 "Invalid update. It would result in a duplicate metadata definition object"
 " with the same name=%(name)s  in namespace=%(namespace_name)s."
 msgstr ""
 
-#: glance/db/simple/api.py:1443
-#: glance/db/sqlalchemy/metadef_api/property.py:127
+#: glance/db/simple/api.py:1453
+#: glance/db/sqlalchemy/metadef_api/property.py:128
 #, python-format
 msgid ""
 "Invalid update. It would result in a duplicate metadata definition "
 "property with the same name=%(name)s in namespace=%(namespace_name)s."
 msgstr ""
 
-#: glance/db/simple/api.py:1487 glance/db/sqlalchemy/metadef_api/property.py:39
+#: glance/db/simple/api.py:1497 glance/db/sqlalchemy/metadef_api/property.py:40
 #, python-format
 msgid "Metadata definition property not found for id=%s"
 msgstr ""
 
-#: glance/db/simple/api.py:1755
-#: glance/db/sqlalchemy/metadef_api/namespace.py:123
+#: glance/db/simple/api.py:1765
+#: glance/db/sqlalchemy/metadef_api/namespace.py:124
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s not visible."
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:112
+#: glance/db/sqlalchemy/api.py:114
 msgid "You do not own this image"
 msgstr "You do not own this image"
 
-#: glance/db/sqlalchemy/api.py:384
+#: glance/db/sqlalchemy/api.py:386
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "Unknown sort direction, must be 'desc' or 'asc'"
 
-#: glance/db/sqlalchemy/api.py:742
-#: glance/tests/unit/v2/test_registry_client.py:495
+#: glance/db/sqlalchemy/api.py:745
+#: glance/tests/unit/v2/test_registry_client.py:497
 #, python-format
 msgid ""
 "cannot transition from %(current)s to %(next)s in update (wanted "
 "from_state=%(from)s)"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:820
+#: glance/db/sqlalchemy/api.py:825
 msgid ""
 "The status of deleted image location can only be set to 'pending_delete' "
 "or 'deleted'"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:44
+#: glance/db/sqlalchemy/metadata.py:45
 msgid "Path to the directory where json metadata files are stored"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadef_api/object.py:37
+#: glance/db/sqlalchemy/metadef_api/object.py:38
 #, python-format
 msgid "Metadata definition object not found for id %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadef_api/object.py:117
+#: glance/db/sqlalchemy/metadef_api/object.py:118
 #, python-format
 msgid ""
 "Invalid update. It would result in a duplicate metadata definition object"
 " with the same name=%(name)s in namespace=%(namespace_name)s."
 msgstr ""
 
-#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:90
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:157
+#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:91
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:158
 msgid ""
 "URI cannot contain more than one occurrence of a scheme.If you have "
 "specified a URI like "
@@ -2298,110 +2323,110 @@ msgstr ""
 " it to use the swift+http:// scheme, like so: "
 "swift+http://user:pass@authurl.com/v1/container/obj"
 
-#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:127
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:193
+#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:128
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:194
 #, python-format
 msgid "Badly formed credentials '%(creds)s' in Swift URI"
 msgstr "Badly formed credentials '%(creds)s' in Swift URI"
 
-#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:139
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:205
+#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:140
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:206
 msgid "Badly formed credentials in Swift URI."
 msgstr "Badly formed credentials in Swift URI."
 
-#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:156
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:222
+#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:157
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:223
 #, python-format
 msgid "Badly formed S3 URI: %(uri)s"
 msgstr ""
 
-#: glance/domain/__init__.py:64
+#: glance/domain/__init__.py:65
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr ""
 
-#: glance/domain/__init__.py:134
+#: glance/domain/__init__.py:136
 #, python-format
 msgid "__init__() got unexpected keyword argument '%s'"
 msgstr ""
 
-#: glance/domain/__init__.py:156
+#: glance/domain/__init__.py:158
 #, python-format
 msgid "Property %s must be set prior to saving data."
 msgstr "Property %s must be set prior to saving data."
 
-#: glance/domain/__init__.py:159
+#: glance/domain/__init__.py:161
 #, python-format
 msgid "Properties %s must be set prior to saving data."
 msgstr "Properties %s must be set prior to saving data."
 
-#: glance/domain/__init__.py:176
+#: glance/domain/__init__.py:178
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr ""
 
-#: glance/domain/__init__.py:195
+#: glance/domain/__init__.py:197
 msgid "Attribute container_format can be only replaced for a queued image."
 msgstr ""
 
-#: glance/domain/__init__.py:207
+#: glance/domain/__init__.py:209
 msgid "Attribute disk_format can be only replaced for a queued image."
 msgstr ""
 
-#: glance/domain/__init__.py:219 glance/domain/__init__.py:232
+#: glance/domain/__init__.py:221 glance/domain/__init__.py:234
 msgid "Cannot be a negative value"
 msgstr ""
 
-#: glance/domain/__init__.py:297
+#: glance/domain/__init__.py:299
 msgid "Status must be \"pending\", \"accepted\" or \"rejected\"."
 msgstr "Status must be \"pending\", \"accepted\" or \"rejected\"."
 
-#: glance/domain/__init__.py:373
+#: glance/domain/__init__.py:375
 #, python-format
 msgid "Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
 msgstr ""
 
-#: glance/domain/__init__.py:380
+#: glance/domain/__init__.py:382
 #, python-format
 msgid ""
 "Task [%(task_id)s] status failed to change from %(cur_status)s to "
 "%(new_status)s"
 msgstr ""
 
-#: glance/image_cache/__init__.py:39
+#: glance/image_cache/__init__.py:40
 msgid "The driver to use for image cache management."
 msgstr "The driver to use for image cache management."
 
-#: glance/image_cache/__init__.py:41
+#: glance/image_cache/__init__.py:42
 msgid "The maximum size in bytes that the cache can use."
 msgstr "The maximum size in bytes that the cache can use."
 
-#: glance/image_cache/__init__.py:43
+#: glance/image_cache/__init__.py:44
 msgid ""
 "The amount of time to let an image remain in the cache without being "
 "accessed."
 msgstr ""
 
-#: glance/image_cache/__init__.py:46
+#: glance/image_cache/__init__.py:47
 msgid "Base directory that the Image Cache uses."
 msgstr "Base directory that the Image Cache uses."
 
-#: glance/image_cache/__init__.py:258
+#: glance/image_cache/__init__.py:259
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr "Checksum verification failed. Aborted caching of image '%s'."
 
-#: glance/image_cache/client.py:118
+#: glance/image_cache/client.py:121
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
 "keystone authentication strategy is enabled\n"
 msgstr ""
 
-#: glance/image_cache/drivers/base.py:54
+#: glance/image_cache/drivers/base.py:56
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "Failed to read %s from config"
 
-#: glance/image_cache/drivers/sqlite.py:44
+#: glance/image_cache/drivers/sqlite.py:45
 msgid ""
 "The path to the sqlite file database that will be used for image cache "
 "management."
@@ -2409,20 +2434,10 @@ msgstr ""
 "The path to the sqlite file database that will be used for image cache "
 "management."
 
-#: glance/image_cache/drivers/sqlite.py:126
+#: glance/image_cache/drivers/sqlite.py:127
 #, python-format
 msgid "Failed to initialize the image cache database. Got error: %s"
 msgstr "Failed to initialize the image cache database. Got error: %s"
-
-#: glance/openstack/common/gettextutils.py:320
-msgid "Message objects do not support addition."
-msgstr ""
-
-#: glance/openstack/common/gettextutils.py:330
-msgid ""
-"Message objects do not support str() because they may contain non-ascii "
-"characters. Please use unicode() or translate() instead."
-msgstr ""
 
 #: glance/openstack/common/lockutils.py:101
 #, python-format
@@ -2449,20 +2464,31 @@ msgstr "syslog facility must be one of: %s"
 msgid "Fatal call to deprecated config: %(msg)s"
 msgstr "Fatal call to deprecated config: %(msg)s"
 
-#: glance/openstack/common/policy.py:396
-#, python-format
-msgid "Failed to understand rule %(rule)s"
-msgstr "Failed to understand rule %(rule)s"
+#: glance/openstack/common/policy.py:98
+msgid "The JSON file that defines policies."
+msgstr ""
 
-#: glance/openstack/common/policy.py:406
-#, python-format
-msgid "No handler for matches of kind %s"
-msgstr "No handler for matches of kind %s"
+#: glance/openstack/common/policy.py:101
+msgid "Default rule. Enforced when a requested rule is not found."
+msgstr ""
 
-#: glance/openstack/common/policy.py:681
+#: glance/openstack/common/policy.py:105
+msgid ""
+"Directories where policy configuration files are stored. They can be "
+"relative to any directory in the search path defined by the config_dir "
+"option, or absolute paths. The file defined by policy_file must exist for"
+" these directories to be searched."
+msgstr ""
+
+#: glance/openstack/common/policy.py:129
 #, python-format
-msgid "Failed to understand rule %(rule)r"
-msgstr "Failed to understand rule %(rule)r"
+msgid "Policy doesn't allow %s to be performed."
+msgstr ""
+
+#: glance/openstack/common/policy.py:226
+#, python-format
+msgid "Rules must be an instance of dict or Rules, got %s instead"
+msgstr ""
 
 #: glance/openstack/common/processutils.py:59
 msgid "Unexpected error while running command."
@@ -2505,100 +2531,86 @@ msgstr ""
 msgid "process_input not supported over SSH"
 msgstr ""
 
-#: glance/openstack/common/strutils.py:92
-#, python-format
-msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
-msgstr ""
-
-#: glance/openstack/common/strutils.py:197
-#, python-format
-msgid "Invalid unit system: \"%s\""
-msgstr ""
-
-#: glance/openstack/common/strutils.py:206
-#, python-format
-msgid "Invalid string format: %s"
-msgstr ""
-
-#: glance/registry/__init__.py:25
+#: glance/registry/__init__.py:28
 msgid "Address to find the registry server."
 msgstr "Address to find the registry server."
 
-#: glance/registry/__init__.py:27
+#: glance/registry/__init__.py:30
 msgid "Port the registry server is listening on."
 msgstr "Port the registry server is listening on."
 
-#: glance/registry/api/v1/images.py:126 glance/registry/api/v1/images.py:131
+#: glance/registry/api/v1/images.py:128 glance/registry/api/v1/images.py:133
 msgid "Invalid marker. Image could not be found."
 msgstr "Invalid marker. Image could not be found."
 
-#: glance/registry/api/v1/images.py:235
+#: glance/registry/api/v1/images.py:237
 msgid "Unrecognized changes-since value"
 msgstr "Unrecognized changes-since value"
 
-#: glance/registry/api/v1/images.py:240
+#: glance/registry/api/v1/images.py:242
 msgid "protected must be True, or False"
 msgstr "protected must be True, or False"
 
-#: glance/registry/api/v1/images.py:287
+#: glance/registry/api/v1/images.py:289
 #, python-format
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "Unsupported sort_key. Acceptable values: %s"
 
-#: glance/registry/api/v1/images.py:296
+#: glance/registry/api/v1/images.py:298
 #, python-format
 msgid "Unsupported sort_dir. Acceptable values: %s"
 msgstr "Unsupported sort_dir. Acceptable values: %s"
 
-#: glance/registry/api/v1/images.py:322
+#: glance/registry/api/v1/images.py:324
 msgid "is_public must be None, True, or False"
 msgstr "is_public must be None, True, or False"
 
-#: glance/registry/api/v1/images.py:416
+#: glance/registry/api/v1/images.py:418
 msgid "Invalid image id format"
 msgstr "Invalid image id format"
 
-#: glance/registry/api/v1/images.py:431
+#: glance/registry/api/v1/images.py:433
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr "Image with identifier %s already exists!"
 
-#: glance/registry/api/v1/images.py:435
+#: glance/registry/api/v1/images.py:437
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:484
+#: glance/registry/api/v1/images.py:486
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:103
+#: glance/registry/api/v1/members.py:70 glance/registry/api/v1/members.py:105
+#: glance/registry/api/v1/members.py:223 glance/registry/api/v1/members.py:287
 #, python-format
 msgid "Image %(id)s not found"
 msgstr "Image %(id)s not found"
 
-#: glance/registry/api/v1/members.py:119 glance/registry/api/v1/members.py:237
-#: glance/registry/api/v1/members.py:301
+#: glance/registry/api/v1/members.py:121 glance/registry/api/v1/members.py:239
+#: glance/registry/api/v1/members.py:303
 msgid "No permission to share that image"
 msgstr "No permission to share that image"
 
-#: glance/registry/api/v1/members.py:130 glance/registry/api/v1/members.py:147
-#: glance/registry/api/v1/members.py:250
+#: glance/registry/api/v1/members.py:132 glance/registry/api/v1/members.py:149
+#: glance/registry/api/v1/members.py:252
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr "Invalid membership association: %s"
 
-#: glance/registry/api/v1/members.py:314 glance/registry/api/v1/members.py:339
+#: glance/registry/api/v1/members.py:316 glance/registry/api/v1/members.py:341
 msgid "Membership could not be found."
 msgstr "Membership could not be found."
 
-#: glance/registry/api/v2/rpc.py:42
+#: glance/registry/api/v2/rpc.py:44
 #, python-format
 msgid "Registry service can't use %s"
 msgstr ""
 
-#: glance/registry/client/__init__.py:20
+#: glance/registry/client/__init__.py:24
 msgid ""
 "The protocol to use for communication with the registry server.  Either "
 "http or https."
@@ -2606,11 +2618,11 @@ msgstr ""
 "The protocol to use for communication with the registry server.  Either "
 "http or https."
 
-#: glance/registry/client/__init__.py:23
+#: glance/registry/client/__init__.py:27
 msgid "The path to the key file to use in SSL connections to the registry server."
 msgstr "The path to the key file to use in SSL connections to the registry server."
 
-#: glance/registry/client/__init__.py:26
+#: glance/registry/client/__init__.py:30
 msgid ""
 "The path to the cert file to use in SSL connections to the registry "
 "server."
@@ -2618,67 +2630,67 @@ msgstr ""
 "The path to the cert file to use in SSL connections to the registry "
 "server."
 
-#: glance/registry/client/__init__.py:29
+#: glance/registry/client/__init__.py:33
 msgid ""
 "The path to the certifying authority cert file to use in SSL connections "
 "to the registry server."
 msgstr ""
 "The path to the certifying authority cert file to use in SSL connections "
 "to the registry server."
-
-#: glance/registry/client/__init__.py:32
-msgid ""
-"When using SSL in connections to the registry server, do not require "
-"validation via a certifying authority."
-msgstr ""
-"When using SSL in connections to the registry server, do not require "
-"validation via a certifying authority."
 
 #: glance/registry/client/__init__.py:36
 msgid ""
+"When using SSL in connections to the registry server, do not require "
+"validation via a certifying authority."
+msgstr ""
+"When using SSL in connections to the registry server, do not require "
+"validation via a certifying authority."
+
+#: glance/registry/client/__init__.py:40
+msgid ""
 "The period of time, in seconds, that the API server will wait for a "
 "registry request to complete. A value of 0 implies no timeout."
 msgstr ""
 "The period of time, in seconds, that the API server will wait for a "
 "registry request to complete. A value of 0 implies no timeout."
 
-#: glance/registry/client/__init__.py:46
+#: glance/registry/client/__init__.py:50
 msgid ""
 "The administrators user name. If \"use_user_token\" is not in effect, "
 "then admin credentials can be specified."
 msgstr ""
 
-#: glance/registry/client/__init__.py:50
+#: glance/registry/client/__init__.py:54
 msgid ""
 "The administrators password. If \"use_user_token\" is not in effect, then"
 " admin credentials can be specified."
 msgstr ""
 
-#: glance/registry/client/__init__.py:54
+#: glance/registry/client/__init__.py:58
 msgid ""
 "The tenant name of the administrative user. If \"use_user_token\" is not "
 "in effect, then admin tenant name can be specified."
 msgstr ""
 
-#: glance/registry/client/__init__.py:58
+#: glance/registry/client/__init__.py:62
 msgid ""
 "The URL to the keystone service. If \"use_user_token\" is not in effect "
 "and using keystone auth, then URL of keystone can be specified."
 msgstr ""
 
-#: glance/registry/client/__init__.py:63
+#: glance/registry/client/__init__.py:67
 msgid ""
 "The strategy to use for authentication. If \"use_user_token\" is not in "
 "effect, then auth strategy can be specified."
 msgstr ""
 
-#: glance/registry/client/__init__.py:67
+#: glance/registry/client/__init__.py:71
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not "
 "in effect and using keystone auth, then region name can be specified."
 msgstr ""
 
-#: glance/registry/client/v1/api.py:33
+#: glance/registry/client/v1/api.py:35
 msgid ""
 "Whether to pass through headers containing user and tenant information "
 "when making requests to the registry. This allows the registry to use the"
@@ -2688,15 +2700,15 @@ msgid ""
 "registry is ensured by means other than auth_token middleware."
 msgstr ""
 
-#: glance/registry/client/v1/api.py:78 glance/registry/client/v2/api.py:60
+#: glance/registry/client/v1/api.py:80 glance/registry/client/v2/api.py:62
 msgid "Configuration option was not valid"
 msgstr "Configuration option was not valid"
 
-#: glance/registry/client/v1/api.py:82 glance/registry/client/v2/api.py:64
+#: glance/registry/client/v1/api.py:84 glance/registry/client/v2/api.py:66
 msgid "Could not find required configuration option"
 msgstr "Could not find required configuration option"
 
-#: glance/tests/unit/test_migrations.py:601
+#: glance/tests/unit/test_migrations.py:614
 #, python-format
 msgid "location: %s data lost"
 msgstr "location: %s data lost"

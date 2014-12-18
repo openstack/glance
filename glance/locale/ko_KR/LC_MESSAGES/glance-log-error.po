@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-21 06:05+0000\n"
-"PO-Revision-Date: 2014-11-03 10:00+0000\n"
+"POT-Creation-Date: 2014-12-18 06:06+0000\n"
+"PO-Revision-Date: 2014-12-10 14:52+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Korean (Korea) (http://www.transifex.com/projects/p/glance/"
 "language/ko_KR/)\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: glance/location.py:390
+#: glance/location.py:403
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for image %s but all have "
@@ -29,34 +29,34 @@ msgstr ""
 "Glance는 모든 활성화 된 위치에서 %s 이미지에 대한 데이터를 수집하려 했으나 모"
 "두 실패했습니다."
 
-#: glance/scrubber.py:167
+#: glance/scrubber.py:168
 #, python-format
 msgid "%s file can not be read."
 msgstr "%s 파일을 읽을 수 없습니다."
 
-#: glance/scrubber.py:190
+#: glance/scrubber.py:191
 #, python-format
 msgid "%s file can not be wrote."
 msgstr "%s 파일에 쓸 수 없습니다."
 
-#: glance/scrubber.py:516
+#: glance/scrubber.py:517
 #, python-format
 msgid "Can not %(op)s scrub jobs from queue: %(err)s"
 msgstr "큐에 있는 %(op)s 스크럽 작업을 수행할 수 없음: %(err)s"
 
-#: glance/scrubber.py:617
+#: glance/scrubber.py:618
 #, python-format
 msgid "%s file can not be created."
 msgstr "%s 파일을 만들 수 없습니다."
 
-#: glance/api/common.py:53
+#: glance/api/common.py:54
 #, python-format
 msgid ""
 "An error occurred reading from backend storage for image %(image_id)s: "
 "%(err)s"
 msgstr "백엔드 스토리지에서 이미지 %(image_id)s를 읽는 중 에러 발생: %(err)s"
 
-#: glance/api/common.py:59
+#: glance/api/common.py:60
 #, python-format
 msgid ""
 "Backend storage for image %(image_id)s disconnected after writing only "
@@ -65,12 +65,12 @@ msgstr ""
 "백엔드 스토리지에 이미지 %(image_id)s 를 %(bytes_written)d byte 를 쓰는 도중 "
 "연결 끊김"
 
-#: glance/api/common.py:90
+#: glance/api/common.py:91
 #, python-format
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr "image.send notification 중 에러 발생 : %(err)s"
 
-#: glance/api/common.py:118
+#: glance/api/common.py:119
 #, python-format
 msgid "Invalid value for option user_storage_quota: %(users_quota)s"
 msgstr ""
@@ -93,44 +93,38 @@ msgstr "%s 를 찾을 수 없음"
 msgid "Checksum header is missing."
 msgstr "Checksum header 없음"
 
-#: glance/api/v1/images.py:606
+#: glance/api/v1/images.py:599
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr "외부 소스 '%(scheme)s' 로부터 이미지 복사 실패 : %(image)s"
 
-#: glance/api/v1/upload_utils.py:77
+#: glance/api/v1/upload_utils.py:79
 #, python-format
 msgid "Unable to kill image %(id)s: "
 msgstr "이미지 %(id)s 를 kill 할 수 없음:"
 
-#: glance/api/v1/upload_utils.py:248
+#: glance/api/v1/upload_utils.py:251
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr "이미지 %s를 업로드 하는 도중 HTTP 에러 수신"
 
-#: glance/api/v2/image_data.py:59
+#: glance/api/v2/image_data.py:60
 #, python-format
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr "이미지 %(image_id)s를 복구할 수 없음 : %(e)s"
 
-#: glance/api/v2/image_data.py:155
+#: glance/api/v2/image_data.py:157
 msgid "Failed to upload image data due to HTTP error"
 msgstr "HTTP 에러로 인해 이미지 데이터 업로드 실패"
 
-#: glance/api/v2/image_data.py:160
+#: glance/api/v2/image_data.py:162
 msgid "Failed to upload image data due to internal error"
 msgstr "내부 에러로 인해 이미지 데이터 업로드 실패"
 
-#: glance/api/v2/metadef_namespaces.py:188
+#: glance/api/v2/metadef_namespaces.py:189
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr "네임스페이스 삭제 실패 %(namespace)s"
-
-#: glance/api/v2/metadef_resource_types.py:125
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:128
-#, python-format
-msgid "Failed to find resource type %(resourcetype)s to delete"
-msgstr "삭제하기 위한 리소스 타입 %(resourcetype)s 검색 실패"
 
 #: glance/async/__init__.py:67
 msgid ""
@@ -144,7 +138,7 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr "작업을 수행하는 중 내부에러 발생"
 
-#: glance/common/store_utils.py:68
+#: glance/common/store_utils.py:69
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr "스토어에서 이미지 %(image_id)s 삭제 실패 : %(exc)s"
@@ -165,28 +159,28 @@ msgid "Failed to save task %(task_id)s in DB as task_repo is %(task_repo)s"
 msgstr ""
 "DB에 task_repo 형태로 작업 %(task_id)s 저장에 실패한 것은 %(task_repo)s"
 
-#: glance/common/scripts/utils.py:46
+#: glance/common/scripts/utils.py:47
 #, python-format
 msgid "Task not found for task_id %s"
 msgstr "task_id %s에 대한 작업을 찾을 수 없음"
 
-#: glance/db/sqlalchemy/metadata.py:128
+#: glance/db/sqlalchemy/metadata.py:129
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
 msgstr "%s에서 Json 스키마 파일을 찾을 수 없음. 중단."
 
-#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:62
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:96
+#: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:63
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:97
 #, python-format
 msgid "Invalid store uri for image: %(image_id)s. Details: %(reason)s"
 msgstr "이미지 %(image_id)s 에 부적합한 저장 uri. 상세: %(reason)s"
 
-#: glance/domain/__init__.py:472
+#: glance/domain/__init__.py:474
 #, python-format
 msgid "Failed to load the %s executor provided in the config."
 msgstr "설정에서 제공된 %s executor 로드 실패"
 
-#: glance/image_cache/__init__.py:268
+#: glance/image_cache/__init__.py:269
 #, python-format
 msgid ""
 "Exception encountered while tee'ing image '%(image_id)s' into cache: "
@@ -195,7 +189,7 @@ msgstr ""
 "이미지 '%(image_id)s'를 캐시에 올리는 중 Exception 발생: %(error)s. 응답과 함"
 "께 진행"
 
-#: glance/image_cache/drivers/sqlite.py:397
+#: glance/image_cache/drivers/sqlite.py:398
 #, python-format
 msgid "Error executing SQLite call. Got error: %s"
 msgstr "SQLLite call 수행중 에러 발생 : %s"
@@ -217,31 +211,46 @@ msgstr ""
 msgid "Could not release the acquired lock `%s`"
 msgstr "획득한 `%s` 잠금을 해제할 수 없음"
 
-#: glance/registry/api/v1/images.py:134
+#: glance/openstack/common/policy.py:550 glance/openstack/common/policy.py:830
+#, python-format
+msgid "Failed to understand rule %s"
+msgstr "%s 규칙을 이해하는데 실패했습니다"
+
+#: glance/openstack/common/policy.py:560
+#, python-format
+msgid "No handler for matches of kind %s"
+msgstr "%s 유형의 일치에 대한 핸들러가 없음"
+
+#: glance/registry/api/v1/images.py:136
 msgid "Unable to get images"
 msgstr "이미지를 가져올 수 없음"
 
-#: glance/registry/api/v1/images.py:352
+#: glance/registry/api/v1/images.py:354
 #, python-format
 msgid "Unable to show image %s"
 msgstr "이미지 %s를 보여줄 수 없음"
 
-#: glance/registry/api/v1/images.py:388
+#: glance/registry/api/v1/images.py:390
 #, python-format
 msgid "Unable to delete image %s"
 msgstr "이미지 %s를 삭제할 수 없음"
 
-#: glance/registry/api/v1/images.py:440
+#: glance/registry/api/v1/images.py:442
 #, python-format
 msgid "Unable to create image %s"
 msgstr "이미지 %s를 생성할 수 없음"
 
-#: glance/registry/api/v1/images.py:513
+#: glance/registry/api/v1/images.py:515
 #, python-format
 msgid "Unable to update image %s"
 msgstr "이미지 %s를 업데이트 할 수 없음"
 
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:98
+#: glance/registry/client/v1/client.py:129
+#, python-format
+msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
+msgstr ""
+
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:99
 #, python-format
 msgid "Forbidden to create resource type. Reason: %(reason)s"
 msgstr "리소스타입 생성이 금지됨. 이유: %(reason)s"
