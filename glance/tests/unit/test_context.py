@@ -14,7 +14,6 @@
 #    under the License.
 
 from glance import context
-from glance.openstack.common import local
 from glance.tests.unit import utils as unit_utils
 from glance.tests import utils
 
@@ -160,13 +159,6 @@ class TestContext(utils.BaseTestCase):
     def test_service_catalog(self):
         ctx = context.RequestContext(service_catalog=['foo'])
         self.assertEqual(['foo'], ctx.service_catalog)
-
-    def test_context_local_store(self):
-        if hasattr(local.store, 'context'):
-            del local.store.context
-        ctx = context.RequestContext()
-        self.assertTrue(hasattr(local.store, 'context'))
-        self.assertEqual(local.store.context, ctx)
 
     def test_user_identity(self):
         ctx = context.RequestContext(user="user",

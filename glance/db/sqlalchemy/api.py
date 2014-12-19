@@ -222,7 +222,7 @@ def _image_get(context, image_id, session=None, force_show_deleted=False):
                     models.Image.locations)).filter_by(id=image_id)
 
         # filter out deleted images if context disallows it
-        if not force_show_deleted and not _can_show_deleted(context):
+        if not force_show_deleted and not context.can_see_deleted:
             query = query.filter_by(deleted=False)
 
         image = query.one()
@@ -1102,19 +1102,6 @@ def image_member_count(context, image_id):
     return query.count()
 
 
-# pylint: disable-msg=C0111
-def _can_show_deleted(context):
-    """
-    Calculates whether to include deleted objects based on context.
-    Currently just looks for a flag called deleted in the context dict.
-    """
-    if hasattr(context, 'show_deleted'):
-        return context.show_deleted
-    if not hasattr(context, 'get'):
-        return False
-    return context.get('deleted', False)
-
-
 def image_tag_set_all(context, image_id, tags):
     # NOTE(kragniz): tag ordering should match exactly what was provided, so a
     # subsequent call to image_tag_get_all returns them in the correct order
@@ -1384,7 +1371,7 @@ def _task_get(context, task_id, session=None, force_show_deleted=False):
         sa_orm.joinedload(models.Task.info)
     ).filter_by(id=task_id)
 
-    if not force_show_deleted and not _can_show_deleted(context):
+    if not force_show_deleted and not context.can_see_deleted:
         query = query.filter_by(deleted=False)
     try:
         task_ref = query.one()

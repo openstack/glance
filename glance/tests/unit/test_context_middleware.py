@@ -16,7 +16,6 @@ import webob
 
 from glance.api.middleware import context
 import glance.context
-from glance.openstack.common import local
 from glance.tests.unit import base
 
 
@@ -118,23 +117,6 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         middleware = self._build_middleware()
         self.assertRaises(webob.exc.HTTPInternalServerError,
                           middleware.process_request, req)
-
-    def test_clear_context(self):
-        # context should be cleared between requests
-        middleware = self._build_middleware()
-
-        req = self._build_request()
-        middleware.process_request(req)
-
-        self.assertTrue(hasattr(local.store, 'context'))
-
-        # response processing should clear reference to
-        # the context
-        resp = webob.Response()
-        resp.request = req
-        resp = middleware.process_response(resp)
-
-        self.assertFalse(hasattr(local.store, 'context'))
 
 
 class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):

@@ -374,7 +374,8 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
         LOG.warn(_LW('Could not find image %s') % image_id)
         raise exception.NotFound()
 
-    if image['deleted'] and not (force_show_deleted or context.show_deleted):
+    if image['deleted'] and not (force_show_deleted
+                                 or context.can_see_deleted):
         LOG.warn(_LW('Unable to get deleted image'))
         raise exception.NotFound()
 
@@ -890,7 +891,7 @@ def _task_get(context, task_id, force_show_deleted=False):
         LOG.warn(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
-    if task['deleted'] and not (force_show_deleted or context.show_deleted):
+    if task['deleted'] and not (force_show_deleted or context.can_see_deleted):
         msg = _LW('Unable to get deleted task %s') % task_id
         LOG.warn(msg)
         raise exception.TaskNotFound(task_id=task_id)
