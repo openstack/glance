@@ -35,8 +35,14 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
-                'id': 'v2.2',
+                'id': 'v2.3',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'http://127.0.0.1:9292/v2/'}],
+            },
+            {
+                'id': 'v2.2',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'http://127.0.0.1:9292/v2/'}],
             },
@@ -78,8 +84,14 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
-                'id': 'v2.2',
+                'id': 'v2.3',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v2/'}],
+            },
+            {
+                'id': 'v2.2',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'https://example.com:9292/v2/'}],
             },
