@@ -2542,6 +2542,16 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'filters': {}}
         self.assertEqual(expected, output)
 
+    def test_index_sort_private_key(self):
+        request = unit_test_utils.get_fake_request('/images?sort_key=min_ram')
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+
+    def test_index_sort_key_bad_value(self):
+        request = unit_test_utils.get_fake_request('/images?sort_key=blah')
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+
     def test_index_sort_dir_bad_value(self):
         request = unit_test_utils.get_fake_request('/images?sort_dir=blah')
         self.assertRaises(webob.exc.HTTPBadRequest,
