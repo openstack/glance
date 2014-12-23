@@ -88,7 +88,7 @@ class ImagesController(object):
 
         return image
 
-    def index(self, req, marker=None, limit=None, sort_key='created_at',
+    def index(self, req, marker=None, limit=None, sort_key=['created_at'],
               sort_dir='desc', filters=None, member_status='accepted'):
         result = {}
         if filters is None:
@@ -102,7 +102,8 @@ class ImagesController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             images = image_repo.list(marker=marker, limit=limit,
-                                     sort_key=sort_key, sort_dir=sort_dir,
+                                     sort_key=sort_key,
+                                     sort_dir=sort_dir,
                                      filters=filters,
                                      member_status=member_status)
             if len(images) != 0 and len(images) == limit:
@@ -590,9 +591,15 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         while 'tag' in params:
             tags.append(params.pop('tag').strip())
 
+        # NOTE (mfedosin) Do the same with sorting keys
+        # v2/images?sort_key=name&sort_key=size
+
+        sort_keys = []
+        while 'sort_key' in params:
+            sort_keys.append(self._validate_sort_key(
+                params.pop('sort_key').strip()))
+
         query_params = {
-            'sort_key': self._validate_sort_key(
-                params.pop('sort_key', 'created_at')),
             'sort_dir': self._validate_sort_dir(sort_dir),
             'filters': self._get_filters(params),
             'member_status': self._validate_member_status(member_status),
@@ -606,6 +613,13 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         if tags:
             query_params['filters']['tags'] = tags
+
+        # NOTE(mfedosin): param is still called sort_key, instead of sort_keys
+        # It's done because in v1 it's still a single value.
+        if sort_keys:
+            query_params['sort_key'] = sort_keys
+        else:
+            query_params['sort_key'] = ['created_at']
 
         return query_params
 

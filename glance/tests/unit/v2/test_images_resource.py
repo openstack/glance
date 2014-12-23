@@ -214,7 +214,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.config(limit_param_default=1, api_limit_max=3)
         request = unit_test_utils.get_fake_request()
         output = self.controller.index(request, marker=UUID3, limit=1,
-                                       sort_key='created_at', sort_dir='desc')
+                                       sort_key=['created_at'],
+                                       sort_dir='desc')
         self.assertEqual(1, len(output['images']))
         actual = set([image.image_id for image in output['images']])
         expected = set([UUID2])
@@ -423,7 +424,20 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_index_with_sort_key(self):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
-        output = self.controller.index(request, sort_key='created_at', limit=3)
+        output = self.controller.index(request, sort_key=['created_at'],
+                                       limit=3)
+        actual = [image.image_id for image in output['images']]
+        self.assertEqual(3, len(actual))
+        self.assertEqual(UUID3, actual[0])
+        self.assertEqual(UUID2, actual[1])
+        self.assertEqual(UUID1, actual[2])
+
+    def test_index_with_multiple_sort_keys(self):
+        path = '/images'
+        request = unit_test_utils.get_fake_request(path)
+        output = self.controller.index(request,
+                                       sort_key=['created_at', 'name'],
+                                       limit=3)
         actual = [image.image_id for image in output['images']]
         self.assertEqual(3, len(actual))
         self.assertEqual(UUID3, actual[0])
@@ -441,7 +455,7 @@ class TestImagesController(base.IsolatedUnitTest):
         path = '/images'
         request = unit_test_utils.get_fake_request(path)
         self.assertRaises(webob.exc.HTTPBadRequest,
-                          self.controller.index, request, sort_key='foo')
+                          self.controller.index, request, sort_key=['foo'])
 
     def test_index_zero_images(self):
         self.db.reset()
@@ -2433,7 +2447,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request(path)
         expected = {'limit': 1,
                     'marker': marker,
-                    'sort_key': 'created_at',
+                    'sort_key': ['created_at'],
                     'sort_dir': 'desc',
                     'member_status': 'pending',
                     'filters': {}}
@@ -2481,7 +2495,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_index_zero_limit(self):
         request = unit_test_utils.get_fake_request('/images?limit=0')
         expected = {'limit': 0,
-                    'sort_key': 'created_at',
+                    'sort_key': ['created_at'],
                     'member_status': 'accepted',
                     'sort_dir': 'desc',
                     'filters': {}}
@@ -2525,18 +2539,38 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request('/images?sort_key=id')
         output = self.deserializer.index(request)
         expected = {
-            'sort_key': 'id',
+            'sort_key': ['id'],
             'sort_dir': 'desc',
             'member_status': 'accepted',
             'filters': {}
         }
         self.assertEqual(expected, output)
 
+    def test_index_multiple_sort_keys(self):
+        request = unit_test_utils.get_fake_request('/images?'
+                                                   'sort_key=name&'
+                                                   'sort_key=size')
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'size'],
+            'sort_dir': 'desc',
+            'member_status': 'accepted',
+            'filters': {}
+        }
+        self.assertEqual(expected, output)
+
+    def test_index_invalid_multiple_sort_keys(self):
+        request = unit_test_utils.get_fake_request('/images?'
+                                                   'sort_key=name&'
+                                                   'sort_key=blah')
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+
     def test_index_sort_dir_asc(self):
         request = unit_test_utils.get_fake_request('/images?sort_dir=asc')
         output = self.deserializer.index(request)
         expected = {
-            'sort_key': 'created_at',
+            'sort_key': ['created_at'],
             'sort_dir': 'asc',
             'member_status': 'accepted',
             'filters': {}}

@@ -302,9 +302,28 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertEqual(set([UUID1, UUID3]), image_ids)
 
     def test_sorted_list(self):
-        images = self.image_repo.list(sort_key='size', sort_dir='asc')
+        images = self.image_repo.list(sort_key=['size'], sort_dir='asc')
         image_ids = [i.image_id for i in images]
         self.assertEqual([UUID1, UUID2, UUID3], image_ids)
+
+    def test_sorted_list_with_multiple_keys(self):
+        temp_id = 'd80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
+        image = _db_fixture(temp_id, owner=TENANT1, checksum=CHECKSUM,
+                            name='1', size=1024,
+                            is_public=True, status='active',
+                            locations=[{'url': UUID1_LOCATION,
+                                        'metadata': UUID1_LOCATION_METADATA,
+                                        'status': 'active'}])
+        self.db.image_create(None, image)
+        images = self.image_repo.list(sort_key=['name', 'size'],
+                                      sort_dir='asc')
+        image_ids = [i.image_id for i in images]
+        self.assertEqual([UUID1, temp_id, UUID2, UUID3], image_ids)
+
+        images = self.image_repo.list(sort_key=['size', 'name'],
+                                      sort_dir='asc')
+        image_ids = [i.image_id for i in images]
+        self.assertEqual([UUID1, UUID2, temp_id, UUID3], image_ids)
 
     def test_add_image(self):
         image = self.image_factory.new_image(name='added image')
