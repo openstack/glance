@@ -22,6 +22,7 @@ from glance import i18n
 import glance.openstack.common.log as logging
 
 _ = i18n._
+_LE = i18n._LE
 
 location_strategy_opts = [
     cfg.StrOpt('location_strategy', default='location_order',
@@ -61,8 +62,9 @@ def _load_strategies():
                 mgr.driver.init()
                 modules[strategy_name] = mgr.driver
         except Exception as e:
-            LOG.error(_("Failed to load location strategy module "
-                        "%(module)s: %(e)s") % {'module': module_name, 'e': e})
+            LOG.error(_LE("Failed to load location strategy module "
+                          "%(module)s: %(e)s") % {'module': module_name,
+                                                  'e': e})
     return modules
 
 

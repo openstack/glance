@@ -20,8 +20,13 @@ from oslo.config import cfg
 
 import glance.context
 import glance.db.sqlalchemy.api as db_api
+from glance import i18n
 import glance.openstack.common.log as logging
 import glance.registry.context
+
+_ = i18n._
+_LC = i18n._LC
+_LI = i18n._LI
 
 LOG = logging.getLogger(__name__)
 LOG.addHandler(logging.StreamHandler())
@@ -44,7 +49,7 @@ def build_image_owner_map(owner_map, db, context):
         owner_name = image['owner']
 
         if not owner_name:
-            LOG.info('Image %s has no owner. Skipping.' % image_id)
+            LOG.info(_LI('Image %s has no owner. Skipping.') % image_id)
             continue
 
         try:
@@ -65,7 +70,7 @@ def build_image_owner_map(owner_map, db, context):
 def update_image_owners(image_owner_map, db, context):
     for (image_id, image_owner) in image_owner_map.items():
         db.image_update(context, image_id, {'owner': image_owner})
-        LOG.info('Image %s successfully updated.' % image_id)
+        LOG.info(_LI('Image %s successfully updated.') % image_id)
 
 
 if __name__ == "__main__":
@@ -96,7 +101,7 @@ if __name__ == "__main__":
     admin_password = config.keystone_admin_password
 
     if not (auth_uri and admin_tenant_name and admin_user and admin_password):
-        LOG.critical('Missing authentication arguments')
+        LOG.critical(_LC('Missing authentication arguments'))
         sys.exit(1)
 
     ks = keystoneclient.v2_0.client.Client(username=admin_user,

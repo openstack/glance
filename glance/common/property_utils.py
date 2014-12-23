@@ -32,6 +32,7 @@ from glance.openstack.common import policy
 CONFIG = ConfigParser.SafeConfigParser(dict_type=OrderedDict)
 LOG = logging.getLogger(__name__)
 _ = i18n._
+_LE = i18n._LE
 
 property_opts = [
     cfg.StrOpt('property_protection_file',
@@ -99,9 +100,9 @@ class PropertyRules(object):
                     if self.prop_prot_rule_format == 'policies':
                         if ',' in permissions:
                             LOG.error(
-                                _("Multiple policies '%s' not allowed"
-                                  "for a given operation. Policies can be "
-                                  "combined in the policy file"),
+                                _LE("Multiple policies '%s' not allowed "
+                                    "for a given operation. Policies can be "
+                                    "combined in the policy file"),
                                 permissions)
                             raise InvalidPropProtectConf()
                         self.prop_exp_mapping[compiled_rule] = property_exp
