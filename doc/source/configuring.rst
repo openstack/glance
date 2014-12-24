@@ -371,7 +371,7 @@ Configuring Glance Storage Backends
 
 There are a number of configuration options in Glance that control how Glance
 stores disk images. These configuration options are specified in the
-``glance-api.conf`` config file in the section ``[DEFAULT]``.
+``glance-api.conf`` config file in the section ``[glance_store]``.
 
 * ``default_store=STORE``
 
