@@ -40,7 +40,7 @@ def get_owner_map(ksclient, owner_is_tenant=True):
     else:
         entities = ksclient.users.list()
     # build mapping of (user or tenant) name to id
-    return dict([(entity.name, entity.id) for entity in entities])
+    return {entity.name: entity.id for entity in entities}
 
 
 def build_image_owner_map(owner_map, db, context):

@@ -83,8 +83,7 @@ class SqliteConnection(sqlite3.Connection):
 
 
 def dict_factory(cur, row):
-    return dict(
-        ((col[0], row[idx]) for idx, col in enumerate(cur.description)))
+    return {col[0]: row[idx] for idx, col in enumerate(cur.description)}
 
 
 class Driver(base.Driver):

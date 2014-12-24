@@ -454,7 +454,7 @@ def _make_conditions_from_filters(filters, is_public=None):
             tag_filters.extend([models.ImageTag.value == tag])
             tag_conditions.append(tag_filters)
 
-    filters = dict([(k, v) for k, v in filters.items() if v is not None])
+    filters = {k: v for k, v in filters.items() if v is not None}
 
     for (k, v) in filters.items():
         key = k

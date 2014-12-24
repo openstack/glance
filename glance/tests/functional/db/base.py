@@ -287,7 +287,7 @@ class DriverTests(object):
         fixture = {'properties': {'ping': 'pong'}}
         image = self.db_api.image_update(self.adm_context, UUID1, fixture)
         expected = {'ping': 'pong', 'foo': 'bar', 'far': 'boo'}
-        actual = dict((p['name'], p['value']) for p in image['properties'])
+        actual = {p['name']: p['value'] for p in image['properties']}
         self.assertEqual(expected, actual)
         self.assertNotEqual(image['created_at'], image['updated_at'])
 
@@ -295,7 +295,7 @@ class DriverTests(object):
         fixture = {'properties': {'ping': 'pong'}}
         image = self.db_api.image_update(self.adm_context, UUID1,
                                          fixture, purge_props=True)
-        properties = dict((p['name'], p) for p in image['properties'])
+        properties = {p['name']: p for p in image['properties']}
 
         # New properties are set
         self.assertTrue('ping' in properties)

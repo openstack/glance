@@ -356,8 +356,7 @@ def make_member_list(members, **attr_map):
     """
 
     def _fetch_memb(memb, attr_map):
-        return dict([(k, memb[v])
-                     for k, v in attr_map.items() if v in memb.keys()])
+        return {k: memb[v] for k, v in attr_map.items() if v in memb.keys()}
 
     # Return the list of members with the given attribute mapping
     return [_fetch_memb(memb, attr_map) for memb in members]

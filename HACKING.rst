@@ -23,3 +23,4 @@ glance Specific Commandments
 - [G325] Validate that LOG.critical messages use _LC.
 - [G326] Validate that LOG.warning messages use _LW.
 - [G327] Prevent use of deprecated contextlib.nested
+- [G328] Must use a dict comprehension instead of a dict constructor with a sequence of key-value pairs

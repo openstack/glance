@@ -55,6 +55,7 @@ log_translation_critical = re.compile(
     r"(.)*LOG\.(critical)\(\s*(_\(|'|\")")
 log_translation_warning = re.compile(
     r"(.)*LOG\.(warning)\(\s*(_\(|'|\")")
+dict_constructor_with_list_copy_re = re.compile(r".*\bdict\((\[)?(\(|\[)")
 
 
 def assert_true_instance(logical_line):
@@ -148,6 +149,13 @@ def check_no_contextlib_nested(logical_line):
         yield(0, msg)
 
 
+def dict_constructor_with_list_copy(logical_line):
+    msg = ("G328: Must use a dict comprehension instead of a dict constructor "
+           "with a sequence of key-value pairs.")
+    if dict_constructor_with_list_copy_re.match(logical_line):
+        yield (0, msg)
+
+
 def factory(register):
     register(assert_true_instance)
     register(assert_equal_type)
@@ -156,3 +164,4 @@ def factory(register):
     register(no_direct_use_of_unicode_function)
     register(validate_log_translations)
     register(check_no_contextlib_nested)
+    register(dict_constructor_with_list_copy)

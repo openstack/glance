@@ -466,8 +466,8 @@ class Controller(object):
         try:
             LOG.debug("Updating image %(id)s with metadata: %(image_data)r",
                       {'id': id,
-                       'image_data': dict((k, v) for k, v in image_data.items()
-                                          if k != 'locations')})
+                       'image_data': {k: v for k, v in image_data.items()
+                                      if k != 'locations'}})
             image_data = _normalize_image_location_for_db(image_data)
             if purge_props == "true":
                 purge_props = True
@@ -532,14 +532,13 @@ def make_image_dict(image):
     """
 
     def _fetch_attrs(d, attrs):
-        return dict([(a, d[a]) for a in attrs
-                    if a in d.keys()])
+        return {a: d[a] for a in attrs if a in d.keys()}
 
     # TODO(sirp): should this be a dict, or a list of dicts?
     # A plain dict is more convenient, but list of dicts would provide
     # access to created_at, etc
-    properties = dict((p['name'], p['value'])
-                      for p in image['properties'] if not p['deleted'])
+    properties = {p['name']: p['value'] for p in image['properties']
+                  if not p['deleted']}
 
     image_dict = _fetch_attrs(image, glance.db.IMAGE_ATTRS)
     image_dict['properties'] = properties

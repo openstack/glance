@@ -413,8 +413,7 @@ class BaseClient(object):
                   names and values
         """
         to_str = encodeutils.safe_encode
-        return dict([(to_str(h), to_str(v)) for h, v in
-                     six.iteritems(headers)])
+        return {to_str(h): to_str(v) for h, v in six.iteritems(headers)}
 
     @handle_redirects
     def _do_request(self, method, url, body, headers):
