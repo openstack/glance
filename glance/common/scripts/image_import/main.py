@@ -17,8 +17,8 @@ __all__ = [
     'run',
 ]
 
-from oslo.concurrency import lockutils
 from oslo.utils import excutils
+from oslo_concurrency import lockutils
 import six
 
 from glance.api.v2 import images as v2_api

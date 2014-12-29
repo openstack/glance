@@ -34,9 +34,9 @@ from eventlet.green import socket
 from eventlet.green import ssl
 import eventlet.greenio
 import eventlet.wsgi
-from oslo.concurrency import processutils
 from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_concurrency import processutils
 import routes
 import routes.middleware
 import six
