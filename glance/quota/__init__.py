@@ -96,9 +96,9 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
             raise exception.ImagePropertyLimitExceeded(attempted=attempted,
                                                        maximum=maximum)
 
-    def save(self, image):
+    def save(self, image, from_state=None):
         self._enforce_image_property_quota(image)
-        super(ImageRepoProxy, self).save(image)
+        return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
         self._enforce_image_property_quota(image)

@@ -79,7 +79,7 @@ class FakeImageRepo(object):
         else:
             return self.result
 
-    def save(self, image):
+    def save(self, image, from_state=None):
         self.saved_image = image
 
 
@@ -180,17 +180,21 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
     def test_upload_non_existent_image_during_save_initiates_deletion(self):
-        def fake_save(self):
+        def fake_save_not_found(self):
             raise exception.NotFound()
 
-        request = unit_test_utils.get_fake_request()
-        image = FakeImage('abcd', locations=['http://example.com/image'])
-        self.image_repo.result = image
-        self.image_repo.save = fake_save
-        image.delete = mock.Mock()
-        self.assertRaises(webob.exc.HTTPGone, self.controller.upload,
-                          request, str(uuid.uuid4()), 'ABC', 3)
-        self.assertTrue(image.delete.called)
+        def fake_save_conflict(self):
+            raise exception.Conflict()
+
+        for fun in [fake_save_not_found, fake_save_conflict]:
+            request = unit_test_utils.get_fake_request()
+            image = FakeImage('abcd', locations=['http://example.com/image'])
+            self.image_repo.result = image
+            self.image_repo.save = fun
+            image.delete = mock.Mock()
+            self.assertRaises(webob.exc.HTTPGone, self.controller.upload,
+                              request, str(uuid.uuid4()), 'ABC', 3)
+            self.assertTrue(image.delete.called)
 
     def test_upload_non_existent_image_before_save(self):
         request = unit_test_utils.get_fake_request()

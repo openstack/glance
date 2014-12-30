@@ -290,7 +290,8 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar'}
         self.image_repo_proxy.save(self.image)
 
-        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image,
+                                                          from_state=None)
 
     def test_save_image_too_many_image_properties(self):
         self.config(image_property_quota=1)
@@ -306,7 +307,8 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar'}
         self.image_repo_proxy.save(self.image)
 
-        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image,
+                                                          from_state=None)
 
     def test_add_image_with_image_property(self):
         self.config(image_property_quota=1)

@@ -69,7 +69,7 @@ class MemberRepoStub(object):
     def get(self, *args, **kwargs):
         return 'member_repo_get'
 
-    def save(self, image_member):
+    def save(self, image_member, from_state=None):
         image_member.output = 'member_repo_save'
 
     def list(self, *args, **kwargs):

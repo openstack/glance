@@ -22,6 +22,7 @@ from glance.common import wsgi
 import glance.db
 import glance.gateway
 import glance.notifier
+from glance.openstack.common import excutils
 import glance.openstack.common.log as logging
 import glance.store
 
@@ -66,13 +67,12 @@ class ImageDataController(object):
             try:
                 image_repo.save(image)
                 image.set_data(data, size)
-                image_repo.save(image)
-            except exception.NotFound as e:
-                msg = (_("Image %(id)s could not be found after upload."
-                         "The image may have been deleted during the upload: "
-                         "%(error)s Cleaning up the chunks uploaded") %
-                       {'id': image_id,
-                        'error': e})
+                image_repo.save(image, from_state='saving')
+            except (exception.NotFound, exception.Conflict):
+                msg = (_("Image %s could not be found after upload. "
+                         "The image may have been deleted during the "
+                         "upload, cleaning up the chunks uploaded.") %
+                       image_id)
                 LOG.warn(msg)
                 # NOTE(sridevi): Cleaning up the uploaded chunks.
                 try:
@@ -130,6 +130,10 @@ class ImageDataController(object):
             self._restore(image_repo, image)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
+
+        except webob.exc.HTTPGone as e:
+            with excutils.save_and_reraise_exception():
+                LOG.error(_("Failed to upload image data due to HTTP error"))
 
         except webob.exc.HTTPError as e:
             LOG.error(_("Failed to upload image data due to HTTP error"))

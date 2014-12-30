@@ -94,9 +94,9 @@ class Repo(object):
         result = self.base.add(base_item)
         return self.helper.proxy(result)
 
-    def save(self, item):
+    def save(self, item, from_state=None):
         base_item = self.helper.unproxy(item)
-        result = self.base.save(base_item)
+        result = self.base.save(base_item, from_state=from_state)
         return self.helper.proxy(result)
 
     def remove(self, item):
