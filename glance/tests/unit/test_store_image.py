@@ -36,7 +36,7 @@ class ImageRepoStub(object):
     def add(self, image):
         return image
 
-    def save(self, image):
+    def save(self, image, from_state=None):
         return image
 
 

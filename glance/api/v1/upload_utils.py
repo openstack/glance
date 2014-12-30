@@ -153,12 +153,19 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         update_data = {'checksum': checksum,
                        'size': size}
         try:
-            image_meta = registry.update_image_metadata(req.context,
-                                                        image_id,
-                                                        update_data,
-                                                        from_state='saving')
-
-        except exception.NotFound as e:
+            try:
+                state = 'saving'
+                image_meta = registry.update_image_metadata(req.context,
+                                                            image_id,
+                                                            update_data,
+                                                            from_state=state)
+            except exception.Duplicate:
+                image = registry.get_image_metadata(req.context, image_id)
+                if image['status'] == 'deleted':
+                    raise exception.NotFound()
+                else:
+                    raise
+        except exception.NotFound:
             msg = _LI("Image %s could not be found after upload. The image may"
                       " have been deleted during the upload.") % image_id
             LOG.info(msg)

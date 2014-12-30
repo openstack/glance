@@ -367,7 +367,8 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar'}
         self.image_repo_proxy.save(self.image)
 
-        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image,
+                                                          from_state=None)
 
     def test_save_image_too_many_image_properties(self):
         self.config(image_property_quota=1)
@@ -383,7 +384,8 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar'}
         self.image_repo_proxy.save(self.image)
 
-        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image,
+                                                          from_state=None)
 
     def test_add_image_with_image_property(self):
         self.config(image_property_quota=1)
@@ -422,7 +424,8 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.config(image_property_quota=1)
         self.image.extra_properties = {'foo': 'frob', 'spam': 'eggs'}
         self.image_repo_proxy.save(self.image)
-        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image,
+                                                          from_state=None)
         self.assertEqual('frob', self.base_image.extra_properties['foo'])
         self.assertEqual('eggs', self.base_image.extra_properties['spam'])
 
@@ -431,7 +434,8 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.config(image_property_quota=1)
         del self.image.extra_properties['foo']
         self.image_repo_proxy.save(self.image)
-        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image,
+                                                          from_state=None)
         self.assertNotIn('foo', self.base_image.extra_properties)
         self.assertEqual('ham', self.base_image.extra_properties['spam'])
 
@@ -447,7 +451,7 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         del self.image.extra_properties['frob']
         del self.image.extra_properties['lorem']
         self.image_repo_proxy.save(self.image)
-        call_args = mock.call(self.base_image)
+        call_args = mock.call(self.base_image, from_state=None)
         self.assertEqual(call_args, self.image_repo_mock.save.call_args)
         self.assertEqual('bar', self.base_image.extra_properties['foo'])
         self.assertEqual('ham', self.base_image.extra_properties['spam'])
@@ -466,7 +470,8 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.config(image_property_quota=1)
         del self.image.extra_properties['foo']
         self.image_repo_proxy.save(self.image)
-        self.image_repo_mock.save.assert_called_once_with(self.base_image)
+        self.image_repo_mock.save.assert_called_once_with(self.base_image,
+                                                          from_state=None)
         self.assertNotIn('foo', self.base_image.extra_properties)
         self.assertEqual('ham', self.base_image.extra_properties['spam'])
         self.assertEqual('baz', self.base_image.extra_properties['frob'])
