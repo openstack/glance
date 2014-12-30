@@ -104,10 +104,10 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
             LOG.debug(six.text_type(exc))
             raise exc
 
-    def save(self, image):
+    def save(self, image, from_state=None):
         if image.added_new_properties():
             self._enforce_image_property_quota(len(image.extra_properties))
-        return super(ImageRepoProxy, self).save(image)
+        return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
         self._enforce_image_property_quota(len(image.extra_properties))
