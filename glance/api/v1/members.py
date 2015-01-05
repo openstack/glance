@@ -74,12 +74,12 @@ class Controller(controller.BaseController):
         try:
             members = registry.get_image_members(req.context, image_id)
         except exception.NotFound:
-            msg = "Image with identifier %s not found" % image_id
-            LOG.debug(msg)
+            msg = _("Image with identifier %s not found") % image_id
+            LOG.warn(msg)
             raise webob.exc.HTTPNotFound(msg)
         except exception.Forbidden:
-            msg = "Unauthorized image access"
-            LOG.debug(msg)
+            msg = _("Unauthorized image access")
+            LOG.warn(msg)
             raise webob.exc.HTTPForbidden(msg)
         return dict(members=members)
 
