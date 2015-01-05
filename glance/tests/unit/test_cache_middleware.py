@@ -19,6 +19,7 @@ import webob
 import glance.api.middleware.cache
 from glance.common import exception
 from glance import context
+from glance.openstack.common import policy
 import glance.registry.client.v1.api as registry
 from glance.tests.unit import base
 from glance.tests.unit import utils as unit_test_utils
@@ -167,6 +168,13 @@ class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
 
 
 class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
+    def _enforcer_from_rules(self, unparsed_rules):
+        rules = dict((k, policy.parse_rule(v))
+                     for (k, v) in unparsed_rules.items())
+        enforcer = glance.api.policy.Enforcer()
+        enforcer.set_rules(rules, overwrite=True)
+        return enforcer
+
     def test_v1_deleted_image_fetch(self):
         """
         Test for determining that when an admin tries to download a deleted
@@ -385,9 +393,8 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
 
-        rules = {'download_image': '!'}
-        self.set_policy_rules(rules)
-        cache_filter.policy = glance.api.policy.Enforcer()
+        enforcer = self._enforcer_from_rules({'download_image': '!'})
+        cache_filter.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden,
                           cache_filter.process_request, request)
 
@@ -420,18 +427,17 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
                 'x_test_key': 'test_1234'
             }
 
+        enforcer = self._enforcer_from_rules({
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        })
+
         request = webob.Request.blank('/v1/images/%s' % image_id)
         request.context = context.RequestContext(roles=['_member_'])
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
-
-        rules = {
-            "restricted":
-            "not ('test_1234':%(x_test_key)s and role:_member_)",
-            "download_image": "role:admin or rule:restricted"
-        }
-        self.set_policy_rules(rules)
-        cache_filter.policy = glance.api.policy.Enforcer()
+        cache_filter.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden,
                           cache_filter.process_request, request)
 
@@ -520,18 +526,18 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             request.environ['api.cache.image'] = image
             return glance.api.policy.ImageTarget(image)
 
+        enforcer = self._enforcer_from_rules({
+            "restricted":
+            "not ('test_1234':%(x_test_key)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        })
+
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext(roles=['_member_'])
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
 
-        rules = {
-            "restricted":
-            "not ('test_1234':%(x_test_key)s and role:_member_)",
-            "download_image": "role:admin or rule:restricted"
-        }
-        self.set_policy_rules(rules)
-        cache_filter.policy = glance.api.policy.Enforcer()
+        cache_filter.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden,
                           cache_filter.process_request, request)
 
