@@ -183,13 +183,6 @@ will prevent any new processes from being created.
 
 Optional. Default: The number of CPUs available will be used by default.
 
-* ``db_auto_create=False``
-
-Whether to automatically create the database tables.  Otherwise you can
-manually run `glance-manage db sync`.
-
-Optional. Default: ``False``
-
 Configuring SSL Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
