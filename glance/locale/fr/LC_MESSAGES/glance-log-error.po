@@ -1,5 +1,5 @@
 # Translations template for glance.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-18 06:06+0000\n"
-"PO-Revision-Date: 2014-12-10 14:52+0000\n"
+"POT-Creation-Date: 2015-01-07 06:03+0000\n"
+"PO-Revision-Date: 2015-01-05 20:11+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/glance/language/"
 "fr/)\n"
@@ -104,7 +104,7 @@ msgstr ""
 msgid "Unable to kill image %(id)s: "
 msgstr "Impossible de supprimer l'image %(id)s :"
 
-#: glance/api/v1/upload_utils.py:251
+#: glance/api/v1/upload_utils.py:253
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr "Une erreur HTTP a été reçu lors du chargement de l'image %s"
@@ -124,7 +124,7 @@ msgid "Failed to upload image data due to internal error"
 msgstr ""
 "Echec de téléchargement des données de l'image en raison d'une erreur interne"
 
-#: glance/api/v2/metadef_namespaces.py:189
+#: glance/api/v2/metadef_namespaces.py:205
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr "Echec lors de la suppresion du namespace %(namespace)s"
@@ -139,10 +139,31 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr "Erreur interne s'est produite lors du traitement de la tâche ."
 
+#: glance/common/property_utils.py:103
+#, python-format
+msgid ""
+"Multiple policies '%s' not allowed for a given operation. Policies can be "
+"combined in the policy file"
+msgstr ""
+
 #: glance/common/store_utils.py:69
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr "Echec de supprésion de l'image %(image_id)s depuis le magasin: %(exc)s"
+
+#: glance/common/swift_store_utils.py:101
+msgid "Invalid format of swift store config cfg"
+msgstr ""
+
+#: glance/common/wsgi.py:288
+#, python-format
+msgid "Not respawning child %d, cannot recover from termination"
+msgstr "Aucune relance de l'enfant %d, récupération impossible après arrêt"
+
+#: glance/common/location_strategy/__init__.py:65
+#, python-format
+msgid "Failed to load location strategy module %(module)s: %(e)s"
+msgstr ""
 
 #: glance/common/scripts/__init__.py:40
 #, python-format
@@ -162,7 +183,7 @@ msgstr ""
 msgid "Task not found for task_id %s"
 msgstr "Tache non trouvé pour  task_id %s"
 
-#: glance/db/sqlalchemy/metadata.py:129
+#: glance/db/sqlalchemy/metadata.py:142
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
 msgstr "Fichier du schéma Json non trouvé dans %s. Abandon."
@@ -202,11 +223,6 @@ msgstr ""
 "prend pas en charge xattr. Vous devez probablement éditer votre fstab et "
 "ajouter l'option user_xattr sur la ligne appropriée de l'unité hébergeant le "
 "répertoire de cache."
-
-#: glance/openstack/common/lockutils.py:117
-#, python-format
-msgid "Could not release the acquired lock `%s`"
-msgstr "Impossible de libérer le verrou acquis `%s`"
 
 #: glance/openstack/common/policy.py:550 glance/openstack/common/policy.py:830
 #, python-format

@@ -1,5 +1,5 @@
 # Translations template for glance.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-18 06:06+0000\n"
-"PO-Revision-Date: 2014-12-10 14:52+0000\n"
+"POT-Creation-Date: 2015-01-07 06:03+0000\n"
+"PO-Revision-Date: 2015-01-05 20:11+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Korean (Korea) (http://www.transifex.com/projects/p/glance/"
 "language/ko_KR/)\n"
@@ -103,7 +103,7 @@ msgstr "외부 소스 '%(scheme)s' 로부터 이미지 복사 실패 : %(image)s
 msgid "Unable to kill image %(id)s: "
 msgstr "이미지 %(id)s 를 kill 할 수 없음:"
 
-#: glance/api/v1/upload_utils.py:251
+#: glance/api/v1/upload_utils.py:253
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr "이미지 %s를 업로드 하는 도중 HTTP 에러 수신"
@@ -121,7 +121,7 @@ msgstr "HTTP 에러로 인해 이미지 데이터 업로드 실패"
 msgid "Failed to upload image data due to internal error"
 msgstr "내부 에러로 인해 이미지 데이터 업로드 실패"
 
-#: glance/api/v2/metadef_namespaces.py:189
+#: glance/api/v2/metadef_namespaces.py:205
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr "네임스페이스 삭제 실패 %(namespace)s"
@@ -138,10 +138,31 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr "작업을 수행하는 중 내부에러 발생"
 
+#: glance/common/property_utils.py:103
+#, python-format
+msgid ""
+"Multiple policies '%s' not allowed for a given operation. Policies can be "
+"combined in the policy file"
+msgstr ""
+
 #: glance/common/store_utils.py:69
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr "스토어에서 이미지 %(image_id)s 삭제 실패 : %(exc)s"
+
+#: glance/common/swift_store_utils.py:101
+msgid "Invalid format of swift store config cfg"
+msgstr ""
+
+#: glance/common/wsgi.py:288
+#, python-format
+msgid "Not respawning child %d, cannot recover from termination"
+msgstr ""
+
+#: glance/common/location_strategy/__init__.py:65
+#, python-format
+msgid "Failed to load location strategy module %(module)s: %(e)s"
+msgstr ""
 
 #: glance/common/scripts/__init__.py:40
 #, python-format
@@ -164,7 +185,7 @@ msgstr ""
 msgid "Task not found for task_id %s"
 msgstr "task_id %s에 대한 작업을 찾을 수 없음"
 
-#: glance/db/sqlalchemy/metadata.py:129
+#: glance/db/sqlalchemy/metadata.py:142
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
 msgstr "%s에서 Json 스키마 파일을 찾을 수 없음. 중단."
@@ -205,11 +226,6 @@ msgstr ""
 "디바이스 하우징 이미지 캐시 디렉터리 %(image_cache_dir)s의 Device 는 xattr을 "
 "지원하지 않습니다. fstab을 수정하거나 user_xattr 옵션을 디바이스 하우징 캐시 "
 "디렉터리의 적합한 행에 추가하기 바랍니다."
-
-#: glance/openstack/common/lockutils.py:117
-#, python-format
-msgid "Could not release the acquired lock `%s`"
-msgstr "획득한 `%s` 잠금을 해제할 수 없음"
 
 #: glance/openstack/common/policy.py:550 glance/openstack/common/policy.py:830
 #, python-format

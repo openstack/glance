@@ -1,5 +1,5 @@
 # Translations template for glance.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-18 06:06+0000\n"
-"PO-Revision-Date: 2014-12-10 14:35+0000\n"
+"POT-Creation-Date: 2015-01-07 06:03+0000\n"
+"PO-Revision-Date: 2015-01-05 04:43+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "glance/language/pt_BR/)\n"
@@ -75,15 +75,6 @@ msgstr "Acionando cópia assíncrona da origem externa"
 msgid "Cleaning up %s after exceeding the quota"
 msgstr "Limpando %s após exceder a quota"
 
-#: glance/api/v1/upload_utils.py:162
-#, python-format
-msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
-msgstr ""
-"Imagem %s não pôde ser encontrada após o envio. A imagem pode ter sido "
-"excluída durante o envio."
-
 #: glance/async/eventlet_executor.py:50
 #, python-format
 msgid ""
@@ -113,6 +104,38 @@ msgstr "Metadados da Imagem %s mudaram"
 msgid "Image %s is being synced"
 msgstr "Imagem %s está sendo sincronizada"
 
+#: glance/common/wsgi.py:270
+#, python-format
+msgid "Starting %d workers"
+msgstr "Iniciando %d trabalhadores"
+
+#: glance/common/wsgi.py:285
+#, python-format
+msgid "Removing dead child %s"
+msgstr "Removendo filho inativo %s"
+
+#: glance/common/wsgi.py:291
+msgid "All workers have terminated. Exiting"
+msgstr "Todos os trabalhadores foram finalizados. Saindo"
+
+#: glance/common/wsgi.py:300
+msgid "Caught keyboard interrupt. Exiting."
+msgstr "Interrupção da captura de teclado. Saindo."
+
+#: glance/common/wsgi.py:326
+#, python-format
+msgid "Child %d exiting normally"
+msgstr "Filho %d saindo normalmente"
+
+#: glance/common/wsgi.py:331
+#, python-format
+msgid "Started child %s"
+msgstr "Filho iniciado %s"
+
+#: glance/common/wsgi.py:355
+msgid "Starting single process server"
+msgstr "Iniciando servidor de processo único"
+
 #: glance/common/scripts/__init__.py:32
 #, python-format
 msgid ""
@@ -139,36 +162,36 @@ msgid "Task %(task_id)s: Could not import image file %(image_data)s"
 msgstr ""
 "Tarefa %(task_id)s: Não pôde importar o arquivo de imagem %(image_data)s"
 
-#: glance/db/simple/api.py:54
+#: glance/db/simple/api.py:56
 #, python-format
 msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 msgstr "Chamando %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 
-#: glance/db/simple/api.py:60
+#: glance/db/simple/api.py:62
 #, python-format
 msgid "Returning %(funcname)s: %(output)s"
 msgstr "Retornando %(funcname)s: %(output)s"
 
-#: glance/db/sqlalchemy/metadata.py:157
+#: glance/db/sqlalchemy/metadata.py:170
 #, python-format
 msgid "Skipping  namespace %s. It already exists in the database."
 msgstr "Ignorando namespace %s. Ele já existe no banco de dados."
 
-#: glance/db/sqlalchemy/metadata.py:219
+#: glance/db/sqlalchemy/metadata.py:242
 #, python-format
 msgid "File %s loaded to database."
 msgstr "Arquivo %s carregado no banco de dados."
 
-#: glance/db/sqlalchemy/metadata.py:221
+#: glance/db/sqlalchemy/metadata.py:244
 msgid "Metadata loading finished"
 msgstr "Carregamento de metadados finalizado"
 
-#: glance/db/sqlalchemy/metadata.py:232
+#: glance/db/sqlalchemy/metadata.py:256
 #, python-format
 msgid "Table %s has been cleared"
 msgstr "Tabela %s foi limpa"
 
-#: glance/db/sqlalchemy/metadata.py:312
+#: glance/db/sqlalchemy/metadata.py:347
 #, python-format
 msgid "Namespace %(namespace)s saved in %(file)s"
 msgstr "Namespace %(namespace)s salvo em %(file)s"
@@ -238,16 +261,6 @@ msgstr "Arquivo de cache paralisado removido %s"
 #, python-format
 msgid "Reaped %(reaped)s %(entry_type)s cache entries"
 msgstr "%(reaped)s %(entry_type)s entradas de cache coletadas"
-
-#: glance/openstack/common/lockutils.py:82
-#, python-format
-msgid "Created lock path: %s"
-msgstr "Criado caminho de lock: %s"
-
-#: glance/openstack/common/lockutils.py:194
-#, python-format
-msgid "Failed to remove file %(file)s"
-msgstr "Falha ao remover arquivo %(file)s"
 
 #: glance/quota/__init__.py:330
 #, python-format

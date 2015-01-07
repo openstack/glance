@@ -1,5 +1,5 @@
 # Translations template for glance.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-18 06:06+0000\n"
-"PO-Revision-Date: 2014-12-10 14:35+0000\n"
+"POT-Creation-Date: 2015-01-07 06:03+0000\n"
+"PO-Revision-Date: 2014-12-18 11:43+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "glance/language/pt_BR/)\n"
@@ -62,7 +62,7 @@ msgstr ""
 "Falha ao ativar imagem %s no registro. Prestes a excluir bits de imagem do "
 "armazenamento e atualizar status para 'encerrado'."
 
-#: glance/api/v2/images.py:860
+#: glance/api/v2/images.py:889
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
@@ -110,50 +110,55 @@ msgstr "Falha ao excluir imagem %s no armazenamento da URI"
 msgid "Task %(task_id)s failed with exception %(error)s"
 msgstr "Tarefa %(task_id)s falhou com exceção %(error)s"
 
-#: glance/db/simple/api.py:355
+#: glance/db/simple/api.py:374
 #, python-format
 msgid "Could not find image %s"
 msgstr "Não foi possível localizar a imagem %s"
 
-#: glance/db/simple/api.py:359
+#: glance/db/simple/api.py:378
 msgid "Unable to get deleted image"
 msgstr "Não é possível obter a imagem excluída"
 
-#: glance/db/simple/api.py:363
+#: glance/db/simple/api.py:382
 msgid "Unable to get unowned image"
 msgstr "Não é possível obter a imagem não possuída"
 
-#: glance/db/simple/api.py:870
+#: glance/db/simple/api.py:889
 #, python-format
 msgid "Could not find task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:875
+#: glance/db/simple/api.py:894
 #, python-format
 msgid "Unable to get deleted task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:1037
+#: glance/db/simple/api.py:1055
 #, python-format
 msgid "Could not find task info %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:73
+#: glance/db/sqlalchemy/api.py:74
 msgid "Deadlock detected. Retrying..."
 msgstr "Conflito detectado. Tentando novamente..."
 
-#: glance/db/sqlalchemy/api.py:113
+#: glance/db/sqlalchemy/api.py:114
 msgid "Attempted to modify image user did not own."
 msgstr "Tentou modificar o usuário da imagem não de sua propriedade."
 
-#: glance/db/sqlalchemy/api.py:323
+#: glance/db/sqlalchemy/api.py:324
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr "ID não em sort_keys; sort_keys é exclusivo?"
 
-#: glance/db/sqlalchemy/metadata.py:240
+#: glance/db/sqlalchemy/metadata.py:264
 #, python-format
 msgid "Duplicate entry for values: %s"
 msgstr "Entrada duplicada para valores: %s"
+
+#: glance/db/sqlalchemy/metadef_api/tag.py:37
+#, python-format
+msgid "Metadata tag not found for id %s"
+msgstr ""
 
 #: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:92
 #, python-format

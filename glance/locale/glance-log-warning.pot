@@ -1,14 +1,14 @@
 # Translations template for glance.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the glance project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev182\n"
+"Project-Id-Version: glance 2015.1.dev24\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-18 06:06+0000\n"
+"POT-Creation-Date: 2015-01-07 06:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,7 +57,7 @@ msgid ""
 "store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:860
+#: glance/api/v2/images.py:889
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
@@ -101,49 +101,54 @@ msgstr ""
 msgid "Task %(task_id)s failed with exception %(error)s"
 msgstr ""
 
-#: glance/db/simple/api.py:355
+#: glance/db/simple/api.py:374
 #, python-format
 msgid "Could not find image %s"
 msgstr ""
 
-#: glance/db/simple/api.py:359
+#: glance/db/simple/api.py:378
 msgid "Unable to get deleted image"
 msgstr ""
 
-#: glance/db/simple/api.py:363
+#: glance/db/simple/api.py:382
 msgid "Unable to get unowned image"
 msgstr ""
 
-#: glance/db/simple/api.py:870
+#: glance/db/simple/api.py:889
 #, python-format
 msgid "Could not find task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:875
+#: glance/db/simple/api.py:894
 #, python-format
 msgid "Unable to get deleted task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:1037
+#: glance/db/simple/api.py:1055
 #, python-format
 msgid "Could not find task info %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:73
+#: glance/db/sqlalchemy/api.py:74
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:113
+#: glance/db/sqlalchemy/api.py:114
 msgid "Attempted to modify image user did not own."
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:323
+#: glance/db/sqlalchemy/api.py:324
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:240
+#: glance/db/sqlalchemy/metadata.py:264
 #, python-format
 msgid "Duplicate entry for values: %s"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadef_api/tag.py:37
+#, python-format
+msgid "Metadata tag not found for id %s"
 msgstr ""
 
 #: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:92
