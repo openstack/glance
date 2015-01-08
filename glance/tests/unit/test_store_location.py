@@ -524,12 +524,15 @@ class TestStoreLocation(base.StoreClearingUnitTest):
 
         loc1 = {'url': 'file:///fake1.img.tar.gz', 'metadata': {}}
         loc2 = {'url': 'swift+config:///xxx', 'metadata': {}}
+        loc3 = {'url': 'filesystem:///foo.img.tar.gz', 'metadata': {}}
 
         # Test for insert location
         image1 = TestStoreLocation.FakeImageProxy(utils.FakeStoreAPI())
         locations = glance.store.StoreLocations(image1, [])
         self.assertRaises(exception.BadStoreUri, locations.insert, 0, loc1)
+        self.assertRaises(exception.BadStoreUri, locations.insert, 0, loc3)
         self.assertNotIn(loc1, locations)
+        self.assertNotIn(loc3, locations)
 
         # Test for set_attr of _locations_proxy
         image2 = TestStoreLocation.FakeImageProxy(utils.FakeStoreAPI())

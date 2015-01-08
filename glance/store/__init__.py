@@ -76,6 +76,8 @@ _ALL_STORES = [
     'glance.store.vmware_datastore.Store'
 ]
 
+RESTRICTED_URI_SCHEMAS = frozenset(['file', 'filesystem', 'swift+config'])
+
 
 class BackendException(Exception):
     pass
@@ -434,10 +436,11 @@ def validate_external_location(uri):
     :param uri: The URI of external image location.
     :return: Whether given URI of external image location are OK.
     """
-    pieces = urlparse.urlparse(uri)
-    valid_schemes = [scheme for scheme in get_known_schemes()
-                     if scheme != 'file' and scheme != 'swift+config']
-    return pieces.scheme in valid_schemes
+
+    # TODO(gm): Use a whitelist of allowed schemes
+    scheme = urlparse.urlparse(uri).scheme
+    return (scheme in get_known_schemes() and
+            scheme not in RESTRICTED_URI_SCHEMAS)
 
 
 class ImageRepoProxy(glance.domain.proxy.Repo):
