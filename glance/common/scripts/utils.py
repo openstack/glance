@@ -92,10 +92,10 @@ def validate_location_uri(location):
         return location
 
     # NOTE: file type uri is being avoided for security reasons,
-    # see LP bug #942118.
-    elif location.startswith("file:///"):
-        msg = ("File based imports are not allowed. Please use a non-local "
-               "source of image data.")
+    # see LP bug #942118 #1400966.
+    elif location.startswith(("file:///", "filesystem:///")):
+        msg = _("File based imports are not allowed. Please use a non-local "
+                "source of image data.")
         # NOTE: raise Exception and let the encompassing block save
         # the error msg in the task.message.
         raise StandardError(msg)
