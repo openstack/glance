@@ -89,7 +89,7 @@ def validate_location_uri(location):
     if not location:
         raise exception.BadStoreUri(_('Invalid location: %s') % location)
 
-    elif location.startswith('http://') or location.startswith("https://"):
+    elif location.startswith(('http://', 'https://')):
         return location
 
     # NOTE: file type uri is being avoided for security reasons,
