@@ -38,6 +38,8 @@ store_utils_opts = [
 CONF = cfg.CONF
 CONF.register_opts(store_utils_opts)
 
+RESTRICTED_URI_SCHEMAS = frozenset(['file', 'filesystem', 'swift+config'])
+
 
 def safe_delete_from_backend(context, image_id, location):
     """
@@ -136,8 +138,7 @@ def validate_external_location(uri):
     """
 
     # TODO(zhiyan): This function could be moved to glance_store.
-
-    pieces = urlparse.urlparse(uri)
-    valid_schemes = [scheme for scheme in store_api.get_known_schemes()
-                     if scheme != 'file' and scheme != 'swift+config']
-    return pieces.scheme in valid_schemes
+    # TODO(gm): Use a whitelist of allowed schemes
+    scheme = urlparse.urlparse(uri).scheme
+    return (scheme in store_api.get_known_schemes() and
+            scheme not in RESTRICTED_URI_SCHEMAS)

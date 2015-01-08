@@ -1071,31 +1071,23 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_add_copy_from_with_restricted_sources(self):
         """Tests creates an image from copy-from with restricted sources"""
-        fixture_headers = {'x-image-meta-store': 'file',
+        header_template = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-glance-api-copy-from': 'file:///etc/passwd',
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F'}
 
-        req = webob.Request.blank("/images")
-        req.method = 'POST'
-        for k, v in six.iteritems(fixture_headers):
-            req.headers[k] = v
-        res = req.get_response(self.api)
-        self.assertEqual(400, res.status_int)
+        schemas = ["file:///etc/passwd",
+                   "swift+config:///xxx",
+                   "filesystem:///etc/passwd"]
 
-        fixture_headers = {'x-image-meta-store': 'file',
-                           'x-image-meta-disk-format': 'vhd',
-                           'x-glance-api-copy-from': 'swift+config://xxx',
-                           'x-image-meta-container-format': 'ovf',
-                           'x-image-meta-name': 'fake image #F'}
-
-        req = webob.Request.blank("/images")
-        req.method = 'POST'
-        for k, v in six.iteritems(fixture_headers):
-            req.headers[k] = v
-        res = req.get_response(self.api)
-        self.assertEqual(400, res.status_int)
+        for schema in schemas:
+            req = webob.Request.blank("/images")
+            req.method = 'POST'
+            for k, v in six.iteritems(header_template):
+                req.headers[k] = v
+            req.headers['x-glance-api-copy-from'] = schema
+            res = req.get_response(self.api)
+            self.assertEqual(400, res.status_int)
 
     def test_add_copy_from_upload_image_unauthorized_with_body(self):
         rules = {"upload_image": '!', "modify_image": '@',
