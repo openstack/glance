@@ -28,7 +28,7 @@ store_type_opts = [
                 default=[],
                 help=_("The store names to use to get store preference order. "
                        "The name must be registered by one of the stores "
-                       "defined by the 'known_stores' config option. "
+                       "defined by the 'stores' config option. "
                        "This option will be applied when you using "
                        "'store_type' option as image location strategy "
                        "defined by the 'location_strategy' config option."))
