@@ -40,7 +40,7 @@ try:
 except ImportError:
     SENDFILE_SUPPORTED = False
 
-from oslo.utils import encodeutils
+from oslo_utils import encodeutils
 import six
 import six.moves.urllib.parse as urlparse
 from six.moves import xrange

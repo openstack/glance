@@ -20,9 +20,9 @@ LRU Cache for Image Data
 import hashlib
 
 from oslo.config import cfg
-from oslo.utils import excutils
-from oslo.utils import importutils
-from oslo.utils import units
+from oslo_utils import excutils
+from oslo_utils import importutils
+from oslo_utils import units
 
 from glance.common import exception
 from glance.common import utils

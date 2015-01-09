@@ -17,7 +17,7 @@ import copy
 
 import glance_store
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import six
 import webob
 

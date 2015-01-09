@@ -23,8 +23,8 @@ import eventlet
 import glance_store as store
 import glance_store.location
 from oslo.config import cfg
-from oslo.utils import excutils
-from oslo.utils import strutils
+from oslo_utils import excutils
+from oslo_utils import strutils
 from webob.exc import HTTPBadRequest
 from webob.exc import HTTPConflict
 from webob.exc import HTTPForbidden

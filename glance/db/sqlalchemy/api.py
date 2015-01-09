@@ -25,7 +25,7 @@ import threading
 from oslo.config import cfg
 from oslo.db import exception as db_exception
 from oslo.db.sqlalchemy import session
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import osprofiler.sqlalchemy
 from retrying import retry
 import six

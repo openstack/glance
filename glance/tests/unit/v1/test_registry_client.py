@@ -19,7 +19,7 @@ import os
 import uuid
 
 from mock import patch
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import testtools
 
 from glance.common import client as test_client

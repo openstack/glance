@@ -16,7 +16,7 @@ import uuid
 
 import mock
 from mock import patch
-from oslo.utils import units
+from oslo_utils import units
 import six
 
 from glance.common import exception

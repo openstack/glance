@@ -16,8 +16,8 @@ import os
 import tempfile
 
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
-from oslo.utils import units
+from oslo_utils import timeutils
+from oslo_utils import units
 import testtools
 
 from glance.tests.integration.legacy_functional import base

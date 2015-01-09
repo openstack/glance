@@ -16,8 +16,8 @@
 import re
 
 from oslo.config import cfg
-from oslo.utils import excutils
-from oslo.utils import units
+from oslo_utils import excutils
+from oslo_utils import units
 
 from glance.common import exception
 from glance import i18n

@@ -25,7 +25,7 @@ class ResourceTypeAssociation(types.Base, WSMEModelTransformer):
     properties_target = wsme.wsattr(types.text, mandatory=False)
 
     # Not using datetime since time format has to be
-    # in oslo.utils.timeutils.isotime() format
+    # in oslo_utils.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 
@@ -46,7 +46,7 @@ class ResourceType(types.Base, WSMEModelTransformer):
     name = wsme.wsattr(types.text, mandatory=True)
 
     # Not using datetime since time format has to be
-    # in oslo.utils.timeutils.isotime() format
+    # in oslo_utils.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 

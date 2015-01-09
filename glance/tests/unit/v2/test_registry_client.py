@@ -25,7 +25,7 @@ import os
 import uuid
 
 from mock import patch
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from glance.common import config
 from glance.common import exception

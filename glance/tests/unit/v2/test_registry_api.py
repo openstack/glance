@@ -20,7 +20,7 @@ import uuid
 
 from oslo.config import cfg
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import routes
 import six
 import webob

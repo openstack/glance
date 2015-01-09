@@ -40,7 +40,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 from oslo.config import cfg
-from oslo.utils import units
+from oslo_utils import units
 from six.moves import xrange
 
 from glance.common import config

@@ -20,7 +20,7 @@ import os
 import time
 
 import fixtures
-from oslo.utils import units
+from oslo_utils import units
 import six
 from six.moves import xrange
 import stubout

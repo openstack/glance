@@ -24,7 +24,7 @@ class MetadefTag(types.Base, wsme_utils.WSMEModelTransformer):
     name = wsme.wsattr(types.text, mandatory=True)
 
     # Not using datetime since time format has to be
-    # in oslo.utils.timeutils.isotime() format
+    # in oslo_utils.timeutils.isotime() format
     created_at = wsme.wsattr(types.text, mandatory=False)
     updated_at = wsme.wsattr(types.text, mandatory=False)
 

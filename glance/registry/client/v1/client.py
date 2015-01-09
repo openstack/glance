@@ -19,7 +19,7 @@ the Glance Registry API
 """
 
 from oslo.serialization import jsonutils
-from oslo.utils import excutils
+from oslo_utils import excutils
 
 from glance.common.client import BaseClient
 from glance.common import crypt

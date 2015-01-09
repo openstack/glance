@@ -17,7 +17,7 @@
 #    under the License.
 
 from oslo.config import cfg
-from oslo.utils import importutils
+from oslo_utils import importutils
 from wsme.rest import json
 
 from glance.api.v2.model.metadef_property_type import PropertyType

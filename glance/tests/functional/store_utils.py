@@ -23,7 +23,7 @@ from __future__ import print_function
 import BaseHTTPServer
 import threading
 
-from oslo.utils import units
+from oslo_utils import units
 
 
 FIVE_KB = 5 * units.Ki

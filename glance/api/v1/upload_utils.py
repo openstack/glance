@@ -14,7 +14,7 @@
 #    under the License.
 import glance_store as store_api
 from oslo.config import cfg
-from oslo.utils import excutils
+from oslo_utils import excutils
 import webob.exc
 
 from glance.common import exception

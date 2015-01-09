@@ -20,8 +20,8 @@ import datetime
 import traceback
 
 from oslo.config import cfg
-import oslo.utils.importutils as imp
-from oslo.utils import timeutils
+import oslo_utils.importutils as imp
+from oslo_utils import timeutils
 import six
 from webob import exc
 
