@@ -14,8 +14,8 @@
 #    under the License.
 
 import eventlet
-from oslo.config import cfg
 from oslo_concurrency import lockutils
+from oslo_config import cfg
 
 import glance.async
 import glance.common.scripts as scripts

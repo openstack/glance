@@ -41,7 +41,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 import glance_store
-from oslo.config import cfg
+from oslo_config import cfg
 import osprofiler.notifier
 import osprofiler.web
 

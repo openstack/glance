@@ -17,10 +17,10 @@ import os
 
 import glance_store as store
 from glance_store import location
-from oslo.config import cfg
 from oslo.db import options
 from oslo.serialization import jsonutils
 from oslo_concurrency import lockutils
+from oslo_config import cfg
 
 from glance.openstack.common import local
 from glance.tests import stubs

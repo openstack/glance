@@ -16,8 +16,8 @@
 import datetime
 
 import glance_store
-from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_config import cfg
 import webob
 
 import glance.api.v2.image_members

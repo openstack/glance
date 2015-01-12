@@ -17,7 +17,7 @@
 RPC Controller
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from glance.common import rpc
 from glance.common import wsgi

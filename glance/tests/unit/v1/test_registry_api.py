@@ -19,8 +19,8 @@ import datetime
 import uuid
 
 import mock
-from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_config import cfg
 from oslo_utils import timeutils
 import routes
 import six

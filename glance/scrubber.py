@@ -19,8 +19,8 @@ import os
 import time
 
 import eventlet
-from oslo.config import cfg
 from oslo_concurrency import lockutils
+from oslo_config import cfg
 import six
 
 from glance.common import crypt

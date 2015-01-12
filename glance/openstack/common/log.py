@@ -37,7 +37,7 @@ import socket
 import sys
 import traceback
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo.serialization import jsonutils
 from oslo_utils import importutils
 import six

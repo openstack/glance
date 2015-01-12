@@ -23,7 +23,7 @@ from os.path import isfile
 from os.path import join
 import re
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_utils import timeutils
 import six
 import sqlalchemy

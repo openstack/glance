@@ -58,7 +58,7 @@ import os
 import stat
 import time
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_utils import excutils
 import xattr
 

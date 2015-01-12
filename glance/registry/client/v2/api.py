@@ -19,7 +19,7 @@ Registry's Client V2
 
 import os
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from glance.common import exception
 from glance import i18n

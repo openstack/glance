@@ -19,7 +19,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 import glance.api.policy
 from glance.common import exception

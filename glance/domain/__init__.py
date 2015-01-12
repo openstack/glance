@@ -18,7 +18,7 @@ import collections
 import datetime
 import uuid
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_utils import excutils
 from oslo_utils import importutils
 from oslo_utils import timeutils
