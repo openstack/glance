@@ -111,19 +111,25 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                                              item_proxy_kwargs=proxy_kwargs)
 
     def get(self, image_id):
-        self.policy.enforce(self.context, 'get_image', {})
-        return super(ImageRepoProxy, self).get(image_id)
+        try:
+            image = super(ImageRepoProxy, self).get(image_id)
+        except exception.NotFound:
+            self.policy.enforce(self.context, 'get_image', {})
+            raise
+        else:
+            self.policy.enforce(self.context, 'get_image', ImageTarget(image))
+        return image
 
     def list(self, *args, **kwargs):
         self.policy.enforce(self.context, 'get_images', {})
         return super(ImageRepoProxy, self).list(*args, **kwargs)
 
     def save(self, image, from_state=None):
-        self.policy.enforce(self.context, 'modify_image', {})
+        self.policy.enforce(self.context, 'modify_image', image.target)
         return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
-        self.policy.enforce(self.context, 'add_image', {})
+        self.policy.enforce(self.context, 'add_image', image.target)
         return super(ImageRepoProxy, self).add(image)
 
 
@@ -131,6 +137,7 @@ class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, policy):
         self.image = image
+        self.target = ImageTarget(image)
         self.context = context
         self.policy = policy
         super(ImageProxy, self).__init__(image)
@@ -142,7 +149,7 @@ class ImageProxy(glance.domain.proxy.Image):
     @visibility.setter
     def visibility(self, value):
         if value == 'public':
-            self.policy.enforce(self.context, 'publicize_image', {})
+            self.policy.enforce(self.context, 'publicize_image', self.target)
         self.image.visibility = value
 
     @property
@@ -154,25 +161,24 @@ class ImageProxy(glance.domain.proxy.Image):
     def locations(self, value):
         if not isinstance(value, (list, ImageLocationsProxy)):
             raise exception.Invalid(_('Invalid locations: %s') % value)
-        self.policy.enforce(self.context, 'set_image_location', {})
+        self.policy.enforce(self.context, 'set_image_location', self.target)
         new_locations = list(value)
         if (set([loc['url'] for loc in self.image.locations]) -
                 set([loc['url'] for loc in new_locations])):
-            self.policy.enforce(self.context, 'delete_image_location', {})
+            self.policy.enforce(self.context, 'delete_image_location',
+                                self.target)
         self.image.locations = new_locations
 
     def delete(self):
-        self.policy.enforce(self.context, 'delete_image', {})
+        self.policy.enforce(self.context, 'delete_image', self.target)
         return self.image.delete()
 
     def get_data(self, *args, **kwargs):
-        target = ImageTarget(self.image)
-        self.policy.enforce(self.context, 'download_image',
-                            target=target)
+        self.policy.enforce(self.context, 'download_image', self.target)
         return self.image.get_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
-        self.policy.enforce(self.context, 'upload_image', {})
+        self.policy.enforce(self.context, 'upload_image', self.target)
         return self.image.set_data(*args, **kwargs)
 
     def get_member_repo(self, **kwargs):
@@ -210,27 +216,28 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def __init__(self, member_repo, context, policy):
         self.member_repo = member_repo
+        self.target = ImageTarget(self.member_repo.image)
         self.context = context
         self.policy = policy
 
     def add(self, member):
-        self.policy.enforce(self.context, 'add_member', {})
+        self.policy.enforce(self.context, 'add_member', self.target)
         self.member_repo.add(member)
 
     def get(self, member_id):
-        self.policy.enforce(self.context, 'get_member', {})
+        self.policy.enforce(self.context, 'get_member', self.target)
         return self.member_repo.get(member_id)
 
     def save(self, member, from_state=None):
-        self.policy.enforce(self.context, 'modify_member', {})
+        self.policy.enforce(self.context, 'modify_member', self.target)
         self.member_repo.save(member, from_state=from_state)
 
     def list(self, *args, **kwargs):
-        self.policy.enforce(self.context, 'get_members', {})
+        self.policy.enforce(self.context, 'get_members', self.target)
         return self.member_repo.list(*args, **kwargs)
 
     def remove(self, member):
-        self.policy.enforce(self.context, 'delete_member', {})
+        self.policy.enforce(self.context, 'delete_member', self.target)
         self.member_repo.remove(member)
 
 
@@ -356,31 +363,38 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
 
 
 class ImageTarget(object):
+    SENTINEL = object()
 
-    def __init__(self, image):
-        """
-        Initialize the object
+    def __init__(self, target):
+        """Initialize the object
 
-        :param image: Image object
+        :param target: Object being targetted
         """
-        self.image = image
+        self.target = target
 
     def __getitem__(self, key):
-        """
-        Returns the value of 'key' from the image if image has that attribute
-        else tries to retrieve value from the extra_properties of image.
+        """Return the value of 'key' from the target.
+
+        If the target has the attribute 'key', return it.
 
         :param key: value to retrieve
         """
-        # Need to change the key 'id' to 'image_id' as Image object has
-        # attribute as 'image_id' in case of V2.
+        key = self.key_transforms(key)
+
+        value = getattr(self.target, key, self.SENTINEL)
+        if value is self.SENTINEL:
+            extra_properties = getattr(self.target, 'extra_properties', None)
+            if extra_properties is not None:
+                value = extra_properties[key]
+            else:
+                value = None
+        return value
+
+    def key_transforms(self, key):
         if key == 'id':
             key = 'image_id'
 
-        if hasattr(self.image, key):
-            return getattr(self.image, key)
-        else:
-            return self.image.extra_properties[key]
+        return key
 
 
 # Metadef Namespace classes
