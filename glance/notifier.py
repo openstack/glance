@@ -17,8 +17,8 @@
 import glance_store
 from oslo.config import cfg
 from oslo import messaging
-from oslo.utils import excutils
-from oslo.utils import timeutils
+from oslo_utils import excutils
+from oslo_utils import timeutils
 import webob
 
 from glance.common import exception

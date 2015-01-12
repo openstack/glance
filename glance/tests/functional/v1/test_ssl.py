@@ -35,8 +35,8 @@ import uuid
 
 import httplib2
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
-from oslo.utils import units
+from oslo_utils import timeutils
+from oslo_utils import units
 
 from glance.tests import functional
 from glance.tests.utils import minimal_headers

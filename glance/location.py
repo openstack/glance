@@ -18,7 +18,7 @@ import copy
 
 import glance_store as store
 from oslo.config import cfg
-from oslo.utils import excutils
+from oslo_utils import excutils
 
 from glance.common import exception
 from glance.common import utils

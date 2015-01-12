@@ -20,7 +20,7 @@ import time
 import glance_store.location
 import httplib2
 from oslo.serialization import jsonutils
-from oslo.utils import units
+from oslo_utils import units
 from six.moves import xrange
 
 from glance.common import crypt

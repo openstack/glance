@@ -19,7 +19,7 @@ import datetime
 import functools
 import uuid
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import six
 
 from glance.common import exception

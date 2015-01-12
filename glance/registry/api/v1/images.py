@@ -18,8 +18,8 @@ Reference implementation registry server WSGI controller
 """
 
 from oslo.config import cfg
-from oslo.utils import strutils
-from oslo.utils import timeutils
+from oslo_utils import strutils
+from oslo_utils import timeutils
 from webob import exc
 
 from glance.common import exception

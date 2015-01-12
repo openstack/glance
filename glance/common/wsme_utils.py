@@ -14,7 +14,7 @@
 
 from datetime import datetime
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 from wsme import types as wsme_types
 
 

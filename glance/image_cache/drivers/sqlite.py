@@ -27,7 +27,7 @@ import time
 from eventlet import sleep
 from eventlet import timeout
 from oslo.config import cfg
-from oslo.utils import excutils
+from oslo_utils import excutils
 
 from glance.common import exception
 from glance import i18n

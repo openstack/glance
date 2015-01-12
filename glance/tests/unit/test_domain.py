@@ -19,8 +19,8 @@ import uuid
 
 import mock
 from oslo.config import cfg
-import oslo.utils.importutils
-from oslo.utils import timeutils
+import oslo_utils.importutils
+from oslo_utils import timeutils
 
 import glance.async
 from glance.common import exception
@@ -526,7 +526,7 @@ class TestTaskExecutorFactory(test_utils.BaseTestCase):
                                                            self.image_repo,
                                                            self.image_factory)
         context = mock.Mock()
-        with mock.patch.object(oslo.utils.importutils,
+        with mock.patch.object(oslo_utils.importutils,
                                'import_class') as mock_import_class:
             mock_executor = mock.Mock()
             mock_import_class.return_value = mock_executor
@@ -542,7 +542,7 @@ class TestTaskExecutorFactory(test_utils.BaseTestCase):
                                                            self.image_repo,
                                                            self.image_factory)
         context = mock.Mock()
-        with mock.patch.object(oslo.utils.importutils,
+        with mock.patch.object(oslo_utils.importutils,
                                'import_class') as mock_import_class:
             mock_import_class.side_effect = ImportError
 

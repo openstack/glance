@@ -59,7 +59,7 @@ import stat
 import time
 
 from oslo.config import cfg
-from oslo.utils import excutils
+from oslo_utils import excutils
 import xattr
 
 from glance.common import exception

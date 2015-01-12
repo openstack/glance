@@ -17,7 +17,7 @@ import os
 
 import httplib2
 from oslo.serialization import jsonutils
-from oslo.utils import units
+from oslo_utils import units
 
 from glance.tests import functional
 from glance.tests.utils import execute

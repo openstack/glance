@@ -22,7 +22,7 @@ import uuid
 
 from oslo.db.sqlalchemy import models
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
 from sqlalchemy import Column

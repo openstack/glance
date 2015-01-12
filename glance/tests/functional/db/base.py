@@ -20,7 +20,7 @@ import datetime
 import uuid
 
 import mock
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from glance.common import exception
 from glance import context

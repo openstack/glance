@@ -16,7 +16,7 @@
 import os
 import sys
 
-import oslo.utils.strutils as strutils
+import oslo_utils.strutils as strutils
 
 from glance import i18n
 

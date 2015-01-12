@@ -24,7 +24,7 @@ from os.path import join
 import re
 
 from oslo.config import cfg
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import six
 import sqlalchemy
 from sqlalchemy.schema import MetaData

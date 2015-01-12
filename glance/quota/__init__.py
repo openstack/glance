@@ -16,7 +16,7 @@ import copy
 
 import glance_store as store
 from oslo.config import cfg
-from oslo.utils import excutils
+from oslo_utils import excutils
 import six
 
 import glance.api.common

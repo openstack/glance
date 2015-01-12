@@ -40,7 +40,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from oslo.config import cfg
 from oslo.db.sqlalchemy import migration
-from oslo.utils import encodeutils
+from oslo_utils import encodeutils
 
 from glance.common import config
 from glance.common import exception

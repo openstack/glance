@@ -20,7 +20,7 @@ import glance_store
 import mock
 from oslo.config import cfg
 from oslo import messaging
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import webob
 
 import glance.async
