@@ -15,7 +15,7 @@
 
 import fixtures
 import mock
-from oslo.db.sqlalchemy import migration
+from oslo_db.sqlalchemy import migration
 import testtools
 
 from glance.cmd import manage

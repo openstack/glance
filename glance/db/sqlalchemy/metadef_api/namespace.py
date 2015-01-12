@@ -12,8 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.db import exception as db_exc
-from oslo.db.sqlalchemy.utils import paginate_query
+from oslo_db import exception as db_exc
+from oslo_db.sqlalchemy.utils import paginate_query
 import sqlalchemy.exc as sa_exc
 from sqlalchemy import or_
 import sqlalchemy.orm as sa_orm

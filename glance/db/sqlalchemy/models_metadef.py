@@ -16,7 +16,7 @@
 SQLAlchemy models for glance metadata schema
 """
 
-from oslo.db.sqlalchemy import models
+from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
 from sqlalchemy import Boolean
 from sqlalchemy import Column

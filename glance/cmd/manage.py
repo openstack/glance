@@ -38,8 +38,8 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
-from oslo.db.sqlalchemy import migration
 from oslo_config import cfg
+from oslo_db.sqlalchemy import migration
 from oslo_utils import encodeutils
 
 from glance.common import config
