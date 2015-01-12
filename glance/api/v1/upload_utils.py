@@ -236,7 +236,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                   content_type='text/plain')
 
     except exception.StorageQuotaFull as e:
-        msg = (_("Denying attempt to upload image because it exceeds the ."
+        msg = (_("Denying attempt to upload image because it exceeds the "
                  "quota: %s") % utils.exception_to_str(e))
         LOG.warn(msg)
         safe_kill(req, image_id, 'saving')
