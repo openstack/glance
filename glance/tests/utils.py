@@ -303,11 +303,11 @@ def execute(cmd,
         exitcode = 0
 
     if exitcode != expected_exitcode and raise_error:
-        msg = "Command %(cmd)s did not succeed. Returned an exit "
-        "code of %(exitcode)d."
-        "\n\nSTDOUT: %(out)s"
-        "\n\nSTDERR: %(err)s" % {'cmd': cmd, 'exitcode': exitcode,
-                                 'out': out, 'err': err}
+        msg = ("Command %(cmd)s did not succeed. Returned an exit "
+               "code of %(exitcode)d."
+               "\n\nSTDOUT: %(out)s"
+               "\n\nSTDERR: %(err)s" % {'cmd': cmd, 'exitcode': exitcode,
+                                        'out': out, 'err': err})
         if context:
             msg += "\n\nCONTEXT: %s" % context
         raise RuntimeError(msg)
