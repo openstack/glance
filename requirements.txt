@@ -28,7 +28,6 @@ oslo.config>=1.6.0  # Apache-2.0
 oslo.concurrency>=0.3.0                 # Apache-2.0
 oslo.utils>=1.2.0                       # Apache-2.0
 stevedore>=1.1.0  # Apache-2.0
-netaddr>=0.7.12
 keystonemiddleware>=1.0.0
 WSME>=0.6
 # For openstack/common/lockutils

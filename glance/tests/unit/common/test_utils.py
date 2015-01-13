@@ -285,57 +285,6 @@ class TestUtils(test_utils.BaseTestCase):
         for input_str in invalid_inputs:
             self.assertFalse(utils.is_valid_port(input_str))
 
-    def test_valid_ipv4(self):
-        valid_inputs = ['10.11.12.13',
-                        '172.17.17.1']
-        for input_str in valid_inputs:
-            self.assertTrue(utils.is_valid_ipv4(input_str))
-
-    def test_valid_ipv4_fail(self):
-        invalid_pairs = ['',
-                         '290.12.52.80',
-                         'a.b.c.d',
-                         u'\u2601',
-                         u'\u2603:8080',
-                         'fe80::1',
-                         '[fe80::2]',
-                         '<fe80::3>:5673',
-                         'fe80:a:b:c:d:e:f:1:2:3:4',
-                         'fe80:a:b:c:d:e:f:g',
-                         'fe80::1:8080',
-                         '[fe80:a:b:c:d:e:f:g]:9090',
-                         '[a:b:s:u:r:d]:fe80']
-
-        for pair in invalid_pairs:
-            self.assertRaises(ValueError,
-                              utils.parse_valid_host_port,
-                              pair)
-
-    def test_valid_ipv6(self):
-        valid_inputs = ['fe80::1',
-                        'fe80:0000:0000:0000:0000:0000:0000:0002',
-                        'fe80:a:b:c:d:e:f:0',
-                        'fe80::a:b:c:d',
-                        'fe80::1:8080']
-
-        for input_str in valid_inputs:
-            self.assertTrue(utils.is_valid_ipv6(input_str))
-
-    def test_valid_ipv6_fail(self):
-        invalid_pairs = ['',
-                         '[fe80::2]',
-                         '<fe80::3>',
-                         'fe80:::a',
-                         'fe80:a:b:c:d:e:f:1:2:3:4',
-                         'fe80:a:b:c:d:e:f:g',
-                         'fe80::1:8080',
-                         'i:n:s:a:n:i:t:y']
-
-        for pair in invalid_pairs:
-            self.assertRaises(ValueError,
-                              utils.parse_valid_host_port,
-                              pair)
-
     def test_valid_hostname(self):
         valid_inputs = ['localhost',
                         'glance04-a'

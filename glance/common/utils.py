@@ -35,7 +35,6 @@ import subprocess
 import sys
 import uuid
 
-import netaddr
 from OpenSSL import crypto
 from oslo.config import cfg
 from oslo_utils import encodeutils
@@ -552,22 +551,6 @@ def is_valid_port(port):
     return str(port).isdigit() and int(port) > 0 and int(port) <= 65535
 
 
-def is_valid_ipv4(address):
-    """Verify that address represents a valid IPv4 address."""
-    try:
-        return netaddr.valid_ipv4(address)
-    except Exception:
-        return False
-
-
-def is_valid_ipv6(address):
-    """Verify that address represents a valid IPv6 address."""
-    try:
-        return netaddr.valid_ipv6(address)
-    except Exception:
-        return False
-
-
 def is_valid_hostname(hostname):
     """Verify whether a hostname (not an FQDN) is valid."""
     return re.match('^[a-zA-Z0-9-]+$', hostname) is not None
@@ -602,7 +585,7 @@ def parse_valid_host_port(host_port):
         # should pass a very generic FQDN check. The FQDN check for letters at
         # the tail end will weed out any hilariously absurd IPv4 addresses.
 
-        if not (is_valid_ipv6(host) or is_valid_ipv4(host) or
+        if not (netutils.is_valid_ipv6(host) or netutils.is_valid_ipv4(host) or
                 is_valid_hostname(host) or is_valid_fqdn(host)):
             raise ValueError(_('Host "%s" is not valid.') % host)
 
