@@ -32,7 +32,7 @@ CONF = {'default_store': 'file',
 
 class TestStoreLocation(base.StoreClearingUnitTest):
 
-    class FakeImageProxy():
+    class FakeImageProxy(object):
         size = None
         context = None
         store_api = mock.Mock()

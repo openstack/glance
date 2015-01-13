@@ -143,7 +143,8 @@ class Server(object):
         self.create_database()
 
         cmd = ("%(server_module)s --config-file %(conf_file_name)s"
-               % self.__dict__)
+               % {"server_module": self.server_module,
+                  "conf_file_name": self.conf_file_name})
         cmd = "%s -m %s" % (sys.executable, cmd)
         # close the sock and release the unused port closer to start time
         if self.exec_env:

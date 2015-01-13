@@ -910,7 +910,7 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
         self.assertEqual(expected, rapi._CLIENT_CREDS)
 
 
-class FakeResponse():
+class FakeResponse(object):
     status = 202
 
     def getheader(*args, **kwargs):
