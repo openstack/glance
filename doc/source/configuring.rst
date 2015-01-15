@@ -374,7 +374,17 @@ Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
 Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, ``sheepdog``,
-``cinder`` or ``vsphere``).
+``cinder`` or ``vsphere``). In order to select a default store it must also
+be listed in the ``stores`` list described below.
+
+* ``stores=STORES``
+
+Optional. Default: ``glance.store.filesystem.Store, glance.store.http.Store``
+
+A comma separated list of enabled glance stores. Options are specified
+in the format of glance.store.OPTION.Store.  Some available options for this
+option are (``filesystem``, ``http``, ``rbd``, ``s3``, ``swift``, ``sheepdog``,
+``cinder``, ``gridfs``, ``vmware_datastore``)
 
 Configuring Glance Image Size Limit
 -----------------------------------
