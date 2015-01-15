@@ -15,7 +15,7 @@
 
 import httplib
 
-import mox
+from mox3 import mox
 import testtools
 
 from glance.common import auth

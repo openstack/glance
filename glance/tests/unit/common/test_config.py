@@ -17,8 +17,8 @@ import os.path
 import shutil
 
 import fixtures
+from oslotest import moxstubout
 import osprofiler.web
-import stubout
 
 from glance.api.middleware import context
 from glance.common import config
@@ -29,8 +29,8 @@ class TestPasteApp(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestPasteApp, self).setUp()
-        self.stubs = stubout.StubOutForTesting()
-        self.addCleanup(self.stubs.UnsetAll)
+        mox_fixture = self.useFixture(moxstubout.MoxStubout())
+        self.stubs = mox_fixture.stubs
 
     def _do_test_load_paste_app(self,
                                 expected_app_type,

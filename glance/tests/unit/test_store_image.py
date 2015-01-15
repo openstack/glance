@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import glance_store
-import mox
+import mock
 
 from glance.common import exception
 import glance.location
@@ -852,21 +852,13 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         self.size = len(self.data)
         self.location = "file:///ab/cde/fgh"
         self.checksum = "md5"
-        self.mox = mox.Mox()
-
-    def tearDown(self):
-        super(TestStoreAddToBackend, self).tearDown()
-        self.mox.UnsetStubs()
 
     def _bad_metadata(self, in_metadata):
-        mstore = self.mox.CreateMockAnything()
-        mstore.add(self.image_id, mox.IgnoreArg(),
-                   self.size, context=None).AndReturn(
-                       (self.location, self.size, self.checksum, in_metadata))
-        mstore.__str__ = lambda: "hello"
-        mstore.__unicode__ = lambda: "hello"
-
-        self.mox.ReplayAll()
+        mstore = mock.Mock()
+        mstore.add.return_value = (self.location, self.size,
+                                   self.checksum, in_metadata)
+        mstore.__str__ = lambda self: "hello"
+        mstore.__unicode__ = lambda self: "hello"
 
         self.assertRaises(glance_store.BackendException,
                           glance_store.store_add_to_backend,
@@ -874,16 +866,15 @@ class TestStoreAddToBackend(utils.BaseTestCase):
                           self.data,
                           self.size,
                           mstore)
-        self.mox.VerifyAll()
+
+        mstore.add.assert_called_once_with(self.image_id, mock.ANY,
+                                           self.size, context=None)
 
     def _good_metadata(self, in_metadata):
+        mstore = mock.Mock()
+        mstore.add.return_value = (self.location, self.size,
+                                   self.checksum, in_metadata)
 
-        mstore = self.mox.CreateMockAnything()
-        mstore.add(self.image_id, mox.IgnoreArg(),
-                   self.size, context=None).AndReturn(
-                       (self.location, self.size, self.checksum, in_metadata))
-
-        self.mox.ReplayAll()
         (location,
          size,
          checksum,
@@ -891,7 +882,10 @@ class TestStoreAddToBackend(utils.BaseTestCase):
                                                        self.data,
                                                        self.size,
                                                        mstore)
-        self.mox.VerifyAll()
+
+        mstore.add.assert_called_once_with(self.image_id, mock.ANY,
+                                           self.size, context=None)
+
         self.assertEqual(self.location, location)
         self.assertEqual(self.size, size)
         self.assertEqual(self.checksum, checksum)
@@ -937,19 +931,4 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         self._bad_metadata(m)
 
     def test_bad_metadata_not_dict(self):
-        store = self.mox.CreateMockAnything()
-        store.add(self.image_id, mox.IgnoreArg(),
-                  self.size, context=None).AndReturn(
-                      (self.location, self.size, self.checksum, []))
-        store.__str__ = lambda: "hello"
-        store.__unicode__ = lambda: "hello"
-
-        self.mox.ReplayAll()
-
-        self.assertRaises(glance_store.BackendException,
-                          glance_store.store_add_to_backend,
-                          self.image_id,
-                          self.data,
-                          self.size,
-                          store)
-        self.mox.VerifyAll()
+        self._bad_metadata([])
