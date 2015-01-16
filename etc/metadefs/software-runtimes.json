@@ -1,0 +1,76 @@
+{
+    "namespace": "OS::Software::Runtimes",
+    "display_name": "Runtime Environment",
+    "description": "Software is written in a specific programming language and the language must execute within a runtime environment. The runtime environment provides an abstraction to utilizing a computer's processor, memory (RAM), and other system resources.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        },
+        {
+            "name": "OS::Cinder::Volume",
+            "properties_target": "image"
+        },
+        {
+            "name": "OS::Nova::Instance"
+        }
+    ],
+    "objects": [
+        {
+            "name": "PHP",
+            "description": "PHP is a server-side scripting language designed for web development but also used as a general-purpose programming language. PHP code can be simply mixed with HTML code, or it can be used in combination with various templating engines and web frameworks. PHP code is usually processed by a PHP interpreter, which is usually implemented as a web server's native module or a Common Gateway Interface (CGI) executable. After the PHP code is interpreted and executed, the web server sends resulting output to its client, usually in form of a part of the generated web page – for example, PHP code can generate a web page's HTML code, an image, or some other data. PHP has also evolved to include a command-line interface (CLI) capability and can be used in standalone graphical applications. (http://en.wikipedia.org/wiki/PHP)",
+            "properties": {
+                "sw_runtime_php_version": {
+                    "title": "Version",
+                    "description": "The specific version of PHP.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "Python",
+            "description": "Python is a widely used general-purpose, high-level programming language. Its design philosophy emphasizes code readability, and its syntax allows programmers to express concepts in fewer lines of code than would be possible in languages such as C++ or Java. The language provides constructs intended to enable clear programs on both a small and large scale. Python supports multiple programming paradigms, including object-oriented, imperative and functional programming or procedural styles. It features a dynamic type system and automatic memory management and has a large and comprehensive standard library. (http://en.wikipedia.org/wiki/Python_(programming_language))",
+            "properties": {
+                "sw_runtime_python_version": {
+                    "title": "Version",
+                    "description": "The specific version of python.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "Java",
+            "description": "Java is a functional computer programming language that is concurrent, class-based, object-oriented, and specifically designed to have as few implementation dependencies as possible. It is intended to let application developers write once, run anywhere (WORA), meaning that code that runs on one platform does not need to be recompiled to run on another. Java applications are typically compiled to bytecode that can run on any Java virtual machine (JVM) regardless of computer architecture. (http://en.wikipedia.org/wiki/Java_(programming_language))",
+            "properties": {
+                "sw_runtime_java_version": {
+                    "title": "Version",
+                    "description": "The specific version of Java.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "Ruby",
+            "description": "Ruby is a dynamic, reflective, object-oriented, general-purpose programming language. It was designed and developed in the mid-1990s by Yukihiro Matsumoto in Japan. According to its authors, Ruby was influenced by Perl, Smalltalk, Eiffel, Ada, and Lisp. It supports multiple programming paradigms, including functional, object-oriented, and imperative. It also has a dynamic type system and automatic memory management. (http://en.wikipedia.org/wiki/Python_(programming_language))",
+            "properties": {
+                "sw_runtime_ruby_version": {
+                    "title": "Version",
+                    "description": "The specific version of Ruby.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "Perl",
+            "description": "Perl is a family of high-level, general-purpose, interpreted, dynamic programming languages. The languages in this family include Perl 5 and Perl 6. Though Perl is not officially an acronym, there are various backronyms in use, the most well-known being Practical Extraction and Reporting Language (http://en.wikipedia.org/wiki/Perl)",
+            "properties": {
+                "sw_runtime_perl_version": {
+                    "title": "Version",
+                    "description": "The specific version of Perl.",
+                    "type": "string"
+                }
+            }
+        }
+    ]
+}
