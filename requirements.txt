@@ -43,7 +43,6 @@ oslo.vmware>=0.8.0                      # Apache-2.0
 Paste
 
 jsonschema>=2.0.0,<3.0.0
-python-cinderclient>=1.1.0
 python-keystoneclient>=0.11.1
 pyOpenSSL>=0.11
 
