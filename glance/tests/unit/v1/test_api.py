@@ -1733,8 +1733,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         self.assertEqual(1, mock_store_add_to_backend.call_count)
 
-    def test_delete_during_image_upload(self):
-        req = unit_test_utils.get_fake_request()
+    def _check_delete_during_image_upload(self, is_admin=False):
 
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
@@ -1742,8 +1741,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                            'x-image-meta-name': 'fake image #3',
                            'x-image-meta-property-key1': 'value1'}
 
-        req = webob.Request.blank("/images")
-        req.method = 'POST'
+        req = unit_test_utils.get_fake_request(path="/images",
+                                               is_admin=is_admin)
         for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
@@ -1768,31 +1767,18 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                        mock_initiate_deletion)
 
         orig_update_image_metadata = registry.update_image_metadata
-        ctlr = glance.api.v1.controller.BaseController
-        orig_get_image_meta_or_404 = ctlr.get_image_meta_or_404
+
+        data = "somedata"
 
         def mock_update_image_metadata(*args, **kwargs):
 
-            if args[2].get('status', None) == 'deleted':
-
-                # One shot.
-                def mock_get_image_meta_or_404(*args, **kwargs):
-                    ret = orig_get_image_meta_or_404(*args, **kwargs)
-                    ret['status'] = 'queued'
-                    self.stubs.Set(ctlr, 'get_image_meta_or_404',
-                                   orig_get_image_meta_or_404)
-                    return ret
-
-                self.stubs.Set(ctlr, 'get_image_meta_or_404',
-                               mock_get_image_meta_or_404)
-
-                req = webob.Request.blank("/images/%s" % image_id)
-                req.method = 'PUT'
-                req.headers['Content-Type'] = 'application/octet-stream'
-                req.body = "somedata"
+            if args[2].get('size', None) == len(data):
+                path = "/images/%s" % image_id
+                req = unit_test_utils.get_fake_request(path=path,
+                                                       method='DELETE',
+                                                       is_admin=is_admin)
                 res = req.get_response(self.api)
                 self.assertEqual(200, res.status_int)
-                self.assertFalse(res.location)
 
                 self.stubs.Set(registry, 'update_image_metadata',
                                orig_update_image_metadata)
@@ -1802,19 +1788,29 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.stubs.Set(registry, 'update_image_metadata',
                        mock_update_image_metadata)
 
-        req = webob.Request.blank("/images/%s" % image_id)
-        req.method = 'DELETE'
+        req = unit_test_utils.get_fake_request(path="/images/%s" % image_id,
+                                               method='PUT')
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.body = data
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(412, res.status_int)
+        self.assertFalse(res.location)
 
         self.assertTrue(called['initiate_deletion'])
 
-        req = webob.Request.blank("/images/%s" % image_id)
-        req.method = 'HEAD'
+        req = unit_test_utils.get_fake_request(path="/images/%s" % image_id,
+                                               method='HEAD',
+                                               is_admin=True)
         res = req.get_response(self.api)
         self.assertEqual(200, res.status_int)
         self.assertEqual('True', res.headers['x-image-meta-deleted'])
         self.assertEqual('deleted', res.headers['x-image-meta-status'])
+
+    def test_delete_during_image_upload_by_normal_user(self):
+        self._check_delete_during_image_upload(is_admin=False)
+
+    def test_delete_during_image_upload_by_admin(self):
+        self._check_delete_during_image_upload(is_admin=True)
 
     def test_disable_purge_props(self):
         """

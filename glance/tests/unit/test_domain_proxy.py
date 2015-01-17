@@ -74,7 +74,7 @@ class TestProxyRepoPlain(test_utils.BaseTestCase):
         self._test_method('add', 'snuff', 'enough')
 
     def test_save(self):
-        self._test_method('save', 'snuff', 'enough')
+        self._test_method('save', 'snuff', 'enough', from_state=None)
 
     def test_remove(self):
         self._test_method('add', None, 'flying')
@@ -121,14 +121,14 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
             self.assertEqual(tuple(), results[i].args)
             self.assertEqual({'a': 1}, results[i].kwargs)
 
-    def _test_method_with_proxied_argument(self, name, result):
+    def _test_method_with_proxied_argument(self, name, result, **kwargs):
         self.fake_repo.result = result
         item = FakeProxy('snoop')
         method = getattr(self.proxy_repo, name)
         proxy_result = method(item)
 
         self.assertEqual(('snoop',), self.fake_repo.args)
-        self.assertEqual({}, self.fake_repo.kwargs)
+        self.assertEqual(kwargs, self.fake_repo.kwargs)
 
         if result is None:
             self.assertIsNone(proxy_result)
@@ -145,10 +145,12 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         self._test_method_with_proxied_argument('add', None)
 
     def test_save(self):
-        self._test_method_with_proxied_argument('save', 'dog')
+        self._test_method_with_proxied_argument('save', 'dog',
+                                                from_state=None)
 
     def test_save_with_no_result(self):
-        self._test_method_with_proxied_argument('save', None)
+        self._test_method_with_proxied_argument('save', None,
+                                                from_state=None)
 
     def test_remove(self):
         self._test_method_with_proxied_argument('remove', 'dog')
