@@ -117,7 +117,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(sort_key=['name'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc'])
 
         self.assertEqualImages(images, (UUID3, UUID1, UUID2, UUID4),
                                unjsonify=False)
@@ -142,7 +142,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(sort_key=['status'],
-                                           sort_dir='desc')
+                                           sort_dir=['desc'])
 
         self.assertEqualImages(images, (UUID3, UUID4, UUID2, UUID1),
                                unjsonify=False)
@@ -166,7 +166,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(sort_key=['disk_format'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc'])
 
         self.assertEqualImages(images, (UUID1, UUID3, UUID4, UUID2),
                                unjsonify=False)
@@ -191,7 +191,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(sort_key=['container_format'],
-                                           sort_dir='desc')
+                                           sort_dir=['desc'])
 
         self.assertEqualImages(images, (UUID2, UUID4, UUID3, UUID1),
                                unjsonify=False)
@@ -217,7 +217,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
 
         db_api.image_create(self.context, extra_fixture)
 
-        images = self.client.image_get_all(sort_key=['size'], sort_dir='asc')
+        images = self.client.image_get_all(sort_key=['size'], sort_dir=['asc'])
 
         self.assertEqualImages(images, (UUID4, UUID1, UUID2, UUID3),
                                unjsonify=False)
@@ -241,7 +241,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(sort_key=['created_at'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc'])
 
         self.assertEqualImages(images, (UUID1, UUID2, UUID4, UUID3),
                                unjsonify=False)
@@ -267,7 +267,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(sort_key=['updated_at'],
-                                           sort_dir='desc')
+                                           sort_dir=['desc'])
 
         self.assertEqualImages(images, (UUID3, UUID4, UUID2, UUID1),
                                unjsonify=False)
@@ -275,8 +275,44 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
     def test_get_image_details_sort_multiple_keys(self):
         """
         Tests that a detailed call returns list of
-        public images sorted alphabetically by name-size and
+        public images sorted by name-size and
         size-name in ascending order.
+        """
+        UUID3 = _gen_uuid()
+        extra_fixture = self.get_fixture(id=UUID3, name='asdf',
+                                         size=19)
+
+        db_api.image_create(self.context, extra_fixture)
+
+        UUID4 = _gen_uuid()
+        extra_fixture = self.get_fixture(id=UUID4, name=u'xyz',
+                                         size=20)
+
+        db_api.image_create(self.context, extra_fixture)
+
+        UUID5 = _gen_uuid()
+        extra_fixture = self.get_fixture(id=UUID5, name=u'asdf',
+                                         size=20)
+
+        db_api.image_create(self.context, extra_fixture)
+
+        images = self.client.image_get_all(sort_key=['name', 'size'],
+                                           sort_dir=['asc'])
+
+        self.assertEqualImages(images, (UUID3, UUID5, UUID1, UUID2, UUID4),
+                               unjsonify=False)
+
+        images = self.client.image_get_all(sort_key=['size', 'name'],
+                                           sort_dir=['asc'])
+
+        self.assertEqualImages(images, (UUID1, UUID3, UUID2, UUID5, UUID4),
+                               unjsonify=False)
+
+    def test_get_image_details_sort_multiple_dirs(self):
+        """
+        Tests that a detailed call returns list of
+        public images sorted by name-size and
+        size-name in ascending and descending orders.
         """
         UUID3 = _gen_uuid()
         extra_fixture = self.get_fixture(id=UUID3, name='asdf',
@@ -297,15 +333,27 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         db_api.image_create(self.context, extra_fixture)
 
         images = self.client.image_get_all(sort_key=['name', 'size'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc', 'desc'])
 
-        self.assertEqualImages(images, (UUID3, UUID5, UUID1, UUID2, UUID4),
+        self.assertEqualImages(images, (UUID5, UUID3, UUID1, UUID2, UUID4),
+                               unjsonify=False)
+
+        images = self.client.image_get_all(sort_key=['name', 'size'],
+                                           sort_dir=['desc', 'asc'])
+
+        self.assertEqualImages(images, (UUID4, UUID2, UUID1, UUID3, UUID5),
                                unjsonify=False)
 
         images = self.client.image_get_all(sort_key=['size', 'name'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc', 'desc'])
 
-        self.assertEqualImages(images, (UUID1, UUID3, UUID2, UUID5, UUID4),
+        self.assertEqualImages(images, (UUID1, UUID2, UUID3, UUID4, UUID5),
+                               unjsonify=False)
+
+        images = self.client.image_get_all(sort_key=['size', 'name'],
+                                           sort_dir=['desc', 'asc'])
+
+        self.assertEqualImages(images, (UUID5, UUID4, UUID3, UUID2, UUID1),
                                unjsonify=False)
 
     def test_image_get_index_marker(self):

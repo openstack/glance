@@ -118,7 +118,7 @@ def is_image_visible(context, image, status=None):
 
 @_get_client
 def image_get_all(client, filters=None, marker=None, limit=None,
-                  sort_key=['created_at'], sort_dir='desc',
+                  sort_key=None, sort_dir=None,
                   member_status='accepted', is_public=None,
                   admin_as_user=False, return_tag=False):
     """
@@ -142,6 +142,8 @@ def image_get_all(client, filters=None, marker=None, limit=None,
                        relevant tag entries. This could improve upper-layer
                        query performance, to prevent using separated calls
     """
+    sort_key = ['created_at'] if not sort_key else sort_key
+    sort_dir = ['desc'] if not sort_dir else sort_dir
     return client.image_get_all(filters=filters, marker=marker, limit=limit,
                                 sort_key=sort_key, sort_dir=sort_dir,
                                 member_status=member_status,

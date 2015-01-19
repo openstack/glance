@@ -164,6 +164,10 @@ class InvalidSortKey(Invalid):
     message = _("Sort key supplied was not valid.")
 
 
+class InvalidSortDir(Invalid):
+    message = _("Sort direction supplied was not valid.")
+
+
 class InvalidPropertyProtectionConfiguration(Invalid):
     message = _("Invalid configuration in property protection file.")
 

@@ -112,10 +112,10 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver,
         original_method = self.db_api._paginate_query
 
         def fake_paginate_query(query, model, limit,
-                                sort_keys, marker, sort_dir):
+                                sort_keys, marker, sort_dir, sort_dirs):
             self.assertEqual(['created_at', 'id'], sort_keys)
             return original_method(query, model, limit,
-                                   sort_keys, marker, sort_dir)
+                                   sort_keys, marker, sort_dir, sort_dirs)
 
         self.stubs.Set(self.db_api, '_paginate_query',
                        fake_paginate_query)
@@ -125,10 +125,10 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver,
         original_method = self.db_api._paginate_query
 
         def fake_paginate_query(query, model, limit,
-                                sort_keys, marker, sort_dir):
+                                sort_keys, marker, sort_dir, sort_dirs):
             self.assertEqual(['name', 'created_at', 'id'], sort_keys)
             return original_method(query, model, limit,
-                                   sort_keys, marker, sort_dir)
+                                   sort_keys, marker, sort_dir, sort_dirs)
 
         self.stubs.Set(self.db_api, '_paginate_query',
                        fake_paginate_query)

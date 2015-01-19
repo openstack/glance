@@ -88,8 +88,12 @@ class ImagesController(object):
 
         return image
 
-    def index(self, req, marker=None, limit=None, sort_key=['created_at'],
-              sort_dir='desc', filters=None, member_status='accepted'):
+    def index(self, req, marker=None, limit=None, sort_key=None,
+              sort_dir=None, filters=None, member_status='accepted'):
+        sort_key = ['created_at'] if not sort_key else sort_key
+
+        sort_dir = ['desc'] if not sort_dir else sort_dir
+
         result = {}
         if filters is None:
             filters = {}
@@ -312,6 +316,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     _available_sort_keys = ('name', 'status', 'container_format',
                             'disk_format', 'size', 'id', 'created_at',
                             'updated_at')
+
+    _default_sort_key = 'created_at'
+
+    _default_sort_dir = 'desc'
 
     _path_depth_limits = {'locations': {'add': 2, 'remove': 2, 'replace': 1}}
 
@@ -581,7 +589,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         params = request.params.copy()
         limit = params.pop('limit', None)
         marker = params.pop('marker', None)
-        sort_dir = params.pop('sort_dir', 'desc')
         member_status = params.pop('member_status', 'accepted')
 
         # NOTE (flwang) To avoid using comma or any predefined chars to split
@@ -599,8 +606,12 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             sort_keys.append(self._validate_sort_key(
                 params.pop('sort_key').strip()))
 
+        sort_dirs = []
+        while 'sort_dir' in params:
+            sort_dirs.append(self._validate_sort_dir(
+                params.pop('sort_dir').strip()))
+
         query_params = {
-            'sort_dir': self._validate_sort_dir(sort_dir),
             'filters': self._get_filters(params),
             'member_status': self._validate_member_status(member_status),
         }
@@ -614,12 +625,31 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if tags:
             query_params['filters']['tags'] = tags
 
-        # NOTE(mfedosin): param is still called sort_key, instead of sort_keys
+        # NOTE(mfedosin): params is still called sort_key and sort_dir,
+        # instead of sort_keys and sort_dirs respectively.
         # It's done because in v1 it's still a single value.
-        if sort_keys:
-            query_params['sort_key'] = sort_keys
+        query_params['sort_key'] = sort_keys if sort_keys \
+            else [self._default_sort_key]
+
+        # NOTE(mfedosin): we have 3 options here:
+        # 1. sort_dir wasn't passed: we use default one - 'desc'.
+        # 2. Only one sort_dir was passed: use it for every sort_key
+        # in the list.
+        # 3. Multiple sort_dirs were passed: consistently apply each one to
+        # the corresponding sort_key.
+        # If number of sort_dirs and sort_keys doesn't match then raise an
+        # exception.
+        if sort_dirs:
+            dir_len = len(sort_dirs)
+            key_len = len(sort_keys)
+
+            if dir_len > 1 and dir_len != key_len:
+                msg = _('Number of sort dirs does not match the number '
+                        'of sort keys')
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+            query_params['sort_dir'] = sort_dirs
         else:
-            query_params['sort_key'] = ['created_at']
+            query_params['sort_dir'] = [self._default_sort_dir]
 
         return query_params
 
