@@ -2633,6 +2633,102 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'filters': {}}
         self.assertEqual(expected, output)
 
+    def test_index_new_sorting_syntax_single_key_default_dir(self):
+        req_string = '/images?sort=name'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name'],
+            'sort_dir': ['desc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+    def test_index_new_sorting_syntax_single_key_desc_dir(self):
+        req_string = '/images?sort=name:desc'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name'],
+            'sort_dir': ['desc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+    def test_index_new_sorting_syntax_multiple_keys_default_dir(self):
+        req_string = '/images?sort=name,size'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'size'],
+            'sort_dir': ['desc', 'desc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+    def test_index_new_sorting_syntax_multiple_keys_asc_dir(self):
+        req_string = '/images?sort=name:asc,size:asc'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'size'],
+            'sort_dir': ['asc', 'asc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+    def test_index_new_sorting_syntax_multiple_keys_different_dirs(self):
+        req_string = '/images?sort=name:desc,size:asc'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'size'],
+            'sort_dir': ['desc', 'asc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+    def test_index_new_sorting_syntax_multiple_keys_optional_dir(self):
+        req_string = '/images?sort=name:asc,size'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'size'],
+            'sort_dir': ['asc', 'desc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+        req_string = '/images?sort=name,size:asc'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'size'],
+            'sort_dir': ['desc', 'asc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+        req_string = '/images?sort=name,id:asc,size'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'id', 'size'],
+            'sort_dir': ['desc', 'asc', 'desc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
+        req_string = '/images?sort=name:asc,id,size:asc'
+        request = unit_test_utils.get_fake_request(req_string)
+        output = self.deserializer.index(request)
+        expected = {
+            'sort_key': ['name', 'id', 'size'],
+            'sort_dir': ['asc', 'desc', 'asc'],
+            'member_status': 'accepted',
+            'filters': {}}
+        self.assertEqual(expected, output)
+
     def test_index_sort_wrong_sort_dirs_number(self):
         req_string = '/images?sort_key=name&sort_dir=asc&sort_dir=desc'
         request = unit_test_utils.get_fake_request(req_string)
@@ -2666,6 +2762,35 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_index_sort_dir_invalid_value(self):
         # foo is an invalid sort dir
         request = unit_test_utils.get_fake_request('/images?sort_dir=foo')
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+
+    def test_index_new_sorting_syntax_invalid_request(self):
+        # 'blah' is not a supported sorting key
+        req_string = '/images?sort=blah'
+        request = unit_test_utils.get_fake_request(req_string)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+
+        req_string = '/images?sort=name,blah'
+        request = unit_test_utils.get_fake_request(req_string)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+
+        # 'foo' isn't a valid sort direction
+        req_string = '/images?sort=name:foo'
+        request = unit_test_utils.get_fake_request(req_string)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+        # 'asc:desc' isn't a valid sort direction
+        req_string = '/images?sort=name:asc:desc'
+        request = unit_test_utils.get_fake_request(req_string)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.index, request)
+
+    def test_index_combined_sorting_syntax(self):
+        req_string = '/images?sort_dir=name&sort=name'
+        request = unit_test_utils.get_fake_request(req_string)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.deserializer.index, request)
 

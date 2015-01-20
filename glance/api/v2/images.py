@@ -323,6 +323,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     _path_depth_limits = {'locations': {'add': 2, 'remove': 2, 'replace': 1}}
 
+    _default_sort_dir = 'desc'
+
     def __init__(self, schema=None):
         super(RequestDeserializer, self).__init__()
         self.schema = schema or get_schema()
@@ -585,6 +587,63 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return filters
 
+    def _get_sorting_params(self, params):
+        """
+        Process sorting params.
+        Currently glance supports two sorting syntax: classic and new one,
+        that is uniform for all Openstack projects.
+        Classic syntax: sort_key=name&sort_dir=asc&sort_key=size&sort_dir=desc
+        New syntax: sort=name:asc,size:desc
+        """
+        sort_keys = []
+        sort_dirs = []
+
+        if 'sort' in params:
+            # use new sorting syntax here
+            if 'sort_key' in params or 'sort_dir' in params:
+                msg = _('Old and new sorting syntax cannot be combined')
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+            for sort_param in params.pop('sort').strip().split(','):
+                key, _sep, dir = sort_param.partition(':')
+                if not dir:
+                    dir = self._default_sort_dir
+                sort_keys.append(self._validate_sort_key(key.strip()))
+                sort_dirs.append(self._validate_sort_dir(dir.strip()))
+        else:
+            # continue with classic syntax
+            # NOTE(mfedosin): we have 3 options here:
+            # 1. sort_dir wasn't passed: we use default one - 'desc'.
+            # 2. Only one sort_dir was passed: use it for every sort_key
+            # in the list.
+            # 3. Multiple sort_dirs were passed: consistently apply each one to
+            # the corresponding sort_key.
+            # If number of sort_dirs and sort_keys doesn't match then raise an
+            # exception.
+            while 'sort_key' in params:
+                sort_keys.append(self._validate_sort_key(
+                    params.pop('sort_key').strip()))
+
+            while 'sort_dir' in params:
+                sort_dirs.append(self._validate_sort_dir(
+                    params.pop('sort_dir').strip()))
+
+            if sort_dirs:
+                dir_len = len(sort_dirs)
+                key_len = len(sort_keys)
+
+                if dir_len > 1 and dir_len != key_len:
+                    msg = _('Number of sort dirs does not match the number '
+                            'of sort keys')
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        if not sort_keys:
+            sort_keys = [self._default_sort_key]
+
+        if not sort_dirs:
+            sort_dirs = [self._default_sort_dir]
+
+        return sort_keys, sort_dirs
+
     def index(self, request):
         params = request.params.copy()
         limit = params.pop('limit', None)
@@ -597,19 +656,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         tags = []
         while 'tag' in params:
             tags.append(params.pop('tag').strip())
-
-        # NOTE (mfedosin) Do the same with sorting keys
-        # v2/images?sort_key=name&sort_key=size
-
-        sort_keys = []
-        while 'sort_key' in params:
-            sort_keys.append(self._validate_sort_key(
-                params.pop('sort_key').strip()))
-
-        sort_dirs = []
-        while 'sort_dir' in params:
-            sort_dirs.append(self._validate_sort_dir(
-                params.pop('sort_dir').strip()))
 
         query_params = {
             'filters': self._get_filters(params),
@@ -625,31 +671,12 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if tags:
             query_params['filters']['tags'] = tags
 
-        # NOTE(mfedosin): params is still called sort_key and sort_dir,
+        # NOTE(mfedosin): param is still called sort_key and sort_dir,
         # instead of sort_keys and sort_dirs respectively.
         # It's done because in v1 it's still a single value.
-        query_params['sort_key'] = sort_keys if sort_keys \
-            else [self._default_sort_key]
 
-        # NOTE(mfedosin): we have 3 options here:
-        # 1. sort_dir wasn't passed: we use default one - 'desc'.
-        # 2. Only one sort_dir was passed: use it for every sort_key
-        # in the list.
-        # 3. Multiple sort_dirs were passed: consistently apply each one to
-        # the corresponding sort_key.
-        # If number of sort_dirs and sort_keys doesn't match then raise an
-        # exception.
-        if sort_dirs:
-            dir_len = len(sort_dirs)
-            key_len = len(sort_keys)
-
-            if dir_len > 1 and dir_len != key_len:
-                msg = _('Number of sort dirs does not match the number '
-                        'of sort keys')
-                raise webob.exc.HTTPBadRequest(explanation=msg)
-            query_params['sort_dir'] = sort_dirs
-        else:
-            query_params['sort_dir'] = [self._default_sort_dir]
+        query_params['sort_key'], query_params['sort_dir'] = \
+            self._get_sorting_params(params)
 
         return query_params
 
