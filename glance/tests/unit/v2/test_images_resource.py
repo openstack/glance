@@ -600,6 +600,20 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('image.create', output_log['event_type'])
         self.assertEqual('image-1', output_log['payload']['name'])
 
+    def test_create_disabled_notification(self):
+        self.config(disabled_notifications=["image.create"])
+        request = unit_test_utils.get_fake_request()
+        image = {'name': 'image-1'}
+        output = self.controller.create(request, image=image,
+                                        extra_properties={},
+                                        tags=[])
+        self.assertEqual('image-1', output.name)
+        self.assertEqual({}, output.extra_properties)
+        self.assertEqual(set([]), output.tags)
+        self.assertEqual('private', output.visibility)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_create_with_properties(self):
         request = unit_test_utils.get_fake_request()
         image_properties = {'foo': 'bar'}
@@ -1781,6 +1795,17 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('image.update', output_log['event_type'])
         self.assertEqual(UUID1, output_log['payload']['id'])
 
+    def test_update_disabled_notification(self):
+        self.config(disabled_notifications=["image.update"])
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'replace', 'path': ['name'], 'value': 'Ping Pong'},
+        ]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual('Ping Pong', output.name)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_delete(self):
         request = unit_test_utils.get_fake_request()
         self.assertIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
@@ -1791,6 +1816,23 @@ class TestImagesController(base.IsolatedUnitTest):
             output_log = output_logs[0]
             self.assertEqual('INFO', output_log['notification_type'])
             self.assertEqual("image.delete", output_log['event_type'])
+        except Exception as e:
+            self.fail("Delete raised exception: %s" % e)
+
+        deleted_img = self.db.image_get(request.context, UUID1,
+                                        force_show_deleted=True)
+        self.assertTrue(deleted_img['deleted'])
+        self.assertEqual('deleted', deleted_img['status'])
+        self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+
+    def test_delete_disabled_notification(self):
+        self.config(disabled_notifications=["image.delete"])
+        request = unit_test_utils.get_fake_request()
+        self.assertIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+        try:
+            self.controller.delete(request, UUID1)
+            output_logs = self.notifier.get_logs()
+            self.assertEqual(0, len(output_logs))
         except Exception as e:
             self.fail("Delete raised exception: %s" % e)
 

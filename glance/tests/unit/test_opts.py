@@ -146,6 +146,7 @@ class OptsTestCase(utils.BaseTestCase):
             'public_endpoint',
             'digest_algorithm',
             'http_keepalive',
+            'disabled_notifications',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
