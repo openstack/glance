@@ -571,6 +571,12 @@ def get_schema_definitions():
                     "description": {
                         "type": "string"
                     },
+                    "operators": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "type": {
                         "type": "string",
                         "enum": [

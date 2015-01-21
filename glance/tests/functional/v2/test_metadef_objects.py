@@ -88,6 +88,7 @@ class TestMetadefObjects(functional.FunctionalTest):
                         "type": "integer",
                         "title": "property1",
                         "description": "property1 description",
+                        "operators": ["<all-in>"],
                         "default": 100,
                         "minimum": 100,
                         "maximum": 30000369
@@ -139,6 +140,7 @@ class TestMetadefObjects(functional.FunctionalTest):
                     'type': 'integer',
                     "title": "property1",
                     'description': 'property1 description',
+                    'operators': ['<all-in>'],
                     'default': 100,
                     'minimum': 100,
                     'maximum': 30000369
@@ -201,6 +203,7 @@ class TestMetadefObjects(functional.FunctionalTest):
                         "type": "string",
                         "title": "property2",
                         "description": "p2 desc-UPDATED",
+                        'operators': ['<or>'],
                         "default": "value2-UPDATED",
                         "minLength": 5,
                         "maxLength": 150
@@ -223,6 +226,7 @@ class TestMetadefObjects(functional.FunctionalTest):
         self.assertEqual('500', updated_property1['default'])
         self.assertEqual(500, updated_property1['minimum'])
         self.assertEqual(1369, updated_property1['maximum'])
+        self.assertEqual(['<or>'], updated_property2['operators'])
         self.assertEqual('string', updated_property2['type'])
         self.assertEqual('p2 desc-UPDATED', updated_property2['description'])
         self.assertEqual('value2-UPDATED', updated_property2['default'])
@@ -244,6 +248,7 @@ class TestMetadefObjects(functional.FunctionalTest):
         self.assertEqual('500', updated_property1['default'])
         self.assertEqual(500, updated_property1['minimum'])
         self.assertEqual(1369, updated_property1['maximum'])
+        self.assertEqual(['<or>'], updated_property2['operators'])
         self.assertEqual('string', updated_property2['type'])
         self.assertEqual('p2 desc-UPDATED', updated_property2['description'])
         self.assertEqual('value2-UPDATED', updated_property2['default'])

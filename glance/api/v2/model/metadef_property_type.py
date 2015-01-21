@@ -28,6 +28,7 @@ class PropertyType(types.Base, WSMEModelTransformer):
     type = wsme.wsattr(types.text, mandatory=True)
     title = wsme.wsattr(types.text, mandatory=True)
     description = wsme.wsattr(types.text, mandatory=False)
+    operators = wsme.wsattr([types.text], mandatory=False)
     default = wsme.wsattr(types.bytes, mandatory=False)
 
     # fields for type = string
