@@ -25,8 +25,8 @@ import logging.handlers
 import os
 import tempfile
 
-from oslo.config import cfg
 from oslo_concurrency import lockutils
+from oslo_config import cfg
 from paste import deploy
 
 from glance import i18n

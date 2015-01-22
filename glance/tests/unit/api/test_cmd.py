@@ -13,7 +13,7 @@ import sys
 
 import glance_store as store
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 import glance.cmd.api

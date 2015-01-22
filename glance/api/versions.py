@@ -15,8 +15,8 @@
 
 import httplib
 
-from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_config import cfg
 import webob.dec
 
 from glance.common import wsgi

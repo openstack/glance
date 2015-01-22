@@ -19,7 +19,7 @@ RPC Controller
 import datetime
 import traceback
 
-from oslo.config import cfg
+from oslo_config import cfg
 import oslo_utils.importutils as imp
 from oslo_utils import timeutils
 import six

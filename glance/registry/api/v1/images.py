@@ -17,7 +17,7 @@
 Reference implementation registry server WSGI controller
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_utils import strutils
 from oslo_utils import timeutils
 from webob import exc

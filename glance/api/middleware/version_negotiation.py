@@ -19,7 +19,7 @@ and/or Accept headers and attempts to negotiate an API controller to
 return
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from glance.api import versions
 from glance.common import wsgi

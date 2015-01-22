@@ -16,8 +16,8 @@
 #    under the License.
 import datetime
 
-from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_config import cfg
 import routes
 import webob
 

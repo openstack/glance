@@ -19,8 +19,8 @@ import uuid
 
 import glance_store as store
 import mock
-from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_config import cfg
 import six
 import testtools
 import webob

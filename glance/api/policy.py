@@ -18,7 +18,7 @@
 
 import copy
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from glance.common import exception
 import glance.domain.proxy

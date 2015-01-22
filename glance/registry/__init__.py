@@ -17,7 +17,7 @@
 Registry API
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from glance import i18n
 

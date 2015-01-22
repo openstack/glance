@@ -30,7 +30,7 @@ import types  # noqa
 
 # NOTE(flaper87): This is bad but there ain't better way to do it.
 from glance_store._drivers import swift  # noqa
-from oslo.config import cfg
+from oslo_config import cfg
 import six.moves.urllib.parse as urlparse
 import sqlalchemy
 

@@ -17,8 +17,8 @@
 import uuid
 
 import mock
-from oslo.config import cfg
 from oslo.db import exception as db_exc
+from oslo_config import cfg
 
 from glance.common import crypt
 from glance.common import exception

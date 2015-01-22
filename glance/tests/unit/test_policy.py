@@ -17,7 +17,7 @@
 import os.path
 
 import mock
-import oslo.config.cfg
+import oslo_config.cfg
 
 import glance.api.policy
 from glance.common import exception
@@ -178,7 +178,7 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
         def fake_find_file(self, name):
             return None
 
-        self.stubs.Set(oslo.config.cfg.ConfigOpts, 'find_file',
+        self.stubs.Set(oslo_config.cfg.ConfigOpts, 'find_file',
                        fake_find_file)
 
         enforcer = glance.api.policy.Enforcer()

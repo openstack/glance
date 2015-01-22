@@ -18,7 +18,7 @@ import datetime
 import uuid
 
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 import oslo_utils.importutils
 from oslo_utils import timeutils
 

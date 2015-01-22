@@ -19,7 +19,7 @@ Base attribute driver class
 
 import os.path
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from glance.common import exception
 from glance.common import utils

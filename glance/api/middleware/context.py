@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_config import cfg
 import webob.exc
 
 from glance.api import policy

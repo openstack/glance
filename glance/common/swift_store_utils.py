@@ -18,7 +18,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from glance.common import exception
 from glance import i18n

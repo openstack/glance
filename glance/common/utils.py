@@ -36,7 +36,7 @@ import sys
 import uuid
 
 from OpenSSL import crypto
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import netutils

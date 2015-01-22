@@ -16,7 +16,7 @@
 import urllib
 
 import glance_store as store
-from oslo.config import cfg
+from oslo_config import cfg
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
