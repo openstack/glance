@@ -22,8 +22,8 @@
 import os
 import threading
 
-from oslo.db import options as db_options
 from oslo_config import cfg
+from oslo_db import options as db_options
 from stevedore import driver
 
 from glance.db.sqlalchemy import api as db_api

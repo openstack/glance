@@ -16,8 +16,8 @@ import tempfile
 
 import fixtures
 import glance_store
-from oslo.db import options
 from oslo_config import cfg
+from oslo_db import options
 
 import glance.common.client
 from glance.common import config

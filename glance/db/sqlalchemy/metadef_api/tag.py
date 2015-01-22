@@ -13,8 +13,8 @@
 #    under the License.
 
 
-from oslo.db import exception as db_exc
-from oslo.db.sqlalchemy.utils import paginate_query
+from oslo_db import exception as db_exc
+from oslo_db.sqlalchemy.utils import paginate_query
 from sqlalchemy import func
 import sqlalchemy.orm as sa_orm
 

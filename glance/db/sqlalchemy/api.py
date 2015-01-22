@@ -22,9 +22,9 @@
 
 import threading
 
-from oslo.db import exception as db_exception
-from oslo.db.sqlalchemy import session
 from oslo_config import cfg
+from oslo_db import exception as db_exception
+from oslo_db.sqlalchemy import session
 from oslo_utils import timeutils
 import osprofiler.sqlalchemy
 from retrying import retry

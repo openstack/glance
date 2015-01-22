@@ -16,7 +16,7 @@
 import re
 
 from migrate.changeset import UniqueConstraint
-from oslo.db import exception as db_exception
+from oslo_db import exception as db_exception
 from sqlalchemy import and_, func, orm
 from sqlalchemy import MetaData, Table
 from sqlalchemy.exc import OperationalError, ProgrammingError

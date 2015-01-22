@@ -13,7 +13,7 @@
 #    under the License.
 
 
-from oslo.db import exception as db_exc
+from oslo_db import exception as db_exc
 import sqlalchemy.exc as sa_exc
 import sqlalchemy.orm as sa_orm
 

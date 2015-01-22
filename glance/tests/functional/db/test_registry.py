@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.db import options
 from oslo_config import cfg
+from oslo_db import options
 
 import glance.db
 import glance.tests.functional.db as db_tests

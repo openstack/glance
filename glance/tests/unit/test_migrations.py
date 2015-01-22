@@ -33,11 +33,11 @@ import uuid
 
 from migrate.versioning import api as migration_api
 from migrate.versioning.repository import Repository
-from oslo.db.sqlalchemy import test_base
-from oslo.db.sqlalchemy import test_migrations
-from oslo.db.sqlalchemy import utils as db_utils
 from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_migrations
+from oslo_db.sqlalchemy import utils as db_utils
 from oslo_utils import timeutils
 import sqlalchemy
 

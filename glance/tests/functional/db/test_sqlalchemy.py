@@ -14,8 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.db import options
 from oslo_config import cfg
+from oslo_db import options
 
 from glance.common import exception
 import glance.db.sqlalchemy.api
