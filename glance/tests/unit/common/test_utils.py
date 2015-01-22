@@ -245,6 +245,7 @@ class TestUtils(test_utils.BaseTestCase):
         self.assertEqual("test passed", result(req, Fake()))
 
     def test_validate_key_cert_key(self):
+        self.config(digest_algorithm='sha256')
         var_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                '../../', 'var'))
         keyfile = os.path.join(var_dir, 'privatekey.key')
@@ -272,6 +273,16 @@ class TestUtils(test_utils.BaseTestCase):
                 self.assertRaises(RuntimeError,
                                   utils.validate_key_cert,
                                   keyf.name, keyf.name)
+
+    def test_invalid_digest_algorithm(self):
+        self.config(digest_algorithm='fake_algorithm')
+        var_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                               '../../', 'var'))
+        keyfile = os.path.join(var_dir, 'privatekey.key')
+        certfile = os.path.join(var_dir, 'certificate.crt')
+        self.assertRaises(ValueError,
+                          utils.validate_key_cert,
+                          keyfile, certfile)
 
     def test_valid_port(self):
         valid_inputs = [1, '1', 2, '3', '5', 8, 13, 21,

@@ -144,7 +144,8 @@ class OptsTestCase(utils.BaseTestCase):
             'store_type_preference',
             'flavor',
             'config_file',
-            'public_endpoint'
+            'public_endpoint',
+            'digest_algorithm',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
@@ -204,7 +205,8 @@ class OptsTestCase(utils.BaseTestCase):
             'workers',
             'max_header_line',
             'flavor',
-            'config_file'
+            'config_file',
+            'digest_algorithm',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
@@ -265,7 +267,8 @@ class OptsTestCase(utils.BaseTestCase):
             'auth_strategy',
             'auth_region',
             'registry_host',
-            'registry_port'
+            'registry_port',
+            'digest_algorithm',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
@@ -324,7 +327,8 @@ class OptsTestCase(utils.BaseTestCase):
             'admin_tenant_name',
             'auth_url',
             'auth_strategy',
-            'auth_region'
+            'auth_region',
+            'digest_algorithm',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
