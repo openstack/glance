@@ -147,10 +147,10 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
             raise exception.Forbidden(message
                                       % self.image.image_id)
 
-    def save(self, image_member):
+    def save(self, image_member, from_state=None):
         if (self.context.is_admin or
                 self.context.owner == image_member.member_id):
-            self.member_repo.save(image_member)
+            self.member_repo.save(image_member, from_state=from_state)
         else:
             message = _("You cannot update image member %s")
             raise exception.Forbidden(message % image_member.member_id)

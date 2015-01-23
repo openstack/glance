@@ -178,8 +178,8 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                                              item_proxy_class=ImageProxy,
                                              item_proxy_kwargs=proxy_kwargs)
 
-    def save(self, image):
-        super(ImageRepoProxy, self).save(image)
+    def save(self, image, from_state=None):
+        super(ImageRepoProxy, self).save(image, from_state=from_state)
         self.notifier.info('image.update',
                            format_image_notification(image))
 

@@ -468,7 +468,7 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         self._set_acls(image)
         return result
 
-    def save(self, image):
+    def save(self, image, from_state=None):
         result = super(ImageRepoProxy, self).save(image)
         self._set_acls(image)
         return result

@@ -182,9 +182,9 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         self.policy.enforce(self.context, 'get_images', {})
         return super(ImageRepoProxy, self).list(*args, **kwargs)
 
-    def save(self, image):
+    def save(self, image, from_state=None):
         self.policy.enforce(self.context, 'modify_image', {})
-        return super(ImageRepoProxy, self).save(image)
+        return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
         self.policy.enforce(self.context, 'add_image', {})
@@ -283,9 +283,9 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
         self.policy.enforce(self.context, 'get_member', {})
         return self.member_repo.get(member_id)
 
-    def save(self, member):
+    def save(self, member, from_state=None):
         self.policy.enforce(self.context, 'modify_member', {})
-        self.member_repo.save(member)
+        self.member_repo.save(member, from_state=from_state)
 
     def list(self, *args, **kwargs):
         self.policy.enforce(self.context, 'get_members', {})
