@@ -20,7 +20,6 @@ from oslo.serialization import jsonutils
 from oslo_utils import units
 
 from glance.tests import functional
-from glance.tests.utils import execute
 from glance.tests.utils import minimal_headers
 
 FIVE_KB = 5 * units.Ki
@@ -95,30 +94,28 @@ class TestMiscellaneous(functional.FunctionalTest):
 
         We start both servers daemonized.
 
-        We then use curl to try adding an image that does not
+        We then use Glance API to try adding an image that does not
         meet validation requirements on the registry server and test
-        that the error returned from the API server to curl is appropriate
+        that the error returned from the API server is appropriate
         """
         self.cleanup()
         self.start_servers()
 
         api_port = self.api_port
+        path = 'http://127.0.0.1:%d/v1/images' % api_port
 
-        cmd = "curl -g http://127.0.0.1:%d/v1/images" % api_port
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(200, response.status)
+        self.assertEqual('{"images": []}', content)
 
-        exitcode, out, err = execute(cmd)
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Name': 'ImageName',
+                   'X-Image-Meta-Disk-Format': 'Invalid', }
+        ignored, content = http.request(path, 'POST', headers=headers)
 
-        self.assertEqual(0, exitcode)
-        self.assertEqual('{"images": []}', out.strip())
-
-        cmd = ("curl -X POST -H 'Content-Type: application/octet-stream' "
-               "-H 'X-Image-Meta-Name: ImageName' "
-               "-H 'X-Image-Meta-Disk-Format: Invalid' "
-               "http://127.0.0.1:%d/v1/images" % api_port)
-        ignored, out, err = execute(cmd)
-
-        self.assertTrue('Invalid disk format' in out,
+        self.assertTrue('Invalid disk format' in content,
                         "Could not find 'Invalid disk format' "
-                        "in output: %s" % out)
+                        "in output: %s" % content)
 
         self.stop_servers()
