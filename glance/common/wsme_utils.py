@@ -18,7 +18,7 @@ from oslo_utils import timeutils
 from wsme import types as wsme_types
 
 
-class WSMEModelTransformer():
+class WSMEModelTransformer(object):
 
     def to_dict(self):
         # Return the wsme_attributes names:values as a dict

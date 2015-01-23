@@ -500,7 +500,7 @@ class TestHelpers(test_utils.BaseTestCase):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
         headers = utils.image_meta_to_http_headers(fixture)
 
-        class FakeResponse():
+        class FakeResponse(object):
             pass
 
         response = FakeResponse()

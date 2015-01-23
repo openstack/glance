@@ -229,11 +229,11 @@ class TestUtils(test_utils.BaseTestCase):
         self.assertEqual("test", result)
 
     def test_mutating(self):
-        class FakeContext():
+        class FakeContext(object):
             def __init__(self):
                 self.read_only = False
 
-        class Fake():
+        class Fake(object):
             def __init__(self):
                 self.context = FakeContext()
 
