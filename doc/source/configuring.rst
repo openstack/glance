@@ -1103,6 +1103,20 @@ Can only be specified in configuration files.
 
 Allow to perform insecure SSL requests to ESX/VC server.
 
+Configuring the Storage Endpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``swift_store_endpoint=URL``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+Overrides the storage URL returned by auth. The URL should include the
+path up to and excluding the container. The location of an object is
+obtained by appending the container and object to the configured URL.
+e.g. ``https://www.my-domain.com/v1/path_up_to_container``
+
 Configuring the Image Cache
 ---------------------------
 
