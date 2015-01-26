@@ -39,6 +39,8 @@ from oslo_db.sqlalchemy import test_base
 from oslo_db.sqlalchemy import test_migrations
 from oslo_db.sqlalchemy import utils as db_utils
 from oslo_utils import timeutils
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 import sqlalchemy
 
 from glance.common import crypt

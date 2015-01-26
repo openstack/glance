@@ -29,7 +29,8 @@ from oslo_utils import timeutils
 import osprofiler.sqlalchemy
 from retrying import retry
 import six
-from six.moves import xrange
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 import sqlalchemy
 import sqlalchemy.orm as sa_orm
 import sqlalchemy.sql as sa_sql
@@ -361,9 +362,9 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
 
         # Build up an array of sort criteria as in the docstring
         criteria_list = []
-        for i in xrange(len(sort_keys)):
+        for i in range(len(sort_keys)):
             crit_attrs = []
-            for j in xrange(i):
+            for j in range(i):
                 model_attr = getattr(model, sort_keys[j])
                 default = None if isinstance(
                     model_attr.property.columns[0].type,

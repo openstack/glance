@@ -238,7 +238,7 @@ class ImagesController(object):
             pos = int(path_pos)
         elif path_pos != '-':
             return None
-        if (not allow_max) and (pos not in range(max_pos)):
+        if not (allow_max or 0 <= pos < max_pos):
             return None
         return pos
 

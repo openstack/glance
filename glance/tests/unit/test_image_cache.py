@@ -23,7 +23,8 @@ import fixtures
 from oslo_utils import units
 from oslotest import moxstubout
 import six
-from six.moves import xrange
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.common import exception
 from glance import image_cache
@@ -179,7 +180,7 @@ class ImageCacheTestCase(object):
         # prune it. We should see only 5 images left after
         # pruning, and the images that are least recently accessed
         # should be the ones pruned...
-        for x in xrange(10):
+        for x in range(10):
             FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
             self.assertTrue(self.cache.cache_image_file(x,
                                                         FIXTURE_FILE))
@@ -187,7 +188,7 @@ class ImageCacheTestCase(object):
         self.assertEqual(10 * units.Ki, self.cache.get_cache_size())
 
         # OK, hit the images that are now cached...
-        for x in xrange(10):
+        for x in range(10):
             buff = six.StringIO()
             with self.cache.open_for_read(x) as cache_file:
                 for chunk in cache_file:
@@ -197,11 +198,11 @@ class ImageCacheTestCase(object):
 
         self.assertEqual(5 * units.Ki, self.cache.get_cache_size())
 
-        for x in xrange(0, 5):
+        for x in range(0, 5):
             self.assertFalse(self.cache.is_cached(x),
                              "Image %s was cached!" % x)
 
-        for x in xrange(5, 10):
+        for x in range(5, 10):
             self.assertTrue(self.cache.is_cached(x),
                             "Image %s was not cached!" % x)
 
@@ -264,7 +265,7 @@ class ImageCacheTestCase(object):
 
         self.cache.delete_cached_image(1)
 
-        for x in xrange(3):
+        for x in range(3):
             self.assertTrue(self.cache.queue_image(x))
 
         self.assertEqual(['0', '1', '2'],

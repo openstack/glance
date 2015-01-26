@@ -17,6 +17,8 @@ import time
 
 import httplib2
 import psutil
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.tests import functional
 from glance.tests.utils import execute
