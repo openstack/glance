@@ -21,7 +21,7 @@ import uuid
 import eventlet
 import glance_store
 from mock import patch
-import mox
+from mox3 import mox
 from oslo_config import cfg
 
 from glance.common import exception

@@ -16,7 +16,7 @@
 
 from oslo.serialization import jsonutils
 from oslo_utils import timeutils
-import stubout
+from oslotest import moxstubout
 import webob
 
 from glance.api import authorization
@@ -122,8 +122,8 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
     def setUp(self):
         super(TestKeystoneAuthPlugin, self).setUp()
-        self.stubs = stubout.StubOutForTesting()
-        self.addCleanup(self.stubs.UnsetAll)
+        mox_fixture = self.useFixture(moxstubout.MoxStubout())
+        self.stubs = mox_fixture.stubs
 
     def test_get_plugin_from_strategy_keystone(self):
         strategy = auth.get_plugin_from_strategy('keystone')

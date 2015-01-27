@@ -27,8 +27,8 @@ import fixtures
 from oslo.serialization import jsonutils
 from oslo_config import cfg
 from oslo_utils import timeutils
+from oslotest import moxstubout
 import six
-import stubout
 import testtools
 import webob
 
@@ -54,17 +54,13 @@ class BaseTestCase(testtools.TestCase):
         # the following policy tests
         config.parse_args(args=[])
         self.addCleanup(CONF.reset)
-        self.stubs = stubout.StubOutForTesting()
+        mox_fixture = self.useFixture(moxstubout.MoxStubout())
+        self.stubs = mox_fixture.stubs
         self.stubs.Set(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(self.conf_dir)
         self.set_policy()
-
-    def tearDown(self):
-        self.stubs.UnsetAll()
-        self.stubs.SmartUnsetAll()
-        super(BaseTestCase, self).tearDown()
 
     def set_policy(self):
         conf_file = "policy.json"
