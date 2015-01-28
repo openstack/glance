@@ -177,43 +177,45 @@ class TestCopyToFile(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(201, response.status, content)
-        data = jsonutils.loads(content)
+        if response.status == 201:
+            data = jsonutils.loads(content)
 
-        copy_image_id = data['image']['id']
-        self.assertEqual('queued', data['image']['status'], content)
+            copy_image_id = data['image']['id']
+            self.assertEqual('queued', data['image']['status'], content)
 
-        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
-                                              copy_image_id)
+            path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                                  copy_image_id)
 
-        def _await_status(expected_status):
-            for i in xrange(100):
-                time.sleep(0.01)
-                http = httplib2.Http()
-                response, content = http.request(path, 'HEAD')
-                self.assertEqual(200, response.status)
-                if response['x-image-meta-status'] == expected_status:
-                    return
-            self.fail('unexpected image status %s' %
-                      response['x-image-meta-status'])
+            def _await_status(expected_status):
+                for i in xrange(100):
+                    time.sleep(0.01)
+                    http = httplib2.Http()
+                    response, content = http.request(path, 'HEAD')
+                    self.assertEqual(200, response.status)
+                    if response['x-image-meta-status'] == expected_status:
+                        return
+                self.fail('unexpected image status %s' %
+                          response['x-image-meta-status'])
 
-        _await_status('active' if exists else 'killed')
+            _await_status('active' if exists else 'killed')
 
-        # GET image and make sure image content is as expected
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET')
-        self.assertEqual(200 if exists else 404, response.status)
+            # GET image and make sure image content is as expected
+            http = httplib2.Http()
+            response, content = http.request(path, 'GET')
+            self.assertEqual(200 if exists else 404, response.status)
 
-        if exists:
-            self.assertEqual(str(FIVE_KB), response['content-length'])
-            self.assertEqual("*" * FIVE_KB, content)
-            self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
-                             hashlib.md5(content).hexdigest())
+            if exists:
+                self.assertEqual(str(FIVE_KB), response['content-length'])
+                self.assertEqual("*" * FIVE_KB, content)
+                self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                                 hashlib.md5(content).hexdigest())
 
-        # DELETE copied image
-        http = httplib2.Http()
-        response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+            # DELETE copied image
+            http = httplib2.Http()
+            response, content = http.request(path, 'DELETE')
+            self.assertEqual(200, response.status)
+        else:
+            self.assertEqual(400, response.status, content)
 
         self.stop_servers()
 

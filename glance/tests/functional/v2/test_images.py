@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import BaseHTTPServer
 import os
 import signal
 import uuid
@@ -23,48 +22,13 @@ import requests
 import six
 
 from glance.tests import functional
+from glance.tests import utils as test_utils
 
 
 TENANT1 = str(uuid.uuid4())
 TENANT2 = str(uuid.uuid4())
 TENANT3 = str(uuid.uuid4())
 TENANT4 = str(uuid.uuid4())
-
-
-def get_handler_class(fixture):
-    class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-        def do_GET(self):
-            self.send_response(200)
-            self.send_header('Content-Length', str(len(fixture)))
-            self.end_headers()
-            self.wfile.write(fixture)
-            return
-
-        def do_HEAD(self):
-            self.send_response(200)
-            self.send_header('Content-Length', str(len(fixture)))
-            self.end_headers()
-            return
-
-        def log_message(self, *args, **kwargs):
-            # Override this method to prevent debug output from going
-            # to stderr during testing
-            return
-
-    return StaticHTTPRequestHandler
-
-
-def http_server(image_id, image_data):
-    server_address = ('127.0.0.1', 0)
-    handler_class = get_handler_class(image_data)
-    httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
-    port = httpd.socket.getsockname()[1]
-
-    pid = os.fork()
-    if pid == 0:
-        httpd.serve_forever()
-    else:
-        return pid, port
 
 
 class TestImages(functional.FunctionalTest):
@@ -75,7 +39,8 @@ class TestImages(functional.FunctionalTest):
         self.api_server.deployment_flavor = 'noauth'
         self.api_server.data_api = 'glance.db.sqlalchemy.api'
         for i in range(3):
-            ret = http_server("foo_image_id%d" % i, "foo_image%d" % i)
+            ret = test_utils.start_http_server("foo_image_id%d" % i,
+                                               "foo_image%d" % i)
             setattr(self, 'http_server%d_pid' % i, ret[0])
             setattr(self, 'http_port%d' % i, ret[1])
 
@@ -2420,7 +2385,8 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.cleanup()
         self.api_server.deployment_flavor = 'noauth'
         for i in range(3):
-            ret = http_server("foo_image_id%d" % i, "foo_image%d" % i)
+            ret = test_utils.start_http_server("foo_image_id%d" % i,
+                                               "foo_image%d" % i)
             setattr(self, 'http_server%d_pid' % i, ret[0])
             setattr(self, 'http_port%d' % i, ret[1])
 

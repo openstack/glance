@@ -19,6 +19,8 @@ import contextlib
 import copy
 import datetime
 import hashlib
+import os
+import signal
 import uuid
 
 import glance_store as store
@@ -95,11 +97,15 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.create_fixtures()
         # Used to store/track image status changes for post-analysis
         self.image_status = []
+        ret = test_utils.start_http_server("foo_image_id", "foo_image")
+        self.http_server_pid, self.http_port = ret
 
     def tearDown(self):
         """Clear the test environment"""
         super(TestGlanceAPI, self).tearDown()
         self.destroy_fixtures()
+        if self.http_server_pid is not None:
+            os.kill(self.http_server_pid, signal.SIGKILL)
 
     def create_fixtures(self):
         for fixture in self.FIXTURES:
@@ -133,6 +139,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             res_body = jsonutils.loads(res.body)['image']
             self.assertEqual(format_value, res_body['disk_format'])
             self.assertEqual(format_value, res_body['container_format'])
+
+    def _http_loc_url(self, path):
+        return 'http://127.0.0.1:%d%s' % (self.http_port, path)
 
     def test_defaulted_amazon_format(self):
         for key in ('x-image-meta-disk-format',
@@ -472,7 +481,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         fixture_headers = {
             'x-image-meta-store': 'bad',
             'x-image-meta-name': 'bogus',
-            'x-image-meta-location': 'http://example.com/image.tar.gz',
+            'x-image-meta-location': self._http_loc_url('/image.tar.gz'),
             'x-image-meta-disk-format': 'vhd',
             'x-image-meta-container-format': 'bare',
         }
@@ -495,7 +504,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         fixture_headers = {
             'x-image-meta-store': 'bad',
             'x-image-meta-name': 'X' * 256,
-            'x-image-meta-location': 'http://example.com/image.tar.gz',
+            'x-image-meta-location': self._http_loc_url('/image.tar.gz'),
             'x-image-meta-disk-format': 'vhd',
             'x-image-meta-container-format': 'bare',
         }
@@ -829,7 +838,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
-        req.headers['x-image-meta-location'] = 'http://example.com/images/123'
+        url = self._http_loc_url('/images/123')
+        req.headers['x-image-meta-location'] = url
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
 
@@ -894,9 +904,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_add_copy_from_image_unauthorized(self):
         rules = {"add_image": '@', "copy_from": '!'}
         self.set_policy_rules(rules)
+        url = self._http_loc_url('/i.ovf')
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-glance-api-copy-from': 'http://glance.com/i.ovf',
+                           'x-glance-api-copy-from': url,
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F'}
 
@@ -913,9 +924,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_add_copy_from_upload_image_unauthorized(self):
         rules = {"add_image": '@', "copy_from": '@', "upload_image": '!'}
         self.set_policy_rules(rules)
+        url = self._http_loc_url('/i.ovf')
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-glance-api-copy-from': 'http://glance.com/i.ovf',
+                           'x-glance-api-copy-from': url,
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F'}
 
@@ -931,9 +943,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_add_copy_from_image_authorized_upload_image_authorized(self):
         rules = {"add_image": '@', "copy_from": '@', "upload_image": '@'}
         self.set_policy_rules(rules)
+        url = self._http_loc_url('/i.ovf')
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-glance-api-copy-from': 'http://glance.com/i.ovf',
+                           'x-glance-api-copy-from': url,
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F'}
 
@@ -1185,7 +1198,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
         req.headers['Content-Type'] = 'application/octet-stream'
-        req.headers['x-glance-api-copy-from'] = 'http://glance.com/i.ovf'
+        req.headers['x-glance-api-copy-from'] = self._http_loc_url('/i.ovf')
         res = req.get_response(self.api)
         self.assertEqual(403, res.status_int)
 
@@ -1211,7 +1224,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images/%s" % image_id)
         req.method = 'PUT'
         req.headers['Content-Type'] = 'application/octet-stream'
-        req.headers['x-glance-api-copy-from'] = 'http://glance.com/i.ovf'
+        req.headers['x-glance-api-copy-from'] = self._http_loc_url('/i.ovf')
         res = req.get_response(self.api)
         self.assertEqual(403, res.status_int)
 
