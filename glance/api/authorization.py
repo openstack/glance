@@ -857,9 +857,7 @@ class ImmutableMetadefTagProxy(object):
 
 
 class MetadefTagProxy(glance.domain.proxy.MetadefTag):
-
-    def __init__(self, meta_tag):
-        super(MetadefTagProxy, self).__init__(meta_tag)
+    pass
 
 
 class MetadefTagFactoryProxy(glance.domain.proxy.MetadefTagFactory):
