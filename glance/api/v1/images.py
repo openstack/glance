@@ -416,7 +416,7 @@ class Controller(controller.BaseController):
     @staticmethod
     def _validate_source(source, req):
         """
-        To validate if external sources (as specified via the location
+        Validate if external sources (as specified via the location
         or copy-from headers) are supported. Otherwise we reject
         with 400 "Bad Request".
         """
@@ -424,7 +424,7 @@ class Controller(controller.BaseController):
             if store_utils.validate_external_location(source):
                 return source
             else:
-                msg = _("External source are not supported: '%s'") % source
+                msg = _("External sources are not supported: '%s'") % source
                 LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,
