@@ -1526,7 +1526,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                         self.assertTrue(mock_db_get.called)
                         self.assertTrue(mock_db_update.called)
 
-                        # Ensure cleanup occured.
+                        # Ensure cleanup occurred.
                         self.assertEqual(1, mock_init_del.call_count)
 
                         self.assertEqual(state_changes, ['saving', 'active'])
@@ -1681,7 +1681,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req.headers['x-image-meta-property-key2'] = 'value2'
         req.body = "chunk00000remainder"
         res = req.get_response(self.api)
-        # We expect 500 since an exception occured during upload.
+        # We expect 500 since an exception occurred during upload.
         self.assertEqual(500, res.status_int)
 
     @mock.patch('glance_store.store_add_to_backend')
