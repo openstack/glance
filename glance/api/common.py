@@ -15,11 +15,13 @@
 
 import re
 
+from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_utils import excutils
 from oslo_utils import units
 
 from glance.common import exception
+from glance.common import wsgi
 from glance import i18n
 from glance.openstack.common import log as logging
 
@@ -29,6 +31,8 @@ _LE = i18n._LE
 _LI = i18n._LI
 _LW = i18n._LW
 CONF = cfg.CONF
+
+_CACHED_THREAD_POOL = {}
 
 
 def size_checked_iter(response, image_meta, expected_size, image_iter,
@@ -181,3 +185,36 @@ def check_quota(context, image_size, db_api, image_id=None):
                                          remaining=remaining)
 
     return remaining
+
+
+def memoize(lock_name):
+    def memoizer_wrapper(func):
+        @lockutils.synchronized(lock_name)
+        def memoizer(lock_name):
+            if lock_name not in _CACHED_THREAD_POOL:
+                _CACHED_THREAD_POOL[lock_name] = func()
+
+            return _CACHED_THREAD_POOL[lock_name]
+
+        return memoizer(lock_name)
+
+    return memoizer_wrapper
+
+
+def get_thread_pool(lock_name, size=1024):
+    """Initializes eventlet thread pool.
+
+    If thread pool is present in cache, then returns it from cache
+    else create new pool, stores it in cache and return newly created
+    pool.
+
+    @param lock_name:  Name of the lock.
+    @param size: Size of eventlet pool.
+
+    @return: eventlet pool
+    """
+    @memoize(lock_name)
+    def _get_thread_pool():
+        return wsgi.get_asynchronous_eventlet_pool(size=size)
+
+    return _get_thread_pool

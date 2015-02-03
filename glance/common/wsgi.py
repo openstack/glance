@@ -34,6 +34,7 @@ from eventlet.green import socket
 from eventlet.green import ssl
 import eventlet.greenio
 import eventlet.wsgi
+import glance_store
 from oslo.serialization import jsonutils
 from oslo_concurrency import processutils
 from oslo_config import cfg
@@ -53,6 +54,7 @@ import glance.openstack.common.log as logging
 _ = i18n._
 _LE = i18n._LE
 _LI = i18n._LI
+_LW = i18n._LW
 
 bind_opts = [
     cfg.StrOpt('bind_host', default='0.0.0.0',
@@ -105,6 +107,8 @@ CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
 CONF.register_opts(profiler_opts, group="profiler")
+
+ASYNC_EVENTLET_THREAD_POOL_LIST = []
 
 
 def get_bind_addr(default_port=None):
@@ -207,14 +211,52 @@ def set_eventlet_hub():
                 reason=msg)
 
 
-class Server(object):
-    """Server class to manage multiple WSGI sockets and applications."""
+def initialize_glance_store():
+    """Initialize glance store."""
+    glance_store.register_opts(CONF)
+    glance_store.create_stores(CONF)
+    glance_store.verify_default_store()
 
-    def __init__(self, threads=1000):
+
+def get_asynchronous_eventlet_pool(size=1000):
+    """Return eventlet pool to caller.
+
+    Also store pools created in global list, to wait on
+    it after getting signal for graceful shutdown.
+
+    :param size: eventlet pool size
+    :returns: eventlet pool
+    """
+    global ASYNC_EVENTLET_THREAD_POOL_LIST
+
+    pool = eventlet.GreenPool(size=size)
+    # Add pool to global ASYNC_EVENTLET_THREAD_POOL_LIST
+    ASYNC_EVENTLET_THREAD_POOL_LIST.append(pool)
+
+    return pool
+
+
+class Server(object):
+    """Server class to manage multiple WSGI sockets and applications.
+
+    This class requires initialize_glance_store set to True if
+    glance store needs to be initialized.
+    """
+
+    def __init__(self, threads=1000, initialize_glance_store=False):
         eventlet.wsgi.MAX_HEADER_LINE = CONF.max_header_line
         self.threads = threads
-        self.children = []
+        self.children = set()
+        self.stale_children = set()
         self.running = True
+        # NOTE(abhishek): Allows us to only re-initialize glance_store when
+        # the API's configuration reloads.
+        self.initialize_glance_store = initialize_glance_store
+
+    def hup(self, *args):
+        """Reloads configuration files with zero down time."""
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)
+        raise exception.SIGHUPInterrupt
 
     def start(self, application, default_port):
         """
@@ -223,11 +265,14 @@ class Server(object):
         :param application: The application to be run in the WSGI server
         :param default_port: Port to bind to if none is specified in conf
         """
-        pgid = os.getpid()
+        if self.initialize_glance_store:
+            initialize_glance_store()
+
+        self.pgid = os.getpid()
         try:
             # NOTE(flaper87): Make sure this process
             # runs in its own process group.
-            os.setpgid(pgid, pgid)
+            os.setpgid(self.pgid, self.pgid)
         except OSError:
             # NOTE(flaper87): When running glance-control,
             # (glance's functional tests, for example)
@@ -238,21 +283,14 @@ class Server(object):
             #
             # Running glance-(api|registry) is safe and
             # shouldn't raise any error here.
-            pgid = 0
+            self.pgid = 0
 
         def kill_children(*args):
             """Kills the entire process group."""
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.running = False
-            os.killpg(pgid, signal.SIGTERM)
-
-        def hup(*args):
-            """
-            Shuts down the server, but allows running requests to complete
-            """
-            signal.signal(signal.SIGHUP, signal.SIG_IGN)
-            self.running = False
+            os.killpg(self.pgid, signal.SIGTERM)
 
         self.application = application
         self.sock = get_socket(default_port)
@@ -270,38 +308,68 @@ class Server(object):
             LOG.info(_LI("Starting %d workers") % CONF.workers)
             signal.signal(signal.SIGTERM, kill_children)
             signal.signal(signal.SIGINT, kill_children)
-            signal.signal(signal.SIGHUP, hup)
+            signal.signal(signal.SIGHUP, self.hup)
             while len(self.children) < CONF.workers:
                 self.run_child()
 
     def create_pool(self):
         return eventlet.GreenPool(size=self.threads)
 
+    def _remove_children(self, pid):
+        if pid in self.children:
+            self.children.remove(pid)
+            LOG.info(_LI('Removed dead child %s') % pid)
+        elif pid in self.stale_children:
+            self.stale_children.remove(pid)
+            LOG.info(_LI('Removed stale child %s') % pid)
+        else:
+            LOG.warn(_LW('Unrecognised child %s') % pid)
+
+    def _verify_and_respawn_children(self, pid, status):
+        if len(self.stale_children) == 0:
+            LOG.debug('No stale children')
+        if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
+            LOG.error(_LE('Not respawning child %d, cannot '
+                          'recover from termination') % pid)
+            if not self.children and not self.stale_children:
+                LOG.info(
+                    _LI('All workers have terminated. Exiting'))
+                self.running = False
+        else:
+            if len(self.children) < CONF.workers:
+                self.run_child()
+
     def wait_on_children(self):
         while self.running:
             try:
                 pid, status = os.wait()
                 if os.WIFEXITED(status) or os.WIFSIGNALED(status):
-                    LOG.info(_LI('Removing dead child %s') % pid)
-                    self.children.remove(pid)
-                    if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
-                        LOG.error(_LE('Not respawning child %d, cannot '
-                                      'recover from termination') % pid)
-                        if not self.children:
-                            LOG.info(_LI('All workers have terminated. '
-                                         'Exiting'))
-                            self.running = False
-                    else:
-                        self.run_child()
+                    self._remove_children(pid)
+                    self._verify_and_respawn_children(pid, status)
             except OSError as err:
                 if err.errno not in (errno.EINTR, errno.ECHILD):
                     raise
             except KeyboardInterrupt:
                 LOG.info(_LI('Caught keyboard interrupt. Exiting.'))
                 break
+            except exception.SIGHUPInterrupt:
+                self.reload()
+                continue
         eventlet.greenio.shutdown_safe(self.sock)
         self.sock.close()
         LOG.debug('Exited')
+
+    def reload(self):
+        cfg.CONF.reload_config_files()
+        if self.initialize_glance_store:
+            initialize_glance_store()
+
+        os.killpg(self.pgid, signal.SIGHUP)
+        self.stale_children = self.children
+        self.children = set()
+        while len(self.children) < CONF.workers:
+            self.run_child()
+        signal.signal(signal.SIGHUP, self.hup)
 
     def wait(self):
         """Wait until all servers have completed running."""
@@ -314,9 +382,15 @@ class Server(object):
             pass
 
     def run_child(self):
+        def child_hup(*args):
+            """Shuts down child processes, existing requests are handled."""
+            signal.signal(signal.SIGHUP, signal.SIG_IGN)
+            eventlet.wsgi.is_accepting = False
+            self.sock.close()
+
         pid = os.fork()
         if pid == 0:
-            signal.signal(signal.SIGHUP, signal.SIG_DFL)
+            signal.signal(signal.SIGHUP, child_hup)
             signal.signal(signal.SIGTERM, signal.SIG_DFL)
             # ignore the interrupt signal to avoid a race whereby
             # a child worker receives the signal before the parent
@@ -329,7 +403,7 @@ class Server(object):
             sys.exit(0)
         else:
             LOG.info(_LI('Started child %s') % pid)
-            self.children.append(pid)
+            self.children.add(pid)
 
     def run_server(self):
         """Run a WSGI server."""
@@ -348,7 +422,11 @@ class Server(object):
         except socket.error as err:
             if err[0] != errno.EINVAL:
                 raise
-        self.pool.waitall()
+
+        # waiting on async pools
+        if ASYNC_EVENTLET_THREAD_POOL_LIST:
+            for pool in ASYNC_EVENTLET_THREAD_POOL_LIST:
+                pool.waitall()
 
     def _single_run(self, application, sock):
         """Start a WSGI server in a new green thread."""

@@ -19,7 +19,6 @@
 
 import copy
 
-import eventlet
 import glance_store as store
 import glance_store.location
 from oslo_config import cfg
@@ -141,7 +140,6 @@ class Controller(controller.BaseController):
         self.notifier = notifier.Notifier()
         registry.configure_registry_client()
         self.policy = policy.Enforcer()
-        self.pool = eventlet.GreenPool(size=1024)
         if property_utils.is_property_protection_enabled():
             self.prop_enforcer = property_utils.PropertyRules(self.policy)
         else:
@@ -739,7 +737,8 @@ class Controller(controller.BaseController):
         elif copy_from:
             msg = _LI('Triggering asynchronous copy from external source')
             LOG.info(msg)
-            self.pool.spawn_n(self._upload_and_activate, req, image_meta)
+            pool = common.get_thread_pool("copy_from_eventlet_pool")
+            pool.spawn_n(self._upload_and_activate, req, image_meta)
         else:
             if location:
                 self._validate_image_for_activation(req, image_id, image_meta)
