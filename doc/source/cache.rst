@@ -38,12 +38,14 @@ Controlling the Growth of the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The image cache has a configurable maximum size (the ``image_cache_max_size``
-configuration file option. However, when images are successfully returned
-from a call to ``GET /images/<IMAGE_ID>``, the image cache automatically
-writes the image file to its cache, regardless of whether the resulting
-write would make the image cache's size exceed the value of
-``image_cache_max_size``. In order to keep the image cache at or below this
-maximum cache size, you need to run the ``glance-cache-pruner`` executable.
+configuration file option). The ``image_cache_max_size`` is an upper limit
+beyond which pruner, if running, starts cleaning the images cache.
+However, when images are successfully returned from a call to
+``GET /images/<IMAGE_ID>``, the image cache automatically writes the image
+file to its cache, regardless of whether the resulting write would make the
+image cache's size exceed the value of ``image_cache_max_size``.
+In order to keep the image cache at or below this maximum cache size,
+you need to run the ``glance-cache-pruner`` executable.
 
 The recommended practice is to use ``cron`` to fire ``glance-cache-pruner``
 at a regular interval.
