@@ -76,6 +76,8 @@ class TestScriptsUtils(test_utils.BaseTestCase):
     def test_validate_location_file_location_error(self):
         self.assertRaises(StandardError, script_utils.validate_location_uri,
                           "file:///tmp")
+        self.assertRaises(StandardError, script_utils.validate_location_uri,
+                          "filesystem:///tmp")
 
     def test_validate_location_unsupported_error(self):
         location = 'swift'
