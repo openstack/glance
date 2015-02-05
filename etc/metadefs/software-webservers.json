@@ -1,0 +1,102 @@
+{
+    "namespace": "OS::Software::WebServers",
+    "display_name": "Web Servers",
+    "description": "A web server is a computer system that processes requests via HTTP, the basic network protocol used to distribute information on the World Wide Web. The most common use of web servers is to host websites, but there are other uses such as gaming, data storage, running enterprise applications, handling email, FTP, or other web uses. (http://en.wikipedia.org/wiki/Web_server)",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        },
+        {
+            "name": "OS::Cinder::Volume",
+            "properties_target": "image"
+        },
+        {
+            "name": "OS::Nova::Instance"
+        }
+    ],
+    "objects": [
+        {
+            "name": "Apache HTTP Server",
+            "description": "The Apache HTTP Server, colloquially called Apache, is a Web server application notable for playing a key role in the initial growth of the World Wide Web. Apache is developed and maintained by an open community of developers under the auspices of the Apache Software Foundation. Most commonly used on a Unix-like system, the software is available for a wide variety of operating systems, including Unix, FreeBSD, Linux, Solaris, Novell NetWare, OS X, Microsoft Windows, OS/2, TPF, OpenVMS and eComStation. Released under the Apache License, Apache is open-source software. (http://en.wikipedia.org/wiki/Apache_HTTP_Server)",
+            "properties": {
+                "sw_webserver_apache_version": {
+                    "title": "Version",
+                    "description": "The specific version of Apache.",
+                    "type": "string"
+                },
+                "sw_webserver_apache_http_port": {
+                    "title": "HTTP Port",
+                    "description": "The configured TCP/IP port on which the web server listens for incoming HTTP connections.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 80
+                },
+                "sw_webserver_apache_https_port": {
+                    "title": "HTTPS Port",
+                    "description": "The configured TCP/IP port on which the web server listens for incoming HTTPS connections.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 443
+                }
+            }
+        },
+        {
+            "name": "Nginx",
+            "description": "Nginx (pronounced 'engine-x') is an open source reverse proxy server for HTTP, HTTPS, SMTP, POP3, and IMAP protocols, as well as a load balancer, HTTP cache, and a web server (origin server). The nginx project started with a strong focus on high concurrency, high performance and low memory usage. It is licensed under the 2-clause BSD-like license and it runs on Linux, BSD variants, Mac OS X, Solaris, AIX, HP-UX, as well as on other *nix flavors. It also has a proof of concept port for Microsoft Windows. (http://en.wikipedia.org/wiki/Nginx)",
+            "properties": {
+                "sw_webserver_nginx_version": {
+                    "title": "Version",
+                    "description": "The specific version of Nginx.",
+                    "type": "string"
+                },
+                "sw_webserver_nginx_http_port": {
+                    "title": "HTTP Port",
+                    "description": "The configured TCP/IP port on which the web server listens for incoming HTTP connections.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 80
+                },
+                "sw_webserver_nginx_https_port": {
+                    "title": "HTTPS Port",
+                    "description": "The configured TCP/IP port on which the web server listens for incoming HTTPS connections.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 443
+                }
+            }
+        },
+        {
+            "name": "IIS",
+            "description": "Internet Information Services (IIS, formerly Internet Information Server) is an extensible web server created by Microsoft. IIS supports HTTP, HTTPS, FTP, FTPS, SMTP and NNTP. IIS is not turned on by default when Windows is installed. The IIS Manager is accessed through the Microsoft Management Console or Administrative Tools in the Control Panel. (http://en.wikipedia.org/wiki/Internet_Information_Services)",
+            "properties": {
+                "sw_webserver_iis_version": {
+                    "title": "Version",
+                    "description": "The specific version of IIS.",
+                    "type": "string"
+                },
+                "sw_webserver_iis_http_port": {
+                    "title": "HTTP Port",
+                    "description": "The configured TCP/IP port on which the web server listens for incoming HTTP connections.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 80
+                },
+                "sw_webserver_iis_https_port": {
+                    "title": "HTTPS Port",
+                    "description": "The configured TCP/IP port on which the web server listens for incoming HTTPS connections.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 443
+                }
+            }
+        }
+    ]
+}

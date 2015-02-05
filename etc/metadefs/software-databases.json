@@ -1,0 +1,333 @@
+{
+    "namespace": "OS::Software::DBMS",
+    "display_name": "Database Software",
+    "description": "A database is an organized collection of data. The data is typically organized to model aspects of reality in a way that supports processes requiring information. Database management systems are computer software applications that interact with the user, other applications, and the database itself to capture and analyze data. (http://en.wikipedia.org/wiki/Database)",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        },
+        {
+            "name": "OS::Cinder::Volume",
+            "properties_target": "image"
+        },
+        {
+            "name": "OS::Nova::Instance"
+        },
+        {
+            "name": "OS::Trove::Instance"
+        }
+    ],
+    "objects": [
+        {
+            "name": "MySQL",
+            "description": "MySQL is an object-relational database management system (ORDBMS). The MySQL development project has made its source code available under the terms of the GNU General Public License, as well as under a variety of proprietary agreements. MySQL was owned and sponsored by a single for-profit firm, the Swedish company MySQL AB, now owned by Oracle Corporation. MySQL is a popular choice of database for use in web applications, and is a central component of the widely used LAMP open source web application software stack (and other 'AMP' stacks). (http://en.wikipedia.org/wiki/MySQL)",
+            "properties": {
+                "sw_database_mysql_version": {
+                    "title": "Version",
+                    "description": "The specific version of MySQL.",
+                    "type": "string"
+                },
+                "sw_database_mysql_listen_port": {
+                    "title": "Listen Port",
+                    "description": "The configured TCP/IP port which MySQL listens for incoming connections.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 3606
+                },
+                "sw_database_mysql_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string",
+                    "default": "root"
+                }
+            }
+        },
+        {
+            "name": "PostgreSQL",
+            "description": "PostgreSQL, often simply 'Postgres', is an object-relational database management system (ORDBMS) with an emphasis on extensibility and standards-compliance. PostgreSQL is cross-platform and runs on many operating systems. (http://en.wikipedia.org/wiki/PostgreSQL)",
+            "properties": {
+                "sw_database_postgresql_version": {
+                    "title": "Version",
+                    "description": "The specific version of PostgreSQL.",
+                    "type": "string"
+                },
+                "sw_database_postgresql_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which PostgreSQL is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 5432
+                },
+                "sw_database_postgresql_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string",
+                    "default": "postgres"
+                }
+            }
+        },
+        {
+            "name": "SQL Server",
+            "description": "Microsoft SQL Server is a relational database management system developed by Microsoft. There are at least a dozen different editions of Microsoft SQL Server aimed at different audiences and for workloads ranging from small single-machine applications to large Internet-facing applications with many concurrent users. Its primary query languages are T-SQL and ANSI SQL. (http://en.wikipedia.org/wiki/Microsoft_SQL_Server)",
+            "properties": {
+                "sw_database_sqlserver_version": {
+                    "title": "Version",
+                    "description": "The specific version of Microsoft SQL Server.",
+                    "type": "string"
+                },
+                "sw_database_sqlserver_edition": {
+                    "title": "Edition",
+                    "description": "SQL Server is available in multiple editions, with different feature sets and targeting different users.",
+                    "type": "string",
+                    "default": "Express",
+                    "enum": [
+                        "Datacenter",
+                        "Enterprise",
+                        "Standard",
+                        "Web",
+                        "Business Intelligence",
+                        "Workgroup",
+                        "Express",
+                        "Compact (SQL CE)",
+                        "Developer",
+                        "Embedded (SSEE)",
+                        "Express",
+                        "Fast Track",
+                        "LocalDB",
+                        "Parallel Data Warehouse (PDW)",
+                        "Business Intelligence",
+                        "Datawarehouse Appliance Edition"
+                    ]
+                },
+                "sw_database_sqlserver_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which SQL Server is to listen for connections from client applications. The default SQL Server port is 1433, and client ports are assigned a random value between 1024 and 5000.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 1433
+                },
+                "sw_database_postsqlserver_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string",
+                    "default": "sa"
+                }
+            }
+        },
+        {
+            "name": "Oracle",
+            "description": "Oracle Database (commonly referred to as Oracle RDBMS or simply as Oracle) is an object-relational database management system produced and marketed by Oracle Corporation. (http://en.wikipedia.org/wiki/Oracle_Database)",
+            "properties": {
+                "sw_database_oracle_version": {
+                    "title": "Version",
+                    "description": "The specific version of Oracle.",
+                    "type": "string"
+                },
+                "sw_database_oracle_edition": {
+                    "title": "Edition",
+                    "description": "Over and above the different versions of the Oracle database management software developed over time, Oracle Corporation subdivides its product into varying editions.",
+                    "type": "string",
+                    "default": "Express",
+                    "enum": [
+                        "Enterprise",
+                        "Standard",
+                        "Standard Edition One",
+                        "Express (XE)",
+                        "Workgroup",
+                        "Lite"
+                    ]
+                },
+                "sw_database_oracle_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which Oracle is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 1521
+                }
+            }
+        },
+        {
+            "name": "DB2",
+            "description": "IBM DB2 is a family of database server products developed by IBM. These products all support the relational model, but in recent years some products have been extended to support object-relational features and non-relational structures, in particular XML. (http://en.wikipedia.org/wiki/IBM_DB2)",
+            "properties": {
+                "sw_database_db2_version": {
+                    "title": "Version",
+                    "description": "The specific version of DB2.",
+                    "type": "string"
+                },
+                "sw_database_db2_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which DB2 is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 5432
+                },
+                "sw_database_db2_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "MongoDB",
+            "description": "MongoDB is a cross-platform document-oriented database. Classified as a NoSQL database, MongoDB uses JSON-like documents with dynamic schemas (MongoDB calls the format BSON), making the integration of data in certain types of applications easier and faster. Released under a combination of the GNU Affero General Public License and the Apache License, MongoDB is free and open-source software. (http://en.wikipedia.org/wiki/MongoDB)",
+            "properties": {
+                "sw_database_mongodb_version": {
+                    "title": "Version",
+                    "description": "The specific version of MongoDB.",
+                    "type": "string"
+                },
+                "sw_database_mongodb_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which MongoDB is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 27017
+                },
+                "sw_database_mongodb_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "Couchbase Server",
+            "description": "Couchbase Server, originally known as Membase, is an open source, distributed (shared-nothing architecture) NoSQL document-oriented database that is optimized for interactive applications. These applications must serve many concurrent users by creating, storing, retrieving, aggregating, manipulating and presenting data. In support of these kinds of application needs, Couchbase is designed to provide easy-to-scale key-value or document access with low latency and high sustained throughput. (http://en.wikipedia.org/wiki/Couchbase_Server)",
+            "properties": {
+                "sw_database_couchbaseserver_version": {
+                    "title": "Version",
+                    "description": "The specific version of Couchbase Server.",
+                    "type": "string"
+                },
+                "sw_database_couchbaseserver_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which Couchbase is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 11211
+                },
+                "sw_database_couchbaseserver_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string",
+                    "default": "admin"
+                }
+            }
+        },
+        {
+            "name": "Redis",
+            "description": "Redis is a data structure server (NoSQL). It is open-source, networked, in-memory, and stores keys with optional durability. The development of Redis has been sponsored by Pivotal Software since May 2013; before that, it was sponsored by VMware. The name Redis means REmote DIctionary Server. (http://en.wikipedia.org/wiki/Redis)",
+            "properties": {
+                "sw_database_redis_version": {
+                    "title": "Version",
+                    "description": "The specific version of Redis.",
+                    "type": "string"
+                },
+                "sw_database_redis_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which Redis is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 6379
+                },
+                "sw_database_redis_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string",
+                    "default": "admin"
+                }
+            }
+        },
+        {
+            "name": "CouchDB",
+            "description": "Apache CouchDB, commonly referred to as CouchDB, is an open source NoSQL database. It is a NoSQL database that uses JSON to store data, JavaScript as its query language using MapReduce, and HTTP for an API. One of its distinguishing features is multi-master replication. CouchDB was first released in 2005 and later became an Apache project in 2008. (http://en.wikipedia.org/wiki/CouchDB)",
+            "properties": {
+                "sw_database_couchdb_version": {
+                    "title": "Version",
+                    "description": "The specific version of CouchDB.",
+                    "type": "string"
+                },
+                "sw_database_couchdb_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which CouchDB is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 5984
+                },
+                "sw_database_couchdb_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "Apache Cassandra",
+            "description": "Apache Cassandra is an open source distributed NoSQL database management system designed to handle large amounts of data across many commodity servers, providing high availability with no single point of failure. (http://en.wikipedia.org/wiki/Apache_Cassandra)",
+            "properties": {
+                "sw_database_cassandra_version": {
+                    "title": "Version",
+                    "description": "The specific version of Apache Cassandra.",
+                    "type": "string"
+                },
+                "sw_database_cassandra_listen_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which Cassandra is to listen for connections from client applications.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 9160
+                },
+                "sw_database_cassandra_admin": {
+                    "title": "Admin User",
+                    "description": "The primary user with privileges to perform administrative operations.",
+                    "type": "string",
+                    "default": "cassandra"
+                }
+            }
+        },
+        {
+            "name": "HBase",
+            "description": "HBase is an open source, non-relational (NoSQL), distributed database modeled after Google's BigTable and written in Java. It is developed as part of Apache Software Foundation's Apache Hadoop project and runs on top of HDFS (Hadoop Distributed Filesystem), providing BigTable-like capabilities for Hadoop. (http://en.wikipedia.org/wiki/Apache_HBase)",
+            "properties": {
+                "sw_database_hbase_version": {
+                    "title": "Version",
+                    "description": "The specific version of HBase.",
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "name": "Hazlecast",
+            "description": "In computing, Hazelcast is an in-memory open source software data grid based on Java. By having multiple nodes form a cluster, data is evenly distributed among the nodes. This allows for horizontal scaling both in terms of available storage space and processing power. Backups are also distributed in a similar fashion to other nodes, based on configuration, thereby protecting against single node failure. (http://en.wikipedia.org/wiki/Hazelcast)",
+            "properties": {
+                "sw_database_hazlecast_version": {
+                    "title": "Version",
+                    "description": "The specific version of Hazlecast.",
+                    "type": "string"
+                },
+                "sw_database_hazlecast_port": {
+                    "title": "Listen Port",
+                    "description": "Specifies the TCP/IP port or local Unix domain socket file extension on which Hazlecast is to listen for connections between members.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 5701
+                }
+            }
+        }
+    ]
+}
