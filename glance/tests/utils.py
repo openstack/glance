@@ -279,13 +279,13 @@ def execute(cmd,
     path_ext = [os.path.join(os.getcwd(), 'bin')]
 
     # Also jack in the path cmd comes from, if it's absolute
-    executable = cmd.split()[0]
+    args = shlex.split(cmd)
+    executable = args[0]
     if os.path.isabs(executable):
         path_ext.append(os.path.dirname(executable))
 
     env['PATH'] = ':'.join(path_ext) + ':' + env['PATH']
-    process = subprocess.Popen(cmd,
-                               shell=True,
+    process = subprocess.Popen(args,
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
