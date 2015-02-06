@@ -1349,7 +1349,8 @@ the ``failure`` state.
 Optional. Default: ``48``
 
 The config value ``task_executor`` is used to determine which executor
-should be used by the Glance service to process the task.
+should be used by the Glance service to process the task. Options include
+``eventlet`` and ``taskflow``.
 
 * ``task_executor=<executor_type>``
 
