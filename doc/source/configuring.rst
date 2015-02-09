@@ -1402,10 +1402,14 @@ profiling will not be triggered even profiling feature is enabled.
 Configuring Glance public endpoint
 ----------------------------------
 
-When Glance API service is ran behind a proxy, operator probably need to
-configure a proper public endpoint to versions URL instead of use host owned
-which run service really. Glance allows configure a public endpoint URL to
-represent the proxy's URL.
+This setting allows an operator to configure the endpoint URL that will
+appear in the Glance "versions" response (that is, the response to
+``GET /``\  ).  This can be necessary when the Glance API service is run
+behind a proxy because the default endpoint displayed in the versions
+response is that of the host actually running the API service.  If
+Glance is being run behind a load balancer, for example, direct access
+to individual hosts running the Glance API may not be allowed, hence the
+load balancer URL would be used for this value.
 
 * ``public_endpoint=<None|URL>``
 
