@@ -116,7 +116,7 @@ def _count_duplicated_locations(locations, new):
 
     ret = 0
     for loc in locations:
-        if (loc['url'] == new['url'] and loc['metadata'] == new['metadata']):
+        if loc['url'] == new['url'] and loc['metadata'] == new['metadata']:
             ret += 1
     return ret
 

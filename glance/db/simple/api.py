@@ -494,7 +494,7 @@ def image_member_create(context, values):
 def image_member_update(context, member_id, values):
     global DATA
     for member in DATA['members']:
-        if (member['id'] == member_id):
+        if member['id'] == member_id:
             member.update(values)
             member['updated_at'] = timeutils.utcnow()
             return copy.deepcopy(member)
@@ -506,7 +506,7 @@ def image_member_update(context, member_id, values):
 def image_member_delete(context, member_id):
     global DATA
     for i, member in enumerate(DATA['members']):
-        if (member['id'] == member_id):
+        if member['id'] == member_id:
             del DATA['members'][i]
             break
     else:
@@ -541,7 +541,7 @@ def image_location_update(context, image_id, location):
 
     updated = False
     for loc in DATA['locations']:
-        if (loc['id'] == loc_id and loc['image_id'] == image_id):
+        if loc['id'] == loc_id and loc['image_id'] == image_id:
             loc.update({"value": location['url'],
                         "meta_data": location['metadata'],
                         "status": location['status'],
@@ -568,7 +568,7 @@ def image_location_delete(context, image_id, location_id, status,
 
     deleted = False
     for loc in DATA['locations']:
-        if (loc['id'] == location_id and loc['image_id'] == image_id):
+        if loc['id'] == location_id and loc['image_id'] == image_id:
             deleted = True
             delete_time = delete_time or timeutils.utcnow()
             loc.update({"deleted": deleted,
@@ -1694,8 +1694,7 @@ def metadef_tag_get(context, namespace_name, name):
     _check_namespace_visibility(context, namespace, namespace_name)
 
     for tag in DATA['metadef_tags']:
-        if (tag['namespace_id'] == namespace['id'] and
-                tag['name'] == name):
+        if tag['namespace_id'] == namespace['id'] and tag['name'] == name:
             return tag
     else:
         msg = ("The metadata definition tag with name=%(name)s"
@@ -1713,8 +1712,7 @@ def metadef_tag_get_by_id(context, namespace_name, id):
     _check_namespace_visibility(context, namespace, namespace_name)
 
     for tag in DATA['metadef_tags']:
-        if (tag['namespace_id'] == namespace['id'] and
-                tag['id'] == id):
+        if tag['namespace_id'] == namespace['id'] and tag['id'] == id:
             return tag
     else:
         msg = (_("Metadata definition tag not found for id=%s") % id)
@@ -1752,8 +1750,7 @@ def metadef_tag_create(context, namespace_name, values):
     namespace = metadef_namespace_get(context, namespace_name)
 
     for tag in DATA['metadef_tags']:
-        if (tag['name'] == tag_name and
-                tag['namespace_id'] == namespace['id']):
+        if tag['name'] == tag_name and tag['namespace_id'] == namespace['id']:
             msg = ("A metadata definition tag with name=%(name)s"
                    " in namespace=%(namespace_name)s already exists."
                    % {'name': tag_name, 'namespace_name': namespace_name})

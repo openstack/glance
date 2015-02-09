@@ -124,8 +124,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
     def get(self, member_id):
         if (self.context.is_admin or
-                self.context.owner == self.image.owner or
-                self.context.owner == member_id):
+                self.context.owner in (self.image.owner, member_id)):
             member = self.member_repo.get(member_id)
             return proxy_member(self.context, member)
         else:

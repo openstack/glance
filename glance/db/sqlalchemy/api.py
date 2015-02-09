@@ -1306,8 +1306,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     session = get_session()
     query = session.query(models.Task)
 
-    if (not (context.is_admin or admin_as_user == True)
-       and context.owner is not None):
+    if not (context.is_admin or admin_as_user) and context.owner is not None:
         query = query.filter(models.Task.owner == context.owner)
 
     showing_deleted = False
