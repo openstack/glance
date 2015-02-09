@@ -48,13 +48,14 @@ class TagsController(object):
                                               policy_enforcer=self.policy)
         self.tag_schema_link = '/v2/schemas/metadefs/tag'
 
-    def create(self, req, metadata_tag, namespace):
+    def create(self, req, namespace, tag_name):
         tag_factory = self.gateway.get_metadef_tag_factory(req.context)
         tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+        tag_name_as_dict = {'name': tag_name}
         try:
             new_meta_tag = tag_factory.new_tag(
                 namespace=namespace,
-                **metadata_tag.to_dict())
+                **tag_name_as_dict)
             tag_repo.add(new_meta_tag)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
@@ -286,7 +287,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return limit
 
-    def _create_or_update(self, request):
+    def update(self, request):
         body = self._get_request_body(request)
         self._check_allowed(body)
         try:
@@ -316,9 +317,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return query_params
 
-    def create(self, request):
-        return self._create_or_update(request)
-
     def create_tags(self, request):
         body = self._get_request_body(request)
         self._check_allowed(body)
@@ -328,9 +326,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         metadata_tags = json.fromjson(MetadefTags, body)
         return dict(metadata_tags=metadata_tags)
-
-    def update(self, request):
-        return self._create_or_update(request)
 
     @classmethod
     def _check_allowed(cls, image):

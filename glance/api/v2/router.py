@@ -379,12 +379,8 @@ class API(wsgi.Router):
                        conditions={'method': ['GET']})
         mapper.connect('/metadefs/namespaces/{namespace}/tags',
                        controller=metadef_tags_resource,
-                       action='create',
-                       conditions={'method': ['POST']})
-        mapper.connect('/metadefs/namespaces/{namespace}/tags',
-                       controller=metadef_tags_resource,
                        action='create_tags',
-                       conditions={'method': ['PUT']})
+                       conditions={'method': ['POST']})
         mapper.connect('/metadefs/namespaces/{namespace}/tags',
                        controller=metadef_namespace_resource,
                        action='delete_tags',
@@ -392,13 +388,17 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/tags',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST, PUT, DELETE',
-                       conditions={'method': ['PATCH', 'HEAD']})
+                       allowed_methods='GET, POST, DELETE',
+                       conditions={'method': ['PUT', 'PATCH', 'HEAD']})
 
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=metadef_tags_resource,
                        action='show',
                        conditions={'method': ['GET']})
+        mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
+                       controller=metadef_tags_resource,
+                       action='create',
+                       conditions={'method': ['POST']})
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=metadef_tags_resource,
                        action='update',
@@ -410,8 +410,8 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, PUT, DELETE',
-                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, POST, PUT, DELETE',
+                       conditions={'method': ['PATCH', 'HEAD']})
 
         images_resource = images.create_resource(custom_image_properties)
         mapper.connect('/images',
