@@ -183,6 +183,9 @@ class ImagesController(object):
         value = change['value']
         if path_root == 'locations':
             self._do_replace_locations(image, value)
+        elif path_root == 'owner' and req.context.is_admin == False:
+            msg = _("Owner can't be updated by non admin.")
+            raise webob.exc.HTTPForbidden(msg)
         else:
             if hasattr(image, path_root):
                 setattr(image, path_root, value)
@@ -323,7 +326,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     _readonly_properties = ('created_at', 'updated_at', 'status', 'checksum',
                             'size', 'virtual_size', 'direct_url', 'self',
                             'file', 'schema', 'id')
-    _reserved_properties = ('owner', 'location', 'deleted', 'deleted_at')
+    _reserved_properties = ('location', 'deleted', 'deleted_at')
     _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'virtual_size', 'status', 'tags',

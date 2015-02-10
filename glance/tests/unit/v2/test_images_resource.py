@@ -793,12 +793,22 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_update_replace_base_attribute(self):
         self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
         request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'replace', 'path': ['name'], 'value': 'fedora'}]
+        request.context.is_admin = True
+        changes = [{'op': 'replace', 'path': ['name'], 'value': 'fedora'},
+                   {'op': 'replace', 'path': ['owner'], 'value': TENANT3}]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(UUID1, output.image_id)
         self.assertEqual('fedora', output.name)
+        self.assertEqual(TENANT3, output.owner)
         self.assertEqual({'foo': 'bar'}, output.extra_properties)
         self.assertNotEqual(output.created_at, output.updated_at)
+
+    def test_update_replace_onwer_non_admin(self):
+        request = unit_test_utils.get_fake_request()
+        request.context.is_admin = False
+        changes = [{'op': 'replace', 'path': ['owner'], 'value': TENANT3}]
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.update, request, UUID1, changes)
 
     def test_update_replace_tags(self):
         request = unit_test_utils.get_fake_request()
@@ -2455,7 +2465,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_update_reserved_attributes(self):
         samples = {
-            'owner': TENANT1,
             'deleted': False,
             'deleted_at': ISOTIME,
         }
