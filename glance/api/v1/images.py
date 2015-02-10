@@ -526,7 +526,7 @@ class Controller(controller.BaseController):
             try:
                 backend = store.get_store_from_location(location)
             except store.BadStoreUri:
-                msg = _("Invalid location %s") % location
+                msg = _("Invalid location: %s") % location
                 LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,
@@ -925,7 +925,7 @@ class Controller(controller.BaseController):
                 self.update_store_acls(req, id, orig_or_updated_loc,
                                        public=is_public)
             except store.BadStoreUri:
-                msg = _("Invalid location %s") % location
+                msg = _("Invalid location: %s") % location
                 LOG.warn(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,

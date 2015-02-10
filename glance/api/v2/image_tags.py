@@ -48,7 +48,7 @@ class Controller(object):
             image.tags.add(tag_value)
             image_repo.save(image)
         except exception.NotFound:
-            msg = _("Image %s not found") % image_id
+            msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
@@ -75,7 +75,7 @@ class Controller(object):
             image.tags.remove(tag_value)
             image_repo.save(image)
         except exception.NotFound:
-            msg = _("Image %s not found") % image_id
+            msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:

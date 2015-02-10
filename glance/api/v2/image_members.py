@@ -75,7 +75,7 @@ class ImageMembersController(object):
 
             return new_member
         except exception.NotFound:
-            msg = _("Image %s not found") % image_id
+            msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
@@ -119,7 +119,7 @@ class ImageMembersController(object):
             member_repo.save(member)
             return member
         except exception.NotFound:
-            msg = _("Image %s not found") % image_id
+            msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
@@ -157,7 +157,7 @@ class ImageMembersController(object):
                 members.append(member)
             return dict(members=members)
         except exception.NotFound:
-            msg = _("Image %s not found") % image_id
+            msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
@@ -186,7 +186,7 @@ class ImageMembersController(object):
             member = member_repo.get(member_id)
             return member
         except (exception.NotFound, exception.Forbidden):
-            msg = _("Image %s not found") % image_id
+            msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
 
@@ -204,7 +204,7 @@ class ImageMembersController(object):
             member_repo.remove(member)
             return webob.Response(body='', status=204)
         except exception.NotFound:
-            msg = _("Image %s not found") % image_id
+            msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:

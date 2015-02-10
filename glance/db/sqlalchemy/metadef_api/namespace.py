@@ -119,10 +119,10 @@ def _get_by_name(context, name, session):
     # Make sure they are allowed to view it.
     if not _is_namespace_visible(context, namespace_rec.to_dict()):
         msg = ("Forbidding request, metadata definition namespace=%s"
-               " not visible." % name)
+               " is not visible." % name)
         LOG.debug(msg)
         emsg = _("Forbidding request, metadata definition namespace=%s"
-                 " not visible.") % name
+                 " is not visible.") % name
         raise exc.MetadefForbidden(emsg)
 
     return namespace_rec

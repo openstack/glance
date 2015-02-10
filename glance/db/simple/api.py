@@ -1986,10 +1986,10 @@ def _is_namespace_visible(context, namespace):
 def _check_namespace_visibility(context, namespace, namespace_name):
     if not _is_namespace_visible(context, namespace):
         msg = ("Forbidding request, metadata definition namespace=%s"
-               " not visible." % namespace_name)
+               " is not visible." % namespace_name)
         LOG.debug(msg)
         emsg = _("Forbidding request, metadata definition namespace=%s"
-                 " not visible.") % namespace_name
+                 " is not visible.") % namespace_name
         raise exception.MetadefForbidden(emsg)
 
 
