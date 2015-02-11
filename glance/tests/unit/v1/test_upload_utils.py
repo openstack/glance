@@ -23,6 +23,7 @@ import webob.exc
 from glance.api.v1 import upload_utils
 from glance.common import exception
 from glance.common import store_utils
+from glance.common import utils
 import glance.registry.client.v1.api as registry
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
@@ -113,11 +114,19 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                           image_meta['size'], context=mock.ANY)
 
     def test_upload_data_to_store(self):
+        # 'user_storage_quota' is not set
+        def store_add(image_id, data, size, **kwargs):
+            # Check if 'data' is instance of 'CooperativeReader' when
+            # 'user_storage_quota' is disabled.
+            self.assertIsInstance(data, utils.CooperativeReader)
+            return location, 10, "checksum", {}
+
         req = unit_test_utils.get_fake_request()
         with self._get_store_and_notifier(
-            ext_update_data={'size': 10}) as (location, checksum, image_meta,
-                                              image_data, store, notifier,
-                                              update_data):
+                ext_update_data={'size': 10},
+                exc_class=store_add) as (location, checksum, image_meta,
+                                         image_data, store, notifier,
+                                         update_data):
             ret = image_meta.update(update_data)
             with patch.object(registry, 'update_image_metadata',
                               return_value=ret) as mock_update_image_metadata:
@@ -129,6 +138,43 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                 mock_update_image_metadata.assert_called_once_with(
                     req.context, image_meta['id'], update_data,
                     from_state='saving')
+
+    def test_upload_data_to_store_user_storage_quota_enabled(self):
+        # Enable user_storage_quota
+        self.config(user_storage_quota='100B')
+
+        def store_add(image_id, data, size, **kwargs):
+            # Check if 'data' is instance of 'LimitingReader' when
+            # 'user_storage_quota' is enabled.
+            self.assertIsInstance(data, utils.LimitingReader)
+            return location, 10, "checksum", {}
+
+        req = unit_test_utils.get_fake_request()
+        with self._get_store_and_notifier(
+                ext_update_data={'size': 10},
+                exc_class=store_add) as (location, checksum, image_meta,
+                                         image_data, store, notifier,
+                                         update_data):
+            ret = image_meta.update(update_data)
+            # mock 'check_quota'
+            mock_check_quota = patch('glance.api.common.check_quota',
+                                     return_value=100)
+            mock_check_quota.start()
+            self.addCleanup(mock_check_quota.stop)
+            with patch.object(registry, 'update_image_metadata',
+                              return_value=ret) as mock_update_image_metadata:
+                actual_meta, location_data = upload_utils.upload_data_to_store(
+                    req, image_meta, image_data, store, notifier)
+
+                self.assertEqual(location, location_data['url'])
+                self.assertEqual(image_meta.update(update_data), actual_meta)
+                mock_update_image_metadata.assert_called_once_with(
+                    req.context, image_meta['id'], update_data,
+                    from_state='saving')
+                # 'check_quota' is called two times
+                check_quota_call_count =\
+                    mock_check_quota.target.check_quota.call_count
+                self.assertEqual(2, check_quota_call_count)
 
     def test_upload_data_to_store_mismatch_size(self):
         req = unit_test_utils.get_fake_request()
