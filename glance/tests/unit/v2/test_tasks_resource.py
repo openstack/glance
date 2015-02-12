@@ -297,7 +297,8 @@ class TestTasksController(test_utils.BaseTestCase):
             "type": "import",
             "input": {
                 "import_from": "swift://cloud.foo/myaccount/mycontainer/path",
-                "image_from_format": "qcow2"
+                "import_from_format": "qcow2",
+                "image_properties": {}
             }
         }
         new_task = mock.Mock()
@@ -316,17 +317,21 @@ class TestTasksController(test_utils.BaseTestCase):
         mock_get_task_executor_factory.new_task_exector.assert_called_once()
         mock_get_task_factory.new_task.run.assert_called_once()
 
-    def test_notifications_on_create(self):
+    @mock.patch.object(glance.gateway.Gateway, 'get_task_factory')
+    def test_notifications_on_create(self, mock_get_task_factory):
         request = unit_test_utils.get_fake_request()
+
+        new_task = mock.MagicMock(type='import')
+        mock_get_task_factory.new_task.return_value = new_task
+        new_task.run.return_value = mock.ANY
+
         task = {"type": "import", "input": {
-            "import_from": "swift://cloud.foo/myaccount/mycontainer/path",
-            "image_from_format": "qcow2"}
+            "import_from": "http://cloud.foo/myaccount/mycontainer/path",
+            "import_from_format": "qcow2",
+            "image_properties": {}
+        }
         }
         task = self.controller.create(request, task=task)
-        self.assertEqual('import', task.type)
-        self.assertEqual({
-            "import_from": "swift://cloud.foo/myaccount/mycontainer/path",
-            "image_from_format": "qcow2"}, task.task_input)
         output_logs = [nlog for nlog in self.notifier.get_logs()
                        if nlog['event_type'] == 'task.create']
         self.assertEqual(1, len(output_logs))

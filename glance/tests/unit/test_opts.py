@@ -140,6 +140,7 @@ class OptsTestCase(utils.BaseTestCase):
             'disk_formats',
             'task_time_to_live',
             'task_executor',
+            'work_dir',
             'store_type_preference',
             'flavor',
             'config_file',

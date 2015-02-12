@@ -15,18 +15,53 @@
 
 import mock
 
+import glance_store
+from oslo.config import cfg
+from taskflow import engines
+
 from glance.async import taskflow_executor
+from glance import domain
 import glance.tests.utils as test_utils
+
+
+CONF = cfg.CONF
+TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 
 
 class TestTaskExecutor(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestTaskExecutor, self).setUp()
+
+        glance_store.register_opts(CONF)
+        self.config(default_store='file',
+                    stores=['file', 'http'],
+                    filesystem_store_datadir=self.test_dir,
+                    group="glance_store")
+        glance_store.create_stores(CONF)
+
+        self.config(engine_mode='serial',
+                    group='taskflow_executor')
+
         self.context = mock.Mock()
         self.task_repo = mock.Mock()
         self.image_repo = mock.Mock()
         self.image_factory = mock.Mock()
+
+        task_input = {
+            "import_from": "http://cloud.foo/image.qcow2",
+            "import_from_format": "qcow2",
+            "image_properties": {'disk_format': 'qcow2',
+                                 'container_format': 'bare'}
+        }
+        task_ttl = CONF.task.task_time_to_live
+
+        self.task_type = 'import'
+        self.task_factory = domain.TaskFactory()
+        self.task = self.task_factory.new_task(self.task_type, TENANT1,
+                                               task_time_to_live=task_ttl,
+                                               task_input=task_input)
+
         self.executor = taskflow_executor.TaskExecutor(
             self.context,
             self.task_repo,
@@ -34,14 +69,12 @@ class TestTaskExecutor(test_utils.BaseTestCase):
             self.image_factory)
 
     def test_begin_processing(self):
-        task_id = mock.ANY
-        task = mock.Mock()
-        task.type = mock.ANY
-
-        with mock.patch.object(taskflow_executor.TaskExecutor,
-                               '_run') as mock_run:
-            self.task_repo.get.return_value = task
-            self.executor.begin_processing(task_id)
+        with mock.patch.object(engines, 'load') as load_mock:
+            engine = mock.Mock()
+            load_mock.return_value = engine
+            self.task_repo.get.return_value = self.task
+            self.executor.begin_processing(self.task.task_id)
 
         # assert the call
-        mock_run.assert_called_once_with(task_id, task.type)
+        load_mock.assert_called_once()
+        engine.assert_called_once()

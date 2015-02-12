@@ -70,6 +70,26 @@ task_opts = [
                default='taskflow',
                help=_("Specifies which task executor to be used to run the "
                       "task scripts.")),
+    cfg.StrOpt('work_dir',
+               default=None,
+               help=_('Work dir for asynchronous task operations. '
+                      'The directory set here will be used to operate over '
+                      'images - normally before they are imported in the '
+                      'destination store. When providing work dir, make sure '
+                      'enough space is provided for concurrent tasks to run '
+                      'efficiently without running out of space. A rough '
+                      'estimation can be done by multiplying the number of '
+                      '`max_workers` - or the N of workers running - by an '
+                      'average image size (e.g 500MB). The image size '
+                      'estimation should be done based on the average size in '
+                      'your deployment. Note that depending on the tasks '
+                      'running you may need to multiply this number by some '
+                      'factor depending on what the task does. For example, '
+                      'you may want to double the available size if image '
+                      'conversion is enabled. All this being said, remember '
+                      'these are just estimations and you should do them '
+                      'based on the worst case scenario and be prepared to '
+                      'act in case they were wrong.')),
 ]
 manage_opts = [
     cfg.BoolOpt('db_enforce_mysql_charset',

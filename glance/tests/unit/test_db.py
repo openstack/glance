@@ -584,7 +584,7 @@ class TestTaskRepo(test_utils.BaseTestCase):
         self.task_factory = glance.domain.TaskFactory()
         self.fake_task_input = ('{"import_from": '
                                 '"swift://cloud.foo/account/mycontainer/path"'
-                                ',"image_from_format": "qcow2"}')
+                                ',"import_from_format": "qcow2"}')
         self._create_tasks()
 
     def _create_tasks(self):
