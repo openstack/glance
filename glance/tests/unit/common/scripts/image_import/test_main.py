@@ -56,7 +56,8 @@ class TestImageImport(test_utils.BaseTestCase):
                     image_id,
                     image_import_script.import_image(image_repo, image_factory,
                                                      task_input, None, uri))
-                self.assertEqual('active', image.status)
+                # Check image is in saving state before image_repo.save called
+                self.assertEqual('saving', image.status)
                 self.assertTrue(image_repo.save.called)
                 mock_set_img_data.assert_called_once_with(image, uri, None)
                 self.assertTrue(image_repo.get.called)
