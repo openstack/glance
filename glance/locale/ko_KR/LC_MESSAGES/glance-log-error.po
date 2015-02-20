@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-07 06:03+0000\n"
-"PO-Revision-Date: 2015-01-05 20:11+0000\n"
+"POT-Creation-Date: 2015-02-20 06:02+0000\n"
+"PO-Revision-Date: 2015-02-06 07:59+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Korean (Korea) (http://www.transifex.com/projects/p/glance/"
 "language/ko_KR/)\n"
@@ -103,7 +103,7 @@ msgstr "외부 소스 '%(scheme)s' 로부터 이미지 복사 실패 : %(image)s
 msgid "Unable to kill image %(id)s: "
 msgstr "이미지 %(id)s 를 kill 할 수 없음:"
 
-#: glance/api/v1/upload_utils.py:253
+#: glance/api/v1/upload_utils.py:266
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr "이미지 %s를 업로드 하는 도중 HTTP 에러 수신"
@@ -113,11 +113,11 @@ msgstr "이미지 %s를 업로드 하는 도중 HTTP 에러 수신"
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr "이미지 %(image_id)s를 복구할 수 없음 : %(e)s"
 
-#: glance/api/v2/image_data.py:157
+#: glance/api/v2/image_data.py:155 glance/api/v2/image_data.py:159
 msgid "Failed to upload image data due to HTTP error"
 msgstr "HTTP 에러로 인해 이미지 데이터 업로드 실패"
 
-#: glance/api/v2/image_data.py:162
+#: glance/api/v2/image_data.py:164
 msgid "Failed to upload image data due to internal error"
 msgstr "내부 에러로 인해 이미지 데이터 업로드 실패"
 
@@ -138,6 +138,11 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr "작업을 수행하는 중 내부에러 발생"
 
+#: glance/async/taskflow_executor.py:101
+#, python-format
+msgid "Failed to execute task %(task_id)s: %(exc)s"
+msgstr ""
+
 #: glance/common/property_utils.py:103
 #, python-format
 msgid ""
@@ -145,7 +150,7 @@ msgid ""
 "combined in the policy file"
 msgstr ""
 
-#: glance/common/store_utils.py:69
+#: glance/common/store_utils.py:71
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr "스토어에서 이미지 %(image_id)s 삭제 실패 : %(exc)s"
@@ -201,7 +206,7 @@ msgstr "이미지 %(image_id)s 에 부적합한 저장 uri. 상세: %(reason)s"
 msgid "Failed to load the %s executor provided in the config."
 msgstr "설정에서 제공된 %s executor 로드 실패"
 
-#: glance/image_cache/__init__.py:269
+#: glance/image_cache/__init__.py:271
 #, python-format
 msgid ""
 "Exception encountered while tee'ing image '%(image_id)s' into cache: "

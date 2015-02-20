@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-07 06:03+0000\n"
-"PO-Revision-Date: 2015-01-05 04:43+0000\n"
+"POT-Creation-Date: 2015-02-20 06:02+0000\n"
+"PO-Revision-Date: 2015-02-06 07:59+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "glance/language/pt_BR/)\n"
@@ -70,10 +70,19 @@ msgstr "Enviados com sucesso dados da imagem %s da requisição de carga útil."
 msgid "Triggering asynchronous copy from external source"
 msgstr "Acionando cópia assíncrona da origem externa"
 
-#: glance/api/v1/upload_utils.py:120
+#: glance/api/v1/upload_utils.py:126
 #, python-format
 msgid "Cleaning up %s after exceeding the quota"
 msgstr "Limpando %s após exceder a quota"
+
+#: glance/api/v1/upload_utils.py:175
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+"Imagem %s não pôde ser encontrada após o envio. A imagem pode ter sido "
+"excluída durante o envio."
 
 #: glance/async/eventlet_executor.py:50
 #, python-format
@@ -84,22 +93,29 @@ msgstr ""
 "Executor Eventlet pegou a execução da tarefa de ID %(task_id)s de tipo de "
 "tarefa %(task_type)s"
 
-#: glance/cmd/replicator.py:327
+#: glance/async/taskflow_executor.py:87
+#, python-format
+msgid ""
+"Taskflow executor picked up the execution of task ID %(task_id)s of task "
+"type %(task_type)s"
+msgstr ""
+
+#: glance/cmd/replicator.py:371
 #, python-format
 msgid "Storing: %s"
 msgstr "Armazenando: %s"
 
-#: glance/cmd/replicator.py:400
+#: glance/cmd/replicator.py:444
 #, python-format
 msgid "Considering: %s"
 msgstr "Considerando: %s"
 
-#: glance/cmd/replicator.py:426 glance/cmd/replicator.py:501
+#: glance/cmd/replicator.py:470 glance/cmd/replicator.py:545
 #, python-format
 msgid "Image %s metadata has changed"
 msgstr "Metadados da Imagem %s mudaram"
 
-#: glance/cmd/replicator.py:508
+#: glance/cmd/replicator.py:552
 #, python-format
 msgid "Image %s is being synced"
 msgstr "Imagem %s está sendo sincronizada"
@@ -215,12 +231,12 @@ msgstr ""
 "um arquivo de configuração não foi especificado. Isso significa que essa "
 "migração é um NOOP."
 
-#: glance/image_cache/__init__.py:69
+#: glance/image_cache/__init__.py:71
 #, python-format
 msgid "Image cache loaded driver '%s'."
 msgstr "O cache de imagem carregou o driver '%s'."
 
-#: glance/image_cache/__init__.py:79 glance/image_cache/__init__.py:98
+#: glance/image_cache/__init__.py:81 glance/image_cache/__init__.py:100
 msgid "Defaulting to SQLite driver."
 msgstr "Padronizando para o driver SQLite."
 

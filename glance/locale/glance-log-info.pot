@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev24\n"
+"Project-Id-Version: glance 2015.1.dev17\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-07 06:03+0000\n"
+"POT-Creation-Date: 2015-02-20 06:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,9 +67,16 @@ msgstr ""
 msgid "Triggering asynchronous copy from external source"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:120
+#: glance/api/v1/upload_utils.py:126
 #, python-format
 msgid "Cleaning up %s after exceeding the quota"
+msgstr ""
+
+#: glance/api/v1/upload_utils.py:175
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted"
+" during the upload."
 msgstr ""
 
 #: glance/async/eventlet_executor.py:50
@@ -79,22 +86,29 @@ msgid ""
 "type %(task_type)s"
 msgstr ""
 
-#: glance/cmd/replicator.py:327
+#: glance/async/taskflow_executor.py:87
+#, python-format
+msgid ""
+"Taskflow executor picked up the execution of task ID %(task_id)s of task "
+"type %(task_type)s"
+msgstr ""
+
+#: glance/cmd/replicator.py:371
 #, python-format
 msgid "Storing: %s"
 msgstr ""
 
-#: glance/cmd/replicator.py:400
+#: glance/cmd/replicator.py:444
 #, python-format
 msgid "Considering: %s"
 msgstr ""
 
-#: glance/cmd/replicator.py:426 glance/cmd/replicator.py:501
+#: glance/cmd/replicator.py:470 glance/cmd/replicator.py:545
 #, python-format
 msgid "Image %s metadata has changed"
 msgstr ""
 
-#: glance/cmd/replicator.py:508
+#: glance/cmd/replicator.py:552
 #, python-format
 msgid "Image %s is being synced"
 msgstr ""
@@ -201,12 +215,12 @@ msgid ""
 "config file was not specified. This means that this migration is a NOOP."
 msgstr ""
 
-#: glance/image_cache/__init__.py:69
+#: glance/image_cache/__init__.py:71
 #, python-format
 msgid "Image cache loaded driver '%s'."
 msgstr ""
 
-#: glance/image_cache/__init__.py:79 glance/image_cache/__init__.py:98
+#: glance/image_cache/__init__.py:81 glance/image_cache/__init__.py:100
 msgid "Defaulting to SQLite driver."
 msgstr ""
 

@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev24\n"
+"Project-Id-Version: glance 2015.1.dev17\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-07 06:03+0000\n"
+"POT-Creation-Date: 2015-02-20 06:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -94,7 +94,7 @@ msgstr ""
 msgid "Unable to kill image %(id)s: "
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:253
+#: glance/api/v1/upload_utils.py:266
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr ""
@@ -104,11 +104,11 @@ msgstr ""
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:157
+#: glance/api/v2/image_data.py:155 glance/api/v2/image_data.py:159
 msgid "Failed to upload image data due to HTTP error"
 msgstr ""
 
-#: glance/api/v2/image_data.py:162
+#: glance/api/v2/image_data.py:164
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 
@@ -127,6 +127,11 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr ""
 
+#: glance/async/taskflow_executor.py:101
+#, python-format
+msgid "Failed to execute task %(task_id)s: %(exc)s"
+msgstr ""
+
 #: glance/common/property_utils.py:103
 #, python-format
 msgid ""
@@ -134,7 +139,7 @@ msgid ""
 " combined in the policy file"
 msgstr ""
 
-#: glance/common/store_utils.py:69
+#: glance/common/store_utils.py:71
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr ""
@@ -187,7 +192,7 @@ msgstr ""
 msgid "Failed to load the %s executor provided in the config."
 msgstr ""
 
-#: glance/image_cache/__init__.py:269
+#: glance/image_cache/__init__.py:271
 #, python-format
 msgid ""
 "Exception encountered while tee'ing image '%(image_id)s' into cache: "

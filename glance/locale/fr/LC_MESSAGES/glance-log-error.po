@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-07 06:03+0000\n"
-"PO-Revision-Date: 2015-01-05 20:11+0000\n"
+"POT-Creation-Date: 2015-02-20 06:02+0000\n"
+"PO-Revision-Date: 2015-02-06 07:59+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/glance/language/"
 "fr/)\n"
@@ -104,7 +104,7 @@ msgstr ""
 msgid "Unable to kill image %(id)s: "
 msgstr "Impossible de supprimer l'image %(id)s :"
 
-#: glance/api/v1/upload_utils.py:253
+#: glance/api/v1/upload_utils.py:266
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr "Une erreur HTTP a été reçu lors du chargement de l'image %s"
@@ -114,12 +114,12 @@ msgstr "Une erreur HTTP a été reçu lors du chargement de l'image %s"
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr "Impossible de restaurer l'image %(image_id)s: %(e)s"
 
-#: glance/api/v2/image_data.py:157
+#: glance/api/v2/image_data.py:155 glance/api/v2/image_data.py:159
 msgid "Failed to upload image data due to HTTP error"
 msgstr ""
 "Echec de téléchargement des données de l'image en raison d'une erreur HTTP"
 
-#: glance/api/v2/image_data.py:162
+#: glance/api/v2/image_data.py:164
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 "Echec de téléchargement des données de l'image en raison d'une erreur interne"
@@ -139,6 +139,11 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr "Erreur interne s'est produite lors du traitement de la tâche ."
 
+#: glance/async/taskflow_executor.py:101
+#, python-format
+msgid "Failed to execute task %(task_id)s: %(exc)s"
+msgstr ""
+
 #: glance/common/property_utils.py:103
 #, python-format
 msgid ""
@@ -146,7 +151,7 @@ msgid ""
 "combined in the policy file"
 msgstr ""
 
-#: glance/common/store_utils.py:69
+#: glance/common/store_utils.py:71
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr "Echec de supprésion de l'image %(image_id)s depuis le magasin: %(exc)s"
@@ -199,7 +204,7 @@ msgstr "uri magasin non valide pour image: %(image_id)s. Details: %(reason)s"
 msgid "Failed to load the %s executor provided in the config."
 msgstr ""
 
-#: glance/image_cache/__init__.py:269
+#: glance/image_cache/__init__.py:271
 #, python-format
 msgid ""
 "Exception encountered while tee'ing image '%(image_id)s' into cache: "
