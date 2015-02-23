@@ -83,16 +83,15 @@ class CacheFilter(wsgi.Middleware):
                  otherwise None
         """
         for ((version, method), pattern) in PATTERNS.items():
-            match = pattern.match(request.path_info)
-            try:
-                assert request.method == method
-                image_id = match.group(1)
-                # Ensure the image id we got looks like an image id to filter
-                # out a URI like /images/detail. See LP Bug #879136
-                assert image_id != 'detail'
-            except (AttributeError, AssertionError):
+            if request.method != method:
                 continue
-            else:
+            match = pattern.match(request.path_info)
+            if match is None:
+                continue
+            image_id = match.group(1)
+            # Ensure the image id we got looks like an image id to filter
+            # out a URI like /images/detail. See LP Bug #879136
+            if image_id != 'detail':
                 return (version, method, image_id)
 
     def _enforce(self, req, action, target=None):
