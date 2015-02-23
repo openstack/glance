@@ -344,7 +344,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
         request.body = 'fake_body'
-        request.headers['transfer-encoding'] = 0
+        request.headers['transfer-encoding'] = ''
         self.assertIn('transfer-encoding', request.headers)
         self.assertTrue(rpc.RPCJSONDeserializer().has_body(request))
 

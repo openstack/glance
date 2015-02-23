@@ -571,13 +571,18 @@ class Request(webob.Request):
 
 
 class JSONRequestDeserializer(object):
+    valid_transfer_encoding = frozenset(['chunked', 'compress', 'deflate',
+                                         'gzip', 'identity'])
+
     def has_body(self, request):
         """
         Returns whether a Webob.Request object will possess an entity body.
 
         :param request:  Webob.Request object
         """
-        if 'transfer-encoding' in request.headers:
+        request_encoding = request.headers.get('transfer-encoding', '').lower()
+        is_valid_encoding = request_encoding in self.valid_transfer_encoding
+        if is_valid_encoding and request.is_body_readable:
             return True
         elif request.content_length > 0:
             return True
