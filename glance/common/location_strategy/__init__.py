@@ -26,6 +26,7 @@ _LE = i18n._LE
 
 location_strategy_opts = [
     cfg.StrOpt('location_strategy', default='location_order',
+               choices=('location_order', 'store_type'),
                help=_("This value sets what strategy will be used to "
                       "determine the image location order. Currently "
                       "two strategies are packaged with Glance "
