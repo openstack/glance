@@ -254,7 +254,6 @@ class ImageLocationsProxy(object):
     def _get_checker(action, func_name):
         def _checker(self, *args, **kwargs):
             self.policy.enforce(self.context, action, {})
-            assert hasattr(self.locations, func_name)
             method = getattr(self.locations, func_name)
             return method(*args, **kwargs)
         return _checker
