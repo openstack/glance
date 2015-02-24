@@ -55,6 +55,7 @@ from glance import i18n
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
+_ = i18n._
 _LW = i18n._LW
 
 
@@ -270,6 +271,11 @@ command_opt = cfg.SubCommandOpt('command',
                                 handler=add_command_parsers)
 
 
+CATEGORIES = {
+    'db': DbCommands,
+}
+
+
 def methods_of(obj):
     """Get all callable methods of an object that don't start with underscore
 
@@ -284,6 +290,14 @@ def methods_of(obj):
 
 def main():
     CONF.register_cli_opt(command_opt)
+    if len(sys.argv) < 2:
+        script_name = sys.argv[0]
+        print("%s category action [<args>]" % script_name)
+        print(_("Available categories:"))
+        for category in CATEGORIES:
+            print(_("\t%s") % category)
+        sys.exit(2)
+
     try:
         logging.register_options(CONF)
         cfg_files = cfg.find_config_files(project='glance',
@@ -292,8 +306,7 @@ def main():
                                                prog='glance-api'))
         cfg_files.extend(cfg.find_config_files(project='glance',
                                                prog='glance-manage'))
-        config.parse_args(default_config_files=cfg_files,
-                          usage="%(prog)s [options] <cmd>")
+        config.parse_args(default_config_files=cfg_files)
         logging.setup(CONF, 'glance')
     except RuntimeError as e:
         sys.exit("ERROR: %s" % e)
