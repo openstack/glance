@@ -218,6 +218,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                                                     chunk_size=chunk_size))
         except glance_store.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except glance_store.RemoteServiceUnavailable as e:
+            raise webob.exc.HTTPServiceUnavailable(explanation=e.msg)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         # NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5

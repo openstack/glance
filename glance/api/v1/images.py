@@ -31,6 +31,7 @@ from webob.exc import HTTPForbidden
 from webob.exc import HTTPMethodNotAllowed
 from webob.exc import HTTPNotFound
 from webob.exc import HTTPRequestEntityTooLarge
+from webob.exc import HTTPServiceUnavailable
 from webob import Response
 
 from glance.api import common
@@ -453,6 +454,8 @@ class Controller(controller.BaseController):
 
             image_data, image_size = src_store.get(loc, context=context)
 
+        except store.RemoteServiceUnavailable as e:
+            raise HTTPServiceUnavailable(explanation=e.msg)
         except store.NotFound as e:
             raise HTTPNotFound(explanation=e.msg)
         image_size = int(image_size) if image_size else None
