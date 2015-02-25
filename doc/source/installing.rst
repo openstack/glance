@@ -110,7 +110,7 @@ In case of Fedora 16, for example, do this::
    $ su -
    # yum install git
    # yum install python2-devel python-setuptools python-distutils-extra
-   # yum install python-webob python-eventlet python-boto
+   # yum install python-webob python-eventlet
    # yum install python-virtualenv
 
 Build Glance::
