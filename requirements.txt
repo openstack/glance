@@ -28,14 +28,14 @@ oslo.config>=1.2.0,<1.5
 stevedore>=0.14,<1.2
 
 # For Swift storage backend.
-python-swiftclient>=1.6,<2.4
+python-swiftclient>=1.6,<=2.3.1
 
 # For paste.util.template used in keystone.common.template
 Paste
 
 jsonschema>=2.0.0,<3.0.0
-python-cinderclient>=1.0.6,<1.2
-python-keystoneclient>=0.7.0,<0.12
+python-cinderclient>=1.0.6,<=1.1.1
+python-keystoneclient>=0.7.0,<=0.11.2
 pyOpenSSL>=0.11
 
 # Required by openstack.common libraries
