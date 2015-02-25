@@ -1358,21 +1358,24 @@ the ``failure`` state.
 Optional. Default: ``48``
 
 The config value ``task_executor`` is used to determine which executor
-should be used by the Glance service to process the task. Options include
-``eventlet`` and ``taskflow``.
+should be used by the Glance service to process the task. The currently
+available implementation is: ``taskflow``.
 
 * ``task_executor=<executor_type>``
 
-Optional. Default: ``eventlet``
+Optional. Default: ``taskflow``
 
-The config value ``eventlet_executor_pool_size`` is used to configure the
-eventlet task executor. It sets the maximum on the number of threads which can
-be spun up at any given point of time, that are used for the execution of
-Glance Tasks.
+The ``taskflow`` engine has its own set of configuration options,
+under the ``taskflow_executor`` section, that can be tuned to improve
+the task execution process. Among the available options, you may find
+``engine_mode`` and ``max_workers``. The former allows for selecting
+an execution model and the available options are ``serial``,
+``parallel`` and ``worker-based``. The ``max_workers`` option,
+instead, allows for controlling the number of workers that will be
+instantiated per executor instance.
 
-* ``eventlet_executor_pool_size=<Size_of_pool_in_int>``
-
-Optional. Default: ``1000``
+The default value for the ``engine_mode`` is ``parallel``, whereas
+the default number of ``max_workers`` is ``10``.
 
 Configuring Glance performance profiling
 ----------------------------------------

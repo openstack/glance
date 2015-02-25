@@ -461,9 +461,17 @@ class TaskExecutorFactory(object):
 
     def new_task_executor(self, context):
         try:
+            # NOTE(flaper87): Backwards compatibility layer.
+            # It'll allow us to provide a deprecation path to
+            # users that are currently consuming the `eventlet`
+            # executor.
+            task_executor = CONF.task.task_executor
+            if task_executor == 'eventlet':
+                task_executor = 'taskflow'
+
             executor_cls = ('glance.async.%s_executor.'
-                            'TaskExecutor' % CONF.task.task_executor)
-            LOG.debug("Loading %s executor" % CONF.task.task_executor)
+                            'TaskExecutor' % task_executor)
+            LOG.debug("Loading %s executor" % task_executor)
             executor = importutils.import_class(executor_cls)
             return executor(context,
                             self.task_repo,
