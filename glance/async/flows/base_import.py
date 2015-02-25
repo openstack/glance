@@ -20,7 +20,7 @@ import glance_store as store_api
 from glance_store import backend
 from oslo_config import cfg
 import six
-from stevedore import extension
+from stevedore import named
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
@@ -350,9 +350,19 @@ class _CompleteTask(task.Task):
 
 
 def _get_import_flows(**kwargs):
-    extensions = extension.ExtensionManager('glance.flows.import',
-                                            invoke_on_load=True,
-                                            invoke_kwds=kwargs)
+    # NOTE(flaper87): Until we have a better infrastructure to enable
+    # and disable tasks plugins, hard-code the tasks we know exist,
+    # instead of loading everything from the namespace. This guarantees
+    # both, the load order of these plugins and the fact that no random
+    # plugins will be added/loaded until we feel comfortable with this.
+    # Future patches will keep using NamedExtensionManager but they'll
+    # rely on a config option to control this process.
+    extensions = named.NamedExtensionManager('glance.flows.import',
+                                             names=['convert',
+                                                    'introspect'],
+                                             name_order=True,
+                                             invoke_on_load=True,
+                                             invoke_kwds=kwargs)
 
     for ext in extensions.extensions:
         yield ext.obj
