@@ -97,8 +97,7 @@ _cache_opts = [
         glance.registry.client.registry_client_ctx_opts))),
 ]
 _manage_opts = [
-    (None, list(itertools.chain(
-        glance.common.config.manage_opts)))
+    (None, [])
 ]
 
 
