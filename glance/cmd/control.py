@@ -380,8 +380,7 @@ def main():
             pid_file = get_pid_file(server, CONF.pid_file)
             do_start('Restart', pid_file, server, CONF.server.args)
 
-    if (CONF.server.command == 'reload' or
-            CONF.server.command == 'force-reload'):
+    if CONF.server.command in ('reload', 'force-reload'):
         for server in CONF.server.servers:
             do_stop(server, CONF.server.args, graceful=True)
             pid_file = get_pid_file(server, CONF.pid_file)

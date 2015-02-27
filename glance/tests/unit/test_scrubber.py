@@ -133,7 +133,7 @@ class TestScrubDBQueue(test_utils.BaseTestCase):
 class ImagePager(object):
     def __init__(self, images, page_size=0):
         image_count = len(images)
-        if (page_size == 0) or (page_size > image_count):
+        if page_size == 0 or page_size > image_count:
             page_size = image_count
         self.image_batches = []
         start = 0

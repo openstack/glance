@@ -293,7 +293,7 @@ class ImagesController(object):
         except Exception as e:
             raise webob.exc.HTTPInternalServerError(
                 explanation=utils.exception_to_str(e))
-        if (len(image.locations) == 0) and (image.status == 'active'):
+        if len(image.locations) == 0 and image.status == 'active':
             image.status = 'queued'
 
 

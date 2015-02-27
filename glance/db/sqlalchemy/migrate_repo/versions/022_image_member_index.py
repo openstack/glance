@@ -29,8 +29,7 @@ ORIGINAL_KEYNAME_RE = re.compile('image_members_image_id.*_key')
 def upgrade(migrate_engine):
     image_members = _get_image_members_table(migrate_engine)
 
-    if (migrate_engine.name == 'mysql' or
-            migrate_engine.name == 'postgresql'):
+    if migrate_engine.name in ('mysql', 'postgresql'):
         try:
             UniqueConstraint('image_id',
                              name=_get_original_keyname(migrate_engine.name),
@@ -49,8 +48,7 @@ def upgrade(migrate_engine):
 def downgrade(migrate_engine):
     image_members = _get_image_members_table(migrate_engine)
 
-    if (migrate_engine.name == 'mysql' or
-            migrate_engine.name == 'postgresql'):
+    if migrate_engine.name in ('mysql', 'postgresql'):
         _sanitize(migrate_engine, image_members)
         UniqueConstraint('image_id',
                          name=NEW_KEYNAME,
