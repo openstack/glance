@@ -44,12 +44,13 @@ be found on the `OpenStack wiki`_.
 
 .. _`OpenStack wiki`: http://wiki.openstack.org
 
-Concepts
-========
+Glance Background Concepts
+==========================
 
 .. toctree::
    :maxdepth: 1
 
+   architecture
    identifiers
    statuses
    formats
