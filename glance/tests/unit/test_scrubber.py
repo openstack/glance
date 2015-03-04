@@ -13,9 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
-import shutil
-import tempfile
 import uuid
 
 import eventlet
@@ -37,8 +34,6 @@ class TestScrubber(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestScrubber, self).setUp()
-        self.data_dir = tempfile.mkdtemp()
-        self.config(scrubber_datadir=self.data_dir)
         glance_store.register_opts(CONF)
         self.config(group='glance_store', default_store='file',
                     filesystem_store_datadir=self.test_dir)
@@ -47,7 +42,6 @@ class TestScrubber(test_utils.BaseTestCase):
 
     def tearDown(self):
         self.mox.UnsetStubs()
-        shutil.rmtree(self.data_dir)
         # These globals impact state outside of this test class, kill them.
         scrubber._file_queue = None
         scrubber._db_queue = None
@@ -68,9 +62,6 @@ class TestScrubber(test_utils.BaseTestCase):
         scrub._scrub_image(eventlet.greenpool.GreenPool(1),
                            id, [(id, '-', uri)])
         self.mox.VerifyAll()
-
-        q_path = os.path.join(self.data_dir, id)
-        self.assertFalse(os.path.exists(q_path))
 
     def test_store_delete_unsupported_backend_exception(self):
         ex = glance_store.UnsupportedBackend()

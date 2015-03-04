@@ -287,7 +287,6 @@ class ApiServer(Server):
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir = os.path.join(self.test_dir, "images")
         self.pid_file = pid_file or os.path.join(self.test_dir, "api.pid")
-        self.scrubber_datadir = os.path.join(self.test_dir, "scrubber")
         self.log_file = os.path.join(self.test_dir, "api.log")
         self.image_size_cap = 1099511627776
         self.delayed_delete = delayed_delete
@@ -336,7 +335,6 @@ delayed_delete = %(delayed_delete)s
 owner_is_tenant = %(owner_is_tenant)s
 workers = %(workers)s
 scrub_time = %(scrub_time)s
-scrubber_datadir = %(scrubber_datadir)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 data_api = %(data_api)s
@@ -518,8 +516,6 @@ class ScrubberDaemon(Server):
 
         self.image_dir = os.path.join(self.test_dir, "images")
         self.scrub_time = 5
-        self.scrubber_datadir = os.path.join(self.test_dir,
-                                             "scrubber")
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
         self.log_file = os.path.join(self.test_dir, "scrubber.log")
         self.metadata_encryption_key = "012345678901234567890123456789ab"
@@ -539,7 +535,6 @@ log_file = %(log_file)s
 daemon = %(daemon)s
 wakeup_time = 2
 scrub_time = %(scrub_time)s
-scrubber_datadir = %(scrubber_datadir)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
