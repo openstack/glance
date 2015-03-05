@@ -117,3 +117,24 @@ class IndexBase(object):
     def get_mapping(self):
         """Get an index mapping."""
         return {}
+
+    def get_notification_handler(self):
+        """Get the notification handler which implements NotificationBase."""
+        return None
+
+    def get_notification_supported_events(self):
+        """Get the list of suppported event types."""
+        return []
+
+
+@six.add_metaclass(abc.ABCMeta)
+class NotificationBase(object):
+
+    def __init__(self, engine, index_name, document_type):
+        self.engine = engine
+        self.index_name = index_name
+        self.document_type = document_type
+
+    @abc.abstractmethod
+    def process(self, ctxt, publisher_id, event_type, payload, metadata):
+        """Process the incoming notification message."""

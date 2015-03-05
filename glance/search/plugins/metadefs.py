@@ -20,6 +20,7 @@ import six
 import glance.db
 from glance.db.sqlalchemy import models_metadef as models
 from glance.search.plugins import base
+from glance.search.plugins import metadefs_notification_handler
 
 
 class MetadefIndex(base.IndexBase):
@@ -228,3 +229,31 @@ class MetadefIndex(base.IndexBase):
         return {
             'name': tag.name
         }
+
+    def get_notification_handler(self):
+        return metadefs_notification_handler.MetadefHandler(
+            self.engine,
+            self.get_index_name(),
+            self.get_document_type()
+        )
+
+    def get_notification_supported_events(self):
+        return [
+            "metadef_namespace.create",
+            "metadef_namespace.update",
+            "metadef_namespace.delete",
+            "metadef_object.create",
+            "metadef_object.update",
+            "metadef_object.delete",
+            "metadef_property.create",
+            "metadef_property.update",
+            "metadef_property.delete",
+            "metadef_tag.create",
+            "metadef_tag.update",
+            "metadef_tag.delete",
+            "metadef_resource_type.create",
+            "metadef_resource_type.delete",
+            "metadef_namespace.delete_properties",
+            "metadef_namespace.delete_objects",
+            "metadef_namespace.delete_tags"
+        ]
