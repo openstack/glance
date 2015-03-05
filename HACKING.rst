@@ -22,3 +22,4 @@ glance Specific Commandments
 - [G324] Validate that LOG.error messages use _LE.
 - [G325] Validate that LOG.critical messages use _LC.
 - [G326] Validate that LOG.warning messages use _LW.
+- [G327] Prevent use of deprecated contextlib.nested

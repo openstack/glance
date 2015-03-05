@@ -62,3 +62,13 @@ class HackingTestCase(utils.BaseTestCase):
             "six.text_type('party over')"))))
         self.assertEqual(0, len(list(checks.no_direct_use_of_unicode_function(
             "not_actually_unicode('something completely different')"))))
+
+    def test_no_contextlib_nested(self):
+        self.assertEqual(1, len(list(checks.check_no_contextlib_nested(
+            "with contextlib.nested("))))
+
+        self.assertEqual(1, len(list(checks.check_no_contextlib_nested(
+            "with nested("))))
+
+        self.assertEqual(0, len(list(checks.check_no_contextlib_nested(
+            "with foo as bar"))))
