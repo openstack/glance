@@ -1267,10 +1267,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_tag_create(self):
         request = unit_test_utils.get_fake_request()
-
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
-        tag.name = TAG2
-        tag = self.tag_controller.create(request, tag, NAMESPACE1)
+        tag = self.tag_controller.create(request, NAMESPACE1, TAG2)
         self.assertEqual(TAG2, tag.name)
 
         tag = self.tag_controller.show(request, NAMESPACE1, TAG2)
@@ -1328,42 +1325,26 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_tag_create_conflict(self):
         request = unit_test_utils.get_fake_request()
-
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
-        tag.name = TAG1
-
         self.assertRaises(webob.exc.HTTPConflict,
-                          self.tag_controller.create, request, tag,
-                          NAMESPACE1)
+                          self.tag_controller.create, request,
+                          NAMESPACE1, TAG1)
 
     def test_tag_create_non_existing_namespace(self):
         request = unit_test_utils.get_fake_request()
-
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
-        tag.name = TAG1
-
         self.assertRaises(webob.exc.HTTPNotFound,
-                          self.tag_controller.create, request, tag,
-                          NAMESPACE4)
+                          self.tag_controller.create, request,
+                          NAMESPACE4, TAG1)
 
     def test_tag_create_non_visible_namespace(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2)
-
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
-        tag.name = TAG1
-
         self.assertRaises(webob.exc.HTTPForbidden,
-                          self.tag_controller.create, request, tag,
-                          NAMESPACE1)
+                          self.tag_controller.create, request,
+                          NAMESPACE1, TAG1)
 
     def test_tag_create_non_visible_namespace_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
                                                    is_admin=True)
-
-        tag = glance.api.v2.model.metadef_tag.MetadefTag()
-        tag.name = TAG2
-
-        tag = self.tag_controller.create(request, tag, NAMESPACE1)
+        tag = self.tag_controller.create(request, NAMESPACE1, TAG2)
         self.assertEqual(TAG2, tag.name)
 
         tag = self.tag_controller.show(request, NAMESPACE1, TAG2)

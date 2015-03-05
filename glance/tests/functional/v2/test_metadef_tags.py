@@ -66,31 +66,24 @@ class TestMetadefTags(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 
-        # Metadata tags should not exist
-        path = self._url('/v2/metadefs/namespaces/MyNamespace/tags/tag1')
+        # Metadata tag should not exist
+        metadata_tag_name = "tag1"
+        path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
+                         (namespace_name, metadata_tag_name))
         response = requests.get(path, headers=self._headers())
         self.assertEqual(404, response.status_code)
 
-        # Create a tag
-        path = self._url('/v2/metadefs/namespaces/MyNamespace/tags')
+        # Create the metadata tag
         headers = self._headers({'content-type': 'application/json'})
-        metadata_tag_name = "tag1"
-        data = jsonutils.dumps(
-            {
-                "name": metadata_tag_name
-            }
-        )
-        response = requests.post(path, headers=headers, data=data)
+        response = requests.post(path, headers=headers)
         self.assertEqual(201, response.status_code)
 
         # Get the metadata tag created above
-        path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                         (namespace_name, metadata_tag_name))
         response = requests.get(path,
                                 headers=self._headers())
         self.assertEqual(200, response.status_code)
         metadata_tag = jsonutils.loads(response.text)
-        self.assertEqual("tag1", metadata_tag['name'])
+        self.assertEqual(metadata_tag_name, metadata_tag['name'])
 
         # Returned tag should match the created tag
         metadata_tag = jsonutils.loads(response.text)
@@ -156,7 +149,7 @@ class TestMetadefTags(functional.FunctionalTest):
         data = jsonutils.dumps(
             {"tags": [{"name": "tag1"}, {"name": "tag2"}, {"name": "tag3"}]}
         )
-        response = requests.put(path, headers=headers, data=data)
+        response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 
         # List out the three new tags.
@@ -169,7 +162,7 @@ class TestMetadefTags(functional.FunctionalTest):
         data = jsonutils.dumps(
             {"tags": [{"name": "tag4"}, {"name": "tag5"}, {"name": "tag4"}]}
         )
-        response = requests.put(path, headers=headers, data=data)
+        response = requests.post(path, headers=headers, data=data)
         self.assertEqual(409, response.status_code)
 
         # Verify the previous 3 still exist
