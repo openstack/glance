@@ -147,7 +147,7 @@ class ApiTest(test_utils.BaseTestCase):
 
     def _configure_policy(self):
         policy_file = self._copy_data_file('policy.json', self.test_dir)
-        self.config(policy_file=policy_file)
+        self.config(policy_file=policy_file, group='oslo_policy')
 
     def _configure_logging(self):
         self.config(default_log_levels=[

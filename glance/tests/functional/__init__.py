@@ -331,8 +331,6 @@ scrub_time = %(scrub_time)s
 scrubber_datadir = %(scrubber_datadir)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
-policy_file = %(policy_file)s
-policy_default_rule = %(policy_default_rule)s
 data_api = %(data_api)s
 sql_connection = %(sql_connection)s
 show_image_direct_url = %(show_image_direct_url)s
@@ -348,6 +346,9 @@ image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
+[oslo_policy]
+policy_file = %(policy_file)s
+policy_default_rule = %(policy_default_rule)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 [store_type_location_strategy]
@@ -459,6 +460,7 @@ enable_v2_registry = %(enable_v2_registry)s
 workers = %(workers)s
 user_storage_quota = %(user_storage_quota)s
 metadata_encryption_key = %(metadata_encryption_key)s
+[oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
 [paste_deploy]
@@ -527,11 +529,12 @@ scrubber_datadir = %(scrubber_datadir)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-policy_file = %(policy_file)s
-policy_default_rule = %(policy_default_rule)s
 lock_path = %(lock_path)s
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
+[oslo_policy]
+policy_file = %(policy_file)s
+policy_default_rule = %(policy_default_rule)s
 """
 
     def start(self, expect_exit=True, expected_exitcode=0, **kwargs):

@@ -76,6 +76,6 @@ class IsolatedUnitTest(StoreClearingUnitTest):
                                                  registry=self.registry)
 
     def set_policy_rules(self, rules):
-        fap = open(CONF.policy_file, 'w')
+        fap = open(CONF.oslo_policy.policy_file, 'w')
         fap.write(jsonutils.dumps(rules))
         fap.close()

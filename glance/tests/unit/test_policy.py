@@ -136,7 +136,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
                           enforcer.enforce, context, 'get_image', {})
 
     def test_policy_file_custom_location(self):
-        self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'))
+        self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'),
+                    group='oslo_policy')
 
         rules = {"get_image": '!'}
         self.set_policy_rules(rules)
@@ -148,7 +149,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
                           enforcer.enforce, context, 'get_image', {})
 
     def test_policy_file_check(self):
-        self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'))
+        self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'),
+                    group='oslo_policy')
 
         rules = {"get_image": '!'}
         self.set_policy_rules(rules)
@@ -162,7 +164,7 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
 class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
     def test_policy_file_specified_but_not_found(self):
         """Missing defined policy file should result in a default ruleset"""
-        self.config(policy_file='gobble.gobble')
+        self.config(policy_file='gobble.gobble', group='oslo_policy')
         enforcer = glance.api.policy.Enforcer()
 
         context = glance.context.RequestContext(roles=[])
@@ -470,7 +472,8 @@ class TestContextPolicyEnforcer(base.IsolatedUnitTest):
                                                 context_role,
                                                 context_is_admin,
                                                 admin_expected):
-        self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'))
+        self.config(policy_file=os.path.join(self.test_dir, 'gobble.gobble'),
+                    group='oslo_policy')
 
         rules = {'context_is_admin': 'role:%s' % policy_admin_role}
         self.set_policy_rules(rules)

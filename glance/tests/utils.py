@@ -66,7 +66,7 @@ class BaseTestCase(testtools.TestCase):
     def set_policy(self):
         conf_file = "policy.json"
         self.policy_file = self._copy_data_file(conf_file, self.conf_dir)
-        self.config(policy_file=self.policy_file)
+        self.config(policy_file=self.policy_file, group='oslo_policy')
 
     def set_property_protections(self, use_policies=False):
         self.unset_property_protections()
