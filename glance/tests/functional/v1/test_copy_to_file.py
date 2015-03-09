@@ -26,7 +26,8 @@ import time
 import httplib2
 from oslo.serialization import jsonutils
 from oslo_utils import units
-from six.moves import xrange
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.tests import functional
 from glance.tests.functional.store_utils import get_http_uri
@@ -92,7 +93,7 @@ class TestCopyToFile(functional.FunctionalTest):
                                               copy_image_id)
 
         def _await_status(expected_status):
-            for i in xrange(100):
+            for i in range(100):
                 time.sleep(0.01)
                 http = httplib2.Http()
                 response, content = http.request(path, 'HEAD')
@@ -187,7 +188,7 @@ class TestCopyToFile(functional.FunctionalTest):
                                                   copy_image_id)
 
             def _await_status(expected_status):
-                for i in xrange(100):
+                for i in range(100):
                     time.sleep(0.01)
                     http = httplib2.Http()
                     response, content = http.request(path, 'HEAD')

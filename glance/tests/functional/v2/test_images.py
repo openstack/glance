@@ -20,6 +20,8 @@ import uuid
 from oslo.serialization import jsonutils
 import requests
 import six
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.tests import functional
 from glance.tests import utils as test_utils

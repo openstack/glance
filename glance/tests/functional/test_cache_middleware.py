@@ -29,7 +29,8 @@ import time
 import httplib2
 from oslo.serialization import jsonutils
 from oslo_utils import units
-from six.moves import xrange
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.tests import functional
 from glance.tests.functional.store_utils import get_http_uri
@@ -528,7 +529,7 @@ class BaseCacheManageMiddlewareTest(object):
         ids = {}
 
         # Add a bunch of images...
-        for x in xrange(4):
+        for x in range(4):
             ids[x] = self.add_image("Image%s" % str(x))
 
         # Verify no images in cached_images because no image has been hit
@@ -536,7 +537,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.verify_no_cached_images()
 
         # Grab the images, essentially caching them...
-        for x in xrange(4):
+        for x in range(4):
             path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                                   ids[x])
             http = httplib2.Http()
@@ -556,7 +557,7 @@ class BaseCacheManageMiddlewareTest(object):
         cached_images = data['cached_images']
         self.assertEqual(4, len(cached_images))
 
-        for x in xrange(4, 0):  # Cached images returned last modified order
+        for x in range(4, 0):  # Cached images returned last modified order
             self.assertEqual(ids[x], cached_images[x]['image_id'])
             self.assertEqual(0, cached_images[x]['hits'])
 
@@ -612,7 +613,7 @@ class BaseCacheManageMiddlewareTest(object):
         NUM_IMAGES = 4
 
         # Add and then queue some images
-        for x in xrange(NUM_IMAGES):
+        for x in range(NUM_IMAGES):
             ids[x] = self.add_image("Image%s" % str(x))
             path = "http://%s:%d/v1/queued_images/%s" % ("127.0.0.1",
                                                          self.api_port, ids[x])
@@ -676,7 +677,7 @@ log_file = %(log_file)s
         ids = {}
 
         # Add a bunch of images...
-        for x in xrange(4):
+        for x in range(4):
             ids[x] = self.add_image("Image%s" % str(x))
 
         # Queue the first image, verify no images still in cache after queueing

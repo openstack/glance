@@ -21,7 +21,8 @@ import glance_store.location
 import httplib2
 from oslo.serialization import jsonutils
 from oslo_utils import units
-from six.moves import xrange
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.common import crypt
 from glance.tests import functional
@@ -271,7 +272,7 @@ class TestScrubber(functional.FunctionalTest):
         http = httplib2.Http()
         wait_for = 300    # seconds
         check_every = 15  # seconds
-        for _ in xrange(wait_for / check_every):
+        for _ in range(wait_for / check_every):
             time.sleep(check_every)
 
             response, content = http.request(path, 'HEAD')

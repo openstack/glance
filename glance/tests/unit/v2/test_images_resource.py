@@ -22,6 +22,8 @@ import mock
 from oslo.serialization import jsonutils
 from oslo_config import cfg
 import six
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 import testtools
 import webob
 

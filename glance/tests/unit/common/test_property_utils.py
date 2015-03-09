@@ -13,7 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from six.moves import xrange
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.api import policy
 from glance.common import exception
@@ -205,7 +206,7 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
         file
         """
         self.rules_checker = property_utils.PropertyRules(self.policy)
-        for i in xrange(len(property_utils.CONFIG.sections())):
+        for i in range(len(property_utils.CONFIG.sections())):
             self.assertEqual(property_utils.CONFIG.sections()[i],
                              self.rules_checker.rules[i][0].pattern)
 

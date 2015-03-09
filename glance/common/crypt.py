@@ -24,6 +24,8 @@ import base64
 from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Random import random
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 
 def urlsafe_encrypt(key, plaintext, blocksize=16):

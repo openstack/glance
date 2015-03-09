@@ -15,7 +15,8 @@
 #    under the License.
 
 import mock
-from six.moves import xrange
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 
 from glance.domain import proxy
 import glance.tests.utils as test_utils
@@ -115,7 +116,7 @@ class TestProxyRepoWrapping(test_utils.BaseTestCase):
         self.assertEqual((2,), self.fake_repo.args)
         self.assertEqual({'prefix': 's'}, self.fake_repo.kwargs)
         self.assertEqual(2, len(results))
-        for i in xrange(2):
+        for i in range(2):
             self.assertIsInstance(results[i], FakeProxy)
             self.assertEqual(self.fake_repo.result[i], results[i].base)
             self.assertEqual(tuple(), results[i].args)
