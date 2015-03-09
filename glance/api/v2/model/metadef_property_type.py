@@ -29,6 +29,7 @@ class PropertyType(types.Base, WSMEModelTransformer):
     title = wsme.wsattr(types.text, mandatory=True)
     description = wsme.wsattr(types.text, mandatory=False)
     default = wsme.wsattr(types.bytes, mandatory=False)
+    readonly = wsme.wsattr(bool, mandatory=False)
 
     # fields for type = string
     minimum = wsme.wsattr(int, mandatory=False)

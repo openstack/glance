@@ -92,7 +92,8 @@ class TestNamespaceProperties(functional.FunctionalTest):
                 "description": "property1 description",
                 "default": 100,
                 "minimum": 100,
-                "maximum": 30000369
+                "maximum": 30000369,
+                "readonly": False,
             }
         )
         response = requests.post(path, headers=headers, data=data)
@@ -135,6 +136,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
         self.assertEqual('100', property_object['default'])
         self.assertEqual(100, property_object['minimum'])
         self.assertEqual(30000369, property_object['maximum'])
+        self.assertFalse(property_object['readonly'])
 
         # Returned property should match the created property
         property_object = jsonutils.loads(response.text)
@@ -145,7 +147,8 @@ class TestNamespaceProperties(functional.FunctionalTest):
             u'description',
             u'default',
             u'minimum',
-            u'maximum'
+            u'maximum',
+            u'readonly',
         ])
         self.assertEqual(set(property_object.keys()), checked_keys)
         expected_metadata_property = {
@@ -154,7 +157,8 @@ class TestNamespaceProperties(functional.FunctionalTest):
             "description": "property1 description",
             "default": '100',
             "minimum": 100,
-            "maximum": 30000369
+            "maximum": 30000369,
+            "readonly": False,
         }
 
         for key, value in expected_metadata_property.items():
@@ -174,7 +178,8 @@ class TestNamespaceProperties(functional.FunctionalTest):
                 "description": "desc-UPDATED",
                 "default": "value-UPDATED",
                 "minLength": 5,
-                "maxLength": 10
+                "maxLength": 10,
+                "readonly": True,
             }
         )
         response = requests.put(path, headers=headers, data=data)
@@ -187,6 +192,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
         self.assertEqual('value-UPDATED', property_object['default'])
         self.assertEqual(5, property_object['minLength'])
         self.assertEqual(10, property_object['maxLength'])
+        self.assertTrue(property_object['readonly'])
 
         # Updates should persist across requests
         path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
