@@ -153,7 +153,7 @@ class PropertyRules(object):
         then the corresponding policy rule would be:
         "prop_a:create": "rule:glance_creator"
         where glance_creator is defined in policy.json. For example:
-        "glance:creator": "role:admin or role:glance_create_user"
+        "glance_creator": "role:admin or role:glance_create_user"
         """
         rule = "rule:%s" % rule
         rule_name = "%s:%s" % (property_exp, action)
