@@ -1444,3 +1444,14 @@ return a ValueError exception with "No such digest method" error.
 * ``digest_algorithm=<algorithm>``
 
 Optional. Default: ``sha1``
+
+Configuring http_keepalive option
+----------------------------------
+
+* ``http_keepalive=<True|False>``
+
+If False, server will return the header "Connection: close", If True, server
+will return "Connection: Keep-Alive" in its responses. In order to close the
+client socket connection explicitly after the response is sent and read
+successfully by the client, you simply have to set this option to False when
+you create a wsgi server.
