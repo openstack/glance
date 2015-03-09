@@ -159,13 +159,13 @@ class TestTasksApi(base.ApiTest):
         self.assertIsNotNone(data)
         self.assertEqual(1, len(data['tasks']))
         # NOTE(venkatesh) find a way to get expected_keys from tasks controller
-        expected_keys = set(['id', 'type', 'owner', 'status',
+        expected_keys = set(['id', 'expires_at', 'type', 'owner', 'status',
                              'created_at', 'updated_at', 'self', 'schema'])
         task = data['tasks'][0]
         self.assertEqual(expected_keys, set(task.keys()))
         self.assertEqual(req_input['type'], task['type'])
         self.assertEqual(task_owner, task['owner'])
-        self.assertEqual('processing', task['status'])
+        self.assertEqual('success', task['status'])
         self.assertIsNotNone(task['created_at'])
         self.assertIsNotNone(task['updated_at'])
 

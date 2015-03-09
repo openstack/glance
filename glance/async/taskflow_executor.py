@@ -13,12 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import contextlib
+
 from oslo_config import cfg
 from oslo_utils import excutils
 from taskflow import engines
 from taskflow.listeners import logging as llistener
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
+from taskflow.types import futures
+from taskflow.utils import eventlet_utils
 
 import glance.async
 import glance.common.scripts as scripts
@@ -30,18 +34,21 @@ _LI = i18n._LI
 _LE = i18n._LE
 LOG = logging.getLogger(__name__)
 
+_deprecated_opt = cfg.DeprecatedOpt('eventlet_executor_pool_size',
+                                    group='task')
 
 taskflow_executor_opts = [
     cfg.StrOpt('engine_mode',
-               default='serial',
+               default='parallel',
                choices=('serial', 'parallel'),
                help=_("The mode in which the engine will run. "
                       "Can be 'serial' or 'parallel'.")),
     cfg.IntOpt('max_workers',
-               default=1,
+               default=10,
                help=_("The number of parallel activities executed at the "
                       "same time by the engine. The value can be greater "
-                      "than one when the engine mode is 'parallel'."))
+                      "than one when the engine mode is 'parallel'."),
+               deprecated_opts=[_deprecated_opt])
 ]
 
 
@@ -83,6 +90,17 @@ class TaskExecutor(glance.async.TaskExecutor):
         super(TaskExecutor, self).__init__(context, task_repo, image_repo,
                                            image_factory)
 
+    @contextlib.contextmanager
+    def _executor(self):
+        if CONF.taskflow_executor.engine_mode != 'parallel':
+            yield None
+        else:
+            max_workers = CONF.taskflow_executor.max_workers
+            if eventlet_utils.EVENTLET_AVAILABLE:
+                yield futures.GreenThreadPoolExecutor(max_workers=max_workers)
+            else:
+                yield futures.ThreadPoolExecutor(max_workers=max_workers)
+
     def _run(self, task_id, task_type):
         LOG.info(_LI('Taskflow executor picked up the execution of task ID '
                      '%(task_id)s of task type '
@@ -93,9 +111,11 @@ class TaskExecutor(glance.async.TaskExecutor):
                   self.image_repo, self.image_factory)
         )
         try:
-            engine = engines.load(flow, self.engine_conf, **self.engine_kwargs)
-            with llistener.DynamicLoggingListener(engine, log=LOG):
-                engine.run()
+            with self._executor() as executor:
+                engine = engines.load(flow, self.engine_conf,
+                                      executor=executor, **self.engine_kwargs)
+                with llistener.DynamicLoggingListener(engine, log=LOG):
+                    engine.run()
         except Exception as exc:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s') %

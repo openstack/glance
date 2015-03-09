@@ -67,14 +67,9 @@ task_opts = [
                deprecated_opts=[cfg.DeprecatedOpt('task_time_to_live',
                                                   group='DEFAULT')]),
     cfg.StrOpt('task_executor',
-               default='eventlet',
+               default='taskflow',
                help=_("Specifies which task executor to be used to run the "
                       "task scripts.")),
-    cfg.IntOpt('eventlet_executor_pool_size',
-               default=1000,
-               help=_("Specifies the maximum number of eventlet threads which "
-                      "can be spun up by the eventlet based task executor to "
-                      "perform execution of Glance tasks.")),
 ]
 manage_opts = [
     cfg.BoolOpt('db_enforce_mysql_charset',

@@ -23,6 +23,7 @@ import oslo_utils.importutils
 from oslo_utils import timeutils
 
 import glance.async
+from glance.async import taskflow_executor
 from glance.common import exception
 from glance import domain
 import glance.tests.utils as test_utils
@@ -549,3 +550,16 @@ class TestTaskExecutorFactory(test_utils.BaseTestCase):
             self.assertRaises(ImportError,
                               task_executor_factory.new_task_executor,
                               context)
+
+    def test_new_task_eventlet_backwards_compatibility(self):
+        context = mock.MagicMock()
+
+        self.config(task_executor='eventlet', group='task')
+
+        task_executor_factory = domain.TaskExecutorFactory(self.task_repo,
+                                                           self.image_repo,
+                                                           self.image_factory)
+
+        # NOTE(flaper87): "eventlet" executor. short name to avoid > 79.
+        te_evnt = task_executor_factory.new_task_executor(context)
+        self.assertIsInstance(te_evnt, taskflow_executor.TaskExecutor)
