@@ -47,6 +47,23 @@ Install Glance::
    $ su -
    # yum install openstack-glance
 
+openSUSE, SLE
+#############
+
+openSUSE 13.2, SLE 12, and the rolling release Factory needs an extra
+repository enabled to install all the OpenStack packages.
+
+Search the proper repository in the `Cloud:OpenStack:Master <https://build.opensuse.org/project/repositories/Cloud:OpenStack:Master>`_ project. For example, for openSUSE 13.2:
+
+1. Add the OpenStack master repository::
+
+   $ sudo zypper ar -f -g http://download.opensuse.org/repositories/Cloud:/OpenStack:/Master/openSUSE_13.2/ OpenStack
+   $ sudo zypper ref
+
+2. Install Glance::
+
+   $ sudo zypper in openstack-glance
+
 Installing from source tarballs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -135,3 +152,28 @@ Once Glance is built and tested, install it::
 
    $ su -
    # python setup.py install
+
+openSUSE, SLE
+#############
+
+On openSUSE and SLE (also this is valid for Factory), we can install
+all the build dependencies using Zypper.
+
+1. Install Git and build dependencies::
+
+   $ sudo zypper install git
+   $ sudo zypper source-install -d openstack-glance
+
+.. note::
+
+   If you want to build the Glance documentation locally, you will also want
+   to install the packages python-sphinx and graphviz.
+
+2. Clone Glance's trunk branch from GitHub::
+
+   $ git clone git://github.com/openstack/glance
+   $ cd glance
+
+3. Install Glance::
+
+   $ sudo python setup.py install
