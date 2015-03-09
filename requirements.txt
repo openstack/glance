@@ -20,7 +20,7 @@ argparse
 boto>=2.32.1,<2.35.0
 sqlalchemy-migrate==0.9.1
 httplib2>=0.7.5,<=0.9
-kombu==3.0.7
+kombu>=2.5.0,<=3.0.7
 pycrypto>=2.6,<=2.6.1
 iso8601>=0.1.9,<=0.1.10
 ordereddict<=1.1
