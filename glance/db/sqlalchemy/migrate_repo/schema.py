@@ -17,10 +17,10 @@
 Various conveniences used for migration scripts
 """
 
+from oslo_log import log as logging
 import sqlalchemy.types
 
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

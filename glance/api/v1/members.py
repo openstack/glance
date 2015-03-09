@@ -15,6 +15,7 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_log import log as logging
 import webob.exc
 
 from glance.api import policy
@@ -23,7 +24,6 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance import i18n
-import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)

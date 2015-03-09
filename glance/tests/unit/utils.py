@@ -17,6 +17,7 @@ import urllib
 
 import glance_store as store
 from oslo_config import cfg
+from oslo_log import log as logging
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
@@ -24,7 +25,6 @@ from glance.common import store_utils
 from glance.common import wsgi
 import glance.context
 import glance.db.simple.api as simple_db
-import glance.openstack.common.log as logging
 
 
 CONF = cfg.CONF

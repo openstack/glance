@@ -40,6 +40,7 @@ try:
 except ImportError:
     SENDFILE_SUPPORTED = False
 
+from oslo_log import log as logging
 from oslo_utils import encodeutils
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -50,7 +51,6 @@ from glance.common import auth
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
-import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 _ = i18n._

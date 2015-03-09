@@ -15,6 +15,7 @@
 
 from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_log import log as logging
 import six
 import six.moves.urllib.parse as urlparse
 import webob.exc
@@ -35,7 +36,6 @@ import glance.db
 import glance.gateway
 from glance import i18n
 import glance.notifier
-import glance.openstack.common.log as logging
 import glance.schema
 
 LOG = logging.getLogger(__name__)

@@ -19,6 +19,7 @@ import datetime
 import uuid
 
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import importutils
 from oslo_utils import timeutils
@@ -26,7 +27,6 @@ import six
 
 from glance.common import exception
 from glance import i18n
-import glance.openstack.common.log as logging
 
 _ = i18n._
 _LE = i18n._LE

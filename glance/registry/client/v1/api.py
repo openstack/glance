@@ -21,10 +21,10 @@ import os
 
 from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from glance.common import exception
 from glance import i18n
-import glance.openstack.common.log as logging
 from glance.registry.client.v1 import client
 
 LOG = logging.getLogger(__name__)

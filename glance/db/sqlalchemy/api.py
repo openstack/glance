@@ -25,6 +25,7 @@ import threading
 from oslo_config import cfg
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import session
+from oslo_log import log as logging
 from oslo_utils import timeutils
 import osprofiler.sqlalchemy
 from retrying import retry
@@ -47,11 +48,10 @@ from glance.db.sqlalchemy.metadef_api\
 from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
 from glance import i18n
-import glance.openstack.common.log as os_logging
 
 BASE = models.BASE
 sa_logger = None
-LOG = os_logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 _ = i18n._
 _LI = i18n._LI
 _LW = i18n._LW
@@ -61,7 +61,6 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
             'deleted']
 
 CONF = cfg.CONF
-CONF.import_opt('debug', 'glance.openstack.common.log')
 CONF.import_group("profiler", "glance.common.wsgi")
 
 _FACADE = None

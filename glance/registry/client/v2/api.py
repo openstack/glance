@@ -20,10 +20,10 @@ Registry's Client V2
 import os
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from glance.common import exception
 from glance import i18n
-import glance.openstack.common.log as logging
 from glance.registry.client.v2 import client
 
 LOG = logging.getLogger(__name__)

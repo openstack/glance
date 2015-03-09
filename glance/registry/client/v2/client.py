@@ -18,8 +18,9 @@ Simple client class to speak with any RESTful service that implements
 the Glance Registry API
 """
 
+from oslo_log import log as logging
+
 from glance.common import rpc
-import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 

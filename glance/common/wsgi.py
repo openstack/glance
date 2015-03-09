@@ -38,6 +38,8 @@ import glance_store
 from oslo.serialization import jsonutils
 from oslo_concurrency import processutils
 from oslo_config import cfg
+from oslo_log import log as logging
+from oslo_log import loggers
 import routes
 import routes.middleware
 import six
@@ -48,7 +50,6 @@ from webob import multidict
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 _ = i18n._
@@ -306,7 +307,7 @@ class Server(object):
 
         os.umask(0o27)  # ensure files are created with the correct privileges
         self._logger = logging.getLogger("eventlet.wsgi.server")
-        self._wsgi_logger = logging.WritableLogger(self._logger)
+        self._wsgi_logger = loggers.WritableLogger(self._logger)
 
         if CONF.workers == 0:
             # Useful for profiling, test, debug etc.

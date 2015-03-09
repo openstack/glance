@@ -24,6 +24,7 @@ from os.path import join
 import re
 
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import timeutils
 import six
 import sqlalchemy
@@ -32,7 +33,6 @@ from sqlalchemy.sql import select
 
 from glance.common import utils
 from glance import i18n
-import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 _ = i18n._

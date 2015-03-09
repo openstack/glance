@@ -34,16 +34,19 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 import glance_store
+from oslo_log import log as logging
 
 from glance.common import config
 from glance.image_cache import prefetcher
-from glance.openstack.common import log
+
+CONF = config.CONF
+logging.register_options(CONF)
 
 
 def main():
     try:
         config.parse_cache_args()
-        log.setup('glance')
+        logging.setup(CONF, 'glance')
 
         glance_store.register_opts(config.CONF)
         glance_store.create_stores(config.CONF)

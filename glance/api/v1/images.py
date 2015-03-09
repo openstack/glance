@@ -22,6 +22,7 @@ import copy
 import glance_store as store
 import glance_store.location
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import strutils
 from webob.exc import HTTPBadRequest
@@ -46,7 +47,6 @@ from glance.common import utils
 from glance.common import wsgi
 from glance import i18n
 from glance import notifier
-import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
@@ -719,7 +719,7 @@ class Controller(controller.BaseController):
             return (image_meta.get('size', 0) or
                     store.get_size_from_backend(location, context=context))
         except (store.NotFound, store.BadStoreUri) as e:
-            LOG.debug(e)
+            LOG.debug(utils.exception_to_str(e))
             raise HTTPBadRequest(explanation=e.msg, content_type="text/plain")
 
     def _handle_source(self, req, image_id, image_meta, image_data):

@@ -20,11 +20,11 @@ Base attribute driver class
 import os.path
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
-import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 _ = i18n._

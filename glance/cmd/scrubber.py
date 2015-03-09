@@ -32,13 +32,14 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 import glance_store
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from glance.common import config
-from glance.openstack.common import log
 from glance import scrubber
 
 
 CONF = cfg.CONF
+logging.register_options(CONF)
 
 
 def main():
@@ -47,7 +48,7 @@ def main():
 
     try:
         config.parse_args()
-        log.setup('glance')
+        logging.setup(CONF, 'glance')
 
         glance_store.register_opts(config.CONF)
         glance_store.create_stores(config.CONF)

@@ -16,12 +16,12 @@ import sys
 
 import glance_store as store_api
 from oslo_config import cfg
+from oslo_log import log as logging
 import six.moves.urllib.parse as urlparse
 
 from glance.common import utils
 import glance.db as db_api
 from glance import i18n
-import glance.openstack.common.log as logging
 from glance import scrubber
 
 LOG = logging.getLogger(__name__)

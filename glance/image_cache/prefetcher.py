@@ -16,14 +16,15 @@
 """
 Prefetches images into the Image Cache
 """
+
 import eventlet
 import glance_store
+from oslo_log import log as logging
 
 from glance.common import exception
 from glance import context
 from glance import i18n
 from glance.image_cache import base
-import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)

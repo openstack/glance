@@ -16,6 +16,7 @@ import copy
 
 import glance_store as store
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 import six
 
@@ -25,7 +26,6 @@ from glance.common import utils
 import glance.domain
 import glance.domain.proxy
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

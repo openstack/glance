@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
 import webob.exc
 
 from glance.common import exception
@@ -20,7 +21,6 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

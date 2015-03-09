@@ -19,9 +19,10 @@ Use gzip compression if the client accepts it.
 
 import re
 
+from oslo_log import log as logging
+
 from glance.common import wsgi
 from glance import i18n
-import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 _LI = i18n._LI

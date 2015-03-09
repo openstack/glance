@@ -17,11 +17,11 @@ import sys
 
 import keystoneclient.v2_0.client
 from oslo_config import cfg
+from oslo_log import log as logging
 
 import glance.context
 import glance.db.sqlalchemy.api as db_api
 from glance import i18n
-import glance.openstack.common.log as logging
 import glance.registry.context
 
 _ = i18n._
