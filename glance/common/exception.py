@@ -434,3 +434,7 @@ class MetadefTagNotFound(NotFound):
     message = _("The metadata definition tag with"
                 " name=%(name)s was not found in"
                 " namespace=%(namespace_name)s.")
+
+
+class InvalidVersion(Invalid):
+    message = _("Version is invalid: %(reason)s")
