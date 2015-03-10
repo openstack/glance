@@ -427,7 +427,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
-        self.assertIn('External source are not supported', res.body)
+        self.assertIn('External sources are not supported', res.body)
 
     def test_create_with_location_bad_store_uri(self):
         fixture_headers = {
