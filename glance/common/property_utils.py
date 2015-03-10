@@ -36,7 +36,13 @@ _LE = i18n._LE
 
 property_opts = [
     cfg.StrOpt('property_protection_file',
-               help=_('The location of the property protection file.')),
+               help=_('The location of the property protection file.'
+                      'This file contains the rules for property protections '
+                      'and the roles/policies associated with it. If this '
+                      'config value is not specified, by default, property '
+                      'protections won\'t be enforced. If a value is '
+                      'specified and the file is not found, then the '
+                      'glance-api service will not start.')),
     cfg.StrOpt('property_protection_rule_format',
                default='roles',
                help=_('This config value indicates whether "roles" or '

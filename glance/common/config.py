@@ -112,12 +112,19 @@ common_opts = [
                        'caution!')),
     cfg.BoolOpt('show_multiple_locations', default=False,
                 help=_('Whether to include the backend image locations '
-                       'in image properties. Revealing storage location can '
+                       'in image properties. '
+                       'For example, if using the file system store a URL of '
+                       '"file:///path/to/image" will be returned to the user '
+                       'in the \'direct_url\' meta-data field. '
+                       'Revealing storage location can '
                        'be a security risk, so use this setting with '
                        'caution!  The overrides show_image_direct_url.')),
     cfg.IntOpt('image_size_cap', default=1099511627776,
                help=_("Maximum size of image a user can upload in bytes. "
-                      "Defaults to 1099511627776 bytes (1 TB).")),
+                      "Defaults to 1099511627776 bytes (1 TB)."
+                      "WARNING: this value should only be increased after "
+                      "careful consideration and must be set to a value under "
+                      "8 EB (9223372036854775808).")),
     cfg.StrOpt('user_storage_quota', default='0',
                help=_("Set a system wide quota for every user. This value is "
                       "the total capacity that a user can use across "
@@ -143,8 +150,10 @@ common_opts = [
                help=_('The port on which a pydev process is listening for '
                       'connections.')),
     cfg.StrOpt('metadata_encryption_key', secret=True,
-               help=_('Key used for encrypting sensitive metadata while '
-                      'talking to the registry or database.')),
+               help=_('AES key for encrypting store \'location\' metadata. '
+                      'This includes, if used, Swift or S3 credentials. '
+                      'Should be set to a random string of length 16, 24 or '
+                      '32 bytes')),
     cfg.StrOpt('digest_algorithm', default='sha1',
                help=_('Digest algorithm which will be used for digital '
                       'signature; the default is sha1 the default in Kilo '
