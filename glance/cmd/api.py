@@ -72,10 +72,6 @@ def main():
         wsgi.set_eventlet_hub()
         log.setup('glance')
 
-        glance_store.register_opts(config.CONF)
-        glance_store.create_stores(config.CONF)
-        glance_store.verify_default_store()
-
         if cfg.CONF.profiler.enabled:
             _notifier = osprofiler.notifier.create("Messaging",
                                                    notifier.messaging, {},
@@ -86,7 +82,7 @@ def main():
         else:
             osprofiler.web.disable()
 
-        server = wsgi.Server()
+        server = wsgi.Server(initialize_glance_store=True)
         server.start(config.load_paste_app('glance-api'), default_port=9292)
         server.wait()
     except KNOWN_EXCEPTIONS as e:

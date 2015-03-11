@@ -316,6 +316,10 @@ class ImageLocationLimitExceeded(LimitExceeded):
                 "locations. Attempted: %(attempted)s, Maximum: %(maximum)s")
 
 
+class SIGHUPInterrupt(GlanceException):
+    message = _("System SIGHUP signal received.")
+
+
 class RPCError(GlanceException):
     message = _("%(cls)s exception was raised in the last rpc call: %(val)s")
 

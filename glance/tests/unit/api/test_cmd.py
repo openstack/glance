@@ -68,6 +68,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         glance.cmd.api.main()
 
     def test_unsupported_default_store(self):
+        self.stubs.UnsetAll()
         self.config(group='glance_store', default_store='shouldnotexist')
         exit = self.assertRaises(SystemExit, glance.cmd.api.main)
         self.assertEqual(1, exit.code)
