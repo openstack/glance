@@ -1060,6 +1060,15 @@ def _task_info_get(task_id):
     return task_info
 
 
+def _metadef_delete_namespace_content(get_func, key, context, namespace_name):
+    global DATA
+    metadefs = get_func(context, namespace_name)
+    data = DATA[key]
+    for metadef in metadefs:
+        data.remove(metadef)
+    return metadefs
+
+
 @log_call
 def metadef_namespace_create(context, values):
     """Create a namespace object"""
@@ -1374,6 +1383,13 @@ def metadef_object_delete(context, namespace_name, object_name):
     return object
 
 
+def metadef_object_delete_namespace_content(context, namespace_name,
+                                            session=None):
+    """Delete an object or raise if namespace or object doesn't exist."""
+    return _metadef_delete_namespace_content(
+        metadef_object_get_all, 'metadef_objects', context, namespace_name)
+
+
 @log_call
 def metadef_object_count(context, namespace_name):
     """Get metadef object count in a namespace"""
@@ -1548,6 +1564,14 @@ def metadef_property_delete(context, namespace_name, property_name):
     DATA['metadef_properties'].remove(property)
 
     return property
+
+
+def metadef_property_delete_namespace_content(context, namespace_name,
+                                              session=None):
+    """Delete a property or raise if it or namespace doesn't exist."""
+    return _metadef_delete_namespace_content(
+        metadef_property_get_all, 'metadef_properties', context,
+        namespace_name)
 
 
 @log_call
@@ -1861,6 +1885,13 @@ def metadef_tag_delete(context, namespace_name, name):
     DATA['metadef_tags'].remove(tags)
 
     return tags
+
+
+def metadef_tag_delete_namespace_content(context, namespace_name,
+                                         session=None):
+    """Delete an tag or raise if namespace or tag doesn't exist."""
+    return _metadef_delete_namespace_content(
+        metadef_tag_get_all, 'metadef_tags', context, namespace_name)
 
 
 @log_call

@@ -173,12 +173,12 @@ class TestImageNotifications(utils.BaseTestCase):
     def test_image_get(self):
         image = self.image_repo_proxy.get(UUID1)
         self.assertIsInstance(image, glance.notifier.ImageProxy)
-        self.assertEqual('image_from_get', image.image)
+        self.assertEqual('image_from_get', image.repo)
 
     def test_image_list(self):
         images = self.image_repo_proxy.list()
         self.assertIsInstance(images[0], glance.notifier.ImageProxy)
-        self.assertEqual('images_from_list', images[0].image)
+        self.assertEqual('images_from_list', images[0].repo)
 
     def test_image_get_data_should_call_next_image_get_data(self):
         with mock.patch.object(self.image, 'get_data') as get_data_mock:

@@ -42,10 +42,12 @@ CONF = cfg.CONF
 
 
 class MetadefObjectsController(object):
-    def __init__(self, db_api=None, policy_enforcer=None):
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None):
         self.db_api = db_api or glance.db.get_api()
         self.policy = policy_enforcer or policy.Enforcer()
+        self.notifier = notifier or glance.notifier.Notifier()
         self.gateway = glance.gateway.Gateway(db_api=self.db_api,
+                                              notifier=self.notifier,
                                               policy_enforcer=self.policy)
         self.obj_schema_link = '/v2/schemas/metadefs/object'
 
@@ -117,6 +119,7 @@ class MetadefObjectsController(object):
         meta_repo = self.gateway.get_metadef_object_repo(req.context)
         try:
             metadef_object = meta_repo.get(namespace, object_name)
+            metadef_object._old_name = metadef_object.name
             metadef_object.name = wsme_utils._get_value(
                 metadata_object.name)
             metadef_object.description = wsme_utils._get_value(

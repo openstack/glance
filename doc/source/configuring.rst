@@ -1303,6 +1303,18 @@ Sets the notification driver used by oslo.messaging. Options include
 For more information see :doc:`Glance notifications <notifications>` and
 `oslo.messaging <http://docs.openstack.org/developer/oslo.messaging/>`_.
 
+* ``disabled_notifications``
+
+Optional. Default: ``[]``
+
+List of disabled notifications. A notification can be given either as a
+notification type to disable a single event, or as a notification group prefix
+to disable all events within a group.
+
+Example: if this config option is set to ["image.create", "metadef_namespace"],
+then "image.create" notification will not be sent after image is created and
+none of the notifications for metadefinition namespaces will be sent.
+
 Configuring Glance Property Protections
 ---------------------------------------
 

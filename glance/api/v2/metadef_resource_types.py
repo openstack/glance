@@ -40,10 +40,12 @@ _LI = i18n._LI
 
 
 class ResourceTypeController(object):
-    def __init__(self, db_api=None, policy_enforcer=None):
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None):
         self.db_api = db_api or glance.db.get_api()
         self.policy = policy_enforcer or policy.Enforcer()
+        self.notifier = notifier or glance.notifier.Notifier()
         self.gateway = glance.gateway.Gateway(db_api=self.db_api,
+                                              notifier=self.notifier,
                                               policy_enforcer=self.policy)
 
     def index(self, req):

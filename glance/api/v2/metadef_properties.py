@@ -40,10 +40,12 @@ _LI = i18n._LI
 
 
 class NamespacePropertiesController(object):
-    def __init__(self, db_api=None, policy_enforcer=None):
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None):
         self.db_api = db_api or glance.db.get_api()
         self.policy = policy_enforcer or policy.Enforcer()
+        self.notifier = notifier or glance.notifier.Notifier()
         self.gateway = glance.gateway.Gateway(db_api=self.db_api,
+                                              notifier=self.notifier,
                                               policy_enforcer=self.policy)
 
     def _to_dict(self, model_property_type):
@@ -131,6 +133,7 @@ class NamespacePropertiesController(object):
         prop_repo = self.gateway.get_metadef_property_repo(req.context)
         try:
             db_property_type = prop_repo.get(namespace, property_name)
+            db_property_type._old_name = db_property_type.name
             db_property_type.name = property_type.name
             db_property_type.schema = (self._to_dict(property_type))['schema']
             updated_property_type = prop_repo.save(db_property_type)
