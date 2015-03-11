@@ -25,17 +25,26 @@ registry_client_opts = [
                       'registry server.  Either http or https.')),
     cfg.StrOpt('registry_client_key_file',
                help=_('The path to the key file to use in SSL connections '
-                      'to the registry server.')),
+                      'to the registry server, if any. Alternately, you may '
+                      'set the GLANCE_CLIENT_KEY_FILE environment variable to '
+                      'a filepath of the key file')),
     cfg.StrOpt('registry_client_cert_file',
                help=_('The path to the cert file to use in SSL connections '
-                      'to the registry server.')),
+                      'to the registry server, if any. Alternately, you may '
+                      'set the GLANCE_CLIENT_CERT_FILE environment variable '
+                      'to a filepath of the CA cert file')),
     cfg.StrOpt('registry_client_ca_file',
-               help=_('The path to the certifying authority cert file to '
-                      'use in SSL connections to the registry server.')),
+               help=_('The path to the certifying authority cert file to use '
+                      'in SSL connections to the registry server, if any. '
+                      'Alternately, you may set the GLANCE_CLIENT_CA_FILE '
+                      'environment variable to a filepath of the CA cert '
+                      'file.')),
     cfg.BoolOpt('registry_client_insecure', default=False,
                 help=_('When using SSL in connections to the registry server, '
                        'do not require validation via a certifying '
-                       'authority.')),
+                       'authority. This is the registry\'s equivalent of '
+                       'specifying --insecure on the command line using '
+                       'glanceclient for the API.')),
     cfg.IntOpt('registry_client_timeout', default=600,
                help=_('The period of time, in seconds, that the API server '
                       'will wait for a registry request to complete. A '
