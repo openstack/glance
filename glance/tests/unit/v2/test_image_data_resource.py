@@ -507,6 +507,47 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
                               self.serializer.download,
                               response, image)
 
+    def test_download_store_get_not_support(self):
+        """Test image download returns HTTPBadRequest.
+
+        Make sure that serializer returns 400 bad request error in case of
+        getting images from this store is not supported at specified location.
+        """
+        with mock.patch.object(glance.api.policy.ImageProxy,
+                               'get_data') as mock_get_data:
+            mock_get_data.side_effect = glance_store.StoreGetNotSupported()
+
+            request = wsgi.Request.blank('/')
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=iter('ZZZ'))
+            image.get_data = mock_get_data
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.serializer.download,
+                              response, image)
+
+    def test_download_store_random_get_not_support(self):
+        """Test image download returns HTTPBadRequest.
+
+        Make sure that serializer returns 400 bad request error in case of
+        getting randomly images from this store is not supported at
+        specified location.
+        """
+        with mock.patch.object(glance.api.policy.ImageProxy,
+                               'get_data') as m_get_data:
+            err = glance_store.StoreRandomGetNotSupported(offset=0,
+                                                          chunk_size=0)
+            m_get_data.side_effect = err
+
+            request = wsgi.Request.blank('/')
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=iter('ZZZ'))
+            image.get_data = m_get_data
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.serializer.download,
+                              response, image)
+
     def test_upload(self):
         request = webob.Request.blank('/')
         request.environ = {}
