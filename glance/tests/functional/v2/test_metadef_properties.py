@@ -176,6 +176,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
                 "type": "string",
                 "title": "string property",
                 "description": "desc-UPDATED",
+                "operators": ["<or>"],
                 "default": "value-UPDATED",
                 "minLength": 5,
                 "maxLength": 10,
@@ -190,6 +191,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
         self.assertEqual('string', property_object['type'])
         self.assertEqual('desc-UPDATED', property_object['description'])
         self.assertEqual('value-UPDATED', property_object['default'])
+        self.assertEqual(["<or>"], property_object['operators'])
         self.assertEqual(5, property_object['minLength'])
         self.assertEqual(10, property_object['maxLength'])
         self.assertTrue(property_object['readonly'])
@@ -201,6 +203,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
         self.assertEqual('string', property_object['type'])
         self.assertEqual('desc-UPDATED', property_object['description'])
         self.assertEqual('value-UPDATED', property_object['default'])
+        self.assertEqual(["<or>"], property_object['operators'])
         self.assertEqual(5, property_object['minLength'])
         self.assertEqual(10, property_object['maxLength'])
 

@@ -673,6 +673,28 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual('string', property.type)
         self.assertEqual('title', property.title)
 
+    def test_property_create_with_operators(self):
+        request = unit_test_utils.get_fake_request()
+
+        property = glance.api.v2.model.metadef_property_type.PropertyType()
+        property.name = PROPERTY2
+        property.type = 'string'
+        property.title = 'title'
+        property.operators = ['<or>']
+        property = self.property_controller.create(request, NAMESPACE1,
+                                                   property)
+        self.assertEqual(PROPERTY2, property.name)
+        self.assertEqual('string', property.type)
+        self.assertEqual('title', property.title)
+        self.assertEqual(['<or>'], property.operators)
+
+        property = self.property_controller.show(request, NAMESPACE1,
+                                                 PROPERTY2)
+        self.assertEqual(PROPERTY2, property.name)
+        self.assertEqual('string', property.type)
+        self.assertEqual('title', property.title)
+        self.assertEqual(['<or>'], property.operators)
+
     def test_property_create_conflict(self):
         request = unit_test_utils.get_fake_request()
 

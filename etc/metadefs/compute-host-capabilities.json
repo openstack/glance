@@ -18,6 +18,7 @@
         "cpu_info:vendor": {
             "title": "Vendor",
             "description": "Specifies the CPU manufacturer.",
+            "operators": ["<or>"],
             "type": "string",
             "enum": [
                 "Intel",
@@ -27,6 +28,7 @@
         "cpu_info:model": {
             "title": "Model",
             "description": "Specifies the CPU model. Use this property to ensure that your vm runs on a a specific cpu model.",
+            "operators": ["<or>"],
             "type": "string",
             "enum": [
                 "Conroe",
@@ -65,6 +67,7 @@
         "cpu_info:arch": {
             "title": "Architecture",
             "description": "Specifies the CPU architecture. Use this property to specify the architecture supported by the hypervisor.",
+            "operators": ["<or>"],
             "type": "string",
             "enum": [
                 "x86",
@@ -99,6 +102,7 @@
         "cpu_info:features": {
             "title": "Features",
             "description": "Specifies CPU flags/features. Using this property you can specify the required set of instructions supported by a vm.",
+            "operators": ["<or>", "<all-in>"],
             "type": "array",
             "items": {
                 "type": "string",
