@@ -324,6 +324,10 @@ class TaskException(GlanceException):
     message = _("An unknown task exception occurred")
 
 
+class BadTaskConfiguration(GlanceException):
+    message = _("Task was not configured properly")
+
+
 class TaskNotFound(TaskException, NotFound):
     message = _("Task with the given id %(task_id)s was not found")
 

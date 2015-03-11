@@ -30,6 +30,7 @@ import glance.openstack.common.log as logging
 
 _ = i18n._
 _LE = i18n._LE
+_LW = i18n._LW
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 CONF.import_opt('task_executor', 'glance.common.config', group='task')
@@ -453,6 +454,7 @@ class TaskFactory(object):
 
 
 class TaskExecutorFactory(object):
+    eventlet_deprecation_warned = False
 
     def __init__(self, task_repo, image_repo, image_factory):
         self.task_repo = task_repo
@@ -467,6 +469,13 @@ class TaskExecutorFactory(object):
             # executor.
             task_executor = CONF.task.task_executor
             if task_executor == 'eventlet':
+                # NOTE(jokke): Making sure we do not log the deprecation
+                # warning 1000 times or anything crazy like that.
+                if not TaskExecutorFactory.eventlet_deprecation_warned:
+                    msg = _LW("The `eventlet` executor has been deprecated. "
+                              "Use `taskflow` instead.")
+                    LOG.warn(msg)
+                    TaskExecutorFactory.eventlet_deprecation_warned = True
                 task_executor = 'taskflow'
 
             executor_cls = ('glance.async.%s_executor.'

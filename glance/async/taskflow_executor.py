@@ -17,20 +17,18 @@ import contextlib
 
 from oslo_config import cfg
 from oslo_utils import excutils
+from stevedore import driver
 from taskflow import engines
 from taskflow.listeners import logging as llistener
-from taskflow.patterns import linear_flow as lf
-from taskflow import task
 from taskflow.types import futures
 from taskflow.utils import eventlet_utils
 
 import glance.async
-import glance.common.scripts as scripts
+from glance.common.scripts import utils as script_utils
 from glance import i18n
 import glance.openstack.common.log as logging
 
 _ = i18n._
-_LI = i18n._LI
 _LE = i18n._LE
 LOG = logging.getLogger(__name__)
 
@@ -54,23 +52,6 @@ taskflow_executor_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(taskflow_executor_opts, group='taskflow_executor')
-
-
-class _Task(task.Task):
-
-    def __init__(self, task_id, task_type, context, task_repo,
-                 image_repo, image_factory):
-        super(_Task, self).__init__(name='%s-%s' % (task_type, task_id))
-        self.task_id = task_id
-        self.task_type = task_type
-        self.context = context
-        self.task_repo = task_repo
-        self.image_repo = image_repo
-        self.image_factory = image_factory
-
-    def execute(self):
-        scripts.run_task(self.task_id, self.task_type, self.context,
-                         self.task_repo, self.image_repo, self.image_factory)
 
 
 class TaskExecutor(glance.async.TaskExecutor):
@@ -101,15 +82,43 @@ class TaskExecutor(glance.async.TaskExecutor):
             else:
                 yield futures.ThreadPoolExecutor(max_workers=max_workers)
 
+    def _get_flow(self, task):
+        try:
+            task_input = script_utils.unpack_task_input(task)
+            uri = script_utils.validate_location_uri(
+                task_input.get('import_from'))
+
+            kwds = {
+                'uri': uri,
+                'task_id': task.task_id,
+                'task_type': task.type,
+                'context': self.context,
+                'task_repo': self.task_repo,
+                'image_repo': self.image_repo,
+                'image_factory': self.image_factory
+            }
+
+            return driver.DriverManager('glance.flows', task.type,
+                                        invoke_on_load=True,
+                                        invoke_kwds=kwds).driver
+        except RuntimeError:
+            raise NotImplementedError()
+
     def _run(self, task_id, task_type):
-        LOG.info(_LI('Taskflow executor picked up the execution of task ID '
-                     '%(task_id)s of task type '
-                     '%(task_type)s') % {'task_id': task_id,
-                                         'task_type': task_type})
-        flow = lf.Flow(task_type).add(
-            _Task(task_id, task_type, self.context, self.task_repo,
-                  self.image_repo, self.image_factory)
-        )
+        LOG.debug('Taskflow executor picked up the execution of task ID '
+                  '%(task_id)s of task type '
+                  '%(task_type)s' % {'task_id': task_id,
+                                     'task_type': task_type})
+
+        task = script_utils.get_task(self.task_repo, task_id)
+        if task is None:
+            # NOTE: This happens if task is not found in the database. In
+            # such cases, there is no way to update the task status so,
+            # it's ignored here.
+            return
+
+        flow = self._get_flow(task)
+
         try:
             with self._executor() as executor:
                 engine = engines.load(flow, self.engine_conf,

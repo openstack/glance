@@ -111,10 +111,26 @@ def validate_location_uri(location):
 
 
 def get_image_data_iter(uri):
-    """The scripts are expected to support only over non-local locations of
-    data. Note the absence of file:// for security reasons, see LP bug #942118.
-    If the above constraint is violated, task should fail.
+    """Returns iterable object either for local file or uri
+
+    :param uri: uri (remote or local) to the datasource we want to iterate
+
+    Validation/sanitization of the uri is expected to happen before we get
+    here.
     """
-    # NOTE: Current script supports http location. Other locations
-    # types are to be supported as the script evolve.
+    # NOTE(flaper87): This is safe because the input uri is already
+    # verified before the task is created.
+    if uri.startswith("file://"):
+        uri = uri.split("file://")[-1]
+        # NOTE(flaper87): The caller of this function expects to have
+        # an iterable object. FileObjects in python are iterable, therefore
+        # we are returning it as is.
+        # The file descriptor will be eventually cleaned up by the garbage
+        # collector once its ref-count is dropped to 0. That is, when there
+        # wont be any references pointing to this file.
+        #
+        # We're not using StringIO or other tools to avoid reading everything
+        # into memory. Some images may be quite heavy.
+        return open(uri, "r")
+
     return urllib2.urlopen(uri)
