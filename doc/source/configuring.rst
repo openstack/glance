@@ -1079,6 +1079,38 @@ Can only be specified in configuration files.
 
 Datastore name associated with the ``vmware_datacenter_path``
 
+* ``vmware_datastores``
+
+Optional. Default: Not set.
+
+This option can only be specified in configuration file and is specific
+to the VMware storage backend.
+
+vmware_datastores allows administrators to configure multiple datastores to
+save glance image in the VMware store backend. The required format for the
+option is: <datacenter_path>:<datastore_name>:<optional_weight>.
+
+where datacenter_path is the inventory path to the datacenter where the
+datastore is located. An optional weight can be given to specify the priority.
+
+Example::
+
+  vmware_datastores = datacenter1:datastore1
+  vmware_datastores = dc_folder/datacenter2:datastore2:100
+  vmware_datastores = datacenter1:datastore3:200
+
+**NOTE**:
+
+  - This option can be specified multiple times to specify multiple datastores.
+  - Either vmware_datastore_name or vmware_datastores option must be specified
+    in glance-api.conf
+  - Datastore with weight 200 has precedence over datastore with weight 100.
+  - If no weight is specified, default weight '0' is associated with it.
+  - If two datastores have same weight, the datastore with maximum free space
+    will be chosen to store the image.
+  - If the datacenter path or datastore name contains a colon (:) symbol, it
+    must be escaped with a backslash.
+
 * ``vmware_api_retry_count=TIMES``
 
 Optional. Default: ``10``
