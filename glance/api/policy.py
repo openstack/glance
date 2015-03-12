@@ -37,8 +37,6 @@ DEFAULT_RULES = policy.Rules.from_dict({
 })
 
 _ = i18n._
-_LI = i18n._LI
-_LW = i18n._LW
 
 
 class Enforcer(policy.Enforcer):

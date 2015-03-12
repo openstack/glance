@@ -42,7 +42,6 @@ import glance.registry.client.v1.api as registry
 LOG = logging.getLogger(__name__)
 _LI = i18n._LI
 _LE = i18n._LE
-_LW = i18n._LW
 
 PATTERNS = {
     ('v1', 'GET'): re.compile(r'^/v1/images/([^\/]+)$'),

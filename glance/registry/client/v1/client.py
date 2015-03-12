@@ -29,7 +29,6 @@ from glance.registry.api.v1 import images
 
 LOG = logging.getLogger(__name__)
 _LE = i18n._LE
-_LI = i18n._LI
 
 
 class RegistryClient(BaseClient):

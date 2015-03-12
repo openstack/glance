@@ -25,7 +25,6 @@ from glance import i18n
 
 
 _LE = i18n._LE
-_LI = i18n._LI
 LOG = logging.getLogger(__name__)
 
 

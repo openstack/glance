@@ -56,7 +56,6 @@ BASE = models.BASE
 sa_logger = None
 LOG = logging.getLogger(__name__)
 _ = i18n._
-_LI = i18n._LI
 _LW = i18n._LW
 
 
