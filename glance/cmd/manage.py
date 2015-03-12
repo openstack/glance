@@ -41,6 +41,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 from oslo_config import cfg
 from oslo_db.sqlalchemy import migration
 from oslo_utils import encodeutils
+import six
 
 from glance.common import config
 from glance.common import exception
@@ -114,12 +115,25 @@ class DbCommands(object):
                           db_migration.MIGRATE_REPO_PATH,
                           version)
 
-    @args('--path', metavar='<path>', help='Path to the directory where '
-                                           'json metadata files are stored')
-    def load_metadefs(self, path=None):
+    @args('--path', metavar='<path>', help='Path to the directory or file '
+                                           'where json metadata is stored')
+    @args('--merge', action='store_true',
+          help='Merge files with data that is in the database. By default it '
+               'prefers existing data over new. This logic can be changed by '
+               'combining --merge option with one of these two options: '
+               '--prefer_new or --overwrite.')
+    @args('--prefer_new', action='store_true',
+          help='Prefer new metadata over existing. Existing metadata '
+               'might be overwritten. Needs to be combined with --merge '
+               'option.')
+    @args('--overwrite', action='store_true',
+          help='Drop and rewrite metadata. Needs to be combined with --merge '
+               'option')
+    def load_metadefs(self, path=None, merge=False,
+                      prefer_new=False, overwrite=False):
         """Load metadefinition json files to database"""
-        metadata.db_load_metadefs(db_api.get_engine(),
-                                  path)
+        metadata.db_load_metadefs(db_api.get_engine(), path, merge,
+                                  prefer_new, overwrite)
 
     def unload_metadefs(self):
         """Unload metadefinitions from database"""
@@ -156,8 +170,12 @@ class DbLegacyCommands(object):
         self.command_object.sync(CONF.command.version,
                                  CONF.command.current_version)
 
-    def load_metadefs(self, path=None):
-        self.command_object.load_metadefs(CONF.command.path)
+    def load_metadefs(self, path=None, merge=False,
+                      prefer_new=False, overwrite=False):
+        self.command_object.load_metadefs(CONF.command.path,
+                                          CONF.command.merge,
+                                          CONF.command.prefer_new,
+                                          CONF.command.overwrite)
 
     def unload_metadefs(self):
         self.command_object.unload_metadefs()
@@ -198,6 +216,9 @@ def add_legacy_command_parsers(command_object, subparsers):
     parser = subparsers.add_parser('db_load_metadefs')
     parser.set_defaults(action_fn=legacy_command_object.load_metadefs)
     parser.add_argument('path', nargs='?')
+    parser.add_argument('merge', nargs='?')
+    parser.add_argument('prefer_new', nargs='?')
+    parser.add_argument('overwrite', nargs='?')
     parser.set_defaults(action='db_load_metadefs')
 
     parser = subparsers.add_parser('db_unload_metadefs')
@@ -285,8 +306,9 @@ def main():
                 v = getattr(CONF.command, 'action_kwarg_' + k)
                 if v is None:
                     continue
-                func_kwargs[k] = encodeutils.safe_decode(v)
-
+                if isinstance(v, six.string_types):
+                    v = encodeutils.safe_decode(v)
+                func_kwargs[k] = v
             func_args = [encodeutils.safe_decode(arg)
                          for arg in CONF.command.action_args]
             return CONF.command.action_fn(*func_args, **func_kwargs)

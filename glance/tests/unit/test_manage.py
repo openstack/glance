@@ -113,7 +113,7 @@ class TestLegacyManage(TestManageBase):
         self._main_test_helper(['glance.cmd.manage', 'db_load_metadefs'],
                                db_metadata.db_load_metadefs,
                                db_api.get_engine(),
-                               None)
+                               None, None, None, None)
 
     def test_db_metadefs_load_with_specified_path(self):
         db_metadata.db_load_metadefs = mock.Mock()
@@ -121,7 +121,31 @@ class TestLegacyManage(TestManageBase):
                                 '/mock/'],
                                db_metadata.db_load_metadefs,
                                db_api.get_engine(),
-                               '/mock/')
+                               '/mock/', None, None, None)
+
+    def test_db_metadefs_load_from_path_merge(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_load_metadefs',
+                                '/mock/', 'True'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               '/mock/', 'True', None, None)
+
+    def test_db_metadefs_load_from_merge_and_prefer_new(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_load_metadefs',
+                                '/mock/', 'True', 'True'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               '/mock/', 'True', 'True', None)
+
+    def test_db_metadefs_load_from_merge_and_prefer_new_and_overwrite(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db_load_metadefs',
+                                '/mock/', 'True', 'True', 'True'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               '/mock/', 'True', 'True', 'True')
 
     def test_db_metadefs_export(self):
         db_metadata.db_export_metadefs = mock.Mock()
@@ -201,7 +225,7 @@ class TestManage(TestManageBase):
         self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs'],
                                db_metadata.db_load_metadefs,
                                db_api.get_engine(),
-                               None)
+                               None, False, False, False)
 
     def test_db_metadefs_load_with_specified_path(self):
         db_metadata.db_load_metadefs = mock.Mock()
@@ -209,7 +233,47 @@ class TestManage(TestManageBase):
                                 '--path', '/mock/'],
                                db_metadata.db_load_metadefs,
                                db_api.get_engine(),
-                               '/mock/')
+                               '/mock/', False, False, False)
+
+    def test_db_metadefs_load_prefer_new_with_path(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs',
+                                '--path', '/mock/', '--merge', '--prefer_new'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               '/mock/', True, True, False)
+
+    def test_db_metadefs_load_prefer_new(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs',
+                                '--merge', '--prefer_new'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               None, True, True, False)
+
+    def test_db_metadefs_load_overwrite_existing(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs',
+                                '--merge', '--overwrite'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               None, True, False, True)
+
+    def test_db_metadefs_load_prefer_new_and_overwrite_existing(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs',
+                                '--merge', '--prefer_new', '--overwrite'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               None, True, True, True)
+
+    def test_db_metadefs_load_from_path_overwrite_existing(self):
+        db_metadata.db_load_metadefs = mock.Mock()
+        self._main_test_helper(['glance.cmd.manage', 'db', 'load_metadefs',
+                                '--path', '/mock/', '--merge', '--overwrite'],
+                               db_metadata.db_load_metadefs,
+                               db_api.get_engine(),
+                               '/mock/', True, False, True)
 
     def test_db_metadefs_export(self):
         db_metadata.db_export_metadefs = mock.Mock()
