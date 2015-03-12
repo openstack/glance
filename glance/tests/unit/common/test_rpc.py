@@ -260,7 +260,7 @@ class TestRPCJSONSerializer(test_utils.BaseTestCase):
 
     def test_to_json_with_date_format_value(self):
         fixture = {"date": datetime.datetime(1900, 3, 8, 2)}
-        expected = {"date": {"_value": "1900-03-08T02:00:00.000000",
+        expected = {"date": {"_value": "1900-03-08T02:00:00",
                              "_type": "datetime"}}
         actual = rpc.RPCJSONSerializer().to_json(fixture)
         actual = jsonutils.loads(actual)
