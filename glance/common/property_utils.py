@@ -80,17 +80,17 @@ class PropertyRules(object):
             conf_file = CONF.find_file(CONF.property_protection_file)
             CONFIG.read(conf_file)
         except Exception as e:
-            msg = (_("Couldn't find property protection file %(file)s: "
-                     "%(error)s.") % {'file': CONF.property_protection_file,
-                                      'error': e})
+            msg = (_LE("Couldn't find property protection file %(file)s: "
+                       "%(error)s.") % {'file': CONF.property_protection_file,
+                                        'error': e})
             LOG.error(msg)
             raise InvalidPropProtectConf()
 
         if self.prop_prot_rule_format not in ['policies', 'roles']:
-            msg = _("Invalid value '%s' for "
-                    "'property_protection_rule_format'. "
-                    "The permitted values are "
-                    "'roles' and 'policies'") % self.prop_prot_rule_format
+            msg = _LE("Invalid value '%s' for "
+                      "'property_protection_rule_format'. "
+                      "The permitted values are "
+                      "'roles' and 'policies'") % self.prop_prot_rule_format
             LOG.error(msg)
             raise InvalidPropProtectConf()
 
@@ -119,7 +119,7 @@ class PropertyRules(object):
                         permissions = [permission.strip() for permission in
                                        permissions.split(',')]
                         if '@' in permissions and '!' in permissions:
-                            msg = (_(
+                            msg = (_LE(
                                 "Malformed property protection rule in "
                                 "[%(prop)s] %(op)s=%(perm)s: '@' and '!' "
                                 "are mutually exclusive") %
@@ -144,9 +144,9 @@ class PropertyRules(object):
         try:
             return re.compile(rule)
         except Exception as e:
-            msg = (_("Encountered a malformed property protection rule"
-                     " %(rule)s: %(error)s.") % {'rule': rule,
-                                                 'error': e})
+            msg = (_LE("Encountered a malformed property protection rule"
+                       " %(rule)s: %(error)s.") % {'rule': rule,
+                                                   'error': e})
             LOG.error(msg)
             raise InvalidPropProtectConf()
 
