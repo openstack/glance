@@ -48,7 +48,10 @@ def get_backend():
 def load_metadefs():
     """Read metadefinition files and insert data into the database"""
     return get_backend().db_load_metadefs(engine=db_api.get_engine(),
-                                          metadata_path=None)
+                                          metadata_path=None,
+                                          merge=False,
+                                          prefer_new=False,
+                                          overwrite=False)
 
 
 def unload_metadefs():
