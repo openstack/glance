@@ -26,6 +26,7 @@ import glance.registry.context
 
 _ = i18n._
 _LC = i18n._LC
+_LE = i18n._LE
 _LI = i18n._LI
 
 LOG = logging.getLogger(__name__)
@@ -55,13 +56,16 @@ def build_image_owner_map(owner_map, db, context):
         try:
             owner_id = owner_map[owner_name]
         except KeyError:
-            msg = 'Image %s owner %s was not found. Skipping.'
-            LOG.error(msg % (image_id, owner_name))
+            msg = (_LE('Image "%(image)s" owner "%(owner)s" was not found. '
+                       'Skipping.'),
+                   {'image': image_id, 'owner': owner_name})
+            LOG.error(msg)
             continue
 
         image_owner_map[image_id] = owner_id
 
-        msg = 'Image %s owner %s -> %s' % (image_id, owner_name, owner_id)
+        msg = (_LI('Image "%(image)s" owner "%(owner)s" -> "%(owner_id)s"'),
+               {'image': image_id, 'owner': owner_name, 'owner_id': owner_id})
         LOG.info(msg)
 
     return image_owner_map

@@ -69,6 +69,7 @@ from glance import i18n
 from glance.image_cache.drivers import base
 
 LOG = logging.getLogger(__name__)
+_ = i18n._
 _LE = i18n._LE
 _LI = i18n._LI
 _LW = i18n._LW
@@ -106,11 +107,11 @@ class Driver(base.Driver):
             set_xattr(fake_image_filepath, 'hits', '1')
         except IOError as e:
             if e.errno == errno.EOPNOTSUPP:
-                msg = (_LE("The device housing the image cache directory "
-                           "%(image_cache_dir)s does not support xattr. It is"
-                           " likely you need to edit your fstab and add the "
-                           "user_xattr option to the appropriate line for the"
-                           " device housing the cache directory.") %
+                msg = (_("The device housing the image cache directory "
+                         "%(image_cache_dir)s does not support xattr. It is"
+                         " likely you need to edit your fstab and add the "
+                         "user_xattr option to the appropriate line for the"
+                         " device housing the cache directory.") %
                        {'image_cache_dir': image_cache_dir})
                 LOG.error(msg)
                 raise exception.BadDriverConfiguration(driver_name="xattr",

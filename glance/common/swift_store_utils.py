@@ -84,7 +84,7 @@ class SwiftParams(object):
             conf_file = CONF.find_file(CONF.swift_store_config_file)
             CONFIG.read(conf_file)
         except Exception as e:
-            msg = (_("swift config file %(conf_file)s:%(exc)s not found") %
+            msg = (_LE("swift config file %(conf_file)s:%(exc)s not found") %
                    {'conf_file': CONF.swift_store_config_file, 'exc': e})
             LOG.error(msg)
             raise exception.InvalidSwiftStoreConfiguration()

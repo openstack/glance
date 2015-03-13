@@ -53,6 +53,7 @@ CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 _ = i18n._
+_LE = i18n._LE
 
 FEATURE_BLACKLIST = ['content-length', 'content-type', 'x-image-meta-size']
 
@@ -111,7 +112,7 @@ def cooperative_iter(iter):
             yield chunk
     except Exception as err:
         with excutils.save_and_reraise_exception():
-            msg = _("Error: cooperative_iter exception %s") % err
+            msg = _LE("Error: cooperative_iter exception %s") % err
             LOG.error(msg)
 
 
@@ -510,10 +511,10 @@ def mutating(func):
 
 
 def setup_remote_pydev_debug(host, port):
-    error_msg = _('Error setting up the debug environment.  Verify that the'
-                  ' option pydev_worker_debug_host is pointing to a valid '
-                  'hostname or IP on which a pydev server is listening on'
-                  ' the port indicated by pydev_worker_debug_port.')
+    error_msg = _LE('Error setting up the debug environment. Verify that the'
+                    ' option pydev_worker_debug_host is pointing to a valid '
+                    'hostname or IP on which a pydev server is listening on'
+                    ' the port indicated by pydev_worker_debug_port.')
 
     try:
         try:

@@ -31,6 +31,7 @@ from glance.domain import proxy as domain_proxy
 from glance import i18n
 
 _ = i18n._
+_LE = i18n._LE
 
 notifier_opts = [
     cfg.StrOpt('default_publisher_id', default="image.localhost",
@@ -357,8 +358,8 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             _send_notification(notify, 'image.send',
                                self._format_image_send(sent))
         except Exception as err:
-            msg = (_("An error occurred during image.send"
-                     " notification: %(err)s") % {'err': err})
+            msg = (_LE("An error occurred during image.send"
+                       " notification: %(err)s") % {'err': err})
             LOG.error(msg)
 
     def get_data(self, offset=0, chunk_size=None):
