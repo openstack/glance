@@ -549,7 +549,7 @@ class DriverTests(object):
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
                                            sort_key=['name'],
-                                           sort_dir='desc')
+                                           sort_dir=['desc'])
         image_ids = [image['id'] for image in images]
         expected = []
         self.assertEqual(sorted(expected), sorted(image_ids))
@@ -571,7 +571,7 @@ class DriverTests(object):
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
                                            sort_key=['disk_format'],
-                                           sort_dir='desc')
+                                           sort_dir=['desc'])
         image_ids = [image['id'] for image in images]
         expected = []
         self.assertEqual(sorted(expected), sorted(image_ids))
@@ -593,7 +593,7 @@ class DriverTests(object):
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
                                            sort_key=['container_format'],
-                                           sort_dir='desc')
+                                           sort_dir=['desc'])
         image_ids = [image['id'] for image in images]
         expected = []
         self.assertEqual(sorted(expected), sorted(image_ids))
@@ -615,7 +615,7 @@ class DriverTests(object):
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
                                            sort_key=['name'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc'])
         image_ids = [image['id'] for image in images]
         expected = [UUID3, UUID2, UUID1]
         self.assertEqual(sorted(expected), sorted(image_ids))
@@ -637,7 +637,7 @@ class DriverTests(object):
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
                                            sort_key=['disk_format'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc'])
         image_ids = [image['id'] for image in images]
         expected = [UUID3, UUID2, UUID1]
         self.assertEqual(sorted(expected), sorted(image_ids))
@@ -659,7 +659,7 @@ class DriverTests(object):
 
         images = self.db_api.image_get_all(ctxt1, marker=UUIDX,
                                            sort_key=['container_format'],
-                                           sort_dir='asc')
+                                           sort_dir=['asc'])
         image_ids = [image['id'] for image in images]
         expected = [UUID3, UUID2, UUID1]
         self.assertEqual(sorted(expected), sorted(image_ids))

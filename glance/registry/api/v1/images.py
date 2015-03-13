@@ -196,7 +196,7 @@ class Controller(object):
             'filters': self._get_filters(req),
             'limit': self._get_limit(req),
             'sort_key': [self._get_sort_key(req)],
-            'sort_dir': self._get_sort_dir(req),
+            'sort_dir': [self._get_sort_dir(req)],
             'marker': self._get_marker(req),
         }
 
@@ -292,7 +292,7 @@ class Controller(object):
 
     def _get_sort_dir(self, req):
         """Parse a sort direction query param from the request object."""
-        sort_dir = req.params.get('sort_dir', None)
+        sort_dir = req.params.get('sort_dir', 'desc')
         if sort_dir is not None and sort_dir not in SUPPORTED_SORT_DIRS:
             _keys = ', '.join(SUPPORTED_SORT_DIRS)
             msg = _("Unsupported sort_dir. Acceptable values: %s") % (_keys,)

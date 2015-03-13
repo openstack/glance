@@ -525,7 +525,7 @@ def _select_images_query(context, image_conditions, admin_as_user,
 
 
 def image_get_all(context, filters=None, marker=None, limit=None,
-                  sort_key=['created_at'], sort_dir='desc',
+                  sort_key=None, sort_dir=None,
                   member_status='accepted', is_public=None,
                   admin_as_user=False, return_tag=False):
     """
@@ -537,7 +537,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     :param marker: image id after which to start page
     :param limit: maximum number of images to return
     :param sort_key: list of image attributes by which results should be sorted
-    :param sort_dir: direction in which results should be sorted (asc, desc)
+    :param sort_dir: directions in which results should be sorted (asc, desc)
     :param member_status: only return shared images that have this membership
                           status
     :param is_public: If true, return only public images. If false, return
@@ -549,6 +549,16 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                        relevant tag entries. This could improve upper-layer
                        query performance, to prevent using separated calls
     """
+    sort_key = ['created_at'] if not sort_key else sort_key
+
+    default_sort_dir = 'desc'
+
+    if not sort_dir:
+        sort_dir = [default_sort_dir] * len(sort_key)
+    elif len(sort_dir) == 1:
+        default_sort_dir = sort_dir[0]
+        sort_dir *= len(sort_key)
+
     filters = filters or {}
 
     visibility = filters.pop('visibility', None)
@@ -589,11 +599,13 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     for key in ['created_at', 'id']:
         if key not in sort_key:
             sort_key.append(key)
+            sort_dir.append(default_sort_dir)
 
     query = _paginate_query(query, models.Image, limit,
                             sort_key,
                             marker=marker_image,
-                            sort_dir=sort_dir)
+                            sort_dir=None,
+                            sort_dirs=sort_dir)
 
     query = query.options(sa_orm.joinedload(
         models.Image.properties)).options(
