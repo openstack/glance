@@ -45,6 +45,7 @@ property_opts = [
                       'glance-api service will not start.')),
     cfg.StrOpt('property_protection_rule_format',
                default='roles',
+               choices=('roles', 'policies'),
                help=_('This config value indicates whether "roles" or '
                       '"policies" are used in the property protection file.')),
 ]
