@@ -16,6 +16,7 @@
 import contextlib
 
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 from stevedore import driver
 from taskflow import engines
@@ -26,7 +27,6 @@ from taskflow.utils import eventlet_utils
 import glance.async
 from glance.common.scripts import utils as script_utils
 from glance import i18n
-import glance.openstack.common.log as logging
 
 _ = i18n._
 _LE = i18n._LE

@@ -46,7 +46,7 @@ class TestManageBase(testtools.TestCase):
             pass
 
         self.useFixture(fixtures.MonkeyPatch(
-            'glance.openstack.common.log.setup', setup))
+            'oslo_log.setup', setup))
         manage.main()
         func_name.assert_called_once_with(*exp_args, **exp_kwargs)
 

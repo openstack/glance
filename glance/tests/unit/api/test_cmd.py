@@ -14,6 +14,7 @@ import sys
 import glance_store as store
 import mock
 from oslo_config import cfg
+from oslo_log import log as logging
 import six
 
 import glance.cmd.api
@@ -81,7 +82,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         self.assertEqual(2, exit.code)
 
     @mock.patch.object(glance.common.config, 'parse_cache_args')
-    @mock.patch.object(glance.openstack.common.log, 'setup')
+    @mock.patch.object(logging, 'setup')
     @mock.patch.object(glance.image_cache.ImageCache, 'init_driver')
     @mock.patch.object(glance.image_cache.ImageCache, 'clean')
     def test_cache_cleaner_main(self, mock_cache_clean,
@@ -96,7 +97,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         manager.attach_mock(mock_cache_clean, 'mock_cache_clean')
         glance.cmd.cache_cleaner.main()
         expected_call_sequence = [mock.call.mock_parse_config(),
-                                  mock.call.mock_log_setup('glance'),
+                                  mock.call.mock_log_setup(CONF, 'glance'),
                                   mock.call.mock_cache_init_driver(),
                                   mock.call.mock_cache_clean()]
         self.assertEqual(expected_call_sequence, manager.mock_calls)
@@ -110,7 +111,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         self.assertEqual('ERROR: ', exit.code)
 
     @mock.patch.object(glance.common.config, 'parse_cache_args')
-    @mock.patch.object(glance.openstack.common.log, 'setup')
+    @mock.patch.object(logging, 'setup')
     @mock.patch.object(glance.image_cache.ImageCache, 'init_driver')
     @mock.patch.object(glance.image_cache.ImageCache, 'prune')
     def test_cache_pruner_main(self, mock_cache_prune,
@@ -125,7 +126,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         manager.attach_mock(mock_cache_prune, 'mock_cache_prune')
         glance.cmd.cache_pruner.main()
         expected_call_sequence = [mock.call.mock_parse_config(),
-                                  mock.call.mock_log_setup('glance'),
+                                  mock.call.mock_log_setup(CONF, 'glance'),
                                   mock.call.mock_cache_init_driver(),
                                   mock.call.mock_cache_prune()]
         self.assertEqual(expected_call_sequence, manager.mock_calls)

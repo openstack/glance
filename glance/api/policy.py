@@ -19,11 +19,11 @@
 import copy
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from glance.common import exception
 import glance.domain.proxy
 from glance import i18n
-import glance.openstack.common.log as logging
 from glance.openstack.common import policy
 
 

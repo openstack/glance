@@ -34,7 +34,6 @@ import glance.common.wsgi
 import glance.image_cache
 import glance.image_cache.drivers.sqlite
 import glance.notifier
-import glance.openstack.common.log
 import glance.openstack.common.policy
 import glance.registry
 import glance.registry.client
@@ -42,12 +41,8 @@ import glance.registry.client.v1.api
 import glance.scrubber
 
 
-_global_opt_lists = [
-    glance.openstack.common.log.common_cli_opts,
-    glance.openstack.common.log.logging_cli_opts,
-]
 _api_opts = [
-    (None, list(itertools.chain(*(_global_opt_lists + [
+    (None, list(itertools.chain(
         glance.api.middleware.context.context_opts,
         glance.api.versions.versions_opts,
         glance.common.config.common_opts,
@@ -65,7 +60,7 @@ _api_opts = [
         glance.registry.client.registry_client_opts,
         glance.registry.client.v1.api.registry_client_ctx_opts,
         glance.openstack.common.policy.policy_opts,
-        glance.scrubber.scrubber_opts])))),
+        glance.scrubber.scrubber_opts))),
     ('image_format', glance.common.config.image_format_opts),
     ('task', glance.common.config.task_opts),
     ('store_type_location_strategy',
@@ -73,37 +68,37 @@ _api_opts = [
     ('paste_deploy', glance.common.config.paste_deploy_opts)
 ]
 _registry_opts = [
-    (None, list(itertools.chain(*(_global_opt_lists + [
+    (None, list(itertools.chain(
         glance.api.middleware.context.context_opts,
         glance.common.config.common_opts,
         glance.common.wsgi.bind_opts,
         glance.common.wsgi.socket_opts,
         glance.common.wsgi.eventlet_opts,
-        glance.openstack.common.policy.policy_opts])))),
+        glance.openstack.common.policy.policy_opts))),
     ('paste_deploy', glance.common.config.paste_deploy_opts)
 ]
 _scrubber_opts = [
-    (None, list(itertools.chain(*(_global_opt_lists + [
+    (None, list(itertools.chain(
         glance.common.config.common_opts,
         glance.openstack.common.policy.policy_opts,
         glance.scrubber.scrubber_opts,
         glance.scrubber.scrubber_cmd_opts,
         glance.scrubber.scrubber_cmd_cli_opts,
         glance.registry.client.registry_client_ctx_opts,
-        glance.registry.registry_addr_opts])))),
+        glance.registry.registry_addr_opts))),
 ]
 _cache_opts = [
-    (None, list(itertools.chain(*(_global_opt_lists + [
+    (None, list(itertools.chain(
         glance.common.config.common_opts,
         glance.openstack.common.policy.policy_opts,
         glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,
         glance.registry.registry_addr_opts,
-        glance.registry.client.registry_client_ctx_opts])))),
+        glance.registry.client.registry_client_ctx_opts))),
 ]
 _manage_opts = [
-    (None, list(itertools.chain(*(_global_opt_lists + [
-        glance.common.config.manage_opts]))))
+    (None, list(itertools.chain(
+        glance.common.config.manage_opts)))
 ]
 
 

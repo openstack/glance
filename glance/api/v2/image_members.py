@@ -17,6 +17,7 @@ import copy
 
 import glance_store
 from oslo.serialization import jsonutils
+from oslo_log import log as logging
 from oslo_utils import timeutils
 import six
 import webob
@@ -29,7 +30,6 @@ import glance.db
 import glance.gateway
 from glance import i18n
 import glance.notifier
-import glance.openstack.common.log as logging
 import glance.schema
 
 

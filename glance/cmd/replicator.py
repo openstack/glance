@@ -24,6 +24,7 @@ import sys
 
 from oslo.config import cfg
 from oslo.serialization import jsonutils
+from oslo_log import log as logging
 import six.moves.urllib.parse as urlparse
 from webob import exc
 
@@ -31,9 +32,8 @@ from glance.common import config
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
-from glance.openstack.common import log
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 _ = i18n._
 _LI = i18n._LI
 _LE = i18n._LE
@@ -81,6 +81,7 @@ cli_opts = [
 
 CONF = cfg.CONF
 CONF.register_cli_opts(cli_opts)
+logging.register_options(CONF)
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -702,7 +703,7 @@ def main():
         sys.exit("ERROR: %s" % utils.exception_to_str(e))
 
     # Setup logging
-    log.setup('glance')
+    logging.setup('glance')
 
     if CONF.token:
         CONF.slavetoken = CONF.token

@@ -14,11 +14,11 @@
 #    under the License.
 
 import glance_store as store
+from oslo_log import log as logging
 import webob.exc
 
 from glance.common import exception
 from glance import i18n
-import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 

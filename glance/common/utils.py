@@ -38,6 +38,7 @@ import uuid
 
 from OpenSSL import crypto
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import netutils
@@ -47,7 +48,6 @@ from webob import exc
 
 from glance.common import exception
 from glance import i18n
-import glance.openstack.common.log as logging
 
 CONF = cfg.CONF
 

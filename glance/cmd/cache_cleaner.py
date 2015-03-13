@@ -32,6 +32,8 @@ period, we automatically sweep it up.
 import os
 import sys
 
+from oslo_log import log as logging
+
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
 possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
@@ -42,13 +44,15 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from glance.common import config
 from glance.image_cache import cleaner
-from glance.openstack.common import log
+
+CONF = config.CONF
+logging.register_options(CONF)
 
 
 def main():
     try:
         config.parse_cache_args()
-        log.setup('glance')
+        logging.setup(CONF, 'glance')
 
         app = cleaner.Cleaner()
         app.run()

@@ -14,6 +14,7 @@
 
 
 from oslo_db import exception as db_exc
+from oslo_log import log as logging
 from sqlalchemy import func
 import sqlalchemy.orm as sa_orm
 
@@ -22,9 +23,8 @@ from glance.db.sqlalchemy.metadef_api import namespace as namespace_api
 from glance.db.sqlalchemy.metadef_api import utils as metadef_utils
 from glance.db.sqlalchemy import models_metadef as models
 from glance import i18n
-import glance.openstack.common.log as os_logging
 
-LOG = os_logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 _ = i18n._
 _LW = i18n._LW
 

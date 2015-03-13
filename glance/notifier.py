@@ -19,6 +19,7 @@ import abc
 import glance_store
 from oslo import messaging
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import timeutils
 import six
@@ -28,7 +29,6 @@ from glance.common import exception
 from glance.common import utils
 from glance.domain import proxy as domain_proxy
 from glance import i18n
-import glance.openstack.common.log as logging
 
 _ = i18n._
 

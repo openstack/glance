@@ -14,6 +14,7 @@
 #    under the License.
 import glance_store as store_api
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 import webob.exc
 
@@ -22,7 +23,6 @@ from glance.common import store_utils
 from glance.common import utils
 import glance.db
 from glance import i18n
-import glance.openstack.common.log as logging
 import glance.registry.client.v1.api as registry
 
 

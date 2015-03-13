@@ -30,13 +30,13 @@ Keystone (an identity management system).
 """
 import httplib2
 from oslo.serialization import jsonutils
+from oslo_log import log as logging
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

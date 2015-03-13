@@ -20,11 +20,11 @@ return
 """
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from glance.api import versions
 from glance.common import wsgi
 from glance import i18n
-import glance.openstack.common.log as logging
 
 CONF = cfg.CONF
 

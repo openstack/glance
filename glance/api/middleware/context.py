@@ -15,13 +15,13 @@
 
 from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_log import log as logging
 import webob.exc
 
 from glance.api import policy
 from glance.common import wsgi
 import glance.context
 from glance import i18n
-import glance.openstack.common.log as logging
 
 _ = i18n._
 

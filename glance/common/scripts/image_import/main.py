@@ -18,6 +18,7 @@ __all__ = [
 ]
 
 from oslo_concurrency import lockutils
+from oslo_log import log as logging
 from oslo_utils import excutils
 import six
 
@@ -27,7 +28,6 @@ from glance.common.scripts import utils as script_utils
 from glance.common import store_utils
 from glance.common import utils as common_utils
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

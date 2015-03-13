@@ -17,13 +17,13 @@ import re
 
 from oslo_concurrency import lockutils
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import units
 
 from glance.common import exception
 from glance.common import wsgi
 from glance import i18n
-from glance.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 _ = i18n._

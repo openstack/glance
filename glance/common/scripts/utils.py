@@ -24,9 +24,10 @@ __all__ = [
 
 import urllib2
 
+from oslo_log import log as logging
+
 from glance.common import exception
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 LOG = logging.getLogger(__name__)

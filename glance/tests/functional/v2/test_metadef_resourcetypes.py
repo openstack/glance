@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from oslo.serialization import jsonutils
+from oslo_log import log as logging
 import six
 import webob.exc
 from wsme.rest import json
@@ -30,7 +31,6 @@ import glance.db
 import glance.gateway
 from glance import i18n
 import glance.notifier
-import glance.openstack.common.log as logging
 import glance.schema
 
 LOG = logging.getLogger(__name__)

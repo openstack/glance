@@ -19,13 +19,13 @@ import datetime
 import functools
 import uuid
 
+from oslo_log import log as logging
 from oslo_utils import timeutils
 import six
 
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
-import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 _ = i18n._

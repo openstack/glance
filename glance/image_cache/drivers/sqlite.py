@@ -27,12 +27,12 @@ import time
 from eventlet import sleep
 from eventlet import timeout
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 
 from glance.common import exception
 from glance import i18n
 from glance.image_cache.drivers import base
-import glance.openstack.common.log as logging
 
 LOG = logging.getLogger(__name__)
 _ = i18n._

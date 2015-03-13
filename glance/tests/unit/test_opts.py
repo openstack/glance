@@ -61,16 +61,6 @@ class OptsTestCase(utils.BaseTestCase):
             'paste_deploy'
         ]
         expected_opt_names = [
-            'debug',
-            'verbose',
-            'log-config-append',
-            'log-format',
-            'log-date-format',
-            'log-file',
-            'log-dir',
-            'use-syslog',
-            'use-syslog-rfc-format',
-            'syslog-log-facility',
             'owner_is_tenant',
             'admin_role',
             'allow_anonymous_access',
@@ -162,16 +152,6 @@ class OptsTestCase(utils.BaseTestCase):
             'paste_deploy'
         ]
         expected_opt_names = [
-            'debug',
-            'verbose',
-            'log-config-append',
-            'log-format',
-            'log-date-format',
-            'log-file',
-            'log-dir',
-            'use-syslog',
-            'use-syslog-rfc-format',
-            'syslog-log-facility',
             'owner_is_tenant',
             'admin_role',
             'allow_anonymous_access',
@@ -223,16 +203,6 @@ class OptsTestCase(utils.BaseTestCase):
             None
         ]
         expected_opt_names = [
-            'debug',
-            'verbose',
-            'log-config-append',
-            'log-format',
-            'log-date-format',
-            'log-file',
-            'log-dir',
-            'use-syslog',
-            'use-syslog-rfc-format',
-            'syslog-log-facility',
             'policy_file',
             'policy_default_rule',
             'policy_dirs',
@@ -285,16 +255,6 @@ class OptsTestCase(utils.BaseTestCase):
             None
         ]
         expected_opt_names = [
-            'debug',
-            'verbose',
-            'log-config-append',
-            'log-format',
-            'log-date-format',
-            'log-file',
-            'log-dir',
-            'use-syslog',
-            'use-syslog-rfc-format',
-            'syslog-log-facility',
             'policy_file',
             'policy_default_rule',
             'policy_dirs',
@@ -345,16 +305,6 @@ class OptsTestCase(utils.BaseTestCase):
             None,
         ]
         expected_opt_names = [
-            'debug',
-            'verbose',
-            'log-config-append',
-            'log-format',
-            'log-date-format',
-            'log-file',
-            'log-dir',
-            'use-syslog',
-            'use-syslog-rfc-format',
-            'syslog-log-facility',
             'db_enforce_mysql_charset'
         ]
 

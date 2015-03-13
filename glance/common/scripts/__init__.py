@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
 
 from glance.common.scripts.image_import import main as image_import
 from glance import i18n
-import glance.openstack.common.log as logging
 
 
 _LI = i18n._LI

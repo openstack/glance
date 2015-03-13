@@ -20,11 +20,11 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 import glance.api.policy
 from glance.common import exception
 from glance import i18n
-from glance.openstack.common import log as logging
 from glance.openstack.common import policy
 
 # NOTE(bourke): The default dict_type is collections.OrderedDict in py27, but

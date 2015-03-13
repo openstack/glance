@@ -42,6 +42,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 import glance_store
 from oslo_config import cfg
+from oslo_log import log as logging
 import osprofiler.notifier
 import osprofiler.web
 
@@ -49,10 +50,10 @@ from glance.common import config
 from glance.common import exception
 from glance.common import wsgi
 from glance import notifier
-from glance.openstack.common import log
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
+logging.register_options(CONF)
 
 KNOWN_EXCEPTIONS = (RuntimeError,
                     exception.WorkerCreationFailure,
@@ -70,7 +71,7 @@ def main():
     try:
         config.parse_args()
         wsgi.set_eventlet_hub()
-        log.setup('glance')
+        logging.setup(CONF, 'glance')
 
         if cfg.CONF.profiler.enabled:
             _notifier = osprofiler.notifier.create("Messaging",

@@ -19,12 +19,12 @@ the Glance Registry API
 """
 
 from oslo.serialization import jsonutils
+from oslo_log import log as logging
 from oslo_utils import excutils
 
 from glance.common.client import BaseClient
 from glance.common import crypt
 from glance import i18n
-import glance.openstack.common.log as logging
 from glance.registry.api.v1 import images
 
 LOG = logging.getLogger(__name__)

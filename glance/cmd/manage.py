@@ -40,6 +40,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import migration
+from oslo_log import log as logging
 from oslo_utils import encodeutils
 import six
 
@@ -50,11 +51,10 @@ from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata
 from glance import i18n
-from glance.openstack.common import log
 
 
 CONF = cfg.CONF
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 _LW = i18n._LW
 
 
@@ -285,6 +285,7 @@ def methods_of(obj):
 def main():
     CONF.register_cli_opt(command_opt)
     try:
+        logging.register_options(CONF)
         cfg_files = cfg.find_config_files(project='glance',
                                           prog='glance-registry')
         cfg_files.extend(cfg.find_config_files(project='glance',
@@ -293,7 +294,7 @@ def main():
                                                prog='glance-manage'))
         config.parse_args(default_config_files=cfg_files,
                           usage="%(prog)s [options] <cmd>")
-        log.setup('glance')
+        logging.setup(CONF, 'glance')
     except RuntimeError as e:
         sys.exit("ERROR: %s" % e)
 

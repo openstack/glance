@@ -14,6 +14,7 @@
 
 
 from oslo_db import exception as db_exc
+from oslo_log import log as logging
 import sqlalchemy.orm as sa_orm
 
 from glance.common import exception as exc
@@ -24,9 +25,8 @@ from glance.db.sqlalchemy.metadef_api\
 from glance.db.sqlalchemy.metadef_api\
     import utils as metadef_utils
 from glance.db.sqlalchemy import models_metadef as models
-import glance.openstack.common.log as os_logging
 
-LOG = os_logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def _to_db_dict(namespace_id, resource_type_id, model_dict):

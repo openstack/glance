@@ -30,7 +30,8 @@ database back-end.
 
 import functools
 
-import glance.openstack.common.log as logging
+from oslo_log import log as logging
+
 from glance.registry.client.v2 import api
 
 
