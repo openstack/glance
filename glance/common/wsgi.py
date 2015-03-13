@@ -312,7 +312,7 @@ class Server(object):
                 self.run_child()
 
     def create_pool(self):
-        return eventlet.GreenPool(size=self.threads)
+        return get_asynchronous_eventlet_pool(size=self.threads)
 
     def _remove_children(self, pid):
         if pid in self.children:
