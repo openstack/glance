@@ -607,11 +607,6 @@ def is_uuid_like(val):
         return False
 
 
-def is_valid_port(port):
-    """Verify that port represents a valid port number."""
-    return str(port).isdigit() and int(port) > 0 and int(port) <= 65535
-
-
 def is_valid_hostname(hostname):
     """Verify whether a hostname (not an FQDN) is valid."""
     return re.match('^[a-zA-Z0-9-]+$', hostname) is not None
@@ -638,7 +633,7 @@ def parse_valid_host_port(host_port):
         except Exception:
             raise ValueError(_('Host and port "%s" is not valid.') % host_port)
 
-        if not is_valid_port(port):
+        if not netutils.is_valid_port(port):
             raise ValueError(_('Port "%s" is not valid.') % port)
 
         # First check for valid IPv6 and IPv4 addresses, then a generic

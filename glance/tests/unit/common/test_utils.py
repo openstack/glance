@@ -323,18 +323,6 @@ class TestUtils(test_utils.BaseTestCase):
                           utils.validate_key_cert,
                           keyfile, certfile)
 
-    def test_valid_port(self):
-        valid_inputs = [1, '1', 2, '3', '5', 8, 13, 21,
-                        '80', '3246', '65535']
-        for input_str in valid_inputs:
-            self.assertTrue(utils.is_valid_port(input_str))
-
-    def test_valid_port_fail(self):
-        invalid_inputs = ['-32768', '0', 0, '65536', 528491, '528491',
-                          '528.491', 'thirty-seven']
-        for input_str in invalid_inputs:
-            self.assertFalse(utils.is_valid_port(input_str))
-
     def test_valid_hostname(self):
         valid_inputs = ['localhost',
                         'glance04-a'
