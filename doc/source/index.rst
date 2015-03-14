@@ -51,6 +51,7 @@ Glance Background Concepts
    :maxdepth: 1
 
    architecture
+   database_architecture
    identifiers
    statuses
    formats
