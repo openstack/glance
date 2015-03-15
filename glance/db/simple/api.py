@@ -395,7 +395,7 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
 @log_call
 def image_get(context, image_id, session=None, force_show_deleted=False):
     image = _image_get(context, image_id, force_show_deleted)
-    return _normalize_locations(copy.deepcopy(image),
+    return _normalize_locations(context, copy.deepcopy(image),
                                 force_show_deleted=force_show_deleted)
 
 
@@ -415,7 +415,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     force_show_deleted = True if filters.get('deleted') else False
     res = []
     for image in images:
-        img = _normalize_locations(copy.deepcopy(image),
+        img = _normalize_locations(context, copy.deepcopy(image),
                                    force_show_deleted=force_show_deleted)
         if return_tag:
             img['tags'] = image_tag_get_all(context, img['id'])
@@ -622,13 +622,18 @@ def _image_locations_delete_all(context, image_id, delete_time=None):
             del DATA['locations'][i]
 
 
-def _normalize_locations(image, force_show_deleted=False):
+def _normalize_locations(context, image, force_show_deleted=False):
     """
     Generate suitable dictionary list for locations field of image.
 
     We don't need to set other data fields of location record which return
     from image query.
     """
+
+    if image['status'] == 'deactivated' and not context.is_admin:
+        # Locations are not returned for a deactivated image for non-admin user
+        image['locations'] = []
+        return image
 
     if force_show_deleted:
         locations = image['locations']
@@ -668,7 +673,7 @@ def image_create(context, image_values):
     DATA['images'][image_id] = image
     DATA['tags'][image_id] = image.pop('tags', [])
 
-    return _normalize_locations(copy.deepcopy(image))
+    return _normalize_locations(context, copy.deepcopy(image))
 
 
 @log_call
@@ -696,7 +701,7 @@ def image_update(context, image_id, image_values, purge_props=False,
     image['updated_at'] = timeutils.utcnow()
     _image_update(image, image_values, new_properties)
     DATA['images'][image_id] = image
-    return _normalize_locations(copy.deepcopy(image))
+    return _normalize_locations(context, copy.deepcopy(image))
 
 
 @log_call
@@ -727,7 +732,8 @@ def image_destroy(context, image_id):
         for tag in tags:
             image_tag_delete(context, image_id, tag)
 
-        return _normalize_locations(copy.deepcopy(DATA['images'][image_id]))
+        return _normalize_locations(context,
+                                    copy.deepcopy(DATA['images'][image_id]))
     except KeyError:
         raise exception.NotFound()
 

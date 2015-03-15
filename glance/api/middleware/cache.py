@@ -154,6 +154,11 @@ class CacheFilter(wsgi.Middleware):
             return None
         method = getattr(self, '_get_%s_image_metadata' % version)
         image_metadata = method(request, image_id)
+
+        # Deactivated images shall not be served from cache
+        if image_metadata['status'] == 'deactivated':
+            return None
+
         try:
             self._enforce(request, 'download_image', target=image_metadata)
         except exception.Forbidden:

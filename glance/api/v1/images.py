@@ -476,7 +476,7 @@ class Controller(controller.BaseController):
         self._enforce(req, 'get_image')
 
         try:
-            image_meta = self.get_active_image_meta_or_404(req, id)
+            image_meta = self.get_active_image_meta_or_error(req, id)
         except HTTPNotFound:
             # provision for backward-compatibility breaking issue
             # catch the 404 exception and raise it after enforcing

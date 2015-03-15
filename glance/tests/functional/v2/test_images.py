@@ -410,6 +410,40 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         self.assertEqual(5, jsonutils.loads(response.text)['size'])
 
+        # Should be able to deactivate image
+        path = self._url('/v2/images/%s/actions/deactivate' % image_id)
+        response = requests.post(path, data={}, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # Deactivating a deactivated image succeeds (no-op)
+        path = self._url('/v2/images/%s/actions/deactivate' % image_id)
+        response = requests.post(path, data={}, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # Can't download a deactivated image
+        path = self._url('/v2/images/%s/file' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(403, response.status_code)
+
+        # Deactivated image should still be in a listing
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(2, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
+        self.assertEqual(image_id, images[1]['id'])
+
+        # Should be able to reactivate a deactivated image
+        path = self._url('/v2/images/%s/actions/reactivate' % image_id)
+        response = requests.post(path, data={}, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
+        # Reactivating an active image succeeds (no-op)
+        path = self._url('/v2/images/%s/actions/reactivate' % image_id)
+        response = requests.post(path, data={}, headers=self._headers())
+        self.assertEqual(204, response.status_code)
+
         # Deletion should not work on protected images
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())

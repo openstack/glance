@@ -52,15 +52,22 @@ class BaseController(object):
                                           request=request,
                                           content_type='text/plain')
 
-    def get_active_image_meta_or_404(self, request, image_id):
+    def get_active_image_meta_or_error(self, request, image_id):
         """
-        Same as get_image_meta_or_404 except that it will raise a 404 if the
-        image isn't 'active'.
+        Same as get_image_meta_or_404 except that it will raise a 403 if the
+        image is deactivated or 404 if the image is otherwise not 'active'.
         """
         image = self.get_image_meta_or_404(request, image_id)
+        if image['status'] == 'deactivated':
+            msg = "Image %s is deactivated" % image_id
+            LOG.debug(msg)
+            msg = _("Image %s is deactivated") % image_id
+            raise webob.exc.HTTPForbidden(
+                msg, request=request, content_type='type/plain')
         if image['status'] != 'active':
             msg = "Image %s is not active" % image_id
             LOG.debug(msg)
+            msg = _("Image %s is not active") % image_id
             raise webob.exc.HTTPNotFound(
                 msg, request=request, content_type='text/plain')
         return image

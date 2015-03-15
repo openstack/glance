@@ -52,6 +52,7 @@ _gen_uuid = lambda: str(uuid.uuid4())
 
 UUID1 = _gen_uuid()
 UUID2 = _gen_uuid()
+UUID3 = _gen_uuid()
 
 
 class TestGlanceAPI(base.IsolatedUnitTest):
@@ -89,6 +90,21 @@ class TestGlanceAPI(base.IsolatedUnitTest):
              'checksum': 'abc123',
              'size': 19,
              'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID2),
+                            'metadata': {}, 'status': 'active'}],
+             'properties': {}},
+            {'id': UUID3,
+             'name': 'fake image #3',
+             'status': 'deactivated',
+             'disk_format': 'ami',
+             'container_format': 'ami',
+             'is_public': False,
+             'created_at': timeutils.utcnow(),
+             'updated_at': timeutils.utcnow(),
+             'deleted_at': None,
+             'deleted': False,
+             'checksum': None,
+             'size': 13,
+             'locations': [{'url': "file:///%s/%s" % (self.test_dir, UUID1),
                             'metadata': {}, 'status': 'active'}],
              'properties': {}}]
         self.context = glance.context.RequestContext(is_admin=True)
@@ -1295,6 +1311,13 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_put_image_content_missing_container_type(self):
         """Tests delayed activation of image with missing container format"""
         self._do_test_put_image_content_missing_format('container_format')
+
+    def test_download_deactivated_images(self):
+        """Tests exception raised trying to download a deactivated image"""
+        req = webob.Request.blank("/images/%s" % UUID3)
+        req.method = 'GET'
+        res = req.get_response(self.api)
+        self.assertEqual(403, res.status_int)
 
     def test_update_deleted_image(self):
         """Tests that exception raised trying to update a deleted image"""
@@ -2615,7 +2638,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         image_controller = glance.api.v1.images.Controller()
         with mock.patch.object(image_controller,
-                               'get_active_image_meta_or_404'
+                               'get_active_image_meta_or_error'
                                ) as mocked_get_image:
             mocked_get_image.return_value = image_fixture
             self.assertRaises(webob.exc.HTTPServiceUnavailable,

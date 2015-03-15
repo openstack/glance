@@ -156,6 +156,12 @@ class Image(object):
     def delete(self):
         self.base.delete()
 
+    def deactivate(self):
+        self.base.deactivate()
+
+    def reactivate(self):
+        self.base.reactivate()
+
     def set_data(self, data, size=None):
         self.base.set_data(data, size)
 
