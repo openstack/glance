@@ -305,7 +305,6 @@ class OptsTestCase(utils.BaseTestCase):
             None,
         ]
         expected_opt_names = [
-            'db_enforce_mysql_charset'
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
