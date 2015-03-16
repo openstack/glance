@@ -972,8 +972,33 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
 
         req.headers['Content-Type'] = 'application/octet-stream'
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as mock_size:
+            mock_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(201, res.status_int)
+
+    def test_upload_image_http_nonexistent_location_url(self):
+        # Ensure HTTP 404 response returned when try to upload
+        # image from non-existent http location URL.
+        rules = {"add_image": '@', "copy_from": '@', "upload_image": '@'}
+        self.set_policy_rules(rules)
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-glance-api-copy-from':
+                               'http://example.com/i.ovf',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-name': 'fake image #F'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+
+        req.headers['Content-Type'] = 'application/octet-stream'
         res = req.get_response(self.api)
-        self.assertEqual(201, res.status_int)
+        self.assertEqual(404, res.status_int)
 
     def test_add_copy_from_with_nonempty_body(self):
         """Tests creates an image from copy-from and nonempty body"""
@@ -1080,6 +1105,25 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
+
+    def test_create_image_with_nonexistent_location_url(self):
+        # Ensure HTTP 404 response returned when try to create
+        # image with non-existent http location URL.
+        fixture_headers = {
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://example.com/images/123',
+            'x-image-meta-disk-format': 'qcow2',
+            'x-image-meta-container-format': 'bare',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(404, res.status_int)
 
     def test_add_copy_from_with_location(self):
         """Tests creates an image from copy-from and location"""

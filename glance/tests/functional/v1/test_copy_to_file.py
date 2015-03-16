@@ -154,20 +154,15 @@ class TestCopyToFile(functional.FunctionalTest):
         self._do_test_copy_from('file', get_http_uri)
 
     @skip_if_disabled
-    def _do_test_copy_from_http(self, exists):
-        """
-        Ensure we can copy from an external image in HTTP.
-
-        :param exists: True iff the external source image exists
-        """
+    def test_copy_from_http_exists(self):
+        """Ensure we can copy from an external image in HTTP."""
         self.cleanup()
 
         self.start_servers(**self.__dict__.copy())
 
         setup_http(self)
 
-        uri = get_http_uri(self, 'foobar')
-        copy_from = uri if exists else uri.replace('images', 'snafu')
+        copy_from = get_http_uri(self, 'foobar')
 
         # POST /images with public image copied from HTTP (to file)
         headers = {'X-Image-Meta-Name': 'copied',
@@ -178,55 +173,73 @@ class TestCopyToFile(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        if response.status == 201:
-            data = jsonutils.loads(content)
+        self.assertEqual(201, response.status, content)
+        data = jsonutils.loads(content)
 
-            copy_image_id = data['image']['id']
-            self.assertEqual('queued', data['image']['status'], content)
+        copy_image_id = data['image']['id']
+        self.assertEqual('queued', data['image']['status'], content)
 
-            path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
-                                                  copy_image_id)
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              copy_image_id)
 
-            def _await_status(expected_status):
-                for i in range(100):
-                    time.sleep(0.01)
-                    http = httplib2.Http()
-                    response, content = http.request(path, 'HEAD')
-                    self.assertEqual(200, response.status)
-                    if response['x-image-meta-status'] == expected_status:
-                        return
-                self.fail('unexpected image status %s' %
-                          response['x-image-meta-status'])
+        def _await_status(expected_status):
+            for i in range(100):
+                time.sleep(0.01)
+                http = httplib2.Http()
+                response, content = http.request(path, 'HEAD')
+                self.assertEqual(200, response.status)
+                if response['x-image-meta-status'] == expected_status:
+                    return
+            self.fail('unexpected image status %s' %
+                      response['x-image-meta-status'])
 
-            _await_status('active' if exists else 'killed')
+        _await_status('active')
 
-            # GET image and make sure image content is as expected
-            http = httplib2.Http()
-            response, content = http.request(path, 'GET')
-            self.assertEqual(200 if exists else 404, response.status)
+        # GET image and make sure image content is as expected
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(200, response.status)
 
-            if exists:
-                self.assertEqual(str(FIVE_KB), response['content-length'])
-                self.assertEqual("*" * FIVE_KB, content)
-                self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
-                                 hashlib.md5(content).hexdigest())
+        self.assertEqual(str(FIVE_KB), response['content-length'])
+        self.assertEqual("*" * FIVE_KB, content)
+        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                         hashlib.md5(content).hexdigest())
 
-            # DELETE copied image
-            http = httplib2.Http()
-            response, content = http.request(path, 'DELETE')
-            self.assertEqual(200, response.status)
-        else:
-            self.assertEqual(400, response.status, content)
+        # DELETE copied image
+        http = httplib2.Http()
+        response, content = http.request(path, 'DELETE')
+        self.assertEqual(200, response.status)
 
         self.stop_servers()
 
     @skip_if_disabled
-    def test_copy_from_http_exists(self):
-        self._do_test_copy_from_http(True)
+    def test_copy_from_http_nonexistent_location_url(self):
+        # Ensure HTTP 404 response returned when try to create
+        # image with non-existent http location URL.
+        self.cleanup()
 
-    @skip_if_disabled
-    def test_copy_from_http_nonexistent(self):
-        self._do_test_copy_from_http(False)
+        self.start_servers(**self.__dict__.copy())
+
+        setup_http(self)
+
+        uri = get_http_uri(self, 'foobar')
+        copy_from = uri.replace('images', 'snafu')
+
+        # POST /images with public image copied from HTTP (to file)
+        headers = {'X-Image-Meta-Name': 'copied',
+                   'X-Image-Meta-disk_format': 'raw',
+                   'X-Image-Meta-container_format': 'ovf',
+                   'X-Image-Meta-Is-Public': 'True',
+                   'X-Glance-API-Copy-From': copy_from}
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers)
+        self.assertEqual(404, response.status, content)
+
+        expected = 'HTTP datastore could not find image at URI.'
+        self.assertIn(expected, content)
+
+        self.stop_servers()
 
     @skip_if_disabled
     def test_copy_from_file(self):

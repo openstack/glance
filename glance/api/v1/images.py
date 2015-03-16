@@ -718,7 +718,18 @@ class Controller(controller.BaseController):
         try:
             return (image_meta.get('size', 0) or
                     store.get_size_from_backend(location, context=context))
-        except (store.NotFound, store.BadStoreUri) as e:
+        except store.NotFound as e:
+            # NOTE(rajesht): The exception is logged as debug message because
+            # the image is located at third-party server and it has nothing to
+            # do with glance. If log.exception is used here, in that case the
+            # log file might be flooded with exception log messages if
+            # malicious user keeps on trying image-create using non-existent
+            # location url. Used log.debug because administrator can
+            # disable debug logs.
+            LOG.debug(utils.exception_to_str(e))
+            raise HTTPNotFound(explanation=e.msg, content_type="text/plain")
+        except store.BadStoreUri as e:
+            # NOTE(rajesht): See above note of store.NotFound
             LOG.debug(utils.exception_to_str(e))
             raise HTTPBadRequest(explanation=e.msg, content_type="text/plain")
 
