@@ -363,8 +363,8 @@ class JSONResponseSerializerTest(test_utils.BaseTestCase):
         self.assertEqual(expected, actual)
 
     def test_to_json_with_date_format_value(self):
-        fixture = {"date": datetime.datetime(1, 3, 8, 2)}
-        expected = '{"date": "0001-03-08T02:00:00"}'
+        fixture = {"date": datetime.datetime(1901, 3, 8, 2)}
+        expected = '{"date": "1901-03-08T02:00:00.000000"}'
         actual = wsgi.JSONResponseSerializer().to_json(fixture)
         self.assertEqual(expected, actual)
 

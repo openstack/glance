@@ -21,9 +21,7 @@ Utility methods for working with WSGI servers
 """
 from __future__ import print_function
 
-import datetime
 import errno
-import json
 import os
 import signal
 import sys
@@ -679,13 +677,14 @@ class JSONRequestDeserializer(object):
 
         return False
 
-    def _sanitizer(self, obj):
+    @staticmethod
+    def _sanitizer(obj):
         """Sanitizer method that will be passed to jsonutils.loads."""
         return obj
 
     def from_json(self, datastring):
         try:
-            return json.loads(datastring, object_hook=self._sanitizer)
+            return jsonutils.loads(datastring, object_hook=self._sanitizer)
         except ValueError:
             msg = _('Malformed JSON in request body.')
             raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -701,15 +700,11 @@ class JSONResponseSerializer(object):
 
     def _sanitizer(self, obj):
         """Sanitizer method that will be passed to jsonutils.dumps."""
-        if isinstance(obj, datetime.datetime):
-            return obj.isoformat()
         if hasattr(obj, "to_dict"):
             return obj.to_dict()
         if isinstance(obj, multidict.MultiDict):
             return obj.mixed()
-        if isinstance(obj, set):
-            return list(obj)
-        return obj
+        return jsonutils.to_primitive(obj)
 
     def to_json(self, data):
         return jsonutils.dumps(data, default=self._sanitizer)
