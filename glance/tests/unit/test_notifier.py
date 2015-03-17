@@ -18,8 +18,8 @@ import datetime
 
 import glance_store
 import mock
-from oslo import messaging
 from oslo_config import cfg
+import oslo_messaging
 from oslo_utils import timeutils
 import webob
 
@@ -98,8 +98,8 @@ class TaskRepoStub(object):
 
 class TestNotifier(utils.BaseTestCase):
 
-    @mock.patch.object(messaging, 'Notifier')
-    @mock.patch.object(messaging, 'get_transport')
+    @mock.patch.object(oslo_messaging, 'Notifier')
+    @mock.patch.object(oslo_messaging, 'get_transport')
     def _test_load_strategy(self,
                             mock_get_transport, mock_notifier,
                             url, driver):
