@@ -549,7 +549,7 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                       only private and shared images.
     :param admin_as_user: For backwards compatibility. If true, then return to
                       an admin the equivalent set of images which it would see
-                      if it were a regular user
+                      if it was a regular user
     :param return_tag: To indicates whether image entry in result includes it
                        relevant tag entries. This could improve upper-layer
                        query performance, to prevent using separated calls
