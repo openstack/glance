@@ -46,7 +46,7 @@ rpc_opts = [
                          'exceptions',
                          ],
                 help='Modules of exceptions that are permitted to be recreated'
-                     'upon receiving exception data from an rpc call.'),
+                     ' upon receiving exception data from an rpc call.'),
 ]
 
 CONF = cfg.CONF
@@ -106,7 +106,7 @@ class Controller(object):
         Exports methods through the RPC Api.
 
         :params resource: Resource's instance to register.
-        :params filtered: List of methods that *can* me registered. Read
+        :params filtered: List of methods that *can* be registered. Read
         as "Method must be in this list".
         :params excluded: List of methods to exclude.
         :params refiner: Callable to use as filter for methods.
