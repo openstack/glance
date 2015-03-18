@@ -59,7 +59,7 @@ class GlanceMetadefBase(models.TimestampMixin):
     #            required and make changes in oslo (if required) or
     #            in glance (if not).
     updated_at = Column(DateTime, default=lambda: timeutils.utcnow(),
-                        nullable=False, onupdate=lambda: timeutils.utcnow())
+                        nullable=True, onupdate=lambda: timeutils.utcnow())
 
 
 class MetadefNamespace(BASE_DICT, GlanceMetadefBase):
@@ -89,7 +89,7 @@ class MetadefObject(BASE_DICT, GlanceMetadefBase):
     name = Column(String(80), nullable=False)
     description = Column(Text())
     required = Column(Text())
-    json_schema = Column(JSONEncodedDict(), default={})
+    json_schema = Column(JSONEncodedDict(), default={}, nullable=False)
 
 
 class MetadefProperty(BASE_DICT, GlanceMetadefBase):
@@ -103,7 +103,7 @@ class MetadefProperty(BASE_DICT, GlanceMetadefBase):
     namespace_id = Column(Integer(), ForeignKey('metadef_namespaces.id'),
                           nullable=False)
     name = Column(String(80), nullable=False)
-    json_schema = Column(JSONEncodedDict(), default={})
+    json_schema = Column(JSONEncodedDict(), default={}, nullable=False)
 
 
 class MetadefNamespaceResourceType(BASE_DICT, GlanceMetadefBase):

@@ -42,6 +42,7 @@ from oslo_utils import timeutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import sqlalchemy
+from sqlalchemy import inspect
 
 from glance.common import crypt
 from glance.common import exception
@@ -50,6 +51,7 @@ from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 from glance.db.sqlalchemy import models
+from glance.db.sqlalchemy import models_metadef
 from glance import i18n
 
 _ = i18n._
@@ -1360,6 +1362,129 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         self.assertRaises(sqlalchemy.exc.NoSuchTableError,
                           db_utils.get_table, engine, 'metadef_tags')
 
+    def _check_039(self, engine, data):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        metadef_namespaces = sqlalchemy.Table('metadef_namespaces', meta,
+                                              autoload=True)
+        metadef_properties = sqlalchemy.Table('metadef_properties', meta,
+                                              autoload=True)
+        metadef_objects = sqlalchemy.Table('metadef_objects', meta,
+                                           autoload=True)
+        metadef_ns_res_types = sqlalchemy.Table(
+            'metadef_namespace_resource_types',
+            meta, autoload=True)
+        metadef_resource_types = sqlalchemy.Table('metadef_resource_types',
+                                                  meta, autoload=True)
+
+        tables = [metadef_namespaces, metadef_properties, metadef_objects,
+                  metadef_ns_res_types, metadef_resource_types]
+
+        for table in tables:
+            for index_name in ['ix_namespaces_namespace',
+                               'ix_objects_namespace_id_name',
+                               'ix_metadef_properties_namespace_id_name']:
+                self.assertFalse(index_exist(index_name, table.name, engine))
+            for uc_name in ['resource_type_id', 'namespace', 'name',
+                            'namespace_id',
+                            'metadef_objects_namespace_id_name_key',
+                            'metadef_properties_namespace_id_name_key']:
+                self.assertFalse(unique_constraint_exist(uc_name, table.name,
+                                                         engine))
+
+        self.assertTrue(index_exist('ix_metadef_ns_res_types_namespace_id',
+                                    metadef_ns_res_types.name, engine))
+
+        self.assertTrue(index_exist('ix_metadef_namespaces_namespace',
+                                    metadef_namespaces.name, engine))
+
+        self.assertTrue(index_exist('ix_metadef_namespaces_owner',
+                                    metadef_namespaces.name, engine))
+
+        self.assertTrue(index_exist('ix_metadef_objects_name',
+                                    metadef_objects.name, engine))
+
+        self.assertTrue(index_exist('ix_metadef_objects_namespace_id',
+                                    metadef_objects.name, engine))
+
+        self.assertTrue(index_exist('ix_metadef_properties_name',
+                                    metadef_properties.name, engine))
+
+        self.assertTrue(index_exist('ix_metadef_properties_namespace_id',
+                                    metadef_properties.name, engine))
+
+    def _post_downgrade_039(self, engine):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        metadef_namespaces = sqlalchemy.Table('metadef_namespaces', meta,
+                                              autoload=True)
+        metadef_properties = sqlalchemy.Table('metadef_properties', meta,
+                                              autoload=True)
+        metadef_objects = sqlalchemy.Table('metadef_objects', meta,
+                                           autoload=True)
+        metadef_ns_res_types = sqlalchemy.Table(
+            'metadef_namespace_resource_types',
+            meta, autoload=True)
+        metadef_resource_types = sqlalchemy.Table('metadef_resource_types',
+                                                  meta, autoload=True)
+
+        self.assertFalse(index_exist('ix_metadef_ns_res_types_namespace_id',
+                                     metadef_ns_res_types.name, engine))
+
+        self.assertFalse(index_exist('ix_metadef_namespaces_namespace',
+                                     metadef_namespaces.name, engine))
+
+        self.assertFalse(index_exist('ix_metadef_namespaces_owner',
+                                     metadef_namespaces.name, engine))
+
+        self.assertFalse(index_exist('ix_metadef_objects_name',
+                                     metadef_objects.name, engine))
+
+        self.assertFalse(index_exist('ix_metadef_objects_namespace_id',
+                                     metadef_objects.name, engine))
+
+        self.assertFalse(index_exist('ix_metadef_properties_name',
+                                     metadef_properties.name, engine))
+
+        self.assertFalse(index_exist('ix_metadef_properties_namespace_id',
+                                     metadef_properties.name, engine))
+
+        self.assertTrue(index_exist('ix_namespaces_namespace',
+                                    metadef_namespaces.name, engine))
+
+        self.assertTrue(index_exist('ix_objects_namespace_id_name',
+                                    metadef_objects.name, engine))
+
+        self.assertTrue(index_exist('ix_metadef_properties_namespace_id_name',
+                                    metadef_properties.name, engine))
+
+        if engine.name == 'postgresql':
+            inspector = inspect(engine)
+
+            self.assertEqual(1, len(inspector.get_unique_constraints(
+                'metadef_objects')))
+
+            self.assertEqual(1, len(inspector.get_unique_constraints(
+                'metadef_properties')))
+
+        if engine.name == 'mysql':
+            self.assertTrue(unique_constraint_exist(
+                'namespace_id', metadef_properties.name, engine))
+
+            self.assertTrue(unique_constraint_exist(
+                'namespace_id', metadef_objects.name, engine))
+
+            self.assertTrue(unique_constraint_exist(
+                'resource_type_id', metadef_ns_res_types.name, engine))
+
+            self.assertTrue(unique_constraint_exist(
+                'namespace', metadef_namespaces.name, engine))
+
+            self.assertTrue(unique_constraint_exist(
+                'name', metadef_resource_types.name, engine))
+
 
 class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
                           MigrationsMixin):
@@ -1399,6 +1524,8 @@ class TestSqliteMigrations(test_base.DbTestCase,
 class ModelsMigrationSyncMixin(object):
 
     def get_metadata(self):
+        for table in models_metadef.BASE_DICT.metadata.sorted_tables:
+            models.BASE.metadata._add_table(table.name, table.schema, table)
         return models.BASE.metadata
 
     def get_engine(self):
@@ -1408,16 +1535,7 @@ class ModelsMigrationSyncMixin(object):
         migration.db_sync(engine=engine)
 
     def include_object(self, object_, name, type_, reflected, compare_to):
-        # We need to exclude tables that aren't in models.py and table that
-        # contains migrate version
-
-        # TODO(ochuprykov): We need to include this tables back after merge of
-        # models.py and models_metadef.py
-        # (except 'migrate_version')
-        if name in ['migrate_version', 'metadef_objects', 'metadef_namespaces',
-                    'metadef_properties', 'metadef_resource_types',
-                    'metadef_tags',
-                    'metadef_namespace_resource_types'] and type_ == 'table':
+        if name in ['migrate_version'] and type_ == 'table':
             return False
         return True
 
