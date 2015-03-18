@@ -26,6 +26,7 @@ import subprocess
 
 import fixtures
 from oslo_config import cfg
+from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslotest import moxstubout
@@ -43,6 +44,19 @@ from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 
 CONF = cfg.CONF
+try:
+    CONF.debug
+except cfg.NoSuchOptError:
+    # NOTE(sigmavirus24): If we run the entire test suite, the logging options
+    # will be registered appropriately and we do not need to re-register them.
+    # However, when we run a test in isolation (or use --debug), those options
+    # will not be registered for us. In order for a test in a class that
+    # inherits from BaseTestCase to even run, we will need to register them
+    # ourselves.  BaseTestCase.config will set the debug level if something
+    # calls self.config(debug=True) so we need these options registered
+    # appropriately.
+    # See bug 1433785 for more details.
+    log.register_options(CONF)
 
 
 class BaseTestCase(testtools.TestCase):
