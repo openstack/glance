@@ -55,4 +55,4 @@ The Glance architecture consists of several components:
   data stores.
 
 * **Registry Layer** — optional layer organizing secure communication between
-  the domain and the DAL by using a seperate service.
+  the domain and the DAL by using a separate service.
