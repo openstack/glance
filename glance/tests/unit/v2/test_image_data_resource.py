@@ -19,6 +19,7 @@ import mock
 import six
 import webob
 
+import glance.api.policy
 import glance.api.v2.image_data
 from glance.common import exception
 from glance.common import wsgi

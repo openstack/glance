@@ -85,7 +85,7 @@ class FunctionalInitWrapper(functional.FunctionalTest):
 
     def setUp(self):
         super(FunctionalInitWrapper, self).setUp()
-        self.config(policy_file=self.policy_file)
+        self.config(policy_file=self.policy_file, group='oslo_policy')
 
 
 class TestDriver(test_utils.BaseTestCase):

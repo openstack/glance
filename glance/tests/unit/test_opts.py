@@ -64,9 +64,6 @@ class OptsTestCase(utils.BaseTestCase):
             'owner_is_tenant',
             'admin_role',
             'allow_anonymous_access',
-            'policy_file',
-            'policy_default_rule',
-            'policy_dirs',
             'allow_additional_image_properties',
             'image_member_quota',
             'image_property_quota',
@@ -155,9 +152,6 @@ class OptsTestCase(utils.BaseTestCase):
             'owner_is_tenant',
             'admin_role',
             'allow_anonymous_access',
-            'policy_file',
-            'policy_default_rule',
-            'policy_dirs',
             'allow_additional_image_properties',
             'image_member_quota',
             'image_property_quota',
@@ -203,9 +197,6 @@ class OptsTestCase(utils.BaseTestCase):
             None
         ]
         expected_opt_names = [
-            'policy_file',
-            'policy_default_rule',
-            'policy_dirs',
             'allow_additional_image_properties',
             'image_member_quota',
             'image_property_quota',
@@ -255,9 +246,6 @@ class OptsTestCase(utils.BaseTestCase):
             None
         ]
         expected_opt_names = [
-            'policy_file',
-            'policy_default_rule',
-            'policy_dirs',
             'allow_additional_image_properties',
             'image_member_quota',
             'image_property_quota',

@@ -27,6 +27,7 @@ import tempfile
 
 from oslo_concurrency import lockutils
 from oslo_config import cfg
+from oslo_policy import policy
 from paste import deploy
 
 from glance import i18n
@@ -180,6 +181,7 @@ CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(image_format_opts, group='image_format')
 CONF.register_opts(task_opts, group='task')
 CONF.register_opts(common_opts)
+policy.Enforcer(CONF)
 
 
 def parse_args(args=None, usage=None, default_config_files=None):

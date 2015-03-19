@@ -20,21 +20,21 @@ import copy
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_policy import policy
 
 from glance.common import exception
 import glance.domain.proxy
 from glance import i18n
-from glance.openstack.common import policy
 
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
-DEFAULT_RULES = {
-    'context_is_admin': policy.RoleCheck('role', 'admin'),
-    'default': policy.TrueCheck(),
-    'manage_image_cache': policy.RoleCheck('role', 'admin'),
-}
+DEFAULT_RULES = policy.Rules.from_dict({
+    'context_is_admin': 'role:admin',
+    'default': '@',
+    'manage_image_cache': 'role:admin',
+})
 
 _ = i18n._
 _LI = i18n._LI
@@ -45,11 +45,11 @@ class Enforcer(policy.Enforcer):
     """Responsible for loading and enforcing rules"""
 
     def __init__(self):
-        if CONF.find_file(CONF.policy_file):
+        if CONF.find_file(CONF.oslo_policy.policy_file):
             kwargs = dict(rules=None, use_conf=True)
         else:
             kwargs = dict(rules=DEFAULT_RULES, use_conf=False)
-        super(Enforcer, self).__init__(overwrite=False, **kwargs)
+        super(Enforcer, self).__init__(CONF, overwrite=False, **kwargs)
 
     def add_rules(self, rules):
         """Add new rules to the Rules object"""

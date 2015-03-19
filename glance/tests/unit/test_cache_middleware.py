@@ -13,15 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_policy import policy
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import testtools
 import webob
 
 import glance.api.middleware.cache
+import glance.api.policy
 from glance.common import exception
 from glance import context
-from glance.openstack.common import policy
 import glance.registry.client.v1.api as registry
 from glance.tests.unit import base
 from glance.tests.unit import utils as unit_test_utils
@@ -171,8 +172,7 @@ class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
 
 class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
     def _enforcer_from_rules(self, unparsed_rules):
-        rules = dict((k, policy.parse_rule(v))
-                     for (k, v) in unparsed_rules.items())
+        rules = policy.Rules.from_dict(unparsed_rules)
         enforcer = glance.api.policy.Enforcer()
         enforcer.set_rules(rules, overwrite=True)
         return enforcer

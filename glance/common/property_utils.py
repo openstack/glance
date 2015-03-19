@@ -21,11 +21,11 @@ except ImportError:
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_policy import policy
 
 import glance.api.policy
 from glance.common import exception
 from glance import i18n
-from glance.openstack.common import policy
 
 # NOTE(bourke): The default dict_type is collections.OrderedDict in py27, but
 # we must set manually for compatibility with py26
@@ -164,8 +164,9 @@ class PropertyRules(object):
         """
         rule = "rule:%s" % rule
         rule_name = "%s:%s" % (property_exp, action)
-        rule_dict = {}
-        rule_dict[rule_name] = policy.parse_rule(rule)
+        rule_dict = policy.Rules.from_dict({
+            rule_name: rule
+        })
         self.policy_enforcer.add_rules(rule_dict)
 
     def _check_policy(self, property_exp, action, context):
