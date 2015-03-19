@@ -116,6 +116,57 @@ To limit an action to a particular role or roles, you list the roles like so ::
 The above would add a rule that only allowed users that had roles of either
 "admin" or "superuser" to delete an image.
 
+Writing Rules
+-------------
+
+Role checks are going to continue to work exactly as they already do. If the
+role defined in the check is one that the user holds, then that will pass,
+e.g., ``role:admin``.
+
+To write a generic rule, you need to know that there are three values provided
+by Glance that can be used in a rule on the left side of the colon (``:``).
+Those values are the current user's credentials in the form of:
+
+- role
+- tenant
+- owner
+
+The left side of the colon can also contain any value that Python can
+understand, e.g.,:
+
+- ``True``
+- ``False``
+- ``"a string"``
+- &c.
+
+Using ``tenant`` and ``owner`` will only work with images. Consider the
+following rule::
+
+    tenant:%(owner)s
+
+This will use the ``tenant`` value of the currently authenticated user. It
+will also use ``owner`` from the image it is acting upon. If those two
+values are equivalent the check will pass. All attributes on an image (as well
+as extra image properties) are available for use on the right side of the
+colon. The most useful are the following:
+
+- ``owner``
+- ``protected``
+- ``is_public``
+
+Therefore, you could construct a set of rules like the following::
+
+    {
+        "not_protected": "False:%(protected)s",
+        "is_owner": "tenant:%(owner)s",
+        "is_owner_or_admin": "rule:is_owner or role:admin",
+        "not_protected_and_is_owner": "rule:not_protected and rule:is_owner",
+
+        "get_image": "rule:is_owner_or_admin",
+        "delete_image": "rule:not_protected_and_is_owner",
+        "add_member": "rule:not_protected_and_is_owner"
+    }
+
 Examples
 --------
 
@@ -124,7 +175,7 @@ Example 1. (The default policy configuration)
  ::
 
   {
-      "default": []
+      "default": ""
   }
 
 Note that an empty JSON list means that all methods of the
@@ -135,8 +186,8 @@ Example 2. Disallow modification calls to non-admins
  ::
 
   {
-      "default": [],
-      "add_image": ["role:admin"],
-      "modify_image": ["role:admin"],
-      "delete_image": ["role:admin"]
+      "default": "",
+      "add_image": "role:admin",
+      "modify_image": "role:admin",
+      "delete_image": "role:admin"
   }

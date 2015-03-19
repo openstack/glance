@@ -811,6 +811,290 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_image_modification_works_for_owning_tenant_id(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "add_image": "",
+            "get_image": "",
+            "modify_image": "tenant:%(owner)s",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
+            "restricted":
+            "not ('aki':%(container_format)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Get the image's ID
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers['content-type'] = media_type
+        del headers['X-Roles']
+        data = jsonutils.dumps([
+            {'op': 'replace', 'path': '/name', 'value': 'new-name'},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+
+        self.stop_servers()
+
+    def test_image_modification_fails_on_mismatched_tenant_ids(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "add_image": "",
+            "get_image": "",
+            "modify_image": "'A-Fake-Tenant-Id':%(owner)s",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
+            "restricted":
+            "not ('aki':%(container_format)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted"
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Get the image's ID
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers['content-type'] = media_type
+        del headers['X-Roles']
+        data = jsonutils.dumps([
+            {'op': 'replace', 'path': '/name', 'value': 'new-name'},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+
+        self.stop_servers()
+
+    def test_member_additions_works_for_owning_tenant_id(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "add_image": "",
+            "get_image": "",
+            "modify_image": "",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
+            "restricted":
+            "not ('aki':%(container_format)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted",
+            "add_member": "tenant:%(owner)s",
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Get the image's ID
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        # Get the image's members resource
+        path = self._url('/v2/images/%s/members' % image_id)
+        body = jsonutils.dumps({'member': TENANT3})
+        del headers['X-Roles']
+        response = requests.post(path, headers=headers, data=body)
+        self.assertEqual(200, response.status_code)
+
+        self.stop_servers()
+
+    def test_image_additions_works_only_for_specific_tenant_id(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "add_image": "'{0}':%(owner)s".format(TENANT1),
+            "get_image": "",
+            "modify_image": "",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
+            "restricted":
+            "not ('aki':%(container_format)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted",
+            "add_member": "",
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin', 'X-Tenant-Id': TENANT1})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        headers['X-Tenant-Id'] = TENANT2
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(403, response.status_code)
+
+        self.stop_servers()
+
+    def test_owning_tenant_id_can_retrieve_image_information(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "add_image": "",
+            "get_image": "tenant:%(owner)s",
+            "modify_image": "",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
+            "restricted":
+            "not ('aki':%(container_format)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted",
+            "add_member": "",
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin', 'X-Tenant-Id': TENANT1})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Remove the admin role
+        del headers['X-Roles']
+        # Get the image's ID
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        # Can retrieve the image as TENANT1
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        # Can retrieve the image's members as TENANT1
+        path = self._url('/v2/images/%s/members' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        headers['X-Tenant-Id'] = TENANT2
+        response = requests.get(path, headers=headers)
+        self.assertEqual(403, response.status_code)
+
+        self.stop_servers()
+
+    def test_owning_tenant_can_publicize_image(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "add_image": "",
+            "publicize_iamge": "tenant:%(owner)s",
+            "get_image": "tenant:%(owner)s",
+            "modify_image": "",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
+            "restricted":
+            "not ('aki':%(container_format)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted",
+            "add_member": "",
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin', 'X-Tenant-Id': TENANT1})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Get the image's ID
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
+            'X-Tenant-Id': TENANT1,
+        })
+        doc = [{'op': 'replace', 'path': '/visibility', 'value': 'public'}]
+        data = jsonutils.dumps(doc)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code)
+
+    def test_owning_tenant_can_delete_image(self):
+        rules = {
+            "context_is_admin": "role:admin",
+            "default": "",
+            "add_image": "",
+            "publicize_iamge": "tenant:%(owner)s",
+            "get_image": "tenant:%(owner)s",
+            "modify_image": "",
+            "upload_image": "",
+            "get_image_location": "",
+            "delete_image": "",
+            "restricted":
+            "not ('aki':%(container_format)s and role:_member_)",
+            "download_image": "role:admin or rule:restricted",
+            "add_member": "",
+        }
+
+        self.set_policy_rules(rules)
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin', 'X-Tenant-Id': TENANT1})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+
+        # Get the image's ID
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=headers)
+        self.assertEqual(204, response.status_code)
+
     def test_image_size_cap(self):
         self.api_server.image_size_cap = 128
         self.start_servers(**self.__dict__.copy())

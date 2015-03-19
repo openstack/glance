@@ -72,6 +72,8 @@ class ImageFactoryStub(object):
 
 
 class MemberRepoStub(object):
+    image = None
+
     def add(self, image_member):
         image_member.output = 'member_repo_add'
 
@@ -207,41 +209,53 @@ class TestImagePolicy(test_utils.BaseTestCase):
         self.assertRaises(exception.Forbidden,
                           setattr, image, 'visibility', 'public')
         self.assertEqual('private', image.visibility)
-        self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
+        self.policy.enforce.assert_called_once_with({}, "publicize_image",
+                                                    image.target)
 
     def test_publicize_image_allowed(self):
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         image.visibility = 'public'
         self.assertEqual('public', image.visibility)
-        self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
+        self.policy.enforce.assert_called_once_with({}, "publicize_image",
+                                                    image.target)
 
     def test_delete_image_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden, image.delete)
         self.assertEqual('active', image.status)
-        self.policy.enforce.assert_called_once_with({}, "delete_image", {})
+        self.policy.enforce.assert_called_once_with({}, "delete_image",
+                                                    image.target)
 
     def test_delete_image_allowed(self):
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         image.delete()
         self.assertEqual('deleted', image.status)
-        self.policy.enforce.assert_called_once_with({}, "delete_image", {})
+        self.policy.enforce.assert_called_once_with({}, "delete_image",
+                                                    image.target)
 
     def test_get_image_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
-        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
-                                                      {}, self.policy)
-        self.assertRaises(exception.Forbidden, image_repo.get, UUID1)
-        self.policy.enforce.assert_called_once_with({}, "get_image", {})
+        image_target = mock.Mock()
+        with mock.patch.object(glance.api.policy, 'ImageTarget') as target:
+            target.return_value = image_target
+            image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                          {}, self.policy)
+            self.assertRaises(exception.Forbidden, image_repo.get, UUID1)
+        self.policy.enforce.assert_called_once_with({}, "get_image",
+                                                    image_target)
 
     def test_get_image_allowed(self):
-        image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
-                                                      {}, self.policy)
-        output = image_repo.get(UUID1)
+        image_target = mock.Mock()
+        with mock.patch.object(glance.api.policy, 'ImageTarget') as target:
+            target.return_value = image_target
+            image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
+                                                          {}, self.policy)
+            output = image_repo.get(UUID1)
         self.assertIsInstance(output, glance.api.policy.ImageProxy)
         self.assertEqual('image_from_get', output.image)
-        self.policy.enforce.assert_called_once_with({}, "get_image", {})
+        self.policy.enforce.assert_called_once_with({}, "get_image",
+                                                    image_target)
 
     def test_get_images_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
@@ -265,14 +279,16 @@ class TestImagePolicy(test_utils.BaseTestCase):
                                                       {}, self.policy)
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden, image_repo.save, image)
-        self.policy.enforce.assert_called_once_with({}, "modify_image", {})
+        self.policy.enforce.assert_called_once_with({}, "modify_image",
+                                                    image.target)
 
     def test_modify_image_allowed(self):
         image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
                                                       {}, self.policy)
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         image_repo.save(image)
-        self.policy.enforce.assert_called_once_with({}, "modify_image", {})
+        self.policy.enforce.assert_called_once_with({}, "modify_image",
+                                                    image.target)
 
     def test_add_image_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
@@ -280,14 +296,16 @@ class TestImagePolicy(test_utils.BaseTestCase):
                                                       {}, self.policy)
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden, image_repo.add, image)
-        self.policy.enforce.assert_called_once_with({}, "add_image", {})
+        self.policy.enforce.assert_called_once_with({}, "add_image",
+                                                    image.target)
 
     def test_add_image_allowed(self):
         image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
                                                       {}, self.policy)
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         image_repo.add(image)
-        self.policy.enforce.assert_called_once_with({}, "add_image", {})
+        self.policy.enforce.assert_called_once_with({}, "add_image",
+                                                    image.target)
 
     def test_new_image_visibility(self):
         self.policy.enforce.side_effect = exception.Forbidden
@@ -308,20 +326,21 @@ class TestImagePolicy(test_utils.BaseTestCase):
             'test_key': 'test_4321'
         }
         image_stub = ImageStub(UUID1, extra_properties=extra_properties)
-        image = glance.api.policy.ImageProxy(image_stub, {}, self.policy)
+        with mock.patch('glance.api.policy.ImageTarget'):
+            image = glance.api.policy.ImageProxy(image_stub, {}, self.policy)
+        target = image.target
         self.policy.enforce.side_effect = exception.Forbidden
-        glance.api.policy.ImageTarget = mock.Mock()
-        target = glance.api.policy.ImageTarget(image)
 
         self.assertRaises(exception.Forbidden, image.get_data)
         self.policy.enforce.assert_called_once_with({}, "download_image",
-                                                    target=target)
+                                                    target)
 
     def test_image_set_data(self):
         self.policy.enforce.side_effect = exception.Forbidden
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.assertRaises(exception.Forbidden, image.set_data)
-        self.policy.enforce.assert_called_once_with({}, "upload_image", {})
+        self.policy.enforce.assert_called_once_with({}, "upload_image",
+                                                    image.target)
 
 
 class TestMemberPolicy(test_utils.BaseTestCase):
@@ -330,60 +349,71 @@ class TestMemberPolicy(test_utils.BaseTestCase):
         self.policy.enforce = mock.Mock()
         self.member_repo = glance.api.policy.ImageMemberRepoProxy(
             MemberRepoStub(), {}, self.policy)
+        self.target = self.member_repo.target
         super(TestMemberPolicy, self).setUp()
 
     def test_add_member_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         self.assertRaises(exception.Forbidden, self.member_repo.add, '')
-        self.policy.enforce.assert_called_once_with({}, "add_member", {})
+        self.policy.enforce.assert_called_once_with({}, "add_member",
+                                                    self.target)
 
     def test_add_member_allowed(self):
         image_member = ImageMembershipStub()
         self.member_repo.add(image_member)
         self.assertEqual('member_repo_add', image_member.output)
-        self.policy.enforce.assert_called_once_with({}, "add_member", {})
+        self.policy.enforce.assert_called_once_with({}, "add_member",
+                                                    self.target)
 
     def test_get_member_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         self.assertRaises(exception.Forbidden, self.member_repo.get, '')
-        self.policy.enforce.assert_called_once_with({}, "get_member", {})
+        self.policy.enforce.assert_called_once_with({}, "get_member",
+                                                    self.target)
 
     def test_get_member_allowed(self):
         output = self.member_repo.get('')
         self.assertEqual('member_repo_get', output)
-        self.policy.enforce.assert_called_once_with({}, "get_member", {})
+        self.policy.enforce.assert_called_once_with({}, "get_member",
+                                                    self.target)
 
     def test_modify_member_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         self.assertRaises(exception.Forbidden, self.member_repo.save, '')
-        self.policy.enforce.assert_called_once_with({}, "modify_member", {})
+        self.policy.enforce.assert_called_once_with({}, "modify_member",
+                                                    self.target)
 
     def test_modify_member_allowed(self):
         image_member = ImageMembershipStub()
         self.member_repo.save(image_member)
         self.assertEqual('member_repo_save', image_member.output)
-        self.policy.enforce.assert_called_once_with({}, "modify_member", {})
+        self.policy.enforce.assert_called_once_with({}, "modify_member",
+                                                    self.target)
 
     def test_get_members_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         self.assertRaises(exception.Forbidden, self.member_repo.list, '')
-        self.policy.enforce.assert_called_once_with({}, "get_members", {})
+        self.policy.enforce.assert_called_once_with({}, "get_members",
+                                                    self.target)
 
     def test_get_members_allowed(self):
         output = self.member_repo.list('')
         self.assertEqual('member_repo_list', output)
-        self.policy.enforce.assert_called_once_with({}, "get_members", {})
+        self.policy.enforce.assert_called_once_with({}, "get_members",
+                                                    self.target)
 
     def test_delete_member_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         self.assertRaises(exception.Forbidden, self.member_repo.remove, '')
-        self.policy.enforce.assert_called_once_with({}, "delete_member", {})
+        self.policy.enforce.assert_called_once_with({}, "delete_member",
+                                                    self.target)
 
     def test_delete_member_allowed(self):
         image_member = ImageMembershipStub()
         self.member_repo.remove(image_member)
         self.assertEqual('member_repo_remove', image_member.output)
-        self.policy.enforce.assert_called_once_with({}, "delete_member", {})
+        self.policy.enforce.assert_called_once_with({}, "delete_member",
+                                                    self.target)
 
 
 class TestTaskPolicy(test_utils.BaseTestCase):
