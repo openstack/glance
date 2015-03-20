@@ -3118,6 +3118,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Image members forbidden for public image
         path = self._url('/v2/images/%s/members' % image_fixture[0]['id'])
         response = requests.get(path, headers=get_header('tenant1'))
+        self.assertIn("Public images do not have members", response.text)
         self.assertEqual(403, response.status_code)
 
         # Image Member Cannot delete Image membership
