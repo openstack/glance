@@ -105,6 +105,16 @@ def _get_namespace_resource_types(meta, namespace_id):
         execute().fetchall()
 
 
+def _get_namespace_resource_type_by_ids(meta, namespace_id, rt_id):
+    namespace_resource_types_table =\
+        get_metadef_namespace_resource_types_table(meta)
+    return namespace_resource_types_table.select().\
+        where(and_(
+            namespace_resource_types_table.c.namespace_id == namespace_id,
+            namespace_resource_types_table.c.resource_type_id == rt_id)).\
+        execute().fetchone()
+
+
 def _get_properties(meta, namespace_id):
     properties_table = get_metadef_properties_table(meta)
     return properties_table.select().\
@@ -247,34 +257,34 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
         namespace_id = db_namespace[0]
 
         for resource_type in metadata.get('resource_type_associations', []):
-            values = {
-                'namespace_id': namespace_id,
-                'properties_target': resource_type.get(
-                    'properties_target'),
-                'prefix': resource_type.get('prefix', None)
-            }
             rt_id = _get_resource_type_id(meta, resource_type['name'])
             if not rt_id:
-                rt_name = resource_type['name']
-                resource_type = {
-                    'name': rt_name,
-                    'protected': True,
-                    'created_at': timeutils.utcnow()
-                }
-                _insert_data_to_db(resource_types_table,
-                                   resource_type)
-
-                rt_id = _get_resource_type_id(meta, rt_name)
-                values.update({
-                    'resource_type_id': rt_id,
+                val = {
+                    'name': resource_type['name'],
                     'created_at': timeutils.utcnow(),
-                })
+                    'protected': True
+                }
+                _insert_data_to_db(resource_types_table, val)
+                rt_id = _get_resource_type_id(meta, resource_type['name'])
+            elif prefer_new:
+                val = {'updated_at': timeutils.utcnow()}
+                _update_data_in_db(resource_types_table, val,
+                                   resource_types_table.c.id, rt_id)
+
+            values = {
+                'namespace_id': namespace_id,
+                'resource_type_id': rt_id,
+                'properties_target': resource_type.get(
+                    'properties_target', None),
+                'prefix': resource_type.get('prefix', None)
+            }
+            namespace_resource_type = _get_namespace_resource_type_by_ids(
+                meta, namespace_id, rt_id)
+            if not namespace_resource_type:
+                values.update({'created_at': timeutils.utcnow()})
                 _insert_data_to_db(namespace_rt_table, values)
             elif prefer_new:
-                values.update({
-                    'resource_type_id': rt_id,
-                    'updated_at': timeutils.utcnow(),
-                })
+                values.update({'updated_at': timeutils.utcnow()})
                 _update_rt_association(namespace_rt_table, values,
                                        rt_id, namespace_id)
 
