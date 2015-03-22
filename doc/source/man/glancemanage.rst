@@ -55,11 +55,25 @@ COMMANDS
         specified VERSION.
 
   **db_version_control**
-        Place the database untder migration control.
+        Place the database under migration control.
 
   **db_sync <VERSION> <CURRENT_VERSION>**
         Place a database under migration control and upgrade, creating
         it first if necessary.
+
+  **db_export_metadefs**
+        Export the metadata definitions into json format. By default the
+        definitions are exported to /etc/glance/metadefs directory.
+
+  **db_load_metadefs**
+        Load the metadata definitions into glance database. By default the
+        definitions are imported from /etc/glance/metadefs directory.
+
+  **db_unload_metadefs**
+        Unload the metadata definitions. Clears the contents of all the glance
+        db tables including metadef_namespace_resource_types, metadef_tags,
+        metadef_objects, metadef_resource_types, metadef_namespaces and
+        metadef_properties.
 
 OPTIONS
 =======
