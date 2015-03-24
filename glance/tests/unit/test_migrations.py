@@ -90,7 +90,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         return self.engine
 
     def test_walk_versions(self):
-        self._walk_versions(True, False)
+        # No more downgrades
+        self._walk_versions(False, False)
 
     def _create_unversioned_001_db(self, engine):
         # Create the initial version of the images table
@@ -1485,6 +1486,15 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             self.assertTrue(unique_constraint_exist(
                 'name', metadef_resource_types.name, engine))
 
+    def _check_040(self, engine, data):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+        metadef_tags = sqlalchemy.Table('metadef_tags', meta, autoload=True)
+
+        if engine.name == 'mysql':
+            self.assertFalse(index_exist('namespace_id',
+                             metadef_tags.name, engine))
+
 
 class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
                           MigrationsMixin):
@@ -1518,7 +1528,8 @@ class TestPostgresqlMigrations(test_base.PostgreSQLOpportunisticTestCase,
 class TestSqliteMigrations(test_base.DbTestCase,
                            MigrationsMixin):
     def test_walk_versions(self):
-        self._walk_versions(True, True)
+        # No more downgrades
+        self._walk_versions(False, False)
 
 
 class ModelsMigrationSyncMixin(object):
