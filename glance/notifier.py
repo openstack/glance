@@ -17,9 +17,9 @@
 import abc
 
 import glance_store
-from oslo import messaging
 from oslo_config import cfg
 from oslo_log import log as logging
+import oslo_messaging
 from oslo_utils import excutils
 from oslo_utils import timeutils
 import six
@@ -60,7 +60,7 @@ _ALIASES = {
 
 
 def get_transport():
-    return messaging.get_transport(CONF, aliases=_ALIASES)
+    return oslo_messaging.get_transport(CONF, aliases=_ALIASES)
 
 
 class Notifier(object):
@@ -69,8 +69,8 @@ class Notifier(object):
     def __init__(self):
         publisher_id = CONF.default_publisher_id
         self._transport = get_transport()
-        self._notifier = messaging.Notifier(self._transport,
-                                            publisher_id=publisher_id)
+        self._notifier = oslo_messaging.Notifier(self._transport,
+                                                 publisher_id=publisher_id)
 
     def warn(self, event_type, payload):
         self._notifier.warn({}, event_type, payload)
