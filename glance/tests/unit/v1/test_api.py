@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import contextlib
 import copy
 import datetime
 import hashlib
@@ -394,7 +393,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(400, res.status_int)
         self.assertIn('Required store bad is invalid', res.body)
 
-    def test_create_with_location_get_store_or_400_raises_exception(self):
+    @mock.patch.object(glance.api.v1.images.Controller, '_external_source')
+    @mock.patch.object(store, 'get_store_from_location')
+    def test_create_with_location_get_store_or_400_raises_exception(
+            self, mock_get_store_from_location, mock_external_source):
         location = 'bad+scheme://localhost:0/image.qcow2'
         scheme = 'bad+scheme'
         fixture_headers = {
@@ -409,23 +411,14 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
-        ctlr = glance.api.v1.images.Controller
+        mock_external_source.return_value = location
+        mock_get_store_from_location.return_value = scheme
 
-        with contextlib.nested(
-                mock.patch.object(ctlr, '_external_source',
-                                  return_value=location),
-                mock.patch.object(store,
-                                  'get_store_from_location',
-                                  return_value=scheme)
-        ) as (
-            mock_external_source,
-            mock_get_store_from_location
-        ):
-            res = req.get_response(self.api)
-            self.assertEqual(400, res.status_int)
-            self.assertEqual(1, mock_external_source.call_count)
-            self.assertEqual(1, mock_get_store_from_location.call_count)
-            self.assertIn('Store for scheme %s not found' % scheme, res.body)
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+        self.assertEqual(1, mock_external_source.call_count)
+        self.assertEqual(1, mock_get_store_from_location.call_count)
+        self.assertIn('Store for scheme %s not found' % scheme, res.body)
 
     def test_create_with_location_unknown_scheme(self):
         fixture_headers = {
