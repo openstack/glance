@@ -22,6 +22,7 @@ Utility methods for working with WSGI servers
 from __future__ import print_function
 
 import errno
+import functools
 import os
 import signal
 import sys
@@ -124,6 +125,30 @@ def get_bind_addr(default_port=None):
     return (CONF.bind_host, CONF.bind_port or default_port)
 
 
+def ssl_wrap_socket(sock):
+    """
+    Wrap an existing socket in SSL
+
+    :param sock: non-SSL socket to wrap
+
+    :returns: An SSL wrapped socket
+    """
+    utils.validate_key_cert(CONF.key_file, CONF.cert_file)
+
+    ssl_kwargs = {
+        'server_side': True,
+        'certfile': CONF.cert_file,
+        'keyfile': CONF.key_file,
+        'cert_reqs': ssl.CERT_NONE,
+    }
+
+    if CONF.ca_file:
+        ssl_kwargs['ca_certs'] = CONF.ca_file
+        ssl_kwargs['cert_reqs'] = ssl.CERT_REQUIRED
+
+    return ssl.wrap_socket(sock, **ssl_kwargs)
+
+
 def get_socket(default_port):
     """
     Bind socket to bind ip:port in conf
@@ -148,43 +173,20 @@ def get_socket(default_port):
         if addr[0] in (socket.AF_INET, socket.AF_INET6)
     ][0]
 
-    cert_file = CONF.cert_file
-    key_file = CONF.key_file
-    use_ssl = cert_file or key_file
-    if use_ssl and (not cert_file or not key_file):
+    use_ssl = CONF.key_file or CONF.cert_file
+    if use_ssl and (not CONF.key_file or not CONF.cert_file):
         raise RuntimeError(_("When running server in SSL mode, you must "
                              "specify both a cert_file and key_file "
                              "option value in your configuration file"))
 
-    def wrap_ssl(sock):
-        utils.validate_key_cert(key_file, cert_file)
-
-        ssl_kwargs = {
-            'server_side': True,
-            'certfile': cert_file,
-            'keyfile': key_file,
-            'cert_reqs': ssl.CERT_NONE,
-        }
-
-        if CONF.ca_file:
-            ssl_kwargs['ca_certs'] = CONF.ca_file
-            ssl_kwargs['cert_reqs'] = ssl.CERT_REQUIRED
-
-        return ssl.wrap_socket(sock, **ssl_kwargs)
-
     sock = utils.get_test_suite_socket()
     retry_until = time.time() + 30
 
-    if sock and use_ssl:
-        sock = wrap_ssl(sock)
     while not sock and time.time() < retry_until:
         try:
             sock = eventlet.listen(bind_addr,
                                    backlog=CONF.backlog,
                                    family=address_family)
-            if use_ssl:
-                sock = wrap_ssl(sock)
-
         except socket.error as err:
             if err.args[0] != errno.EADDRINUSE:
                 raise
@@ -194,14 +196,6 @@ def get_socket(default_port):
                              " trying for 30 seconds") %
                            {'host': bind_addr[0],
                             'port': bind_addr[1]})
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # in my experience, sockets can hang around forever without keepalive
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-
-    # This option isn't available in the OS X version of eventlet
-    if hasattr(socket, 'TCP_KEEPIDLE'):
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE,
-                        CONF.tcp_keepidle)
 
     return sock
 
@@ -250,9 +244,10 @@ class Server(object):
     This class requires initialize_glance_store set to True if
     glance store needs to be initialized.
     """
-
     def __init__(self, threads=1000, initialize_glance_store=False):
-        eventlet.wsgi.MAX_HEADER_LINE = CONF.max_header_line
+        os.umask(0o27)  # ensure files are created with the correct privileges
+        self._logger = logging.getLogger("eventlet.wsgi.server")
+        self._wsgi_logger = loggers.WritableLogger(self._logger)
         self.threads = threads
         self.children = set()
         self.stale_children = set()
@@ -260,22 +255,6 @@ class Server(object):
         # NOTE(abhishek): Allows us to only re-initialize glance_store when
         # the API's configuration reloads.
         self.initialize_glance_store = initialize_glance_store
-
-    def hup(self, *args):
-        """Reloads configuration files with zero down time."""
-        signal.signal(signal.SIGHUP, signal.SIG_IGN)
-        raise exception.SIGHUPInterrupt
-
-    def start(self, application, default_port):
-        """
-        Run a WSGI server with the given application.
-
-        :param application: The application to be run in the WSGI server
-        :param default_port: Port to bind to if none is specified in conf
-        """
-        if self.initialize_glance_store:
-            initialize_glance_store()
-
         self.pgid = os.getpid()
         try:
             # NOTE(flaper87): Make sure this process
@@ -293,20 +272,33 @@ class Server(object):
             # shouldn't raise any error here.
             self.pgid = 0
 
-        def kill_children(*args):
-            """Kills the entire process group."""
-            signal.signal(signal.SIGTERM, signal.SIG_IGN)
-            signal.signal(signal.SIGINT, signal.SIG_IGN)
-            self.running = False
-            os.killpg(self.pgid, signal.SIGTERM)
+    def hup(self, *args):
+        """
+        Reloads configuration files with zero down time
+        """
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)
+        raise exception.SIGHUPInterrupt
 
+    def kill_children(self, *args):
+        """Kills the entire process group."""
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        self.running = False
+        os.killpg(self.pgid, signal.SIGTERM)
+
+    def start(self, application, default_port):
+        """
+        Run a WSGI server with the given application.
+
+        :param application: The application to be run in the WSGI server
+        :param default_port: Port to bind to if none is specified in conf
+        """
         self.application = application
-        self.sock = get_socket(default_port)
+        self.default_port = default_port
+        self.configure()
+        self.start_wsgi()
 
-        os.umask(0o27)  # ensure files are created with the correct privileges
-        self._logger = logging.getLogger("eventlet.wsgi.server")
-        self._wsgi_logger = loggers.WritableLogger(self._logger)
-
+    def start_wsgi(self):
         if CONF.workers == 0:
             # Useful for profiling, test, debug etc.
             self.pool = self.create_pool()
@@ -314,8 +306,8 @@ class Server(object):
             return
         else:
             LOG.info(_LI("Starting %d workers") % CONF.workers)
-            signal.signal(signal.SIGTERM, kill_children)
-            signal.signal(signal.SIGINT, kill_children)
+            signal.signal(signal.SIGTERM, self.kill_children)
+            signal.signal(signal.SIGINT, self.kill_children)
             signal.signal(signal.SIGHUP, self.hup)
             while len(self.children) < CONF.workers:
                 self.run_child()
@@ -367,17 +359,41 @@ class Server(object):
         self.sock.close()
         LOG.debug('Exited')
 
-    def reload(self):
-        cfg.CONF.reload_config_files()
+    def configure(self, old_conf=None, has_changed=None):
+        """
+        Apply configuration settings
+
+        :param old_conf: Cached old configuration settings (if any)
+        :param has changed: callable to determine if a parameter has changed
+        """
+        eventlet.wsgi.MAX_HEADER_LINE = CONF.max_header_line
+        self.configure_socket(old_conf, has_changed)
         if self.initialize_glance_store:
             initialize_glance_store()
 
+    def reload(self):
+        """
+        Reload and re-apply configuration settings
+
+        Existing child processes are sent a SIGHUP signal
+        and will exit after completing existing requests.
+        New child processes, which will have the updated
+        configuration, are spawned. This allows preventing
+        interruption to the service.
+        """
+        def _has_changed(old, new, param):
+            old = old.get(param)
+            new = getattr(new, param)
+            return (new != old)
+
+        old_conf = utils.stash_conf_values()
+        has_changed = functools.partial(_has_changed, old_conf, CONF)
+        CONF.reload_config_files()
         os.killpg(self.pgid, signal.SIGHUP)
         self.stale_children = self.children
         self.children = set()
-        while len(self.children) < CONF.workers:
-            self.run_child()
-        signal.signal(signal.SIGHUP, self.hup)
+        self.configure(old_conf, has_changed)
+        self.start_wsgi()
 
     def wait(self):
         """Wait until all servers have completed running."""
@@ -404,10 +420,14 @@ class Server(object):
             # a child worker receives the signal before the parent
             # and is respawned unnecessarily as a result
             signal.signal(signal.SIGINT, signal.SIG_IGN)
+            # The child has no need to stash the unwrapped
+            # socket, and the reference prevents a clean
+            # exit on sighup
+            self._sock = None
             self.run_server()
             LOG.info(_LI('Child %d exiting normally') % os.getpid())
-            # self.pool.waitall() has been called by run_server, so
-            # its safe to exit here
+            # self.pool.waitall() is now called in wsgi's server so
+            # it's safe to exit here
             sys.exit(0)
         else:
             LOG.info(_LI('Started child %s') % pid)
@@ -444,6 +464,78 @@ class Server(object):
                              log=self._wsgi_logger,
                              debug=False,
                              keepalive=CONF.http_keepalive)
+
+    def configure_socket(self, old_conf=None, has_changed=None):
+        """
+        Ensure a socket exists and is appropriately configured.
+
+        This function is called on start up, and can also be
+        called in the event of a configuration reload.
+
+        When called for the first time a new socket is created.
+        If reloading and either bind_host or bind port have been
+        changed the existing socket must be closed and a new
+        socket opened (laws of physics).
+
+        In all other cases (bind_host/bind_port have not changed)
+        the existing socket is reused.
+
+        :param old_conf: Cached old configuration settings (if any)
+        :param has changed: callable to determine if a parameter has changed
+        """
+        # Do we need a fresh socket?
+        new_sock = (old_conf is None or (
+                    has_changed('bind_host') or
+                    has_changed('bind_port')))
+        # Will we be using https?
+        use_ssl = not (not CONF.cert_file or not CONF.key_file)
+        # Were we using https before?
+        old_use_ssl = (old_conf is not None and not (
+                       not old_conf.get('key_file') or
+                       not old_conf.get('cert_file')))
+        # Do we now need to perform an SSL wrap on the socket?
+        wrap_sock = use_ssl is True and (old_use_ssl is False or new_sock)
+        # Do we now need to perform an SSL unwrap on the socket?
+        unwrap_sock = use_ssl is False and old_use_ssl is True
+
+        if new_sock:
+            self._sock = None
+            if old_conf is not None:
+                self.sock.close()
+            _sock = get_socket(self.default_port)
+            _sock.setsockopt(socket.SOL_SOCKET,
+                             socket.SO_REUSEADDR, 1)
+            # sockets can hang around forever without keepalive
+            _sock.setsockopt(socket.SOL_SOCKET,
+                             socket.SO_KEEPALIVE, 1)
+            self._sock = _sock
+
+        if wrap_sock:
+            self.sock = ssl_wrap_socket(self._sock)
+
+        if unwrap_sock:
+            self.sock = self._sock
+
+        if new_sock and not use_ssl:
+            self.sock = self._sock
+
+        # Pick up newly deployed certs
+        if old_conf is not None and use_ssl is True and old_use_ssl is True:
+            if has_changed('cert_file') or has_changed('key_file'):
+                utils.validate_key_cert(CONF.key_file, CONF.cert_file)
+            if has_changed('cert_file'):
+                self.sock.certfile = CONF.cert_file
+            if has_changed('key_file'):
+                self.sock.keyfile = CONF.key_file
+
+        if new_sock or (old_conf is not None and has_changed('tcp_keepidle')):
+            # This option isn't available in the OS X version of eventlet
+            if hasattr(socket, 'TCP_KEEPIDLE'):
+                self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE,
+                                     CONF.tcp_keepidle)
+
+        if old_conf is not None and has_changed('backlog'):
+            self.sock.listen(CONF.backlog)
 
 
 class Middleware(object):

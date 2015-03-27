@@ -489,14 +489,13 @@ class ServerTest(test_utils.BaseTestCase):
         actual = wsgi.Server(threads=1).create_pool()
         self.assertIsInstance(actual, eventlet.greenpool.GreenPool)
 
-    @mock.patch.object(wsgi, 'get_socket')
-    def test_http_keepalive(self, mock_get_socket):
-        fake_socket = 'fake_socket'
-        mock_get_socket.return_value = 'fake_socket'
+    @mock.patch.object(wsgi.Server, 'configure_socket')
+    def test_http_keepalive(self, mock_configure_socket):
         self.config(http_keepalive=False)
         self.config(workers=0)
 
         server = wsgi.Server(threads=1)
+        server.sock = 'fake_socket'
         # mocking eventlet.wsgi server method to check it is called with
         # configured 'http_keepalive' value.
         with mock.patch.object(eventlet.wsgi,
@@ -504,7 +503,7 @@ class ServerTest(test_utils.BaseTestCase):
             fake_application = "fake-application"
             server.start(fake_application, 0)
             server.wait()
-            mock_server.assert_called_once_with(fake_socket,
+            mock_server.assert_called_once_with('fake_socket',
                                                 fake_application,
                                                 log=server._wsgi_logger,
                                                 debug=False,
@@ -582,20 +581,22 @@ class GetSocketTestCase(test_utils.BaseTestCase):
         wsgi.CONF.ca_file = '/etc/ssl/ca_cert'
         wsgi.CONF.tcp_keepidle = 600
 
-    def test_correct_get_socket(self):
+    def test_correct_configure_socket(self):
         mock_socket = mock.Mock()
         self.useFixture(fixtures.MonkeyPatch(
             'glance.common.wsgi.ssl.wrap_socket',
             mock_socket))
         self.useFixture(fixtures.MonkeyPatch(
             'glance.common.wsgi.eventlet.listen',
-            lambda *x, **y: None))
-        wsgi.get_socket(1234)
-        self.assertIn(mock.call().setsockopt(
+            lambda *x, **y: mock_socket))
+        server = wsgi.Server()
+        server.default_port = 1234
+        server.configure_socket()
+        self.assertIn(mock.call.setsockopt(
             socket.SOL_SOCKET,
             socket.SO_REUSEADDR,
             1), mock_socket.mock_calls)
-        self.assertIn(mock.call().setsockopt(
+        self.assertIn(mock.call.setsockopt(
             socket.SOL_SOCKET,
             socket.SO_KEEPALIVE,
             1), mock_socket.mock_calls)
