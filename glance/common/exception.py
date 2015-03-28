@@ -450,3 +450,50 @@ class MetadefTagNotFound(NotFound):
 
 class InvalidVersion(Invalid):
     message = _("Version is invalid: %(reason)s")
+
+
+class ArtifactNotFound(NotFound):
+    message = _("Artifact with id=%(id)s was not found")
+
+
+class ArtifactForbidden(Forbidden):
+    message = _("Artifact with id=%(id)s is not accessible")
+
+
+class ArtifactDuplicateNameTypeVersion(Duplicate):
+    message = _("Artifact with the specified type, name and version"
+                " already exists")
+
+
+class InvalidArtifactStateTransition(Invalid):
+    message = _("Artifact cannot change state from %(source)s to %(target)s")
+
+
+class ArtifactDuplicateDirectDependency(Duplicate):
+    message = _("Artifact with the specified type, name and version"
+                " already has the direct dependency=%(dep)s")
+
+
+class ArtifactDuplicateTransitiveDependency(Duplicate):
+    message = _("Artifact with the specified type, name and version"
+                " already has the transitive dependency=%(dep)s")
+
+
+class ArtifactUnsupportedPropertyOperator(Invalid):
+    message = _("Operator %(op)s is not supported")
+
+
+class ArtifactUnsupportedShowLevel(Invalid):
+    message = _("Show level %(shl)s is not supported in this operation")
+
+
+class ArtifactPropertyValueNotFound(NotFound):
+    message = _("Property's %(prop)s value has not been found")
+
+
+class ArtifactInvalidPropertyParameter(Invalid):
+    message = _("Cannot use this parameter with the operator %(op)s")
+
+
+class ArtifactInvalidStateTransition(Invalid):
+    message = _("Artifact state cannot be changed from %(curr)s to %(to)s")
