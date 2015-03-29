@@ -171,8 +171,8 @@ class PropertyRules(object):
 
     def _check_policy(self, property_exp, action, context):
         try:
-            target = ":".join([property_exp, action])
-            self.policy_enforcer.enforce(context, target, {})
+            action = ":".join([property_exp, action])
+            self.policy_enforcer.enforce(context, action, {})
         except exception.Forbidden:
             return False
         return True
