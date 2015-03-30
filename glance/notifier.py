@@ -166,8 +166,9 @@ def format_metadef_namespace_notification(metadef_namespace):
 
 
 def format_metadef_object_notification(metadef_object):
+    object_properties = metadef_object.properties or {}
     properties = []
-    for name, prop in six.iteritems(metadef_object.properties):
+    for name, prop in six.iteritems(object_properties):
         object_property = _format_metadef_object_property(name, prop)
         properties.append(object_property)
 
