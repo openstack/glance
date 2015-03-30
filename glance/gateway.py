@@ -25,16 +25,18 @@ import glance.domain
 import glance.location
 import glance.notifier
 import glance.quota
+import glance.search
 
 
 class Gateway(object):
     def __init__(self, db_api=None, store_api=None, notifier=None,
-                 policy_enforcer=None):
+                 policy_enforcer=None, es_api=None):
         self.db_api = db_api or glance.db.get_api()
         self.store_api = store_api or glance_store
         self.store_utils = store_utils
         self.notifier = notifier or glance.notifier.Notifier()
         self.policy = policy_enforcer or policy.Enforcer()
+        self.es_api = es_api or glance.search.get_api()
 
     def get_image_factory(self, context):
         image_factory = glance.domain.ImageFactory()
@@ -231,3 +233,9 @@ class Gateway(object):
         authorized_tag_repo = authorization.MetadefTagRepoProxy(
             notifier_tag_repo, context)
         return authorized_tag_repo
+
+    def get_catalog_search_repo(self, context):
+        search_repo = glance.search.CatalogSearchRepo(context, self.es_api)
+        policy_search_repo = policy.CatalogSearchRepoProxy(
+            search_repo, context, self.policy)
+        return policy_search_repo

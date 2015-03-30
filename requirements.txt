@@ -61,3 +61,6 @@ osprofiler>=0.3.0                       # Apache-2.0
 
 # Glance Store
 glance_store>=0.3.0                   # Apache-2.0
+
+# Glance catalog index
+elasticsearch>=1.3.0
