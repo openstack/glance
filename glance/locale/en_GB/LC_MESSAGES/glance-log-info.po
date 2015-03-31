@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-02-20 06:02+0000\n"
-"PO-Revision-Date: 2015-02-06 07:59+0000\n"
+"POT-Creation-Date: 2015-03-31 06:02+0000\n"
+"PO-Revision-Date: 2015-03-28 10:42+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "glance/language/en_GB/)\n"
@@ -57,16 +57,16 @@ msgstr "Initialised image cache middleware"
 msgid "Initialized image cache management middleware"
 msgstr "Initialised image cache management middleware"
 
-#: glance/api/middleware/gzip.py:35
+#: glance/api/middleware/gzip.py:36
 msgid "Initialized gzip middleware"
 msgstr "Initialised gzip middleware"
 
-#: glance/api/v1/images.py:686
+#: glance/api/v1/images.py:690
 #, python-format
 msgid "Uploaded data of image %s from request payload successfully."
 msgstr ""
 
-#: glance/api/v1/images.py:737
+#: glance/api/v1/images.py:752
 msgid "Triggering asynchronous copy from external source"
 msgstr "Triggering asynchronous copy from external source"
 
@@ -84,69 +84,75 @@ msgstr ""
 "Image %s could not be found after upload. The image may have been deleted "
 "during the upload."
 
-#: glance/async/eventlet_executor.py:50
+#: glance/api/v2/image_actions.py:51
 #, python-format
-msgid ""
-"Eventlet executor picked up the execution of task ID %(task_id)s of task "
-"type %(task_type)s"
+msgid "Image %s is deactivated"
 msgstr ""
 
-#: glance/async/taskflow_executor.py:87
+#: glance/api/v2/image_actions.py:66
 #, python-format
-msgid ""
-"Taskflow executor picked up the execution of task ID %(task_id)s of task "
-"type %(task_type)s"
+msgid "Image %s is reactivated"
 msgstr ""
 
-#: glance/cmd/replicator.py:371
+#: glance/async/flows/base_import.py:348
+#, python-format
+msgid "%(task_id)s of %(task_type)s completed"
+msgstr ""
+
+#: glance/cmd/replicator.py:372
 #, python-format
 msgid "Storing: %s"
 msgstr "Storing: %s"
 
-#: glance/cmd/replicator.py:444
+#: glance/cmd/replicator.py:445
 #, python-format
 msgid "Considering: %s"
 msgstr "Considering: %s"
 
-#: glance/cmd/replicator.py:470 glance/cmd/replicator.py:545
+#: glance/cmd/replicator.py:471 glance/cmd/replicator.py:546
 #, python-format
 msgid "Image %s metadata has changed"
 msgstr "Image %s metadata has changed"
 
-#: glance/cmd/replicator.py:552
+#: glance/cmd/replicator.py:553
 #, python-format
 msgid "Image %s is being synced"
 msgstr "Image %s is being synced"
 
-#: glance/common/wsgi.py:270
+#: glance/common/wsgi.py:308 glance/openstack/common/service.py:326
 #, python-format
 msgid "Starting %d workers"
 msgstr "Starting %d workers"
 
-#: glance/common/wsgi.py:285
+#: glance/common/wsgi.py:321
 #, python-format
-msgid "Removing dead child %s"
-msgstr "Removing dead child %s"
+msgid "Removed dead child %s"
+msgstr ""
 
-#: glance/common/wsgi.py:291
+#: glance/common/wsgi.py:324
+#, python-format
+msgid "Removed stale child %s"
+msgstr ""
+
+#: glance/common/wsgi.py:336
 msgid "All workers have terminated. Exiting"
 msgstr "All workers have terminated. Exiting"
 
-#: glance/common/wsgi.py:300
+#: glance/common/wsgi.py:353
 msgid "Caught keyboard interrupt. Exiting."
 msgstr "Caught keyboard interrupt. Exiting."
 
-#: glance/common/wsgi.py:326
+#: glance/common/wsgi.py:432
 #, python-format
 msgid "Child %d exiting normally"
 msgstr "Child %d exiting normally"
 
-#: glance/common/wsgi.py:331
+#: glance/common/wsgi.py:437
 #, python-format
 msgid "Started child %s"
 msgstr "Started child %s"
 
-#: glance/common/wsgi.py:355
+#: glance/common/wsgi.py:466
 msgid "Starting single process server"
 msgstr "Starting single process server"
 
@@ -171,46 +177,60 @@ msgstr ""
 msgid "Task %(task_id)s: Could not import image file %(image_data)s"
 msgstr ""
 
-#: glance/db/simple/api.py:56
+#: glance/db/simple/api.py:62
 #, python-format
 msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 msgstr "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 
-#: glance/db/simple/api.py:62
+#: glance/db/simple/api.py:68
 #, python-format
 msgid "Returning %(funcname)s: %(output)s"
 msgstr "Returning %(funcname)s: %(output)s"
 
-#: glance/db/sqlalchemy/metadata.py:170
+#: glance/db/simple/api.py:2002
 #, python-format
-msgid "Skipping  namespace %s. It already exists in the database."
+msgid "Could not find artifact %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:242
-#, python-format
-msgid "File %s loaded to database."
-msgstr ""
+#: glance/db/simple/api.py:2006
+msgid "Unable to get deleted image"
+msgstr "Unable to get deleted image"
 
-#: glance/db/sqlalchemy/metadata.py:244
-msgid "Metadata loading finished"
-msgstr ""
-
-#: glance/db/sqlalchemy/metadata.py:256
+#: glance/db/sqlalchemy/metadata.py:152
 #, python-format
 msgid "Table %s has been cleared"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:347
+#: glance/db/sqlalchemy/metadata.py:223
+#, python-format
+msgid "Overwriting namespace %s"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:239
+#, python-format
+msgid "Skipping namespace %s. It already exists in the database."
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:330
+#, python-format
+msgid "File %s loaded to database."
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:332
+msgid "Metadata loading finished"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:441
 #, python-format
 msgid "Namespace %(namespace)s saved in %(file)s"
 msgstr ""
 
-#: glance/db/sqlalchemy/migrate_repo/schema.py:98
+#: glance/db/sqlalchemy/migrate_repo/schema.py:101
 #, python-format
 msgid "creating table %(table)s"
 msgstr "creating table %(table)s"
 
-#: glance/db/sqlalchemy/migrate_repo/schema.py:104
+#: glance/db/sqlalchemy/migrate_repo/schema.py:107
 #, python-format
 msgid "dropping table %(table)s"
 msgstr "dropping table %(table)s"
@@ -223,6 +243,12 @@ msgstr ""
 "'metadata_encryption_key' was not specified in the config file or a config "
 "file was not specified. This means that this migration is a NOOP."
 
+#: glance/domain/__init__.py:406
+#, python-format
+msgid ""
+"Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
+msgstr ""
+
 #: glance/image_cache/__init__.py:71
 #, python-format
 msgid "Image cache loaded driver '%s'."
@@ -232,25 +258,25 @@ msgstr "Image cache loaded driver '%s'."
 msgid "Defaulting to SQLite driver."
 msgstr "Defaulting to SQLite driver."
 
-#: glance/image_cache/prefetcher.py:84
+#: glance/image_cache/prefetcher.py:85
 #, python-format
 msgid "Successfully cached all %d images"
 msgstr "Successfully cached all %d images"
 
 #: glance/image_cache/drivers/sqlite.py:414
-#: glance/image_cache/drivers/xattr.py:342
+#: glance/image_cache/drivers/xattr.py:343
 #, python-format
 msgid "Not queueing image '%s'. Already cached."
 msgstr "Not queueing image '%s'. Already cached."
 
 #: glance/image_cache/drivers/sqlite.py:419
-#: glance/image_cache/drivers/xattr.py:347
+#: glance/image_cache/drivers/xattr.py:348
 #, python-format
 msgid "Not queueing image '%s'. Already being written to cache"
 msgstr "Not queueing image '%s'. Already being written to cache"
 
 #: glance/image_cache/drivers/sqlite.py:425
-#: glance/image_cache/drivers/xattr.py:353
+#: glance/image_cache/drivers/xattr.py:354
 #, python-format
 msgid "Not queueing image '%s'. Already queued."
 msgstr "Not queueing image '%s'. Already queued."
@@ -265,10 +291,62 @@ msgstr "Removed invalid cache file %s"
 msgid "Removed stalled cache file %s"
 msgstr "Removed stalled cache file %s"
 
-#: glance/image_cache/drivers/xattr.py:399
+#: glance/image_cache/drivers/xattr.py:400
 #, python-format
 msgid "Reaped %(reaped)s %(entry_type)s cache entries"
 msgstr "Reaped %(reaped)s %(entry_type)s cache entries"
+
+#: glance/openstack/common/eventlet_backdoor.py:146
+#, python-format
+msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
+msgstr "Eventlet backdoor listening on %(port)s for process %(pid)d"
+
+#: glance/openstack/common/service.py:173
+#, python-format
+msgid "Caught %s, exiting"
+msgstr "Caught %s, exiting"
+
+#: glance/openstack/common/service.py:227
+msgid "Parent process has died unexpectedly, exiting"
+msgstr "Parent process has died unexpectedly, exiting"
+
+#: glance/openstack/common/service.py:258
+#, python-format
+msgid "Child caught %s, exiting"
+msgstr "Child caught %s, exiting"
+
+#: glance/openstack/common/service.py:297
+msgid "Forking too fast, sleeping"
+msgstr "Forking too fast, sleeping"
+
+#: glance/openstack/common/service.py:316
+#, python-format
+msgid "Started child %d"
+msgstr "Started child %d"
+
+#: glance/openstack/common/service.py:343
+#, python-format
+msgid "Child %(pid)d killed by signal %(sig)d"
+msgstr "Child %(pid)d killed by signal %(sig)d"
+
+#: glance/openstack/common/service.py:347
+#, python-format
+msgid "Child %(pid)s exited with status %(code)d"
+msgstr "Child %(pid)s exited with status %(code)d"
+
+#: glance/openstack/common/service.py:382
+#, python-format
+msgid "Caught %s, stopping children"
+msgstr "Caught %s, stopping children"
+
+#: glance/openstack/common/service.py:391
+msgid "Wait called after thread killed. Cleaning up."
+msgstr ""
+
+#: glance/openstack/common/service.py:407
+#, python-format
+msgid "Waiting on %d children to exit"
+msgstr "Waiting on %d children to exit"
 
 #: glance/quota/__init__.py:330
 #, python-format
