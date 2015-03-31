@@ -22,6 +22,7 @@ from glance.common import property_utils
 import glance.db
 from glance.db.sqlalchemy import models
 from glance.search.plugins import base
+from glance.search.plugins import images_notification_handler
 
 
 class ImageIndex(base.IndexBase):
@@ -150,3 +151,13 @@ class ImageIndex(base.IndexBase):
             document[image_property.name] = image_property.value
 
         return document
+
+    def get_notification_handler(self):
+        return images_notification_handler.ImageHandler(
+            self.engine,
+            self.get_index_name(),
+            self.get_document_type()
+        )
+
+    def get_notification_supported_events(self):
+        return ['image.create', 'image.update', 'image.delete']
