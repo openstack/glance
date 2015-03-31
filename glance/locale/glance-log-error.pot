@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev17\n"
+"Project-Id-Version: glance 2015.1.dev22\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-02-20 06:02+0000\n"
+"POT-Creation-Date: 2015-03-31 06:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,11 @@ msgstr ""
 msgid ""
 "Glance tried all active locations to get data for image %s but all have "
 "failed."
+msgstr ""
+
+#: glance/notifier.py:361 glance/api/common.py:95
+#, python-format
+msgid "An error occurred during image.send notification: %(err)s"
 msgstr ""
 
 #: glance/scrubber.py:168
@@ -44,47 +49,42 @@ msgstr ""
 msgid "%s file can not be created."
 msgstr ""
 
-#: glance/api/common.py:54
+#: glance/api/common.py:58
 #, python-format
 msgid ""
 "An error occurred reading from backend storage for image %(image_id)s: "
 "%(err)s"
 msgstr ""
 
-#: glance/api/common.py:60
+#: glance/api/common.py:64
 #, python-format
 msgid ""
 "Backend storage for image %(image_id)s disconnected after writing only "
 "%(bytes_written)d bytes"
 msgstr ""
 
-#: glance/api/common.py:91
-#, python-format
-msgid "An error occurred during image.send notification: %(err)s"
-msgstr ""
-
-#: glance/api/common.py:119
+#: glance/api/common.py:123
 #, python-format
 msgid "Invalid value for option user_storage_quota: %(users_quota)s"
 msgstr ""
 
-#: glance/api/middleware/cache.py:169
+#: glance/api/middleware/cache.py:173
 #, python-format
 msgid ""
 "Image cache contained image file for image '%s', however the registry did"
 " not contain metadata for that image!"
 msgstr ""
 
-#: glance/api/middleware/cache.py:268
+#: glance/api/middleware/cache.py:272
 #, python-format
 msgid "could not find %s"
 msgstr ""
 
-#: glance/api/middleware/cache.py:287
+#: glance/api/middleware/cache.py:291
 msgid "Checksum header is missing."
 msgstr ""
 
-#: glance/api/v1/images.py:599
+#: glance/api/v1/images.py:603
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr ""
@@ -112,31 +112,77 @@ msgstr ""
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:205
+#: glance/api/v2/metadef_namespaces.py:207
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr ""
 
-#: glance/async/__init__.py:67
+#: glance/async/__init__.py:68
 msgid ""
 "This execution of Tasks is not setup. Please consult the project "
 "documentation for more information on the executors available."
 msgstr ""
 
-#: glance/async/__init__.py:71
+#: glance/async/__init__.py:72
 msgid "Internal error occurred while trying to process task."
 msgstr ""
 
-#: glance/async/taskflow_executor.py:101
+#: glance/async/taskflow_executor.py:130
 #, python-format
 msgid "Failed to execute task %(task_id)s: %(exc)s"
 msgstr ""
 
-#: glance/common/property_utils.py:103
+#: glance/async/flows/base_import.py:341
+#, python-format
+msgid "Task ID %s"
+msgstr ""
+
+#: glance/async/flows/introspect.py:60
+#, python-format
+msgid "Failed to execute introspection %(task_id)s: %(exc)s"
+msgstr ""
+
+#: glance/cmd/index.py:48
+#, python-format
+msgid "Failed to setup index extension %(ext)s: %(e)s"
+msgstr ""
+
+#: glance/common/property_utils.py:84
+#, python-format
+msgid "Couldn't find property protection file %(file)s: %(error)s."
+msgstr ""
+
+#: glance/common/property_utils.py:91
+#, python-format
+msgid ""
+"Invalid value '%s' for 'property_protection_rule_format'. The permitted "
+"values are 'roles' and 'policies'"
+msgstr ""
+
+#: glance/common/property_utils.py:110
 #, python-format
 msgid ""
 "Multiple policies '%s' not allowed for a given operation. Policies can be"
 " combined in the policy file"
+msgstr ""
+
+#: glance/common/property_utils.py:123
+#, python-format
+msgid ""
+"Malformed property protection rule in [%(prop)s] %(op)s=%(perm)s: '@' and"
+" '!' are mutually exclusive"
+msgstr ""
+
+#: glance/common/property_utils.py:148
+#, python-format
+msgid "Encountered a malformed property protection rule %(rule)s: %(error)s."
+msgstr ""
+
+#: glance/common/rpc.py:186
+#, python-format
+msgid ""
+"RPC Call Error: %(val)s\n"
+"%(tb)s"
 msgstr ""
 
 #: glance/common/store_utils.py:71
@@ -144,16 +190,34 @@ msgstr ""
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr ""
 
+#: glance/common/swift_store_utils.py:87
+#, python-format
+msgid "swift config file %(conf_file)s:%(exc)s not found"
+msgstr ""
+
 #: glance/common/swift_store_utils.py:101
 msgid "Invalid format of swift store config cfg"
 msgstr ""
 
-#: glance/common/wsgi.py:288
+#: glance/common/utils.py:115
+#, python-format
+msgid "Error: cooperative_iter exception %s"
+msgstr ""
+
+#: glance/common/utils.py:514
+msgid ""
+"Error setting up the debug environment. Verify that the option "
+"pydev_worker_debug_host is pointing to a valid hostname or IP on which a "
+"pydev server is listening on the port indicated by "
+"pydev_worker_debug_port."
+msgstr ""
+
+#: glance/common/wsgi.py:332
 #, python-format
 msgid "Not respawning child %d, cannot recover from termination"
 msgstr ""
 
-#: glance/common/location_strategy/__init__.py:65
+#: glance/common/location_strategy/__init__.py:66
 #, python-format
 msgid "Failed to load location strategy module %(module)s: %(e)s"
 msgstr ""
@@ -171,14 +235,39 @@ msgstr ""
 msgid "Failed to save task %(task_id)s in DB as task_repo is %(task_repo)s"
 msgstr ""
 
-#: glance/common/scripts/utils.py:47
+#: glance/common/scripts/utils.py:48
 #, python-format
 msgid "Task not found for task_id %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:142
+#: glance/db/sqlalchemy/artifacts.py:346
+msgid "Unknown sort direction, must be 'desc' or 'asc'"
+msgstr ""
+
+#: glance/db/sqlalchemy/artifacts.py:532
+msgid "Cannot use this parameter with the operator IN"
+msgstr ""
+
+#: glance/db/sqlalchemy/artifacts.py:539
+#, python-format
+msgid "Operator %s is not supported"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:185
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:451
+msgid ""
+"To use --prefer_new or --overwrite you need to combine of these options "
+"with --merge option."
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:456
+msgid ""
+"Please provide no more than one option from this list: --prefer_new, "
+"--overwrite"
 msgstr ""
 
 #: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:63
@@ -187,7 +276,14 @@ msgstr ""
 msgid "Invalid store uri for image: %(image_id)s. Details: %(reason)s"
 msgstr ""
 
-#: glance/domain/__init__.py:474
+#: glance/domain/__init__.py:413
+#, python-format
+msgid ""
+"Task [%(task_id)s] status failed to change from %(cur_status)s to "
+"%(new_status)s"
+msgstr ""
+
+#: glance/domain/__init__.py:521
 #, python-format
 msgid "Failed to load the %s executor provided in the config."
 msgstr ""
@@ -204,23 +300,16 @@ msgstr ""
 msgid "Error executing SQLite call. Got error: %s"
 msgstr ""
 
-#: glance/image_cache/drivers/xattr.py:109
-#, python-format
-msgid ""
-"The device housing the image cache directory %(image_cache_dir)s does not"
-" support xattr. It is likely you need to edit your fstab and add the "
-"user_xattr option to the appropriate line for the device housing the "
-"cache directory."
+#: glance/openstack/common/loopingcall.py:95
+msgid "in fixed duration looping call"
 msgstr ""
 
-#: glance/openstack/common/policy.py:550 glance/openstack/common/policy.py:830
-#, python-format
-msgid "Failed to understand rule %s"
+#: glance/openstack/common/loopingcall.py:138
+msgid "in dynamic looping call"
 msgstr ""
 
-#: glance/openstack/common/policy.py:560
-#, python-format
-msgid "No handler for matches of kind %s"
+#: glance/openstack/common/service.py:264
+msgid "Unhandled exception"
 msgstr ""
 
 #: glance/registry/api/v1/images.py:136
@@ -250,6 +339,11 @@ msgstr ""
 #: glance/registry/client/v1/client.py:129
 #, python-format
 msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
+msgstr ""
+
+#: glance/search/api/v0_1/search.py:243
+#, python-format
+msgid "Failed to retrieve RBAC filters from search plugin %(ext)s: %(e)s"
 msgstr ""
 
 #: glance/tests/functional/v2/test_metadef_resourcetypes.py:99

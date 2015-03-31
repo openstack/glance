@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-07 06:03+0000\n"
-"PO-Revision-Date: 2014-12-18 11:43+0000\n"
+"POT-Creation-Date: 2015-03-31 06:02+0000\n"
+"PO-Revision-Date: 2015-03-28 10:42+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "glance/language/en_GB/)\n"
@@ -35,14 +35,14 @@ msgstr "%s directory does not exist."
 msgid "Unable to delete URI from image %s."
 msgstr ""
 
-#: glance/api/common.py:167
+#: glance/api/common.py:171
 #, python-format
 msgid ""
 "User %(user)s attempted to upload an image of unknown size that will exceed "
 "the quota. %(remaining)d bytes remaining."
 msgstr ""
 
-#: glance/api/common.py:176
+#: glance/api/common.py:180
 #, python-format
 msgid ""
 "User %(user)s attempted to upload an image of size %(size)d that will exceed "
@@ -53,14 +53,14 @@ msgstr ""
 msgid "Unknown version. Returning version choices."
 msgstr "Unknown version. Returning version choices."
 
-#: glance/api/v1/images.py:700
+#: glance/api/v1/images.py:704
 #, python-format
 msgid ""
 "Failed to activate image %s in registry. About to delete image bits from "
 "store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:889
+#: glance/api/v2/images.py:946
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
@@ -84,7 +84,19 @@ msgstr "Failed to find task %(task_id)s. Reason: %(reason)s"
 msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
 msgstr "Forbidden to get task %(task_id)s. Reason: %(reason)s"
 
-#: glance/cmd/replicator.py:562
+#: glance/async/utils.py:62
+#, python-format
+msgid "An optional task has failed, the failure was: %s"
+msgstr ""
+
+#: glance/async/flows/convert.py:67
+#, python-format
+msgid ""
+"The conversion format is None, please add a value for it in the config file "
+"for this task to work: %s"
+msgstr ""
+
+#: glance/cmd/replicator.py:607
 #, python-format
 msgid ""
 "%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
@@ -93,62 +105,101 @@ msgstr ""
 "%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
 "is %(slave_value)s)"
 
-#: glance/cmd/replicator.py:575
+#: glance/cmd/replicator.py:620
 #, python-format
 msgid "Image %s entirely missing from the destination"
 msgstr "Image %s entirely missing from the destination"
 
-#: glance/common/store_utils.py:63
+#: glance/common/store_utils.py:65
 #, python-format
 msgid "Failed to delete image %s in store from URI"
 msgstr "Failed to delete image %s in store from URI"
+
+#: glance/common/wsgi.py:326
+#, python-format
+msgid "Unrecognised child %s"
+msgstr ""
 
 #: glance/common/scripts/image_import/main.py:158
 #, python-format
 msgid "Task %(task_id)s failed with exception %(error)s"
 msgstr ""
 
-#: glance/db/simple/api.py:374
+#: glance/db/simple/api.py:387
 #, python-format
 msgid "Could not find image %s"
 msgstr "Could not find image %s"
 
-#: glance/db/simple/api.py:378
+#: glance/db/simple/api.py:392
 msgid "Unable to get deleted image"
 msgstr "Unable to get deleted image"
 
-#: glance/db/simple/api.py:382
+#: glance/db/simple/api.py:396
 msgid "Unable to get unowned image"
 msgstr "Unable to get unowned image"
 
-#: glance/db/simple/api.py:889
+#: glance/db/simple/api.py:909
 #, python-format
 msgid "Could not find task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:894
+#: glance/db/simple/api.py:914
 #, python-format
 msgid "Unable to get deleted task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:1055
+#: glance/db/simple/api.py:1075
 #, python-format
 msgid "Could not find task info %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:74
+#: glance/db/sqlalchemy/api.py:77
 msgid "Deadlock detected. Retrying..."
 msgstr "Deadlock detected. Retrying..."
 
-#: glance/db/sqlalchemy/api.py:114
+#: glance/db/sqlalchemy/api.py:117
 msgid "Attempted to modify image user did not own."
 msgstr "Attempted to modify image user did not own."
 
-#: glance/db/sqlalchemy/api.py:324
+#: glance/db/sqlalchemy/api.py:332
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr "Id not in sort_keys; is sort_keys unique?"
 
-#: glance/db/sqlalchemy/metadata.py:264
+#: glance/db/sqlalchemy/artifacts.py:135
+msgid "Artifact with the specified type, name and version already exists"
+msgstr ""
+
+#: glance/db/sqlalchemy/artifacts.py:240
+#, python-format
+msgid "Artifact with id=%s not found"
+msgstr ""
+
+#: glance/db/sqlalchemy/artifacts.py:243
+#, python-format
+msgid "Artifact with id=%s is not accessible"
+msgstr ""
+
+#: glance/db/sqlalchemy/artifacts.py:423
+#, python-format
+msgid "Show level %s is not supported in this operation"
+msgstr ""
+
+#: glance/db/sqlalchemy/artifacts.py:655
+#, python-format
+msgid ""
+"Artifact with the specified type, name and versions already has the direct "
+"dependency=%s"
+msgstr ""
+
+#: glance/db/sqlalchemy/artifacts.py:685
+#, python-format
+msgid ""
+"Artifact with the specified type, name and version already has the direct "
+"dependency=%d"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:340 glance/db/sqlalchemy/metadata.py:348
+#: glance/db/sqlalchemy/metadata.py:357
 #, python-format
 msgid "Duplicate entry for values: %s"
 msgstr ""
@@ -163,7 +214,11 @@ msgstr ""
 msgid "Failed to decrypt location value for image %(image_id)s"
 msgstr "Failed to decrypt location value for image %(image_id)s"
 
-#: glance/image_cache/__init__.py:72
+#: glance/domain/__init__.py:505
+msgid "The `eventlet` executor has been deprecated. Use `taskflow` instead."
+msgstr ""
+
+#: glance/image_cache/__init__.py:74
 #, python-format
 msgid ""
 "Image cache driver '%(driver_name)s' failed to load. Got error: "
@@ -172,7 +227,7 @@ msgstr ""
 "Image cache driver '%(driver_name)s' failed to load. Got error: "
 "'%(import_err)s."
 
-#: glance/image_cache/__init__.py:93
+#: glance/image_cache/__init__.py:95
 #, python-format
 msgid ""
 "Image cache driver '%(driver_module)s' failed to configure. Got error: "
@@ -181,17 +236,17 @@ msgstr ""
 "Image cache driver '%(driver_module)s' failed to configure. Got error: "
 "'%(config_err)s"
 
-#: glance/image_cache/prefetcher.py:47
+#: glance/image_cache/prefetcher.py:48
 #, python-format
 msgid "Image '%s' is not active. Not caching."
 msgstr "Image '%s' is not active. Not caching."
 
-#: glance/image_cache/prefetcher.py:52
+#: glance/image_cache/prefetcher.py:53
 #, python-format
 msgid "No metadata found for image '%s'"
 msgstr "No metadata found for image '%s'"
 
-#: glance/image_cache/prefetcher.py:80
+#: glance/image_cache/prefetcher.py:81
 msgid "Failed to successfully cache all images in queue."
 msgstr "Failed to successfully cache all images in queue."
 
@@ -210,15 +265,20 @@ msgid "Failed to delete file %(path)s. Got error: %(e)s"
 msgstr "Failed to delete file %(path)s. Got error: %(e)s"
 
 #: glance/image_cache/drivers/sqlite.py:496
-#: glance/image_cache/drivers/xattr.py:446
+#: glance/image_cache/drivers/xattr.py:447
 #, python-format
 msgid "Cached image file '%s' doesn't exist, unable to delete"
 msgstr "Cached image file '%s' doesn't exist, unable to delete"
 
-#: glance/openstack/common/policy.py:262
+#: glance/openstack/common/loopingcall.py:87
 #, python-format
-msgid "Can not find policy directory: %s"
+msgid "task %(func_name)r run outlasted interval by %(delay).2f sec"
 msgstr ""
+
+#: glance/openstack/common/service.py:351
+#, python-format
+msgid "pid %d not in child list"
+msgstr "pid %d not in child list"
 
 #: glance/registry/api/v1/images.py:126
 #, python-format
