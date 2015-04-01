@@ -690,6 +690,10 @@ class CatalogSearchRepoProxy(object):
         self.policy.enforce(self.context, 'catalog_search', {})
         return self.search_repo.search(*args, **kwargs)
 
+    def plugins_info(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'catalog_plugins', {})
+        return self.search_repo.plugins_info(*args, **kwargs)
+
     def index(self, *args, **kwargs):
         self.policy.enforce(self.context, 'catalog_index', {})
         return self.search_repo.index(*args, **kwargs)
