@@ -1324,6 +1324,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_replace_locations_status_exception(self):
+        self.stubs.Set(store, 'get_size_from_backend',
+                       unit_test_utils.fake_get_size_from_backend)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID2, changes)
@@ -1413,6 +1415,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_add_locations_status_exception(self):
+        self.stubs.Set(store, 'get_size_from_backend',
+                       unit_test_utils.fake_get_size_from_backend)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID2, changes)
@@ -1442,6 +1446,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_replace_duplicate_locations(self):
+        self.stubs.Set(store, 'get_size_from_backend',
+                       unit_test_utils.fake_get_size_from_backend)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
         output = self.controller.update(request, UUID1, changes)
