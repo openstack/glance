@@ -262,7 +262,8 @@ class TestImageRepo(test_utils.BaseTestCase):
         images = self.image_repo.list(filters=filters)
         image_ids = list([i.image_id for i in images])
         self.assertEqual(2, len(image_ids))
-        self.assertEqual([UUID3, UUID2], image_ids)
+        self.assertIn(UUID2, image_ids)
+        self.assertIn(UUID3, image_ids)
 
     def test_list_with_wrong_checksum(self):
         WRONG_CHKSUM = 'd2fd42f979e1ed1aafadc7eb9354bff839c858cd'
