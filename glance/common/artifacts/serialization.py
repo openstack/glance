@@ -194,7 +194,7 @@ def _deserialize_blobs(artifact_type, blobs_from_db, artifact_properties):
 
 
 def _deserialize_dependencies(artifact_type, deps_from_db,
-                              artifact_properties, type_dictionary):
+                              artifact_properties, plugins):
     """Retrieves dependencies from database"""
     for dep_name, dep_value in six.iteritems(deps_from_db):
         if not dep_value:
@@ -204,9 +204,9 @@ def _deserialize_dependencies(artifact_type, deps_from_db,
                 declarative.ListAttributeDefinition):
             val = []
             for v in dep_value:
-                val.append(deserialize_from_db(v, type_dictionary))
+                val.append(deserialize_from_db(v, plugins))
         elif len(dep_value) == 1:
-            val = deserialize_from_db(dep_value[0], type_dictionary)
+            val = deserialize_from_db(dep_value[0], plugins)
         else:
             raise exception.InvalidArtifactPropertyValue(
                 message=_('Relation %(name)s may not have multiple values'),
@@ -214,7 +214,7 @@ def _deserialize_dependencies(artifact_type, deps_from_db,
         artifact_properties[dep_name] = val
 
 
-def deserialize_from_db(db_dict, type_dictionary):
+def deserialize_from_db(db_dict, plugins):
     artifact_properties = {}
     type_name = None
     type_version = None
@@ -228,10 +228,9 @@ def deserialize_from_db(db_dict, type_dictionary):
         else:
             artifact_properties[prop_name] = prop_value
 
-    if type_name and type_version and (type_version in
-                                       type_dictionary.get(type_name, [])):
-        artifact_type = type_dictionary[type_name][type_version]
-    else:
+    try:
+        artifact_type = plugins.get_class_by_typename(type_name, type_version)
+    except exception.ArtifactPluginNotFound:
         raise exception.UnknownArtifactType(name=type_name,
                                             version=type_version)
 
@@ -260,6 +259,6 @@ def deserialize_from_db(db_dict, type_dictionary):
 
     dependencies = db_dict.pop('dependencies', {})
     _deserialize_dependencies(artifact_type, dependencies,
-                              artifact_properties, type_dictionary)
+                              artifact_properties, plugins)
 
     return artifact_type(**artifact_properties)
