@@ -17,6 +17,8 @@ import elasticsearch
 from elasticsearch import helpers
 from oslo_config import cfg
 
+from glance.common import utils
+
 
 search_opts = [
     cfg.ListOpt('hosts', default=['127.0.0.1:9200'],
@@ -40,6 +42,8 @@ class CatalogSearchRepo(object):
     def __init__(self, context, es_api):
         self.context = context
         self.es_api = es_api
+        self.plugins = utils.get_search_plugins() or []
+        self.plugins_info_dict = self._get_plugin_info()
 
     def search(self, index, doc_type, query, fields, offset, limit,
                ignore_unavailable=True):
@@ -58,3 +62,16 @@ class CatalogSearchRepo(object):
             index=default_index,
             doc_type=default_type,
             actions=actions)
+
+    def plugins_info(self):
+        return self.plugins_info_dict
+
+    def _get_plugin_info(self):
+        plugin_info = dict()
+        plugin_info['plugins'] = []
+        for plugin in self.plugins:
+            info = dict()
+            info['type'] = plugin.obj.get_document_type()
+            info['index'] = plugin.obj.get_index_name()
+            plugin_info['plugins'].append(info)
+        return plugin_info

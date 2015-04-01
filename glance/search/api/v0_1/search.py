@@ -18,7 +18,6 @@ import json
 from oslo.config import cfg
 from oslo_log import log as logging
 import six
-import stevedore
 import webob.exc
 
 from glance.api import policy
@@ -72,6 +71,18 @@ class SearchController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
+        except Exception as e:
+            LOG.error(utils.exception_to_str(e))
+            raise webob.exc.HTTPInternalServerError()
+
+    def plugins_info(self, req):
+        try:
+            search_repo = self.gateway.get_catalog_search_repo(req.context)
+            return search_repo.plugins_info()
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
             LOG.error(utils.exception_to_str(e))
             raise webob.exc.HTTPInternalServerError()
@@ -351,22 +362,20 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
+    def plugins_info(self, response, query_result):
+        body = json.dumps(query_result, ensure_ascii=False)
+        response.unicode_body = six.text_type(body)
+        response.content_type = 'application/json'
+
     def index(self, response, query_result):
         body = json.dumps(query_result, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
 
-def get_plugins():
-    namespace = 'glance.search.index_backend'
-    ext_manager = stevedore.extension.ExtensionManager(
-        namespace, invoke_on_load=True)
-    return ext_manager.extensions
-
-
 def create_resource():
     """Search resource factory method"""
-    plugins = get_plugins()
+    plugins = utils.get_search_plugins()
     deserializer = RequestDeserializer(plugins)
     serializer = ResponseSerializer()
     controller = SearchController(plugins)
