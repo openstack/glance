@@ -2381,7 +2381,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_update_reserved_attributes(self):
         samples = {
             'owner': TENANT1,
-            'is_public': True,
             'deleted': False,
             'deleted_at': ISOTIME,
         }

@@ -307,8 +307,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     _readonly_properties = ('created_at', 'updated_at', 'status', 'checksum',
                             'size', 'virtual_size', 'direct_url', 'self',
                             'file', 'schema')
-    _reserved_properties = ('owner', 'is_public', 'location', 'deleted',
-                            'deleted_at')
+    _reserved_properties = ('owner', 'location', 'deleted', 'deleted_at')
     _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'virtual_size', 'status', 'tags',
