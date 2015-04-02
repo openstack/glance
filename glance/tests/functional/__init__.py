@@ -317,6 +317,8 @@ class ApiServer(Server):
         self.location_strategy = 'location_order'
         self.store_type_location_strategy_preference = ""
 
+        self.send_identity_headers = False
+
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -336,6 +338,7 @@ delayed_delete = %(delayed_delete)s
 owner_is_tenant = %(owner_is_tenant)s
 workers = %(workers)s
 scrub_time = %(scrub_time)s
+send_identity_headers = %(send_identity_headers)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 data_api = %(data_api)s
@@ -541,6 +544,9 @@ class ScrubberDaemon(Server):
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
 
+        self.send_identity_headers = False
+        self.admin_role = 'admin'
+
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
@@ -555,6 +561,8 @@ metadata_encryption_key = %(metadata_encryption_key)s
 lock_path = %(lock_path)s
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
+send_identity_headers = %(send_identity_headers)s
+admin_role = %(admin_role)s
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s

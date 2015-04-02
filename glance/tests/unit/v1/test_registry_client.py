@@ -855,8 +855,8 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
     def test_get_registry_client_with_identity_headers(self):
         self.config(send_identity_headers=True)
         expected_identity_headers = {
-            'X-User-Id': self.context.user,
-            'X-Tenant-Id': self.context.tenant,
+            'X-User-Id': '',
+            'X-Tenant-Id': '',
             'X-Roles': ','.join(self.context.roles),
             'X-Identity-Status': 'Confirmed',
             'X-Service-Catalog': 'null',

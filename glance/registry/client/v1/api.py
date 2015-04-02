@@ -131,8 +131,8 @@ def get_registry_client(cxt):
 
     if CONF.send_identity_headers:
         identity_headers = {
-            'X-User-Id': cxt.user,
-            'X-Tenant-Id': cxt.tenant,
+            'X-User-Id': cxt.user or '',
+            'X-Tenant-Id': cxt.tenant or '',
             'X-Roles': ','.join(cxt.roles),
             'X-Identity-Status': 'Confirmed',
             'X-Service-Catalog': jsonutils.dumps(cxt.service_catalog),
