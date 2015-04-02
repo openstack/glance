@@ -174,16 +174,15 @@ class ImageCacheTestCase(object):
         """
         self.assertEqual(0, self.cache.get_cache_size())
 
-        # Add a bunch of images to the cache. The max cache
-        # size for the cache is set to 5KB and each image is
-        # 1K. We add 10 images to the cache and then we'll
-        # prune it. We should see only 5 images left after
-        # pruning, and the images that are least recently accessed
-        # should be the ones pruned...
+        # Add a bunch of images to the cache. The max cache size for the cache
+        # is set to 5KB and each image is 1K. We use 11 images in this test.
+        # The first 10 are added to and retrieved from cache in the same order.
+        # Then, the 11th image is added to cache but not retrieved before we
+        # prune. We should see only 5 images left after pruning, and the
+        # images that are least recently accessed should be the ones pruned...
         for x in range(10):
             FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
-            self.assertTrue(self.cache.cache_image_file(x,
-                                                        FIXTURE_FILE))
+            self.assertTrue(self.cache.cache_image_file(x, FIXTURE_FILE))
 
         self.assertEqual(10 * units.Ki, self.cache.get_cache_size())
 
@@ -194,17 +193,27 @@ class ImageCacheTestCase(object):
                 for chunk in cache_file:
                     buff.write(chunk)
 
+        # Add a new image to cache.
+        # This is specifically to test the bug: 1438564
+        FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
+        self.assertTrue(self.cache.cache_image_file(99, FIXTURE_FILE))
+
         self.cache.prune()
 
         self.assertEqual(5 * units.Ki, self.cache.get_cache_size())
 
-        for x in range(0, 5):
+        # Ensure images 0, 1, 2, 3, 4 & 5 are not cached anymore
+        for x in range(0, 6):
             self.assertFalse(self.cache.is_cached(x),
                              "Image %s was cached!" % x)
 
-        for x in range(5, 10):
+        # Ensure images 6, 7, 8 and 9 are still cached
+        for x in range(6, 10):
             self.assertTrue(self.cache.is_cached(x),
                             "Image %s was not cached!" % x)
+
+        # Ensure the newly added image, 99, is still cached
+        self.assertTrue(self.cache.is_cached(99), "Image 99 was not cached!")
 
     @skip_if_disabled
     def test_prune_to_zero(self):

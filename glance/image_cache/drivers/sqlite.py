@@ -321,8 +321,8 @@ class Driver(base.Driver):
 
                 db.execute("""INSERT INTO cached_images
                            (image_id, last_accessed, last_modified, hits, size)
-                           VALUES (?, 0, ?, 0, ?)""",
-                           (image_id, now, filesize))
+                           VALUES (?, ?, ?, 0, ?)""",
+                           (image_id, now, now, filesize))
                 db.commit()
 
         def rollback(e):
