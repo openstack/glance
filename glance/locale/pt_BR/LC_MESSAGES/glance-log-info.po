@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-31 06:02+0000\n"
-"PO-Revision-Date: 2015-03-28 10:42+0000\n"
+"POT-Creation-Date: 2015-04-03 06:02+0000\n"
+"PO-Revision-Date: 2015-04-01 21:54+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "glance/language/pt_BR/)\n"
@@ -155,6 +155,11 @@ msgstr "Filho iniciado %s"
 #: glance/common/wsgi.py:466
 msgid "Starting single process server"
 msgstr "Iniciando servidor de processo único"
+
+#: glance/common/artifacts/loader.py:131 glance/common/artifacts/loader.py:155
+#, python-format
+msgid "Artifact %s has been successfully loaded"
+msgstr ""
 
 #: glance/common/scripts/__init__.py:32
 #, python-format

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-31 06:02+0000\n"
-"PO-Revision-Date: 2015-03-28 10:42+0000\n"
+"POT-Creation-Date: 2015-04-03 06:02+0000\n"
+"PO-Revision-Date: 2015-04-01 21:54+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "glance/language/pt_BR/)\n"
@@ -62,7 +62,7 @@ msgstr ""
 "Falha ao ativar imagem %s no registro. Prestes a excluir bits de imagem do "
 "armazenamento e atualizar status para 'encerrado'."
 
-#: glance/api/v2/images.py:946
+#: glance/api/v2/images.py:945
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
@@ -120,6 +120,16 @@ msgstr "Falha ao excluir imagem %s no armazenamento da URI"
 #: glance/common/wsgi.py:326
 #, python-format
 msgid "Unrecognised child %s"
+msgstr ""
+
+#: glance/common/artifacts/loader.py:125
+#, python-format
+msgid "Can't load artifact %s: load disabled in config"
+msgstr ""
+
+#: glance/common/artifacts/loader.py:151
+#, python-format
+msgid "Can't load artifact %s: not in available_plugins list"
 msgstr ""
 
 #: glance/common/scripts/image_import/main.py:158

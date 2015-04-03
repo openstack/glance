@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-31 06:02+0000\n"
-"PO-Revision-Date: 2015-03-30 17:43+0000\n"
+"POT-Creation-Date: 2015-04-03 06:02+0000\n"
+"PO-Revision-Date: 2015-04-01 21:54+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Korean (Korea) (http://www.transifex.com/projects/p/glance/"
 "language/ko_KR/)\n"
@@ -19,6 +19,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+
+#: glance/listener.py:40
+#, python-format
+msgid ""
+"Failed to retrieve supported notification events from search plugins "
+"%(ext)s: %(e)s"
+msgstr ""
 
 #: glance/location.py:403
 #, python-format
@@ -225,6 +232,16 @@ msgstr ""
 #: glance/common/wsgi.py:332
 #, python-format
 msgid "Not respawning child %d, cannot recover from termination"
+msgstr ""
+
+#: glance/common/artifacts/loader.py:96
+#, python-format
+msgid "Unable to load artifacts: %s"
+msgstr ""
+
+#: glance/common/artifacts/loader.py:164
+#, python-format
+msgid "Could not load plugin from %(module)s: %(msg)s"
 msgstr ""
 
 #: glance/common/location_strategy/__init__.py:66
