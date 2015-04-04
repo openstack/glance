@@ -60,7 +60,8 @@ class TestArtifactsLoader(utils.BaseTestCase):
         self.assertEqual(art1.MyArtifact,
                          self.loader.get_class_by_endpoint('myartifact'))
         # entrypoint = [a, list]
-        path = os.path.splitext(__file__)[0].replace('/', '.')
+        path = os.path.splitext(__file__)[0][__file__.rfind(
+            'glance'):].replace('/', '.')
         self._setup_loader([
             'MyArtifact=%s:MyArtifactOk' % path,
             'MyArtifact=%s.v2.artifact:MyArtifact' % self.path,
@@ -115,7 +116,8 @@ class TestArtifactsLoader(utils.BaseTestCase):
         self.assertEqual('1.0.1', art_type.metadata.type_version)
         # now try to add duplicate artifact with the same type_name and
         # type_version as already exists
-        bad_art_path = os.path.splitext(__file__)[0].replace('/', '.')
+        bad_art_path = os.path.splitext(__file__)[0][__file__.rfind(
+            'glance'):].replace('/', '.')
         self.assertEqual(art_type.metadata.type_version,
                          MyArtifactDuplicate.metadata.type_version)
         self.assertEqual(art_type.metadata.type_name,
@@ -148,7 +150,8 @@ class TestArtifactsLoader(utils.BaseTestCase):
         self.assertRaises(exception.ArtifactLoadError,
                           self._setup_loader,
                           ['MyArtifact=%s.v1.artifact:MyArtifact' % self.path])
-        path = os.path.splitext(__file__)[0].replace('/', '.')
+        path = os.path.splitext(__file__)[0][__file__.rfind(
+            'glance'):].replace('/', '.')
         self._setup_loader(['MyArtifact=%s:MyArtifactOk' % path])
         # make sure that plugin_map has the expected plugin
         self.assertEqual(MyArtifactOk,
