@@ -1,88 +1,31 @@
 {
     "namespace": "OS::Compute::Libvirt",
     "display_name": "libvirt Driver Options",
-    "description": "The libvirt compute driver options.  \n\nThese are properties specific to compute drivers.  For a list of all hypervisors, see here: https://wiki.openstack.org/wiki/HypervisorSupportMatrix.",
+    "description": "The libvirt compute driver options.  \n\nThese are properties that affect the libvirt compute driver and may be specified on flavors and images.  For a list of all hypervisors, see here: https://wiki.openstack.org/wiki/HypervisorSupportMatrix.",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [
         {
-            "name": "OS::Glance::Image"
+            "name": "OS::Glance::Image",
+            "prefix": "hw_"
+        },
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "hw:"
         }
     ],
     "properties": {
-        "hw_disk_bus": {
-            "title": "Disk Bus",
-            "description": "Specifies the type of disk controller to attach disk devices to.",
-            "type": "string",
-            "enum": [
-                "scsi",
-                "virtio",
-                "uml",
-                "xen",
-                "ide",
-                "usb"
-            ]
-        },
-        "hw_rng_model": {
-            "title": "Random Number Generator Device",
-            "description": "Adds a random-number generator device to the image's instances. The cloud administrator can enable and control device behavior by configuring the instance's flavor. By default: The generator device is disabled. /dev/random is used as the default entropy source. To specify a physical HW RNG device, use the following option in the nova.conf file: rng_dev_path=/dev/hwrng",
-            "type": "string",
-            "default": "virtio"
-        },
-        "hw_machine_type": {
-            "title": "Machine Type",
-            "description": "Enables booting an ARM system using the specified machine type. By default, if an ARM image is used and its type is not specified, Compute uses vexpress-a15 (for ARMv7) or virt (for AArch64) machine types. Valid types can be viewed by using the virsh capabilities command (machine types are displayed in the machine tag).",
-            "type": "string"
-        },
-        "hw_scsi_model": {
-            "title": "SCSI Model",
-            "description": "Enables the use of VirtIO SCSI (virtio-scsi) to provide block device access for compute instances; by default, instances use VirtIO Block (virtio-blk). VirtIO SCSI is a para-virtualized SCSI controller device that provides improved scalability and performance, and supports advanced SCSI hardware.",
-            "type": "string",
-            "default": "virtio-scsi"
-        },
-        "hw_video_model": {
-            "title": "Video Model",
-            "description": "The video image driver used.",
-            "type": "string",
-            "enum": [
-                "vga",
-                "cirrus",
-                "vmvga",
-                "xen",
-                "qxl"
-            ]
-        },
-        "hw_video_ram": {
-            "title": "Max Video Ram",
-            "description": "Maximum RAM (unit: MB) for the video image. Used only if a hw_video:ram_max_mb value has been set in the flavor's extra_specs and that value is higher than the value set in hw_video_ram.",
+        "serial_port_count": {
+            "title": "Serial Port Count",
+            "description": "Specifies the count of serial ports that should be provided. If hw:serial_port_count is not set in the flavor's extra_specs, then any count is permitted. If hw:serial_port_count is set, then this provides the default serial port count. It is permitted to override the default serial port count, but only with a lower value.",
             "type": "integer",
             "minimum": 0
         },
-        "os_command_line": {
-            "title": "Kernel Command Line",
-            "description": "The kernel command line to be used by the libvirt driver, instead of the default. For linux containers (LXC), the value is used as arguments for initialization. This key is valid only for Amazon kernel, ramdisk, or machine images (aki, ari, or ami).",
-            "type": "string"
-        },
-        "hw_vif_model": {
-            "title": "Virtual Network Interface",
-            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor configuration. libvirt driver options: KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, spapr-vlan, and virtio. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
+        "boot_menu": {
+            "title": "Boot Menu",
+            "description": "If true, enables the BIOS bootmenu. In cases where both the image metadata and Extra Spec are set, the Extra Spec setting is used. This allows for flexibility in setting/overriding the default behavior as needed.",
             "type": "string",
-            "enum": [
-                "e1000",
-                "e1000e",
-                "ne2k_pci",
-                "netfront",
-                "pcnet",
-                "rtl8139",
-                "spapr-vlan",
-                "virtio"
-            ]
-        },
-        "hw_qemu_guest_agent": {
-            "title": "QEMU Guest Agent",
-            "description": "It is a daemon program running inside the domain which is supposed to help management applications with executing functions which need assistance of the guest OS. For example, freezing and thawing filesystems, entering suspend. However, guest agent (GA) is not bullet proof, and hostile guest OS can send spurious replies.",
-            "type": "string",
-            "enum": ["yes", "no"]
+            "enum": ["true", "false"]
         }
     },
     "objects": []
