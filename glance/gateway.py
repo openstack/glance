@@ -14,10 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import glance_store
+from oslo_log import log as logging
 
 from glance.api import authorization
 from glance.api import policy
 from glance.api import property_protections
+from glance.common import exception
 from glance.common import property_utils
 from glance.common import store_utils
 import glance.db
@@ -25,7 +27,14 @@ import glance.domain
 import glance.location
 import glance.notifier
 import glance.quota
-import glance.search
+try:
+    import glance.search
+    glance_search = glance.search
+except ImportError:
+    glance_search = None
+
+
+LOG = logging.getLogger(__name__)
 
 
 class Gateway(object):
@@ -36,7 +45,10 @@ class Gateway(object):
         self.store_utils = store_utils
         self.notifier = notifier or glance.notifier.Notifier()
         self.policy = policy_enforcer or policy.Enforcer()
-        self.es_api = es_api or glance.search.get_api()
+        if es_api:
+            self.es_api = es_api
+        else:
+            self.es_api = glance_search.get_api() if glance_search else None
 
     def get_image_factory(self, context):
         image_factory = glance.domain.ImageFactory()
@@ -235,6 +247,15 @@ class Gateway(object):
         return authorized_tag_repo
 
     def get_catalog_search_repo(self, context):
+        if self.es_api is None:
+            # TODO(mriedem): Make this a separate exception or change to
+            # warning/error logging in Liberty once we're past string freeze.
+            # See bug 1441764.
+            LOG.debug('The search and index services are not available. '
+                      'Ensure you have the necessary prerequisite '
+                      'dependencies installed like elasticsearch to use these '
+                      'services.')
+            raise exception.ServiceUnavailable()
         search_repo = glance.search.CatalogSearchRepo(context, self.es_api)
         policy_search_repo = policy.CatalogSearchRepoProxy(
             search_repo, context, self.policy)
