@@ -196,11 +196,17 @@ def _normalize_tags(image):
     return image
 
 
-def image_get(context, image_id, session=None, force_show_deleted=False):
+def image_get(context, image_id, session=None, force_show_deleted=False,
+              return_tag=False):
     image = _image_get(context, image_id, session=session,
-                       force_show_deleted=force_show_deleted)
+                       force_show_deleted=force_show_deleted,
+                       return_tag=return_tag)
     image = _normalize_locations(context, image.to_dict(),
                                  force_show_deleted=force_show_deleted)
+
+    if return_tag:
+        image = _normalize_tags(image)
+
     return image
 
 
@@ -218,7 +224,8 @@ def _check_image_id(image_id):
         raise exception.NotFound()
 
 
-def _image_get(context, image_id, session=None, force_show_deleted=False):
+def _image_get(context, image_id, session=None, force_show_deleted=False,
+               return_tag=False):
     """Get an image or raise if it does not exist."""
     _check_image_id(image_id)
     session = session or get_session()
@@ -232,6 +239,9 @@ def _image_get(context, image_id, session=None, force_show_deleted=False):
         # filter out deleted images if context disallows it
         if not force_show_deleted and not context.can_see_deleted:
             query = query.filter_by(deleted=False)
+
+        if return_tag:
+            query = query.options(sa_orm.joinedload(models.Image.tags))
 
         image = query.one()
 
