@@ -91,9 +91,8 @@ def _get_resource_type_id(meta, name):
 def _get_resource_type(meta, resource_type_id):
     rt_table = get_metadef_resource_types_table(meta)
     return (
-        select([rt_table.c.id]).
+        rt_table.select().
         where(rt_table.c.id == resource_type_id).
-        select_from(rt_table).
         execute().fetchone())
 
 
