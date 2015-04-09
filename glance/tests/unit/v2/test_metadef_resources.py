@@ -1250,7 +1250,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual({}, object.properties)
         self.assertNotificationLog("metadef_object.create",
                                    [{'name': OBJECT2,
-                                    'namespace': NAMESPACE1}])
+                                     'namespace': NAMESPACE1,
+                                     'properties': []}])
         object = self.object_controller.show(request, NAMESPACE1, OBJECT2)
         self.assertEqual(OBJECT2, object.name)
         self.assertEqual([], object.required)
@@ -1310,6 +1311,24 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationLog("metadef_object.create",
                                    [{'name': OBJECT2,
                                     'namespace': NAMESPACE1}])
+        object = self.object_controller.show(request, NAMESPACE1, OBJECT2)
+        self.assertEqual(OBJECT2, object.name)
+        self.assertEqual([], object.required)
+        self.assertEqual({}, object.properties)
+
+    def test_object_create_missing_properties(self):
+        request = unit_test_utils.get_fake_request()
+
+        object = glance.api.v2.model.metadef_object.MetadefObject()
+        object.name = OBJECT2
+        object.required = []
+        object = self.object_controller.create(request, object, NAMESPACE1)
+        self.assertEqual(OBJECT2, object.name)
+        self.assertEqual([], object.required)
+        self.assertNotificationLog("metadef_object.create",
+                                   [{'name': OBJECT2,
+                                     'namespace': NAMESPACE1,
+                                     'properties': []}])
         object = self.object_controller.show(request, NAMESPACE1, OBJECT2)
         self.assertEqual(OBJECT2, object.name)
         self.assertEqual([], object.required)
