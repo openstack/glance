@@ -457,7 +457,8 @@ class Controller(controller.BaseController):
         except store.NotFound as e:
             raise HTTPNotFound(explanation=e.msg)
         except (store.StoreGetNotSupported,
-                store.StoreRandomGetNotSupported) as e:
+                store.StoreRandomGetNotSupported,
+                store.UnknownScheme) as e:
             raise HTTPBadRequest(explanation=e.msg)
         image_size = int(image_size) if image_size else None
         return image_data, image_size
@@ -529,9 +530,9 @@ class Controller(controller.BaseController):
         if location:
             try:
                 backend = store.get_store_from_location(location)
-            except store.BadStoreUri:
-                msg = _("Invalid location: %s") % location
-                LOG.warn(msg)
+            except (store.UnknownScheme, store.BadStoreUri):
+                msg = _("Invalid location %s") % location
+                LOG.debug(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,
                                      content_type="text/plain")
@@ -728,7 +729,7 @@ class Controller(controller.BaseController):
             # disable debug logs.
             LOG.debug(utils.exception_to_str(e))
             raise HTTPNotFound(explanation=e.msg, content_type="text/plain")
-        except store.BadStoreUri as e:
+        except (store.UnknownScheme, store.BadStoreUri) as e:
             # NOTE(rajesht): See above note of store.NotFound
             LOG.debug(utils.exception_to_str(e))
             raise HTTPBadRequest(explanation=e.msg, content_type="text/plain")
