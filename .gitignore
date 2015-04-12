@@ -6,6 +6,7 @@
 .tox
 .coverage*
 cover/*
+covhtml
 nosetests.xml
 coverage.xml
 glance.sqlite
