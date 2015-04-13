@@ -1370,7 +1370,7 @@ Optional. Default: ``roles``.
 Configuring Glance APIs
 -----------------------
 
-The glance-api service implents versions 1 and 2 of the OpenStack
+The glance-api service implements versions 1 and 2 of the OpenStack
 Images API. Disable either version of the Images API using the
 following options:
 
@@ -1439,7 +1439,7 @@ profiling feature for glance-api and glance-registry service.
 
 Optional. Default: ``True``
 
-The config value ``trace_sqlalchemy`` is used to determin whether fully enable
+The config value ``trace_sqlalchemy`` is used to determine whether fully enable
 sqlalchemy engine based SQL execution profiling feature for glance-api and
 glance-registry services.
 
@@ -1448,7 +1448,7 @@ glance-registry services.
 Optional. Default: ``True``
 
 **IMPORTANT NOTE**: The HMAC key which is used for encrypting context data for
-performance profiling is configued in paste config file of glance-api and
+performance profiling is configured in paste config file of glance-api and
 glance-registry service separately, by default they place at
 /etc/glance/api-paste.ini and /etc/glance/registry-paste.ini files, in order
 to make profiling work as designed operator needs to make those values of HMAC
