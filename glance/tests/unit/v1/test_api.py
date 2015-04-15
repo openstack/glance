@@ -2098,7 +2098,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_get_index_sort_name_asc(self):
         """
-        Tests that the /images registry API returns list of
+        Tests that the /images API returns list of
         public images sorted alphabetically by name in
         ascending order.
         """
@@ -2139,8 +2139,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_get_details_filter_changes_since(self):
         """
-        Tests that the /images/detail registry API returns list of
-        public images that have a size less than or equal to size_max
+        Tests that the /images/detail API returns list of
+        images that changed since the time defined by changes-since
         """
         dt1 = timeutils.utcnow() - datetime.timedelta(1)
         iso1 = timeutils.isotime(dt1)
@@ -2860,7 +2860,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
     def test_get_details_invalid_marker(self):
         """
-        Tests that the /images/detail registry API returns a 400
+        Tests that the /images/detail API returns a 400
         when an invalid marker is provided
         """
         req = webob.Request.blank('/images/detail?marker=%s' % _gen_uuid())
