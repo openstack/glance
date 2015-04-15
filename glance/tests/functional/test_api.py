@@ -53,7 +53,7 @@ class TestApiVersions(functional.FunctionalTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
             {
@@ -117,7 +117,7 @@ class TestApiVersions(functional.FunctionalTest):
         versions = {'versions': [
             {
                 'id': 'v1.1',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
             {
@@ -165,7 +165,7 @@ class TestApiPaths(functional.FunctionalTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
             {
