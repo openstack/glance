@@ -60,7 +60,7 @@ class VersionsTest(base.IsolatedUnitTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'http://127.0.0.1:9292/v1/'}],
             },
@@ -109,7 +109,7 @@ class VersionsTest(base.IsolatedUnitTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'https://example.com:9292/v1/'}],
             },

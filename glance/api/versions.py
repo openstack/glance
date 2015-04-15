@@ -66,7 +66,7 @@ class Controller(object):
             ])
         if CONF.enable_v1_api:
             version_objs.extend([
-                build_version_object(1.1, 'v1', 'CURRENT'),
+                build_version_object(1.1, 'v1', 'SUPPORTED'),
                 build_version_object(1.0, 'v1', 'SUPPORTED'),
             ])
 
