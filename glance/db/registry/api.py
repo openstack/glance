@@ -83,9 +83,10 @@ def image_destroy(client, image_id):
 
 
 @_get_client
-def image_get(client, image_id, force_show_deleted=False):
+def image_get(client, image_id, force_show_deleted=False, return_tag=False):
     return client.image_get(image_id=image_id,
-                            force_show_deleted=force_show_deleted)
+                            force_show_deleted=force_show_deleted,
+                            return_tag=return_tag)
 
 
 def is_image_visible(context, image, status=None):
