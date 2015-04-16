@@ -382,28 +382,6 @@ class DriverTests(object):
                                       force_show_deleted=True)
         self.assertEqual(self.fixtures[0]['id'], image['id'])
 
-    def test_image_get_with_tag_returning(self):
-        expected_tags = {UUID1: ['foo'], UUID2: ['bar'], UUID3: ['baz']}
-
-        self.db_api.image_tag_create(self.context, UUID1,
-                                     expected_tags[UUID1][0])
-        self.db_api.image_tag_create(self.context, UUID2,
-                                     expected_tags[UUID2][0])
-        self.db_api.image_tag_create(self.context, UUID3,
-                                     expected_tags[UUID3][0])
-
-        image = self.db_api.image_get(self.context, UUID1, return_tag=True)
-        self.assertEqual(self.fixtures[0]['id'], image['id'])
-        self.assertEqual(expected_tags[image['id']], image['tags'])
-
-        self.db_api.image_tag_delete(self.context, UUID1,
-                                     expected_tags[UUID1][0])
-        expected_tags[UUID1] = []
-
-        image = self.db_api.image_get(self.context, UUID1, return_tag=True)
-        self.assertEqual(self.fixtures[0]['id'], image['id'])
-        self.assertEqual(expected_tags[image['id']], image['tags'])
-
     def test_image_get_not_owned(self):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
