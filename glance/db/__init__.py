@@ -66,14 +66,13 @@ class ImageRepo(object):
 
     def get(self, image_id):
         try:
-            db_api_image = dict(self.db_api.image_get(self.context,
-                                                      image_id,
-                                                      return_tag=True))
+            db_api_image = dict(self.db_api.image_get(self.context, image_id))
             assert not db_api_image['deleted']
         except (exception.NotFound, exception.Forbidden, AssertionError):
             msg = _("No image found with ID %s") % image_id
             raise exception.NotFound(msg)
-        image = self._format_image_from_db(db_api_image, db_api_image['tags'])
+        tags = self.db_api.image_tag_get_all(self.context, image_id)
+        image = self._format_image_from_db(db_api_image, tags)
         return ImageProxy(image, self.context, self.db_api)
 
     def list(self, marker=None, limit=None, sort_key=None,

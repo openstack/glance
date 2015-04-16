@@ -380,8 +380,7 @@ def _sort_images(images, sort_key, sort_dir):
     return images
 
 
-def _image_get(context, image_id, force_show_deleted=False, status=None,
-               return_tag=False):
+def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]
     except KeyError:
@@ -397,18 +396,12 @@ def _image_get(context, image_id, force_show_deleted=False, status=None,
         LOG.warn(_LW('Unable to get unowned image'))
         raise exception.Forbidden("Image not visible to you")
 
-    if return_tag:
-        image['tags'] = image_tag_get_all(context, image_id)
-
     return image
 
 
 @log_call
-def image_get(context, image_id, session=None, force_show_deleted=False,
-              return_tag=False):
-    image = _image_get(context, image_id, force_show_deleted,
-                       return_tag=return_tag)
-
+def image_get(context, image_id, session=None, force_show_deleted=False):
+    image = _image_get(context, image_id, force_show_deleted)
     return _normalize_locations(context, copy.deepcopy(image),
                                 force_show_deleted=force_show_deleted)
 
