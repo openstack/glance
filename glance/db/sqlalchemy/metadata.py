@@ -327,7 +327,7 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
                 'name': tag.get('name'),
                 'namespace_id': namespace_id,
             }
-            tag_id = _get_resource_id(tags_table, namespace_id, tag['id'])
+            tag_id = _get_resource_id(tags_table, namespace_id, tag['name'])
             if not tag_id:
                 values.update({'created_at': timeutils.utcnow()})
                 _insert_data_to_db(tags_table, values)
