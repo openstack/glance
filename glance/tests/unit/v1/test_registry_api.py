@@ -946,7 +946,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_get_details_filter_changes_since(self):
         """
         Tests that the /images/detail registry API returns list of
-        public images that have a size less than or equal to size_max
+        images that changed since the time defined by changes-since
         """
         dt1 = timeutils.utcnow() - datetime.timedelta(1)
         iso1 = timeutils.isotime(dt1)
