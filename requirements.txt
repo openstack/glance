@@ -28,13 +28,13 @@ oslo.context>=0.2.0,<0.3.0                     # Apache-2.0
 oslo.utils>=1.4.0,<1.5.0                       # Apache-2.0
 stevedore>=1.3.0,<1.4.0  # Apache-2.0
 taskflow>=0.7.1,<0.8.0
-keystonemiddleware>=1.5.0
+keystonemiddleware>=1.5.0,<1.6.0
 WSME>=0.6
 # For openstack/common/lockutils
 posix_ipc
 
 # For Swift storage backend.
-python-swiftclient>=2.2.0
+python-swiftclient>=2.2.0,<2.5.0
 
 # For VMware storage backed.
 oslo.vmware>=0.11.1,<0.12.0                     # Apache-2.0
@@ -43,7 +43,7 @@ oslo.vmware>=0.11.1,<0.12.0                     # Apache-2.0
 Paste
 
 jsonschema>=2.0.0,<3.0.0
-python-keystoneclient>=1.1.0
+python-keystoneclient>=1.1.0,<1.4.0
 pyOpenSSL>=0.11
 # Required by openstack.common libraries
 six>=1.9.0
@@ -59,7 +59,7 @@ retrying>=1.2.3,!=1.3.0 # Apache-2.0
 osprofiler>=0.3.0                       # Apache-2.0
 
 # Glance Store
-glance_store>=0.3.0                   # Apache-2.0
+glance_store>=0.3.0,<0.5.0             # Apache-2.0
 
 # Artifact repository
 semantic_version>=2.3.1
