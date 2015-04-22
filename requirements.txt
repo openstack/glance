@@ -25,7 +25,7 @@ pycrypto>=2.6,<=2.6.1
 iso8601>=0.1.9,<=0.1.10
 ordereddict
 oslo.config>=1.2.0,<1.5
-stevedore>=0.14,<1.2
+stevedore>=0.14
 
 # For Swift storage backend.
 python-swiftclient>=1.6,<=2.3.1
@@ -35,7 +35,7 @@ Paste
 
 jsonschema>=2.0.0,<3.0.0
 python-cinderclient>=1.0.6,<=1.1.1
-python-keystoneclient>=0.7.0,<=0.11.2
+python-keystoneclient>=0.7.0,<0.12.0
 pyOpenSSL>=0.11,<=0.14
 
 # Required by openstack.common libraries
