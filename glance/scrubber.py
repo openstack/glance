@@ -50,15 +50,19 @@ scrubber_opts = [
                help=_('The amount of time in seconds to delay before '
                       'performing a delete.')),
     cfg.BoolOpt('cleanup_scrubber', default=False,
-                help=_('A boolean that determines if the scrubber should '
+                help=_('DEPRECATED. TO BE REMOVED IN THE LIBERTY RELEASE. '
+                       'A boolean that determines if the scrubber should '
                        'clean up the files it uses for taking data. Only '
                        'one server in your deployment should be designated '
-                       'the cleanup host.')),
+                       'the cleanup host.'),
+                deprecated_for_removal=True),
     cfg.BoolOpt('delayed_delete', default=False,
                 help=_('Turn on/off delayed delete.')),
     cfg.IntOpt('cleanup_scrubber_time', default=86400,
-               help=_('Items must have a modified time that is older than '
-                      'this value in order to be candidates for cleanup.'))
+               help=_('DEPRECATED. TO BE REMOVED IN THE LIBERTY RELEASE. '
+                      'Items must have a modified time that is older than '
+                      'this value in order to be candidates for cleanup.'),
+               deprecated_for_removal=True)
 ]
 
 scrubber_cmd_opts = [
@@ -484,8 +488,6 @@ class Scrubber(object):
     def __init__(self, store_api):
         LOG.info(_LI("Initializing scrubber with configuration: %s") %
                  six.text_type({'scrubber_datadir': CONF.scrubber_datadir,
-                                'cleanup': CONF.cleanup_scrubber,
-                                'cleanup_time': CONF.cleanup_scrubber_time,
                                 'registry_host': CONF.registry_host,
                                 'registry_port': CONF.registry_port}))
 
@@ -548,9 +550,6 @@ class Scrubber(object):
             for image_id, jobs in six.iteritems(delete_jobs):
                 self._scrub_image(pool, image_id, jobs)
 
-        if CONF.cleanup_scrubber:
-            self._cleanup(pool)
-
     def _scrub_image(self, pool, image_id, delete_jobs):
         if len(delete_jobs) == 0:
             return
@@ -581,70 +580,3 @@ class Scrubber(object):
             LOG.info(_LI("Image %s has been deleted.") % image_id)
         except Exception:
             LOG.warn(_LW("Unable to delete URI from image %s.") % image_id)
-
-    def _read_cleanup_file(self, file_path):
-        """Reading cleanup to get latest cleanup timestamp.
-
-        :param file_path: Cleanup status file full path
-
-        :retval latest cleanup timestamp
-        """
-        try:
-            if not os.path.exists(file_path):
-                msg = _("%s file is not exists.") % six.text_type(file_path)
-                raise Exception(msg)
-            atime = int(os.path.getatime(file_path))
-            mtime = int(os.path.getmtime(file_path))
-            if atime != mtime:
-                msg = _("%s file contains conflicting cleanup "
-                        "timestamp.") % six.text_type(file_path)
-                raise Exception(msg)
-            return atime
-        except Exception as e:
-            LOG.error(utils.exception_to_str(e))
-        return None
-
-    def _update_cleanup_file(self, file_path, cleanup_time):
-        """Update latest cleanup timestamp to cleanup file.
-
-        :param file_path: Cleanup status file full path
-        :param cleanup_time: The Latest cleanup timestamp
-        """
-        try:
-            open(file_path, 'w').close()
-            os.chmod(file_path, 0o600)
-            os.utime(file_path, (cleanup_time, cleanup_time))
-        except Exception:
-            LOG.error(_LE("%s file can not be created.") %
-                      six.text_type(file_path))
-
-    def _cleanup(self, pool):
-        now = time.time()
-        cleanup_file = os.path.join(CONF.scrubber_datadir, ".cleanup")
-        if not os.path.exists(cleanup_file):
-            self._update_cleanup_file(cleanup_file, now)
-            return
-
-        last_cleanup_time = self._read_cleanup_file(cleanup_file)
-        cleanup_time = last_cleanup_time + CONF.cleanup_scrubber_time
-        if cleanup_time > now:
-            return
-
-        LOG.info(_LI("Getting images deleted before %s") %
-                 CONF.cleanup_scrubber_time)
-        self._update_cleanup_file(cleanup_file, now)
-
-        delete_jobs = self._get_delete_jobs(self.db_queue, False)
-        if not delete_jobs:
-            return
-
-        for image_id, jobs in six.iteritems(delete_jobs):
-            with lockutils.lock("scrubber-%s" % image_id,
-                                lock_file_prefix='glance-', external=True):
-                if not self.file_queue.has_image(image_id):
-                    # NOTE(zhiyan): scrubber should not cleanup this image
-                    # since a queue file be created for this 'pending_delete'
-                    # image concurrently before the code get lock and
-                    # reach here. The checking only be worth if glance-api and
-                    # glance-scrubber service be deployed on a same host.
-                    self._scrub_image(pool, image_id, jobs)
