@@ -18,6 +18,7 @@ from oslo.serialization import jsonutils
 import webob.exc
 
 from glance.common import exception
+from glance.common import utils
 import glance.gateway
 import glance.search
 from glance.search.api.v0_1 import search as search
@@ -234,12 +235,52 @@ class TestSearchController(base.IsolatedUnitTest):
             webob.exc.HTTPInternalServerError, self.search_controller.index,
             request, actions)
 
+    def test_plugins_info(self):
+        request = unit_test_utils.get_fake_request()
+        self.search_controller.plugins_info = mock.Mock(return_value="{}")
+        self.search_controller.plugins_info(request)
+        self.search_controller.plugins_info.assert_called_once_with(request)
+
+    def test_plugins_info_repo(self):
+        request = unit_test_utils.get_fake_request()
+        repo = glance.search.CatalogSearchRepo
+        repo.plugins_info = mock.Mock(return_value="{}")
+        self.search_controller.plugins_info(request)
+        repo.plugins_info.assert_called_once_with()
+
+    def test_plugins_info_forbidden(self):
+        request = unit_test_utils.get_fake_request()
+        repo = glance.search.CatalogSearchRepo
+        repo.plugins_info = mock.Mock(side_effect=exception.Forbidden)
+
+        self.assertRaises(
+            webob.exc.HTTPForbidden, self.search_controller.plugins_info,
+            request)
+
+    def test_plugins_info_not_found(self):
+        request = unit_test_utils.get_fake_request()
+        repo = glance.search.CatalogSearchRepo
+        repo.plugins_info = mock.Mock(side_effect=exception.NotFound)
+
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.search_controller.plugins_info, request)
+
+    def test_plugins_info_internal_server_error(self):
+        request = unit_test_utils.get_fake_request()
+        repo = glance.search.CatalogSearchRepo
+        repo.plugins_info = mock.Mock(side_effect=Exception)
+
+        self.assertRaises(webob.exc.HTTPInternalServerError,
+                          self.search_controller.plugins_info, request)
+
 
 class TestSearchDeserializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestSearchDeserializer, self).setUp()
-        self.deserializer = search.RequestDeserializer(search.get_plugins())
+        self.deserializer = search.RequestDeserializer(
+            utils.get_search_plugins()
+        )
 
     def test_single_index(self):
         request = unit_test_utils.get_fake_request()
@@ -411,7 +452,9 @@ class TestIndexDeserializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestIndexDeserializer, self).setUp()
-        self.deserializer = search.RequestDeserializer(search.get_plugins())
+        self.deserializer = search.RequestDeserializer(
+            utils.get_search_plugins()
+        )
 
     def test_empty_request(self):
         request = unit_test_utils.get_fake_request()
@@ -873,6 +916,39 @@ class TestResponseSerializer(test_utils.BaseTestCase):
     def setUp(self):
         super(TestResponseSerializer, self).setUp()
         self.serializer = search.ResponseSerializer()
+
+    def test_plugins_info(self):
+        expected = {
+            "plugins": [
+                {
+                    "index": "glance",
+                    "type": "image"
+                },
+                {
+                    "index": "glance",
+                    "type": "metadef"
+                }
+            ]
+        }
+
+        request = webob.Request.blank('/v0.1/search')
+        response = webob.Response(request=request)
+        result = {
+            "plugins": [
+                {
+                    "index": "glance",
+                    "type": "image"
+                },
+                {
+                    "index": "glance",
+                    "type": "metadef"
+                }
+            ]
+        }
+        self.serializer.search(response, result)
+        actual = jsonutils.loads(response.body)
+        self.assertEqual(expected, actual)
+        self.assertEqual('application/json', response.content_type)
 
     def test_search(self):
         expected = [{
