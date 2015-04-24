@@ -1,0 +1,19 @@
+{
+    "namespace": "OS::Compute::VMwareFlavor",
+    "display_name": "VMware Driver Options for Flavors",
+    "description": "VMware Driver Options for Flavors may be used to customize and manage Nova Flavors. These are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova. See: http://docs.openstack.org/admin-guide-cloud/content/customize-flavors.html",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Flavor"
+        }
+    ],
+    "properties": {
+        "vmware:hw_version": {
+            "title": "VMware Hardware Version",
+            "description": "Specifies the hardware version VMware uses to create images. If the hardware version needs to be compatible with a cluster version, for backward compatibility or other circumstances, the vmware:hw_version key specifies a virtual machine hardware version. In the event that a cluster has mixed host version types, the key will enable the VC to place the cluster on the correct host.",
+            "type": "string"
+        }
+    }
+}

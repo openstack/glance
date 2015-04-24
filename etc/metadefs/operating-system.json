@@ -1,0 +1,27 @@
+{
+    "display_name": "Common Operating System Properties",
+    "namespace": "OS::OperatingSystem",
+    "description": "When adding an image to Glance, you may specify some common image properties that may prove useful to consumers of your image.",
+    "protected": true,
+    "resource_type_associations" : [
+	    {
+            "name": "OS::Glance::Image"
+        },
+        {
+            "name": "OS::Cinder::Volume",
+            "properties_target": "image"
+        }
+    ],
+    "properties": {
+        "os_distro": {
+            "title": "OS Distro",
+            "description": "The common name of the operating system distribution in lowercase (uses the same data vocabulary as the libosinfo project). Specify only a recognized value for this field. Deprecated values are listed to assist you in searching for the recognized value.",
+            "type": "string"
+        },
+        "os_version": {
+            "title": "OS Version",
+            "description": "Operating system version as specified by the distributor. (for example, '11.10')",
+            "type": "string"
+        }
+    }
+}

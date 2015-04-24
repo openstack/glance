@@ -1,0 +1,26 @@
+{
+    "namespace": "OS::Compute::VMwareQuotaFlavor",
+    "display_name": "VMware Quota for Flavors",
+    "description": "The VMware compute driver allows various compute quotas to be specified on flavors. When specified, the VMWare driver will ensure that the quota is enforced. These are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova. For a list of hypervisors, see: https://wiki.openstack.org/wiki/HypervisorSupportMatrix. For flavor customization, see: http://docs.openstack.org/admin-guide-cloud/content/customize-flavors.html",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Flavor"
+        }
+    ],
+    "properties": {
+        "quota:cpu_limit": {
+            "title": "Quota: CPU Limit",
+            "description": "Specifies the upper limit for CPU allocation in MHz. This parameter ensures that a machine never uses more than the defined amount of CPU time. It can be used to enforce a limit on the machine's CPU performance. The value should be a numerical value in MHz. If zero is supplied then the cpu_limit is unlimited.",
+            "type": "integer",
+            "minimum": 0
+        },
+        "quota:cpu_reservation": {
+            "title": "Quota: CPU Reservation Limit",
+            "description": "Specifies the guaranteed minimum CPU reservation in MHz. This means that if needed, the machine will definitely get allocated the reserved amount of CPU cycles. The value should be a numerical value in MHz.",
+            "type": "integer",
+            "minimum": 0
+        }
+    }
+}
