@@ -1,0 +1,418 @@
+# Translations template for glance.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the glance project.
+#
+# Translators:
+# Maxime COQUEREL <max.coquerel@gmail.com>, 2014
+msgid ""
+msgstr ""
+"Project-Id-Version: Glance\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-04-20 11:09+0200\n"
+"PO-Revision-Date: 2015-04-01 21:54+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"Language-Team: French (http://www.transifex.com/projects/p/glance/language/"
+"fr/)\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: glance/scrubber.py:459
+#, python-format
+msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
+msgstr ""
+"Démarrage du serveur démon : wakeup_time=%(wakeup_time)s threads=%(threads)s"
+
+#: glance/scrubber.py:473
+msgid "Daemon Shutdown on KeyboardInterrupt"
+msgstr "Arrêt du serveur démon sur KeyboardInterrupt"
+
+#: glance/scrubber.py:485
+#, python-format
+msgid "Initializing scrubber with configuration: %s"
+msgstr ""
+
+#: glance/scrubber.py:558
+#, python-format
+msgid "Scrubbing image %(id)s from %(count)d locations."
+msgstr ""
+
+#: glance/scrubber.py:581
+#, python-format
+msgid "Image %s has been deleted."
+msgstr ""
+
+#: glance/scrubber.py:633
+#, python-format
+msgid "Getting images deleted before %s"
+msgstr "Obtention des images supprimées avant %s"
+
+#: glance/api/middleware/cache.py:61
+msgid "Initialized image cache middleware"
+msgstr "Middleware de cache d'image initialisé"
+
+#: glance/api/middleware/cache_manage.py:74
+msgid "Initialized image cache management middleware"
+msgstr "Middleware de gestion du cache d'image initialisé"
+
+#: glance/api/middleware/gzip.py:36
+msgid "Initialized gzip middleware"
+msgstr ""
+
+#: glance/api/v1/images.py:691
+#, python-format
+msgid "Uploaded data of image %s from request payload successfully."
+msgstr ""
+
+#: glance/api/v1/images.py:753
+msgid "Triggering asynchronous copy from external source"
+msgstr "Déclenchement de copie asynchrone depuis une source externe"
+
+#: glance/api/v1/upload_utils.py:126
+#, python-format
+msgid "Cleaning up %s after exceeding the quota"
+msgstr ""
+
+#: glance/api/v1/upload_utils.py:175
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+
+#: glance/api/v2/image_actions.py:51
+#, python-format
+msgid "Image %s is deactivated"
+msgstr ""
+
+#: glance/api/v2/image_actions.py:66
+#, python-format
+msgid "Image %s is reactivated"
+msgstr ""
+
+#: glance/async/flows/base_import.py:348
+#, python-format
+msgid "%(task_id)s of %(task_type)s completed"
+msgstr ""
+
+#: glance/cmd/replicator.py:372
+#, python-format
+msgid "Storing: %s"
+msgstr "Stockage: %s"
+
+#: glance/cmd/replicator.py:445
+#, python-format
+msgid "Considering: %s"
+msgstr "considérant : %s"
+
+#: glance/cmd/replicator.py:471 glance/cmd/replicator.py:546
+#, python-format
+msgid "Image %s metadata has changed"
+msgstr ""
+
+#: glance/cmd/replicator.py:553
+#, python-format
+msgid "Image %s is being synced"
+msgstr ""
+
+#: glance/common/wsgi.py:308 glance/openstack/common/service.py:326
+#, python-format
+msgid "Starting %d workers"
+msgstr "Démarrage des workers %d"
+
+#: glance/common/wsgi.py:321
+#, python-format
+msgid "Removed dead child %s"
+msgstr ""
+
+#: glance/common/wsgi.py:324
+#, python-format
+msgid "Removed stale child %s"
+msgstr ""
+
+#: glance/common/wsgi.py:336
+msgid "All workers have terminated. Exiting"
+msgstr "Tous les agents ont terminé. Quittez"
+
+#: glance/common/wsgi.py:353
+msgid "Caught keyboard interrupt. Exiting."
+msgstr "Interruption interceptée de clavier. Fermeture du programme en cours."
+
+#: glance/common/wsgi.py:432
+#, python-format
+msgid "Child %d exiting normally"
+msgstr "Sortie normale de l'enfant %d"
+
+#: glance/common/wsgi.py:437
+#, python-format
+msgid "Started child %s"
+msgstr "Enfant démarré %s"
+
+#: glance/common/wsgi.py:466
+msgid "Starting single process server"
+msgstr "Démarrage de serveur de processus unique"
+
+#: glance/common/artifacts/loader.py:131 glance/common/artifacts/loader.py:155
+#, python-format
+msgid "Artifact %s has been successfully loaded"
+msgstr ""
+
+#: glance/common/scripts/__init__.py:32
+#, python-format
+msgid ""
+"Loading known task scripts for task_id %(task_id)s of type %(task_type)s"
+msgstr ""
+
+#: glance/common/scripts/image_import/main.py:41
+#, python-format
+msgid "Task %(task_id)s beginning import execution."
+msgstr ""
+
+#: glance/common/scripts/image_import/main.py:152
+#, python-format
+msgid "Task %(task_id)s: Got image data uri %(data_uri)s to be imported"
+msgstr ""
+
+#: glance/common/scripts/image_import/main.py:161
+#, python-format
+msgid "Task %(task_id)s: Could not import image file %(image_data)s"
+msgstr ""
+
+#: glance/db/simple/api.py:62
+#, python-format
+msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
+msgstr "Appel de %(funcname)s : args = %(args)s, kwargs = %(kwargs)s"
+
+#: glance/db/simple/api.py:68
+#, python-format
+msgid "Returning %(funcname)s: %(output)s"
+msgstr "Retour de %(funcname)s : %(output)s"
+
+#: glance/db/simple/api.py:2002
+#, python-format
+msgid "Could not find artifact %s"
+msgstr ""
+
+#: glance/db/simple/api.py:2006
+msgid "Unable to get deleted image"
+msgstr "Impossible de supprimer l'image"
+
+#: glance/db/sqlalchemy/metadata.py:161
+#, python-format
+msgid "Table %s has been cleared"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:232
+#, python-format
+msgid "Overwriting namespace %s"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:248
+#, python-format
+msgid "Skipping namespace %s. It already exists in the database."
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:339
+#, python-format
+msgid "File %s loaded to database."
+msgstr "Fichier %s chargé dans la base de données."
+
+#: glance/db/sqlalchemy/metadata.py:341
+msgid "Metadata loading finished"
+msgstr ""
+
+#: glance/db/sqlalchemy/metadata.py:450
+#, python-format
+msgid "Namespace %(namespace)s saved in %(file)s"
+msgstr "Namespace %(namespace)s est sauvegardé dans %(file)s"
+
+#: glance/db/sqlalchemy/migrate_repo/schema.py:101
+#, python-format
+msgid "creating table %(table)s"
+msgstr "création de la table %(table)s"
+
+#: glance/db/sqlalchemy/migrate_repo/schema.py:107
+#, python-format
+msgid "dropping table %(table)s"
+msgstr "suppression de la table %(table)s"
+
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:72
+msgid ""
+"'metadata_encryption_key' was not specified in the config file or a config "
+"file was not specified. This means that this migration is a NOOP."
+msgstr ""
+"L'élément 'metadata_encryption_key' n'est pas spécifié dans le fichier "
+"config ou bien aucun fichier config n'est spécifié. Cela signifie que cette "
+"migration est un NOOP."
+
+#: glance/domain/__init__.py:406
+#, python-format
+msgid ""
+"Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
+msgstr ""
+
+#: glance/image_cache/__init__.py:71
+#, python-format
+msgid "Image cache loaded driver '%s'."
+msgstr "Le cache d'image a chargé le pilote '%s'."
+
+#: glance/image_cache/__init__.py:81 glance/image_cache/__init__.py:100
+msgid "Defaulting to SQLite driver."
+msgstr "Utilisation par défaut du pilote SQLite."
+
+#: glance/image_cache/prefetcher.py:85
+#, python-format
+msgid "Successfully cached all %d images"
+msgstr "Mise en cache réussie de l'ensemble des %d images"
+
+#: glance/image_cache/drivers/sqlite.py:414
+#: glance/image_cache/drivers/xattr.py:343
+#, python-format
+msgid "Not queueing image '%s'. Already cached."
+msgstr "Aucune mise en file d'attente de l'image '%s'. Déjà en cache."
+
+#: glance/image_cache/drivers/sqlite.py:419
+#: glance/image_cache/drivers/xattr.py:348
+#, python-format
+msgid "Not queueing image '%s'. Already being written to cache"
+msgstr "Aucune mise en file d'attente de l'image '%s'. Déjà écrite en cache"
+
+#: glance/image_cache/drivers/sqlite.py:425
+#: glance/image_cache/drivers/xattr.py:354
+#, python-format
+msgid "Not queueing image '%s'. Already queued."
+msgstr "Aucune mise en file d'attente de l'image '%s'. Déjà en file d'attente."
+
+#: glance/image_cache/drivers/sqlite.py:443
+#, python-format
+msgid "Removed invalid cache file %s"
+msgstr "Fichier cache non valide supprimé %s"
+
+#: glance/image_cache/drivers/sqlite.py:457
+#, python-format
+msgid "Removed stalled cache file %s"
+msgstr "Fichier cache bloqué supprimé %s"
+
+#: glance/image_cache/drivers/xattr.py:400
+#, python-format
+msgid "Reaped %(reaped)s %(entry_type)s cache entries"
+msgstr "%(reaped)s %(entry_type)s entrées de cache régulées"
+
+#: glance/openstack/common/eventlet_backdoor.py:146
+#, python-format
+msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
+msgstr "Eventlet backdoor en écoute sur le port %(port)s for process %(pid)d"
+
+#: glance/openstack/common/service.py:173
+#, python-format
+msgid "Caught %s, exiting"
+msgstr "%s interceptée, sortie"
+
+#: glance/openstack/common/service.py:227
+msgid "Parent process has died unexpectedly, exiting"
+msgstr "Le processus parent s'est soudainement achevé sans raison, sortie"
+
+#: glance/openstack/common/service.py:258
+#, python-format
+msgid "Child caught %s, exiting"
+msgstr "L'enfant a reçu %s, sortie"
+
+#: glance/openstack/common/service.py:297
+msgid "Forking too fast, sleeping"
+msgstr "Bifurcation trop rapide, en veille"
+
+#: glance/openstack/common/service.py:316
+#, python-format
+msgid "Started child %d"
+msgstr "Démarrage du dépendant %d"
+
+#: glance/openstack/common/service.py:343
+#, python-format
+msgid "Child %(pid)d killed by signal %(sig)d"
+msgstr "%(pid)d du dépendant annihilés par le signal %(sig)d"
+
+#: glance/openstack/common/service.py:347
+#, python-format
+msgid "Child %(pid)s exited with status %(code)d"
+msgstr "%(pid)s du dépendant sortis avec le statut %(code)d"
+
+#: glance/openstack/common/service.py:382
+#, python-format
+msgid "Caught %s, stopping children"
+msgstr "%s intercepté, arrêtant les dépendants"
+
+#: glance/openstack/common/service.py:391
+msgid "Wait called after thread killed. Cleaning up."
+msgstr "Pause demandée après suppression de thread. Nettoyage."
+
+#: glance/openstack/common/service.py:407
+#, python-format
+msgid "Waiting on %d children to exit"
+msgstr "En attente de sortie des dépendants %d"
+
+#: glance/quota/__init__.py:330
+#, python-format
+msgid "Cleaning up %s after exceeding the quota."
+msgstr ""
+
+#: glance/registry/api/v1/images.py:343 glance/registry/api/v1/images.py:386
+#: glance/registry/api/v1/images.py:491
+#, python-format
+msgid "Image %(id)s not found"
+msgstr "Image %(id)s non trouvé"
+
+#: glance/registry/api/v1/images.py:349 glance/registry/api/v1/images.py:381
+#: glance/registry/api/v1/images.py:503
+#, python-format
+msgid "Access denied to image %(id)s but returning 'not found'"
+msgstr "Accès refusé à l'image %(id)s mais renvoi de 'non trouvé'"
+
+#: glance/registry/api/v1/images.py:371
+#, python-format
+msgid "Successfully deleted image %(id)s"
+msgstr "La suppression de l'image %(id)s a abouti"
+
+#: glance/registry/api/v1/images.py:375
+#, python-format
+msgid "Delete denied for public image %(id)s"
+msgstr "Suppression refusée pour l'image publique %(id)s"
+
+#: glance/registry/api/v1/images.py:415
+#, python-format
+msgid "Rejecting image creation request for invalid image id '%(bad_id)s'"
+msgstr ""
+"Rejet de la demande de création d'image pour l'ID image non valide "
+"'%(bad_id)s'"
+
+#: glance/registry/api/v1/images.py:428
+#, python-format
+msgid "Successfully created image %(id)s"
+msgstr "La création de l'image %(id)s a abouti"
+
+#: glance/registry/api/v1/images.py:482
+#, python-format
+msgid "Updating metadata for image %(id)s"
+msgstr "Mise à jour des métadonnées pour l'image %(id)s"
+
+#: glance/registry/api/v1/images.py:497
+#, python-format
+msgid "Update denied for public image %(id)s"
+msgstr "Mise à jour refusée pour l'image publique %(id)s"
+
+#: glance/registry/api/v1/members.py:198
+#, python-format
+msgid "Successfully updated memberships for image %(id)s"
+msgstr "Mise à jour des appartenance effectuée pour l'image %(id)s"
+
+#: glance/registry/api/v1/members.py:271
+#, python-format
+msgid "Successfully updated a membership for image %(id)s"
+msgstr "Mise à jour d'une appartenance effectuée pour l'image %(id)s"
+
+#: glance/registry/api/v1/members.py:320
+#, python-format
+msgid "Successfully deleted a membership from image %(id)s"
+msgstr "La suppression d'une appartenance de l'image %(id)s a abouti"

@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev42\n"
+"Project-Id-Version: glance 2015.1.dev1.ge3bed85\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-03 06:02+0000\n"
+"POT-Creation-Date: 2015-04-20 11:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,48 +39,48 @@ msgstr ""
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr ""
 
-#: glance/notifier.py:379 glance/api/v1/upload_utils.py:222
+#: glance/notifier.py:380 glance/api/v1/upload_utils.py:222
 #: glance/api/v2/image_data.py:122
 #, python-format
 msgid "Image storage media is full: %s"
 msgstr ""
 
-#: glance/notifier.py:384 glance/api/v1/upload_utils.py:232
+#: glance/notifier.py:385 glance/api/v1/upload_utils.py:232
 #: glance/api/v2/image_data.py:146
 #, python-format
 msgid "Insufficient permissions on image storage media: %s"
 msgstr ""
 
-#: glance/notifier.py:389
+#: glance/notifier.py:390
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:396
+#: glance/notifier.py:397
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:403
+#: glance/notifier.py:404
 #, python-format
 msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:409
+#: glance/notifier.py:410
 #, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have "
 "been deleted during the upload: %(error)s"
 msgstr ""
 
-#: glance/notifier.py:417
+#: glance/notifier.py:418
 #, python-format
 msgid ""
 "Failed to upload image data for image %(image_id)s due to HTTP error: "
 "%(error)s"
 msgstr ""
 
-#: glance/notifier.py:424
+#: glance/notifier.py:425
 #, python-format
 msgid ""
 "Failed to upload image data for image %(image_id)s due to internal error:"
@@ -391,97 +391,101 @@ msgstr ""
 msgid "External sources are not supported: '%s'"
 msgstr ""
 
-#: glance/api/v1/images.py:521
+#: glance/api/v1/images.py:522
 #, python-format
 msgid "Required store %s is invalid"
 msgstr ""
 
-#: glance/api/v1/images.py:533 glance/api/v1/images.py:944
-#: glance/common/scripts/utils.py:91
+#: glance/api/v1/images.py:534
 #, python-format
-msgid "Invalid location: %s"
+msgid "Invalid location %s"
 msgstr ""
 
-#: glance/api/v1/images.py:556
+#: glance/api/v1/images.py:557
 #, python-format
 msgid "An image with identifier %s already exists"
 msgstr ""
 
-#: glance/api/v1/images.py:563
+#: glance/api/v1/images.py:564
 #, python-format
 msgid "Failed to reserve image. Got error: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:570
+#: glance/api/v1/images.py:571
 msgid "Forbidden to reserve image."
 msgstr ""
 
-#: glance/api/v1/images.py:614
+#: glance/api/v1/images.py:615
 msgid "Content-Type must be application/octet-stream"
 msgstr ""
 
-#: glance/api/v1/images.py:670
+#: glance/api/v1/images.py:671
 #, python-format
 msgid "Failed to activate image. Got error: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:741
+#: glance/api/v1/images.py:742
 msgid "It's invalid to provide multiple image sources."
 msgstr ""
 
-#: glance/api/v1/images.py:774
+#: glance/api/v1/images.py:775
 #, python-format
 msgid ""
 "Provided image size must match the stored image size. (provided size: "
 "%(ps)d, stored size: %(ss)d)"
 msgstr ""
 
-#: glance/api/v1/images.py:898
+#: glance/api/v1/images.py:899
 msgid "Forbidden to update deleted image."
 msgstr ""
 
-#: glance/api/v1/images.py:909
+#: glance/api/v1/images.py:910
 #, python-format
 msgid "Forbidden to modify '%s' of active image."
 msgstr ""
 
-#: glance/api/v1/images.py:927
+#: glance/api/v1/images.py:928
 msgid "Cannot upload to an unqueued image"
 msgstr ""
 
-#: glance/api/v1/images.py:951
+#: glance/api/v1/images.py:945 glance/common/scripts/utils.py:91
+#, python-format
+msgid "Invalid location: %s"
+msgstr ""
+
+#: glance/api/v1/images.py:952
 msgid "Attempted to update Location field for an image not in queued status."
 msgstr ""
 
-#: glance/api/v1/images.py:991 glance/registry/api/v1/images.py:486
+#: glance/api/v1/images.py:992 glance/registry/api/v1/images.py:486
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:998
+#: glance/api/v1/images.py:999
 #, python-format
 msgid "Failed to find image to update: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1005
+#: glance/api/v1/images.py:1006
 #, python-format
 msgid "Forbidden to update image: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1013
+#: glance/api/v1/images.py:1014
 msgid "Image operation conflicts"
 msgstr ""
 
-#: glance/api/v1/images.py:1044
+#: glance/api/v1/images.py:1045
 msgid "Image is protected"
 msgstr ""
 
-#: glance/api/v1/images.py:1051
+#: glance/api/v1/images.py:1052
 #, python-format
 msgid "Forbidden to delete a %s image."
 msgstr ""
 
-#: glance/api/v1/images.py:1058 glance/api/v2/image_members.py:78
+#: glance/api/v1/images.py:1059 glance/api/v2/image_members.py:78
 #: glance/api/v2/image_members.py:122 glance/api/v2/image_members.py:160
 #: glance/api/v2/image_members.py:189 glance/api/v2/image_members.py:207
 #: glance/api/v2/image_tags.py:51 glance/api/v2/image_tags.py:78
@@ -489,27 +493,27 @@ msgstr ""
 msgid "Image %s not found."
 msgstr ""
 
-#: glance/api/v1/images.py:1093
+#: glance/api/v1/images.py:1094
 #, python-format
 msgid "Failed to find image to delete: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1100
+#: glance/api/v1/images.py:1101
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1107 glance/api/v2/images.py:230
+#: glance/api/v1/images.py:1108 glance/api/v2/images.py:230
 #, python-format
 msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr ""
 
-#: glance/api/v1/images.py:1130
+#: glance/api/v1/images.py:1131
 #, python-format
 msgid "Store for scheme %s not found"
 msgstr ""
 
-#: glance/api/v1/images.py:1169 glance/api/v1/upload_utils.py:242
+#: glance/api/v1/images.py:1170 glance/api/v1/upload_utils.py:242
 #, python-format
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr ""
@@ -1134,46 +1138,46 @@ msgid ""
 "Please ensure that eventlet is not imported prior to this being set."
 msgstr ""
 
-#: glance/cmd/control.py:105
+#: glance/cmd/control.py:106
 #, python-format
 msgid "%(serv)s appears to already be running: %(pid)s"
 msgstr ""
 
-#: glance/cmd/control.py:109
+#: glance/cmd/control.py:110
 #, python-format
 msgid "Removing stale pid file %s"
 msgstr ""
 
-#: glance/cmd/control.py:118
+#: glance/cmd/control.py:119
 msgid "Unable to increase file descriptor limit.  Running as non-root?"
 msgstr ""
 
-#: glance/cmd/control.py:165
+#: glance/cmd/control.py:166
 #, python-format
 msgid "%(verb)sing %(serv)s with %(conf)s"
 msgstr ""
 
-#: glance/cmd/control.py:168
+#: glance/cmd/control.py:169
 #, python-format
 msgid "%(verb)sing %(serv)s"
 msgstr ""
 
-#: glance/cmd/control.py:180
+#: glance/cmd/control.py:181
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
 msgstr ""
 
-#: glance/cmd/control.py:211
+#: glance/cmd/control.py:212
 #, python-format
 msgid "%(serv)s (pid %(pid)s) is running..."
 msgstr ""
 
-#: glance/cmd/control.py:214
+#: glance/cmd/control.py:215
 #, python-format
 msgid "%s is stopped"
 msgstr ""
 
-#: glance/cmd/control.py:230
+#: glance/cmd/control.py:231
 #, python-format
 msgid ""
 "Unable to create pid file %(pid)s.  Running as non-root?\n"
@@ -1181,27 +1185,42 @@ msgid ""
 "  %(file)s %(server)s stop --pid-file %(fb)s"
 msgstr ""
 
-#: glance/cmd/control.py:260
+#: glance/cmd/control.py:248
 #, python-format
-msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
+msgid "Reload of %(serv)s not supported"
 msgstr ""
 
-#: glance/cmd/control.py:264
+#: glance/cmd/control.py:256
+#, python-format
+msgid "Server %(serv)s is stopped"
+msgstr ""
+
+#: glance/cmd/control.py:261
+#, python-format
+msgid "Reloading %(serv)s (pid %(pid)s) with signal(%(sig)s)"
+msgstr ""
+
+#: glance/cmd/control.py:265 glance/cmd/control.py:287
 #, python-format
 msgid "Process %d not running"
 msgstr ""
 
-#: glance/cmd/control.py:271
+#: glance/cmd/control.py:283
+#, python-format
+msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
+msgstr ""
+
+#: glance/cmd/control.py:294
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
 
-#: glance/cmd/control.py:274
+#: glance/cmd/control.py:297
 #, python-format
 msgid "%s is already stopped"
 msgstr ""
 
-#: glance/cmd/control.py:351
+#: glance/cmd/control.py:374
 #, python-format
 msgid "Suppressed respawn as %(serv)s was %(rsn)s."
 msgstr ""
