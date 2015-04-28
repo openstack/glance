@@ -61,7 +61,10 @@ class TestStore(base.StoreClearingUnitTest):
             self.called_commands_actual.append('create')
             return self.location
 
-        def _fake_delete_image(*args, **kwargs):
+        def _fake_delete_image(target_pool, image_name, snapshot_name=None):
+            self.assertEqual(self.location.pool, target_pool)
+            self.assertEqual(self.location.image, image_name)
+            self.assertEqual(self.location.snapshot, snapshot_name)
             self.called_commands_actual.append('delete')
 
         def _fake_enter(*args, **kwargs):
@@ -145,14 +148,22 @@ class TestStore(base.StoreClearingUnitTest):
         self.called_commands_expected = ['remove']
 
     def test_image_size_exceeded_exception(self):
+        def _fake_create_image(*args, **kwargs):
+            self.called_commands_actual.append('create')
+            return self.location
+
         def _fake_write(*args, **kwargs):
             if 'write' not in self.called_commands_actual:
                 self.called_commands_actual.append('write')
             raise exception.ImageSizeLimitExceeded
 
-        def _fake_delete_image(*args, **kwargs):
+        def _fake_delete_image(target_pool, image_name, snapshot_name=None):
+            self.assertEqual(self.location.pool, target_pool)
+            self.assertEqual(self.location.image, image_name)
+            self.assertEqual(self.location.snapshot, snapshot_name)
             self.called_commands_actual.append('delete')
 
+        self.stubs.Set(self.store, '_create_image', _fake_create_image)
         self.stubs.Set(mock_rbd.Image, 'write', _fake_write)
         self.stubs.Set(self.store, '_delete_image', _fake_delete_image)
         data = utils.LimitingReader(self.data_iter, self.data_len)
@@ -160,7 +171,7 @@ class TestStore(base.StoreClearingUnitTest):
                           self.store.add, 'fake_image_id',
                           data, self.data_len + 1)
 
-        self.called_commands_expected = ['write', 'delete']
+        self.called_commands_expected = ['create', 'write', 'delete']
 
     def tearDown(self):
         self.assertEqual(self.called_commands_actual,
