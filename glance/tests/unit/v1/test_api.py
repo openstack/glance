@@ -24,8 +24,8 @@ import uuid
 
 import glance_store as store
 import mock
-from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import routes
 import six

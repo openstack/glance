@@ -15,7 +15,7 @@ import hashlib
 import os
 import tempfile
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslo_utils import units
 import testtools

@@ -16,7 +16,7 @@ import hashlib
 import os
 
 import httplib2
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 from oslo_utils import units
 
 from glance.tests import functional

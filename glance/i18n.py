@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.i18n import *  # noqa
+from oslo_i18n import *  # noqa
 
 _translators = TranslatorFactory(domain='glance')
 

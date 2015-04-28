@@ -17,9 +17,9 @@
 import copy
 
 import glance_store
-import oslo.serialization.jsonutils as json
 from oslo_config import cfg
 from oslo_log import log as logging
+import oslo_serialization.jsonutils as json
 from oslo_utils import timeutils
 import six
 import six.moves.urllib.parse as urlparse

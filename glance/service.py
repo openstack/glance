@@ -19,10 +19,10 @@ import os
 import socket
 import sys
 
-from oslo.config import cfg
-from oslo import i18n
-import oslo.messaging
+from oslo_config import cfg
+import oslo_i18n
 from oslo_log import log
+import oslo_messaging
 
 CONF = cfg.CONF
 
@@ -97,11 +97,11 @@ def get_workers(name):
 
 
 def prepare_service(argv=None):
-    i18n.enable_lazy()
+    oslo_i18n.enable_lazy()
     log.set_defaults(_DEFAULT_LOG_LEVELS)
     log.register_options(CONF)
     if argv is None:
         argv = sys.argv
     CONF(argv[1:], project='glance-search')
     log.setup(cfg.CONF, 'glance-search')
-    oslo.messaging.set_transport_defaults('glance')
+    oslo_messaging.set_transport_defaults('glance')

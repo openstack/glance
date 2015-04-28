@@ -34,11 +34,11 @@ from eventlet.green import ssl
 import eventlet.greenio
 import eventlet.wsgi
 import glance_store
-from oslo.serialization import jsonutils
 from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_log import loggers
+from oslo_serialization import jsonutils
 import routes
 import routes.middleware
 import six

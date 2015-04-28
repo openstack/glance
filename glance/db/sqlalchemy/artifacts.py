@@ -17,8 +17,8 @@ import operator
 import uuid
 
 from enum import Enum
-from oslo.config import cfg
-from oslo.db import exception as db_exc
+from oslo_config import cfg
+from oslo_db import exception as db_exc
 from oslo_utils import timeutils
 import sqlalchemy
 from sqlalchemy import and_

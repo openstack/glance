@@ -19,7 +19,7 @@ import UserDict
 import uuid
 
 import fixtures
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import six
 import webob
 
