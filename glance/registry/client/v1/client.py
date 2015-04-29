@@ -48,6 +48,8 @@ class RegistryClient(BaseClient):
         # settings when using keystone. configure_via_auth=False disables
         # this behaviour to ensure we still send requests to the Registry API
         self.identity_headers = identity_headers
+        # store available passed request id for do_request call
+        self._passed_request_id = kwargs.pop('request_id', None)
         BaseClient.__init__(self, host, port, configure_via_auth=False,
                             **kwargs)
 
@@ -112,6 +114,9 @@ class RegistryClient(BaseClient):
         try:
             kwargs['headers'] = kwargs.get('headers', {})
             kwargs['headers'].update(self.identity_headers or {})
+            if self._passed_request_id:
+                kwargs['headers']['X-Openstack-Request-ID'] = \
+                    self._passed_request_id
             res = super(RegistryClient, self).do_request(method,
                                                          action,
                                                          **kwargs)

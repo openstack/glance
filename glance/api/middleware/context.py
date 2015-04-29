@@ -119,6 +119,7 @@ class ContextMiddleware(BaseContextMiddleware):
             'owner_is_tenant': CONF.owner_is_tenant,
             'service_catalog': service_catalog,
             'policy_enforcer': self.policy_enforcer,
+            'request_id': req.headers.get('X-Openstack-Request-ID'),
         }
 
         return glance.context.RequestContext(**kwargs)
