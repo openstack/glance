@@ -152,6 +152,7 @@ class Controller(controller.BaseController):
         try:
             self.policy.enforce(req.context, action, target)
         except exception.Forbidden:
+            LOG.debug("User not permitted to perform '%s' action" % action)
             raise HTTPForbidden()
 
     def _enforce_image_property_quota(self,

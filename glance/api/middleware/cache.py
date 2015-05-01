@@ -101,6 +101,7 @@ class CacheFilter(wsgi.Middleware):
         try:
             self.policy.enforce(req.context, action, target)
         except exception.Forbidden as e:
+            LOG.debug("User not permitted to perform '%s' action" % action)
             raise webob.exc.HTTPForbidden(explanation=e.msg, request=req)
 
     def _get_v1_image_metadata(self, request, image_id):

@@ -17,6 +17,7 @@
 Controller for Image Cache Management API
 """
 
+from oslo_log import log as logging
 import webob.exc
 
 from glance.api import policy
@@ -24,6 +25,8 @@ from glance.api.v1 import controller
 from glance.common import exception
 from glance.common import wsgi
 from glance import image_cache
+
+LOG = logging.getLogger(__name__)
 
 
 class Controller(controller.BaseController):
@@ -40,6 +43,7 @@ class Controller(controller.BaseController):
         try:
             self.policy.enforce(req.context, 'manage_image_cache', {})
         except exception.Forbidden:
+            LOG.debug("User not permitted to manage the image cache")
             raise webob.exc.HTTPForbidden()
 
     def get_cached_images(self, req):

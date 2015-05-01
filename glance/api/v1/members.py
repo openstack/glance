@@ -46,6 +46,7 @@ class Controller(controller.BaseController):
         try:
             self.policy.enforce(req.context, action, {})
         except exception.Forbidden:
+            LOG.debug("User not permitted to perform '%s' action" % action)
             raise webob.exc.HTTPForbidden()
 
     def _raise_404_if_image_deleted(self, req, image_id):
@@ -99,7 +100,8 @@ class Controller(controller.BaseController):
             LOG.debug(utils.exception_to_str(e))
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug("User not permitted to remove membership from image "
+                      "'%s'" % image_id)
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         return webob.exc.HTTPNoContent()
