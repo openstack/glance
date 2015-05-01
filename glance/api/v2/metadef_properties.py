@@ -74,7 +74,7 @@ class NamespacePropertiesController(object):
             namespace_properties.properties = property_list
         except exception.Forbidden as e:
             LOG.debug("User not permitted to retrieve metadata properties "
-                      "within '%s' namespace" % namespace)
+                      "within '%s' namespace", namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -106,7 +106,7 @@ class NamespacePropertiesController(object):
             property = self._to_model(db_property)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to show metadata property '%s' "
-                      "within '%s' namespace" % (property_name, namespace))
+                      "within '%s' namespace", property_name, namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -124,7 +124,7 @@ class NamespacePropertiesController(object):
             prop_repo.add(new_property_type)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to create metadata property within "
-                      "'%s' namespace" % namespace)
+                      "'%s' namespace", namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -145,7 +145,7 @@ class NamespacePropertiesController(object):
             updated_property_type = prop_repo.save(db_property_type)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata property '%s' "
-                      "within '%s' namespace" % (property_name, namespace))
+                      "within '%s' namespace", property_name, namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -164,7 +164,7 @@ class NamespacePropertiesController(object):
             prop_repo.remove(property_type)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to delete metadata property '%s' "
-                      "within '%s' namespace" % (property_name, namespace))
+                      "within '%s' namespace", property_name, namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)

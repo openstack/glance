@@ -180,7 +180,7 @@ class ImageDataController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.debug("User not permitted to download image '%s'" % image_id)
+            LOG.debug("User not permitted to download image '%s'", image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
 
         return image
@@ -229,7 +229,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                 glance_store.StoreRandomGetNotSupported) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.debug("User not permitted to download image '%s'" % image)
+            LOG.debug("User not permitted to download image '%s'", image)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         # NOTE(saschpe): "response.app_iter = ..." currently resets Content-MD5
         # (https://github.com/Pylons/webob/issues/86), so it should be set
