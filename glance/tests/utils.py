@@ -25,8 +25,8 @@ import socket
 import subprocess
 
 import fixtures
-from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslotest import moxstubout
 import six

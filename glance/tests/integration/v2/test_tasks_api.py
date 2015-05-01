@@ -15,7 +15,7 @@
 
 import time
 
-from oslo.serialization import jsonutils as json
+from oslo_serialization import jsonutils as json
 from oslo_utils import timeutils
 
 from glance.api.v2 import tasks

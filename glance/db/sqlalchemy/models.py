@@ -20,8 +20,8 @@ SQLAlchemy models for glance data
 
 import uuid
 
-from oslo.serialization import jsonutils
 from oslo_db.sqlalchemy import models
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean

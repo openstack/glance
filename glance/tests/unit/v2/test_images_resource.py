@@ -19,8 +19,8 @@ import uuid
 
 import glance_store as store
 import mock
-from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_serialization import jsonutils
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range

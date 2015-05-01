@@ -18,7 +18,7 @@ import datetime
 import uuid
 
 import mock
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range

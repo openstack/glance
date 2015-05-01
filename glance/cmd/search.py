@@ -40,7 +40,7 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 import osprofiler.notifier
 import osprofiler.web

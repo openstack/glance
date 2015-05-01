@@ -17,7 +17,7 @@ import os
 import signal
 import uuid
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import requests
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange

@@ -15,7 +15,7 @@
 
 import copy
 
-from oslo.config import cfg
+from oslo_config import cfg
 import semantic_version
 from stevedore import enabled
 

@@ -19,9 +19,9 @@ Registry's Client API
 
 import os
 
-from oslo.serialization import jsonutils
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 from glance.common import exception
 from glance import i18n

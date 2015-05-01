@@ -29,8 +29,8 @@ Keystone (an identity management system).
     http://service_endpoint/
 """
 import httplib2
-from oslo.serialization import jsonutils
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import six.moves.urllib.parse as urlparse

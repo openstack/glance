@@ -24,7 +24,7 @@ import tempfile
 import time
 
 import httplib2
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 from oslo_utils import units
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range

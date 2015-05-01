@@ -15,7 +15,7 @@
 
 import os
 
-from oslo.serialization import jsonutils as json
+from oslo_serialization import jsonutils as json
 
 from glance.common import client as base_client
 from glance.common import exception

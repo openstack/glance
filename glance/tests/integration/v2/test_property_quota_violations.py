@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.serialization import jsonutils
 from oslo_config import cfg
+from oslo_serialization import jsonutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 

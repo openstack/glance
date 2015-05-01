@@ -16,7 +16,7 @@
 import mock
 
 import glance_store
-from oslo.config import cfg
+from oslo_config import cfg
 from taskflow import engines
 
 from glance.async import taskflow_executor
