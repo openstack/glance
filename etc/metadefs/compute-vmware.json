@@ -51,7 +51,8 @@
                 "VirtualE1000e",
                 "VirtualPCNet32",
                 "VirtualSriovEthernetCard",
-                "VirtualVmxnet"
+                "VirtualVmxnet",
+                "VirtualVmxnet3"
             ],
             "default" : "e1000"
         }
