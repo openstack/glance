@@ -53,9 +53,8 @@ def _import_delayed_delete():
 class ImageFactory(object):
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
                             'size', 'virtual_size']
-    _reserved_properties = ['owner', 'is_public', 'locations',
-                            'deleted', 'deleted_at', 'direct_url', 'self',
-                            'file', 'schema']
+    _reserved_properties = ['owner', 'locations', 'deleted', 'deleted_at',
+                            'direct_url', 'self', 'file', 'schema']
 
     def _check_readonly(self, kwargs):
         for key in self._readonly_properties:
