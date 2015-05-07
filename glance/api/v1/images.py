@@ -745,6 +745,8 @@ class Controller(controller.BaseController):
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
+        if len(sources) == 0:
+            return image_meta
         if image_data:
             image_meta = self._validate_image_for_activation(req,
                                                              image_id,
@@ -790,9 +792,15 @@ class Controller(controller.BaseController):
     def _validate_image_for_activation(self, req, id, values):
         """Ensures that all required image metadata values are valid."""
         image = self.get_image_meta_or_404(req, id)
-        if 'disk_format' not in values:
+        if values['disk_format'] is None:
+            if not image['disk_format']:
+                msg = _("Disk format is not specified.")
+                raise HTTPBadRequest(explanation=msg, request=req)
             values['disk_format'] = image['disk_format']
-        if 'container_format' not in values:
+        if values['container_format'] is None:
+            if not image['container_format']:
+                msg = _("Container format is not specified.")
+                raise HTTPBadRequest(explanation=msg, request=req)
             values['container_format'] = image['container_format']
         if 'name' not in values:
             values['name'] = image['name']

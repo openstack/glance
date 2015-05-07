@@ -374,7 +374,44 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             mocked_size.return_value = 0
             res = req.get_response(self.api)
             self.assertEqual(400, res.status_int)
-            self.assertIn('Invalid container format', res.body)
+            self.assertIn('Container format is not specified', res.body)
+
+    def test_create_with_location_no_disk_format(self):
+        fixture_headers = {
+            'x-image-meta-name': 'bogus',
+            'x-image-meta-location': 'http://localhost:0/image.tar.gz',
+            'x-image-meta-container-format': 'bare',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as mocked_size:
+            mocked_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(400, res.status_int)
+            self.assertIn('Disk format is not specified', res.body)
+
+    def test_create_delayed_image_with_no_disk_and_container_formats(self):
+        fixture_headers = {
+            'x-image-meta-name': 'delayed',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+
+        http = store.get_store_from_scheme('http')
+
+        with mock.patch.object(http, 'get_size') as mocked_size:
+            mocked_size.return_value = 0
+            res = req.get_response(self.api)
+            self.assertEqual(201, res.status_int)
 
     def test_create_with_bad_store_name(self):
         fixture_headers = {

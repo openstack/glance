@@ -1057,8 +1057,8 @@ class TestApi(base.ApiTest):
                                               headers=headers,
                                               body=test_data_file.name)
         self.assertEqual(400, response.status)
-        type = format.replace('_format', '')
-        expected = "Invalid %s format 'None' for image" % type
+        type = format.replace('_format', '').capitalize()
+        expected = "%s format is not specified" % type
         self.assertTrue(expected in content,
                         "Could not find '%s' in '%s'" % (expected, content))
 
