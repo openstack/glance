@@ -90,7 +90,9 @@ class TestImportTask(test_utils.BaseTestCase):
 
         with mock.patch.object(processutils, 'execute') as exc_mock:
             exc_mock.return_value = ("", None)
-            image_convert.execute(image, '/test/path.raw')
+            with mock.patch.object(os, 'rename') as rm_mock:
+                rm_mock.return_value = None
+                image_convert.execute(image, 'file:///test/path.raw')
 
     def test_import_flow_with_convert_and_introspect(self):
         self.config(engine_mode='serial',
@@ -117,11 +119,16 @@ class TestImportTask(test_utils.BaseTestCase):
         self.img_repo.get.return_value = image
         img_factory.new_image.side_effect = create_image
 
-        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = StringIO.StringIO("TEST_IMAGE")
+        image_path = os.path.join(self.work_dir, image.image_id)
 
-            with mock.patch.object(processutils, 'execute') as exc_mock:
-                result = json.dumps({
+        def fake_execute(*args, **kwargs):
+            if 'info' in args:
+                # NOTE(flaper87): Make sure the file actually
+                # exists. Extra check to verify previous tasks did
+                # what they were supposed to do.
+                assert os.path.exists(args[3].split("file://")[-1])
+
+                return (json.dumps({
                     "virtual-size": 10737418240,
                     "filename": "/tmp/image.qcow2",
                     "cluster-size": 65536,
@@ -134,19 +141,24 @@ class TestImportTask(test_utils.BaseTestCase):
                         }
                     },
                     "dirty-flag": False
-                })
+                }), None)
 
-                # NOTE(flaper87): First result for the conversion step and
-                # the second one for the introspection one. The later *must*
-                # come after the former. If not, the current builtin flow
-                # process will be unsound.
-                # Follow-up work will fix this by having a better way to handle
-                # task's dependencies and activation.
-                exc_mock.side_effect = [("", None), (result, None)]
+            open("%s.converted" % image_path, 'a').close()
+            return ("", None)
+
+        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
+            dmock.return_value = StringIO.StringIO("TEST_IMAGE")
+
+            with mock.patch.object(processutils, 'execute') as exc_mock:
+                exc_mock.side_effect = fake_execute
                 executor.begin_processing(self.task.task_id)
-                image_path = os.path.join(self.test_dir, image.image_id)
-                tmp_image_path = "%s.tasks_import" % image_path
-                self.assertFalse(os.path.exists(tmp_image_path))
-                self.assertTrue(os.path.exists(image_path))
+
+                # NOTE(flaper87): DeleteFromFS should've deleted this
+                # file. Make sure it doesn't exist.
+                self.assertFalse(os.path.exists(image_path))
+
+                # NOTE(flaper87): Workdir should be empty after all
+                # the tasks have been executed.
+                self.assertEqual([], os.listdir(self.work_dir))
                 self.assertEqual('qcow2', image.disk_format)
                 self.assertEqual(10737418240, image.virtual_size)

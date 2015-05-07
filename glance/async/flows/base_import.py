@@ -145,10 +145,7 @@ class _ImportToFS(task.Task):
         # refer to the comment in the `_ImportToStore.execute` method.
         data = script_utils.get_image_data_iter(self.uri)
 
-        # NOTE(jokke): Using .tasks_import to ease debugging. The file name
-        # is specific so we know exactly where it's coming from.
-        tmp_id = "%s.tasks_import" % image_id
-        path = self.store.add(tmp_id, data, 0, context=None)[0]
+        path = self.store.add(image_id, data, 0, context=None)[0]
         return path
 
     def revert(self, image_id, result=None, **kwargs):

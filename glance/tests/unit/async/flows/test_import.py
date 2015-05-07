@@ -274,8 +274,7 @@ class TestImportTask(test_utils.BaseTestCase):
             self.assertEqual(dmock.return_value, "".join(reader))
 
             image_path = os.path.join(self.work_dir, image_id)
-            tmp_image_path = os.path.join(self.work_dir,
-                                          "%s.tasks_import" % image_path)
+            tmp_image_path = os.path.join(self.work_dir, image_path)
             self.assertTrue(os.path.exists(tmp_image_path))
 
     def test_delete_from_fs(self):
