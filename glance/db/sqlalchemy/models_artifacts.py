@@ -44,7 +44,7 @@ _LW = i18n._LW
 class ArtifactBase(models.ModelBase, models.TimestampMixin):
     """Base class for Artifact Models."""
 
-    __table_args__ = {'mysql_engine': 'InnoDB'}
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
     __table_initialized__ = False
     __protected_attributes__ = set([
         "created_at", "updated_at"])
@@ -102,7 +102,7 @@ class Artifact(BASE, ArtifactBase):
         Index('ix_artifact_state', 'state'),
         Index('ix_artifact_owner', 'owner'),
         Index('ix_artifact_visibility', 'visibility'),
-        {'mysql_engine': 'InnoDB'})
+        {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'})
 
     __protected_attributes__ = ArtifactBase.__protected_attributes__.union(
         set(['published_at', 'deleted_at']))
@@ -219,7 +219,7 @@ class ArtifactDependency(BASE, ArtifactBase):
                             'artifact_dest'),
                       Index('ix_artifact_dependencies_direct_dependencies',
                             'artifact_source', 'is_direct'),
-                      {'mysql_engine': 'InnoDB'})
+                      {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'})
 
     id = Column(String(36), primary_key=True, nullable=False,
                 default=lambda: str(uuid.uuid4()))
@@ -248,7 +248,7 @@ class ArtifactTag(BASE, ArtifactBase):
     __table_args__ = (Index('ix_artifact_tags_artifact_id', 'artifact_id'),
                       Index('ix_artifact_tags_artifact_id_tag_value',
                             'artifact_id', 'value'),
-                      {'mysql_engine': 'InnoDB'},)
+                      {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'},)
 
     id = Column(String(36), primary_key=True, nullable=False,
                 default=lambda: str(uuid.uuid4()))
@@ -265,7 +265,7 @@ class ArtifactProperty(BASE, ArtifactBase):
     __table_args__ = (
         Index('ix_artifact_properties_artifact_id', 'artifact_id'),
         Index('ix_artifact_properties_name', 'name'),
-        {'mysql_engine': 'InnoDB'},)
+        {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'},)
     id = Column(String(36), primary_key=True, nullable=False,
                 default=lambda: str(uuid.uuid4()))
     artifact_id = Column(String(36), ForeignKey('artifacts.id'),
@@ -287,7 +287,7 @@ class ArtifactBlob(BASE, ArtifactBase):
     __table_args__ = (
         Index('ix_artifact_blobs_artifact_id', 'artifact_id'),
         Index('ix_artifact_blobs_name', 'name'),
-        {'mysql_engine': 'InnoDB'},)
+        {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'},)
     id = Column(String(36), primary_key=True, nullable=False,
                 default=lambda: str(uuid.uuid4()))
     artifact_id = Column(String(36), ForeignKey('artifacts.id'),
@@ -306,7 +306,7 @@ class ArtifactBlobLocation(BASE, ArtifactBase):
     __tablename__ = 'artifact_blob_locations'
     __table_args__ = (Index('ix_artifact_blob_locations_blob_id',
                             'blob_id'),
-                      {'mysql_engine': 'InnoDB'})
+                      {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'})
 
     id = Column(String(36), primary_key=True, nullable=False,
                 default=lambda: str(uuid.uuid4()))

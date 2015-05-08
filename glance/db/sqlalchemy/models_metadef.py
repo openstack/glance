@@ -48,7 +48,7 @@ BASE_DICT = declarative_base(cls=DictionaryBase)
 class GlanceMetadefBase(models.TimestampMixin):
     """Base class for Glance Metadef Models."""
 
-    __table_args__ = {'mysql_engine': 'InnoDB'}
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
     __table_initialized__ = False
     __protected_attributes__ = set(["created_at", "updated_at"])
 
