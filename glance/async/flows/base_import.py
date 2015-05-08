@@ -283,6 +283,10 @@ class _ImportToStore(task.Task):
 
         image_import.set_image_data(image, file_path or self.uri, None)
 
+        # NOTE(flaper87): We need to save the image again after the locations
+        # have been set in the image.
+        self.image_repo.save(image)
+
 
 class _SaveImage(task.Task):
 
