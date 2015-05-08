@@ -112,6 +112,10 @@ class TestImportTask(test_utils.BaseTestCase):
                                           "%s.tasks_import" % image_path)
             self.assertFalse(os.path.exists(tmp_image_path))
             self.assertTrue(os.path.exists(image_path))
+            self.assertEqual(1, len(list(self.image.locations)))
+            self.assertEqual("file://%s/%s" % (self.test_dir,
+                                               self.image.image_id),
+                             self.image.locations[0]['url'])
 
     def test_import_flow_missing_work_dir(self):
         self.config(engine_mode='serial', group='taskflow_executor')
