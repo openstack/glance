@@ -211,7 +211,8 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
             'image_cache_driver': self.image_cache_driver,
             'registry_port': self.registry_server.bind_port,
             'log_file': os.path.join(self.test_dir, 'cache.log'),
-            'metadata_encryption_key': "012345678901234567890123456789ab"
+            'metadata_encryption_key': "012345678901234567890123456789ab",
+            'filesystem_store_datadir': self.test_dir
         }
         with open(cache_config_filepath, 'w') as cache_file:
             cache_file.write("""[DEFAULT]
@@ -223,6 +224,9 @@ registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
 log_file = %(log_file)s
+
+[glance_store]
+filesystem_store_datadir=%(filesystem_store_datadir)s
 """ % cache_file_options)
 
         cmd = ("%s -m glance.cmd.cache_prefetcher --config-file %s" %

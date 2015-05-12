@@ -46,6 +46,11 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
         :returns: the number of how many store drivers been loaded.
         """
         store.register_opts(CONF)
+
+        self.config(default_store='filesystem',
+                    filesystem_store_datadir=self.test_dir,
+                    group="glance_store")
+
         store.create_stores(CONF)
 
 
@@ -67,7 +72,7 @@ class IsolatedUnitTest(StoreClearingUnitTest):
                     debug=False)
 
         self.config(default_store='filesystem',
-                    filesystem_store_datadir=os.path.join(self.test_dir),
+                    filesystem_store_datadir=self.test_dir,
                     group="glance_store")
 
         store.create_stores()

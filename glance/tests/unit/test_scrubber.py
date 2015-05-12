@@ -36,13 +36,14 @@ CONF = cfg.CONF
 class TestScrubber(test_utils.BaseTestCase):
 
     def setUp(self):
+        super(TestScrubber, self).setUp()
         self.data_dir = tempfile.mkdtemp()
         self.config(scrubber_datadir=self.data_dir)
         glance_store.register_opts(CONF)
+        self.config(group='glance_store', default_store='file',
+                    filesystem_store_datadir=self.test_dir)
         glance_store.create_stores()
-        self.config(group='glance_store', default_store='file')
         self.mox = mox.Mox()
-        super(TestScrubber, self).setUp()
 
     def tearDown(self):
         self.mox.UnsetStubs()
