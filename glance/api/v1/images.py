@@ -65,9 +65,12 @@ CONF.import_opt('container_formats', 'glance.common.config',
 CONF.import_opt('image_property_quota', 'glance.common.config')
 
 
-def validate_image_meta(req, values):
+def _validate_format(req, values):
+    """Validates disk_format and container_format fields
 
-    name = values.get('name')
+    Introduced to split too complex validate_image_meta method.
+    """
+    amazon_formats = ('aki', 'ari', 'ami')
     disk_format = values.get('disk_format')
     container_format = values.get('container_format')
 
@@ -82,13 +85,7 @@ def validate_image_meta(req, values):
                     "for image.") % container_format
             raise HTTPBadRequest(explanation=msg, request=req)
 
-    if name and len(name) > 255:
-        msg = _('Image name too long: %d') % len(name)
-        raise HTTPBadRequest(explanation=msg, request=req)
-
-    amazon_formats = ('aki', 'ari', 'ami')
-
-    if disk_format in amazon_formats or container_format in amazon_formats:
+    if any(f in amazon_formats for f in [disk_format, container_format]):
         if disk_format is None:
             values['disk_format'] = container_format
         elif container_format is None:
@@ -99,6 +96,25 @@ def validate_image_meta(req, values):
                      "one of 'aki', 'ari', or 'ami', the container "
                      "and disk formats must match."))
             raise HTTPBadRequest(explanation=msg, request=req)
+
+
+def validate_image_meta(req, values):
+    _validate_format(req, values)
+
+    name = values.get('name')
+    checksum = values.get('checksum')
+
+    if name and len(name) > 255:
+        msg = _('Image name too long: %d') % len(name)
+        raise HTTPBadRequest(explanation=msg, request=req)
+
+    # check that checksum retrieved is exactly 32 characters
+    # as long as we expect md5 checksum
+    # https://bugs.launchpad.net/glance/+bug/1454730
+    if checksum and len(checksum) > 32:
+        msg = (_("Invalid checksum '%s': can't exceed 32 characters") %
+               checksum)
+        raise HTTPBadRequest(explanation=msg, request=req)
 
     return values
 

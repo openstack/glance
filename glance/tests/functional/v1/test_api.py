@@ -18,6 +18,8 @@
 import hashlib
 
 import httplib2
+import sys
+
 from oslo_serialization import jsonutils
 from oslo_utils import units
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -34,6 +36,50 @@ FIVE_GB = 5 * units.Gi
 class TestApi(functional.FunctionalTest):
 
     """Functional tests using httplib2 against the API server"""
+
+    def _check_image_create(self, headers, status=201,
+                            image_data="*" * FIVE_KB):
+        # performs image_create request, checks the response and returns
+        # content
+        http = httplib2.Http()
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        response, content = http.request(
+            path, 'POST', headers=headers, body=image_data)
+        self.assertEqual(status, response.status)
+        return content
+
+    def test_checksum_32_chars_at_image_create(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+        headers = minimal_headers('Image1')
+        image_data = "*" * FIVE_KB
+
+        # checksum can be no longer that 32 characters (String(32))
+        headers['X-Image-Meta-Checksum'] = 'x' * 42
+        content = self._check_image_create(headers, 400)
+        self.assertIn("Invalid checksum", content)
+        # test positive case as well
+        headers['X-Image-Meta-Checksum'] = hashlib.md5(image_data).hexdigest()
+        self._check_image_create(headers)
+
+    def test_param_int_too_large_at_create(self):
+        # currently 2 params min_disk/min_ram can cause DBError on save
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+        # Integer field can't be greater than max 8-byte signed integer
+        for param in ['min_disk', 'min_ram']:
+            headers = minimal_headers('Image1')
+            # check that long numbers result in 400
+            headers['X-Image-Meta-%s' % param] = str(sys.maxint + 1)
+            content = self._check_image_create(headers, 400)
+            self.assertIn("'%s' value out of range" % param, content)
+            # check that integers over 4 byte result in 400
+            headers['X-Image-Meta-%s' % param] = str(2 ** 31)
+            content = self._check_image_create(headers, 400)
+            self.assertIn("'%s' value out of range" % param, content)
+            # verify positive case as well
+            headers['X-Image-Meta-%s' % param] = str((2 ** 31) - 1)
+            self._check_image_create(headers)
 
     @skip_if_disabled
     def test_get_head_simple_post(self):

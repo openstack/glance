@@ -675,6 +675,10 @@ def _validate_image(values):
         msg = "Invalid image status '%s' for image." % status
         raise exception.Invalid(msg)
 
+    # validate integer values to eliminate DBError on save
+    utils.validate_mysql_int(min_disk=values.get('min_disk'),
+                             min_ram=values.get('min_ram'))
+
     return values
 
 
