@@ -83,6 +83,15 @@ def fake_get_size_from_backend(uri, context=None):
     return 1
 
 
+def fake_verify_signature(context, checksum_hash, image_properties):
+    if (image_properties is not None and 'signature' in image_properties and
+            image_properties['signature'] == 'VALID'):
+        return True
+    else:
+        raise exception.SignatureVerificationError(
+            'Signature verification failed.')
+
+
 class FakeDB(object):
 
     def __init__(self, initialize=True):

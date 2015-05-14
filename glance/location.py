@@ -23,6 +23,7 @@ from oslo_utils import encodeutils
 from oslo_utils import excutils
 
 from glance.common import exception
+from glance.common import signature_utils
 from glance.common import utils
 import glance.domain.proxy
 from glance import i18n
@@ -30,6 +31,7 @@ from glance import i18n
 
 _ = i18n._
 _LE = i18n._LE
+_LI = i18n._LI
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
@@ -375,6 +377,18 @@ class ImageProxy(glance.domain.proxy.Image):
                                  CONF.image_size_cap),
             size,
             context=self.context)
+
+        # Verify the signature (if correct properties are present)
+        if (signature_utils.should_verify_signature(
+                self.image.extra_properties)):
+            # NOTE(bpoulos): if verification fails, exception will be raised
+            result = signature_utils.verify_signature(
+                self.context, checksum, self.image.extra_properties)
+            if result:
+                msg = (_LI("Successfully verified signature for image "
+                           "%s") % self.image.image_id)
+                LOG.info(msg)
+
         self.image.locations = [{'url': location, 'metadata': loc_meta,
                                  'status': 'active'}]
         self.image.size = size

@@ -447,6 +447,10 @@ class MetadefTagNotFound(NotFound):
                 " namespace=%(namespace_name)s.")
 
 
+class SignatureVerificationError(GlanceException):
+    message = _("Unable to verify signature: %(reason)s")
+
+
 class InvalidVersion(Invalid):
     message = _("Version is invalid: %(reason)s")
 
