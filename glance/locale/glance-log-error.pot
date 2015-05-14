@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev42\n"
+"Project-Id-Version: glance 2015.2.0.dev9\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-03 06:02+0000\n"
+"POT-Creation-Date: 2015-05-08 06:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,29 +31,24 @@ msgid ""
 "failed."
 msgstr ""
 
-#: glance/notifier.py:361 glance/api/common.py:95
+#: glance/notifier.py:362 glance/api/common.py:95
 #, python-format
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr ""
 
-#: glance/scrubber.py:168
+#: glance/scrubber.py:172
 #, python-format
 msgid "%s file can not be read."
 msgstr ""
 
-#: glance/scrubber.py:191
+#: glance/scrubber.py:195
 #, python-format
 msgid "%s file can not be wrote."
 msgstr ""
 
-#: glance/scrubber.py:517
+#: glance/scrubber.py:519
 #, python-format
 msgid "Can not %(op)s scrub jobs from queue: %(err)s"
-msgstr ""
-
-#: glance/scrubber.py:618
-#, python-format
-msgid "%s file can not be created."
 msgstr ""
 
 #: glance/api/common.py:58
@@ -75,23 +70,23 @@ msgstr ""
 msgid "Invalid value for option user_storage_quota: %(users_quota)s"
 msgstr ""
 
-#: glance/api/middleware/cache.py:173
+#: glance/api/middleware/cache.py:174
 #, python-format
 msgid ""
 "Image cache contained image file for image '%s', however the registry did"
 " not contain metadata for that image!"
 msgstr ""
 
-#: glance/api/middleware/cache.py:272
+#: glance/api/middleware/cache.py:273
 #, python-format
 msgid "could not find %s"
 msgstr ""
 
-#: glance/api/middleware/cache.py:291
+#: glance/api/middleware/cache.py:292
 msgid "Checksum header is missing."
 msgstr ""
 
-#: glance/api/v1/images.py:603
+#: glance/api/v1/images.py:605
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr ""
@@ -119,7 +114,7 @@ msgstr ""
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:207
+#: glance/api/v2/metadef_namespaces.py:210
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr ""
@@ -154,33 +149,33 @@ msgstr ""
 msgid "Failed to setup index extension %(ext)s: %(e)s"
 msgstr ""
 
-#: glance/common/property_utils.py:84
+#: glance/common/property_utils.py:81
 #, python-format
 msgid "Couldn't find property protection file %(file)s: %(error)s."
 msgstr ""
 
-#: glance/common/property_utils.py:91
+#: glance/common/property_utils.py:88
 #, python-format
 msgid ""
 "Invalid value '%s' for 'property_protection_rule_format'. The permitted "
 "values are 'roles' and 'policies'"
 msgstr ""
 
-#: glance/common/property_utils.py:110
+#: glance/common/property_utils.py:107
 #, python-format
 msgid ""
 "Multiple policies '%s' not allowed for a given operation. Policies can be"
 " combined in the policy file"
 msgstr ""
 
-#: glance/common/property_utils.py:123
+#: glance/common/property_utils.py:120
 #, python-format
 msgid ""
 "Malformed property protection rule in [%(prop)s] %(op)s=%(perm)s: '@' and"
 " '!' are mutually exclusive"
 msgstr ""
 
-#: glance/common/property_utils.py:148
+#: glance/common/property_utils.py:145
 #, python-format
 msgid "Encountered a malformed property protection rule %(rule)s: %(error)s."
 msgstr ""
@@ -197,21 +192,21 @@ msgstr ""
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
 msgstr ""
 
-#: glance/common/swift_store_utils.py:87
+#: glance/common/swift_store_utils.py:84
 #, python-format
 msgid "swift config file %(conf_file)s:%(exc)s not found"
 msgstr ""
 
-#: glance/common/swift_store_utils.py:101
+#: glance/common/swift_store_utils.py:98
 msgid "Invalid format of swift store config cfg"
 msgstr ""
 
-#: glance/common/utils.py:115
+#: glance/common/utils.py:116
 #, python-format
 msgid "Error: cooperative_iter exception %s"
 msgstr ""
 
-#: glance/common/utils.py:514
+#: glance/common/utils.py:515
 msgid ""
 "Error setting up the debug environment. Verify that the option "
 "pydev_worker_debug_host is pointing to a valid hostname or IP on which a "
@@ -270,18 +265,18 @@ msgstr ""
 msgid "Operator %s is not supported"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:185
+#: glance/db/sqlalchemy/metadata.py:194
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:451
+#: glance/db/sqlalchemy/metadata.py:460
 msgid ""
 "To use --prefer_new or --overwrite you need to combine of these options "
 "with --merge option."
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:456
+#: glance/db/sqlalchemy/metadata.py:465
 msgid ""
 "Please provide no more than one option from this list: --prefer_new, "
 "--overwrite"
@@ -353,12 +348,12 @@ msgstr ""
 msgid "Unable to update image %s"
 msgstr ""
 
-#: glance/registry/client/v1/client.py:129
+#: glance/registry/client/v1/client.py:134
 #, python-format
 msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
 msgstr ""
 
-#: glance/search/api/v0_1/search.py:243
+#: glance/search/api/v0_1/search.py:254
 #, python-format
 msgid "Failed to retrieve RBAC filters from search plugin %(ext)s: %(e)s"
 msgstr ""
