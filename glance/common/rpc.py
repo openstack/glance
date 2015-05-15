@@ -41,8 +41,7 @@ rpc_opts = [
     # NOTE(flaper87): Shamelessly copied
     # from oslo rpc.
     cfg.ListOpt('allowed_rpc_exception_modules',
-                default=['openstack.common.exception',
-                         'glance.common.exception',
+                default=['glance.common.exception',
                          'exceptions',
                          ],
                 help='Modules of exceptions that are permitted to be recreated'
