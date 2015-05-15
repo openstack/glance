@@ -42,7 +42,7 @@ use when configuring the server application.
 .. note::
 
   Glance ships with an ``etc/`` directory that contains sample ``paste.deploy``
-  configuration files that you can copy to a standard configuation directory and
+  configuration files that you can copy to a standard configuration directory and
   adapt for your own uses. Specifically, bind_host must be set properly.
 
 If you do `not` specify a configuration file on the command line, Glance will
