@@ -86,6 +86,8 @@ class ImagesController(object):
             LOG.debug(utils.exception_to_str(e))
             raise webob.exc.HTTPBadRequest(
                 explanation=utils.exception_to_str(e))
+        except exception.NotAuthenticated as e:
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
         return image
 
@@ -119,6 +121,8 @@ class ImagesController(object):
         except exception.Forbidden as e:
             LOG.debug("User not permitted to retrieve images index")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotAuthenticated as e:
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg)
         result['images'] = images
         return result
 
@@ -131,6 +135,8 @@ class ImagesController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except exception.NotAuthenticated as e:
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
     @utils.mutating
     def update(self, req, image_id, changes):
@@ -165,6 +171,8 @@ class ImagesController(object):
             LOG.exception(utils.exception_to_str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
+        except exception.NotAuthenticated as e:
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
         return image
 
@@ -238,6 +246,8 @@ class ImagesController(object):
                     "exc": e.msg})
             LOG.warn(msg)
             raise webob.exc.HTTPConflict(explanation=msg)
+        except exception.NotAuthenticated as e:
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
     def _get_locations_op_pos(self, path_pos, max_pos, allow_max):
         if path_pos is None or max_pos is None:

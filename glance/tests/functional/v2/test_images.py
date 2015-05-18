@@ -96,7 +96,40 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual('', image['my_empty_prop'])
+        self.stop_servers()
 
+    def test_not_authenticated_in_registry_on_ops(self):
+        # https://bugs.launchpad.net/glance/+bug/1451850
+        # this configuration guarantees that authentication succeeds in
+        # glance-api and fails in glance-registry if no token is passed
+        self.api_server.deployment_flavor = ''
+        # make sure that request will reach registry
+        self.api_server.data_api = 'glance.db.registry.api'
+        self.registry_server.deployment_flavor = 'fakeauth'
+        self.start_servers(**self.__dict__.copy())
+        headers = {'content-type': 'application/json'}
+        image = {'name': 'image', 'type': 'kernel', 'disk_format': 'qcow2',
+                 'container_format': 'bare'}
+        # image create should return 401
+        response = requests.post(self._url('/v2/images'), headers=headers,
+                                 data=jsonutils.dumps(image))
+        self.assertEqual(401, response.status_code)
+        # image list should return 401
+        response = requests.get(self._url('/v2/images'))
+        self.assertEqual(401, response.status_code)
+        # image show should return 401
+        response = requests.get(self._url('/v2/images/someimageid'))
+        self.assertEqual(401, response.status_code)
+        # image update should return 401
+        ops = [{'op': 'replace', 'path': '/protected', 'value': False}]
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        response = requests.patch(self._url('/v2/images/someimageid'),
+                                  headers={'content-type': media_type},
+                                  data=jsonutils.dumps(ops))
+        self.assertEqual(401, response.status_code)
+        # image delete should return 401
+        response = requests.delete(self._url('/v2/images/someimageid'))
+        self.assertEqual(401, response.status_code)
         self.stop_servers()
 
     def test_image_lifecycle(self):
