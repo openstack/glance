@@ -25,6 +25,7 @@ import six
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
+from glance.api import common
 from glance.api import policy
 from glance.common import exception
 from glance.common import utils
@@ -67,7 +68,8 @@ class TasksController(object):
                                              task_input=task['input'])
             task_repo.add(new_task)
             task_executor = executor_factory.new_task_executor(req.context)
-            new_task.run(task_executor)
+            pool = common.get_thread_pool("tasks_eventlet_pool")
+            pool.spawn_n(new_task.run, task_executor)
         except exception.Forbidden as e:
             msg = (_LW("Forbidden to create task. Reason: %(reason)s")
                    % {'reason': utils.exception_to_str(e)})
