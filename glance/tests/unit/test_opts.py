@@ -42,7 +42,7 @@ class OptsTestCase(utils.BaseTestCase):
         opt_list = None
         for ep in pkg_resources.iter_entry_points('oslo.config.opts'):
             if ep.name == namespace:
-                list_fn = ep.load()
+                list_fn = ep.load(require=False)
                 opt_list = list_fn()
                 break
 
