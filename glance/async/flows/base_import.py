@@ -24,6 +24,7 @@ from stevedore import named
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
+from taskflow.types import failure
 
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
@@ -148,11 +149,11 @@ class _ImportToFS(task.Task):
         path = self.store.add(image_id, data, 0, context=None)[0]
         return path
 
-    def revert(self, image_id, result=None, **kwargs):
-        # NOTE(flaper87): If result is None, it probably
-        # means this task failed. Otherwise, we would have
-        # a result from its execution.
-        if result is None:
+    def revert(self, image_id, result, **kwargs):
+        if isinstance(result, failure.Failure):
+            LOG.exception(_LE('Task: %(task_id)s failed to import image '
+                              '%(image_id)s to the filesystem.') %
+                          {'task_id': self.task_id, 'image_id': image_id})
             return
 
         if os.path.exists(result.split("file://")[-1]):

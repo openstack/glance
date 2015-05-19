@@ -21,6 +21,7 @@ import glance_store
 from oslo_config import cfg
 from six.moves import cStringIO
 from taskflow import task
+from taskflow.types import failure
 
 import glance.async.flows.base_import as import_flow
 from glance.async import taskflow_executor
@@ -150,6 +151,44 @@ class TestImportTask(test_utils.BaseTestCase):
                                               "%s.tasks_import" % image_path)
                 self.assertFalse(os.path.exists(tmp_image_path))
                 self.assertTrue(os.path.exists(image_path))
+
+    def test_import_flow_revert_import_to_fs(self):
+        self.config(engine_mode='serial', group='taskflow_executor')
+
+        img_factory = mock.MagicMock()
+
+        executor = taskflow_executor.TaskExecutor(
+            self.context,
+            self.task_repo,
+            self.img_repo,
+            img_factory)
+
+        self.task_repo.get.return_value = self.task
+
+        def create_image(*args, **kwargs):
+            kwargs['image_id'] = UUID1
+            return self.img_factory.new_image(*args, **kwargs)
+
+        self.img_repo.get.return_value = self.image
+        img_factory.new_image.side_effect = create_image
+
+        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
+            dmock.side_effect = RuntimeError
+
+            with mock.patch.object(import_flow._ImportToFS, 'revert') as rmock:
+                self.assertRaises(RuntimeError,
+                                  executor.begin_processing, self.task.task_id)
+                self.assertTrue(rmock.called)
+                self.assertIsInstance(rmock.call_args[1]['result'],
+                                      failure.Failure)
+
+                image_path = os.path.join(self.test_dir, self.image.image_id)
+                tmp_image_path = os.path.join(self.work_dir,
+                                              "%s.tasks_import" % image_path)
+                self.assertFalse(os.path.exists(tmp_image_path))
+                # Note(sabari): The image should not have been uploaded to
+                # the store as the flow failed before ImportToStore Task.
+                self.assertFalse(os.path.exists(image_path))
 
     def test_import_flow_revert(self):
         self.config(engine_mode='serial',

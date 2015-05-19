@@ -129,3 +129,7 @@ class TaskExecutor(glance.async.TaskExecutor):
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s') %
                           {'task_id': task_id, 'exc': exc.message})
+                # TODO(sabari): Check for specific exceptions and update the
+                # task failure message.
+                task.fail(_('Task failed due to Internal Error'))
+                self.task_repo.save(task)
