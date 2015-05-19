@@ -165,7 +165,8 @@ def skip_if_disabled(func):
 
 def fork_exec(cmd,
               exec_env=None,
-              logfile=None):
+              logfile=None,
+              pass_fds=None):
     """
     Execute a command using fork/exec.
 
@@ -182,6 +183,7 @@ def fork_exec(cmd,
                      which to run the command.
     :param logile: A path to a file which will hold the stdout/err of
                    the child process.
+    :param pass_fds: Sequence of file descriptors passed to the child.
     """
     env = os.environ.copy()
     if exec_env is not None:
@@ -201,6 +203,12 @@ def fork_exec(cmd,
                         os.dup2(fptr.fileno(), desc)
                     except OSError:
                         pass
+        if pass_fds and hasattr(os, 'set_inheritable'):
+            # os.set_inheritable() is only available and needed
+            # since Python 3.4. On Python 3.3 and older, file descriptors are
+            # inheritable by default.
+            for fd in pass_fds:
+                os.set_inheritable(fd, True)
 
         args = shlex.split(cmd)
         os.execvpe(args[0], args, env)
