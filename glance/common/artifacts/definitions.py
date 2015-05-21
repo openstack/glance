@@ -15,7 +15,6 @@
 import datetime
 import numbers
 import re
-import types
 
 import semantic_version
 import six
@@ -283,7 +282,7 @@ class Boolean(declarative.PropertyDefinition):
 
     Maps to Boolean columns in database. Supports filtering and sorting.
     """
-    ALLOWED_TYPES = (types.BooleanType,)
+    ALLOWED_TYPES = (bool,)
     DB_TYPE = 'bool'
 
 
@@ -423,7 +422,7 @@ class ArtifactReference(declarative.RelationDefinition):
         """
         super(ArtifactReference, self).__init__(**kwargs)
         if type_name is not None:
-            if isinstance(type_name, types.ListType):
+            if isinstance(type_name, list):
                 type_names = list(type_name)
                 if type_version is not None:
                     raise exc.InvalidArtifactTypePropertyDefinition(
@@ -461,7 +460,7 @@ class ArtifactReferenceList(declarative.ListAttributeDefinition,
 
     def __init__(self, references=ArtifactReference(), min_size=0,
                  max_size=None, **kwargs):
-        if isinstance(references, types.ListType):
+        if isinstance(references, list):
             raise exc.InvalidArtifactTypePropertyDefinition(
                 _("Invalid reference list specification"))
         declarative.RelationDefinition.__init__(self, **kwargs)
