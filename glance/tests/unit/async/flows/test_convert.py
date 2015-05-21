@@ -16,11 +16,11 @@
 import json
 import mock
 import os
-import StringIO
 
 import glance_store
 from oslo_concurrency import processutils
 from oslo_config import cfg
+import six
 
 from glance.async.flows import convert
 from glance.async import taskflow_executor
@@ -147,7 +147,7 @@ class TestImportTask(test_utils.BaseTestCase):
             return ("", None)
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = StringIO.StringIO("TEST_IMAGE")
+            dmock.return_value = six.BytesIO("TEST_IMAGE")
 
             with mock.patch.object(processutils, 'execute') as exc_mock:
                 exc_mock.side_effect = fake_execute

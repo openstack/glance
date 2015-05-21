@@ -92,7 +92,7 @@ def from_migration_import(module_name, fromlist):
         # Refer to images table
     """
     module_path = 'glance.db.sqlalchemy.migrate_repo.versions.%s' % module_name
-    module = __import__(module_path, globals(), locals(), fromlist, -1)
+    module = __import__(module_path, globals(), locals(), fromlist, 0)
     return [getattr(module, item) for item in fromlist]
 
 

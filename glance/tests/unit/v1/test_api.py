@@ -1101,7 +1101,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.headers['Content-Type'] = 'application/octet-stream'
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
@@ -1117,7 +1117,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.headers['Content-Type'] = 'application/octet-stream'
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
@@ -1131,7 +1131,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         req = webob.Request.blank("/images")
         req.headers['Content-Type'] = 'application/octet-stream'
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
         res = req.get_response(self.api)
         self.assertEqual(400, res.status_int)
@@ -1751,7 +1751,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
-        for k, v in fixture_headers.iteritems():
+        for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
 
         res = req.get_response(self.api)

@@ -14,6 +14,8 @@
 
 import uuid
 
+import six
+
 import glance.artifacts as ga
 from glance.common import exception as exc
 from glance import context
@@ -513,7 +515,7 @@ class ArtifactTests(object):
         self.assertIsNotNone(res['published_at'])
         published_at = res['published_at']
         expected['published_at'] = published_at
-        for key, value in expected.iteritems():
+        for key, value in six.iteritems(expected):
             self.assertEqual(expected[key], res[key])
 
     def test_artifact_get_all(self):

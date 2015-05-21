@@ -29,6 +29,7 @@ import time
 from oslo_utils import timeutils
 
 from glance.common import utils
+from six.moves import input
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -467,7 +468,7 @@ def user_confirm(prompt, default=False):
     else:
         prompt_default = "[y/N]"
 
-    answer = raw_input("%s %s " % (prompt, prompt_default))
+    answer = input("%s %s " % (prompt, prompt_default))
 
     if answer == "":
         return default

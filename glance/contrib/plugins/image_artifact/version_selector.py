@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from v1 import image as v1
-from v1_1 import image as v1_1
-from v2 import image as v2
+from glance.contrib.plugins.image_artifact.v1 import image as v1
+from glance.contrib.plugins.image_artifact.v1_1 import image as v1_1
+from glance.contrib.plugins.image_artifact.v2 import image as v2
 
 versions = [v1.ImageAsAnArtifact, v1_1.ImageAsAnArtifact, v2.ImageAsAnArtifact]

@@ -26,7 +26,6 @@ if possible.
 from __future__ import print_function
 
 import datetime
-import exceptions
 import os
 import pickle
 import uuid
@@ -420,7 +419,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         invalid_scheme_uri = ('http://acct:usr:pass@example.com'
                               '/container/obj-id')
-        self.assertRaises(exceptions.AssertionError,
+        self.assertRaises(AssertionError,
                           legacy_parse_uri_fn,
                           invalid_scheme_uri,
                           True)

@@ -873,7 +873,7 @@ class Resource(object):
                                           request, **action_args)
         except webob.exc.WSGIHTTPException as e:
             exc_info = sys.exc_info()
-            raise translate_exception(request, e), None, exc_info[2]
+            six.reraise(translate_exception(request, e), None, exc_info[2])
 
         try:
             response = webob.Response(request=request)
