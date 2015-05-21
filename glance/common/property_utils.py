@@ -13,12 +13,12 @@
 #    under the License.
 
 from collections import OrderedDict
-import ConfigParser
 import re
 
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_policy import policy
+from six.moves import configparser
 
 import glance.api.policy
 from glance.common import exception
@@ -26,7 +26,7 @@ from glance import i18n
 
 # NOTE(bourke): The default dict_type is collections.OrderedDict in py27, but
 # we must set manually for compatibility with py26
-CONFIG = ConfigParser.SafeConfigParser(dict_type=OrderedDict)
+CONFIG = configparser.SafeConfigParser(dict_type=OrderedDict)
 LOG = logging.getLogger(__name__)
 _ = i18n._
 _LE = i18n._LE

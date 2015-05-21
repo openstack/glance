@@ -15,7 +15,6 @@
 
 """Common utilities used in testing"""
 
-import BaseHTTPServer
 import errno
 import functools
 import os
@@ -30,6 +29,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslotest import moxstubout
 import six
+from six.moves import BaseHTTPServer
 import testtools
 import webob
 

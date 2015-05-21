@@ -18,13 +18,13 @@
 
 from __future__ import print_function
 
-import httplib
 import os
 import sys
 
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from six.moves import http_client
 import six.moves.urllib.parse as urlparse
 from webob import exc
 
@@ -115,7 +115,7 @@ class ImageService(object):
     def __init__(self, conn, auth_token):
         """Initialize the ImageService.
 
-        conn: a httplib.HTTPConnection to the glance server
+        conn: a http_client.HTTPConnection to the glance server
         auth_token: authentication token to pass in the x-auth-token header
         """
         self.auth_token = auth_token
@@ -131,7 +131,7 @@ class ImageService(object):
         body: body to send with the request
         ignore_result_body: the body of the result will be ignored
 
-        Returns: a httplib response object
+        Returns: a http_client response object
         """
         if self.auth_token:
             headers.setdefault('x-auth-token', self.auth_token)
@@ -148,7 +148,7 @@ class ImageService(object):
         response = self.conn.getresponse()
         headers = self._header_list_to_dict(response.getheaders())
         code = response.status
-        code_description = httplib.responses[code]
+        code_description = http_client.responses[code]
         LOG.debug('Response: %(code)s %(status)s %(headers)s'
                   % {'code': code,
                      'status': code_description,
@@ -176,7 +176,7 @@ class ImageService(object):
 
         if ignore_result_body:
             # NOTE: because we are pipelining requests through a single HTTP
-            # connection, httplib requires that we read the response body
+            # connection, http_client requires that we read the response body
             # before we can make another request. If the caller knows they
             # don't care about the body, they can ask us to do that for them.
             response.read()
@@ -209,7 +209,7 @@ class ImageService(object):
 
         image_uuid: the id of an image
 
-        Returns: a httplib Response object where the body is the image.
+        Returns: a http_client Response object where the body is the image.
         """
         url = '/v1/images/%s' % image_uuid
         return self._http_request('GET', url, {}, '')
@@ -332,7 +332,7 @@ def replication_size(options, args):
     count = 0
 
     imageservice = get_image_service()
-    client = imageservice(httplib.HTTPConnection(server, port),
+    client = imageservice(http_client.HTTPConnection(server, port),
                           options.slavetoken)
     for image in client.get_images():
         LOG.debug('Considering image: %(image)s' % {'image': image})
@@ -362,7 +362,7 @@ def replication_dump(options, args):
     server, port = utils.parse_valid_host_port(args.pop())
 
     imageservice = get_image_service()
-    client = imageservice(httplib.HTTPConnection(server, port),
+    client = imageservice(http_client.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
         LOG.debug('Considering: %s' % image['id'])
@@ -434,7 +434,7 @@ def replication_load(options, args):
     server, port = utils.parse_valid_host_port(args.pop())
 
     imageservice = get_image_service()
-    client = imageservice(httplib.HTTPConnection(server, port),
+    client = imageservice(http_client.HTTPConnection(server, port),
                           options.slavetoken)
 
     updated = []
@@ -509,11 +509,11 @@ def replication_livecopy(options, args):
     imageservice = get_image_service()
 
     slave_server, slave_port = utils.parse_valid_host_port(args.pop())
-    slave_conn = httplib.HTTPConnection(slave_server, slave_port)
+    slave_conn = http_client.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
     master_server, master_port = utils.parse_valid_host_port(args.pop())
-    master_conn = httplib.HTTPConnection(master_server, master_port)
+    master_conn = http_client.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
 
     updated = []
@@ -580,11 +580,11 @@ def replication_compare(options, args):
     imageservice = get_image_service()
 
     slave_server, slave_port = utils.parse_valid_host_port(args.pop())
-    slave_conn = httplib.HTTPConnection(slave_server, slave_port)
+    slave_conn = http_client.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
     master_server, master_port = utils.parse_valid_host_port(args.pop())
-    master_conn = httplib.HTTPConnection(master_server, master_port)
+    master_conn = http_client.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
 
     differences = {}

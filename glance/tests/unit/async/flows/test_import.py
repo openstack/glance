@@ -15,11 +15,11 @@
 
 import mock
 import os
-import urllib2
 
 import glance_store
 from oslo_config import cfg
 from six.moves import cStringIO
+from six.moves import urllib
 from taskflow import task
 
 import glance.async.flows.base_import as import_flow
@@ -211,7 +211,7 @@ class TestImportTask(test_utils.BaseTestCase):
         self.img_repo.get.return_value = self.image
         img_factory.new_image.side_effect = create_image
 
-        with mock.patch.object(urllib2, 'urlopen') as umock:
+        with mock.patch.object(urllib.request, 'urlopen') as umock:
             content = "TEST_IMAGE"
             umock.return_value = cStringIO(content)
 

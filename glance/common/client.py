@@ -21,7 +21,6 @@ import collections
 import copy
 import errno
 import functools
-import httplib
 import os
 import re
 
@@ -43,6 +42,7 @@ except ImportError:
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 import six
+from six.moves import http_client
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import six.moves.urllib.parse as urlparse
@@ -94,7 +94,7 @@ def handle_redirects(func):
     return wrapped
 
 
-class HTTPSClientAuthConnection(httplib.HTTPSConnection):
+class HTTPSClientAuthConnection(http_client.HTTPSConnection):
     """
     Class to make a HTTPS connection, with support for
     full client-based SSL Authentication
@@ -105,8 +105,9 @@ class HTTPSClientAuthConnection(httplib.HTTPSConnection):
 
     def __init__(self, host, port, key_file, cert_file,
                  ca_file, timeout=None, insecure=False):
-        httplib.HTTPSConnection.__init__(self, host, port, key_file=key_file,
-                                         cert_file=cert_file)
+        http_client.HTTPSConnection.__init__(self, host, port,
+                                             key_file=key_file,
+                                             cert_file=cert_file)
         self.key_file = key_file
         self.cert_file = cert_file
         self.ca_file = ca_file
@@ -151,18 +152,18 @@ class BaseClient(object):
                             '/etc/ssl/cert.pem')
 
     OK_RESPONSE_CODES = (
-        httplib.OK,
-        httplib.CREATED,
-        httplib.ACCEPTED,
-        httplib.NO_CONTENT,
+        http_client.OK,
+        http_client.CREATED,
+        http_client.ACCEPTED,
+        http_client.NO_CONTENT,
     )
 
     REDIRECT_RESPONSE_CODES = (
-        httplib.MOVED_PERMANENTLY,
-        httplib.FOUND,
-        httplib.SEE_OTHER,
-        httplib.USE_PROXY,
-        httplib.TEMPORARY_REDIRECT,
+        http_client.MOVED_PERMANENTLY,
+        http_client.FOUND,
+        http_client.SEE_OTHER,
+        http_client.USE_PROXY,
+        http_client.TEMPORARY_REDIRECT,
     )
 
     def __init__(self, host, port=None, timeout=None, use_ssl=False,
@@ -332,7 +333,7 @@ class BaseClient(object):
         if self.use_ssl:
             return HTTPSClientAuthConnection
         else:
-            return httplib.HTTPConnection
+            return http_client.HTTPConnection
 
     def _authenticate(self, force_reauth=False):
         """
@@ -515,24 +516,24 @@ class BaseClient(object):
                 return res
             elif status_code in self.REDIRECT_RESPONSE_CODES:
                 raise exception.RedirectException(res.getheader('Location'))
-            elif status_code == httplib.UNAUTHORIZED:
+            elif status_code == http_client.UNAUTHORIZED:
                 raise exception.NotAuthenticated(res.read())
-            elif status_code == httplib.FORBIDDEN:
+            elif status_code == http_client.FORBIDDEN:
                 raise exception.Forbidden(res.read())
-            elif status_code == httplib.NOT_FOUND:
+            elif status_code == http_client.NOT_FOUND:
                 raise exception.NotFound(res.read())
-            elif status_code == httplib.CONFLICT:
+            elif status_code == http_client.CONFLICT:
                 raise exception.Duplicate(res.read())
-            elif status_code == httplib.BAD_REQUEST:
+            elif status_code == http_client.BAD_REQUEST:
                 raise exception.Invalid(res.read())
-            elif status_code == httplib.MULTIPLE_CHOICES:
+            elif status_code == http_client.MULTIPLE_CHOICES:
                 raise exception.MultipleChoices(body=res.read())
-            elif status_code == httplib.REQUEST_ENTITY_TOO_LARGE:
+            elif status_code == http_client.REQUEST_ENTITY_TOO_LARGE:
                 raise exception.LimitExceeded(retry=_retry(res),
                                               body=res.read())
-            elif status_code == httplib.INTERNAL_SERVER_ERROR:
+            elif status_code == http_client.INTERNAL_SERVER_ERROR:
                 raise exception.ServerError()
-            elif status_code == httplib.SERVICE_UNAVAILABLE:
+            elif status_code == http_client.SERVICE_UNAVAILABLE:
                 raise exception.ServiceUnavailable(retry=_retry(res))
             else:
                 raise exception.UnexpectedStatus(status=status_code,

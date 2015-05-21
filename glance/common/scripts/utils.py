@@ -22,9 +22,8 @@ __all__ = [
 ]
 
 
-import urllib2
-
 from oslo_log import log as logging
+from six.moves import urllib
 
 from glance.common import exception
 from glance import i18n
@@ -108,7 +107,7 @@ def validate_location_uri(location):
         msg = _("The given uri is not valid. Please specify a "
                 "valid uri from the following list of supported uri "
                 "%(supported)s") % {'supported': supported}
-        raise urllib2.URLError(msg)
+        raise urllib.error.URLError(msg)
 
 
 def get_image_data_iter(uri):
@@ -134,4 +133,4 @@ def get_image_data_iter(uri):
         # into memory. Some images may be quite heavy.
         return open(uri, "r")
 
-    return urllib2.urlopen(uri)
+    return urllib.request.urlopen(uri)
