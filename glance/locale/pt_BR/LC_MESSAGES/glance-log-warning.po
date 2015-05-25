@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
+# Andre Campos Bezerra <andrecbezerra@gmail.com>, 2015
 # Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-08 06:02+0000\n"
-"PO-Revision-Date: 2015-04-01 21:54+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"POT-Creation-Date: 2015-05-25 06:02+0000\n"
+"PO-Revision-Date: 2015-05-22 18:31+0000\n"
+"Last-Translator: Andre Campos Bezerra <andrecbezerra@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "glance/language/pt_BR/)\n"
 "Language: pt_BR\n"
@@ -80,6 +81,10 @@ msgid "Failed to delete image %s in store from URI"
 msgstr "Falha ao excluir imagem %s no armazenamento da URI"
 
 #, python-format
+msgid "Unrecognised child %s"
+msgstr "Filho %s não reconhecido"
+
+#, python-format
 msgid "Task %(task_id)s failed with exception %(error)s"
 msgstr "Tarefa %(task_id)s falhou com exceção %(error)s"
 
@@ -93,6 +98,10 @@ msgstr "Não é possível obter a imagem excluída"
 msgid "Unable to get unowned image"
 msgstr "Não é possível obter a imagem não possuída"
 
+#, python-format
+msgid "Could not find task %s"
+msgstr "Não foi possível localizar tarefa %s"
+
 msgid "Deadlock detected. Retrying..."
 msgstr "Conflito detectado. Tentando novamente..."
 
@@ -101,6 +110,14 @@ msgstr "Tentou modificar o usuário da imagem não de sua propriedade."
 
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr "ID não em sort_keys; sort_keys é exclusivo?"
+
+#, python-format
+msgid "Artifact with id=%s not found"
+msgstr "Artefato com id=%s não encontrado"
+
+#, python-format
+msgid "Artifact with id=%s is not accessible"
+msgstr "Artefato com id=%s não está acessível"
 
 #, python-format
 msgid "Duplicate entry for values: %s"
