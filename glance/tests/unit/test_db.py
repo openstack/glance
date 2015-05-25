@@ -125,8 +125,7 @@ class TestImageRepo(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageRepo, self).setUp()
-        self.db = unit_test_utils.FakeDB()
-        self.db.reset()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.context = glance.context.RequestContext(
             user=USER1, tenant=TENANT1)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
@@ -135,7 +134,6 @@ class TestImageRepo(test_utils.BaseTestCase):
         self._create_image_members()
 
     def _create_images(self):
-        self.db.reset()
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, checksum=CHECKSUM,
                         name='1', size=256,
@@ -393,8 +391,7 @@ class TestImageRepo(test_utils.BaseTestCase):
 class TestEncryptedLocations(test_utils.BaseTestCase):
     def setUp(self):
         super(TestEncryptedLocations, self).setUp()
-        self.db = unit_test_utils.FakeDB()
-        self.db.reset()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.context = glance.context.RequestContext(
             user=USER1, tenant=TENANT1)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
@@ -472,8 +469,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageMemberRepo, self).setUp()
-        self.db = unit_test_utils.FakeDB()
-        self.db.reset()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.context = glance.context.RequestContext(
             user=USER1, tenant=TENANT1)
         self.image_repo = glance.db.ImageRepo(self.context, self.db)
@@ -596,8 +592,7 @@ class TestTaskRepo(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestTaskRepo, self).setUp()
-        self.db = unit_test_utils.FakeDB()
-        self.db.reset()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.context = glance.context.RequestContext(user=USER1,
                                                      tenant=TENANT1)
         self.task_repo = glance.db.TaskRepo(self.context, self.db)
@@ -608,7 +603,6 @@ class TestTaskRepo(test_utils.BaseTestCase):
         self._create_tasks()
 
     def _create_tasks(self):
-        self.db.reset()
         self.tasks = [
             _db_task_fixture(UUID1, type='import', status='pending',
                              input=self.fake_task_input,

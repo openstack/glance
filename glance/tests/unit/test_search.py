@@ -167,8 +167,7 @@ def _db_tag_fixture(name, **kwargs):
 class TestImageLoaderPlugin(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageLoaderPlugin, self).setUp()
-        self.db = unit_test_utils.FakeDB()
-        self.db.reset()
+        self.db = unit_test_utils.FakeDB(initialize=False)
 
         self._create_images()
 
@@ -396,8 +395,7 @@ class TestImageLoaderPlugin(test_utils.BaseTestCase):
 class TestMetadefLoaderPlugin(test_utils.BaseTestCase):
     def setUp(self):
         super(TestMetadefLoaderPlugin, self).setUp()
-        self.db = unit_test_utils.FakeDB()
-        self.db.reset()
+        self.db = unit_test_utils.FakeDB(initialize=False)
 
         self._create_resource_types()
         self._create_namespaces()

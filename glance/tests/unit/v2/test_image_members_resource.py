@@ -90,7 +90,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageMembersController, self).setUp()
-        self.db = unit_test_utils.FakeDB()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.store = unit_test_utils.FakeStoreAPI()
         self.policy = unit_test_utils.FakePolicyEnforcer()
         self.notifier = unit_test_utils.FakeNotifier()
@@ -110,7 +110,6 @@ class TestImageMembersController(test_utils.BaseTestCase):
         glance_store.create_stores()
 
     def _create_images(self):
-        self.db.reset()
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
                         is_public=True,

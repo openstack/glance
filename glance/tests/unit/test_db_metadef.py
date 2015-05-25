@@ -128,8 +128,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestMetadefRepo, self).setUp()
-        self.db = unit_test_utils.FakeDB()
-        self.db.reset()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.context = glance.context.RequestContext(user=USER1,
                                                      tenant=TENANT1)
         self.namespace_repo = glance.db.MetadefNamespaceRepo(self.context,
@@ -154,7 +153,6 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         self._create_resource_types()
 
     def _create_namespaces(self):
-        self.db.reset()
         self.namespaces = [
             _db_namespace_fixture(namespace=NAMESPACE1,
                                   display_name='1',

@@ -140,7 +140,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def setUp(self):
         super(TestMetadefsControllers, self).setUp()
-        self.db = unit_test_utils.FakeDB()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.policy = unit_test_utils.FakePolicyEnforcer()
         self.notifier = unit_test_utils.FakeNotifier()
         self._create_namespaces()
@@ -161,7 +161,6 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
             self.db, self.policy, self.notifier)
 
     def _create_namespaces(self):
-        self.db.reset()
         req = unit_test_utils.get_fake_request()
         self.namespaces = [
             _db_namespace_fixture(NAMESPACE1, owner=TENANT1,
