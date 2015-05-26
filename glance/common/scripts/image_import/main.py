@@ -92,7 +92,7 @@ def import_image(image_repo, image_factory, task_input, task_id, uri):
     # returned from create_image method does not have appropriate factories
     # wrapped around it.
     new_image = image_repo.get(image_id)
-    set_image_data(new_image, uri, None)
+    set_image_data(new_image, uri, task_id)
 
     try:
         # NOTE: Check if the Image is not deleted after setting the data
