@@ -62,7 +62,7 @@ class MetadefObjectsController(object):
 
         except exception.Forbidden as e:
             LOG.debug("User not permitted to create metadata object within "
-                      "'%s' namespace" % namespace)
+                      "'%s' namespace", namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -93,7 +93,7 @@ class MetadefObjectsController(object):
             metadef_objects.objects = object_list
         except exception.Forbidden as e:
             LOG.debug("User not permitted to retrieve metadata objects within "
-                      "'%s' namespace" % namespace)
+                      "'%s' namespace", namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -113,7 +113,7 @@ class MetadefObjectsController(object):
                 self.obj_schema_link)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to show metadata object '%s' "
-                      "within '%s' namespace" % (namespace, object_name))
+                      "within '%s' namespace", namespace, object_name)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -137,7 +137,7 @@ class MetadefObjectsController(object):
             updated_metadata_obj = meta_repo.save(metadef_object)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata object '%s' "
-                      "within '%s' namespace " % (object_name, namespace))
+                      "within '%s' namespace ", object_name, namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -159,7 +159,7 @@ class MetadefObjectsController(object):
             meta_repo.remove(metadef_object)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to delete metadata object '%s' "
-                      "within '%s' namespace" % (object_name, namespace))
+                      "within '%s' namespace", object_name, namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
