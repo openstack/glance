@@ -15,12 +15,12 @@
 import copy
 import os
 import sys
-import UserDict
 import uuid
 
 import fixtures
 from oslo_serialization import jsonutils
 import six
+from six import moves
 import webob
 
 from glance.cmd import replicator as glance_replicator
@@ -302,7 +302,7 @@ def get_image_service():
 
 
 def check_no_args(command, args):
-    options = UserDict.UserDict()
+    options = moves.UserDict()
     no_args_error = False
 
     orig_img_service = glance_replicator.get_image_service
@@ -318,7 +318,7 @@ def check_no_args(command, args):
 
 
 def check_bad_args(command, args):
-    options = UserDict.UserDict()
+    options = moves.UserDict()
     bad_args_error = False
 
     orig_img_service = glance_replicator.get_image_service
@@ -335,7 +335,7 @@ def check_bad_args(command, args):
 
 class ReplicationCommandsTestCase(test_utils.BaseTestCase):
     def test_replication_size(self):
-        options = UserDict.UserDict()
+        options = moves.UserDict()
         options.slavetoken = 'slavetoken'
         args = ['localhost:9292']
 
@@ -367,7 +367,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
     def test_replication_dump(self):
         tempdir = self.useFixture(fixtures.TempDir()).path
 
-        options = UserDict.UserDict()
+        options = moves.UserDict()
         options.chunksize = 4096
         options.mastertoken = 'mastertoken'
         options.metaonly = False
@@ -454,7 +454,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
             f.write(jsonutils.dumps([1, 2, 3, 4, 5]))
 
         # Finally, we're ready to test
-        options = UserDict.UserDict()
+        options = moves.UserDict()
         options.dontreplicate = 'dontrepl dontreplabsent'
         options.slavetoken = 'slavetoken'
         args = ['localhost:9292', tempdir]
@@ -482,7 +482,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         self.assertTrue(check_bad_args(command, args))
 
     def test_replication_livecopy(self):
-        options = UserDict.UserDict()
+        options = moves.UserDict()
         options.chunksize = 4096
         options.dontreplicate = 'dontrepl dontreplabsent'
         options.mastertoken = 'livemastertoken'
@@ -510,7 +510,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
         self.assertTrue(check_bad_args(command, args))
 
     def test_replication_compare(self):
-        options = UserDict.UserDict()
+        options = moves.UserDict()
         options.chunksize = 4096
         options.dontreplicate = 'dontrepl dontreplabsent'
         options.mastertoken = 'livemastertoken'

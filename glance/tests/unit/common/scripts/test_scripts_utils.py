@@ -12,9 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import urllib2
 
 import mock
+from six.moves import urllib
 
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
@@ -96,61 +96,61 @@ class TestScriptsUtils(test_utils.BaseTestCase):
 
     def test_validate_location_unsupported_error(self):
         location = 'swift'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'swift+http'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'swift+https'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'swift+config'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'vsphere'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'sheepdog://'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 's3+https://'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'rbd://'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'gridfs://'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
         location = 'cinder://'
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
     def test_get_image_data_http(self):
         uri = "http://example.com"
-        response = urllib2.urlopen(uri)
+        response = urllib.request.urlopen(uri)
         expected = response.read()
         self.assertEqual(expected,
                          script_utils.get_image_data_iter(uri).read())
 
     def test_get_image_data_https(self):
         uri = "https://example.com"
-        response = urllib2.urlopen(uri)
+        response = urllib.request.urlopen(uri)
         expected = response.read()
         self.assertEqual(expected,
                          script_utils.get_image_data_iter(uri).read())
 
     def test_get_image_data_http_error(self):
         uri = "http:/example.com"
-        self.assertRaises(urllib2.URLError,
+        self.assertRaises(urllib.error.URLError,
                           script_utils.get_image_data_iter,
                           uri)

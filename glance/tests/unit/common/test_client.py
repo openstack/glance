@@ -13,9 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httplib
-
 from mox3 import mox
+from six.moves import http_client
 import testtools
 
 from glance.common import auth
@@ -28,8 +27,8 @@ class TestClient(testtools.TestCase):
     def setUp(self):
         super(TestClient, self).setUp()
         self.mock = mox.Mox()
-        self.mock.StubOutWithMock(httplib.HTTPConnection, 'request')
-        self.mock.StubOutWithMock(httplib.HTTPConnection, 'getresponse')
+        self.mock.StubOutWithMock(http_client.HTTPConnection, 'request')
+        self.mock.StubOutWithMock(http_client.HTTPConnection, 'getresponse')
 
         self.endpoint = 'example.com'
         self.client = client.BaseClient(self.endpoint, port=9191,
@@ -55,16 +54,16 @@ class TestClient(testtools.TestCase):
         self.mock.VerifyAll()
 
     def test_http_encoding_headers(self):
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             mox.IgnoreArg())
 
         # Lets fake the response
-        # returned by httplib
+        # returned by http_client
         fake = utils.FakeHTTPResponse(data="Ok")
-        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
         headers = {"test": u'ni\xf1o'}
@@ -73,16 +72,16 @@ class TestClient(testtools.TestCase):
         self.assertEqual(fake, resp)
 
     def test_http_encoding_params(self):
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             mox.IgnoreArg())
 
         # Lets fake the response
-        # returned by httplib
+        # returned by http_client
         fake = utils.FakeHTTPResponse(data="Ok")
-        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
         params = {"test": u'ni\xf1o'}

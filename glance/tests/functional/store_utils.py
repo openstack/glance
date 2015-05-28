@@ -20,10 +20,10 @@ Utility methods to set testcases up for Swift and/or S3 tests.
 
 from __future__ import print_function
 
-import BaseHTTPServer
 import threading
 
 from oslo_utils import units
+from six.moves import BaseHTTPServer
 
 
 FIVE_KB = 5 * units.Ki
