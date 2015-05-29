@@ -134,7 +134,7 @@ def image_update(context, image_id, values, purge_props=False,
     """
     Set the given properties on an image and update it.
 
-    :raises NotFound if image does not exist.
+    :raises ImageNotFound if image does not exist.
     """
     return _image_update(context, values, image_id, purge_props,
                          from_state=from_state)
@@ -215,7 +215,7 @@ def _check_image_id(image_id):
     """
     if (image_id and
        len(image_id) > models.Image.id.property.columns[0].type.length):
-        raise exception.NotFound()
+        raise exception.ImageNotFound()
 
 
 def _image_get(context, image_id, session=None, force_show_deleted=False):
@@ -238,7 +238,7 @@ def _image_get(context, image_id, session=None, force_show_deleted=False):
     except sa_orm.exc.NoResultFound:
         msg = "No image found with ID %s" % image_id
         LOG.debug(msg)
-        raise exception.NotFound(msg)
+        raise exception.ImageNotFound(msg)
 
     # Make sure they can look at it
     if not is_image_visible(context, image):

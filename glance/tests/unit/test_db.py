@@ -190,7 +190,7 @@ class TestImageRepo(test_utils.BaseTestCase):
 
     def test_get_not_found(self):
         fake_uuid = str(uuid.uuid4())
-        exc = self.assertRaises(exception.NotFound, self.image_repo.get,
+        exc = self.assertRaises(exception.ImageNotFound, self.image_repo.get,
                                 fake_uuid)
         self.assertIn(fake_uuid, utils.exception_to_str(exc))
 
@@ -370,7 +370,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         fake_uuid = str(uuid.uuid4())
         image = self.image_repo.get(UUID1)
         image.image_id = fake_uuid
-        exc = self.assertRaises(exception.NotFound, self.image_repo.save,
+        exc = self.assertRaises(exception.ImageNotFound, self.image_repo.save,
                                 image)
         self.assertIn(fake_uuid, utils.exception_to_str(exc))
 
@@ -379,14 +379,14 @@ class TestImageRepo(test_utils.BaseTestCase):
         previous_update_time = image.updated_at
         self.image_repo.remove(image)
         self.assertTrue(image.updated_at > previous_update_time)
-        self.assertRaises(exception.NotFound, self.image_repo.get, UUID1)
+        self.assertRaises(exception.ImageNotFound, self.image_repo.get, UUID1)
 
     def test_remove_image_not_found(self):
         fake_uuid = str(uuid.uuid4())
         image = self.image_repo.get(UUID1)
         image.image_id = fake_uuid
-        exc = self.assertRaises(exception.NotFound, self.image_repo.remove,
-                                image)
+        exc = self.assertRaises(
+            exception.ImageNotFound, self.image_repo.remove, image)
         self.assertIn(fake_uuid, utils.exception_to_str(exc))
 
 

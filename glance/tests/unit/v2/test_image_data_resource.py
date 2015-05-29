@@ -194,7 +194,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_upload_non_existent_image_during_save_initiates_deletion(self):
         def fake_save_not_found(self):
-            raise exception.NotFound()
+            raise exception.ImageNotFound()
 
         def fake_save_conflict(self):
             raise exception.Conflict()
@@ -211,10 +211,10 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_upload_non_existent_image_raises_not_found_exception(self):
         def fake_save(self):
-            raise exception.NotFound()
+            raise exception.ImageNotFound()
 
         def fake_delete():
-            raise exception.NotFound()
+            raise exception.ImageNotFound()
 
         request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd', locations=['http://example.com/image'])

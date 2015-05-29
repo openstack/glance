@@ -122,7 +122,7 @@ class Controller(object):
         try:
             return self.db_api.image_get_all(context, filters=filters,
                                              **params)
-        except exception.NotFound:
+        except exception.ImageNotFound:
             LOG.warn(_LW("Invalid marker. Image %(id)s could not be "
                          "found.") % {'id': params.get('marker')})
             msg = _("Invalid marker. Image could not be found.")
@@ -339,7 +339,7 @@ class Controller(object):
             image = self.db_api.image_get(req.context, id)
             msg = "Successfully retrieved image %(id)s" % {'id': id}
             LOG.debug(msg)
-        except exception.NotFound:
+        except exception.ImageNotFound:
             msg = _LI("Image %(id)s not found") % {'id': id}
             LOG.info(msg)
             raise exc.HTTPNotFound()
@@ -382,7 +382,7 @@ class Controller(object):
                       " 'not found'") % {'id': id}
             LOG.info(msg)
             return exc.HTTPNotFound()
-        except exception.NotFound:
+        except exception.ImageNotFound:
             msg = _LI("Image %(id)s not found") % {'id': id}
             LOG.info(msg)
             return exc.HTTPNotFound()
@@ -487,7 +487,7 @@ class Controller(object):
                      "Got error: %s") % utils.exception_to_str(e))
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
-        except exception.NotFound:
+        except exception.ImageNotFound:
             msg = _LI("Image %(id)s not found") % {'id': id}
             LOG.info(msg)
             raise exc.HTTPNotFound(body='Image not found',

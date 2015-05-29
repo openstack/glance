@@ -304,7 +304,7 @@ class TestUploadUtils(base.StoreClearingUnitTest):
             ext_update_data={'size': 10}) as (location, checksum, image_meta,
                                               image_data, store, notifier,
                                               update_data):
-            exc = exception.NotFound
+            exc = exception.ImageNotFound
             with patch.object(registry, 'update_image_metadata',
                               side_effect=exc) as mock_update_image_metadata:
                 with patch.object(upload_utils,

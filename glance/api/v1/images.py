@@ -996,7 +996,7 @@ class Controller(controller.BaseController):
             raise HTTPBadRequest(explanation=msg,
                                  request=req,
                                  content_type="text/plain")
-        except exception.NotFound as e:
+        except exception.ImageNotFound as e:
             msg = (_("Failed to find image to update: %s") %
                    utils.exception_to_str(e))
             LOG.warn(msg)
@@ -1091,7 +1091,7 @@ class Controller(controller.BaseController):
                                                    {'status': ori_status})
 
             registry.delete_image_metadata(req.context, id)
-        except exception.NotFound as e:
+        except exception.ImageNotFound as e:
             msg = (_("Failed to find image to delete: %s") %
                    utils.exception_to_str(e))
             LOG.warn(msg)
