@@ -119,6 +119,12 @@ class TestImageFactory(test_utils.BaseTestCase):
                           self.image_factory.new_image, image_id=UUID1,
                           extra_properties=extra_properties)
 
+    def test_new_image_for_is_public(self):
+        extra_prop = {'is_public': True}
+        new_image = self.image_factory.new_image(image_id=UUID1,
+                                                 extra_properties=extra_prop)
+        self.assertEqual(True, new_image.extra_properties['is_public'])
+
 
 class TestImage(test_utils.BaseTestCase):
 
