@@ -32,9 +32,9 @@ LOG = logging.getLogger(__name__)
 convert_task_opts = [
     cfg.StrOpt('conversion_format',
                default=None,
-               choices=('qcow2', 'raw'),
+               choices=('qcow2', 'raw', 'vmdk'),
                help=_("The format to which images will be automatically "
-                      "converted. " "Can be 'qcow2' or 'raw'.")),
+                      "converted.")),
 ]
 
 CONF = cfg.CONF
