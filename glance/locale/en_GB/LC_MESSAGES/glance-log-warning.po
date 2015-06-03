@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-08 06:02+0000\n"
+"POT-Creation-Date: 2015-06-03 06:06+0000\n"
 "PO-Revision-Date: 2015-04-01 21:54+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
@@ -21,98 +21,62 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "Failed to find image to delete: %s"
+msgid ""
+"%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
+"is %(slave_value)s)"
+msgstr ""
+"%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
+"is %(slave_value)s)"
 
 #, python-format
 msgid "%s directory does not exist."
 msgstr "%s directory does not exist."
 
-msgid "Unknown version. Returning version choices."
-msgstr "Unknown version. Returning version choices."
+#, python-format
+msgid "Access denied to image %(id)s but returning 'not found'"
+msgstr "Access denied to image %(id)s but returning 'not found'"
+
+msgid "Attempted to modify image user did not own."
+msgstr "Attempted to modify image user did not own."
 
 #, python-format
-msgid ""
-"Could not find schema properties file %s. Continuing without custom "
-"properties"
-msgstr ""
-"Could not find schema properties file %s. Continuing without custom "
-"properties"
-
-#, python-format
-msgid "Forbidden to create task. Reason: %(reason)s"
-msgstr "Forbidden to create task. Reason: %(reason)s"
-
-#, python-format
-msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
-msgstr "Failed to find task %(task_id)s. Reason: %(reason)s"
-
-#, python-format
-msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
-msgstr "Forbidden to get task %(task_id)s. Reason: %(reason)s"
-
-#, python-format
-msgid ""
-"%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
-"is %(slave_value)s)"
-msgstr ""
-"%(image_id)s: field %(key)s differs (source is %(master_value)s, destination "
-"is %(slave_value)s)"
-
-#, python-format
-msgid "Image %s entirely missing from the destination"
-msgstr "Image %s entirely missing from the destination"
-
-#, python-format
-msgid "Failed to delete image %s in store from URI"
-msgstr "Failed to delete image %s in store from URI"
+msgid "Cached image file '%s' doesn't exist, unable to delete"
+msgstr "Cached image file '%s' doesn't exist, unable to delete"
 
 #, python-format
 msgid "Could not find image %s"
 msgstr "Could not find image %s"
 
-msgid "Unable to get deleted image"
-msgstr "Unable to get deleted image"
-
-msgid "Unable to get unowned image"
-msgstr "Unable to get unowned image"
+#, python-format
+msgid ""
+"Could not find schema properties file %s. Continuing without custom "
+"properties"
+msgstr ""
+"Could not find schema properties file %s. Continuing without custom "
+"properties"
 
 msgid "Deadlock detected. Retrying..."
 msgstr "Deadlock detected. Retrying..."
-
-msgid "Attempted to modify image user did not own."
-msgstr "Attempted to modify image user did not own."
-
-msgid "Id not in sort_keys; is sort_keys unique?"
-msgstr "Id not in sort_keys; is sort_keys unique?"
 
 #, python-format
 msgid "Failed to decrypt location value for image %(image_id)s"
 msgstr "Failed to decrypt location value for image %(image_id)s"
 
 #, python-format
-msgid ""
-"Image cache driver '%(driver_name)s' failed to load. Got error: "
-"'%(import_err)s."
-msgstr ""
-"Image cache driver '%(driver_name)s' failed to load. Got error: "
-"'%(import_err)s."
+msgid "Failed to delete file %(path)s. Got error: %(e)s"
+msgstr "Failed to delete file %(path)s. Got error: %(e)s"
 
 #, python-format
-msgid ""
-"Image cache driver '%(driver_module)s' failed to configure. Got error: "
-"'%(config_err)s"
-msgstr ""
-"Image cache driver '%(driver_module)s' failed to configure. Got error: "
-"'%(config_err)s"
+msgid "Failed to delete image %s in store from URI"
+msgstr "Failed to delete image %s in store from URI"
 
 #, python-format
-msgid "Image '%s' is not active. Not caching."
-msgstr "Image '%s' is not active. Not caching."
+msgid "Failed to find image to delete: %s"
+msgstr "Failed to find image to delete: %s"
 
 #, python-format
-msgid "No metadata found for image '%s'"
-msgstr "No metadata found for image '%s'"
+msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
+msgstr "Failed to find task %(task_id)s. Reason: %(reason)s"
 
 msgid "Failed to successfully cache all images in queue."
 msgstr "Failed to successfully cache all images in queue."
@@ -126,28 +90,43 @@ msgstr ""
 "'%(incomplete_path)s' to '%(invalid_path)s'"
 
 #, python-format
-msgid "Failed to delete file %(path)s. Got error: %(e)s"
-msgstr "Failed to delete file %(path)s. Got error: %(e)s"
+msgid "Forbidden to create task. Reason: %(reason)s"
+msgstr "Forbidden to create task. Reason: %(reason)s"
 
 #, python-format
-msgid "Cached image file '%s' doesn't exist, unable to delete"
-msgstr "Cached image file '%s' doesn't exist, unable to delete"
+msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
+msgstr "Forbidden to get task %(task_id)s. Reason: %(reason)s"
+
+msgid "Id not in sort_keys; is sort_keys unique?"
+msgstr "Id not in sort_keys; is sort_keys unique?"
 
 #, python-format
-msgid "pid %d not in child list"
-msgstr "pid %d not in child list"
+msgid "Image %s entirely missing from the destination"
+msgstr "Image %s entirely missing from the destination"
+
+#, python-format
+msgid "Image '%s' is not active. Not caching."
+msgstr "Image '%s' is not active. Not caching."
+
+#, python-format
+msgid ""
+"Image cache driver '%(driver_module)s' failed to configure. Got error: "
+"'%(config_err)s"
+msgstr ""
+"Image cache driver '%(driver_module)s' failed to configure. Got error: "
+"'%(config_err)s"
+
+#, python-format
+msgid ""
+"Image cache driver '%(driver_name)s' failed to load. Got error: "
+"'%(import_err)s."
+msgstr ""
+"Image cache driver '%(driver_name)s' failed to load. Got error: "
+"'%(import_err)s."
 
 #, python-format
 msgid "Invalid marker. Image %(id)s could not be found."
 msgstr "Invalid marker. Image %(id)s could not be found."
-
-#, python-format
-msgid "Access denied to image %(id)s but returning 'not found'"
-msgstr "Access denied to image %(id)s but returning 'not found'"
-
-#, python-format
-msgid "User lacks permission to share image %(id)s"
-msgstr "User lacks permission to share image %(id)s"
 
 #, python-format
 msgid "Invalid membership association specified for image %(id)s"
@@ -156,3 +135,24 @@ msgstr "Invalid membership association specified for image %(id)s"
 #, python-format
 msgid "Member %(id)s not found"
 msgstr "Member %(id)s not found"
+
+#, python-format
+msgid "No metadata found for image '%s'"
+msgstr "No metadata found for image '%s'"
+
+msgid "Unable to get deleted image"
+msgstr "Unable to get deleted image"
+
+msgid "Unable to get unowned image"
+msgstr "Unable to get unowned image"
+
+msgid "Unknown version. Returning version choices."
+msgstr "Unknown version. Returning version choices."
+
+#, python-format
+msgid "User lacks permission to share image %(id)s"
+msgstr "User lacks permission to share image %(id)s"
+
+#, python-format
+msgid "pid %d not in child list"
+msgstr "pid %d not in child list"

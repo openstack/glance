@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-25 06:02+0000\n"
+"POT-Creation-Date: 2015-06-03 06:06+0000\n"
 "PO-Revision-Date: 2015-05-22 13:44+0000\n"
 "Last-Translator: Andre Campos Bezerra <andrecbezerra@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
@@ -22,180 +22,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #, python-format
-msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
-msgstr "Iniciando Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
-
-msgid "Daemon Shutdown on KeyboardInterrupt"
-msgstr "Encerrando o daemon em KeyboardInterrupt"
-
-#, python-format
-msgid "Initializing scrubber with configuration: %s"
-msgstr "Inicializando scrubber com configuração: %s"
-
-#, python-format
-msgid "Scrubbing image %(id)s from %(count)d locations."
-msgstr "Limpando imagem %(id)s dos locais %(count)d."
-
-#, python-format
-msgid "Image %s has been deleted."
-msgstr "Imagem %s foi excluída."
-
-msgid "Initialized image cache middleware"
-msgstr "Middleware do cache de imagem inicializado"
-
-msgid "Initialized image cache management middleware"
-msgstr "Middleware de gerenciamento do cache de imagem inicializado"
-
-msgid "Initialized gzip middleware"
-msgstr "Inicializado middleware gzip"
-
-#, python-format
-msgid "Uploaded data of image %s from request payload successfully."
-msgstr "Enviados com sucesso dados da imagem %s da requisição de carga útil."
-
-msgid "Triggering asynchronous copy from external source"
-msgstr "Acionando cópia assíncrona da origem externa"
-
-#, python-format
-msgid "Cleaning up %s after exceeding the quota"
-msgstr "Limpando %s após exceder a quota"
-
-#, python-format
-msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
-msgstr ""
-"Imagem %s não pôde ser encontrada após o envio. A imagem pode ter sido "
-"excluída durante o envio."
-
-#, python-format
-msgid "Image %s is deactivated"
-msgstr "Imagem %s está desativada"
-
-#, python-format
-msgid "Image %s is reactivated"
-msgstr "Imagem %s está reativada."
-
-#, python-format
 msgid "%(task_id)s of %(task_type)s completed"
 msgstr "%(task_id)s de %(task_type)s completado"
-
-#, python-format
-msgid "Storing: %s"
-msgstr "Armazenando: %s"
-
-#, python-format
-msgid "Considering: %s"
-msgstr "Considerando: %s"
-
-#, python-format
-msgid "Image %s metadata has changed"
-msgstr "Metadados da Imagem %s mudaram"
-
-#, python-format
-msgid "Image %s is being synced"
-msgstr "Imagem %s está sendo sincronizada"
-
-#, python-format
-msgid "Starting %d workers"
-msgstr "Iniciando %d trabalhadores"
-
-#, python-format
-msgid "Removed dead child %s"
-msgstr "Removendo filho terminado %s"
-
-#, python-format
-msgid "Removed stale child %s"
-msgstr "Removendo filho inativo %s"
-
-msgid "All workers have terminated. Exiting"
-msgstr "Todos os trabalhadores foram finalizados. Saindo"
-
-msgid "Caught keyboard interrupt. Exiting."
-msgstr "Interrupção da captura de teclado. Saindo."
-
-#, python-format
-msgid "Child %d exiting normally"
-msgstr "Filho %d saindo normalmente"
-
-#, python-format
-msgid "Started child %s"
-msgstr "Filho iniciado %s"
-
-msgid "Starting single process server"
-msgstr "Iniciando servidor de processo único"
-
-#, python-format
-msgid "Artifact %s has been successfully loaded"
-msgstr "Artefato %s foi carregado com sucesso"
-
-#, python-format
-msgid ""
-"Loading known task scripts for task_id %(task_id)s of type %(task_type)s"
-msgstr ""
-"Carregando scripts conhecidos de tarefas para task_id %(task_id)s de tipo "
-"%(task_type)s"
-
-#, python-format
-msgid "Task %(task_id)s beginning import execution."
-msgstr "Tarefa %(task_id)s iniciando execução da importação."
-
-#, python-format
-msgid "Task %(task_id)s: Got image data uri %(data_uri)s to be imported"
-msgstr ""
-"Tarefa %(task_id)s: Obtidos dados de uri de imagem %(data_uri)s a ser "
-"importada"
-
-#, python-format
-msgid "Task %(task_id)s: Could not import image file %(image_data)s"
-msgstr ""
-"Tarefa %(task_id)s: Não pôde importar o arquivo de imagem %(image_data)s"
-
-#, python-format
-msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
-msgstr "Chamando %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
-
-#, python-format
-msgid "Returning %(funcname)s: %(output)s"
-msgstr "Retornando %(funcname)s: %(output)s"
-
-#, python-format
-msgid "Could not find artifact %s"
-msgstr "Não foi possível encontrar artefato %s"
-
-msgid "Unable to get deleted image"
-msgstr "Não é possível obter a imagem excluída"
-
-#, python-format
-msgid "Table %s has been cleared"
-msgstr "Tabela %s foi limpa"
-
-#, python-format
-msgid "Overwriting namespace %s"
-msgstr "Sobrescrevendo namespace %s"
-
-#, python-format
-msgid "Skipping namespace %s. It already exists in the database."
-msgstr "Ignorando namespace %s. Já existe no banco de dados."
-
-#, python-format
-msgid "File %s loaded to database."
-msgstr "Arquivo %s carregado no banco de dados."
-
-msgid "Metadata loading finished"
-msgstr "Carregamento de metadados finalizado"
-
-#, python-format
-msgid "Namespace %(namespace)s saved in %(file)s"
-msgstr "Namespace %(namespace)s salvo em %(file)s"
-
-#, python-format
-msgid "creating table %(table)s"
-msgstr "criando tabela %(table)s"
-
-#, python-format
-msgid "dropping table %(table)s"
-msgstr "descartando tabela %(table)s"
 
 msgid ""
 "'metadata_encryption_key' was not specified in the config file or a config "
@@ -206,67 +34,30 @@ msgstr ""
 "migração é um NOOP."
 
 #, python-format
-msgid ""
-"Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
-msgstr ""
-"Status da tarefa [%(task_id)s] mudando de %(cur_status)s para %(new_status)s"
+msgid "Access denied to image %(id)s but returning 'not found'"
+msgstr "Acesso negado à imagem %(id)s, mas retornando 'não localizado'"
+
+msgid "All workers have terminated. Exiting"
+msgstr "Todos os trabalhadores foram finalizados. Saindo"
 
 #, python-format
-msgid "Image cache loaded driver '%s'."
-msgstr "O cache de imagem carregou o driver '%s'."
-
-msgid "Defaulting to SQLite driver."
-msgstr "Padronizando para o driver SQLite."
+msgid "Artifact %s has been successfully loaded"
+msgstr "Artefato %s foi carregado com sucesso"
 
 #, python-format
-msgid "Successfully cached all %d images"
-msgstr "Armazenadas em cache com êxito todas as %d imagens"
-
-#, python-format
-msgid "Not queueing image '%s'. Already cached."
-msgstr "Não enfileirando imagem %s'. Já armazenada em cache."
-
-#, python-format
-msgid "Not queueing image '%s'. Already being written to cache"
-msgstr "Não enfileirando imagem %s'. Já está sendo gravada no cache"
-
-#, python-format
-msgid "Not queueing image '%s'. Already queued."
-msgstr "Não enfileirando a imagem '%s'. Já enfileirada."
-
-#, python-format
-msgid "Removed invalid cache file %s"
-msgstr "Arquivo de cache inválido removido %s"
-
-#, python-format
-msgid "Removed stalled cache file %s"
-msgstr "Arquivo de cache paralisado removido %s"
-
-#, python-format
-msgid "Reaped %(reaped)s %(entry_type)s cache entries"
-msgstr "%(reaped)s %(entry_type)s entradas de cache coletadas"
-
-#, python-format
-msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
-msgstr "Backdoor de Eventlet escutando na porta %(port)s pelo processo %(pid)d"
+msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
+msgstr "Chamando %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 
 #, python-format
 msgid "Caught %s, exiting"
 msgstr "%s capturadas, saindo"
 
-msgid "Parent process has died unexpectedly, exiting"
-msgstr "Processo pai saiu inesperadamente, saindo"
-
 #, python-format
-msgid "Child caught %s, exiting"
-msgstr "Filho capturado %s, terminando"
+msgid "Caught %s, stopping children"
+msgstr "%s capturado, parando filhos"
 
-msgid "Forking too fast, sleeping"
-msgstr "Bifurcação muito rápida, suspendendo"
-
-#, python-format
-msgid "Started child %d"
-msgstr "Filho %d iniciado"
+msgid "Caught keyboard interrupt. Exiting."
+msgstr "Interrupção da captura de teclado. Saindo."
 
 #, python-format
 msgid "Child %(pid)d killed by signal %(sig)d"
@@ -277,8 +68,259 @@ msgid "Child %(pid)s exited with status %(code)d"
 msgstr "Filho %(pid)s encerrando com status %(code)d"
 
 #, python-format
-msgid "Caught %s, stopping children"
-msgstr "%s capturado, parando filhos"
+msgid "Child %d exiting normally"
+msgstr "Filho %d saindo normalmente"
+
+#, python-format
+msgid "Child caught %s, exiting"
+msgstr "Filho capturado %s, terminando"
+
+#, python-format
+msgid "Cleaning up %s after exceeding the quota"
+msgstr "Limpando %s após exceder a quota"
+
+#, python-format
+msgid "Cleaning up %s after exceeding the quota."
+msgstr "Realizando limpeza %s após exceder a cota."
+
+#, python-format
+msgid "Considering: %s"
+msgstr "Considerando: %s"
+
+#, python-format
+msgid "Could not find artifact %s"
+msgstr "Não foi possível encontrar artefato %s"
+
+msgid "Daemon Shutdown on KeyboardInterrupt"
+msgstr "Encerrando o daemon em KeyboardInterrupt"
+
+msgid "Defaulting to SQLite driver."
+msgstr "Padronizando para o driver SQLite."
+
+#, python-format
+msgid "Delete denied for public image %(id)s"
+msgstr "Exclusão negada para imagem pública %(id)s"
+
+#, python-format
+msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
+msgstr "Backdoor de Eventlet escutando na porta %(port)s pelo processo %(pid)d"
+
+#, python-format
+msgid "File %s loaded to database."
+msgstr "Arquivo %s carregado no banco de dados."
+
+msgid "Forking too fast, sleeping"
+msgstr "Bifurcação muito rápida, suspendendo"
+
+#, python-format
+msgid "Image %(id)s not found"
+msgstr "Imagem %(id)s não localizada"
+
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+"Imagem %s não pôde ser encontrada após o envio. A imagem pode ter sido "
+"excluída durante o envio."
+
+#, python-format
+msgid "Image %s has been deleted."
+msgstr "Imagem %s foi excluída."
+
+#, python-format
+msgid "Image %s is being synced"
+msgstr "Imagem %s está sendo sincronizada"
+
+#, python-format
+msgid "Image %s is deactivated"
+msgstr "Imagem %s está desativada"
+
+#, python-format
+msgid "Image %s is reactivated"
+msgstr "Imagem %s está reativada."
+
+#, python-format
+msgid "Image %s metadata has changed"
+msgstr "Metadados da Imagem %s mudaram"
+
+#, python-format
+msgid "Image cache loaded driver '%s'."
+msgstr "O cache de imagem carregou o driver '%s'."
+
+msgid "Initialized gzip middleware"
+msgstr "Inicializado middleware gzip"
+
+msgid "Initialized image cache management middleware"
+msgstr "Middleware de gerenciamento do cache de imagem inicializado"
+
+msgid "Initialized image cache middleware"
+msgstr "Middleware do cache de imagem inicializado"
+
+#, python-format
+msgid "Initializing scrubber with configuration: %s"
+msgstr "Inicializando scrubber com configuração: %s"
+
+#, python-format
+msgid ""
+"Loading known task scripts for task_id %(task_id)s of type %(task_type)s"
+msgstr ""
+"Carregando scripts conhecidos de tarefas para task_id %(task_id)s de tipo "
+"%(task_type)s"
+
+msgid "Metadata loading finished"
+msgstr "Carregamento de metadados finalizado"
+
+#, python-format
+msgid "Namespace %(namespace)s saved in %(file)s"
+msgstr "Namespace %(namespace)s salvo em %(file)s"
+
+#, python-format
+msgid "Not queueing image '%s'. Already being written to cache"
+msgstr "Não enfileirando imagem %s'. Já está sendo gravada no cache"
+
+#, python-format
+msgid "Not queueing image '%s'. Already cached."
+msgstr "Não enfileirando imagem %s'. Já armazenada em cache."
+
+#, python-format
+msgid "Not queueing image '%s'. Already queued."
+msgstr "Não enfileirando a imagem '%s'. Já enfileirada."
+
+#, python-format
+msgid "Overwriting namespace %s"
+msgstr "Sobrescrevendo namespace %s"
+
+msgid "Parent process has died unexpectedly, exiting"
+msgstr "Processo pai saiu inesperadamente, saindo"
+
+#, python-format
+msgid "Reaped %(reaped)s %(entry_type)s cache entries"
+msgstr "%(reaped)s %(entry_type)s entradas de cache coletadas"
+
+#, python-format
+msgid "Rejecting image creation request for invalid image id '%(bad_id)s'"
+msgstr ""
+"Rejeitando solicitação de criação de imagem para o ID de imagem inválido "
+"'%(bad_id)s'"
+
+#, python-format
+msgid "Removed dead child %s"
+msgstr "Removendo filho terminado %s"
+
+#, python-format
+msgid "Removed invalid cache file %s"
+msgstr "Arquivo de cache inválido removido %s"
+
+#, python-format
+msgid "Removed stale child %s"
+msgstr "Removendo filho inativo %s"
+
+#, python-format
+msgid "Removed stalled cache file %s"
+msgstr "Arquivo de cache paralisado removido %s"
+
+#, python-format
+msgid "Returning %(funcname)s: %(output)s"
+msgstr "Retornando %(funcname)s: %(output)s"
+
+#, python-format
+msgid "Scrubbing image %(id)s from %(count)d locations."
+msgstr "Limpando imagem %(id)s dos locais %(count)d."
+
+#, python-format
+msgid "Skipping namespace %s. It already exists in the database."
+msgstr "Ignorando namespace %s. Já existe no banco de dados."
+
+#, python-format
+msgid "Started child %d"
+msgstr "Filho %d iniciado"
+
+#, python-format
+msgid "Started child %s"
+msgstr "Filho iniciado %s"
+
+#, python-format
+msgid "Starting %d workers"
+msgstr "Iniciando %d trabalhadores"
+
+#, python-format
+msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
+msgstr "Iniciando Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
+
+msgid "Starting single process server"
+msgstr "Iniciando servidor de processo único"
+
+#, python-format
+msgid "Storing: %s"
+msgstr "Armazenando: %s"
+
+#, python-format
+msgid "Successfully cached all %d images"
+msgstr "Armazenadas em cache com êxito todas as %d imagens"
+
+#, python-format
+msgid "Successfully created image %(id)s"
+msgstr "Imagem criada com êxito %(id)s"
+
+#, python-format
+msgid "Successfully deleted a membership from image %(id)s"
+msgstr "Excluída com êxito uma associação da imagem %(id)s"
+
+#, python-format
+msgid "Successfully deleted image %(id)s"
+msgstr "Imagem excluída com êxito %(id)s"
+
+#, python-format
+msgid "Successfully updated a membership for image %(id)s"
+msgstr "Atualizada com êxito uma associação para a imagem %(id)s"
+
+#, python-format
+msgid "Successfully updated memberships for image %(id)s"
+msgstr "Associações atualizadas com êxito para a imagem %(id)s"
+
+#, python-format
+msgid "Table %s has been cleared"
+msgstr "Tabela %s foi limpa"
+
+#, python-format
+msgid "Task %(task_id)s beginning import execution."
+msgstr "Tarefa %(task_id)s iniciando execução da importação."
+
+#, python-format
+msgid "Task %(task_id)s: Could not import image file %(image_data)s"
+msgstr ""
+"Tarefa %(task_id)s: Não pôde importar o arquivo de imagem %(image_data)s"
+
+#, python-format
+msgid "Task %(task_id)s: Got image data uri %(data_uri)s to be imported"
+msgstr ""
+"Tarefa %(task_id)s: Obtidos dados de uri de imagem %(data_uri)s a ser "
+"importada"
+
+#, python-format
+msgid ""
+"Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
+msgstr ""
+"Status da tarefa [%(task_id)s] mudando de %(cur_status)s para %(new_status)s"
+
+msgid "Triggering asynchronous copy from external source"
+msgstr "Acionando cópia assíncrona da origem externa"
+
+msgid "Unable to get deleted image"
+msgstr "Não é possível obter a imagem excluída"
+
+#, python-format
+msgid "Update denied for public image %(id)s"
+msgstr "Atualização negada para imagem pública %(id)s"
+
+#, python-format
+msgid "Updating metadata for image %(id)s"
+msgstr "Atualizando metadados para a imagem %(id)s"
+
+#, python-format
+msgid "Uploaded data of image %s from request payload successfully."
+msgstr "Enviados com sucesso dados da imagem %s da requisição de carga útil."
 
 msgid "Wait called after thread killed. Cleaning up."
 msgstr "Espera requisitada depois que thread foi morta.  Limpando."
@@ -288,51 +330,9 @@ msgid "Waiting on %d children to exit"
 msgstr "Aguardando em %d filhos para sair"
 
 #, python-format
-msgid "Cleaning up %s after exceeding the quota."
-msgstr "Realizando limpeza %s após exceder a cota."
+msgid "creating table %(table)s"
+msgstr "criando tabela %(table)s"
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "Imagem %(id)s não localizada"
-
-#, python-format
-msgid "Access denied to image %(id)s but returning 'not found'"
-msgstr "Acesso negado à imagem %(id)s, mas retornando 'não localizado'"
-
-#, python-format
-msgid "Successfully deleted image %(id)s"
-msgstr "Imagem excluída com êxito %(id)s"
-
-#, python-format
-msgid "Delete denied for public image %(id)s"
-msgstr "Exclusão negada para imagem pública %(id)s"
-
-#, python-format
-msgid "Rejecting image creation request for invalid image id '%(bad_id)s'"
-msgstr ""
-"Rejeitando solicitação de criação de imagem para o ID de imagem inválido "
-"'%(bad_id)s'"
-
-#, python-format
-msgid "Successfully created image %(id)s"
-msgstr "Imagem criada com êxito %(id)s"
-
-#, python-format
-msgid "Updating metadata for image %(id)s"
-msgstr "Atualizando metadados para a imagem %(id)s"
-
-#, python-format
-msgid "Update denied for public image %(id)s"
-msgstr "Atualização negada para imagem pública %(id)s"
-
-#, python-format
-msgid "Successfully updated memberships for image %(id)s"
-msgstr "Associações atualizadas com êxito para a imagem %(id)s"
-
-#, python-format
-msgid "Successfully updated a membership for image %(id)s"
-msgstr "Atualizada com êxito uma associação para a imagem %(id)s"
-
-#, python-format
-msgid "Successfully deleted a membership from image %(id)s"
-msgstr "Excluída com êxito uma associação da imagem %(id)s"
+msgid "dropping table %(table)s"
+msgstr "descartando tabela %(table)s"

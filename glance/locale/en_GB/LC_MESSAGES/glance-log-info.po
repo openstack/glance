@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-08 06:02+0000\n"
-"PO-Revision-Date: 2015-04-23 03:18+0000\n"
+"POT-Creation-Date: 2015-06-03 06:06+0000\n"
+"PO-Revision-Date: 2015-05-08 18:53+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "glance/language/en_GB/)\n"
@@ -20,164 +20,34 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#, python-format
-msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
-msgstr "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
-
-msgid "Daemon Shutdown on KeyboardInterrupt"
-msgstr "Daemon Shutdown on KeyboardInterrupt"
-
-#, python-format
-msgid "Initializing scrubber with configuration: %s"
-msgstr "Initializing scrubber with configuration: %s"
-
-#, python-format
-msgid "Scrubbing image %(id)s from %(count)d locations."
-msgstr "Scrubbing image %(id)s from %(count)d locations."
-
-msgid "Initialized image cache middleware"
-msgstr "Initialised image cache middleware"
-
-msgid "Initialized image cache management middleware"
-msgstr "Initialised image cache management middleware"
-
-msgid "Initialized gzip middleware"
-msgstr "Initialised gzip middleware"
-
-msgid "Triggering asynchronous copy from external source"
-msgstr "Triggering asynchronous copy from external source"
-
-#, python-format
-msgid "Cleaning up %s after exceeding the quota"
-msgstr "Cleaning up %s after exceeding the quota"
-
-#, python-format
 msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
+"'metadata_encryption_key' was not specified in the config file or a config "
+"file was not specified. This means that this migration is a NOOP."
 msgstr ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
+"'metadata_encryption_key' was not specified in the config file or a config "
+"file was not specified. This means that this migration is a NOOP."
 
 #, python-format
-msgid "Storing: %s"
-msgstr "Storing: %s"
-
-#, python-format
-msgid "Considering: %s"
-msgstr "Considering: %s"
-
-#, python-format
-msgid "Image %s metadata has changed"
-msgstr "Image %s metadata has changed"
-
-#, python-format
-msgid "Image %s is being synced"
-msgstr "Image %s is being synced"
-
-#, python-format
-msgid "Starting %d workers"
-msgstr "Starting %d workers"
+msgid "Access denied to image %(id)s but returning 'not found'"
+msgstr "Access denied to image %(id)s but returning 'not found'"
 
 msgid "All workers have terminated. Exiting"
 msgstr "All workers have terminated. Exiting"
-
-msgid "Caught keyboard interrupt. Exiting."
-msgstr "Caught keyboard interrupt. Exiting."
-
-#, python-format
-msgid "Child %d exiting normally"
-msgstr "Child %d exiting normally"
-
-#, python-format
-msgid "Started child %s"
-msgstr "Started child %s"
-
-msgid "Starting single process server"
-msgstr "Starting single process server"
 
 #, python-format
 msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 msgstr "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 
 #, python-format
-msgid "Returning %(funcname)s: %(output)s"
-msgstr "Returning %(funcname)s: %(output)s"
-
-msgid "Unable to get deleted image"
-msgstr "Unable to get deleted image"
-
-#, python-format
-msgid "creating table %(table)s"
-msgstr "creating table %(table)s"
-
-#, python-format
-msgid "dropping table %(table)s"
-msgstr "dropping table %(table)s"
-
-msgid ""
-"'metadata_encryption_key' was not specified in the config file or a config "
-"file was not specified. This means that this migration is a NOOP."
-msgstr ""
-"'metadata_encryption_key' was not specified in the config file or a config "
-"file was not specified. This means that this migration is a NOOP."
-
-#, python-format
-msgid "Image cache loaded driver '%s'."
-msgstr "Image cache loaded driver '%s'."
-
-msgid "Defaulting to SQLite driver."
-msgstr "Defaulting to SQLite driver."
-
-#, python-format
-msgid "Successfully cached all %d images"
-msgstr "Successfully cached all %d images"
-
-#, python-format
-msgid "Not queueing image '%s'. Already cached."
-msgstr "Not queueing image '%s'. Already cached."
-
-#, python-format
-msgid "Not queueing image '%s'. Already being written to cache"
-msgstr "Not queueing image '%s'. Already being written to cache"
-
-#, python-format
-msgid "Not queueing image '%s'. Already queued."
-msgstr "Not queueing image '%s'. Already queued."
-
-#, python-format
-msgid "Removed invalid cache file %s"
-msgstr "Removed invalid cache file %s"
-
-#, python-format
-msgid "Removed stalled cache file %s"
-msgstr "Removed stalled cache file %s"
-
-#, python-format
-msgid "Reaped %(reaped)s %(entry_type)s cache entries"
-msgstr "Reaped %(reaped)s %(entry_type)s cache entries"
-
-#, python-format
-msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
-msgstr "Eventlet backdoor listening on %(port)s for process %(pid)d"
-
-#, python-format
 msgid "Caught %s, exiting"
 msgstr "Caught %s, exiting"
 
-msgid "Parent process has died unexpectedly, exiting"
-msgstr "Parent process has died unexpectedly, exiting"
-
 #, python-format
-msgid "Child caught %s, exiting"
-msgstr "Child caught %s, exiting"
+msgid "Caught %s, stopping children"
+msgstr "Caught %s, stopping children"
 
-msgid "Forking too fast, sleeping"
-msgstr "Forking too fast, sleeping"
-
-#, python-format
-msgid "Started child %d"
-msgstr "Started child %d"
+msgid "Caught keyboard interrupt. Exiting."
+msgstr "Caught keyboard interrupt. Exiting."
 
 #, python-format
 msgid "Child %(pid)d killed by signal %(sig)d"
@@ -188,57 +58,187 @@ msgid "Child %(pid)s exited with status %(code)d"
 msgstr "Child %(pid)s exited with status %(code)d"
 
 #, python-format
-msgid "Caught %s, stopping children"
-msgstr "Caught %s, stopping children"
+msgid "Child %d exiting normally"
+msgstr "Child %d exiting normally"
 
 #, python-format
-msgid "Waiting on %d children to exit"
-msgstr "Waiting on %d children to exit"
+msgid "Child caught %s, exiting"
+msgstr "Child caught %s, exiting"
+
+#, python-format
+msgid "Cleaning up %s after exceeding the quota"
+msgstr "Cleaning up %s after exceeding the quota"
 
 #, python-format
 msgid "Cleaning up %s after exceeding the quota."
 msgstr "Cleaning up %s after exceeding the quota."
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "Image %(id)s not found"
+msgid "Considering: %s"
+msgstr "Considering: %s"
 
-#, python-format
-msgid "Access denied to image %(id)s but returning 'not found'"
-msgstr "Access denied to image %(id)s but returning 'not found'"
+msgid "Daemon Shutdown on KeyboardInterrupt"
+msgstr "Daemon Shutdown on KeyboardInterrupt"
 
-#, python-format
-msgid "Successfully deleted image %(id)s"
-msgstr "Successfully deleted image %(id)s"
+msgid "Defaulting to SQLite driver."
+msgstr "Defaulting to SQLite driver."
 
 #, python-format
 msgid "Delete denied for public image %(id)s"
 msgstr "Delete denied for public image %(id)s"
 
 #, python-format
+msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
+msgstr "Eventlet backdoor listening on %(port)s for process %(pid)d"
+
+msgid "Forking too fast, sleeping"
+msgstr "Forking too fast, sleeping"
+
+#, python-format
+msgid "Image %(id)s not found"
+msgstr "Image %(id)s not found"
+
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+
+#, python-format
+msgid "Image %s is being synced"
+msgstr "Image %s is being synced"
+
+#, python-format
+msgid "Image %s metadata has changed"
+msgstr "Image %s metadata has changed"
+
+#, python-format
+msgid "Image cache loaded driver '%s'."
+msgstr "Image cache loaded driver '%s'."
+
+msgid "Initialized gzip middleware"
+msgstr "Initialised gzip middleware"
+
+msgid "Initialized image cache management middleware"
+msgstr "Initialised image cache management middleware"
+
+msgid "Initialized image cache middleware"
+msgstr "Initialised image cache middleware"
+
+#, python-format
+msgid "Initializing scrubber with configuration: %s"
+msgstr "Initializing scrubber with configuration: %s"
+
+#, python-format
+msgid "Not queueing image '%s'. Already being written to cache"
+msgstr "Not queueing image '%s'. Already being written to cache"
+
+#, python-format
+msgid "Not queueing image '%s'. Already cached."
+msgstr "Not queueing image '%s'. Already cached."
+
+#, python-format
+msgid "Not queueing image '%s'. Already queued."
+msgstr "Not queueing image '%s'. Already queued."
+
+msgid "Parent process has died unexpectedly, exiting"
+msgstr "Parent process has died unexpectedly, exiting"
+
+#, python-format
+msgid "Reaped %(reaped)s %(entry_type)s cache entries"
+msgstr "Reaped %(reaped)s %(entry_type)s cache entries"
+
+#, python-format
 msgid "Rejecting image creation request for invalid image id '%(bad_id)s'"
 msgstr "Rejecting image creation request for invalid image id '%(bad_id)s'"
+
+#, python-format
+msgid "Removed invalid cache file %s"
+msgstr "Removed invalid cache file %s"
+
+#, python-format
+msgid "Removed stalled cache file %s"
+msgstr "Removed stalled cache file %s"
+
+#, python-format
+msgid "Returning %(funcname)s: %(output)s"
+msgstr "Returning %(funcname)s: %(output)s"
+
+#, python-format
+msgid "Scrubbing image %(id)s from %(count)d locations."
+msgstr "Scrubbing image %(id)s from %(count)d locations."
+
+#, python-format
+msgid "Started child %d"
+msgstr "Started child %d"
+
+#, python-format
+msgid "Started child %s"
+msgstr "Started child %s"
+
+#, python-format
+msgid "Starting %d workers"
+msgstr "Starting %d workers"
+
+#, python-format
+msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
+msgstr "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
+
+msgid "Starting single process server"
+msgstr "Starting single process server"
+
+#, python-format
+msgid "Storing: %s"
+msgstr "Storing: %s"
+
+#, python-format
+msgid "Successfully cached all %d images"
+msgstr "Successfully cached all %d images"
 
 #, python-format
 msgid "Successfully created image %(id)s"
 msgstr "Successfully created image %(id)s"
 
 #, python-format
-msgid "Updating metadata for image %(id)s"
-msgstr "Updating metadata for image %(id)s"
+msgid "Successfully deleted a membership from image %(id)s"
+msgstr "Successfully deleted a membership from image %(id)s"
 
 #, python-format
-msgid "Update denied for public image %(id)s"
-msgstr "Update denied for public image %(id)s"
-
-#, python-format
-msgid "Successfully updated memberships for image %(id)s"
-msgstr "Successfully updated memberships for image %(id)s"
+msgid "Successfully deleted image %(id)s"
+msgstr "Successfully deleted image %(id)s"
 
 #, python-format
 msgid "Successfully updated a membership for image %(id)s"
 msgstr "Successfully updated a membership for image %(id)s"
 
 #, python-format
-msgid "Successfully deleted a membership from image %(id)s"
-msgstr "Successfully deleted a membership from image %(id)s"
+msgid "Successfully updated memberships for image %(id)s"
+msgstr "Successfully updated memberships for image %(id)s"
+
+msgid "Triggering asynchronous copy from external source"
+msgstr "Triggering asynchronous copy from external source"
+
+msgid "Unable to get deleted image"
+msgstr "Unable to get deleted image"
+
+#, python-format
+msgid "Update denied for public image %(id)s"
+msgstr "Update denied for public image %(id)s"
+
+#, python-format
+msgid "Updating metadata for image %(id)s"
+msgstr "Updating metadata for image %(id)s"
+
+#, python-format
+msgid "Waiting on %d children to exit"
+msgstr "Waiting on %d children to exit"
+
+#, python-format
+msgid "creating table %(table)s"
+msgstr "creating table %(table)s"
+
+#, python-format
+msgid "dropping table %(table)s"
+msgstr "dropping table %(table)s"
