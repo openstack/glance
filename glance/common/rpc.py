@@ -54,20 +54,23 @@ CONF.register_opts(rpc_opts)
 
 class RPCJSONSerializer(wsgi.JSONResponseSerializer):
 
-    def _sanitizer(self, obj):
-        def to_primitive(_type, _value):
-            return {"_type": _type, "_value": _value}
+    @staticmethod
+    def _to_primitive(_type, _value):
+        return {"_type": _type, "_value": _value}
 
+    def _sanitizer(self, obj):
         if isinstance(obj, datetime.datetime):
-            return to_primitive("datetime", timeutils.strtime(obj))
+            return self._to_primitive("datetime",
+                                      obj.isoformat())
 
         return super(RPCJSONSerializer, self)._sanitizer(obj)
 
 
 class RPCJSONDeserializer(wsgi.JSONRequestDeserializer):
 
-    def _to_datetime(self, obj):
-        return timeutils.parse_strtime(obj)
+    @staticmethod
+    def _to_datetime(obj):
+        return timeutils.normalize_time(timeutils.parse_isotime(obj))
 
     def _sanitizer(self, obj):
         try:
