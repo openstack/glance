@@ -318,9 +318,7 @@ def get_image_meta_from_headers(response):
                                                           param=key,
                                                           extra_msg=extra)
             if result[key] < 0 and result[key] is not None:
-                extra = (_("Image %(key)s must be >= 0 "
-                           "('%(value)s' specified).")
-                         % {'key': key, 'value': result[key]})
+                extra = _('Cannot be a negative value.')
                 raise exception.InvalidParameterValue(value=result[key],
                                                       param=key,
                                                       extra_msg=extra)
