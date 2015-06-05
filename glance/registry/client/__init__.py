@@ -54,7 +54,12 @@ registry_client_opts = [
 registry_client_ctx_opts = [
     cfg.BoolOpt('use_user_token', default=True,
                 help=_('Whether to pass through the user token when '
-                       'making requests to the registry.')),
+                       'making requests to the registry. To prevent '
+                       'failures with token expiration during big '
+                       'files upload, it is recommended to set this '
+                       'parameter to False.'
+                       'If "use_user_token" is not in effect, then '
+                       'admin credentials can be specified.')),
     cfg.StrOpt('admin_user', secret=True,
                help=_('The administrators user name. '
                       'If "use_user_token" is not in effect, then '
