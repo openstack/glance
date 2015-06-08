@@ -304,7 +304,7 @@ def _get_all(context, session, filters=None, marker=None,
                 sort_keys.append(key)
                 sort_dirs.append('desc')
 
-    # Note(mfedosin): Kostyl to deal with situation that sqlalchemy cannot
+    # Note(mfedosin): Workaround to deal with situation that sqlalchemy cannot
     # work with composite keys correctly
     if ('version', None) in sort_keys:
         i = sort_keys.index(('version', None))
