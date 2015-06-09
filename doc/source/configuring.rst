@@ -692,6 +692,14 @@ Can only be specified in configuration files.
 
 `This option is specific to the Swift storage backend.`
 
+Optional. Default: True.
+
+If set to False, disables SSL layer compression of https swift
+requests. Setting to 'False' may improve performance for images which
+are already in a compressed format, e.g. qcow2. If set to True then
+compression will be enabled (provided it is supported by the swift
+proxy).
+
 * ``swift_store_cacert``
 
 Can only be specified in configuration files.
@@ -700,14 +708,6 @@ Optional. Default: ``None``
 
 A string giving the path to a CA certificate bundle that will allow Glance's
 services to perform SSL verification when communicating with Swift.
-
-Optional. Default: True.
-
-If set to False, disables SSL layer compression of https swift
-requests. Setting to 'False' may improve performance for images which
-are already in a compressed format, e.g. qcow2. If set to True then
-compression will be enabled (provided it is supported by the swift
-proxy).
 
 * ``swift_store_retry_get_count``
 
