@@ -78,3 +78,14 @@ class TestTaskExecutor(test_utils.BaseTestCase):
         # assert the call
         load_mock.assert_called_once()
         engine.assert_called_once()
+
+    def test_task_fail(self):
+        with mock.patch.object(engines, 'load') as load_mock:
+            engine = mock.Mock()
+            load_mock.return_value = engine
+            engine.run.side_effect = RuntimeError
+            self.task_repo.get.return_value = self.task
+            self.assertRaises(RuntimeError, self.executor.begin_processing,
+                              self.task.task_id)
+        self.assertEqual('failure', self.task.status)
+        self.task_repo.save.assert_called_with(self.task)
