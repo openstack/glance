@@ -47,6 +47,22 @@ class Schema(object):
         for key, value in six.iteritems(obj):
             if self._filter_func(self.properties, key):
                 filtered[key] = value
+
+            # NOTE(flaper87): This exists to allow for v1, null properties,
+            # to be used with the V2 API. During Kilo, it was allowed for the
+            # later to return None values without considering that V1 allowed
+            # for custom properties to be None, which is something V2 doesn't
+            # allow for. This small hack here will set V1 custom `None` pro-
+            # perties to an empty string so that they will be updated along
+            # with the image (if an update happens).
+            #
+            # We could skip the properties that are `None` but that would bring
+            # back the behavior we moved away from. Note that we can't consider
+            # doing a schema migration because we don't know which properties
+            # are "custom" and which came from `schema-image` if those custom
+            # properties were created with v1.
+            if key not in self.properties and value is None:
+                filtered[key] = ''
         return filtered
 
     @staticmethod

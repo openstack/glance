@@ -85,6 +85,7 @@ class Server(object):
         self.server_module = None
         self.stop_kill = False
         self.use_user_token = False
+        self.send_identity_credentials = False
 
     def write_conf(self, **kwargs):
         """
@@ -322,6 +323,7 @@ metadata_encryption_key = %(metadata_encryption_key)s
 registry_host = 127.0.0.1
 registry_port = %(registry_port)s
 use_user_token = %(use_user_token)s
+send_identity_credentials = %(send_identity_credentials)s
 log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
 delayed_delete = %(delayed_delete)s
@@ -346,6 +348,7 @@ image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
+allow_additional_image_properties = True
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
