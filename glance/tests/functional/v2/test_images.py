@@ -68,6 +68,37 @@ class TestImages(functional.FunctionalTest):
         base_headers.update(custom_headers or {})
         return base_headers
 
+    def test_v1_none_properties_v2(self):
+        self.api_server.deployment_flavor = 'noauth'
+        self.api_server.use_user_token = True
+        self.api_server.send_identity_credentials = True
+        self.registry_server.deployment_flavor = ''
+        # Image list should be empty
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image (with two deployer-defined properties)
+        path = self._url('/v1/images')
+        headers = self._headers({'content-type': 'application/octet-stream'})
+        headers.update(test_utils.minimal_headers('image-1'))
+        # NOTE(flaper87): Sending empty string, the server will use None
+        headers['x-image-meta-property-my_empty_prop'] = ''
+
+        response = requests.post(path, headers=headers)
+        self.assertEqual(201, response.status_code)
+        data = jsonutils.loads(response.text)
+        image_id = data['image']['id']
+
+        # NOTE(flaper87): Get the image using V2 and verify
+        # the returned value for `my_empty_prop` is an empty
+        # string.
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        image = jsonutils.loads(response.text)
+        self.assertEqual('', image['my_empty_prop'])
+
+        self.stop_servers()
+
     def test_image_lifecycle(self):
         # Image list should be empty
         self.start_servers(**self.__dict__.copy())
