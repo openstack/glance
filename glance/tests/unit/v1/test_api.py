@@ -543,7 +543,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         expected = "Cannot convert image size 'invalid' to an integer."
         exec_bad_size_test('invalid', expected)
-        expected = "Image size must be >= 0 ('-10' specified)."
+        expected = "Cannot be a negative value."
         exec_bad_size_test(-10, expected)
 
     def test_bad_image_name(self):
