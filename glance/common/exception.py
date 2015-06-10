@@ -497,6 +497,10 @@ class ArtifactDuplicateTransitiveDependency(Duplicate):
                 " already has the transitive dependency=%(dep)s")
 
 
+class ArtifactCircularDependency(Invalid):
+    message = _("Artifact with a circular dependency can not be created")
+
+
 class ArtifactUnsupportedPropertyOperator(Invalid):
     message = _("Operator %(op)s is not supported")
 
