@@ -32,6 +32,11 @@ class TestApiVersions(functional.FunctionalTest):
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
         versions = {'versions': [
             {
+                'status': 'EXPERIMENTAL',
+                'id': 'v3.0',
+                'links': [{'href': url % '3', "rel": "self"}],
+            },
+            {
                 'id': 'v2.3',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self', 'href': url % '2'}],
@@ -79,6 +84,11 @@ class TestApiVersions(functional.FunctionalTest):
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
         versions = {'versions': [
             {
+                'status': 'EXPERIMENTAL',
+                'id': 'v3.0',
+                'links': [{'href': url % '3', "rel": "self"}],
+            },
+            {
                 'id': 'v2.3',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self', 'href': url % '2'}],
@@ -111,6 +121,7 @@ class TestApiVersions(functional.FunctionalTest):
     def test_v1_api_configuration(self):
         self.api_server.enable_v1_api = True
         self.api_server.enable_v2_api = False
+        self.api_server.enable_v3_api = False
         self.start_servers(**self.__dict__.copy())
 
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
@@ -143,6 +154,11 @@ class TestApiPaths(functional.FunctionalTest):
 
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
         versions = {'versions': [
+            {
+                'status': 'EXPERIMENTAL',
+                'id': 'v3.0',
+                'links': [{'href': url % '3', "rel": "self"}],
+            },
             {
                 'id': 'v2.3',
                 'status': 'CURRENT',

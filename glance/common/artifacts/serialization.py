@@ -12,8 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import collections
+
 import six
 
+from glance import artifacts as ga
 from glance.common.artifacts import declarative
 from glance.common.artifacts import definitions
 from glance.common import exception
@@ -262,3 +265,66 @@ def deserialize_from_db(db_dict, plugins):
                               artifact_properties, plugins)
 
     return artifact_type(**artifact_properties)
+
+
+def _process_blobs_for_client(artifact, result):
+    """Processes artifact's blobs: adds download links and pretty-printed data.
+
+    The result is stored in 'result' dict.
+    """
+    def build_uri(blob_attr, position=None):
+        """A helper func to build download uri"""
+        template = "/artifacts/%(type)s/v%(version)s/%(id)s/%(prop)s/download"
+        format_dict = {
+            "type": artifact.metadata.endpoint,
+            "version": artifact.type_version,
+            "id": artifact.id,
+            "prop": blob_attr.name
+        }
+        if position is not None:
+            template = "/artifacts/%(type)s/v%(version)s/" \
+                "%(id)s/%(prop)s/%(position)s/download"
+            format_dict["position"] = position
+
+        return template % format_dict
+
+    for blob_attr in artifact.metadata.attributes.blobs.values():
+        value = blob_attr.get_value(artifact)
+        if value is None:
+            result[blob_attr.name] = None
+        elif isinstance(value, collections.Iterable):
+            res_list = []
+            for pos, blob in enumerate(value):
+                blob_dict = blob.to_dict()
+                blob_dict["download_link"] = build_uri(blob_attr, pos)
+                res_list.append(blob_dict)
+            result[blob_attr.name] = res_list
+        else:
+            result[blob_attr.name] = value.to_dict()
+            result[blob_attr.name]["download_link"] = build_uri(blob_attr)
+
+
+def serialize_for_client(artifact, show_level=ga.Showlevel.NONE):
+    # use serialize_for_db and modify some fields
+    # (like properties, show only value, not type)
+    result = {}
+
+    for prop in artifact.metadata.attributes.properties.values():
+        result[prop.name] = prop.get_value(artifact)
+
+    if show_level > ga.Showlevel.NONE:
+        for dep in artifact.metadata.attributes.dependencies.values():
+            inner_show_level = (ga.Showlevel.DIRECT
+                                if show_level == ga.Showlevel.DIRECT
+                                else ga.Showlevel.NONE)
+            value = dep.get_value(artifact)
+            if value is None:
+                result[dep.name] = None
+            elif isinstance(value, list):
+                result[dep.name] = [serialize_for_client(v, inner_show_level)
+                                    for v in value]
+            else:
+                result[dep.name] = serialize_for_client(value,
+                                                        inner_show_level)
+    _process_blobs_for_client(artifact, result)
+    return result
