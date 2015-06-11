@@ -24,6 +24,7 @@ from glance.common import property_utils
 from glance.common import store_utils
 import glance.db
 import glance.domain
+from glance.i18n import _LE
 import glance.location
 import glance.notifier
 import glance.quota
@@ -248,14 +249,11 @@ class Gateway(object):
 
     def get_catalog_search_repo(self, context):
         if self.es_api is None:
-            # TODO(mriedem): Make this a separate exception or change to
-            # warning/error logging in Liberty once we're past string freeze.
-            # See bug 1441764.
-            LOG.debug('The search and index services are not available. '
-                      'Ensure you have the necessary prerequisite '
-                      'dependencies installed like elasticsearch to use these '
-                      'services.')
-            raise exception.ServiceUnavailable()
+            LOG.error(_LE('The search and index services are not available. '
+                          'Ensure you have the necessary prerequisite '
+                          'dependencies installed like elasticsearch to use '
+                          'these services.'))
+            raise exception.SearchNotAvailable()
         search_repo = glance.search.CatalogSearchRepo(context, self.es_api)
         policy_search_repo = policy.CatalogSearchRepoProxy(
             search_repo, context, self.policy)

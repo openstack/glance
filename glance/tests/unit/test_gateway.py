@@ -25,6 +25,6 @@ class TestGateway(test_utils.BaseTestCase):
     @mock.patch.object(gateway, 'glance_search', None)
     def test_get_catalog_search_repo_no_es_api(self):
         gate = gateway.Gateway()
-        self.assertRaises(exception.ServiceUnavailable,
+        self.assertRaises(exception.SearchNotAvailable,
                           gate.get_catalog_search_repo,
                           context.get_admin_context())
