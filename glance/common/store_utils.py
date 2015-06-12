@@ -29,14 +29,7 @@ _ = i18n._
 _LE = i18n._LE
 _LW = i18n._LW
 
-store_utils_opts = [
-    cfg.BoolOpt('use_user_token', default=True,
-                help=_('Whether to pass through the user token when '
-                       'making requests to the registry.')),
-]
-
 CONF = cfg.CONF
-CONF.register_opts(store_utils_opts)
 
 RESTRICTED_URI_SCHEMAS = frozenset(['file', 'filesystem', 'swift+config'])
 
