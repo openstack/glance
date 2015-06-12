@@ -4249,6 +4249,76 @@ class TestAPIProtectedProps(base.IsolatedUnitTest):
         output = another_request.get_response(self.api)
         self.assertEqual(403, output.status_int)
 
+    def test_create_protected_prop_check_case_insensitive(self):
+        """
+        Verify that role check is case-insensitive i.e. the property
+        marked with role Member is creatable by the member role
+        """
+        image_id = self._create_admin_image()
+        another_request = unit_test_utils.get_fake_request(
+            path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'x-image-meta-property-x_case_insensitive': '1'}
+        for k, v in six.iteritems(headers):
+                another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = jsonutils.loads(output.body)['image']
+        self.assertEqual('1', res_body['properties']['x_case_insensitive'])
+
+    def test_read_protected_prop_check_case_insensitive(self):
+        """
+        Verify that role check is case-insensitive i.e. the property
+        marked with role Member is readable by the member role
+        """
+        custom_props = {
+            'x-image-meta-property-x_case_insensitive': '1'
+        }
+        image_id = self._create_admin_image(custom_props)
+        another_request = unit_test_utils.get_fake_request(
+            method='HEAD', path='/images/%s' % image_id)
+        headers = {'x-auth-token': 'user:tenant:member'}
+        for k, v in six.iteritems(headers):
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        self.assertEqual(200, output.status_int)
+        self.assertEqual('', output.body)
+        self.assertEqual(
+            '1', output.headers['x-image-meta-property-x_case_insensitive'])
+
+    def test_update_protected_props_check_case_insensitive(self):
+        """
+        Verify that role check is case-insensitive i.e. the property
+        marked with role Member is updatable by the member role
+        """
+        image_id = self._create_admin_image(
+            {'x-image-meta-property-x_case_insensitive': '1'})
+        another_request = unit_test_utils.get_fake_request(
+            path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'x-image-meta-property-x_case_insensitive': '2'}
+        for k, v in six.iteritems(headers):
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = jsonutils.loads(output.body)['image']
+        self.assertEqual('2', res_body['properties']['x_case_insensitive'])
+
+    def test_delete_protected_props_check_case_insensitive(self):
+        """
+        Verify that role check is case-insensitive i.e. the property
+        marked with role Member is deletable by the member role
+        """
+        image_id = self._create_admin_image(
+            {'x-image-meta-property-x_case_insensitive': '1'})
+        another_request = unit_test_utils.get_fake_request(
+            path='/images/%s' % image_id, method='PUT')
+        headers = {'x-auth-token': 'user:tenant:member',
+                   'X-Glance-Registry-Purge-Props': 'True'}
+        for k, v in six.iteritems(headers):
+            another_request.headers[k] = v
+        output = another_request.get_response(self.api)
+        res_body = jsonutils.loads(output.body)['image']
+        self.assertEqual({}, res_body['properties'])
+
     def test_create_non_protected_prop(self):
         """
         Verify property marked with special char '@' is creatable by an unknown

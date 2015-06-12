@@ -198,6 +198,7 @@ class PropertyRules(object):
                 prop_exp_key = self.prop_exp_mapping[rule_exp]
                 return self._check_policy(prop_exp_key, action,
                                           context)
-            if set(roles).intersection(set(rule_roles)):
+            if set(roles).intersection(set([role.lower() for role
+                                            in rule_roles])):
                 return True
         return False

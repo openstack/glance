@@ -36,6 +36,7 @@ CONFIG_SECTIONS = [
     'x_none_read',
     'x_none_update',
     'x_none_delete',
+    'x_case_insensitive',
     'x_foo_matcher',
     'x_foo_*',
     '.*'
@@ -309,6 +310,21 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
         self.assertFalse(self.rules_checker.check_property_rules(
             'x_foo_matcher', 'delete',
             create_context(self.policy, [''])))
+
+    def test_check_case_insensitive_property_rules(self):
+        self.rules_checker = property_utils.PropertyRules()
+        self.assertTrue(self.rules_checker.check_property_rules(
+            'x_case_insensitive', 'create',
+            create_context(self.policy, ['member'])))
+        self.assertTrue(self.rules_checker.check_property_rules(
+            'x_case_insensitive', 'read',
+            create_context(self.policy, ['member'])))
+        self.assertTrue(self.rules_checker.check_property_rules(
+            'x_case_insensitive', 'update',
+            create_context(self.policy, ['member'])))
+        self.assertTrue(self.rules_checker.check_property_rules(
+            'x_case_insensitive', 'delete',
+            create_context(self.policy, ['member'])))
 
 
 class TestPropertyRulesWithPolicies(base.IsolatedUnitTest):
