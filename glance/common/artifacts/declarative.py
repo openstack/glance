@@ -14,7 +14,6 @@
 
 import copy
 import re
-import types
 
 import semantic_version
 import six
@@ -124,7 +123,7 @@ class ListAttributeDefinition(AttributeDefinition):
 
     Is inherited by Array, ArtifactReferenceList and BinaryObjectList
     """
-    ALLOWED_TYPES = (types.ListType,)
+    ALLOWED_TYPES = (list,)
     ALLOWED_ITEM_TYPES = (AttributeDefinition, )
 
     def _check_item_type(self, item):
@@ -139,7 +138,7 @@ class ListAttributeDefinition(AttributeDefinition):
                  **kwargs):
 
         super(ListAttributeDefinition, self).__init__(**kwargs)
-        if isinstance(item_type, types.ListType):
+        if isinstance(item_type, list):
             for it in item_type:
                 self._check_item_type(it)
 
@@ -208,7 +207,7 @@ class ListAttributeDefinition(AttributeDefinition):
 
     def _set_name(self, value):
         super(ListAttributeDefinition, self)._set_name(value)
-        if isinstance(self.item_type, types.ListType):
+        if isinstance(self.item_type, list):
             for i, item in enumerate(self.item_type):
                 item._set_name("%s[%i]" % (value, i))
         else:
@@ -221,7 +220,7 @@ class ListAttributeDefinition(AttributeDefinition):
                 self._validate_item_at(item, i)
 
     def get_item_definition_at_index(self, index):
-        if isinstance(self.item_type, types.ListType):
+        if isinstance(self.item_type, list):
             if index < len(self.item_type):
                 return self.item_type[index]
             else:
@@ -231,7 +230,7 @@ class ListAttributeDefinition(AttributeDefinition):
     def _validate_item_at(self, item, index):
         item_type = self.get_item_definition_at_index(index)
         # set name if none has been given to the list element at given index
-        if (isinstance(self.item_type, types.ListType) and item_type and
+        if (isinstance(self.item_type, list) and item_type and
                 not item_type.name):
             item_type.name = "%s[%i]" % (self.name, index)
         if item_type:
@@ -243,25 +242,25 @@ class DictAttributeDefinition(AttributeDefinition):
 
     Is inherited by Dict
     """
-    ALLOWED_TYPES = (types.DictionaryType,)
+    ALLOWED_TYPES = (dict,)
     ALLOWED_PROPERTY_TYPES = (AttributeDefinition,)
 
     def _check_prop(self, key, item):
         if (not isinstance(item, self.ALLOWED_PROPERTY_TYPES) or
-                (key is not None and not isinstance(key, types.StringTypes))):
+                (key is not None and not isinstance(key, six.string_types))):
             raise exc.InvalidArtifactTypePropertyDefinition(
                 _('Invalid dict property type specification'))
 
     @staticmethod
     def _validate_key(key):
-        if not isinstance(key, types.StringTypes):
+        if not isinstance(key, six.string_types):
             raise exc.InvalidArtifactPropertyValue(
                 _('Invalid dict property type'))
 
     def __init__(self, properties, min_properties=0, max_properties=0,
                  **kwargs):
         super(DictAttributeDefinition, self).__init__(**kwargs)
-        if isinstance(properties, types.DictionaryType):
+        if isinstance(properties, dict):
             for key, value in six.iteritems(properties):
                 self._check_prop(key, value)
             # copy the properties dict
@@ -303,7 +302,7 @@ class DictAttributeDefinition(AttributeDefinition):
 
     def _set_name(self, value):
         super(DictAttributeDefinition, self)._set_name(value)
-        if isinstance(self.properties, types.DictionaryType):
+        if isinstance(self.properties, dict):
             for k, v in six.iteritems(self.properties):
                 v._set_name(value)
         else:
@@ -317,7 +316,7 @@ class DictAttributeDefinition(AttributeDefinition):
 
     def _validate_item_with_key(self, value, key):
         self._validate_key(key)
-        if isinstance(self.properties, types.DictionaryType):
+        if isinstance(self.properties, dict):
             prop_def = self.properties.get(key)
             if prop_def is not None:
                 name = "%s[%s]" % (prop_def.name, key)
@@ -327,7 +326,7 @@ class DictAttributeDefinition(AttributeDefinition):
             self.properties.validate(value, name=name)
 
     def get_prop_definition_at_key(self, key):
-        if isinstance(self.properties, types.DictionaryType):
+        if isinstance(self.properties, dict):
             return self.properties.get(key)
         else:
             return self.properties
