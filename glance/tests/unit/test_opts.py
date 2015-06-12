@@ -145,7 +145,8 @@ class OptsTestCase(utils.BaseTestCase):
             'eventlet_executor_pool_size',
             'store_type_preference',
             'flavor',
-            'config_file'
+            'config_file',
+            'http_keepalive',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
@@ -205,7 +206,8 @@ class OptsTestCase(utils.BaseTestCase):
             'eventlet_hub',
             'max_header_line',
             'flavor',
-            'config_file'
+            'config_file',
+            'http_keepalive',
         ]
 
         self._check_opt_groups(opt_list, expected_opt_groups)
