@@ -272,6 +272,9 @@ specified (see below). If admin credentials are specified then they are
 used to generate a token; this token rather than the original user's
 token is used for requests to the registry.
 
+To prevent failures with token expiration during big files upload,
+it is recommended to set this parameter to False.
+
 * ``admin_user=USER``
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the username.
