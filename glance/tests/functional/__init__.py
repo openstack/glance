@@ -115,7 +115,7 @@ class Server(object):
         utils.safe_mkdirs(conf_dir)
 
         def override_conf(filepath, overridden):
-            with open(filepath, 'wb') as conf_file:
+            with open(filepath, 'w') as conf_file:
                 conf_file.write(overridden)
                 conf_file.flush()
                 return conf_file.name
@@ -207,7 +207,7 @@ class Server(object):
             utils.safe_mkdirs(conf_dir)
             conf_filepath = os.path.join(conf_dir, 'glance-manage.conf')
 
-            with open(conf_filepath, 'wb') as conf_file:
+            with open(conf_filepath, 'w') as conf_file:
                 conf_file.write('[DEFAULT]\n')
                 conf_file.write('sql_connection = %s' % self.sql_connection)
                 conf_file.flush()

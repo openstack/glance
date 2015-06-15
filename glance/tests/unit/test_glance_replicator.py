@@ -108,7 +108,8 @@ class FakeHTTPConnection(object):
 
     def getresponse(self):
         class FakeResponse(object):
-            def __init__(self, (code, body, headers)):
+            def __init__(self, args):
+                (code, body, headers) = args
                 self.body = six.StringIO(body)
                 self.headers = headers
                 self.status = code

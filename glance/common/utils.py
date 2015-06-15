@@ -586,7 +586,8 @@ def get_test_suite_socket():
     if GLANCE_TEST_SOCKET_FD_STR in os.environ:
         fd = int(os.environ[GLANCE_TEST_SOCKET_FD_STR])
         sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
-        sock = socket.SocketType(_sock=sock)
+        if six.PY2:
+            sock = socket.SocketType(_sock=sock)
         sock.listen(CONF.backlog)
         del os.environ[GLANCE_TEST_SOCKET_FD_STR]
         os.close(fd)
@@ -682,12 +683,12 @@ def no_4byte_params(f):
     def wrapper(*args, **kwargs):
 
         def _is_match(some_str):
-            return (isinstance(some_str, unicode) and
+            return (isinstance(some_str, six.text_type) and
                     REGEX_4BYTE_UNICODE.findall(some_str) != [])
 
         def _check_dict(data_dict):
             # a dict of dicts has to be checked recursively
-            for key, value in data_dict.iteritems():
+            for key, value in six.iteritems(data_dict):
                 if isinstance(value, dict):
                     _check_dict(value)
                 else:
