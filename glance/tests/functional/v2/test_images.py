@@ -3196,7 +3196,7 @@ class TestImageMembers(functional.FunctionalTest):
         response = requests.delete(path, headers=get_header('tenant1'))
         self.assertEqual(204, response.status_code)
 
-        # Now the image has only no members
+        # Now the image has no members
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
         response = requests.get(path, headers=get_header('tenant1'))
         self.assertEqual(200, response.status_code)
@@ -3216,11 +3216,17 @@ class TestImageMembers(functional.FunctionalTest):
                                  data=body)
         self.assertEqual(413, response.status_code)
 
-        # Delete Image members not found for public image
+        # Get Image member should return not found for public image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
                                                        TENANT3))
         response = requests.get(path, headers=get_header('tenant1'))
         self.assertEqual(404, response.status_code)
+
+        # Delete Image member should return forbidden for public image
+        path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
+                                                       TENANT3))
+        response = requests.delete(path, headers=get_header('tenant1'))
+        self.assertEqual(403, response.status_code)
 
         self.stop_servers()
 
