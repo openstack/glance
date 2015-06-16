@@ -29,7 +29,7 @@ oslo.utils>=1.4.0,<1.5.0                       # Apache-2.0
 stevedore>=1.3.0,<1.4.0  # Apache-2.0
 taskflow>=0.7.1,<0.8.0
 keystonemiddleware>=1.5.0,<1.6.0
-WSME>=0.6
+WSME>=0.6,<0.7
 # For openstack/common/lockutils
 posix_ipc
 
