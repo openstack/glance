@@ -2271,6 +2271,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             True,
             False,
             None,
+            {'op': 'invalid', 'path': '/name', 'value': 'fedora'}
         ]
         for change in changes:
             request = self._get_fake_patch_request()

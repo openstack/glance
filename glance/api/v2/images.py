@@ -339,6 +339,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     _default_sort_dir = 'desc'
 
+    _supported_operations = ('add', 'remove', 'replace')
+
     def __init__(self, schema=None):
         super(RequestDeserializer, self).__init__()
         self.schema = schema or get_schema()
@@ -382,15 +384,23 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return dict(image=image, extra_properties=properties, tags=tags)
 
     def _get_change_operation_d10(self, raw_change):
-        try:
-            return raw_change['op']
-        except KeyError:
-            msg = _("Unable to find '%s' in JSON Schema change") % 'op'
+        op = raw_change.get('op')
+        if op is None:
+            msg = _('Unable to find `op` in JSON Schema change. '
+                    'It must be one of the following: %(available)s.') % \
+                {'available': ', '.join(self._supported_operations)}
             raise webob.exc.HTTPBadRequest(explanation=msg)
+        if op not in self._supported_operations:
+            msg = _('Invalid operation: `%(op)s`. '
+                    'It must be one of the following: %(available)s.') % \
+                {'op': op,
+                 'available': ', '.join(self._supported_operations)}
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        return op
 
     def _get_change_operation_d4(self, raw_change):
         op = None
-        for key in ['replace', 'add', 'remove']:
+        for key in self._supported_operations:
             if key in raw_change:
                 if op is not None:
                     msg = _('Operation objects must contain only one member'
