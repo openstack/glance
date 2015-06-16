@@ -25,6 +25,7 @@ import subprocess
 
 import fixtures
 from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
@@ -63,6 +64,8 @@ class BaseTestCase(testtools.TestCase):
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
+
+        self._config_fixture = self.useFixture(cfg_fixture.Config())
 
         # NOTE(bcwaldon): parse_args has to be called to register certain
         # command-line options - specifically we need config_dir for
@@ -122,9 +125,7 @@ class BaseTestCase(testtools.TestCase):
         All overrides are automatically cleared at the end of the current
         test by the fixtures cleanup process.
         """
-        group = kw.pop('group', None)
-        for k, v in six.iteritems(kw):
-            CONF.set_override(k, v, group)
+        self._config_fixture.config(**kw)
 
 
 class requires(object):

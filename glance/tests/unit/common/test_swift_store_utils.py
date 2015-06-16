@@ -22,11 +22,11 @@ from glance.tests.unit import base
 class TestSwiftParams(base.IsolatedUnitTest):
 
     def setUp(self):
+        super(TestSwiftParams, self).setUp()
         conf_file = "glance-swift.conf"
         test_dir = self.useFixture(fixtures.TempDir()).path
         self.swift_config_file = self._copy_data_file(conf_file, test_dir)
         self.config(swift_store_config_file=self.swift_config_file)
-        super(TestSwiftParams, self).setUp()
 
     def tearDown(self):
         super(TestSwiftParams, self).tearDown()
