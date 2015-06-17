@@ -1114,3 +1114,37 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/dict_prop/bar_list/nosuchkey' % art['id'],
             data={'data': 15}, status=400)
+
+    def test_list_artifact_types(self):
+        actual = {
+            u'artifact_types': [
+                {u'displayed_name': u'NoProp',
+                 u'type_name': u'NoProp',
+                 u'versions':
+                     [{u'id': u'v0.5',
+                       u'link': u'http://127.0.0.1:%d/v3/artifacts/noprop/v0.5'
+                                % self.api_port},
+                      {u'id': u'v1.0',
+                       u'link': u'http://127.0.0.1:%d/v3/artifacts/noprop/v1.0'
+                                % self.api_port}]},
+                {u'displayed_name': u'WithBlob',
+                 u'type_name': u'WithBlob',
+                 u'versions':
+                     [{u'id': u'v1.0',
+                       u'link':
+                           u'http://127.0.0.1:%d/v3/artifacts/withblob/v1.0'
+                           % self.api_port}]},
+                {u'displayed_name': u'WithProps',
+                 u'type_name': u'WithProps',
+                 u'versions':
+                     [{u'id': u'v1.0',
+                       u'link':
+                           u'http://127.0.0.1:%d/v3/artifacts/withprops/v1.0'
+                           % self.api_port}]}]}
+
+        response = self._check_artifact_get("", status=200)
+        response[u'artifact_types'].sort(key=lambda x: x[u'type_name'])
+        for artifact_type in response[u'artifact_types']:
+            artifact_type[u'versions'].sort(key=lambda x: x[u'id'])
+
+        self.assertEqual(actual, response)

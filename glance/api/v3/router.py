@@ -30,6 +30,7 @@ class API(wsgi.Router):
     def __init__(self, mapper):
         self.artifacts_resource = None
         artifacts_resource = self._get_artifacts_resource()
+        reject_method_resource = wsgi.Resource(wsgi.RejectMethodController())
 
         def _check_json_content_type(environ, result):
             return "application/json" in environ["CONTENT_TYPE"]
@@ -74,6 +75,11 @@ class API(wsgi.Router):
                 m.connect("/drafts", action='create',
                           conditions={'method': 'POST'})
 
+        mapper.connect('/artifacts',
+                       controller=artifacts_resource,
+                       action='list_artifact_types',
+                       conditions={'method': ['GET']})
+
         versioned = mapper.submapper(path_prefix='/artifacts/{type_name}/'
                                                  'v{type_version}',
                                      controller=artifacts_resource)
@@ -83,5 +89,12 @@ class API(wsgi.Router):
                                          controller=artifacts_resource)
         connect_routes(versioned, False)
         connect_routes(non_versioned, True)
+
+        mapper.connect('/artifacts',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET',
+                       conditions={'method': ['POST', 'PUT', 'DELETE',
+                                              'PATCH', 'HEAD']})
 
         super(API, self).__init__(mapper)
