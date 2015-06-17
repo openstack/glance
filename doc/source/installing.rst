@@ -68,7 +68,7 @@ Installing from source tarballs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To install the latest version of Glance from the Launchpad Bazaar repositories,
-following the following instructions.
+follow the following instructions.
 
 1. Grab the source tarball from `Launchpad <http://launchpad.net/glance/+download>`_
 
@@ -85,7 +85,7 @@ Installing from Git
 ~~~~~~~~~~~~~~~~~~~
 
 To install the latest version of Glance from the GitHub Git repositories,
-following the following instructions.
+follow the following instructions.
 
 Debian, Ubuntu
 ##############
