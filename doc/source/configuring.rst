@@ -173,6 +173,15 @@ Not supported on OS X.
 
 Optional. Default: ``600``
 
+* ``client_socket_timeout=SECONDS``
+
+Timeout for client connections' socket operations.  If an incoming
+connection is idle for this period it will be closed.  A value of `0`
+means wait forever.
+
+Optional. Default: ``900``
+
+
 * ``workers=PROCESSES``
 
 Number of Glance API or Registry worker processes to start. Each worker
