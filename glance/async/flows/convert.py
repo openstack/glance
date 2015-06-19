@@ -40,7 +40,7 @@ convert_task_opts = [
 CONF = cfg.CONF
 
 # NOTE(flaper87): Registering under the taskflow_executor section
-# for now. It seems a waste to have a whole section dedidcated to a
+# for now. It seems a waste to have a whole section dedicated to a
 # single task with a single option.
 CONF.register_opts(convert_task_opts, group='taskflow_executor')
 
