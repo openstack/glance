@@ -425,7 +425,7 @@ def get_flow(**kwargs):
 
             # NOTE(flaper87): Since this is an "optional" task but required
             # when `limbo` is executed, we're adding it in its own subflow
-            # to isolat it from the rest of the flow.
+            # to isolate it from the rest of the flow.
             delete_flow = lf.Flow(task_type).add(_DeleteFromFS(task_id,
                                                                task_type))
             flow.add(delete_flow)
