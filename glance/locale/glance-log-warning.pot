@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 2015.1.dev42\n"
+"Project-Id-Version: glance 11.0.0.0a1.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-03 06:02+0000\n"
+"POT-Creation-Date: 2015-06-19 06:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,17 +17,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: glance/scrubber.py:218
+#: glance/scrubber.py:222
 #, python-format
 msgid "Failed to find image to delete: %s"
 msgstr ""
 
-#: glance/scrubber.py:258
+#: glance/scrubber.py:262
 #, python-format
 msgid "%s directory does not exist."
 msgstr ""
 
-#: glance/scrubber.py:583
+#: glance/scrubber.py:582
 #, python-format
 msgid "Unable to delete URI from image %s."
 msgstr ""
@@ -50,33 +50,38 @@ msgstr ""
 msgid "Unknown version. Returning version choices."
 msgstr ""
 
-#: glance/api/v1/images.py:704
+#: glance/api/v1/images.py:722
 #, python-format
 msgid ""
 "Failed to activate image %s in registry. About to delete image bits from "
 "store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:945
+#: glance/api/v2/images.py:970
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
 "properties"
 msgstr ""
 
-#: glance/api/v2/tasks.py:72
+#: glance/api/v2/tasks.py:74
 #, python-format
 msgid "Forbidden to create task. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:110
+#: glance/api/v2/tasks.py:112
 #, python-format
 msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:115
+#: glance/api/v2/tasks.py:117
 #, python-format
 msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
+msgstr ""
+
+#: glance/artifacts/location.py:125
+#, python-format
+msgid "Failed to delete blob %s in store from URI"
 msgstr ""
 
 #: glance/async/utils.py:62
@@ -84,7 +89,7 @@ msgstr ""
 msgid "An optional task has failed, the failure was: %s"
 msgstr ""
 
-#: glance/async/flows/convert.py:67
+#: glance/async/flows/convert.py:68
 #, python-format
 msgid ""
 "The conversion format is None, please add a value for it in the config "
@@ -103,12 +108,12 @@ msgstr ""
 msgid "Image %s entirely missing from the destination"
 msgstr ""
 
-#: glance/common/store_utils.py:65
+#: glance/common/store_utils.py:58
 #, python-format
 msgid "Failed to delete image %s in store from URI"
 msgstr ""
 
-#: glance/common/wsgi.py:326
+#: glance/common/wsgi.py:331
 #, python-format
 msgid "Unrecognised child %s"
 msgstr ""
@@ -201,8 +206,8 @@ msgid ""
 " dependency=%d"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:340 glance/db/sqlalchemy/metadata.py:348
-#: glance/db/sqlalchemy/metadata.py:357
+#: glance/db/sqlalchemy/metadata.py:349 glance/db/sqlalchemy/metadata.py:357
+#: glance/db/sqlalchemy/metadata.py:366
 #, python-format
 msgid "Duplicate entry for values: %s"
 msgstr ""
@@ -217,7 +222,7 @@ msgstr ""
 msgid "Failed to decrypt location value for image %(image_id)s"
 msgstr ""
 
-#: glance/domain/__init__.py:505
+#: glance/domain/__init__.py:504
 msgid "The `eventlet` executor has been deprecated. Use `taskflow` instead."
 msgstr ""
 
@@ -249,19 +254,19 @@ msgstr ""
 msgid "Failed to successfully cache all images in queue."
 msgstr ""
 
-#: glance/image_cache/drivers/sqlite.py:333
+#: glance/image_cache/drivers/sqlite.py:332
 #, python-format
 msgid ""
 "Fetch of cache file failed (%(e)s), rolling back by moving "
 "'%(incomplete_path)s' to '%(invalid_path)s'"
 msgstr ""
 
-#: glance/image_cache/drivers/sqlite.py:459
+#: glance/image_cache/drivers/sqlite.py:458
 #, python-format
 msgid "Failed to delete file %(path)s. Got error: %(e)s"
 msgstr ""
 
-#: glance/image_cache/drivers/sqlite.py:496
+#: glance/image_cache/drivers/sqlite.py:495
 #: glance/image_cache/drivers/xattr.py:447
 #, python-format
 msgid "Cached image file '%s' doesn't exist, unable to delete"
@@ -272,7 +277,7 @@ msgstr ""
 msgid "task %(func_name)r run outlasted interval by %(delay).2f sec"
 msgstr ""
 
-#: glance/openstack/common/service.py:351
+#: glance/openstack/common/service.py:353
 #, python-format
 msgid "pid %d not in child list"
 msgstr ""
