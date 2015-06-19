@@ -1,0 +1,33 @@
+# The order of packages is significant, because pip processes them in the order
+# of appearance. Changing the order has an impact on the overall integration
+# process, which may cause wedges in the gate later.
+
+# Hacking already pins down pep8, pyflakes and flake8
+hacking>=0.10.0,<0.11
+
+# For translations processing
+Babel>=1.3
+
+# Needed for testing
+coverage>=3.6
+discover
+fixtures>=0.3.14
+mox3>=0.7.0
+mock>=1.0
+sphinx>=1.1.2,!=1.2.0,!=1.3b1,<1.3
+requests>=2.5.2
+testrepository>=0.0.18
+testtools>=0.9.36,!=1.2.0
+psutil>=1.1.1,<2.0.0
+oslotest>=1.5.1  # Apache-2.0
+# Optional packages that should be installed when testing
+PyMySQL>=0.6.2  # MIT License
+psycopg2
+pysendfile>=2.0.0
+xattr>=0.4
+
+# Documentation
+oslosphinx>=2.5.0  # Apache-2.0
+
+# Glance catalog index
+elasticsearch>=1.3.0
