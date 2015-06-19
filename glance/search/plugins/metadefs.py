@@ -214,7 +214,7 @@ class MetadefIndex(base.IndexBase):
         if 'default' in document:
             document['default'] = str(document['default'])
         if 'enum' in document:
-            document['enum'] = map(str, document['enum'])
+            document['enum'] = [str(enum) for enum in document['enum']]
 
         return document
 
