@@ -68,7 +68,7 @@ class TestLocationStrategy(base.IsolatedUnitTest):
 
         loaded_modules = location_strategy._load_strategies()
         self.assertEqual(1, len(loaded_modules))
-        self.assertEqual('module_name', loaded_modules.keys()[0])
+        self.assertIn('module_name', loaded_modules)
         # Skipped module #2, duplicated one.
         self.assertEqual('module1', loaded_modules['module_name'].__name__)
 
@@ -98,7 +98,7 @@ class TestLocationStrategy(base.IsolatedUnitTest):
 
         loaded_modules = location_strategy._load_strategies()
         self.assertEqual(1, len(loaded_modules))
-        self.assertEqual('module_good', loaded_modules.keys()[0])
+        self.assertIn('module_good', loaded_modules)
         # Skipped module #1, initialize failed one.
         self.assertEqual('module_good', loaded_modules['module_good'].__name__)
 
