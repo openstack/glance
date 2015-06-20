@@ -508,7 +508,8 @@ class ServerTest(test_utils.BaseTestCase):
                                                 log=server._wsgi_logger,
                                                 debug=False,
                                                 custom_pool=server.pool,
-                                                keepalive=False)
+                                                keepalive=False,
+                                                socket_timeout=None)
 
 
 class TestHelpers(test_utils.BaseTestCase):
