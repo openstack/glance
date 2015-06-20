@@ -155,6 +155,7 @@ class Server(object):
             exec_env = self.exec_env.copy()
         else:
             exec_env = {}
+        pass_fds = set()
         if self.sock:
             if not self.fork_socket:
                 self.sock.close()
@@ -162,11 +163,13 @@ class Server(object):
             else:
                 fd = os.dup(self.sock.fileno())
                 exec_env[utils.GLANCE_TEST_SOCKET_FD_STR] = str(fd)
+                pass_fds.add(fd)
                 self.sock.close()
 
         self.process_pid = test_utils.fork_exec(cmd,
                                                 logfile=os.devnull,
-                                                exec_env=exec_env)
+                                                exec_env=exec_env,
+                                                pass_fds=pass_fds)
 
         self.stop_kill = not expect_exit
         if self.pid_file:
