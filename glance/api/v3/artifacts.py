@@ -17,9 +17,9 @@ import sys
 
 import glance_store
 import jsonschema
-from oslo.config import cfg
-from oslo.serialization import jsonutils as json
-from oslo.utils import excutils
+from oslo_config import cfg
+from oslo_serialization import jsonutils as json
+from oslo_utils import excutils
 import semantic_version
 import six
 import webob.exc
