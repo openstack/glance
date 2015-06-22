@@ -16,10 +16,10 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging
+from oslo_service import service as os_service
 import stevedore
 
 from glance import i18n
-from glance.openstack.common import service as os_service
 
 LOG = logging.getLogger(__name__)
 _ = i18n._
