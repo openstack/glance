@@ -25,6 +25,7 @@ import atexit
 import datetime
 import logging
 import os
+import platform
 import shutil
 import signal
 import socket
@@ -45,6 +46,7 @@ from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 
 execute, get_unused_port = test_utils.execute, test_utils.get_unused_port
+tracecmd_osmap = {'Linux': 'strace', 'FreeBSD': 'truss'}
 
 
 class Server(object):
@@ -577,6 +579,8 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
         self.registry_port, reg_sock = test_utils.get_unused_port_and_socket()
 
+        self.tracecmd = tracecmd_osmap.get(platform.system())
+
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
@@ -828,11 +832,13 @@ class FunctionalTest(test_utils.BaseTestCase):
             if os.path.exists(f.pid_file):
                 pid = f.process_pid
                 trace = f.pid_file.replace('.pid', '.trace')
-                cmd = 'strace -p %d -o %s' % (pid, trace)
-                execute(cmd, raise_error=False, expect_exit=False)
-                time.sleep(0.5)
-                if os.path.exists(trace):
-                    msg += ('\nstrace:\n%s\n' % open(trace).read())
+                if self.tracecmd:
+                    cmd = '%s -p %d -o %s' % (self.tracecmd, pid, trace)
+                    execute(cmd, raise_error=False, expect_exit=False)
+                    time.sleep(0.5)
+                    if os.path.exists(trace):
+                        msg += ('\n%s:\n%s\n' % (self.tracecmd,
+                                                 open(trace).read()))
 
         self.add_log_details(failed)
 
