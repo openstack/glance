@@ -42,6 +42,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from oslo.config import cfg
 from oslo_log import log as logging
+import oslo_messaging
 import osprofiler.notifier
 import osprofiler.web
 
@@ -73,7 +74,7 @@ def main():
 
         if cfg.CONF.profiler.enabled:
             _notifier = osprofiler.notifier.create("Messaging",
-                                                   notifier.messaging, {},
+                                                   oslo_messaging, {},
                                                    notifier.get_transport(),
                                                    "glance", "search",
                                                    cfg.CONF.bind_host)
