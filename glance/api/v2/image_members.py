@@ -160,10 +160,10 @@ class ImageMembersController(object):
             msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
-        except exception.Forbidden:
+        except exception.Forbidden as e:
             msg = _("Not allowed to list members for image %s.") % image_id
-            LOG.warning(msg)
-            raise webob.exc.HTTPForbidden(explanation=msg)
+            LOG.warning(e.msg or msg)
+            raise webob.exc.HTTPForbidden(explanation=e.msg or msg)
 
     def show(self, req, image_id, member_id):
         """
