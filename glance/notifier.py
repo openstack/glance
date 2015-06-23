@@ -59,6 +59,10 @@ _ALIASES = {
 }
 
 
+def set_defaults(control_exchange='glance'):
+    oslo_messaging.set_transport_defaults(control_exchange)
+
+
 def get_transport():
     return oslo_messaging.get_transport(CONF, aliases=_ALIASES)
 
