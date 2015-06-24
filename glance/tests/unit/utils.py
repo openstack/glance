@@ -85,9 +85,10 @@ def fake_get_size_from_backend(uri, context=None):
 
 class FakeDB(object):
 
-    def __init__(self):
+    def __init__(self, initialize=True):
         self.reset()
-        self.init_db()
+        if initialize:
+            self.init_db()
 
     @staticmethod
     def init_db():

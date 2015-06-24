@@ -117,7 +117,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def setUp(self):
         super(TestImagesController, self).setUp()
-        self.db = unit_test_utils.FakeDB()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.policy = unit_test_utils.FakePolicyEnforcer()
         self.notifier = unit_test_utils.FakeNotifier()
         self.store = unit_test_utils.FakeStoreAPI()
@@ -134,7 +134,6 @@ class TestImagesController(base.IsolatedUnitTest):
         store.create_stores()
 
     def _create_images(self):
-        self.db.reset()
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, checksum=CHKSUM,
                         name='1', size=256, virtual_size=1024,

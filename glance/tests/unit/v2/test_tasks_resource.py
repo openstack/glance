@@ -87,7 +87,7 @@ class TestTasksController(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestTasksController, self).setUp()
-        self.db = unit_test_utils.FakeDB()
+        self.db = unit_test_utils.FakeDB(initialize=False)
         self.policy = unit_test_utils.FakePolicyEnforcer()
         self.notifier = unit_test_utils.FakeNotifier()
         self.store = unit_test_utils.FakeStoreAPI()
@@ -98,7 +98,6 @@ class TestTasksController(test_utils.BaseTestCase):
                                                               self.store)
 
     def _create_tasks(self):
-        self.db.reset()
         now = timeutils.utcnow()
         times = [now + datetime.timedelta(seconds=5 * i) for i in range(4)]
         self.tasks = [
