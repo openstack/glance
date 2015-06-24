@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-19 06:10+0000\n"
-"PO-Revision-Date: 2015-06-18 21:16+0000\n"
-"Last-Translator: Adriana Chisco Landazábal <achisco94@gmail.com>\n"
+"POT-Creation-Date: 2015-06-24 06:10+0000\n"
+"PO-Revision-Date: 2015-06-23 13:20+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Spanish (http://www.transifex.com/projects/p/glance/language/"
 "es/)\n"
 "Language: es\n"
@@ -47,32 +47,12 @@ msgstr "El artefacto %s se ha cargado correctamente"
 msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 msgstr "Llamando a %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 
-#, python-format
-msgid "Caught %s, exiting"
-msgstr "Se ha captado %s, saliendo"
-
-#, python-format
-msgid "Caught %s, stopping children"
-msgstr "Se ha captado %s, deteniendo hijos"
-
 msgid "Caught keyboard interrupt. Exiting."
 msgstr "Se ha generado interrupción de teclado. Saliendo."
 
 #, python-format
-msgid "Child %(pid)d killed by signal %(sig)d"
-msgstr "Hijo %(pid)d matado por señal %(sig)d"
-
-#, python-format
-msgid "Child %(pid)s exited with status %(code)d"
-msgstr "El hijo %(pid)s ha salido con el estado %(code)d"
-
-#, python-format
 msgid "Child %d exiting normally"
 msgstr "El hijo %d está saliendo de forma normal"
-
-#, python-format
-msgid "Child caught %s, exiting"
-msgstr "Hijo captado %s, saliendo"
 
 #, python-format
 msgid "Cleaning up %s after exceeding the quota"
@@ -101,15 +81,8 @@ msgid "Delete denied for public image %(id)s"
 msgstr "Se ha denegado la supresión para la imagen pública %(id)s"
 
 #, python-format
-msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
-msgstr "Eventlet oculto escuchando en %(port)s para el proceso %(pid)d"
-
-#, python-format
 msgid "File %s loaded to database."
 msgstr "Se ha cargado fichero %s a la base de datos."
-
-msgid "Forking too fast, sleeping"
-msgstr "Bifurcación demasiado rápida, en reposo"
 
 #, python-format
 msgid "Image %(id)s not found"
@@ -194,9 +167,6 @@ msgstr "No se está poniendo en cola la imagen '%s'. Ya está en cola. "
 msgid "Overwriting namespace %s"
 msgstr "Reemplazando espacio de nombre %s"
 
-msgid "Parent process has died unexpectedly, exiting"
-msgstr "El proceso padre se ha detenido inesperadamente, saliendo"
-
 #, python-format
 msgid "Reaped %(reaped)s %(entry_type)s cache entries"
 msgstr "Se han obtenido %(reaped)s entradas de memoria caché %(entry_type)s "
@@ -234,10 +204,6 @@ msgstr "Depurando imagen %(id)s de ubicaciones %(count)d."
 #, python-format
 msgid "Skipping namespace %s. It already exists in the database."
 msgstr "Omitiendo nombre de espacio %s. Ya existe en la base de datos."
-
-#, python-format
-msgid "Started child %d"
-msgstr "Se ha iniciado el hijo %d"
 
 #, python-format
 msgid "Started child %s"
@@ -326,13 +292,6 @@ msgid "Uploaded data of image %s from request payload successfully."
 msgstr ""
 "Se ha subido de manera exitosa la información de imagen %s de la carga útil "
 "de solicitud."
-
-msgid "Wait called after thread killed. Cleaning up."
-msgstr "Esperar llamado después de cortar la línea. Limpiando."
-
-#, python-format
-msgid "Waiting on %d children to exit"
-msgstr "En espera de %d hijos para salir"
 
 #, python-format
 msgid "creating table %(table)s"

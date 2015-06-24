@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-19 06:10+0000\n"
-"PO-Revision-Date: 2015-06-18 21:41+0000\n"
-"Last-Translator: Adriana Chisco Landazábal <achisco94@gmail.com>\n"
+"POT-Creation-Date: 2015-06-24 06:10+0000\n"
+"PO-Revision-Date: 2015-06-23 13:20+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Spanish (http://www.transifex.com/projects/p/glance/language/"
 "es/)\n"
 "Language: es\n"
@@ -277,13 +277,3 @@ msgstr ""
 #, python-format
 msgid "User lacks permission to share image %(id)s"
 msgstr "El usuario no tiene permiso para compartir la imagen %(id)s"
-
-#, python-format
-msgid "pid %d not in child list"
-msgstr "El pid %d no está en la lista de hijos"
-
-#, python-format
-msgid "task %(func_name)r run outlasted interval by %(delay).2f sec"
-msgstr ""
-"la ejecución de tarea %(func_name)r ha durado %(delay).2f seg. más que el "
-"intervalo"

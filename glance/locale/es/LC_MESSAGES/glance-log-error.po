@@ -9,9 +9,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-19 06:10+0000\n"
-"PO-Revision-Date: 2015-06-18 22:48+0000\n"
-"Last-Translator: Adriana Chisco Landazábal <achisco94@gmail.com>\n"
+"POT-Creation-Date: 2015-06-24 06:10+0000\n"
+"PO-Revision-Date: 2015-06-23 13:20+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Spanish (http://www.transifex.com/projects/p/glance/language/"
 "es/)\n"
 "Language: es\n"
@@ -93,18 +93,17 @@ msgstr ""
 "un servidor pydev está escuchando respestas en el puerto indicado por "
 "pydev_worker_debug_port."
 
-msgid "Error stopping thread."
-msgstr "Error al detener la línea."
-
-msgid "Error stopping timer."
-msgstr "Error al detener temporizador."
-
-msgid "Error waiting on ThreadGroup."
-msgstr "Error al esperar en ThreadGroup."
-
 #, python-format
 msgid "Error: cooperative_iter exception %s"
 msgstr "Error: excepción de cooperative_iter %s"
+
+#, python-format
+msgid ""
+"Exception encountered while tee'ing image '%(image_id)s' into cache: "
+"%(error)s. Continuing with response."
+msgstr ""
+"Se ha encontrado una excepción al colocar la imagen '%(image_id)s' en la "
+"memoria caché: %(error)s. Continuando con la respuesta. "
 
 #, python-format
 msgid "Failed to delete blob %(blob_id)s from store: %(exc)s"
@@ -129,6 +128,16 @@ msgstr "Error al ejecutar la tarea %(task_id)s: %(exc)s"
 #, python-format
 msgid "Failed to load location strategy module %(module)s: %(e)s"
 msgstr "Error al cargar módulo de estrategia de localización %(module)s: %(e)s"
+
+#, python-format
+msgid "Failed to load the %s executor provided in the config."
+msgstr "Error al cargar el ejecutor %s en la configuración."
+
+#, python-format
+msgid "Failed to retrieve RBAC filters from search plugin %(ext)s: %(e)s"
+msgstr ""
+"Error al recuperar filtros RBAC desde el complemento de búsqueda %(ext)s: "
+"%(e)s"
 
 #, python-format
 msgid ""
@@ -157,6 +166,10 @@ msgid "Failed to upload image data due to internal error"
 msgstr ""
 "Se ha encontrado un error en la carga de datos de imagen debido a un error "
 "interno"
+
+#, python-format
+msgid "Forbidden to create resource type. Reason: %(reason)s"
+msgstr "Se olvidó crear tipo de recurso. Razón: %(reason)s"
 
 #, python-format
 msgid ""
@@ -264,6 +277,14 @@ msgid "Task ID %s"
 msgstr "Identificación de tarea %s"
 
 #, python-format
+msgid ""
+"Task [%(task_id)s] status failed to change from %(cur_status)s to "
+"%(new_status)s"
+msgstr ""
+"Error al cambiar el estado de tarea [%(task_id)s] de %(cur_status)s a "
+"%(new_status)s"
+
+#, python-format
 msgid "Task not found for task_id %s"
 msgstr "No se ha encontrado tarea para task_id %s"
 
@@ -309,6 +330,17 @@ msgstr ""
 "opción  --merge."
 
 #, python-format
+msgid "Unable to create image %s"
+msgstr "No es posible crear imagen %s"
+
+#, python-format
+msgid "Unable to delete image %s"
+msgstr "No es posible eliminar imagen %s"
+
+msgid "Unable to get images"
+msgstr "No es posible obtener imágenes "
+
+#, python-format
 msgid "Unable to kill image %(id)s: "
 msgstr "No se puede matar imagen %(id)s:"
 
@@ -324,8 +356,13 @@ msgstr "No se puede restaurar artefacto %(artifact_id)s: %(e)s"
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr "No es posible restaurar imagen %(image_id)s: %(e)s"
 
-msgid "Unhandled exception"
-msgstr "Excepción no controlada"
+#, python-format
+msgid "Unable to show image %s"
+msgstr "No es posible mostrar imagen %s"
+
+#, python-format
+msgid "Unable to update image %s"
+msgstr "No ha sido posible actualizar la imagen %s"
 
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "Dirección de clasificación desconocida, debe ser 'desc' o ' asc'"
@@ -333,12 +370,6 @@ msgstr "Dirección de clasificación desconocida, debe ser 'desc' o ' asc'"
 #, python-format
 msgid "could not find %s"
 msgstr "no se ha podido encontrar %s"
-
-msgid "in dynamic looping call"
-msgstr "en llamada en bucle dinámica"
-
-msgid "in fixed duration looping call"
-msgstr "en llamada en bucle de duración fija"
 
 #, python-format
 msgid "swift config file %(conf_file)s:%(exc)s not found"

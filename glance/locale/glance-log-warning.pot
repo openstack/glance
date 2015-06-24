@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0a1.dev1\n"
+"Project-Id-Version: glance 11.0.0.0b2.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-19 06:10+0000\n"
+"POT-Creation-Date: 2015-06-24 06:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -270,16 +270,6 @@ msgstr ""
 #: glance/image_cache/drivers/xattr.py:447
 #, python-format
 msgid "Cached image file '%s' doesn't exist, unable to delete"
-msgstr ""
-
-#: glance/openstack/common/loopingcall.py:87
-#, python-format
-msgid "task %(func_name)r run outlasted interval by %(delay).2f sec"
-msgstr ""
-
-#: glance/openstack/common/service.py:353
-#, python-format
-msgid "pid %d not in child list"
 msgstr ""
 
 #: glance/registry/api/v1/images.py:126

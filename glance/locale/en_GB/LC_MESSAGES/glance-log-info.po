@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-03 06:06+0000\n"
-"PO-Revision-Date: 2015-05-08 18:53+0000\n"
+"POT-Creation-Date: 2015-06-24 06:10+0000\n"
+"PO-Revision-Date: 2015-06-23 13:20+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "glance/language/en_GB/)\n"
@@ -38,32 +38,12 @@ msgstr "All workers have terminated. Exiting"
 msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 msgstr "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 
-#, python-format
-msgid "Caught %s, exiting"
-msgstr "Caught %s, exiting"
-
-#, python-format
-msgid "Caught %s, stopping children"
-msgstr "Caught %s, stopping children"
-
 msgid "Caught keyboard interrupt. Exiting."
 msgstr "Caught keyboard interrupt. Exiting."
 
 #, python-format
-msgid "Child %(pid)d killed by signal %(sig)d"
-msgstr "Child %(pid)d killed by signal %(sig)d"
-
-#, python-format
-msgid "Child %(pid)s exited with status %(code)d"
-msgstr "Child %(pid)s exited with status %(code)d"
-
-#, python-format
 msgid "Child %d exiting normally"
 msgstr "Child %d exiting normally"
-
-#, python-format
-msgid "Child caught %s, exiting"
-msgstr "Child caught %s, exiting"
 
 #, python-format
 msgid "Cleaning up %s after exceeding the quota"
@@ -86,13 +66,6 @@ msgstr "Defaulting to SQLite driver."
 #, python-format
 msgid "Delete denied for public image %(id)s"
 msgstr "Delete denied for public image %(id)s"
-
-#, python-format
-msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
-msgstr "Eventlet backdoor listening on %(port)s for process %(pid)d"
-
-msgid "Forking too fast, sleeping"
-msgstr "Forking too fast, sleeping"
 
 #, python-format
 msgid "Image %(id)s not found"
@@ -143,9 +116,6 @@ msgstr "Not queueing image '%s'. Already cached."
 msgid "Not queueing image '%s'. Already queued."
 msgstr "Not queueing image '%s'. Already queued."
 
-msgid "Parent process has died unexpectedly, exiting"
-msgstr "Parent process has died unexpectedly, exiting"
-
 #, python-format
 msgid "Reaped %(reaped)s %(entry_type)s cache entries"
 msgstr "Reaped %(reaped)s %(entry_type)s cache entries"
@@ -169,10 +139,6 @@ msgstr "Returning %(funcname)s: %(output)s"
 #, python-format
 msgid "Scrubbing image %(id)s from %(count)d locations."
 msgstr "Scrubbing image %(id)s from %(count)d locations."
-
-#, python-format
-msgid "Started child %d"
-msgstr "Started child %d"
 
 #, python-format
 msgid "Started child %s"
@@ -230,10 +196,6 @@ msgstr "Update denied for public image %(id)s"
 #, python-format
 msgid "Updating metadata for image %(id)s"
 msgstr "Updating metadata for image %(id)s"
-
-#, python-format
-msgid "Waiting on %d children to exit"
-msgstr "Waiting on %d children to exit"
 
 #, python-format
 msgid "creating table %(table)s"

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-03 06:06+0000\n"
-"PO-Revision-Date: 2015-04-23 03:18+0000\n"
+"POT-Creation-Date: 2015-06-24 06:10+0000\n"
+"PO-Revision-Date: 2015-06-23 13:20+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/glance/language/"
 "fr/)\n"
@@ -150,18 +150,9 @@ msgstr "Impossible d'afficher l'image %s"
 msgid "Unable to update image %s"
 msgstr "Impossible de mettre à jour l'image %s"
 
-msgid "Unhandled exception"
-msgstr "Exception non prise en charge"
-
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "Direction d'ordonnancement inconnue, choisir 'desc' ou 'asc'"
 
 #, python-format
 msgid "could not find %s"
 msgstr "impossible de trouver %s"
-
-msgid "in dynamic looping call"
-msgstr "dans l'appel en boucle dynamique"
-
-msgid "in fixed duration looping call"
-msgstr "Fixe la durée de l'appel de la boucle"
