@@ -170,7 +170,7 @@ class CacheFilter(wsgi.Middleware):
 
         try:
             return method(request, image_id, image_iterator, image_metadata)
-        except exception.NotFound:
+        except exception.ImageNotFound:
             msg = _LE("Image cache contained image file for image '%s', "
                       "however the registry did not contain metadata for "
                       "that image!") % image_id

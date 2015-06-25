@@ -168,10 +168,10 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             except exception.Duplicate:
                 image = registry.get_image_metadata(req.context, image_id)
                 if image['status'] == 'deleted':
-                    raise exception.NotFound()
+                    raise exception.ImageNotFound()
                 else:
                     raise
-        except exception.NotFound:
+        except exception.ImageNotFound:
             msg = _LI("Image %s could not be found after upload. The image may"
                       " have been deleted during the upload.") % image_id
             LOG.info(msg)

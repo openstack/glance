@@ -340,7 +340,7 @@ def _do_pagination(context, images, marker, limit, show_deleted,
                 start = i + 1
                 break
         else:
-            raise exception.NotFound()
+            raise exception.ImageNotFound()
 
     end = start + limit if limit is not None else None
     return images[start:end]
@@ -385,12 +385,12 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
         image = DATA['images'][image_id]
     except KeyError:
         LOG.warn(_LW('Could not find image %s') % image_id)
-        raise exception.NotFound()
+        raise exception.ImageNotFound()
 
     if image['deleted'] and not (force_show_deleted
                                  or context.can_see_deleted):
         LOG.warn(_LW('Unable to get deleted image'))
-        raise exception.NotFound()
+        raise exception.ImageNotFound()
 
     if not is_image_visible(context, image):
         LOG.warn(_LW('Unable to get unowned image'))
@@ -690,7 +690,7 @@ def image_update(context, image_id, image_values, purge_props=False,
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        raise exception.NotFound()
+        raise exception.ImageNotFound()
 
     location_data = image_values.pop('locations', None)
     if location_data is not None:
@@ -742,7 +742,7 @@ def image_destroy(context, image_id):
         return _normalize_locations(context,
                                     copy.deepcopy(DATA['images'][image_id]))
     except KeyError:
-        raise exception.NotFound()
+        raise exception.ImageNotFound()
 
 
 @log_call

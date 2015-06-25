@@ -164,9 +164,9 @@ class ImageRepo(object):
         try:
             db_api_image = dict(self.db_api.image_get(self.context, image_id))
             assert not db_api_image['deleted']
-        except (exception.NotFound, exception.Forbidden, AssertionError):
+        except (exception.ImageNotFound, exception.Forbidden, AssertionError):
             msg = _("No image found with ID %s") % image_id
-            raise exception.NotFound(msg)
+            raise exception.ImageNotFound(msg)
         tags = self.db_api.image_tag_get_all(self.context, image_id)
         image = self._format_image_from_db(db_api_image, tags)
         return ImageProxy(image, self.context, self.db_api)
@@ -274,9 +274,9 @@ class ImageRepo(object):
                                                   image_values,
                                                   purge_props=True,
                                                   from_state=from_state)
-        except (exception.NotFound, exception.Forbidden):
+        except (exception.ImageNotFound, exception.Forbidden):
             msg = _("No image found with ID %s") % image.image_id
-            raise exception.NotFound(msg)
+            raise exception.ImageNotFound(msg)
         self.db_api.image_tag_set_all(self.context, image.image_id,
                                       image.tags)
         image.updated_at = new_values['updated_at']
@@ -286,9 +286,9 @@ class ImageRepo(object):
         try:
             self.db_api.image_update(self.context, image.image_id,
                                      image_values, purge_props=True)
-        except (exception.NotFound, exception.Forbidden):
+        except (exception.ImageNotFound, exception.Forbidden):
             msg = _("No image found with ID %s") % image.image_id
-            raise exception.NotFound(msg)
+            raise exception.ImageNotFound(msg)
         # NOTE(markwash): don't update tags?
         new_values = self.db_api.image_destroy(self.context, image.image_id)
         image.updated_at = new_values['updated_at']

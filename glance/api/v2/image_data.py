@@ -73,7 +73,7 @@ class ImageDataController(object):
                 image_repo.save(image)
                 image.set_data(data, size)
                 image_repo.save(image, from_state='saving')
-            except (exception.NotFound, exception.Conflict):
+            except (exception.ImageNotFound, exception.Conflict):
                 msg = (_("Image %s could not be found after upload. "
                          "The image may have been deleted during the "
                          "upload, cleaning up the chunks uploaded.") %
@@ -82,7 +82,7 @@ class ImageDataController(object):
                 # NOTE(sridevi): Cleaning up the uploaded chunks.
                 try:
                     image.delete()
-                except exception.NotFound:
+                except exception.ImageNotFound:
                     # NOTE(sridevi): Ignore this exception
                     pass
                 raise webob.exc.HTTPGone(explanation=msg,

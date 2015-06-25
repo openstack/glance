@@ -336,6 +336,10 @@ class BadTaskConfiguration(GlanceException):
     message = _("Task was not configured properly")
 
 
+class ImageNotFound(NotFound):
+    message = _("Image with the given id %(image_id)s was not found")
+
+
 class TaskNotFound(TaskException, NotFound):
     message = _("Task with the given id %(task_id)s was not found")
 

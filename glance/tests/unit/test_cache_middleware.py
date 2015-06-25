@@ -220,7 +220,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         """
         def fake_process_v1_request(request, image_id, image_iterator,
                                     image_meta):
-            raise exception.NotFound()
+            raise exception.ImageNotFound()
 
         def fake_get_v1_image_metadata(request, image_id):
             return {'status': 'active', 'properties': {}}
