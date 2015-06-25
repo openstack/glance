@@ -658,22 +658,24 @@ def _image_get_disk_usage_by_owner(owner, session, image_id=None):
     return total
 
 
-def _validate_image(values):
+def _validate_image(values, mandatory_status=True):
     """
     Validates the incoming data and raises a Invalid exception
     if anything is out of order.
 
     :param values: Mapping of image metadata to check
+    :param mandatory_status: Whether to validate status from values
     """
 
-    status = values.get('status')
-    if not status:
-        msg = "Image status is required."
-        raise exception.Invalid(msg)
+    if mandatory_status:
+        status = values.get('status')
+        if not status:
+            msg = "Image status is required."
+            raise exception.Invalid(msg)
 
-    if status not in STATUSES:
-        msg = "Invalid image status '%s' for image." % status
-        raise exception.Invalid(msg)
+        if status not in STATUSES:
+            msg = "Invalid image status '%s' for image." % status
+            raise exception.Invalid(msg)
 
     # validate integer values to eliminate DBError on save
     utils.validate_mysql_int(min_disk=values.get('min_disk'),
@@ -753,8 +755,8 @@ def _image_update(context, values, image_id, purge_props=False,
             if from_state:
                 query = query.filter_by(status=from_state)
 
-            if new_status:
-                _validate_image(values)
+            mandatory_status = True if new_status else False
+            _validate_image(values, mandatory_status=mandatory_status)
 
             # Validate fields for Images table. This is similar to what is done
             # for the query result update except that we need to do it prior

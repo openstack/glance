@@ -587,6 +587,44 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
                     'from': from_state})
             self.assertEqual(str(exc), msg)
 
+    def test_image_update_with_invalid_min_disk(self):
+        """Tests that the registry API updates the image"""
+        next_state = 'saving'
+        fixture = {'name': 'fake image',
+                   'disk_format': 'vmdk',
+                   'min_disk': str(2 ** 31 + 1),
+                   'status': next_state}
+
+        image = self.client.image_get(image_id=UUID2)
+        current = image['status']
+        self.assertEqual('active', current)
+
+        # image is in 'active' state so this should cause a failure.
+        from_state = 'saving'
+
+        self.assertRaises(exception.Invalid, self.client.image_update,
+                          image_id=UUID2, values=fixture,
+                          from_state=from_state)
+
+    def test_image_update_with_invalid_min_ram(self):
+        """Tests that the registry API updates the image"""
+        next_state = 'saving'
+        fixture = {'name': 'fake image',
+                   'disk_format': 'vmdk',
+                   'min_ram': str(2 ** 31 + 1),
+                   'status': next_state}
+
+        image = self.client.image_get(image_id=UUID2)
+        current = image['status']
+        self.assertEqual('active', current)
+
+        # image is in 'active' state so this should cause a failure.
+        from_state = 'saving'
+
+        self.assertRaises(exception.Invalid, self.client.image_update,
+                          image_id=UUID2, values=fixture,
+                          from_state=from_state)
+
     def _test_image_update_not_existing(self):
         """Tests non existing image update doesn't work"""
         fixture = self.get_fixture(status='bad status')
