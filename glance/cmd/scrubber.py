@@ -29,6 +29,7 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                    os.pardir))
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
+import eventlet
 
 import glance_store
 from oslo_config import cfg
@@ -37,6 +38,8 @@ from oslo_log import log as logging
 from glance.common import config
 from glance import scrubber
 
+eventlet.patcher.monkey_patch(all=False, socket=True, time=True, select=True,
+                              thread=True, os=True)
 
 CONF = cfg.CONF
 logging.register_options(CONF)
@@ -61,9 +64,7 @@ def main():
             server.start(app)
             server.wait()
         else:
-            import eventlet
-            pool = eventlet.greenpool.GreenPool(1000)
-            app.run(pool)
+            app.run()
     except RuntimeError as e:
         sys.exit("ERROR: %s" % e)
 

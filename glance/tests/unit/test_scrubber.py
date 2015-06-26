@@ -15,7 +15,6 @@
 
 import uuid
 
-import eventlet
 import glance_store
 from mock import patch
 from mox3 import mox
@@ -59,8 +58,7 @@ class TestScrubber(test_utils.BaseTestCase):
             uri,
             mox.IgnoreArg()).AndRaise(ex)
         self.mox.ReplayAll()
-        scrub._scrub_image(eventlet.greenpool.GreenPool(1),
-                           id, [(id, '-', uri)])
+        scrub._scrub_image(id, [(id, '-', uri)])
         self.mox.VerifyAll()
 
     def test_store_delete_unsupported_backend_exception(self):
