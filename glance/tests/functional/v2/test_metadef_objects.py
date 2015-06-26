@@ -107,6 +107,10 @@ class TestMetadefObjects(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 
+        # Attempt to insert a duplicate
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(409, response.status_code)
+
         # Get the metadata object created above
         path = self._url('/v2/metadefs/namespaces/%s/objects/%s' %
                          (namespace_name, metadata_object_name))

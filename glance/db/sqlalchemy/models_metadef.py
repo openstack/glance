@@ -28,6 +28,7 @@ from sqlalchemy import Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy import UniqueConstraint
 
 from glance.db.sqlalchemy.models import JSONEncodedDict
 
@@ -65,8 +66,11 @@ class GlanceMetadefBase(models.TimestampMixin):
 class MetadefNamespace(BASE_DICT, GlanceMetadefBase):
     """Represents a metadata-schema namespace in the datastore."""
     __tablename__ = 'metadef_namespaces'
-    __table_args__ = (Index('ix_metadef_namespaces_namespace', 'namespace'),
-                      Index('ix_metadef_namespaces_owner', 'owner'))
+    __table_args__ = (UniqueConstraint('namespace',
+                                       name='uq_metadef_namespaces'
+                                            '_namespace'),
+                      Index('ix_metadef_namespaces_owner', 'owner')
+                      )
 
     id = Column(Integer, primary_key=True, nullable=False)
     namespace = Column(String(80), nullable=False)
@@ -80,8 +84,11 @@ class MetadefNamespace(BASE_DICT, GlanceMetadefBase):
 class MetadefObject(BASE_DICT, GlanceMetadefBase):
     """Represents a metadata-schema object in the datastore."""
     __tablename__ = 'metadef_objects'
-    __table_args__ = (Index('ix_metadef_objects_namespace_id', 'namespace_id'),
-                      Index('ix_metadef_objects_name', 'name'))
+    __table_args__ = (UniqueConstraint('namespace_id', 'name',
+                                       name='uq_metadef_objects_namespace_id'
+                                            '_name'),
+                      Index('ix_metadef_objects_name', 'name')
+                      )
 
     id = Column(Integer, primary_key=True, nullable=False)
     namespace_id = Column(Integer(), ForeignKey('metadef_namespaces.id'),
@@ -95,9 +102,11 @@ class MetadefObject(BASE_DICT, GlanceMetadefBase):
 class MetadefProperty(BASE_DICT, GlanceMetadefBase):
     """Represents a metadata-schema namespace-property in the datastore."""
     __tablename__ = 'metadef_properties'
-    __table_args__ = (Index('ix_metadef_properties_namespace_id',
-                            'namespace_id'),
-                      Index('ix_metadef_properties_name', 'name'))
+    __table_args__ = (UniqueConstraint('namespace_id', 'name',
+                                       name='uq_metadef_properties_namespace'
+                                            '_id_name'),
+                      Index('ix_metadef_properties_name', 'name')
+                      )
 
     id = Column(Integer, primary_key=True, nullable=False)
     namespace_id = Column(Integer(), ForeignKey('metadef_namespaces.id'),
@@ -109,10 +118,9 @@ class MetadefProperty(BASE_DICT, GlanceMetadefBase):
 class MetadefNamespaceResourceType(BASE_DICT, GlanceMetadefBase):
     """Represents a metadata-schema namespace-property in the datastore."""
     __tablename__ = 'metadef_namespace_resource_types'
-    __table_args__ = (Index('ix_metadef_ns_res_types_res_type_id_ns_id',
-                            'resource_type_id', 'namespace_id'),
-                      Index('ix_metadef_ns_res_types_namespace_id',
-                            'namespace_id'))
+    __table_args__ = (Index('ix_metadef_ns_res_types_namespace_id',
+                            'namespace_id'),
+                      )
 
     resource_type_id = Column(Integer,
                               ForeignKey('metadef_resource_types.id'),
@@ -126,7 +134,9 @@ class MetadefNamespaceResourceType(BASE_DICT, GlanceMetadefBase):
 class MetadefResourceType(BASE_DICT, GlanceMetadefBase):
     """Represents a metadata-schema resource type in the datastore."""
     __tablename__ = 'metadef_resource_types'
-    __table_args__ = (Index('ix_metadef_resource_types_name', 'name'), )
+    __table_args__ = (UniqueConstraint('name',
+                                       name='uq_metadef_resource_types_name'),
+                      )
 
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(80), nullable=False)
@@ -140,9 +150,11 @@ class MetadefResourceType(BASE_DICT, GlanceMetadefBase):
 class MetadefTag(BASE_DICT, GlanceMetadefBase):
     """Represents a metadata-schema tag in the data store."""
     __tablename__ = 'metadef_tags'
-    __table_args__ = (Index('ix_metadef_tags_namespace_id',
-                            'namespace_id', 'name'),
-                      Index('ix_metadef_tags_name', 'name'))
+    __table_args__ = (UniqueConstraint('namespace_id', 'name',
+                                       name='uq_metadef_tags_namespace_id'
+                                            '_name'),
+                      Index('ix_metadef_tags_name', 'name')
+                      )
 
     id = Column(Integer, primary_key=True, nullable=False)
     namespace_id = Column(Integer(), ForeignKey('metadef_namespaces.id'),

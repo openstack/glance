@@ -123,6 +123,15 @@ class MetadefNamespaceTests(object):
         self.assertIsNotNone(created)
         self._assert_saved_fields(fixture, created)
 
+    def test_namespace_create_duplicate(self):
+        fixture = build_namespace_fixture()
+        created = self.db_api.metadef_namespace_create(self.context, fixture)
+        self.assertIsNotNone(created)
+        self._assert_saved_fields(fixture, created)
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.metadef_namespace_create,
+                          self.context, fixture)
+
     def test_namespace_get(self):
         fixture = build_namespace_fixture()
         created = self.db_api.metadef_namespace_create(self.context, fixture)
@@ -221,6 +230,22 @@ class MetadefPropertyTests(object):
         created_prop = self.db_api.metadef_property_create(
             self.context, created_ns['namespace'], fixture_prop)
         self._assert_saved_fields(fixture_prop, created_prop)
+
+    def test_property_create_duplicate(self):
+        fixture = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(
+            self.context, fixture)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture, created_ns)
+
+        fixture_prop = build_property_fixture(namespace_id=created_ns['id'])
+        created_prop = self.db_api.metadef_property_create(
+            self.context, created_ns['namespace'], fixture_prop)
+        self._assert_saved_fields(fixture_prop, created_prop)
+
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.metadef_property_create,
+                          self.context, created_ns['namespace'], fixture_prop)
 
     def test_property_get(self):
         fixture_ns = build_namespace_fixture()
@@ -332,6 +357,23 @@ class MetadefObjectTests(object):
             self.context, created_ns['namespace'], fixture_object)
         self._assert_saved_fields(fixture_object, created_object)
 
+    def test_object_create_duplicate(self):
+        fixture = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture, created_ns)
+
+        fixture_object = build_object_fixture(namespace_id=created_ns['id'])
+        created_object = self.db_api.metadef_object_create(
+            self.context, created_ns['namespace'], fixture_object)
+        self._assert_saved_fields(fixture_object, created_object)
+
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.metadef_object_create,
+                          self.context, created_ns['namespace'],
+                          fixture_object)
+
     def test_object_get(self):
         fixture_ns = build_namespace_fixture()
         created_ns = self.db_api.metadef_namespace_create(self.context,
@@ -442,6 +484,24 @@ class MetadefResourceTypeAssociationTests(object):
         self.assertIsNotNone(assn_created)
         self._assert_saved_fields(assn_fixture, assn_created)
 
+    def test_association_create_duplicate(self):
+        ns_fixture = build_namespace_fixture()
+        ns_created = self.db_api.metadef_namespace_create(
+            self.context, ns_fixture)
+        self.assertIsNotNone(ns_created)
+        self._assert_saved_fields(ns_fixture, ns_created)
+
+        assn_fixture = build_association_fixture()
+        assn_created = self.db_api.metadef_resource_type_association_create(
+            self.context, ns_created['namespace'], assn_fixture)
+        self.assertIsNotNone(assn_created)
+        self._assert_saved_fields(assn_fixture, assn_created)
+
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.
+                          metadef_resource_type_association_create,
+                          self.context, ns_created['namespace'], assn_fixture)
+
     def test_association_delete(self):
         ns_fixture = build_namespace_fixture()
         ns_created = self.db_api.metadef_namespace_create(
@@ -499,6 +559,23 @@ class MetadefTagTests(object):
             self.context, created_ns['namespace'], fixture_tag)
         self._assert_saved_fields(fixture_tag, created_tag)
 
+    def test_tag_create_duplicate(self):
+        fixture = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture, created_ns)
+
+        fixture_tag = build_tag_fixture(namespace_id=created_ns['id'])
+        created_tag = self.db_api.metadef_tag_create(
+            self.context, created_ns['namespace'], fixture_tag)
+        self._assert_saved_fields(fixture_tag, created_tag)
+
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.metadef_tag_create,
+                          self.context, created_ns['namespace'],
+                          fixture_tag)
+
     def test_tag_create_tags(self):
         fixture = build_namespace_fixture()
         created_ns = self.db_api.metadef_namespace_create(self.context,
@@ -512,6 +589,35 @@ class MetadefTagTests(object):
         actual = set([tag['name'] for tag in created_tags])
         expected = set(['Tag1', 'Tag2', 'Tag3'])
         self.assertEqual(expected, actual)
+
+    def test_tag_create_duplicate_tags_1(self):
+        fixture = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture, created_ns)
+
+        tags = build_tags_fixture(['Tag1', 'Tag2', 'Tag3', 'Tag2'])
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.metadef_tag_create_tags,
+                          self.context, created_ns['namespace'],
+                          tags)
+
+    def test_tag_create_duplicate_tags_2(self):
+        fixture = build_namespace_fixture()
+        created_ns = self.db_api.metadef_namespace_create(self.context,
+                                                          fixture)
+        self.assertIsNotNone(created_ns)
+        self._assert_saved_fields(fixture, created_ns)
+
+        tags = build_tags_fixture(['Tag1', 'Tag2', 'Tag3'])
+        self.db_api.metadef_tag_create_tags(self.context,
+                                            created_ns['namespace'], tags)
+        dup_tag = build_tag_fixture(namespace_id=created_ns['id'],
+                                    name='Tag3')
+        self.assertRaises(exception.Duplicate,
+                          self.db_api.metadef_tag_create,
+                          self.context, created_ns['namespace'], dup_tag)
 
     def test_tag_get(self):
         fixture_ns = build_namespace_fixture()
