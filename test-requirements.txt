@@ -21,7 +21,7 @@ testtools>=0.9.36,!=1.2.0
 psutil>=1.1.1,<2.0.0
 oslotest>=1.5.1  # Apache-2.0
 # Optional packages that should be installed when testing
-MySQL-python
+PyMySQL>=0.6.2  # MIT License
 psycopg2
 pysendfile>=2.0.0
 qpid-python
