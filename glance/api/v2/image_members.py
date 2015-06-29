@@ -47,6 +47,48 @@ class ImageMembersController(object):
         self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
                                               self.notifier, self.policy)
 
+    def _lookup_image(self, req, image_id):
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            return image_repo.get(image_id)
+        except (exception.NotFound):
+            msg = _("Image %s not found.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = _("You are not authorized to lookup image %s.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
+    @staticmethod
+    def _get_member_repo(image):
+        try:
+            # For public images, a forbidden exception with message
+            # "Public images do not have members" is thrown.
+            return image.get_member_repo()
+        except exception.Forbidden as e:
+            msg = (_("Error fetching members of image %(image_id)s: "
+                     "%(inner_msg)s"), {"image_id": image.image_id,
+                                        "inner_msg": e.msg})
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
+    def _lookup_member(self, image, member_id):
+        member_repo = self._get_member_repo(image)
+        try:
+            return member_repo.get(member_id)
+        except (exception.NotFound):
+            msg = (_("%(m_id)s not found in the member list of the image "
+                     "%(i_id)s."), {"m_id": member_id,
+                                    "i_id": image.image_id})
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        except exception.Forbidden:
+            msg = (_("You are not authorized to lookup the members of the "
+                     "image %s.") % image.image_id)
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
     @utils.mutating
     def create(self, req, image_id, member_id):
         """
@@ -63,21 +105,15 @@ class ImageMembersController(object):
              'updated_at': ..}
 
         """
-        image_repo = self.gateway.get_repo(req.context)
+        image = self._lookup_image(req, image_id)
+        member_repo = self._get_member_repo(image)
         image_member_factory = self.gateway.get_image_member_factory(
             req.context)
         try:
-            image = image_repo.get(image_id)
-            member_repo = image.get_member_repo()
             new_member = image_member_factory.new_image_member(image,
                                                                member_id)
             member_repo.add(new_member)
-
             return new_member
-        except exception.NotFound:
-            msg = _("Image %s not found.") % image_id
-            LOG.warning(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
             msg = _("Not allowed to create members for image %s.") % image_id
             LOG.warning(msg)
@@ -110,18 +146,13 @@ class ImageMembersController(object):
              'updated_at': ..}
 
         """
-        image_repo = self.gateway.get_repo(req.context)
+        image = self._lookup_image(req, image_id)
+        member_repo = self._get_member_repo(image)
+        member = self._lookup_member(image, member_id)
         try:
-            image = image_repo.get(image_id)
-            member_repo = image.get_member_repo()
-            member = member_repo.get(member_id)
             member.status = status
             member_repo.save(member)
             return member
-        except exception.NotFound:
-            msg = _("Image %s not found.") % image_id
-            LOG.warning(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
             msg = _("Not allowed to update members for image %s.") % image_id
             LOG.warning(msg)
@@ -148,22 +179,17 @@ class ImageMembersController(object):
                  'updated_at': ..}, ..
             ]}
         """
-        image_repo = self.gateway.get_repo(req.context)
+        image = self._lookup_image(req, image_id)
+        member_repo = self._get_member_repo(image)
+        members = []
         try:
-            image = image_repo.get(image_id)
-            member_repo = image.get_member_repo()
-            members = []
             for member in member_repo.list():
                 members.append(member)
-            return dict(members=members)
-        except exception.NotFound:
-            msg = _("Image %s not found.") % image_id
-            LOG.warning(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
-        except exception.Forbidden as e:
+        except exception.Forbidden:
             msg = _("Not allowed to list members for image %s.") % image_id
-            LOG.warning(e.msg or msg)
-            raise webob.exc.HTTPForbidden(explanation=e.msg or msg)
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
+        return dict(members=members)
 
     def show(self, req, image_id, member_id):
         """
@@ -179,34 +205,25 @@ class ImageMembersController(object):
              'created_at': ..,
              'updated_at': ..}
         """
-        image_repo = self.gateway.get_repo(req.context)
         try:
-            image = image_repo.get(image_id)
-            member_repo = image.get_member_repo()
-            member = member_repo.get(member_id)
-            return member
-        except (exception.NotFound, exception.Forbidden):
-            msg = _("Image %s not found.") % image_id
-            LOG.warning(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
+            image = self._lookup_image(req, image_id)
+            return self._lookup_member(image, member_id)
+        except webob.exc.HTTPForbidden as e:
+            # Convert Forbidden to NotFound to prevent information
+            # leakage.
+            raise webob.exc.HTTPNotFound(explanation=e.explanation)
 
     @utils.mutating
     def delete(self, req, image_id, member_id):
         """
         Removes a membership from the image.
         """
-
-        image_repo = self.gateway.get_repo(req.context)
+        image = self._lookup_image(req, image_id)
+        member_repo = self._get_member_repo(image)
+        member = self._lookup_member(image, member_id)
         try:
-            image = image_repo.get(image_id)
-            member_repo = image.get_member_repo()
-            member = member_repo.get(member_id)
             member_repo.remove(member)
             return webob.Response(body='', status=204)
-        except exception.NotFound:
-            msg = _("Image %s not found.") % image_id
-            LOG.warning(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
             msg = _("Not allowed to delete members for image %s.") % image_id
             LOG.warning(msg)
