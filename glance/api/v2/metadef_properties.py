@@ -35,8 +35,6 @@ import glance.schema
 
 LOG = logging.getLogger(__name__)
 _ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
 
 
 class NamespacePropertiesController(object):

@@ -26,7 +26,6 @@ from glance import i18n
 
 LOG = logging.getLogger(__name__)
 _ = i18n._
-_LW = i18n._LW
 
 
 def _get(context, object_id, session):
