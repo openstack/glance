@@ -145,7 +145,6 @@ CREATE TABLE image_properties (
   deleted BOOLEAN NOT NULL,
   PRIMARY KEY (id),
   CHECK (deleted IN (0, 1)),
-  UNIQUE (image_id, name),
   FOREIGN KEY(image_id) REFERENCES images (id),
   CONSTRAINT ix_image_properties_image_id_name UNIQUE (image_id, name)
 );
