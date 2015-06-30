@@ -298,6 +298,13 @@ def _filter_images(images, filters, context,
                 to_add = image.get(key) >= value
             elif k.endswith('_max'):
                 to_add = image.get(key) <= value
+            elif k in ['created_at', 'updated_at']:
+                attr_value = image.get(key)
+                operator, isotime = utils.split_filter_op(value)
+                parsed_time = timeutils.parse_isotime(isotime)
+                threshold = timeutils.normalize_time(parsed_time)
+                to_add = utils.evaluate_filter_op(attr_value, operator,
+                                                  threshold)
             elif k != 'is_public' and image.get(k) is not None:
                 to_add = image.get(key) == value
             elif k == 'tags':

@@ -407,3 +407,78 @@ class TestUtils(test_utils.BaseTestCase):
             self.assertRaises(ValueError,
                               utils.parse_valid_host_port,
                               pair)
+
+
+class SplitFilterOpTestCase(test_utils.BaseTestCase):
+
+    def test_less_than_operator(self):
+        expr = 'lt:bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('lt', 'bar'), returned)
+
+    def test_less_than_equal_operator(self):
+        expr = 'lte:bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('lte', 'bar'), returned)
+
+    def test_greater_than_operator(self):
+        expr = 'gt:bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('gt', 'bar'), returned)
+
+    def test_greater_than_equal_operator(self):
+        expr = 'gte:bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('gte', 'bar'), returned)
+
+    def test_not_equal_operator(self):
+        expr = 'neq:bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('neq', 'bar'), returned)
+
+    def test_equal_operator(self):
+        expr = 'eq:bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('eq', 'bar'), returned)
+
+    def test_default_operator(self):
+        expr = 'bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('eq', expr), returned)
+
+
+class EvaluateFilterOpTestCase(test_utils.BaseTestCase):
+
+    def test_less_than_operator(self):
+        self.assertTrue(utils.evaluate_filter_op(9, 'lt', 10))
+        self.assertFalse(utils.evaluate_filter_op(10, 'lt', 10))
+        self.assertFalse(utils.evaluate_filter_op(11, 'lt', 10))
+
+    def test_less_than_equal_operator(self):
+        self.assertTrue(utils.evaluate_filter_op(9, 'lte', 10))
+        self.assertTrue(utils.evaluate_filter_op(10, 'lte', 10))
+        self.assertFalse(utils.evaluate_filter_op(11, 'lte', 10))
+
+    def test_greater_than_operator(self):
+        self.assertFalse(utils.evaluate_filter_op(9, 'gt', 10))
+        self.assertFalse(utils.evaluate_filter_op(10, 'gt', 10))
+        self.assertTrue(utils.evaluate_filter_op(11, 'gt', 10))
+
+    def test_greater_than_equal_operator(self):
+        self.assertFalse(utils.evaluate_filter_op(9, 'gte', 10))
+        self.assertTrue(utils.evaluate_filter_op(10, 'gte', 10))
+        self.assertTrue(utils.evaluate_filter_op(11, 'gte', 10))
+
+    def test_not_equal_operator(self):
+        self.assertTrue(utils.evaluate_filter_op(9, 'neq', 10))
+        self.assertFalse(utils.evaluate_filter_op(10, 'neq', 10))
+        self.assertTrue(utils.evaluate_filter_op(11, 'neq', 10))
+
+    def test_equal_operator(self):
+        self.assertFalse(utils.evaluate_filter_op(9, 'eq', 10))
+        self.assertTrue(utils.evaluate_filter_op(10, 'eq', 10))
+        self.assertFalse(utils.evaluate_filter_op(11, 'eq', 10))
+
+    def test_invalid_operator(self):
+        self.assertRaises(exception.InvalidFilterOperatorValue,
+                          utils.evaluate_filter_op, '10', 'bar', '8')
