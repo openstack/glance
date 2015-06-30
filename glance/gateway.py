@@ -19,20 +19,13 @@ from oslo_log import log as logging
 from glance.api import authorization
 from glance.api import policy
 from glance.api import property_protections
-from glance.common import exception
 from glance.common import property_utils
 from glance.common import store_utils
 import glance.db
 import glance.domain
-from glance.i18n import _LE
 import glance.location
 import glance.notifier
 import glance.quota
-try:
-    import glance.search
-    glance_search = glance.search
-except ImportError:
-    glance_search = None
 
 
 LOG = logging.getLogger(__name__)
@@ -40,16 +33,12 @@ LOG = logging.getLogger(__name__)
 
 class Gateway(object):
     def __init__(self, db_api=None, store_api=None, notifier=None,
-                 policy_enforcer=None, es_api=None):
+                 policy_enforcer=None):
         self.db_api = db_api or glance.db.get_api()
         self.store_api = store_api or glance_store
         self.store_utils = store_utils
         self.notifier = notifier or glance.notifier.Notifier()
         self.policy = policy_enforcer or policy.Enforcer()
-        if es_api:
-            self.es_api = es_api
-        else:
-            self.es_api = glance_search.get_api() if glance_search else None
 
     def get_image_factory(self, context):
         image_factory = glance.domain.ImageFactory()
@@ -246,15 +235,3 @@ class Gateway(object):
         authorized_tag_repo = authorization.MetadefTagRepoProxy(
             notifier_tag_repo, context)
         return authorized_tag_repo
-
-    def get_catalog_search_repo(self, context):
-        if self.es_api is None:
-            LOG.error(_LE('The search and index services are not available. '
-                          'Ensure you have the necessary prerequisite '
-                          'dependencies installed like elasticsearch to use '
-                          'these services.'))
-            raise exception.SearchNotAvailable()
-        search_repo = glance.search.CatalogSearchRepo(context, self.es_api)
-        policy_search_repo = policy.CatalogSearchRepoProxy(
-            search_repo, context, self.policy)
-        return policy_search_repo
