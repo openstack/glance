@@ -20,13 +20,13 @@ import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import timeutils
 import six
 import webob
 
 from glance.common import exception
-from glance.common import utils
 from glance.domain import proxy as domain_proxy
 from glance import i18n
 
@@ -378,54 +378,56 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             self.repo.set_data(data, size)
         except glance_store.StorageFull as e:
             msg = (_("Image storage media is full: %s") %
-                   utils.exception_to_str(e))
+                   encodeutils.exception_to_unicode(e))
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
         except glance_store.StorageWriteDenied as e:
             msg = (_("Insufficient permissions on image storage media: %s")
-                   % utils.exception_to_str(e))
+                   % encodeutils.exception_to_unicode(e))
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except ValueError as e:
             msg = (_("Cannot save data for image %(image_id)s: %(error)s") %
                    {'image_id': self.repo.image_id,
-                    'error': utils.exception_to_str(e)})
+                    'error': encodeutils.exception_to_unicode(e)})
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPBadRequest(
-                explanation=utils.exception_to_str(e))
+                explanation=encodeutils.exception_to_unicode(e))
         except exception.Duplicate as e:
             msg = (_("Unable to upload duplicate image data for image"
                      "%(image_id)s: %(error)s") %
                    {'image_id': self.repo.image_id,
-                    'error': utils.exception_to_str(e)})
+                    'error': encodeutils.exception_to_unicode(e)})
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPConflict(explanation=msg)
         except exception.Forbidden as e:
             msg = (_("Not allowed to upload image data for image %(image_id)s:"
-                     " %(error)s") % {'image_id': self.repo.image_id,
-                                      'error': utils.exception_to_str(e)})
+                     " %(error)s")
+                   % {'image_id': self.repo.image_id,
+                      'error': encodeutils.exception_to_unicode(e)})
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
         except exception.NotFound as e:
+            exc_str = encodeutils.exception_to_unicode(e)
             msg = (_("Image %(image_id)s could not be found after upload."
                      " The image may have been deleted during the upload:"
                      " %(error)s") % {'image_id': self.repo.image_id,
-                                      'error': utils.exception_to_str(e)})
+                                      'error': exc_str})
             _send_notification(notify_error, 'image.upload', msg)
-            raise webob.exc.HTTPNotFound(explanation=utils.exception_to_str(e))
+            raise webob.exc.HTTPNotFound(explanation=exc_str)
         except webob.exc.HTTPError as e:
             with excutils.save_and_reraise_exception():
                 msg = (_("Failed to upload image data for image %(image_id)s"
                          " due to HTTP error: %(error)s") %
                        {'image_id': self.repo.image_id,
-                        'error': utils.exception_to_str(e)})
+                        'error': encodeutils.exception_to_unicode(e)})
                 _send_notification(notify_error, 'image.upload', msg)
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 msg = (_("Failed to upload image data for image %(image_id)s "
                          "due to internal error: %(error)s") %
                        {'image_id': self.repo.image_id,
-                        'error': utils.exception_to_str(e)})
+                        'error': encodeutils.exception_to_unicode(e)})
                 _send_notification(notify_error, 'image.upload', msg)
         else:
             self.send_notification('image.upload', self.repo)

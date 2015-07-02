@@ -14,6 +14,7 @@
 #    under the License.
 import glance_store
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import webob.exc
 
 from glance.api import policy
@@ -56,12 +57,14 @@ class Controller(object):
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
         except exception.Invalid as e:
-            msg = _("Could not update image: %s") % utils.exception_to_str(e)
+            msg = (_("Could not update image: %s")
+                   % encodeutils.exception_to_unicode(e))
             LOG.warning(msg)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.ImageTagLimitExceeded as e:
             msg = (_("Image tag limit exceeded for image %(id)s: %(e)s:")
-                   % {"id": image_id, "e": utils.exception_to_str(e)})
+                   % {"id": image_id,
+                      "e": encodeutils.exception_to_unicode(e)})
             LOG.warning(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
 

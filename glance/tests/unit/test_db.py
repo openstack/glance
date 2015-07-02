@@ -19,10 +19,10 @@ import uuid
 import mock
 from oslo_config import cfg
 from oslo_db import exception as db_exc
+from oslo_utils import encodeutils
 
 from glance.common import crypt
 from glance.common import exception
-from glance.common import utils
 import glance.context
 import glance.db
 from glance.db.sqlalchemy import api
@@ -190,7 +190,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         fake_uuid = str(uuid.uuid4())
         exc = self.assertRaises(exception.ImageNotFound, self.image_repo.get,
                                 fake_uuid)
-        self.assertIn(fake_uuid, utils.exception_to_str(exc))
+        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
 
     def test_get_forbidden(self):
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID4)
@@ -370,7 +370,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image.image_id = fake_uuid
         exc = self.assertRaises(exception.ImageNotFound, self.image_repo.save,
                                 image)
-        self.assertIn(fake_uuid, utils.exception_to_str(exc))
+        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
 
     def test_remove_image(self):
         image = self.image_repo.get(UUID1)
@@ -385,7 +385,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image.image_id = fake_uuid
         exc = self.assertRaises(
             exception.ImageNotFound, self.image_repo.remove, image)
-        self.assertIn(fake_uuid, utils.exception_to_str(exc))
+        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
 
 
 class TestEncryptedLocations(test_utils.BaseTestCase):
@@ -585,7 +585,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         exc = self.assertRaises(exception.NotFound,
                                 self.image_member_repo.remove,
                                 fake_member)
-        self.assertIn(fake_uuid, utils.exception_to_str(exc))
+        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
 
 
 class TestTaskRepo(test_utils.BaseTestCase):

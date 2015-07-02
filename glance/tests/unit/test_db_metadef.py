@@ -14,8 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_utils import encodeutils
+
 from glance.common import exception
-from glance.common import utils
 import glance.context
 import glance.db
 import glance.tests.unit.utils as unit_test_utils
@@ -244,7 +245,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         exc = self.assertRaises(exception.NotFound,
                                 self.namespace_repo.get,
                                 fake_namespace)
-        self.assertIn(fake_namespace, utils.exception_to_str(exc))
+        self.assertIn(fake_namespace, encodeutils.exception_to_unicode(exc))
 
     def test_get_namespace_forbidden(self):
         self.assertRaises(exception.NotFound,
@@ -299,7 +300,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         namespace.namespace = fake_name
         exc = self.assertRaises(exception.NotFound, self.namespace_repo.remove,
                                 namespace)
-        self.assertIn(fake_name, utils.exception_to_str(exc))
+        self.assertIn(fake_name, encodeutils.exception_to_unicode(exc))
 
     def test_get_property(self):
         property = self.property_repo.get(NAMESPACE1, PROPERTY1)
@@ -311,7 +312,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         exc = self.assertRaises(exception.NotFound,
                                 self.property_repo.get,
                                 NAMESPACE2, PROPERTY1)
-        self.assertIn(PROPERTY1, utils.exception_to_str(exc))
+        self.assertIn(PROPERTY1, encodeutils.exception_to_unicode(exc))
 
     def test_list_property(self):
         properties = self.property_repo.list(filters={'namespace': NAMESPACE1})
@@ -328,7 +329,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_list_property_namespace_not_found(self):
         exc = self.assertRaises(exception.NotFound, self.property_repo.list,
                                 filters={'namespace': 'not-a-namespace'})
-        self.assertIn('not-a-namespace', utils.exception_to_str(exc))
+        self.assertIn('not-a-namespace', encodeutils.exception_to_unicode(exc))
 
     def test_add_property(self):
         # NOTE(pawel-koniszewski): Change db_property_fixture to
@@ -392,7 +393,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_get_object_not_found(self):
         exc = self.assertRaises(exception.NotFound, self.object_repo.get,
                                 NAMESPACE2, OBJECT1)
-        self.assertIn(OBJECT1, utils.exception_to_str(exc))
+        self.assertIn(OBJECT1, encodeutils.exception_to_unicode(exc))
 
     def test_list_object(self):
         objects = self.object_repo.list(filters={'namespace': NAMESPACE1})
@@ -407,7 +408,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_list_object_namespace_not_found(self):
         exc = self.assertRaises(exception.NotFound, self.object_repo.list,
                                 filters={'namespace': 'not-a-namespace'})
-        self.assertIn('not-a-namespace', utils.exception_to_str(exc))
+        self.assertIn('not-a-namespace', encodeutils.exception_to_unicode(exc))
 
     def test_add_object(self):
         # NOTE(pawel-koniszewski): Change db_object_fixture to
@@ -475,7 +476,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_get_tag_not_found(self):
         exc = self.assertRaises(exception.NotFound, self.tag_repo.get,
                                 NAMESPACE2, TAG1)
-        self.assertIn(TAG1, utils.exception_to_str(exc))
+        self.assertIn(TAG1, encodeutils.exception_to_unicode(exc))
 
     def test_list_tag(self):
         tags = self.tag_repo.list(filters={'namespace': NAMESPACE1})
@@ -490,7 +491,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def test_list_tag_namespace_not_found(self):
         exc = self.assertRaises(exception.NotFound, self.tag_repo.list,
                                 filters={'namespace': 'not-a-namespace'})
-        self.assertIn('not-a-namespace', utils.exception_to_str(exc))
+        self.assertIn('not-a-namespace', encodeutils.exception_to_unicode(exc))
 
     def test_add_tag(self):
         # NOTE(pawel-koniszewski): Change db_tag_fixture to

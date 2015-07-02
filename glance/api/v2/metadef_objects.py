@@ -16,6 +16,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 import six
 import webob.exc
 from wsme.rest import json
@@ -25,7 +26,6 @@ from glance.api.v2 import metadef_namespaces as namespaces
 from glance.api.v2.model.metadef_object import MetadefObject
 from glance.api.v2.model.metadef_object import MetadefObjects
 from glance.common import exception
-from glance.common import utils
 from glance.common import wsgi
 from glance.common import wsme_utils
 import glance.db
@@ -67,7 +67,7 @@ class MetadefObjectsController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
         return MetadefObject.to_wsme_model(
             new_meta_object,
@@ -96,7 +96,7 @@ class MetadefObjectsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
         return metadef_objects
 
@@ -116,7 +116,7 @@ class MetadefObjectsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
     def update(self, req, metadata_object, namespace, object_name):
@@ -142,7 +142,7 @@ class MetadefObjectsController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
         return MetadefObject.to_wsme_model(
             updated_metadata_obj,
@@ -162,7 +162,7 @@ class MetadefObjectsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
 

@@ -17,6 +17,7 @@ import uuid
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 
 from glance.artifacts.domain import proxy
 from glance.common.artifacts import definitions
@@ -126,7 +127,7 @@ class ArtifactBlobProxy(proxy.ArtifactBlob):
                       ' %s in store from URI') % self.blob.id
             LOG.warn(msg)
         except self.store_api.StoreDeleteNotSupported as e:
-            LOG.warn(utils.exception_to_str(e))
+            LOG.warn(encodeutils.exception_to_unicode(e))
         except self.store_api.UnsupportedBackend:
             exc_type = sys.exc_info()[0].__name__
             msg = (_LE('Failed to delete blob'
@@ -158,8 +159,9 @@ class ArtifactBlobProxy(proxy.ArtifactBlob):
                     return data
             except Exception as e:
                 LOG.warn(_('Get blob %(name)s data failed: '
-                           '%(err)s.') % {'name': self.blob.item_key,
-                                          'err': utils.exception_to_str(e)})
+                           '%(err)s.')
+                         % {'name': self.blob.item_key,
+                            'err': encodeutils.exception_to_unicode(e)})
                 err = e
 
             # tried all locations

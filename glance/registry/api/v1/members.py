@@ -14,6 +14,7 @@
 #    under the License.
 
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import webob.exc
 
 from glance.common import exception
@@ -130,7 +131,7 @@ class Controller(object):
                       "image %(id)s") % {'id': image_id}
             LOG.warn(msg)
             msg = (_("Invalid membership association: %s") %
-                   utils.exception_to_str(e))
+                   encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
         add = []
@@ -147,7 +148,7 @@ class Controller(object):
                           "image %(id)s") % {'id': image_id}
                 LOG.warn(msg)
                 msg = (_("Invalid membership association: %s") %
-                       utils.exception_to_str(e))
+                       encodeutils.exception_to_unicode(e))
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
             # Figure out what can_share should be
@@ -250,7 +251,7 @@ class Controller(object):
                           "image %(id)s") % {'id': image_id}
                 LOG.warn(msg)
                 msg = (_("Invalid membership association: %s") %
-                       utils.exception_to_str(e))
+                       encodeutils.exception_to_unicode(e))
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
         # Look up an existing membership...

@@ -406,21 +406,6 @@ class TestUtils(test_utils.BaseTestCase):
                               utils.parse_valid_host_port,
                               pair)
 
-    def test_exception_to_str(self):
-        class FakeException(Exception):
-            def __str__(self):
-                raise UnicodeError()
-
-        ret = utils.exception_to_str(Exception('error message'))
-        self.assertEqual('error message', ret)
-
-        ret = utils.exception_to_str(Exception('\xa5 error message'))
-        self.assertEqual(' error message', ret)
-
-        ret = utils.exception_to_str(FakeException('\xa5 error message'))
-        self.assertEqual("Caught '%(exception)s' exception." %
-                         {'exception': 'FakeException'}, ret)
-
 
 class UUIDTestCase(test_utils.BaseTestCase):
 

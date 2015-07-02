@@ -17,8 +17,8 @@ import six
 
 from oslo_log import log as logging
 import oslo_messaging
+from oslo_utils import encodeutils
 
-from glance.common import utils
 from glance.search.plugins import base
 
 LOG = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class MetadefHandler(base.NotificationBase):
             actions[event_type](payload)
             return oslo_messaging.NotificationResult.HANDLED
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
 
     def run_create(self, id, payload):
         self.engine.create(

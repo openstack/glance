@@ -14,11 +14,11 @@
 #    under the License.
 
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import six.moves.urllib.parse as urlparse
 import sqlalchemy
 
 from glance.common import exception
-from glance.common import utils
 from glance import i18n
 
 LOG = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ def migrate_location_credentials(migrate_engine, to_quoted):
                 images_table.c.id == image['id']).values(
                     location=fixed_uri).execute()
         except exception.BadStoreUri as e:
-            reason = utils.exception_to_str(e)
+            reason = encodeutils.exception_to_unicode(e)
             msg = _LE("Invalid store uri for image: %(image_id)s. "
                       "Details: %(reason)s") % {'image_id': image.id,
                                                 'reason': reason}

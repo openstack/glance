@@ -16,6 +16,7 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import webob.exc
 
 from glance.api import policy
@@ -97,7 +98,7 @@ class Controller(controller.BaseController):
             registry.delete_member(req.context, image_id, id)
             self._update_store_acls(req, image_id)
         except exception.NotFound as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to remove membership from image "
@@ -154,13 +155,13 @@ class Controller(controller.BaseController):
             registry.add_member(req.context, image_id, id, can_share)
             self._update_store_acls(req, image_id)
         except exception.Invalid as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotFound as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         return webob.exc.HTTPNoContent()
@@ -189,13 +190,13 @@ class Controller(controller.BaseController):
             registry.replace_members(req.context, image_id, body)
             self._update_store_acls(req, image_id)
         except exception.Invalid as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotFound as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         return webob.exc.HTTPNoContent()
@@ -216,10 +217,10 @@ class Controller(controller.BaseController):
         try:
             members = registry.get_member_images(req.context, id)
         except exception.NotFound as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.debug(utils.exception_to_str(e))
+            LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return dict(shared_images=members)
 

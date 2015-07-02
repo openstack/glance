@@ -25,6 +25,7 @@ import os
 import sys
 
 import eventlet
+from oslo_utils import encodeutils
 
 # Monkey patch socket and time
 eventlet.patcher.monkey_patch(all=False, socket=True, time=True, thread=True)
@@ -44,7 +45,6 @@ import osprofiler.notifier
 import osprofiler.web
 
 from glance.common import config
-from glance.common import utils
 from glance.common import wsgi
 from glance import notifier
 
@@ -75,7 +75,7 @@ def main():
                      default_port=9191)
         server.wait()
     except RuntimeError as e:
-        sys.exit("ERROR: %s" % utils.exception_to_str(e))
+        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
 
 
 if __name__ == '__main__':

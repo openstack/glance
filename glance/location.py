@@ -19,6 +19,7 @@ import copy
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 
 from glance.common import exception
@@ -396,8 +397,9 @@ class ImageProxy(glance.domain.proxy.Image):
                 return data
             except Exception as e:
                 LOG.warn(_('Get image %(id)s data failed: '
-                           '%(err)s.') % {'id': self.image.image_id,
-                                          'err': utils.exception_to_str(e)})
+                           '%(err)s.')
+                         % {'id': self.image.image_id,
+                            'err': encodeutils.exception_to_unicode(e)})
                 err = e
         # tried all locations
         LOG.error(_LE('Glance tried all active locations to get data for '

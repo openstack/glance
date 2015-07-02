@@ -40,7 +40,6 @@ import uuid
 from OpenSSL import crypto
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import netutils
 from oslo_utils import strutils
@@ -654,18 +653,6 @@ def parse_valid_host_port(host_port):
                            '"[fe80::a:b:c]:9876").') % ex)
 
     return (host, int(port))
-
-
-def exception_to_str(exc):
-    try:
-        error = six.text_type(exc)
-    except UnicodeError:
-        try:
-            error = str(exc)
-        except UnicodeError:
-            error = ("Caught '%(exception)s' exception." %
-                     {"exception": exc.__class__.__name__})
-    return encodeutils.safe_encode(error, errors='ignore')
 
 
 try:

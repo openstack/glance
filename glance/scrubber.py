@@ -19,11 +19,11 @@ import time
 import eventlet
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import six
 
 from glance.common import crypt
 from glance.common import exception
-from glance.common import utils
 from glance import context
 import glance.db as db_api
 from glance import i18n
@@ -232,7 +232,7 @@ class Scrubber(object):
             records = self.db_queue.get_all_locations()
         except Exception as err:
             LOG.error(_LE("Can not get scrub jobs from queue: %s") %
-                      utils.exception_to_str(err))
+                      encodeutils.exception_to_unicode(err))
             return {}
 
         delete_jobs = {}

@@ -19,6 +19,7 @@ import glance_store
 import jsonschema
 from oslo_config import cfg
 from oslo_serialization import jsonutils as json
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 import semantic_version
 import six
@@ -214,7 +215,7 @@ class ArtifactsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.StorageQuotaFull as e:
             msg = (_("Denying attempt to upload artifact because it exceeds "
-                     "the quota: %s") % utils.exception_to_str(e))
+                     "the quota: %s") % encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')
         except exception.Invalid as e:
@@ -357,7 +358,7 @@ class ArtifactsController(object):
         except Exception as e:
             msg = (_LE("Unable to restore artifact %(artifact_id)s: %(e)s") %
                    {'artifact_id': artifact.id,
-                    'e': utils.exception_to_str(e)})
+                    'e': encodeutils.exception_to_unicode(e)})
             LOG.exception(msg)
 
     def list_artifact_types(self, req):

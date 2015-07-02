@@ -13,8 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_utils import encodeutils
+import six
+
 from glance.common import exception
-from glance.common import utils
 from glance.tests import utils as test_utils
 
 
@@ -25,23 +27,26 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
             message = "default message"
 
         exc = FakeGlanceException()
-        self.assertEqual('default message', utils.exception_to_str(exc))
+        self.assertEqual('default message',
+                         encodeutils.exception_to_unicode(exc))
 
     def test_specified_error_msg(self):
         msg = exception.GlanceException('test')
-        self.assertIn('test', utils.exception_to_str(msg))
+        self.assertIn('test', encodeutils.exception_to_unicode(msg))
 
     def test_default_error_msg_with_kwargs(self):
         class FakeGlanceException(exception.GlanceException):
             message = "default message: %(code)s"
 
         exc = FakeGlanceException(code=500)
-        self.assertEqual("default message: 500", utils.exception_to_str(exc))
+        self.assertEqual("default message: 500",
+                         encodeutils.exception_to_unicode(exc))
 
     def test_specified_error_msg_with_kwargs(self):
         msg = exception.GlanceException('test: %(code)s', code=500)
-        self.assertIn('test: 500', utils.exception_to_str(msg))
+        self.assertIn('test: 500', encodeutils.exception_to_unicode(msg))
 
     def test_non_unicode_error_msg(self):
         exc = exception.GlanceException(str('test'))
-        self.assertIsInstance(utils.exception_to_str(exc), str)
+        self.assertIsInstance(encodeutils.exception_to_unicode(exc),
+                              six.text_type)

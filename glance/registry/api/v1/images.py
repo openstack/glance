@@ -19,6 +19,7 @@ Reference implementation registry server WSGI controller
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import strutils
 from oslo_utils import timeutils
 from webob import exc
@@ -435,7 +436,7 @@ class Controller(object):
             return exc.HTTPConflict(msg)
         except exception.Invalid as e:
             msg = (_("Failed to add image metadata. "
-                     "Got error: %s") % utils.exception_to_str(e))
+                     "Got error: %s") % encodeutils.exception_to_unicode(e))
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except Exception:
@@ -484,7 +485,7 @@ class Controller(object):
             return dict(image=make_image_dict(updated_image))
         except exception.Invalid as e:
             msg = (_("Failed to update image metadata. "
-                     "Got error: %s") % utils.exception_to_str(e))
+                     "Got error: %s") % encodeutils.exception_to_unicode(e))
             LOG.error(msg)
             return exc.HTTPBadRequest(msg)
         except exception.ImageNotFound:
@@ -507,7 +508,7 @@ class Controller(object):
                                    request=req,
                                    content_type='text/plain')
         except exception.Conflict as e:
-            LOG.info(utils.exception_to_str(e))
+            LOG.info(encodeutils.exception_to_unicode(e))
             raise exc.HTTPConflict(body='Image operation conflicts',
                                    request=req,
                                    content_type='text/plain')

@@ -26,6 +26,7 @@ import os
 import sys
 import time
 
+from oslo_utils import encodeutils
 from oslo_utils import timeutils
 
 from glance.common import utils
@@ -69,7 +70,7 @@ def catch_error(action):
                 if options.debug:
                     raise
                 print("Failed to %s. Got error:" % action)
-                pieces = utils.exception_to_str(e).split('\n')
+                pieces = encodeutils.exception_to_unicode(e).split('\n')
                 for piece in pieces:
                     print(piece)
                 return FAILURE

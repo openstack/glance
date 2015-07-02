@@ -16,6 +16,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 import six
 import webob.exc
 from wsme.rest import json
@@ -24,7 +25,6 @@ from glance.api import policy
 from glance.api.v2.model.metadef_tag import MetadefTag
 from glance.api.v2.model.metadef_tag import MetadefTags
 from glance.common import exception
-from glance.common import utils
 from glance.common import wsgi
 from glance.common import wsme_utils
 import glance.db
@@ -68,7 +68,7 @@ class TagsController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
         return MetadefTag.to_wsme_model(new_meta_tag)
@@ -95,7 +95,7 @@ class TagsController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
         return metadef_tags
@@ -127,7 +127,7 @@ class TagsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
         return metadef_tags
@@ -144,7 +144,7 @@ class TagsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
     def update(self, req, metadata_tag, namespace, tag_name):
@@ -164,7 +164,7 @@ class TagsController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
         return MetadefTag.to_wsme_model(updated_metadata_tag)
@@ -182,7 +182,7 @@ class TagsController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
 

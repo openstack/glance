@@ -25,8 +25,8 @@ import os
 import sys
 
 import eventlet
+from oslo_utils import encodeutils
 
-from glance.common import utils
 
 # Monkey patch socket, time, select, threads
 eventlet.patcher.monkey_patch(all=False, socket=True, time=True,
@@ -64,7 +64,7 @@ KNOWN_EXCEPTIONS = (RuntimeError,
 def fail(e):
     global KNOWN_EXCEPTIONS
     return_code = KNOWN_EXCEPTIONS.index(type(e)) + 1
-    sys.stderr.write("ERROR: %s\n" % utils.exception_to_str(e))
+    sys.stderr.write("ERROR: %s\n" % encodeutils.exception_to_unicode(e))
     sys.exit(return_code)
 
 

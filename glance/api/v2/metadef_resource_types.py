@@ -15,6 +15,7 @@
 
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 import six
 import webob.exc
 from wsme.rest import json
@@ -25,7 +26,6 @@ from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociation
 from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociations
 from glance.api.v2.model.metadef_resource_type import ResourceTypes
 from glance.common import exception
-from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.gateway
@@ -64,7 +64,7 @@ class ResourceTypeController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError(e)
         return resource_types
 
@@ -86,7 +86,7 @@ class ResourceTypeController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError(e)
         return resource_types
 
@@ -108,7 +108,7 @@ class ResourceTypeController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
         return ResourceTypeAssociation.to_wsme_model(new_resource_type)
 
@@ -136,7 +136,7 @@ class ResourceTypeController(object):
             LOG.error(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
 
