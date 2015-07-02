@@ -15,7 +15,6 @@
 
 """Tests for `glance.wsgi`."""
 
-import re
 import socket
 import time
 
@@ -42,25 +41,15 @@ class TestWSGIServer(testtools.TestCase):
         server = wsgi.Server()
         server.start(hello_world, 0)
         port = server.sock.getsockname()[1]
-        sock1 = socket.socket()
-        sock1.connect(("127.0.0.1", port))
 
-        fd = sock1.makefile('rw')
-        fd.write(b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n')
-        fd.flush()
+        def get_request(delay=0.0):
+            sock = socket.socket()
+            sock.connect(('127.0.0.1', port))
+            time.sleep(delay)
+            sock.send('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n')
+            return sock.recv(1024)
 
-        buf = fd.read()
         # Should succeed - no timeout
-        self.assertTrue(re.search(greetings, buf))
-
-        sock2 = socket.socket()
-        sock2.connect(("127.0.0.1", port))
-        time.sleep(0.2)
-
-        fd = sock2.makefile('rw')
-        fd.write(b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n')
-        fd.flush()
-
-        buf = fd.read()
+        self.assertTrue(greetings in get_request())
         # Should fail - connection timed out so we get nothing from the server
-        self.assertFalse(buf)
+        self.assertFalse(get_request(delay=0.2))
