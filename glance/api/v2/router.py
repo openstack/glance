@@ -44,9 +44,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/image',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
         mapper.connect('/schemas/images',
                        controller=schemas_resource,
                        action='images',
@@ -54,9 +52,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/images',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
         mapper.connect('/schemas/member',
                        controller=schemas_resource,
                        action='member',
@@ -64,9 +60,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/member',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/members',
                        controller=schemas_resource,
@@ -75,9 +69,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/members',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/task',
                        controller=schemas_resource,
@@ -86,9 +78,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/task',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
         mapper.connect('/schemas/tasks',
                        controller=schemas_resource,
                        action='tasks',
@@ -96,9 +86,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/tasks',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/namespace',
                        controller=schemas_resource,
@@ -107,9 +95,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/namespace',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/namespaces',
                        controller=schemas_resource,
@@ -118,9 +104,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/namespaces',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/resource_type',
                        controller=schemas_resource,
@@ -129,9 +113,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/resource_type',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/resource_types',
                        controller=schemas_resource,
@@ -140,9 +122,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/resource_types',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/property',
                        controller=schemas_resource,
@@ -151,9 +131,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/property',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/properties',
                        controller=schemas_resource,
@@ -162,9 +140,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/properties',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/object',
                        controller=schemas_resource,
@@ -173,9 +149,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/object',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/objects',
                        controller=schemas_resource,
@@ -184,9 +158,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/objects',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/tag',
                        controller=schemas_resource,
@@ -195,9 +167,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/tag',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/schemas/metadefs/tags',
                        controller=schemas_resource,
@@ -206,9 +176,7 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/tags',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         # Metadef resource types
         metadef_resource_types_resource = (
@@ -221,9 +189,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/resource_types',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         mapper.connect('/metadefs/namespaces/{namespace}/resource_types',
                        controller=metadef_resource_types_resource,
@@ -236,9 +202,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/resource_types',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST',
-                       conditions={'method': ['PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET, POST')
 
         mapper.connect('/metadefs/namespaces/{namespace}/resource_types/'
                        '{resource_type}',
@@ -249,9 +213,7 @@ class API(wsgi.Router):
                        '{resource_type}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='DELETE',
-                       conditions={'method': ['GET', 'POST', 'PUT',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='DELETE')
 
         # Metadef Namespaces
         metadef_namespace_resource = metadef_namespaces.create_resource()
@@ -266,9 +228,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST',
-                       conditions={'method': ['PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET, POST')
 
         mapper.connect('/metadefs/namespaces/{namespace}',
                        controller=metadef_namespace_resource,
@@ -285,8 +245,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, PUT, DELETE',
-                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, PUT, DELETE')
 
         # Metadef namespace properties
         metadef_properties_resource = metadef_properties.create_resource()
@@ -305,8 +264,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/properties',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST, DELETE',
-                       conditions={'method': ['PUT', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, POST, DELETE')
 
         mapper.connect('/metadefs/namespaces/{namespace}/properties/{'
                        'property_name}',
@@ -327,8 +285,7 @@ class API(wsgi.Router):
                        'property_name}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, PUT, DELETE',
-                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, PUT, DELETE')
 
         # Metadef objects
         metadef_objects_resource = metadef_objects.create_resource()
@@ -347,8 +304,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/objects',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST, DELETE',
-                       conditions={'method': ['PUT', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, POST, DELETE')
 
         mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
                        'object_name}',
@@ -369,8 +325,7 @@ class API(wsgi.Router):
                        'object_name}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, PUT, DELETE',
-                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, PUT, DELETE')
 
         # Metadef tags
         metadef_tags_resource = metadef_tags.create_resource()
@@ -389,8 +344,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/tags',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST, DELETE',
-                       conditions={'method': ['PUT', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, POST, DELETE')
 
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=metadef_tags_resource,
@@ -411,8 +365,7 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST, PUT, DELETE',
-                       conditions={'method': ['PATCH', 'HEAD']})
+                       allowed_methods='GET, POST, PUT, DELETE')
 
         images_resource = images.create_resource(custom_image_properties)
         mapper.connect('/images',
@@ -426,9 +379,7 @@ class API(wsgi.Router):
         mapper.connect('/images',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST',
-                       conditions={'method': ['PUT', 'DELETE', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='GET, POST')
 
         mapper.connect('/images/{image_id}',
                        controller=images_resource,
@@ -445,8 +396,7 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, PATCH, DELETE',
-                       conditions={'method': ['POST', 'PUT', 'HEAD']})
+                       allowed_methods='GET, PATCH, DELETE')
 
         image_actions_resource = image_actions.create_resource()
         mapper.connect('/images/{image_id}/actions/deactivate',
@@ -460,15 +410,11 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/actions/deactivate',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='POST',
-                       conditions={'method': ['GET', 'PUT', 'DELETE', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='POST')
         mapper.connect('/images/{image_id}/actions/reactivate',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='POST',
-                       conditions={'method': ['GET', 'PUT', 'DELETE', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='POST')
 
         image_data_resource = image_data.create_resource()
         mapper.connect('/images/{image_id}/file',
@@ -482,9 +428,7 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/file',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, PUT',
-                       conditions={'method': ['POST', 'DELETE', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='GET, PUT')
 
         image_tags_resource = image_tags.create_resource()
         mapper.connect('/images/{image_id}/tags/{tag_value}',
@@ -498,9 +442,7 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/tags/{tag_value}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='PUT, DELETE',
-                       conditions={'method': ['GET', 'POST', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='PUT, DELETE')
 
         image_members_resource = image_members.create_resource()
         mapper.connect('/images/{image_id}/members',
@@ -514,9 +456,7 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/members',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST',
-                       conditions={'method': ['PUT', 'DELETE', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='GET, POST')
 
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=image_members_resource,
@@ -533,8 +473,7 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, PUT, DELETE',
-                       conditions={'method': ['POST', 'PATCH', 'HEAD']})
+                       allowed_methods='GET, PUT, DELETE')
 
         tasks_resource = tasks.create_resource()
         mapper.connect('/tasks',
@@ -548,9 +487,7 @@ class API(wsgi.Router):
         mapper.connect('/tasks',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, POST',
-                       conditions={'method': ['PUT', 'DELETE', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='GET, POST')
 
         mapper.connect('/tasks/{task_id}',
                        controller=tasks_resource,
@@ -563,8 +500,6 @@ class API(wsgi.Router):
         mapper.connect('/tasks/{task_id}',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET, DELETE',
-                       conditions={'method': ['POST', 'PUT', 'PATCH',
-                                              'HEAD']})
+                       allowed_methods='GET, DELETE')
 
         super(API, self).__init__(mapper)

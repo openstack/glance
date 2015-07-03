@@ -217,11 +217,11 @@ class RequestTest(test_utils.BaseTestCase):
                 res = req.get_response(api)
                 self.assertEqual(405, res.status_int)
 
-        """Makes sure not implemented methods return 501"""
+        # Makes sure not implemented methods return 405
         req = webob.Request.blank('/schemas/image')
         req.method = 'NonexistentMethod'
         res = req.get_response(api)
-        self.assertEqual(501, res.status_int)
+        self.assertEqual(405, res.status_int)
 
 
 class ResourceTest(test_utils.BaseTestCase):
