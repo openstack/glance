@@ -19,19 +19,7 @@ from glance import i18n
 _ = i18n._
 
 
-class JsonPatchUpdateMixin(object):
-    def _split_path(self, path):
-        """Splits path into (prop_name, rest_of_path)"""
-        parts = path.lstrip('/').split('/', 1)
-        return parts[0], None if len(parts) == 1 else parts[1]
-
-    def _proc_key(self, key_str):
-        """A method to retrieve value by some string key"""
-        raise NotImplemented(
-            "Function must be overloaded to use mixin correctly")
-
-
-class ArtifactProxy(proxy.Artifact, JsonPatchUpdateMixin):
+class ArtifactProxy(proxy.Artifact):
     """A proxy that is capable of modifying an artifact via jsonpatch methods.
 
     Currently supported methods are update, remove, replace.
@@ -48,7 +36,7 @@ class ArtifactProxy(proxy.Artifact, JsonPatchUpdateMixin):
     def _perform_op(self, op, **kwargs):
         path = kwargs.get("path")
         value = kwargs.get("value")
-        prop_name, path_left = self._split_path(path)
+        prop_name, delimiter, path_left = path.lstrip('/').partition('/')
         if not path_left:
             return setattr(self, prop_name, value)
         try:
@@ -115,7 +103,7 @@ def wrap_property(prop_value, full_path):
     raise exc.InvalidJsonPatchPath(path=full_path)
 
 
-class ArtifactListPropertyProxy(proxy.List, JsonPatchUpdateMixin):
+class ArtifactListPropertyProxy(proxy.List):
     """A class to wrap a list property.
 
     Makes possible to modify the property value via supported jsonpatch
@@ -171,7 +159,7 @@ class ArtifactListPropertyProxy(proxy.List, JsonPatchUpdateMixin):
         return self.base
 
 
-class ArtifactDictPropertyProxy(proxy.Dict, JsonPatchUpdateMixin):
+class ArtifactDictPropertyProxy(proxy.Dict):
     """A class to wrap a dict property.
 
     Makes possible to modify the property value via supported jsonpatch
@@ -189,7 +177,7 @@ class ArtifactDictPropertyProxy(proxy.Dict, JsonPatchUpdateMixin):
         return key_str
 
     def replace(self, path, value):
-        start, rest = self._split_path(path)
+        start, delimiter, rest = path.partition('/')
         # the full path MUST exist in replace operation, so let's check
         # that such key exists
         key = self._proc_key(start)
@@ -200,7 +188,7 @@ class ArtifactDictPropertyProxy(proxy.Dict, JsonPatchUpdateMixin):
             self[key] = prop.replace(rest, value)
 
     def remove(self, path, value=None):
-        start, rest = self._split_path(path)
+        start, delimiter, rest = path.partition('/')
         key = self._proc_key(start)
         if not rest:
             del self[key]
@@ -209,7 +197,7 @@ class ArtifactDictPropertyProxy(proxy.Dict, JsonPatchUpdateMixin):
             prop.remove(rest)
 
     def add(self, path, value):
-        start, rest = self._split_path(path)
+        start, delimiter, rest = path.partition('/')
         if not rest:
             self[start] = value
         else:
