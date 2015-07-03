@@ -191,6 +191,12 @@ class DriverTests(object):
                   for l in image['locations']]
         self.assertEqual(locations, actual)
 
+    def test_image_create_without_locations(self):
+        locations = []
+        fixture = {'status': 'queued',
+                   'locations': locations}
+        self.db_api.image_create(self.context, fixture)
+
     def test_image_create_with_location_data(self):
         location_data = [{'url': 'a', 'metadata': {'key': 'value'},
                           'status': 'active'},
