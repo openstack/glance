@@ -167,15 +167,12 @@ common_opts = [
                       'This includes, if used, Swift or S3 credentials. '
                       'Should be set to a random string of length 16, 24 or '
                       '32 bytes')),
-    cfg.StrOpt('digest_algorithm', default='sha1',
+    cfg.StrOpt('digest_algorithm', default='sha256',
                help=_('Digest algorithm which will be used for digital '
-                      'signature; the default is sha1 the default in Kilo '
-                      'for a smooth upgrade process, and it will be updated '
-                      'with sha256 in next release(L). Use the command '
-                      '"openssl list-message-digest-algorithms" to get the '
-                      'available algorithms supported by the version of '
-                      'OpenSSL on the platform. Examples are "sha1", '
-                      '"sha256", "sha512", etc.')),
+                      'signature. Use the command "openssl list-message-'
+                      'digest-algorithms" to get the available algorithms'
+                      'supported by the version of OpenSSL on the platform.'
+                      ' Examples are "sha1", "sha256", "sha512", etc.')),
 ]
 
 CONF = cfg.CONF
