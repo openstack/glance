@@ -2375,7 +2375,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     def test_update_base_attributes(self):
         request = self._get_fake_patch_request()
         body = [
-            {'op': 'replace', 'path': '/id', 'value': UUID1},
             {'op': 'replace', 'path': '/name', 'value': 'fedora'},
             {'op': 'replace', 'path': '/visibility', 'value': 'public'},
             {'op': 'replace', 'path': '/tags', 'value': ['king', 'kong']},
@@ -2392,8 +2391,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = jsonutils.dumps(body)
         output = self.deserializer.update(request)
         expected = {'changes': [
-            {'json_schema_version': 10, 'op': 'replace',
-             'path': ['id'], 'value': UUID1},
             {'json_schema_version': 10, 'op': 'replace',
              'path': ['name'], 'value': 'fedora'},
             {'json_schema_version': 10, 'op': 'replace',
@@ -2439,6 +2436,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_update_readonly_attributes(self):
         samples = {
+            'id': '00000000-0000-0000-0000-000000000000',
             'status': 'active',
             'checksum': 'abcdefghijklmnopqrstuvwxyz012345',
             'size': 9001,
