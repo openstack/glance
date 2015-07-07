@@ -795,7 +795,7 @@ def _image_update(context, values, image_id, purge_props=False,
         _set_properties_for_image(context, image_ref, properties, purge_props,
                                   session)
 
-        if location_data is not None:
+        if location_data:
             _image_locations_set(context, image_ref.id, location_data,
                                  session=session)
 
