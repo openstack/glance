@@ -16,6 +16,7 @@ import collections
 
 import six
 
+from glance.common import exception as exc
 from glance.domain import proxy as image_proxy
 
 
@@ -99,7 +100,10 @@ class Artifact(object):
         setattr(self.base, prop_name, value)
 
     def get_type_specific_property(self, prop_name):
-        return getattr(self.base, prop_name)
+        try:
+            return getattr(self.base, prop_name)
+        except AttributeError:
+            raise exc.ArtifactInvalidProperty(prop=prop_name)
 
     def __pre_publish__(self, *args, **kwargs):
         self.base.__pre_publish__(*args, **kwargs)
