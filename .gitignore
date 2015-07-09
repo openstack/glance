@@ -16,6 +16,7 @@ build
 doc/source/api
 dist
 *.egg
+.eggs/*
 glance.egg-info
 tests.sqlite
 glance/versioninfo
