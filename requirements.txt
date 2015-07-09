@@ -61,5 +61,6 @@ osprofiler>=0.3.0 # Apache-2.0
 # Glance Store
 -e git+https://github.com/openstack/glance_store.git#egg=glance_store
 
+
 # Artifact repository
 semantic-version>=2.3.1
