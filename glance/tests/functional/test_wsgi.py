@@ -50,6 +50,6 @@ class TestWSGIServer(testtools.TestCase):
             return sock.recv(1024)
 
         # Should succeed - no timeout
-        self.assertTrue(greetings in get_request())
+        self.assertIn(greetings, get_request())
         # Should fail - connection timed out so we get nothing from the server
         self.assertFalse(get_request(delay=0.2))

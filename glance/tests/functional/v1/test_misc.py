@@ -114,8 +114,8 @@ class TestMiscellaneous(functional.FunctionalTest):
                    'X-Image-Meta-Disk-Format': 'Invalid', }
         ignored, content = http.request(path, 'POST', headers=headers)
 
-        self.assertTrue('Invalid disk format' in content,
-                        "Could not find 'Invalid disk format' "
-                        "in output: %s" % content)
+        self.assertIn('Invalid disk format', content,
+                      "Could not find 'Invalid disk format' "
+                      "in output: %s" % content)
 
         self.stop_servers()

@@ -1479,7 +1479,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         # on any exception status_int is always 200, so have to check _error
         # dict
         code, res_dict = self._send_request(command, kwargs, method)
-        self.assertTrue('_error' in res_dict)
+        self.assertIn('_error', res_dict)
         self.assertEqual(error_cls, res_dict['_error']['cls'])
         return res_dict
 

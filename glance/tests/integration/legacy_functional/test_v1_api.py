@@ -395,8 +395,8 @@ class TestApi(base.ApiTest):
                                               headers=headers)
         self.assertEqual(400, response.status)
         expected = "Content-Type must be application/octet-stream"
-        self.assertTrue(expected in content,
-                        "Could not find '%s' in '%s'" % (expected, content))
+        self.assertIn(expected, content,
+                      "Could not find '%s' in '%s'" % (expected, content))
 
     def test_filtered_images(self):
         """
@@ -691,7 +691,7 @@ class TestApi(base.ApiTest):
         path = "/v1/images?%s" % (params)
         response, content = self.http.request(path, 'GET')
         self.assertEqual(400, response.status)
-        self.assertTrue("filter size_min got -1" in content)
+        self.assertIn("filter size_min got -1", content)
 
         # 19. GET /images with size_min filter
         # Verify correct images returned with size >= expected
@@ -699,7 +699,7 @@ class TestApi(base.ApiTest):
         path = "/v1/images?%s" % (params)
         response, content = self.http.request(path, 'GET')
         self.assertEqual(400, response.status)
-        self.assertTrue("filter size_max got -1" in content)
+        self.assertIn("filter size_max got -1", content)
 
         # 20. GET /images with size_min filter
         # Verify correct images returned with size >= expected
@@ -707,7 +707,7 @@ class TestApi(base.ApiTest):
         path = "/v1/images?%s" % (params)
         response, content = self.http.request(path, 'GET')
         self.assertEqual(400, response.status)
-        self.assertTrue("Bad value passed to filter min_ram got -1" in content)
+        self.assertIn("Bad value passed to filter min_ram got -1", content)
 
         # 21. GET /images with size_min filter
         # Verify correct images returned with size >= expected
@@ -715,7 +715,7 @@ class TestApi(base.ApiTest):
         path = "/v1/images?%s" % (params)
         response, content = self.http.request(path, 'GET')
         self.assertEqual(400, response.status)
-        self.assertTrue("protected got imalittleteapot" in content)
+        self.assertIn("protected got imalittleteapot", content)
 
         # 22. GET /images with size_min filter
         # Verify correct images returned with size >= expected
@@ -723,7 +723,7 @@ class TestApi(base.ApiTest):
         path = "/v1/images?%s" % (params)
         response, content = self.http.request(path, 'GET')
         self.assertEqual(400, response.status)
-        self.assertTrue("is_public got imalittleteapot" in content)
+        self.assertIn("is_public got imalittleteapot", content)
 
     def test_limited_images(self):
         """
@@ -1008,8 +1008,8 @@ class TestApi(base.ApiTest):
         self.assertEqual(400, response.status)
         type = format.replace('_format', '')
         expected = "Invalid %s format 'bad_value' for image" % type
-        self.assertTrue(expected in content,
-                        "Could not find '%s' in '%s'" % (expected, content))
+        self.assertIn(expected, content,
+                      "Could not find '%s' in '%s'" % (expected, content))
 
         # make sure the image was not created
         # Verify no public images
@@ -1059,8 +1059,8 @@ class TestApi(base.ApiTest):
         self.assertEqual(400, response.status)
         type = format.replace('_format', '').capitalize()
         expected = "%s format is not specified" % type
-        self.assertTrue(expected in content,
-                        "Could not find '%s' in '%s'" % (expected, content))
+        self.assertIn(expected, content,
+                      "Could not find '%s' in '%s'" % (expected, content))
 
     def test_put_image_content_bad_container_format(self):
         self._do_test_put_image_content_missing_format('container_format')
@@ -1420,7 +1420,7 @@ class TestApiWithFakeAuth(base.ApiTest):
 
         # 'spl_delete_prop' has delete permission for spl_role
         # hence the property has been deleted
-        self.assertTrue('spl_delete_prop' not in image['image']['properties'])
+        self.assertNotIn('spl_delete_prop', image['image']['properties'])
 
         # 'spl_create_prop' has create permission for spl_role
         # hence the property has been created

@@ -268,7 +268,7 @@ class TestCopyToFile(functional.FunctionalTest):
 
         expected = 'External sources are not supported: \'%s\'' % copy_from
         msg = 'expected "%s" in "%s"' % (expected, content)
-        self.assertTrue(expected in content, msg)
+        self.assertIn(expected, content, msg)
 
         self.stop_servers()
 
@@ -294,6 +294,6 @@ class TestCopyToFile(functional.FunctionalTest):
 
         expected = 'External sources are not supported: \'swift+config://xxx\''
         msg = 'expected "%s" in "%s"' % (expected, content)
-        self.assertTrue(expected in content, msg)
+        self.assertIn(expected, content, msg)
 
         self.stop_servers()

@@ -70,6 +70,6 @@ class TestMultiprocessing(functional.FunctionalTest):
             self.assertTrue(len(children) >= len(self._get_children()))
             for child in self._get_children():
                 # ensure no new children spawned
-                self.assertTrue(child in children, child)
+                self.assertIn(child, children, child)
 
         self.stop_servers()

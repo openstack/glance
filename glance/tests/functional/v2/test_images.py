@@ -360,7 +360,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('baz', image['foo'])
         self.assertEqual('pong', image['ping'])
         self.assertTrue(image['protected'])
-        self.assertFalse('type' in image, response.text)
+        self.assertNotIn('type', image, response.text)
 
         # Adding 11 image properties should fail since configured limit is 10
         path = self._url('/v2/images/%s' % image_id)
@@ -414,7 +414,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual('baz', image['foo'])
         self.assertEqual('pong', image['ping'])
         self.assertTrue(image['protected'])
-        self.assertFalse('type' in image, response.text)
+        self.assertNotIn('type', image, response.text)
 
         # Try to download data before its uploaded
         path = self._url('/v2/images/%s/file' % image_id)
@@ -1570,7 +1570,7 @@ class TestImages(functional.FunctionalTest):
         # 'random_role' is allowed read 'spl_default_policy'.
         self.assertEqual(image['spl_default_policy'], 'default_bar')
         # 'random_role' is forbidden to read 'spl_creator_policy'.
-        self.assertFalse('spl_creator_policy' in image)
+        self.assertNotIn('spl_creator_policy', image)
 
         # Attempt to replace and remove properties which are permitted
         path = self._url('/v2/images/%s' % image_id)
@@ -1590,7 +1590,7 @@ class TestImages(functional.FunctionalTest):
 
         # 'spl_creator_policy' has delete permission for admin
         # hence the value has been deleted
-        self.assertFalse('spl_creator_policy' in image)
+        self.assertNotIn('spl_creator_policy', image)
 
         # Attempt to read a property that is permitted
         path = self._url('/v2/images/%s' % image_id)
@@ -2357,7 +2357,7 @@ class TestImages(functional.FunctionalTest):
         images = jsonutils.loads(response.text)['images']
         first = jsonutils.loads(response.text)['first']
         self.assertEqual(0, len(images))
-        self.assertTrue('next' not in jsonutils.loads(response.text))
+        self.assertNotIn('next', jsonutils.loads(response.text))
         self.assertEqual('/v2/images', first)
 
         # Create 7 images
@@ -2386,7 +2386,7 @@ class TestImages(functional.FunctionalTest):
         body = jsonutils.loads(response.text)
         self.assertEqual(7, len(body['images']))
         self.assertEqual('/v2/images', body['first'])
-        self.assertFalse('next' in jsonutils.loads(response.text))
+        self.assertNotIn('next', jsonutils.loads(response.text))
 
         # Begin pagination after the first image
         template_url = ('/v2/images?limit=2&sort_dir=asc&sort_key=name'
@@ -2481,7 +2481,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(1, len(images))
         image = images[0]
         self.assertEqual('private', image['visibility'])
-        self.assertTrue('tenant1' in image['name'])
+        self.assertIn('tenant1', image['name'])
 
         # 4. Unknown user sees only public images
         images = list_images('none')
@@ -2681,7 +2681,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertFalse('direct_url' in image)
+        self.assertNotIn('direct_url', image)
 
         # Upload some image data, setting the image location
         path = self._url('/v2/images/%s/file' % image_id)
@@ -2695,7 +2695,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertTrue('direct_url' in image)
+        self.assertIn('direct_url', image)
 
         # Image direct_url should be visible to non-owner, non-admin user
         path = self._url('/v2/images/%s' % image_id)
@@ -2712,7 +2712,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)['images'][0]
-        self.assertTrue('direct_url' in image)
+        self.assertIn('direct_url', image)
 
         self.stop_servers()
 
@@ -2739,7 +2739,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertTrue('locations' in image)
+        self.assertIn('locations', image)
         self.assertTrue(image["locations"] == [])
 
         # Upload some image data, setting the image location
@@ -2754,12 +2754,12 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertTrue('locations' in image)
+        self.assertIn('locations', image)
         loc = image['locations']
         self.assertTrue(len(loc) > 0)
         loc = loc[0]
-        self.assertTrue('url' in loc)
-        self.assertTrue('metadata' in loc)
+        self.assertIn('url', loc)
+        self.assertIn('metadata', loc)
 
         self.stop_servers()
 
@@ -2800,7 +2800,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertFalse('direct_url' in image)
+        self.assertNotIn('direct_url', image)
 
         # Image direct_url should not be visible in a list
         path = self._url('/v2/images')
@@ -2808,7 +2808,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)['images'][0]
-        self.assertFalse('direct_url' in image)
+        self.assertNotIn('direct_url', image)
 
         self.stop_servers()
 
@@ -2883,7 +2883,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertTrue('locations' in image)
+        self.assertIn('locations', image)
         self.assertTrue(image["locations"] == [])
 
         # Update image locations via PATCH
@@ -2907,9 +2907,9 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
-        self.assertTrue('locations' in image)
+        self.assertIn('locations', image)
         self.assertEqual(values, image['locations'])
-        self.assertTrue('direct_url' in image)
+        self.assertIn('direct_url', image)
         self.assertEqual(values[0]['url'], image['direct_url'])
 
         self.stop_servers()
@@ -3002,8 +3002,8 @@ class TestImageMembers(functional.FunctionalTest):
         image_member = jsonutils.loads(response.text)
         self.assertEqual(image_fixture[1]['id'], image_member['image_id'])
         self.assertEqual(TENANT3, image_member['member_id'])
-        self.assertTrue('created_at' in image_member)
-        self.assertTrue('updated_at' in image_member)
+        self.assertIn('created_at', image_member)
+        self.assertIn('updated_at', image_member)
         self.assertEqual('pending', image_member['status'])
 
         # Image list should contain 3 images for TENANT3
@@ -3150,8 +3150,8 @@ class TestImageMembers(functional.FunctionalTest):
         image_member = jsonutils.loads(response.text)
         self.assertEqual(image_fixture[3]['id'], image_member['image_id'])
         self.assertEqual(TENANT4, image_member['member_id'])
-        self.assertTrue('created_at' in image_member)
-        self.assertTrue('updated_at' in image_member)
+        self.assertIn('created_at', image_member)
+        self.assertIn('updated_at', image_member)
 
         # Add Image member to public image
         path = self._url('/v2/images/%s/members' % image_fixture[0]['id'])

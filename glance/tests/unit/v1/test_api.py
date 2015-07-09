@@ -913,9 +913,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         # Test that the Location: header is set to the URI to
         # edit the newly-created image, as required by APP.
         # See LP Bug #719825
-        self.assertTrue('location' in res.headers,
-                        "'location' not in response headers.\n"
-                        "res.headerlist = %r" % res.headerlist)
+        self.assertIn('location', res.headers,
+                      "'location' not in response headers.\n"
+                      "res.headerlist = %r" % res.headerlist)
         res_body = jsonutils.loads(res.body)['image']
         self.assertIn('/images/%s' % res_body['id'], res.headers['location'])
         self.assertEqual('active', res_body['status'])
@@ -1495,7 +1495,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             req.method = 'DELETE'
             res = req.get_response(self.api)
             self.assertEqual(403, res.status_int)
-            self.assertTrue('Forbidden to delete image' in res.body)
+            self.assertIn('Forbidden to delete image', res.body)
 
             # check image metadata is still there with active state
             req = webob.Request.blank("/images/%s" % UUID2)
@@ -1723,9 +1723,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(200, res.status_int)
-        self.assertTrue('x-image-meta-property-key1' in res.headers,
-                        "Did not find required property in headers. "
-                        "Got headers: %r" % res.headers)
+        self.assertIn('x-image-meta-property-key1', res.headers,
+                      "Did not find required property in headers. "
+                      "Got headers: %r" % res.headers)
         self.assertEqual("active", res.headers['x-image-meta-status'])
 
     def test_upload_image_raises_store_disabled(self):
@@ -1800,11 +1800,11 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(201, res.status_int)
         res_body = jsonutils.loads(res.body)['image']
 
-        self.assertTrue('id' in res_body)
+        self.assertIn('id', res_body)
 
         self.image_id = res_body['id']
-        self.assertTrue('/images/%s' %
-                        self.image_id in res.headers['location'])
+        self.assertIn('/images/%s' %
+                      self.image_id, res.headers['location'])
 
         # Verify the status is 'queued'
         self.assertEqual('queued', res_body['status'])
@@ -2016,10 +2016,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(200, res.status_int)
-        self.assertTrue('x-image-meta-property-key2' in res.headers,
-                        "Did not find required property in headers. "
-                        "Got headers: %r" % res.headers)
-        self.assertFalse('x-image-meta-property-key1' in res.headers,
+        self.assertIn('x-image-meta-property-key2', res.headers,
+                      "Did not find required property in headers. "
+                      "Got headers: %r" % res.headers)
+        self.assertNotIn('x-image-meta-property-key1', res.headers,
                          "Found property in headers that was not expected. "
                          "Got headers: %r" % res.headers)
 
@@ -2040,12 +2040,12 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         res = req.get_response(self.api)
         self.assertEqual(200, res.status_int)
-        self.assertTrue('x-image-meta-property-key2' in res.headers,
-                        "Did not find required property in headers. "
-                        "Got headers: %r" % res.headers)
-        self.assertTrue('x-image-meta-property-key3' in res.headers,
-                        "Did not find required property in headers. "
-                        "Got headers: %r" % res.headers)
+        self.assertIn('x-image-meta-property-key2', res.headers,
+                      "Did not find required property in headers. "
+                      "Got headers: %r" % res.headers)
+        self.assertIn('x-image-meta-property-key3', res.headers,
+                      "Did not find required property in headers. "
+                      "Got headers: %r" % res.headers)
 
     def test_publicize_image_unauthorized(self):
         """Create a non-public image then fail to make public"""
@@ -2636,9 +2636,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
 
         for key in expected_headers.keys():
-            self.assertTrue(key in res.headers,
-                            "required header '%s' missing from "
-                            "returned headers" % key)
+            self.assertIn(key, res.headers,
+                          "required header '%s' missing from "
+                          "returned headers" % key)
         for key, value in six.iteritems(expected_headers):
             self.assertEqual(value, res.headers[key])
 

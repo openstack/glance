@@ -80,7 +80,7 @@ class TestTasks(functional.FunctionalTest):
         task = jsonutils.loads(response.text)
         task_id = task['id']
 
-        self.assertTrue('Location' in response.headers)
+        self.assertIn('Location', response.headers)
         self.assertEqual(path + '/' + task_id, response.headers['Location'])
 
         checked_keys = set([u'created_at',

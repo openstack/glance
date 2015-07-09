@@ -1777,7 +1777,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.method = 'GET'
         res = req.get_response(self.api)
         self.assertEqual(405, res.status_int)
-        self.assertTrue(('Allow', 'PUT, DELETE') in res.headerlist)
+        self.assertIn(('Allow', 'PUT, DELETE'), res.headerlist)
 
     def test_get_images_bad_urls(self):
         """Check that routes collections are not on (LP bug 1185828)"""

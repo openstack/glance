@@ -154,10 +154,10 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
     def _check_003(self, engine, data):
         images = db_utils.get_table(engine, 'images')
-        self.assertTrue('type' not in images.c,
-                        "'type' column found in images table columns! "
-                        "images table columns reported by metadata: %s\n"
-                        % images.c.keys())
+        self.assertNotIn('type', images.c,
+                         "'type' column found in images table columns! "
+                         "images table columns reported by metadata: %s\n"
+                         % images.c.keys())
         images_prop = db_utils.get_table(engine, 'image_properties')
         result = images_prop.select().execute()
         types = []
@@ -530,10 +530,10 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
     def _check_016(self, engine, data):
         image_members = db_utils.get_table(engine, 'image_members')
-        self.assertTrue('status' in image_members.c,
-                        "'status' column found in image_members table "
-                        "columns! image_members table columns: %s"
-                        % image_members.c.keys())
+        self.assertIn('status', image_members.c,
+                      "'status' column found in image_members table "
+                      "columns! image_members table columns: %s"
+                      % image_members.c.keys())
 
     def test_legacy_parse_swift_uri_017(self):
         metadata_encryption_key = 'a' * 16

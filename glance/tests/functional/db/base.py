@@ -172,7 +172,7 @@ class DriverTests(object):
 
         # NOTE(bcwaldon): the tags attribute should not be returned as a part
         # of a core image entity
-        self.assertFalse('tags' in image)
+        self.assertNotIn('tags', image)
 
     def test_image_create_duplicate_id(self):
         self.assertRaises(exception.Duplicate,
@@ -323,13 +323,13 @@ class DriverTests(object):
         properties = {p['name']: p for p in image['properties']}
 
         # New properties are set
-        self.assertTrue('ping' in properties)
+        self.assertIn('ping', properties)
         self.assertEqual('pong', properties['ping']['value'])
         self.assertFalse(properties['ping']['deleted'])
 
         # Original properties still show up, but with deleted=True
         # TODO(markwash): db api should not return deleted properties
-        self.assertTrue('foo' in properties)
+        self.assertIn('foo', properties)
         self.assertEqual('bar', properties['foo']['value'])
         self.assertTrue(properties['foo']['deleted'])
 
@@ -968,8 +968,8 @@ class DriverTests(object):
         self.assertFalse(active_image['deleted_at'])
 
         self.assertEqual(2, len(active_image['locations']))
-        self.assertTrue('id' in active_image['locations'][0])
-        self.assertTrue('id' in active_image['locations'][1])
+        self.assertIn('id', active_image['locations'][0])
+        self.assertIn('id', active_image['locations'][1])
         active_image['locations'][0].pop('id')
         active_image['locations'][1].pop('id')
         self.assertEqual(location_data, active_image['locations'])
@@ -1644,7 +1644,7 @@ class TaskTests(test_utils.BaseTestCase):
             self.assertEqual(fixture['updated_at'], task['updated_at'])
             task_details_keys = ['input', 'message', 'result']
             for key in task_details_keys:
-                self.assertFalse(key in task)
+                self.assertNotIn(key, task)
 
     def test_task_create(self):
         task_id = str(uuid.uuid4())

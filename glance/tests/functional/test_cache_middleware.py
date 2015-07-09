@@ -437,7 +437,7 @@ class BaseCacheManageMiddlewareTest(object):
         response, content = http.request(path, 'GET')
         self.assertEqual(200, response.status)
         data = jsonutils.loads(content)
-        self.assertTrue('images' in data)
+        self.assertIn('images', data)
         self.assertEqual(0, len(data['images']))
 
     def add_image(self, name):
@@ -471,7 +471,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
         self.assertEqual([], data['cached_images'])
 
     @skip_if_disabled
@@ -501,7 +501,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
 
         cached_images = data['cached_images']
         self.assertEqual(1, len(cached_images))
@@ -569,7 +569,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
 
         # Verify the last_modified/last_accessed values are valid floats
         for cached_image in data['cached_images']:
@@ -601,7 +601,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
 
         cached_images = data['cached_images']
         self.assertEqual(1, len(cached_images))
@@ -646,7 +646,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
 
         cached_images = data['cached_images']
         self.assertEqual(4, len(cached_images))
@@ -668,11 +668,11 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
 
         cached_images = data['cached_images']
         self.assertEqual(3, len(cached_images))
-        self.assertTrue(ids[2] not in [x['image_id'] for x in cached_images])
+        self.assertNotIn(ids[2], [x['image_id'] for x in cached_images])
 
         # Delete all cached images and verify nothing in cache
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
@@ -686,7 +686,7 @@ class BaseCacheManageMiddlewareTest(object):
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
 
         cached_images = data['cached_images']
         self.assertEqual(0, len(cached_images))
@@ -804,12 +804,12 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         self.assertEqual(200, response.status)
 
         data = jsonutils.loads(content)
-        self.assertTrue('cached_images' in data)
+        self.assertIn('cached_images', data)
 
         cached_images = data['cached_images']
         self.assertEqual(1, len(cached_images))
-        self.assertTrue(ids[0] in [r['image_id']
-                        for r in data['cached_images']])
+        self.assertIn(ids[0], [r['image_id']
+                      for r in data['cached_images']])
 
         self.stop_servers()
 

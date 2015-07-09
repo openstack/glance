@@ -217,7 +217,7 @@ class TestUtils(test_utils.BaseTestCase):
         }
 
         mashup_dict = utils.create_mashup_dict(image_meta)
-        self.assertFalse('properties' in mashup_dict)
+        self.assertNotIn('properties', mashup_dict)
         self.assertEqual(image_meta['properties']['test_key'],
                          mashup_dict['test_key'])
 
@@ -244,7 +244,7 @@ class TestUtils(test_utils.BaseTestCase):
         }
 
         mashup_dict = utils.create_mashup_dict(image_meta)
-        self.assertFalse('properties' in mashup_dict)
+        self.assertNotIn('properties', mashup_dict)
         self.assertNotEqual(image_meta['properties']['min_ram'],
                             mashup_dict['min_ram'])
         self.assertEqual(image_meta['min_ram'], mashup_dict['min_ram'])

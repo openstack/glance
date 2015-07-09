@@ -51,9 +51,9 @@ class TestGlanceManage(functional.FunctionalTest):
         cmd = "sqlite3 %s '.schema'" % self.db_filepath
         exitcode, out, err = execute(cmd, raise_error=True)
 
-        self.assertTrue('CREATE TABLE images' in out)
-        self.assertTrue('CREATE TABLE image_tags' in out)
-        self.assertTrue('CREATE TABLE image_locations' in out)
+        self.assertIn('CREATE TABLE images', out)
+        self.assertIn('CREATE TABLE image_tags', out)
+        self.assertIn('CREATE TABLE image_locations', out)
 
         # NOTE(bcwaldon): For some reason we need double-quotes around
         # these two table names

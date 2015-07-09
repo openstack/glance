@@ -35,6 +35,6 @@ class TestSqlite(functional.FunctionalTest):
         cmd = "sqlite3 tests.sqlite '.schema'"
         exitcode, out, err = execute(cmd, raise_error=True)
 
-        self.assertFalse('BIGINT' in out)
+        self.assertNotIn('BIGINT', out)
 
         self.stop_servers()
