@@ -290,11 +290,6 @@ class UnsupportedHeaderFeature(GlanceException):
     message = _("Provided header feature is unsupported: %(feature)s")
 
 
-class InUseByStore(GlanceException):
-    message = _("The image cannot be deleted because it is in use through "
-                "the backend store outside of Glance.")
-
-
 class ImageSizeLimitExceeded(GlanceException):
     message = _("The provided image is too large.")
 

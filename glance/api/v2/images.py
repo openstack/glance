@@ -155,7 +155,7 @@ class ImagesController(object):
                 image_repo.save(image)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Invalid as e:
+        except (exception.Invalid, exception.BadStoreUri) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update image '%s'", image_id)
@@ -232,15 +232,15 @@ class ImagesController(object):
             image = image_repo.get(image_id)
             image.delete()
             image_repo.remove(image)
-        except exception.Forbidden as e:
+        except (glance_store.Forbidden, exception.Forbidden) as e:
             LOG.debug("User not permitted to delete image '%s'", image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.NotFound as e:
+        except (glance_store.NotFound, exception.NotFound) as e:
             msg = (_("Failed to find image %(image_id)s to delete") %
                    {'image_id': image_id})
             LOG.warn(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
-        except exception.InUseByStore as e:
+        except glance_store.exceptions.InUseByStore as e:
             msg = (_("Image %(id)s could not be deleted "
                      "because it is in use: %(exc)s") %
                    {"id": image_id,

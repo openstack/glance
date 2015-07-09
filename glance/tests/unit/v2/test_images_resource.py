@@ -2000,7 +2000,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_delete_in_use(self):
         def fake_safe_delete_from_backend(self, *args, **kwargs):
-            raise exception.InUseByStore()
+            raise store.exceptions.InUseByStore()
         self.stubs.Set(self.store_utils, 'safe_delete_from_backend',
                        fake_safe_delete_from_backend)
         request = unit_test_utils.get_fake_request()

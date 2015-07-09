@@ -679,7 +679,7 @@ class Controller(controller.BaseController):
             return image_meta_data
         except exception.Duplicate:
             with excutils.save_and_reraise_exception():
-                # Delete image data since it has been supersceded by another
+                # Delete image data since it has been superseded by another
                 # upload and re-raise.
                 LOG.debug("duplicate operation - deleting image data for "
                           " %(id)s (location:%(location)s)" %
@@ -715,18 +715,19 @@ class Controller(controller.BaseController):
                                             image_id,
                                             location_data,
                                             from_state='saving')
-            except Exception as e:
+            except exception.Duplicate:
+                raise
+            except Exception:
                 with excutils.save_and_reraise_exception():
-                    if not isinstance(e, exception.Duplicate):
-                        # NOTE(zhiyan): Delete image data since it has already
-                        # been added to store by above _upload() call.
-                        LOG.warn(_LW("Failed to activate image %s in "
-                                     "registry. About to delete image "
-                                     "bits from store and update status "
-                                     "to 'killed'.") % image_id)
-                        upload_utils.initiate_deletion(req, location_data,
-                                                       image_id)
-                        upload_utils.safe_kill(req, image_id, 'saving')
+                    # NOTE(zhiyan): Delete image data since it has already
+                    # been added to store by above _upload() call.
+                    LOG.warn(_LW("Failed to activate image %s in "
+                                 "registry. About to delete image "
+                                 "bits from store and update status "
+                                 "to 'killed'.") % image_id)
+                    upload_utils.initiate_deletion(req, location_data,
+                                                   image_id)
+                    upload_utils.safe_kill(req, image_id, 'saving')
         else:
             image_meta = None
 
@@ -1130,7 +1131,7 @@ class Controller(controller.BaseController):
             raise HTTPForbidden(explanation=msg,
                                 request=req,
                                 content_type="text/plain")
-        except exception.InUseByStore as e:
+        except store.InUseByStore as e:
             msg = (_("Image %(id)s could not be deleted because it is in use: "
                      "%(exc)s")
                    % {"id": id, "exc": encodeutils.exception_to_unicode(e)})

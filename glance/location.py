@@ -77,12 +77,11 @@ def _check_location_uri(context, store_api, store_utils, uri):
     :param uri: location's uri string
     """
 
-    is_ok = True
     try:
         # NOTE(zhiyan): Some stores return zero when it catch exception
         is_ok = (store_utils.validate_external_location(uri) and
                  store_api.get_size_from_backend(uri, context=context) > 0)
-    except (store.UnknownScheme, store.NotFound):
+    except (store.UnknownScheme, store.NotFound, store.BadStoreUri):
         is_ok = False
     if not is_ok:
         reason = _('Invalid location')
