@@ -262,7 +262,7 @@ class TestImportTask(test_utils.BaseTestCase):
                                               "%s.tasks_import" % image_path)
                 self.assertFalse(os.path.exists(tmp_image_path))
                 self.assertTrue(os.path.exists(image_path))
-                umock.assert_called_once()
+                self.assertEqual(1, umock.call_count)
 
                 with open(image_path) as ifile:
                     self.assertEqual(content, ifile.read())

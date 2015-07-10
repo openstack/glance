@@ -300,21 +300,30 @@ class TestTasksController(test_utils.BaseTestCase):
                 "image_properties": {}
             }
         }
+        get_task_factory = mock.Mock()
+        mock_get_task_factory.return_value = get_task_factory
+
         new_task = mock.Mock()
-        mock_get_task_factory.new_task.return_value = new_task
-        mock_get_task_factory.new_task.run.return_value = mock.ANY
-        mock_get_task_executor_factory.new_task_exector.return_value = \
-            mock.Mock()
-        mock_get_task_repo.add.return_value = mock.Mock()
+        get_task_factory.new_task.return_value = new_task
+
+        new_task.run.return_value = mock.ANY
+
+        get_task_executor_factory = mock.Mock()
+        mock_get_task_executor_factory.return_value = get_task_executor_factory
+        get_task_executor_factory.new_task_executor.return_value = mock.Mock()
+
+        get_task_repo = mock.Mock()
+        mock_get_task_repo.return_value = get_task_repo
+        get_task_repo.add.return_value = mock.Mock()
 
         # call
         self.controller.create(request, task=task)
 
         # assert
-        mock_get_task_factory.new_task.assert_called_once()
-        mock_get_task_repo.add.assert_called_once()
-        mock_get_task_executor_factory.new_task_exector.assert_called_once()
-        mock_get_task_factory.new_task.run.assert_called_once()
+        self.assertEqual(1, get_task_factory.new_task.call_count)
+        self.assertEqual(1, get_task_repo.add.call_count)
+        self.assertEqual(
+            1, get_task_executor_factory.new_task_executor.call_count)
 
     @mock.patch.object(glance.gateway.Gateway, 'get_task_factory')
     def test_notifications_on_create(self, mock_get_task_factory):
