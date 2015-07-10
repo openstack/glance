@@ -76,5 +76,5 @@ class TestTaskExecutor(test_utils.BaseTestCase):
             self.executor.begin_processing(self.task.task_id)
 
         # assert the call
-        load_mock.assert_called_once()
-        engine.assert_called_once()
+        self.assertEqual(1, load_mock.call_count)
+        self.assertEqual(1, engine.run.call_count)
