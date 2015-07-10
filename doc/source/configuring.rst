@@ -912,6 +912,18 @@ Can only be specified in configuration files.
 Images will be chunked into objects of this size (in megabytes).
 For best performance, this should be a power of two.
 
+* ``rados_connect_timeout``
+
+Optional. Default: ``0``
+
+Can only be specified in configuration files.
+
+`This option is specific to the RBD storage backend.`
+
+Prevents glance-api hangups during the connection to RBD. Sets the time
+to wait (in seconds) for glance-api before closing the connection.
+Setting ``rados_connect_timeout<=0`` means no timeout.
+
 * ``rbd_store_ceph_conf=PATH``
 
 Optional. Default: ``/etc/ceph/ceph.conf``, ``~/.ceph/config``, and ``./ceph.conf``
