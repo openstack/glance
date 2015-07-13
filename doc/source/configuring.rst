@@ -1486,9 +1486,8 @@ Optional. Default: ``None``
 Configuring Glance digest algorithm
 -----------------------------------
 
-Digest algorithm which will be used for digital signature; the default is
-sha1 for a smooth upgrade process but the recommended value is sha256. Use the
-command::
+Digest algorithm that will be used for digital signature. The default
+is sha256. Use the command::
 
   openssl list-message-digest-algorithms
 
@@ -1499,7 +1498,7 @@ return a ValueError exception with "No such digest method" error.
 
 * ``digest_algorithm=<algorithm>``
 
-Optional. Default: ``sha1``
+Optional. Default: ``sha256``
 
 Configuring http_keepalive option
 ----------------------------------
