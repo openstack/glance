@@ -304,6 +304,7 @@ class ApiServer(Server):
         self.image_property_quota = 10
         self.image_tag_quota = 10
         self.image_location_quota = 2
+        self.disable_path = None
 
         self.needs_database = True
         default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
@@ -368,13 +369,15 @@ filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
 """
         self.paste_conf_base = """[pipeline:glance-api]
-pipeline = versionnegotiation gzip unauthenticated-context rootapp
+pipeline = healthcheck versionnegotiation gzip unauthenticated-context rootapp
 
 [pipeline:glance-api-caching]
-pipeline = versionnegotiation gzip unauthenticated-context cache rootapp
+pipeline = healthcheck versionnegotiation gzip unauthenticated-context
+ cache rootapp
 
 [pipeline:glance-api-cachemanagement]
 pipeline =
+    healthcheck
     versionnegotiation
     gzip
     unauthenticated-context
@@ -383,10 +386,10 @@ pipeline =
     rootapp
 
 [pipeline:glance-api-fakeauth]
-pipeline = versionnegotiation gzip fakeauth context rootapp
+pipeline = healthcheck versionnegotiation gzip fakeauth context rootapp
 
 [pipeline:glance-api-noauth]
-pipeline = versionnegotiation gzip context rootapp
+pipeline = healthcheck versionnegotiation gzip context rootapp
 
 [composite:rootapp]
 paste.composite_factory = glance.api:root_app_factory
@@ -406,6 +409,11 @@ paste.app_factory = glance.api.v2.router:API.factory
 
 [app:apiv3app]
 paste.app_factory = glance.api.v3.router:API.factory
+
+[filter:healthcheck]
+paste.filter_factory = oslo_middleware:Healthcheck.factory
+backends = disable_by_file
+disable_by_file_path = %(disable_path)s
 
 [filter:versionnegotiation]
 paste.filter_factory =
@@ -458,6 +466,7 @@ class RegistryServer(Server):
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
+        self.disable_path = None
 
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
@@ -481,16 +490,21 @@ policy_default_rule = %(policy_default_rule)s
 flavor = %(deployment_flavor)s
 """
         self.paste_conf_base = """[pipeline:glance-registry]
-pipeline = unauthenticated-context registryapp
+pipeline = healthcheck unauthenticated-context registryapp
 
 [pipeline:glance-registry-fakeauth]
-pipeline = fakeauth context registryapp
+pipeline = healthcheck fakeauth context registryapp
 
 [pipeline:glance-registry-trusted-auth]
-pipeline = context registryapp
+pipeline = healthcheck context registryapp
 
 [app:registryapp]
 paste.app_factory = glance.registry.api:API.factory
+
+[filter:healthcheck]
+paste.filter_factory = oslo_middleware:Healthcheck.factory
+backends = disable_by_file
+disable_by_file_path = %(disable_path)s
 
 [filter:context]
 paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
