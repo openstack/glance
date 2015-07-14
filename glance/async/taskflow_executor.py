@@ -15,14 +15,13 @@
 
 import contextlib
 
+import futurist
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
 from stevedore import driver
 from taskflow import engines
 from taskflow.listeners import logging as llistener
-from taskflow.types import futures
-from taskflow.utils import eventlet_utils
 
 import glance.async
 from glance.common.scripts import utils as script_utils
@@ -77,10 +76,10 @@ class TaskExecutor(glance.async.TaskExecutor):
             yield None
         else:
             max_workers = CONF.taskflow_executor.max_workers
-            if eventlet_utils.EVENTLET_AVAILABLE:
-                yield futures.GreenThreadPoolExecutor(max_workers=max_workers)
-            else:
-                yield futures.ThreadPoolExecutor(max_workers=max_workers)
+            try:
+                yield futurist.GreenThreadPoolExecutor(max_workers=max_workers)
+            except RuntimeError:
+                yield futurist.ThreadPoolExecutor(max_workers=max_workers)
 
     def _get_flow(self, task):
         try:
