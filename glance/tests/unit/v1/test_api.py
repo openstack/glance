@@ -1510,7 +1510,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         a pending_delete image
         """
         # First deletion
-        self.config(delayed_delete=True, scrubber_datadir='/tmp/scrubber')
+        self.config(delayed_delete=True)
         req = webob.Request.blank("/images/%s" % UUID2)
         req.method = 'DELETE'
         res = req.get_response(self.api)

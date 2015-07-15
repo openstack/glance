@@ -76,12 +76,12 @@ def schedule_delayed_delete_from_backend(context, image_id, location):
     :param location: The image location entry
     """
 
-    __, db_queue = scrubber.get_scrub_queues()
+    db_queue = scrubber.get_scrub_queue()
 
     if not CONF.use_user_token:
         context = None
 
-    ret = db_queue.add_location(image_id, location, user_context=context)
+    ret = db_queue.add_location(image_id, location)
     if ret:
         location['status'] = 'pending_delete'
         if 'id' in location:

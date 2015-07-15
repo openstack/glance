@@ -14,7 +14,6 @@
 #    under the License.
 
 import datetime
-import os
 import uuid
 
 import glance_store as store
@@ -1944,8 +1943,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
         Must be set to 'deleted' when delayed_delete isenabled.
         """
-        scrubber_dir = os.path.join(self.test_dir, 'scrubber')
-        self.config(delayed_delete=True, scrubber_datadir=scrubber_dir)
+        self.config(delayed_delete=True)
 
         request = unit_test_utils.get_fake_request(is_admin=True)
         image = self.db.image_create(request.context, {'status': 'queued'})
@@ -1973,8 +1971,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 
     def test_delayed_delete(self):
-        scrubber_dir = os.path.join(self.test_dir, 'scrubber')
-        self.config(delayed_delete=True, scrubber_datadir=scrubber_dir)
+        self.config(delayed_delete=True)
         request = unit_test_utils.get_fake_request()
         self.assertIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 

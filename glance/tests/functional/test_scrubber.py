@@ -17,14 +17,12 @@ import os
 import sys
 import time
 
-import glance_store.location
 import httplib2
 from oslo_serialization import jsonutils
 from oslo_utils import units
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
-from glance.common import crypt
 from glance.tests import functional
 from glance.tests.utils import execute
 
@@ -116,59 +114,6 @@ class TestScrubber(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def test_scrubber_with_metadata_enc(self):
-        """
-        test that files written to scrubber_data_dir use
-        metadata_encryption_key when available to encrypt the location
-        """
-
-        # FIXME(flaper87): It looks like an older commit
-        # may have broken this test. The file_queue `add_location`
-        # is not being called.
-        self.skipTest("Test broken. See bug #1366682")
-        self.cleanup()
-        self.start_servers(delayed_delete=True,
-                           daemon=True,
-                           default_store='file')
-
-        # add an image
-
-        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
-        response, content = self._send_http_request(path, 'POST', body='XXX')
-        self.assertEqual(201, response.status)
-        image = jsonutils.loads(content)['image']
-        self.assertEqual('active', image['status'])
-
-        # delete the image
-        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1",
-                                              self.api_port,
-                                              image['id'])
-        response, content = self._send_http_request(path, 'DELETE')
-        self.assertEqual(200, response.status)
-
-        response, content = self._send_http_request(path, 'HEAD')
-        self.assertEqual(200, response.status)
-        self.assertEqual('pending_delete', response['x-image-meta-status'])
-
-        # ensure the marker file has encrypted the image location by decrypting
-        # it and checking the image_id is intact
-        file_path = os.path.join(self.api_server.scrubber_datadir, image['id'])
-        marker_uri = None
-        with open(file_path, 'r') as f:
-            marker_uri = f.readline().strip()
-        self.assertTrue(marker_uri is not None)
-
-        decrypted_uri = crypt.urlsafe_decrypt(
-            self.api_server.metadata_encryption_key, marker_uri)
-        loc = glance_store.location.StoreLocation({})
-        loc.parse_uri(decrypted_uri)
-
-        self.assertEqual("file", loc.scheme)
-        self.assertEqual(image['id'], loc.obj)
-
-        self.wait_for_scrub(path)
-        self.stop_servers()
-
     def test_scrubber_delete_handles_exception(self):
         """
         Test that the scrubber handles the case where an
@@ -217,11 +162,6 @@ class TestScrubber(functional.FunctionalTest):
         self.assertEqual(0, exitcode)
 
         self.wait_for_scrub(path)
-
-        # Make sure there are no queue files associated with image.
-        queue_file_path = os.path.join(self.api_server.scrubber_datadir,
-                                       image['id'])
-        self.assertFalse(os.path.exists(queue_file_path))
 
         self.stop_servers()
 
