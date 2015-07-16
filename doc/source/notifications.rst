@@ -131,7 +131,8 @@ Payload
     Tenant ID of the account receiving the image (string)
   receiver_user_id
     User ID of the account receiving the image (string)
-    destination_ip
+  destination_ip
+    The receiver's IP address to which the image was sent (string)
   bytes_sent
     The number of bytes actually sent
 
