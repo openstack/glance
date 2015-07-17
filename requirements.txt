@@ -3,11 +3,6 @@
 # process, which may cause wedges in the gate later.
 
 pbr<2.0,>=1.6
-#
-# The greenlet package must be compiled with gcc and needs
-# the Python.h headers. Make sure you install the python-dev
-# package to get the right headers...
-greenlet>=0.3.2
 
 # < 0.8.0/0.8 does not work, see https://bugs.launchpad.net/bugs/1153983
 SQLAlchemy<1.1.0,>=0.9.9
@@ -19,7 +14,6 @@ Routes!=2.0,>=1.12.3;python_version!='2.7'
 WebOb>=1.2.3
 sqlalchemy-migrate>=0.9.6
 httplib2>=0.7.5
-kombu>=3.0.7
 pycrypto>=2.6
 iso8601>=0.1.9
 oslo.config>=2.3.0 # Apache-2.0
@@ -32,14 +26,6 @@ futurist>=0.1.2 # Apache-2.0
 taskflow>=1.16.0
 keystonemiddleware>=2.0.0
 WSME>=0.7
-# For openstack/common/lockutils
-posix-ipc
-
-# For Swift storage backend.
-python-swiftclient>=2.2.0
-
-# For VMware storage backed.
-oslo.vmware>=1.16.0 # Apache-2.0
 
 # For paste.util.template used in keystone.common.template
 Paste

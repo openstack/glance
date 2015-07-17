@@ -28,8 +28,6 @@ Fixes bug #1081043
 """
 import types  # noqa
 
-# NOTE(flaper87): This is bad but there ain't better way to do it.
-from glance_store._drivers import swift  # noqa
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
