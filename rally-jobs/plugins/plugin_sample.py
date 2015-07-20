@@ -16,7 +16,7 @@
 """ Sample of plugin for Glance.
 
 For more Glance related benchmarks take a look here:
-github.com/stackforge/rally/blob/master/rally/benchmark/scenarios/glance/
+github.com/openstack/rally/tree/master/samples/tasks/scenarios/glance
 
 About plugins: https://rally.readthedocs.org/en/latest/plugins.html
 
@@ -25,8 +25,8 @@ Rally concepts https://wiki.openstack.org/wiki/Rally/Concepts
 
 import os
 
-from rally.benchmark.scenarios import base
-from rally.benchmark import utils as bench_utils
+from rally.task.scenarios import base
+from rally.task import utils as task_utils
 
 
 class GlancePlugin(base.Scenario):
@@ -63,10 +63,10 @@ class GlancePlugin(base.Scenario):
 
             image = self.clients("glance").images.create(**kw)
 
-            image = bench_utils.wait_for(
+            image = task_utils.wait_for(
                 image,
-                is_ready=bench_utils.resource_is("active"),
-                update_resource=bench_utils.get_from_manager(),
+                is_ready=task_utils.resource_is("active"),
+                update_resource=task_utils.get_from_manager(),
                 timeout=100,
                 check_interval=0.5)
 
