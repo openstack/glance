@@ -9,11 +9,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-24 06:10+0000\n"
-"PO-Revision-Date: 2015-06-23 13:20+0000\n"
+"POT-Creation-Date: 2015-07-21 06:05+0000\n"
+"PO-Revision-Date: 2015-07-15 00:39+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
-"glance/language/pt_BR/)\n"
+"Language-Team: Portuguese (Brazil) (http://www.transifex.com/p/glance/"
+"language/pt_BR/)\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -28,10 +28,6 @@ msgid ""
 msgstr ""
 "%(image_id)s: campo %(key)s difere (origem é %(master_value)s, destino é "
 "%(slave_value)s)"
-
-#, python-format
-msgid "%s directory does not exist."
-msgstr "Diretório %s não existe."
 
 #, python-format
 msgid "Access denied to image %(id)s but returning 'not found'"
@@ -98,10 +94,6 @@ msgstr "Falha ao excluir arquivo %(path)s. Erro recebido: %(e)s"
 #, python-format
 msgid "Failed to delete image %s in store from URI"
 msgstr "Falha ao excluir imagem %s no armazenamento da URI"
-
-#, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "Falha ao encontrar imagem para excluir: %s"
 
 #, python-format
 msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
