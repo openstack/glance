@@ -21,6 +21,7 @@ import traceback
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import oslo_utils.importutils as imp
 from oslo_utils import timeutils
 import six
@@ -28,7 +29,6 @@ from webob import exc
 
 from glance.common import client
 from glance.common import exception
-from glance.common import utils
 from glance.common import wsgi
 from glance import i18n
 
@@ -184,7 +184,7 @@ class Controller(object):
                 if self.raise_exc:
                     raise
 
-                cls, val = e.__class__, utils.exception_to_str(e)
+                cls, val = e.__class__, encodeutils.exception_to_unicode(e)
                 msg = (_LE("RPC Call Error: %(val)s\n%(tb)s") %
                        dict(val=val, tb=traceback.format_exc()))
                 LOG.error(msg)

@@ -60,11 +60,11 @@ import time
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 import xattr
 
 from glance.common import exception
-from glance.common import utils
 from glance import i18n
 from glance.image_cache.drivers import base
 
@@ -288,13 +288,13 @@ class Driver(base.Driver):
                 os.unlink(self.get_image_filepath(image_id, 'queue'))
 
         def rollback(e):
-            set_attr('error', utils.exception_to_str(e))
+            set_attr('error', encodeutils.exception_to_unicode(e))
 
             invalid_path = self.get_image_filepath(image_id, 'invalid')
             LOG.debug("Fetch of cache file failed (%(e)s), rolling back by "
                       "moving '%(incomplete_path)s' to "
                       "'%(invalid_path)s'" %
-                      {'e': utils.exception_to_str(e),
+                      {'e': encodeutils.exception_to_unicode(e),
                        'incomplete_path': incomplete_path,
                        'invalid_path': invalid_path})
             os.rename(incomplete_path, invalid_path)

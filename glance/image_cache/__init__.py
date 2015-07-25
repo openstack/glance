@@ -21,6 +21,7 @@ import hashlib
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import importutils
 from oslo_utils import units
@@ -266,13 +267,13 @@ class ImageCache(object):
             with excutils.save_and_reraise_exception():
                 # image_iter has given us bad, (size_checked_iter has found a
                 # bad length), or corrupt data (checksum is wrong).
-                LOG.exception(utils.exception_to_str(e))
+                LOG.exception(encodeutils.exception_to_unicode(e))
         except Exception as e:
             LOG.exception(_LE("Exception encountered while tee'ing "
                               "image '%(image_id)s' into cache: %(error)s. "
                               "Continuing with response.") %
                           {'image_id': image_id,
-                           'error': utils.exception_to_str(e)})
+                           'error': encodeutils.exception_to_unicode(e)})
 
             # If no checksum provided continue responding even if
             # caching failed.

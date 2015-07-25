@@ -24,6 +24,7 @@ import sys
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 from six.moves import http_client
 import six.moves.urllib.parse as urlparse
 from webob import exc
@@ -700,7 +701,7 @@ def main():
     try:
         config.parse_args()
     except RuntimeError as e:
-        sys.exit("ERROR: %s" % utils.exception_to_str(e))
+        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
 
     # Setup logging
     logging.setup('glance')
@@ -715,10 +716,10 @@ def main():
         command(CONF, CONF.args)
     except TypeError as e:
         LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
-        sys.exit("ERROR: %s" % utils.exception_to_str(e))
+        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
     except ValueError as e:
         LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
-        sys.exit("ERROR: %s" % utils.exception_to_str(e))
+        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
 
 
 if __name__ == '__main__':

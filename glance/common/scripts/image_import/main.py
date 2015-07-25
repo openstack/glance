@@ -19,6 +19,7 @@ __all__ = [
 
 from oslo_concurrency import lockutils
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 import six
 
@@ -26,7 +27,6 @@ from glance.api.v2 import images as v2_api
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
 from glance.common import store_utils
-from glance.common import utils as common_utils
 from glance import i18n
 
 
@@ -71,7 +71,7 @@ def _execute(t_id, task_repo, image_repo, image_factory):
         # TODO(nikhil): need to bring back save_and_reraise_exception when
         # necessary
         err_msg = ("Error: " + six.text_type(type(e)) + ': ' +
-                   common_utils.exception_to_str(e))
+                   encodeutils.exception_to_unicode(e))
         log_msg = _LE(err_msg + ("Task ID %s" % task.task_id))  # noqa
         LOG.exception(log_msg)
 
@@ -156,7 +156,7 @@ def set_image_data(image, uri, task_id):
     except Exception as e:
         with excutils.save_and_reraise_exception():
             LOG.warn(_LW("Task %(task_id)s failed with exception %(error)s") %
-                     {"error": common_utils.exception_to_str(e),
+                     {"error": encodeutils.exception_to_unicode(e),
                       "task_id": task_id})
             LOG.info(_LI("Task %(task_id)s: Could not import image file"
                          " %(image_data)s") % {"image_data": uri,

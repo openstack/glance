@@ -19,6 +19,7 @@ import os
 import glance_store as store_api
 from glance_store import backend
 from oslo_config import cfg
+from oslo_utils import encodeutils
 import six
 from stevedore import named
 from taskflow.patterns import linear_flow as lf
@@ -29,7 +30,6 @@ from taskflow.types import failure
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
-from glance.common import utils as common_utils
 from glance import i18n
 
 
@@ -339,7 +339,7 @@ class _CompleteTask(task.Task):
             # TODO(nikhil): need to bring back save_and_reraise_exception when
             # necessary
             err_msg = ("Error: " + six.text_type(type(e)) + ': ' +
-                       common_utils.exception_to_str(e))
+                       encodeutils.exception_to_unicode(e))
             log_msg = err_msg + _LE("Task ID %s") % task.task_id
             LOG.exception(log_msg)
 

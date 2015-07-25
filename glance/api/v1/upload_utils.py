@@ -15,6 +15,7 @@
 import glance_store as store_api
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 import webob.exc
 
@@ -197,7 +198,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
 
     except exception.Duplicate as e:
         msg = (_("Attempt to upload duplicate image: %s") %
-               utils.exception_to_str(e))
+               encodeutils.exception_to_unicode(e))
         LOG.warn(msg)
         # NOTE(dosaboy): do not delete the image since it is likely that this
         # conflict is a result of another concurrent upload that will be
@@ -209,7 +210,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
 
     except exception.Forbidden as e:
         msg = (_("Forbidden upload attempt: %s") %
-               utils.exception_to_str(e))
+               encodeutils.exception_to_unicode(e))
         LOG.warn(msg)
         safe_kill(req, image_id, 'saving')
         notifier.error('image.upload', msg)
@@ -219,7 +220,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
 
     except store_api.StorageFull as e:
         msg = (_("Image storage media is full: %s") %
-               utils.exception_to_str(e))
+               encodeutils.exception_to_unicode(e))
         LOG.error(msg)
         safe_kill(req, image_id, 'saving')
         notifier.error('image.upload', msg)
@@ -229,7 +230,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
 
     except store_api.StorageWriteDenied as e:
         msg = (_("Insufficient permissions on image storage media: %s") %
-               utils.exception_to_str(e))
+               encodeutils.exception_to_unicode(e))
         LOG.error(msg)
         safe_kill(req, image_id, 'saving')
         notifier.error('image.upload', msg)
@@ -249,7 +250,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
 
     except exception.StorageQuotaFull as e:
         msg = (_("Denying attempt to upload image because it exceeds the "
-                 "quota: %s") % utils.exception_to_str(e))
+                 "quota: %s") % encodeutils.exception_to_unicode(e))
         LOG.warn(msg)
         safe_kill(req, image_id, 'saving')
         notifier.error('image.upload', msg)

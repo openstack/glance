@@ -17,6 +17,7 @@ import json
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import six
 import webob.exc
 
@@ -72,7 +73,7 @@ class SearchController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
     def plugins_info(self, req):
@@ -84,7 +85,7 @@ class SearchController(object):
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
     def index(self, req, actions, default_index=None, default_type=None):
@@ -107,7 +108,7 @@ class SearchController(object):
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPInternalServerError()
 
 

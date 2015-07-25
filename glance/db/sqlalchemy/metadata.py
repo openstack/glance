@@ -25,6 +25,7 @@ import re
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import timeutils
 import six
 import sqlalchemy
@@ -32,7 +33,6 @@ from sqlalchemy import and_
 from sqlalchemy.schema import MetaData
 from sqlalchemy.sql import select
 
-from glance.common import utils
 from glance import i18n
 
 LOG = logging.getLogger(__name__)
@@ -187,7 +187,7 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
                                  if isfile(join(metadata_path, f))
                                  and f.endswith('.json')]
     except OSError as e:
-        LOG.error(utils.exception_to_str(e))
+        LOG.error(encodeutils.exception_to_unicode(e))
         return
 
     if not json_schema_files:
@@ -208,7 +208,7 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
             with open(file) as json_file:
                 metadata = json.load(json_file)
         except Exception as e:
-            LOG.error(utils.exception_to_str(e))
+            LOG.error(encodeutils.exception_to_unicode(e))
             continue
 
         values = {
@@ -446,7 +446,7 @@ def _export_data_to_file(meta, path):
             with open(file_name, 'w') as json_file:
                 json_file.write(json.dumps(values))
         except Exception as e:
-            LOG.exception(utils.exception_to_str(e))
+            LOG.exception(encodeutils.exception_to_unicode(e))
         LOG.info(_LI("Namespace %(namespace)s saved in %(file)s") % {
             'namespace': namespace_file_name, 'file': file_name})
 

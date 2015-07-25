@@ -15,6 +15,7 @@
 
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 import six
 import webob.exc
 from wsme.rest import json
@@ -25,7 +26,6 @@ from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociation
 from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociations
 from glance.api.v2.model.metadef_resource_type import ResourceTypes
 from glance.common import exception
-from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.gateway
@@ -96,8 +96,9 @@ class ResourceTypeController(object):
             rs_type_repo.add(new_resource_type)
 
         except exception.Forbidden as e:
-            msg = (_LE("Forbidden to create resource type. Reason: %("
-                       "reason)s") % {'reason': utils.exception_to_str(e)})
+            msg = (_LE("Forbidden to create resource type. "
+                       "Reason: %(reason)s")
+                   % {'reason': encodeutils.exception_to_unicode(e)})
             LOG.error(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
@@ -155,7 +156,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             if key in image:
                 msg = _("Attribute '%s' is read-only.") % key
                 raise webob.exc.HTTPForbidden(
-                    explanation=utils.exception_to_str(msg))
+                    explanation=encodeutils.exception_to_unicode(msg))
 
     def create(self, request):
         body = self._get_request_body(request)
