@@ -196,7 +196,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         raise webob.exc.HTTPGone(explanation=msg, request=req,
                                  content_type='text/plain')
 
-    except exception.Duplicate as e:
+    except (store_api.Duplicate, exception.Duplicate) as e:
         msg = (_("Attempt to upload duplicate image: %s") %
                encodeutils.exception_to_unicode(e))
         LOG.warn(msg)

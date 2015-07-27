@@ -93,3 +93,8 @@ class BaseController(object):
                 raise webob.exc.HTTPBadRequest(explanation=msg,
                                                request=req,
                                                content_type='text/plain')
+            except store.NotFound:
+                msg = _("Data for image_id not found: %s") % image_id
+                raise webob.exc.HTTPNotFound(explanation=msg,
+                                             request=req,
+                                             content_type='text/plain')
