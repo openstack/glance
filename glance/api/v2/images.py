@@ -338,8 +338,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     _path_depth_limits = {'locations': {'add': 2, 'remove': 2, 'replace': 1}}
 
-    _default_sort_dir = 'desc'
-
     _supported_operations = ('add', 'remove', 'replace')
 
     def __init__(self, schema=None):
