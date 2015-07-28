@@ -882,6 +882,10 @@ class Resource(object):
         except webob.exc.WSGIHTTPException as e:
             exc_info = sys.exc_info()
             raise translate_exception(request, e), None, exc_info[2]
+        except Exception as e:
+            LOG.exception(_LE("Caught error: %s"), six.text_type(e))
+            response = webob.exc.HTTPInternalServerError()
+            return response
 
         try:
             response = webob.Response(request=request)
