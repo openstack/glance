@@ -253,7 +253,8 @@ class ImageRepo(object):
 
     def add(self, image):
         image_values = self._format_image_to_db(image)
-        if image_values['size'] > CONF.image_size_cap:
+        if (image_values['size'] is not None
+           and image_values['size'] > CONF.image_size_cap):
             raise exception.ImageSizeLimitExceeded
         # the updated_at value is not set in the _format_image_to_db
         # function since it is specific to image create
@@ -266,7 +267,8 @@ class ImageRepo(object):
 
     def save(self, image, from_state=None):
         image_values = self._format_image_to_db(image)
-        if image_values['size'] > CONF.image_size_cap:
+        if (image_values['size'] is not None
+           and image_values['size'] > CONF.image_size_cap):
             raise exception.ImageSizeLimitExceeded
         try:
             new_values = self.db_api.image_update(self.context,
