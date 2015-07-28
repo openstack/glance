@@ -153,7 +153,7 @@ class CooperativeReader(object):
             self.read = cooperative_read(fd)
         else:
             self.iterator = None
-            self.buffer = ''
+            self.buffer = b''
             self.position = 0
 
     def read(self, length=None):
@@ -168,7 +168,7 @@ class CooperativeReader(object):
                 # if no length specified but some data exists in buffer,
                 # return that data and clear the buffer
                 result = self.buffer[self.position:]
-                self.buffer = ''
+                self.buffer = b''
                 self.position = 0
                 return str(result)
             else:
@@ -178,11 +178,11 @@ class CooperativeReader(object):
                 try:
                     if self.iterator is None:
                         self.iterator = self.__iter__()
-                    return self.iterator.next()
+                    return next(self.iterator)
                 except StopIteration:
                     return ''
                 finally:
-                    self.buffer = ''
+                    self.buffer = b''
                     self.position = 0
         else:
             result = bytearray()
@@ -206,13 +206,13 @@ class CooperativeReader(object):
                     try:
                         if self.iterator is None:
                             self.iterator = self.__iter__()
-                        self.buffer = self.iterator.next()
+                        self.buffer = next(self.iterator)
                         self.position = 0
                     except StopIteration:
-                        self.buffer = ''
+                        self.buffer = b''
                         self.position = 0
-                        return str(result)
-            return str(result)
+                        return bytes(result)
+            return bytes(result)
 
     def __iter__(self):
         return cooperative_iter(self.fd.__iter__())
@@ -313,7 +313,7 @@ def get_image_meta_from_headers(response):
                     raise exception.InvalidParameterValue(value=result[key],
                                                           param=key,
                                                           extra_msg=extra)
-            if result[key] < 0 and result[key] is not None:
+            if result[key] is not None and result[key] < 0:
                 extra = _('Cannot be a negative value.')
                 raise exception.InvalidParameterValue(value=result[key],
                                                       param=key,
