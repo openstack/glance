@@ -35,13 +35,13 @@ from glance.tests.utils import skip_if_disabled
 from glance.tests.utils import xattr_writes_supported
 
 FIXTURE_LENGTH = 1024
-FIXTURE_DATA = '*' * FIXTURE_LENGTH
+FIXTURE_DATA = b'*' * FIXTURE_LENGTH
 
 
 class ImageCacheTestCase(object):
 
     def _setup_fixture_file(self):
-        FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
+        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
 
         self.assertFalse(self.cache.is_cached(1))
 
@@ -64,7 +64,7 @@ class ImageCacheTestCase(object):
         """
         self._setup_fixture_file()
 
-        buff = six.StringIO()
+        buff = six.BytesIO()
         with self.cache.open_for_read(1) as cache_file:
             for chunk in cache_file:
                 buff.write(chunk)
@@ -78,7 +78,7 @@ class ImageCacheTestCase(object):
         """
         self._setup_fixture_file()
 
-        buff = six.StringIO()
+        buff = six.BytesIO()
         with self.cache.open_for_read(1) as cache_file:
             for chunk in cache_file:
                 buff.write(chunk)
@@ -112,7 +112,7 @@ class ImageCacheTestCase(object):
             self.assertFalse(self.cache.is_cached(image_id))
 
         for image_id in (1, 2):
-            FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
+            FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
             self.assertTrue(self.cache.cache_image_file(image_id,
                                                         FIXTURE_FILE))
 
@@ -128,7 +128,7 @@ class ImageCacheTestCase(object):
     def test_clean_stalled(self):
         """Test the clean method removes expected images."""
         incomplete_file_path = os.path.join(self.cache_dir, 'incomplete', '1')
-        incomplete_file = open(incomplete_file_path, 'w')
+        incomplete_file = open(incomplete_file_path, 'wb')
         incomplete_file.write(FIXTURE_DATA)
         incomplete_file.close()
 
@@ -148,7 +148,7 @@ class ImageCacheTestCase(object):
         incomplete_file_path_2 = os.path.join(self.cache_dir,
                                               'incomplete', '2')
         for f in (incomplete_file_path_1, incomplete_file_path_2):
-            incomplete_file = open(f, 'w')
+            incomplete_file = open(f, 'wb')
             incomplete_file.write(FIXTURE_DATA)
             incomplete_file.close()
 
@@ -181,21 +181,21 @@ class ImageCacheTestCase(object):
         # prune. We should see only 5 images left after pruning, and the
         # images that are least recently accessed should be the ones pruned...
         for x in range(10):
-            FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
+            FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
             self.assertTrue(self.cache.cache_image_file(x, FIXTURE_FILE))
 
         self.assertEqual(10 * units.Ki, self.cache.get_cache_size())
 
         # OK, hit the images that are now cached...
         for x in range(10):
-            buff = six.StringIO()
+            buff = six.BytesIO()
             with self.cache.open_for_read(x) as cache_file:
                 for chunk in cache_file:
                     buff.write(chunk)
 
         # Add a new image to cache.
         # This is specifically to test the bug: 1438564
-        FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
+        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
         self.assertTrue(self.cache.cache_image_file(99, FIXTURE_FILE))
 
         self.cache.prune()
@@ -223,13 +223,13 @@ class ImageCacheTestCase(object):
         """
         self.assertEqual(0, self.cache.get_cache_size())
 
-        FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
+        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
         self.assertTrue(self.cache.cache_image_file('xxx', FIXTURE_FILE))
 
         self.assertEqual(1024, self.cache.get_cache_size())
 
         # OK, hit the image that is now cached...
-        buff = six.StringIO()
+        buff = six.BytesIO()
         with self.cache.open_for_read('xxx') as cache_file:
             for chunk in cache_file:
                 buff.write(chunk)
@@ -249,7 +249,7 @@ class ImageCacheTestCase(object):
         self.assertFalse(self.cache.is_cached(1))
         self.assertFalse(self.cache.is_queued(1))
 
-        FIXTURE_FILE = six.StringIO(FIXTURE_DATA)
+        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
 
         self.assertTrue(self.cache.queue_image(1))
 
@@ -289,7 +289,7 @@ class ImageCacheTestCase(object):
         image_id = '1'
         self.assertFalse(self.cache.is_cached(image_id))
         with self.cache.driver.open_for_write(image_id) as cache_file:
-            cache_file.write('a')
+            cache_file.write(b'a')
         self.assertTrue(self.cache.is_cached(image_id),
                         "Image %s was NOT cached!" % image_id)
         # make sure it has tidied up
@@ -332,7 +332,7 @@ class ImageCacheTestCase(object):
         # test a case where an exception NOT raised while the file is open,
         # and a consuming iterator completes
         def consume(image_id):
-            data = ['a', 'b', 'c', 'd', 'e', 'f']
+            data = [b'a', b'b', b'c', b'd', b'e', b'f']
             checksum = None
             caching_iter = self.cache.get_caching_iter(image_id, checksum,
                                                        iter(data))
@@ -356,9 +356,9 @@ class ImageCacheTestCase(object):
         to consume data, and rolls back the cache.
         """
         def faulty_backend():
-            data = ['a', 'b', 'c', 'Fail', 'd', 'e', 'f']
+            data = [b'a', b'b', b'c', b'Fail', b'd', b'e', b'f']
             for d in data:
-                if d == 'Fail':
+                if d == b'Fail':
                     raise exception.GlanceException('Backend failure')
                 yield d
 
@@ -383,11 +383,11 @@ class ImageCacheTestCase(object):
         """
         # test a case where a consuming iterator just stops.
         def falloffend(image_id):
-            data = ['a', 'b', 'c', 'd', 'e', 'f']
+            data = [b'a', b'b', b'c', b'd', b'e', b'f']
             checksum = None
             caching_iter = self.cache.get_caching_iter(image_id, checksum,
                                                        iter(data))
-            self.assertEqual('a', caching_iter.next())
+            self.assertEqual(b'a', next(caching_iter))
 
         image_id = '1'
         self.assertFalse(self.cache.is_cached(image_id))
@@ -402,7 +402,7 @@ class ImageCacheTestCase(object):
         self.assertTrue(os.path.exists(invalid_file_path))
 
     def test_gate_caching_iter_good_checksum(self):
-        image = "12345678990abcdefghijklmnop"
+        image = b"12345678990abcdefghijklmnop"
         image_id = 123
 
         md5 = hashlib.md5()
@@ -410,19 +410,19 @@ class ImageCacheTestCase(object):
         checksum = md5.hexdigest()
 
         cache = image_cache.ImageCache()
-        img_iter = cache.get_caching_iter(image_id, checksum, image)
+        img_iter = cache.get_caching_iter(image_id, checksum, [image])
         for chunk in img_iter:
             pass
         # checksum is valid, fake image should be cached:
         self.assertTrue(cache.is_cached(image_id))
 
     def test_gate_caching_iter_bad_checksum(self):
-        image = "12345678990abcdefghijklmnop"
+        image = b"12345678990abcdefghijklmnop"
         image_id = 123
         checksum = "foobar"  # bad.
 
         cache = image_cache.ImageCache()
-        img_iter = cache.get_caching_iter(image_id, checksum, image)
+        img_iter = cache.get_caching_iter(image_id, checksum, [image])
 
         def reader():
             for chunk in img_iter:
@@ -539,7 +539,7 @@ class TestImageCacheNoDep(test_utils.BaseTestCase):
 
         self.driver = FailingFileDriver()
         cache = image_cache.ImageCache()
-        data = ['a', 'b', 'c', 'Fail', 'd', 'e', 'f']
+        data = [b'a', b'b', b'c', b'Fail', b'd', b'e', b'f']
 
         caching_iter = cache.get_caching_iter('dummy_id', None, iter(data))
         self.assertEqual(data, list(caching_iter))
@@ -557,7 +557,7 @@ class TestImageCacheNoDep(test_utils.BaseTestCase):
 
         self.driver = OpenFailingDriver()
         cache = image_cache.ImageCache()
-        data = ['a', 'b', 'c', 'd', 'e', 'f']
+        data = [b'a', b'b', b'c', b'd', b'e', b'f']
 
         caching_iter = cache.get_caching_iter('dummy_id', None, iter(data))
         self.assertEqual(data, list(caching_iter))
