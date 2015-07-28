@@ -226,7 +226,7 @@ class TestStoreImage(utils.BaseTestCase):
         # in Location proxy layer. Complete test rule for
         # 'store.check_location_metadata()' testing please
         # check below cases within 'TestStoreMetaDataChecker'.
-        location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
+        location_bad = {'url': UUID3, 'metadata': b"a invalid metadata"}
 
         self.assertRaises(glance_store.BackendException,
                           image1.locations.append, location_bad)
@@ -315,7 +315,7 @@ class TestStoreImage(utils.BaseTestCase):
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
-        location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
+        location_bad = {'url': UUID3, 'metadata': b"a invalid metadata"}
 
         self.assertRaises(glance_store.BackendException,
                           image1.locations.extend, [location_bad])
@@ -417,7 +417,7 @@ class TestStoreImage(utils.BaseTestCase):
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
-        location_bad = {'url': UUID3, 'metadata': "a invalid metadata"}
+        location_bad = {'url': UUID3, 'metadata': b"a invalid metadata"}
 
         self.assertRaises(glance_store.BackendException,
                           image1.locations.insert, 0, location_bad)
@@ -511,7 +511,7 @@ class TestStoreImage(utils.BaseTestCase):
         image2 = glance.location.ImageProxy(image_stub2, context,
                                             self.store_api, self.store_utils)
 
-        location_bad = {'url': UUID2, 'metadata': "a invalid metadata"}
+        location_bad = {'url': UUID2, 'metadata': b"a invalid metadata"}
 
         self.assertRaises(glance_store.BackendException,
                           image2.locations.__iadd__, [location_bad])
@@ -921,7 +921,7 @@ class TestStoreAddToBackend(utils.BaseTestCase):
         self._good_metadata(m)
 
     def test_bad_top_level_nonunicode(self):
-        metadata = {'key': 'a string'}
+        metadata = {'key': b'a string'}
         self._bad_metadata(metadata)
 
     def test_bad_nonunicode_dict_list(self):
