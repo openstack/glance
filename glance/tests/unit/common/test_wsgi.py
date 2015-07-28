@@ -317,6 +317,25 @@ class ResourceTest(test_utils.BaseTestCase):
         self.assertIsInstance(response, webob.exc.HTTPForbidden)
         self.assertEqual(403, response.status_code)
 
+    def test_call_raises_exception(self):
+        class FakeController(object):
+            def index(self, shirt, pants=None):
+                return (shirt, pants)
+
+        resource = wsgi.Resource(FakeController(), None, None)
+
+        def dispatch(self, obj, action, *args, **kwargs):
+            raise Exception("test exception")
+
+        self.stubs.Set(wsgi.Resource, 'dispatch', dispatch)
+
+        request = wsgi.Request.blank('/')
+
+        response = resource.__call__(request)
+
+        self.assertIsInstance(response, webob.exc.HTTPInternalServerError)
+        self.assertEqual(500, response.status_code)
+
     @mock.patch.object(wsgi, 'translate_exception')
     def test_resource_call_error_handle_localized(self,
                                                   mock_translate_exception):
