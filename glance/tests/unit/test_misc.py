@@ -15,6 +15,7 @@
 
 import os
 
+import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
@@ -34,13 +35,21 @@ class UtilsTestCase(test_utils.BaseTestCase):
         plaintext_list = ['']
         blocksize = 64
         for i in range(3 * blocksize):
-            plaintext_list.append(os.urandom(i))
+            text = os.urandom(i)
+            if six.PY3:
+                text = text.decode('latin1')
+            plaintext_list.append(text)
 
         for key in key_list:
             for plaintext in plaintext_list:
                 ciphertext = crypt.urlsafe_encrypt(key, plaintext, blocksize)
-                self.assertNotEqual(ciphertext, plaintext)
+                self.assertIsInstance(ciphertext, bytes)
+                if six.PY3:
+                    self.assertNotEqual(ciphertext, plaintext.encode('utf-8'))
+                else:
+                    self.assertNotEqual(ciphertext, plaintext)
                 text = crypt.urlsafe_decrypt(key, ciphertext)
+                self.assertIsInstance(text, str)
                 self.assertEqual(plaintext, text)
 
     def test_empty_metadata_headers(self):

@@ -15,6 +15,7 @@
 import datetime
 
 import mock
+import six
 
 from glance.common.artifacts import declarative
 import glance.common.artifacts.definitions as defs
@@ -401,7 +402,11 @@ class TestDeclarativeProperties(test_utils.BaseTestCase):
         self.assertEqual(1234, tt.address[1])
         self.assertEqual(True, tt.address[2])
 
-        self.assertRaises(exc.InvalidArtifactPropertyValue, tt.address.sort)
+        # On Python 3, sort() fails because int (1) and string ("20") are not
+        # comparable
+        if six.PY2:
+            self.assertRaises(exc.InvalidArtifactPropertyValue,
+                              tt.address.sort)
         self.assertRaises(exc.InvalidArtifactPropertyValue, tt.address.pop, 0)
         self.assertRaises(exc.InvalidArtifactPropertyValue, tt.address.pop, 1)
         self.assertRaises(exc.InvalidArtifactPropertyValue, tt.address.pop)

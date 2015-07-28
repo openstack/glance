@@ -634,7 +634,7 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         resp = webob.Response(request=request)
         self.assertRaises(webob.exc.HTTPForbidden,
                           cache_filter.process_response, resp)
-        self.assertEqual([''], resp.app_iter)
+        self.assertEqual([b''], resp.app_iter)
 
     def test_v1_process_response_download_restricted(self):
         """
