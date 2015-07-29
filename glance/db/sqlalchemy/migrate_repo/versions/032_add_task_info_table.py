@@ -37,7 +37,8 @@ def define_task_info_table(meta):
                       Column('input', Text()),
                       Column('result', Text()),
                       Column('message', Text()),
-                      mysql_engine='InnoDB')
+                      mysql_engine='InnoDB',
+                      mysql_charset='utf8')
 
     return task_info
 

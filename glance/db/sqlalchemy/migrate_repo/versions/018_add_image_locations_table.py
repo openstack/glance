@@ -50,6 +50,8 @@ def upgrade(migrate_engine):
                           nullable=False,
                           default=False,
                           index=True),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
     )
 
     schema.create_tables([image_locations_table])

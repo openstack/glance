@@ -60,6 +60,7 @@ def define_image_properties_table(meta):
                              UniqueConstraint('image_id', 'key',
                                               **constr_kwargs),
                              mysql_engine='InnoDB',
+                             mysql_charset='utf8',
                              extend_existing=True)
 
     if meta.bind.name != 'ibm_db_sa':

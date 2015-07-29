@@ -44,6 +44,7 @@ def define_artifacts_table(meta):
                       Column('deleted_at', DateTime()),
                       Column('published_at', DateTime()),
                       mysql_engine='InnoDB',
+                      mysql_charset='utf8',
                       extend_existing=True)
 
     Index('ix_artifact_name_and_version', artifacts.c.name,
@@ -69,6 +70,7 @@ def define_artifact_tags_table(meta):
                           Column('updated_at', DateTime(),
                                  nullable=False),
                           mysql_engine='InnoDB',
+                          mysql_charset='utf8',
                           extend_existing=True)
 
     Index('ix_artifact_tags_artifact_id', artifact_tags.c.artifact_id)
@@ -101,6 +103,7 @@ def define_artifact_dependencies_table(meta):
                                   Column('updated_at', DateTime(),
                                          nullable=False),
                                   mysql_engine='InnoDB',
+                                  mysql_charset='utf8',
                                   extend_existing=True)
 
     Index('ix_artifact_dependencies_source_id',
@@ -132,6 +135,7 @@ def define_artifact_blobs_table(meta):
                            Column('updated_at', DateTime(),
                                   nullable=False),
                            mysql_engine='InnoDB',
+                           mysql_charset='utf8',
                            extend_existing=True)
     Index('ix_artifact_blobs_artifact_id',
           artifact_blobs.c.artifact_id)
@@ -162,6 +166,7 @@ def define_artifact_properties_table(meta):
                                        nullable=False),
                                 Column('position', Integer()),
                                 mysql_engine='InnoDB',
+                                mysql_charset='utf8',
                                 extend_existing=True)
     Index('ix_artifact_properties_artifact_id',
           artifact_properties.c.artifact_id)
@@ -187,6 +192,7 @@ def define_artifact_blob_locations_table(meta):
                                     Column('status', String(36),
                                            nullable=True),
                                     mysql_engine='InnoDB',
+                                    mysql_charset='utf8',
                                     extend_existing=True)
     Index('ix_artifact_blob_locations_blob_id',
           artifact_blob_locations.c.blob_id)

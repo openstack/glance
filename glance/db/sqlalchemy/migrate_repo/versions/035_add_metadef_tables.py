@@ -66,6 +66,7 @@ def define_metadef_namespaces_table(meta):
                        Column('updated_at', DateTime()),
                        UniqueConstraint('namespace', **_constr_kwargs),
                        mysql_engine='InnoDB',
+                       mysql_charset='utf8',
                        extend_existing=True)
 
     if meta.bind.name != 'ibm_db_sa':
@@ -95,6 +96,7 @@ def define_metadef_objects_table(meta):
                     UniqueConstraint('namespace_id', 'name',
                                      **_constr_kwargs),
                     mysql_engine='InnoDB',
+                    mysql_charset='utf8',
                     extend_existing=True)
 
     if meta.bind.name != 'ibm_db_sa':
@@ -123,6 +125,7 @@ def define_metadef_properties_table(meta):
         Column('updated_at', DateTime()),
         UniqueConstraint('namespace_id', 'name', **_constr_kwargs),
         mysql_engine='InnoDB',
+        mysql_charset='utf8',
         extend_existing=True)
 
     if meta.bind.name != 'ibm_db_sa':
@@ -149,6 +152,7 @@ def define_metadef_resource_types_table(meta):
         Column('updated_at', DateTime()),
         UniqueConstraint('name', **_constr_kwargs),
         mysql_engine='InnoDB',
+        mysql_charset='utf8',
         extend_existing=True)
 
     if meta.bind.name != 'ibm_db_sa':
@@ -180,6 +184,7 @@ def define_metadef_namespace_resource_types_table(meta):
         UniqueConstraint('resource_type_id', 'namespace_id',
                          **_constr_kwargs),
         mysql_engine='InnoDB',
+        mysql_charset='utf8',
         extend_existing=True)
 
     if meta.bind.name != 'ibm_db_sa':

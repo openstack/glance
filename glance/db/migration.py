@@ -62,5 +62,4 @@ def db_sync(version=None, init_version=0, engine=None):
     return get_backend().db_sync(engine=engine,
                                  abs_path=MIGRATE_REPO_PATH,
                                  version=version,
-                                 init_version=init_version,
-                                 sanity_check=False)
+                                 init_version=init_version)
