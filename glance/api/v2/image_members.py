@@ -69,8 +69,8 @@ class ImageMembersController(object):
             return image.get_member_repo()
         except exception.Forbidden as e:
             msg = (_("Error fetching members of image %(image_id)s: "
-                     "%(inner_msg)s"), {"image_id": image.image_id,
-                                        "inner_msg": e.msg})
+                     "%(inner_msg)s") % {"image_id": image.image_id,
+                                         "inner_msg": e.msg})
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
 
@@ -80,8 +80,8 @@ class ImageMembersController(object):
             return member_repo.get(member_id)
         except (exception.NotFound):
             msg = (_("%(m_id)s not found in the member list of the image "
-                     "%(i_id)s."), {"m_id": member_id,
-                                    "i_id": image.image_id})
+                     "%(i_id)s.") % {"m_id": member_id,
+                                     "i_id": image.image_id})
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except exception.Forbidden:
