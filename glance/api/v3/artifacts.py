@@ -154,23 +154,18 @@ class ArtifactsController(object):
             # retrieve artifact from db
             return self._get_artifact_with_dependencies(artifact_repo,
                                                         new_artifact.id)
-        except TypeError as e:
+        except (TypeError,
+                exception.ArtifactNotFound,
+                exception.Invalid,
+                exception.DuplicateLocation) as e:
             raise webob.exc.HTTPBadRequest(explanation=e)
-        except exception.ArtifactNotFound as e:
-            raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        except exception.DuplicateLocation as dup:
-            raise webob.exc.HTTPBadRequest(explanation=dup.msg)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.InvalidParameterValue as e:
-            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.LimitExceeded as e:
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
-        except exception.Duplicate as dupex:
-            raise webob.exc.HTTPConflict(explanation=dupex.msg)
-        except exception.Invalid as e:
-            raise webob.exc.HTTPBadRequest(explanation=e.msg)
+        except exception.Duplicate as e:
+            raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
@@ -219,9 +214,8 @@ class ArtifactsController(object):
                 updated = self._do_update_op(updated, change)
             artifact_repo.save(updated)
             return self._get_artifact_with_dependencies(artifact_repo, id)
-        except (exception.InvalidArtifactPropertyValue,
-                exception.InvalidJsonPatchPath,
-                exception.InvalidParameterValue) as e:
+        except (exception.InvalidJsonPatchPath,
+                exception.Invalid) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -232,8 +226,6 @@ class ArtifactsController(object):
                      "the quota: %s") % encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')
-        except exception.Invalid as e:
-            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.LimitExceeded as e:
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')

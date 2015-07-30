@@ -64,31 +64,26 @@ class ImagesController(object):
             image = image_factory.new_image(extra_properties=extra_properties,
                                             tags=tags, **image)
             image_repo.add(image)
-        except exception.DuplicateLocation as dup:
-            raise webob.exc.HTTPBadRequest(explanation=dup.msg)
-        except exception.Invalid as e:
+        except (exception.DuplicateLocation,
+                exception.Invalid) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
+        except (exception.ReservedProperty,
+                exception.ReadonlyProperty) as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to create image")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.InvalidParameterValue as e:
-            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.LimitExceeded as e:
             LOG.warn(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
-        except exception.Duplicate as dupex:
-            raise webob.exc.HTTPConflict(explanation=dupex.msg)
-        except exception.ReservedProperty as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.ReadonlyProperty as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except TypeError as e:
-            LOG.debug(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(e))
+        except exception.Duplicate as e:
+            raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
+        except TypeError as e:
+            LOG.debug(encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e)
 
         return image
 
@@ -160,8 +155,6 @@ class ImagesController(object):
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update image '%s'", image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.InvalidParameterValue as e:
-            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.StorageQuotaFull as e:
             msg = (_("Denying attempt to upload image because it exceeds the"
                      " quota: %s") % encodeutils.exception_to_unicode(e))
@@ -281,8 +274,8 @@ class ImagesController(object):
                 image.locations = value
                 if image.status == 'queued':
                     image.status = 'active'
-            except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
-                raise webob.exc.HTTPBadRequest(explanation=bse.msg)
+            except (exception.BadStoreUri, exception.DuplicateLocation) as e:
+                raise webob.exc.HTTPBadRequest(explanation=e.msg)
             except ValueError as ve:    # update image status failed.
                 raise webob.exc.HTTPBadRequest(
                     explanation=encodeutils.exception_to_unicode(ve))
@@ -297,11 +290,11 @@ class ImagesController(object):
             image.locations.insert(pos, value)
             if image.status == 'queued':
                 image.status = 'active'
-        except (exception.BadStoreUri, exception.DuplicateLocation) as bse:
-            raise webob.exc.HTTPBadRequest(explanation=bse.msg)
-        except ValueError as ve:    # update image status failed.
+        except (exception.BadStoreUri, exception.DuplicateLocation) as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
+        except ValueError as e:    # update image status failed.
             raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(ve))
+                explanation=encodeutils.exception_to_unicode(e))
 
     def _do_remove_locations(self, image, path_pos):
         pos = self._get_locations_op_pos(path_pos,
