@@ -1148,3 +1148,68 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             artifact_type[u'versions'].sort(key=lambda x: x[u'id'])
 
         self.assertEqual(actual, response)
+
+    def test_filter_by_non_dict_props(self):
+        data = {'name': 'art1',
+                'version': '4.2',
+                'prop2': 12
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'art2',
+                'version': '4.2',
+                'prop2': 10
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'art3',
+                'version': '4.2',
+                'prop2': 10
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'art4',
+                'version': '4.3',
+                'prop2': 33
+                }
+        self._create_artifact('withprops', data=data)
+
+        result = self._check_artifact_get('/withprops/v1.0/drafts?name=art2')
+        self.assertEqual(1, len(result))
+
+        result = self._check_artifact_get('/withprops/v1.0/drafts?prop2=10')
+        self.assertEqual(2, len(result))
+
+    def test_filter_by_dict_props(self):
+        data = {'name': 'art1',
+                'version': '4.2',
+                'dict_prop':
+                    {'foo': 'Moscow',
+                     'bar_list': [42, 44]}
+                }
+        self._create_artifact('withprops', data=data)
+        data = {'name': 'art2',
+                'version': '4.2',
+                'dict_prop':
+                    {'foo': 'Saratov',
+                     'bar_list': [42, 42]}
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'art3',
+                'version': '4.2',
+                'dict_prop':
+                    {'foo': 'Saratov',
+                     'bar_list': [42, 44]}
+                }
+        self._create_artifact('withprops', data=data)
+
+        url = '/withprops/v1.0/drafts?dict_prop.foo=Saratov'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(2, len(result))
+
+        url = '/withprops/v1.0/drafts?dict_prop.bar_list=44'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(2, len(result))

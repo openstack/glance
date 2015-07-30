@@ -683,37 +683,84 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
         return mapper[type_name](value)
 
     def _get_filters(self, artifact_type, params):
+        error_msg = 'Unexpected filter property'
         filters = dict()
-        for filter, value in params.items():
-            value = value.strip()
-            prop_type = artifact_type.metadata.attributes.all.get(filter)
+        for filter, raw_value in params.items():
+
+            # first, get the comparison operator
+            left, sep, right = raw_value.strip().partition(':')
+            if not sep:
+                op = "default"
+                value = left.strip()
+            else:
+                op = left.strip().upper()
+                value = right.strip()
+
+            # then, understand what's the property to filter and its value
+            if '.' in filter:  # Indicates a dict-valued property with a key
+                prop_name, key = filter.split('.', 1)
+            else:
+                prop_name = filter
+                key = None
+            prop_type = artifact_type.metadata.attributes.all.get(prop_name)
+            if prop_type is None:
+                raise webob.exc.HTTPBadRequest(error_msg)
+            key_only_check = False
+            position = None
+            if isinstance(prop_type, dict):
+                if key is None:
+                    key = value
+                    val = None
+                    key_only_check = True
+                else:
+                    val = value
+
+                if isinstance(prop_type.properties, dict):
+                    # This one is to handle the case of composite dict, having
+                    # different types of values at different keys, i.e. object
+                    prop_type = prop_type.properties.get(key)
+                    if prop_type is None:
+                        raise webob.exc.HTTPBadRequest(error_msg)
+                else:
+                    prop_type = prop_type.properties
+
+                property_name = prop_name + '.' + key
+                property_value = val
+            else:
+                if key is not None:
+                    raise webob.exc.HTTPBadRequest(error_msg)
+                property_name = prop_name
+                property_value = value
+
+            # now detect the value DB type
             if prop_type.DB_TYPE is not None:
                 str_type = prop_type.DB_TYPE
             elif isinstance(prop_type, list):
                 if not isinstance(prop_type.item_type, list):
+                    position = "any"
                     str_type = prop_type.item_type.DB_TYPE
                 else:
                     raise webob.exc.HTTPBadRequest('Filtering by tuple-like'
                                                    ' fields is not supported')
-            elif isinstance(prop_type, dict):
-                filters['name'] = filter + '.' + value
-                continue
             else:
-                raise webob.exc.HTTPBadRequest('Filtering by this property '
-                                               'is not supported')
-            substr1, _sep, substr2 = value.partition(':')
-            if not _sep:
-                op = 'IN' if isinstance(prop_type, list) else 'EQ'
-                filters[filter] = dict(operator=op,
-                                       value=self._bring_to_type(str_type,
-                                                                 substr1),
-                                       type=str_type)
+                raise webob.exc.HTTPBadRequest(error_msg)
+            if property_value is not None:
+                property_value = self._bring_to_type(str_type, property_value)
+
+            # convert the default operation to NE, EQ or IN
+            if key_only_check:
+                if op == 'default':
+                    op = 'NE'
+                else:
+                    raise webob.exc.HTTPBadRequest('Comparison not supported '
+                                                   'for key-only filtering')
             else:
-                op = substr1.strip().upper()
-                filters[filter] = dict(operator=op,
-                                       value=self._bring_to_type(str_type,
-                                                                 substr2),
-                                       type=str_type)
+                if op == 'default':
+                    op = 'IN' if isinstance(prop_type, list) else 'EQ'
+
+            filters[property_name] = dict(operator=op, position=position,
+                                          value=property_value,
+                                          type=str_type)
         return filters
 
     def list(self, req):

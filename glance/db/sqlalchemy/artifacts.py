@@ -528,16 +528,18 @@ def _do_query_filters(filters):
             result = fn(getattr(models.ArtifactProperty, db_prop_type),
                         db_prop_value)
 
-            cond = [result,
-                    models.ArtifactProperty.position == db_prop_position]
+            cond = [result]
             if db_prop_op == 'IN':
-                if db_prop_position is not None:
+                if db_prop_position == 'any' or db_prop_position is None:
+                    cond.append(models.ArtifactProperty.position >= 0)
+                else:
                     msg = _LE("Cannot use this parameter with "
                               "the operator IN")
                     LOG.error(msg)
                     raise exception.ArtifactInvalidPropertyParameter(op='IN')
-                cond = [result,
-                        models.ArtifactProperty.position >= 0]
+            else:
+                cond.append(
+                    models.ArtifactProperty.position == db_prop_position)
         else:
             msg = _LE("Operator %s is not supported") % db_prop_op
             LOG.error(msg)
