@@ -6,16 +6,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b2.dev52\n"
+"Project-Id-Version: glance 11.0.0.0b3.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-21 06:05+0000\n"
+"POT-Creation-Date: 2015-07-31 06:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.0\n"
 
 #: glance/scrubber.py:280
 #, python-format
@@ -40,36 +40,36 @@ msgstr ""
 msgid "Unknown version. Returning version choices."
 msgstr ""
 
-#: glance/api/v1/images.py:722
+#: glance/api/v1/images.py:724
 #, python-format
 msgid ""
 "Failed to activate image %s in registry. About to delete image bits from "
 "store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:970
+#: glance/api/v2/images.py:969
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
 "properties"
 msgstr ""
 
-#: glance/api/v2/tasks.py:74
+#: glance/api/v2/tasks.py:75
 #, python-format
 msgid "Forbidden to create task. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:112
+#: glance/api/v2/tasks.py:113
 #, python-format
 msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:117
+#: glance/api/v2/tasks.py:119
 #, python-format
 msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
 msgstr ""
 
-#: glance/artifacts/location.py:125
+#: glance/artifacts/location.py:126
 #, python-format
 msgid "Failed to delete blob %s in store from URI"
 msgstr ""
@@ -86,14 +86,14 @@ msgid ""
 "file for this task to work: %s"
 msgstr ""
 
-#: glance/cmd/replicator.py:607
+#: glance/cmd/replicator.py:608
 #, python-format
 msgid ""
 "%(image_id)s: field %(key)s differs (source is %(master_value)s, "
 "destination is %(slave_value)s)"
 msgstr ""
 
-#: glance/cmd/replicator.py:620
+#: glance/cmd/replicator.py:621
 #, python-format
 msgid "Image %s entirely missing from the destination"
 msgstr ""
@@ -216,14 +216,14 @@ msgstr ""
 msgid "The `eventlet` executor has been deprecated. Use `taskflow` instead."
 msgstr ""
 
-#: glance/image_cache/__init__.py:74
+#: glance/image_cache/__init__.py:75
 #, python-format
 msgid ""
 "Image cache driver '%(driver_name)s' failed to load. Got error: "
 "'%(import_err)s."
 msgstr ""
 
-#: glance/image_cache/__init__.py:95
+#: glance/image_cache/__init__.py:96
 #, python-format
 msgid ""
 "Image cache driver '%(driver_module)s' failed to configure. Got error: "
@@ -262,31 +262,31 @@ msgstr ""
 msgid "Cached image file '%s' doesn't exist, unable to delete"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:126
+#: glance/registry/api/v1/images.py:127
 #, python-format
 msgid "Invalid marker. Image %(id)s could not be found."
 msgstr ""
 
-#: glance/registry/api/v1/images.py:131 glance/registry/api/v1/members.py:76
-#: glance/registry/api/v1/members.py:111 glance/registry/api/v1/members.py:229
-#: glance/registry/api/v1/members.py:293
+#: glance/registry/api/v1/images.py:132 glance/registry/api/v1/members.py:77
+#: glance/registry/api/v1/members.py:112 glance/registry/api/v1/members.py:230
+#: glance/registry/api/v1/members.py:294
 #, python-format
 msgid "Access denied to image %(id)s but returning 'not found'"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:118 glance/registry/api/v1/members.py:236
-#: glance/registry/api/v1/members.py:300
+#: glance/registry/api/v1/members.py:119 glance/registry/api/v1/members.py:237
+#: glance/registry/api/v1/members.py:301
 #, python-format
 msgid "User lacks permission to share image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:129 glance/registry/api/v1/members.py:146
-#: glance/registry/api/v1/members.py:249
+#: glance/registry/api/v1/members.py:130 glance/registry/api/v1/members.py:147
+#: glance/registry/api/v1/members.py:250
 #, python-format
 msgid "Invalid membership association specified for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:339
+#: glance/registry/api/v1/members.py:340
 #, python-format
 msgid "Member %(id)s not found"
 msgstr ""

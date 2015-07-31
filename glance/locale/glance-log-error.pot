@@ -6,16 +6,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b2.dev52\n"
+"Project-Id-Version: glance 11.0.0.0b3.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-21 06:05+0000\n"
+"POT-Creation-Date: 2015-07-31 06:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.0\n"
 
 #: glance/gateway.py:252
 msgid ""
@@ -31,7 +31,7 @@ msgid ""
 "%(ext)s: %(e)s"
 msgstr ""
 
-#: glance/location.py:403
+#: glance/location.py:404
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for image %s but all have "
@@ -83,50 +83,58 @@ msgstr ""
 msgid "Checksum header is missing."
 msgstr ""
 
-#: glance/api/v1/images.py:621
+#: glance/api/v1/images.py:622
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:78
+#: glance/api/v1/upload_utils.py:79
 #, python-format
 msgid "Unable to kill image %(id)s: "
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:265
+#: glance/api/v1/upload_utils.py:266
 #, python-format
 msgid "Received HTTP error while uploading image %s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:60
+#: glance/api/v2/image_data.py:61
 #, python-format
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:155 glance/api/v2/image_data.py:159
+#: glance/api/v2/image_data.py:157 glance/api/v2/image_data.py:161
 msgid "Failed to upload image data due to HTTP error"
 msgstr ""
 
-#: glance/api/v2/image_data.py:164 glance/api/v3/artifacts.py:313
+#: glance/api/v2/image_data.py:166
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 
-#: glance/api/v2/metadef_namespaces.py:208
+#: glance/api/v2/metadef_namespaces.py:209
 #, python-format
 msgid "Failed to delete namespace %(namespace)s "
 msgstr ""
 
-#: glance/api/v3/artifacts.py:358
+#: glance/api/v3/artifacts.py:380 glance/api/v3/artifacts.py:385
+msgid "Failed to upload artifact blob data due to HTTP error"
+msgstr ""
+
+#: glance/api/v3/artifacts.py:391
+msgid "Failed to upload artifact blob data due to internal error"
+msgstr ""
+
+#: glance/api/v3/artifacts.py:436
 #, python-format
 msgid "Unable to restore artifact %(artifact_id)s: %(e)s"
 msgstr ""
 
-#: glance/artifacts/location.py:132
+#: glance/artifacts/location.py:133
 #, python-format
 msgid "Failed to delete blob %(blob_id)s from store: %(exc)s"
 msgstr ""
 
-#: glance/artifacts/location.py:166
+#: glance/artifacts/location.py:168
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for blob %s but all have "
@@ -220,12 +228,12 @@ msgstr ""
 msgid "Invalid format of swift store config cfg"
 msgstr ""
 
-#: glance/common/utils.py:116
+#: glance/common/utils.py:115
 #, python-format
 msgid "Error: cooperative_iter exception %s"
 msgstr ""
 
-#: glance/common/utils.py:513
+#: glance/common/utils.py:512
 msgid ""
 "Error setting up the debug environment. Verify that the option "
 "pydev_worker_debug_host is pointing to a valid hostname or IP on which a "
@@ -319,7 +327,7 @@ msgstr ""
 msgid "Failed to load the %s executor provided in the config."
 msgstr ""
 
-#: glance/image_cache/__init__.py:271
+#: glance/image_cache/__init__.py:272
 #, python-format
 msgid ""
 "Exception encountered while tee'ing image '%(image_id)s' into cache: "
@@ -331,26 +339,26 @@ msgstr ""
 msgid "Error executing SQLite call. Got error: %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:136
+#: glance/registry/api/v1/images.py:137
 msgid "Unable to get images"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:354
+#: glance/registry/api/v1/images.py:355
 #, python-format
 msgid "Unable to show image %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:390
+#: glance/registry/api/v1/images.py:391
 #, python-format
 msgid "Unable to delete image %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:442
+#: glance/registry/api/v1/images.py:443
 #, python-format
 msgid "Unable to create image %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:515
+#: glance/registry/api/v1/images.py:516
 #, python-format
 msgid "Unable to update image %s"
 msgstr ""
@@ -360,7 +368,7 @@ msgstr ""
 msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
 msgstr ""
 
-#: glance/search/api/v0_1/search.py:254
+#: glance/search/api/v0_1/search.py:255
 #, python-format
 msgid "Failed to retrieve RBAC filters from search plugin %(ext)s: %(e)s"
 msgstr ""

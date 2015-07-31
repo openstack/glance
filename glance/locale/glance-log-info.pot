@@ -6,42 +6,42 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b2.dev1\n"
+"Project-Id-Version: glance 11.0.0.0b3.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-06-24 06:10+0000\n"
+"POT-Creation-Date: 2015-07-31 06:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.0\n"
 
-#: glance/scrubber.py:463
+#: glance/scrubber.py:184
 #, python-format
 msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
 msgstr ""
 
-#: glance/scrubber.py:477
+#: glance/scrubber.py:198
 msgid "Daemon Shutdown on KeyboardInterrupt"
 msgstr ""
 
-#: glance/scrubber.py:489
+#: glance/scrubber.py:210
 #, python-format
 msgid "Initializing scrubber with configuration: %s"
 msgstr ""
 
-#: glance/scrubber.py:557
+#: glance/scrubber.py:256
 #, python-format
 msgid "Scrubbing image %(id)s from %(count)d locations."
 msgstr ""
 
-#: glance/scrubber.py:580
+#: glance/scrubber.py:278
 #, python-format
 msgid "Image %s has been deleted."
 msgstr ""
 
-#: glance/api/middleware/cache.py:61
+#: glance/api/middleware/cache.py:60
 msgid "Initialized image cache middleware"
 msgstr ""
 
@@ -53,12 +53,12 @@ msgstr ""
 msgid "Initialized gzip middleware"
 msgstr ""
 
-#: glance/api/v1/images.py:708
+#: glance/api/v1/images.py:709
 #, python-format
 msgid "Uploaded data of image %s from request payload successfully."
 msgstr ""
 
-#: glance/api/v1/images.py:772
+#: glance/api/v1/images.py:774
 msgid "Triggering asynchronous copy from external source"
 msgstr ""
 
@@ -89,22 +89,22 @@ msgstr ""
 msgid "%(task_id)s of %(task_type)s completed"
 msgstr ""
 
-#: glance/cmd/replicator.py:372
+#: glance/cmd/replicator.py:373
 #, python-format
 msgid "Storing: %s"
 msgstr ""
 
-#: glance/cmd/replicator.py:445
+#: glance/cmd/replicator.py:446
 #, python-format
 msgid "Considering: %s"
 msgstr ""
 
-#: glance/cmd/replicator.py:471 glance/cmd/replicator.py:546
+#: glance/cmd/replicator.py:472 glance/cmd/replicator.py:547
 #, python-format
 msgid "Image %s metadata has changed"
 msgstr ""
 
-#: glance/cmd/replicator.py:553
+#: glance/cmd/replicator.py:554
 #, python-format
 msgid "Image %s is being synced"
 msgstr ""
@@ -240,12 +240,12 @@ msgstr ""
 msgid "Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
 msgstr ""
 
-#: glance/image_cache/__init__.py:71
+#: glance/image_cache/__init__.py:72
 #, python-format
 msgid "Image cache loaded driver '%s'."
 msgstr ""
 
-#: glance/image_cache/__init__.py:81 glance/image_cache/__init__.py:100
+#: glance/image_cache/__init__.py:82 glance/image_cache/__init__.py:101
 msgid "Defaulting to SQLite driver."
 msgstr ""
 
@@ -292,59 +292,59 @@ msgstr ""
 msgid "Cleaning up %s after exceeding the quota."
 msgstr ""
 
-#: glance/registry/api/v1/images.py:343 glance/registry/api/v1/images.py:386
-#: glance/registry/api/v1/images.py:491
+#: glance/registry/api/v1/images.py:344 glance/registry/api/v1/images.py:387
+#: glance/registry/api/v1/images.py:492
 #, python-format
 msgid "Image %(id)s not found"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:349 glance/registry/api/v1/images.py:381
-#: glance/registry/api/v1/images.py:503
+#: glance/registry/api/v1/images.py:350 glance/registry/api/v1/images.py:382
+#: glance/registry/api/v1/images.py:504
 #, python-format
 msgid "Access denied to image %(id)s but returning 'not found'"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:371
+#: glance/registry/api/v1/images.py:372
 #, python-format
 msgid "Successfully deleted image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:375
+#: glance/registry/api/v1/images.py:376
 #, python-format
 msgid "Delete denied for public image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:415
+#: glance/registry/api/v1/images.py:416
 #, python-format
 msgid "Rejecting image creation request for invalid image id '%(bad_id)s'"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:428
+#: glance/registry/api/v1/images.py:429
 #, python-format
 msgid "Successfully created image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:482
+#: glance/registry/api/v1/images.py:483
 #, python-format
 msgid "Updating metadata for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:497
+#: glance/registry/api/v1/images.py:498
 #, python-format
 msgid "Update denied for public image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:198
+#: glance/registry/api/v1/members.py:199
 #, python-format
 msgid "Successfully updated memberships for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:271
+#: glance/registry/api/v1/members.py:272
 #, python-format
 msgid "Successfully updated a membership for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:320
+#: glance/registry/api/v1/members.py:321
 #, python-format
 msgid "Successfully deleted a membership from image %(id)s"
 msgstr ""
