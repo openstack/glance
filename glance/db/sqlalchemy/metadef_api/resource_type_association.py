@@ -179,7 +179,7 @@ def create(context, namespace_name, values, session):
         LOG.debug("Creating resource-type %s" % resource_type_name)
 
     if resource_type is None:
-        resource_type_dict = {'name': resource_type_name, 'protected': 0}
+        resource_type_dict = {'name': resource_type_name, 'protected': False}
         resource_type = resource_type_api.create(
             context, resource_type_dict, session)
 
