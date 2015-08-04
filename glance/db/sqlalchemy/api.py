@@ -293,6 +293,21 @@ def is_image_visible(context, image, status=None):
     return False
 
 
+def _get_default_column_value(column_type):
+    """Return the default value of the columns from DB table
+
+    In postgreDB case, if no right default values are being set, an
+    psycopg2.DataError will be thrown.
+    """
+    type_schema = {
+        'datetime': None,
+        'big_integer': 0,
+        'integer': 0,
+        'string': ''
+    }
+    return type_schema[column_type.__visit_name__]
+
+
 def _paginate_query(query, model, limit, sort_keys, marker=None,
                     sort_dir=None, sort_dirs=None):
     """Returns a query with sorting / pagination criteria added.
@@ -372,17 +387,16 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
             crit_attrs = []
             for j in range(i):
                 model_attr = getattr(model, sort_keys[j])
-                default = None if isinstance(
-                    model_attr.property.columns[0].type,
-                    sqlalchemy.DateTime) else ''
+                default = _get_default_column_value(
+                    model_attr.property.columns[0].type)
                 attr = sa_sql.expression.case([(model_attr != None,
                                               model_attr), ],
                                               else_=default)
                 crit_attrs.append((attr == marker_values[j]))
 
             model_attr = getattr(model, sort_keys[i])
-            default = None if isinstance(model_attr.property.columns[0].type,
-                                         sqlalchemy.DateTime) else ''
+            default = _get_default_column_value(
+                model_attr.property.columns[0].type)
             attr = sa_sql.expression.case([(model_attr != None,
                                           model_attr), ],
                                           else_=default)

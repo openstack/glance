@@ -546,6 +546,14 @@ class DriverTests(object):
         images = self.db_api.image_get_all(self.context, marker=UUID3)
         self.assertEqual(2, len(images))
 
+    def test_image_get_all_marker_with_size(self):
+        # Use sort_key=size to test BigInteger
+        images = self.db_api.image_get_all(self.context, sort_key=['size'],
+                                           marker=UUID3)
+        self.assertEqual(2, len(images))
+        self.assertEqual(17, images[0]['size'])
+        self.assertEqual(13, images[1]['size'])
+
     def test_image_get_all_marker_deleted(self):
         """Cannot specify a deleted image as a marker."""
         self.db_api.image_destroy(self.adm_context, UUID1)
