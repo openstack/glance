@@ -56,7 +56,7 @@ def _db_fixture(task_id, **kwargs):
         'result': None,
         'owner': None,
         'message': None,
-        'expires_at': None,
+        'expires_at': default_datetime + datetime.timedelta(days=365),
         'created_at': default_datetime,
         'updated_at': default_datetime,
         'deleted_at': None,

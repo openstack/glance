@@ -1440,6 +1440,21 @@ def task_delete(context, task_id, session=None):
     return _task_format(task_ref, task_ref.info)
 
 
+def _task_soft_delete(context, session=None):
+    """Scrub task entities which are expired """
+    expires_at = models.Task.expires_at
+    session = session or get_session()
+    query = session.query(models.Task)
+
+    query = (query.filter(models.Task.owner == context.owner)
+                  .filter_by(deleted=0)
+                  .filter(expires_at <= timeutils.utcnow()))
+    values = {'deleted': 1, 'deleted_at': timeutils.utcnow()}
+
+    with session.begin():
+        query.update(values)
+
+
 def task_get_all(context, filters=None, marker=None, limit=None,
                  sort_key='created_at', sort_dir='desc', admin_as_user=False):
     """
@@ -1462,6 +1477,8 @@ def task_get_all(context, filters=None, marker=None, limit=None,
 
     if not (context.is_admin or admin_as_user) and context.owner is not None:
         query = query.filter(models.Task.owner == context.owner)
+
+    _task_soft_delete(context, session=session)
 
     showing_deleted = False
 
