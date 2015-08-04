@@ -380,7 +380,7 @@ class ImageTarget(object):
     def __init__(self, target):
         """Initialize the object
 
-        :param target: Object being targetted
+        :param target: Object being targeted
         """
         self.target = target
 

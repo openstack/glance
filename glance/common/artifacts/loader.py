@@ -57,7 +57,7 @@ class ArtifactsPluginLoader(object):
         self.plugin_map = {'by_typename': {},
                            'by_endpoint': {}}
 
-        def _add_extention(ext):
+        def _add_extension(ext):
             """
             Plugins can be loaded as entry_point=single plugin and
             entry_point=PLUGIN_LIST, where PLUGIN_LIST is a python variable
@@ -91,7 +91,7 @@ class ArtifactsPluginLoader(object):
         # but stevedore has awful exception wrapping with no specific class
         # for this very case (no extensions for given namespace found)
         try:
-            self.mgr.map(_add_extention)
+            self.mgr.map(_add_extension)
         except RuntimeError as re:
             LOG.error(_LE("Unable to load artifacts: %s") % re.message)
 
