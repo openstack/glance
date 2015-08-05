@@ -663,10 +663,11 @@ class Controller(controller.BaseController):
         :param image_id: Opaque image identifier
         :param location_data: Location of where Glance stored this image
         """
-        image_meta = {}
-        image_meta['location'] = location_data['url']
-        image_meta['status'] = 'active'
-        image_meta['location_data'] = [location_data]
+        image_meta = {
+            'location': location_data['url'],
+            'status': 'active',
+            'location_data': [location_data]
+        }
 
         try:
             s = from_state

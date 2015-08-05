@@ -48,8 +48,7 @@ class ResourceTypeController(object):
 
     def index(self, req):
         try:
-            filters = {}
-            filters['namespace'] = None
+            filters = {'namespace': None}
             rs_type_repo = self.gateway.get_metadef_resource_type_repo(
                 req.context)
             db_resource_type_list = rs_type_repo.list(filters=filters)
@@ -68,8 +67,7 @@ class ResourceTypeController(object):
 
     def show(self, req, namespace):
         try:
-            filters = {}
-            filters['namespace'] = namespace
+            filters = {'namespace': namespace}
             rs_type_repo = self.gateway.get_metadef_resource_type_repo(
                 req.context)
             db_resource_type_list = rs_type_repo.list(filters=filters)

@@ -211,10 +211,11 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
 
         image_body = 'THISISANIMAGEBODYFORSURE!'
-        image_meta_with_proto = {}
-        image_meta_with_proto['x-auth-token'] = 'noauth'
-        image_meta_with_proto['Content-Type'] = 'application/octet-stream'
-        image_meta_with_proto['Content-Length'] = len(image_body)
+        image_meta_with_proto = {
+            'x-auth-token': 'noauth',
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': len(image_body)
+        }
 
         for key in IMG_RESPONSE_ACTIVE:
             image_meta_with_proto[
