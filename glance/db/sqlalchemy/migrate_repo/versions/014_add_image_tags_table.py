@@ -46,7 +46,8 @@ def define_image_tags_table(meta):
                                             glance_schema.Boolean(),
                                             nullable=False,
                                             default=False),
-                              mysql_engine='InnoDB')
+                              mysql_engine='InnoDB',
+                              mysql_charset='utf8')
 
     schema.Index('ix_image_tags_image_id',
                  image_tags.c.image_id)

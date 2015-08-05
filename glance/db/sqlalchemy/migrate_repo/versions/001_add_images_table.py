@@ -42,6 +42,7 @@ def define_images_table(meta):
                           default=False,
                           index=True),
                    mysql_engine='InnoDB',
+                   mysql_charset='utf8',
                    extend_existing=True)
 
     return images

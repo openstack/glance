@@ -71,6 +71,7 @@ def get_image_members_table(meta):
                                  default=False,
                                  index=True),
                           UniqueConstraint('image_id', 'member'),
+                          mysql_charset='utf8',
                           mysql_engine='InnoDB',
                           extend_existing=True)
 

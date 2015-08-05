@@ -126,7 +126,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                                                         sqlalchemy.Boolean(),
                                                         nullable=False,
                                                         default=False),
-                                      mysql_engine='InnoDB')
+                                      mysql_engine='InnoDB',
+                                      mysql_charset='utf8')
         images_001.create()
 
     def test_version_control_existing_db(self):

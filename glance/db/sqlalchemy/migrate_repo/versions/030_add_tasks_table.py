@@ -39,6 +39,7 @@ def define_tasks_table(meta):
                          nullable=False,
                          default=False),
                   mysql_engine='InnoDB',
+                  mysql_charset='utf8',
                   extend_existing=True)
 
     Index('ix_tasks_type', tasks.c.type)

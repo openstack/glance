@@ -33,6 +33,7 @@ def define_metadef_tags_table(meta):
                          UniqueConstraint('namespace_id', 'name',
                                           **_constr_kwargs),
                          mysql_engine='InnoDB',
+                         mysql_charset='utf8',
                          extend_existing=False)
 
     if meta.bind.name != 'ibm_db_sa':
