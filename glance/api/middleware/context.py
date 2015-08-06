@@ -38,7 +38,7 @@ context_opts = [
                 help=_('Allow unauthenticated users to access the API with '
                        'read-only privileges. This only applies when using '
                        'ContextMiddleware.')),
-    cfg.IntOpt('max_request_id_length', default=0,
+    cfg.IntOpt('max_request_id_length', default=64,
                help=_('Limits request ID length.')),
 ]
 
