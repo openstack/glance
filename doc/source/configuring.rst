@@ -192,6 +192,13 @@ will prevent any new processes from being created.
 
 Optional. Default: The number of CPUs available will be used by default.
 
+* ``max_request_id_length=LENGTH``
+
+Limits the maximum size of the x-openstack-request-id header which is
+logged. Affects only if context middleware is configured in pipeline.
+
+Optional. Default: ``0`` (Limited by max_header_line default: 16384)
+
 Configuring SSL Support
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
