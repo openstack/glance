@@ -627,8 +627,7 @@ class TestHelpers(test_utils.BaseTestCase):
         """
         Verifies that data is the same after being passed through headers
         """
-        fixture = {'name': 'fake public image',
-                   'is_public': True,
+        fixture = {'is_public': True,
                    'deleted': False,
                    'name': None,
                    'size': 19,
