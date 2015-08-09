@@ -1,10 +1,10 @@
 {
     "display_name": "Common Operating System Properties",
     "namespace": "OS::OperatingSystem",
-    "description": "When adding an image to Glance, you may specify some common image properties that may prove useful to consumers of your image.",
+    "description": "Details of the operating system contained within this image as well as common operating system properties that can be set on a VM instance created from this image.",
     "protected": true,
     "resource_type_associations" : [
-	    {
+        {
             "name": "OS::Glance::Image"
         },
         {
