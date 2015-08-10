@@ -446,7 +446,7 @@ class Driver(base.Driver):
         Removes any incomplete cache entries older than a
         supplied modified time.
 
-        :param older_than: Files written to on or before this timestemp
+        :param older_than: Files written to on or before this timestamp
                            will be deleted.
         """
         for path in self.get_cache_files(self.incomplete_dir):
