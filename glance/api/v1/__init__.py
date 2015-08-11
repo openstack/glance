@@ -21,3 +21,6 @@ SUPPORTED_PARAMS = ('limit', 'marker', 'sort_key', 'sort_dir')
 
 # Metadata which only an admin can change once the image is active
 ACTIVE_IMMUTABLE = ('size', 'checksum')
+
+# Metadata which cannot be changed (irrespective of the current image state)
+IMMUTABLE = ('status',)
