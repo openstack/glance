@@ -332,9 +332,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
 
 def get_object_href(namespace_name, metadef_object):
-        base_href = ('/v2/metadefs/namespaces/%s/objects/%s' %
-                     (namespace_name, metadef_object.name))
-        return base_href
+    base_href = ('/v2/metadefs/namespaces/%s/objects/%s' %
+                 (namespace_name, metadef_object.name))
+    return base_href
 
 
 def create_resource():

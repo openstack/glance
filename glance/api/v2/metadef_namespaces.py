@@ -795,20 +795,20 @@ def get_collection_schema():
 
 
 def get_namespace_href(namespace):
-        base_href = '/v2/metadefs/namespaces/%s' % namespace.namespace
-        return base_href
+    base_href = '/v2/metadefs/namespaces/%s' % namespace.namespace
+    return base_href
 
 
 def get_object_href(namespace_name, metadef_object):
-        base_href = ('/v2/metadefs/namespaces/%s/objects/%s' %
-                     (namespace_name, metadef_object.name))
-        return base_href
+    base_href = ('/v2/metadefs/namespaces/%s/objects/%s' %
+                 (namespace_name, metadef_object.name))
+    return base_href
 
 
 def get_tag_href(namespace_name, metadef_tag):
-        base_href = ('/v2/metadefs/namespaces/%s/tags/%s' %
-                     (namespace_name, metadef_tag.name))
-        return base_href
+    base_href = ('/v2/metadefs/namespaces/%s/tags/%s' %
+                 (namespace_name, metadef_tag.name))
+    return base_href
 
 
 def create_resource():
