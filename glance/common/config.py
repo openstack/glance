@@ -160,9 +160,9 @@ common_opts = [
     cfg.StrOpt('pydev_worker_debug_host',
                help=_('The hostname/IP of the pydev process listening for '
                       'debug connections')),
-    cfg.IntOpt('pydev_worker_debug_port', default=5678, min=1, max=65535,
-               help=_('The port on which a pydev process is listening for '
-                      'connections.')),
+    cfg.PortOpt('pydev_worker_debug_port', default=5678,
+                help=_('The port on which a pydev process is listening for '
+                       'connections.')),
     cfg.StrOpt('metadata_encryption_key', secret=True,
                help=_('AES key for encrypting store \'location\' metadata. '
                       'This includes, if used, Swift or S3 credentials. '
