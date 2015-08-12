@@ -307,11 +307,11 @@ class TestUtils(test_utils.BaseTestCase):
 
     def test_validate_key_cert_key_cant_read(self):
         with tempfile.NamedTemporaryFile('w+') as keyf:
-            with tempfile.NamedTemporaryFile('w+') as keyf:
+            with tempfile.NamedTemporaryFile('w+') as certf:
                 os.chmod(keyf.name, 0)
                 self.assertRaises(RuntimeError,
                                   utils.validate_key_cert,
-                                  keyf.name, keyf.name)
+                                  keyf.name, certf.name)
 
     def test_invalid_digest_algorithm(self):
         self.config(digest_algorithm='fake_algorithm')
