@@ -54,8 +54,6 @@ LOG = logging.getLogger(__name__)
 _ = i18n._
 _LE = i18n._LE
 
-FEATURE_BLACKLIST = ['content-length', 'content-type', 'x-image-meta-size']
-
 # Whitelist of v1 API headers of form x-image-meta-xxx
 IMAGE_META_HEADERS = ['x-image-meta-location', 'x-image-meta-size',
                       'x-image-meta-is_public', 'x-image-meta-disk_format',
