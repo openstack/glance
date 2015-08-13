@@ -128,7 +128,7 @@ class HTTPSClientAuthConnection(http_client.HTTPSConnection):
         if self._tunnel_host:
             self.sock = sock
             self._tunnel()
-        # Check CA file unless 'insecure' is specificed
+        # Check CA file unless 'insecure' is specified
         if self.insecure is True:
             self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file,
                                         cert_reqs=ssl.CERT_NONE)
