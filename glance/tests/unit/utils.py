@@ -64,7 +64,10 @@ def sort_url_by_qs_keys(url):
 
 
 def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
-                     roles=['member'], tenant=TENANT1):
+                     roles=None, tenant=TENANT1):
+    if roles is None:
+            roles = ['member']
+
     req = wsgi.Request.blank(path)
     req.method = method
 

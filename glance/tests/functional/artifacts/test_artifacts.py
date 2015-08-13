@@ -235,7 +235,10 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         return response.text
 
     def _check_artifact_post(self, url, data, status=201,
-                             headers={'Content-Type': 'application/json'}):
+                             headers=None):
+        if headers is None:
+            headers = {'Content-Type': 'application/json'}
+
         return self._check_artifact_method("post", url, data, status=status,
                                            headers=headers)
 

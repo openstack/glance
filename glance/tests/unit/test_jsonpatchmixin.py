@@ -19,7 +19,10 @@ import glance.tests.utils as utils
 
 
 class TestValidator(jpv.JsonPatchValidatorMixin):
-    def __init__(self, methods_allowed=["replace", "add"]):
+    def __init__(self, methods_allowed=None):
+        if methods_allowed is None:
+            methods_allowed = ["replace", "add"]
+
         super(TestValidator, self).__init__(methods_allowed)
 
 

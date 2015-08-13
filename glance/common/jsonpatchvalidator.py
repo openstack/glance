@@ -34,7 +34,9 @@ class JsonPatchValidatorMixin(object):
     ALLOWED = ["replace", "test", "remove", "add", "copy"]
     PATH_REGEX_COMPILED = re.compile("^/[^/]+(/[^/]+)*$")
 
-    def __init__(self, methods_allowed=["replace", "remove"]):
+    def __init__(self, methods_allowed=None):
+        if methods_allowed is None:
+            methods_allowed = ["replace", "remove"]
         self.schema = self._gen_schema(methods_allowed)
         self.methods_allowed = [m for m in methods_allowed
                                 if m in self.ALLOWED]
