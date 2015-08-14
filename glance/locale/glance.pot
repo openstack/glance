@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b3.dev1\n"
+"Project-Id-Version: glance 11.0.0.0b3.dev26\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-31 06:45+0000\n"
+"POT-Creation-Date: 2015-08-14 06:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -647,7 +647,7 @@ msgstr ""
 #: glance/api/v2/metadef_properties.py:184
 #: glance/api/v2/metadef_resource_types.py:153
 #: glance/api/v2/metadef_tags.py:272 glance/api/v2/tasks.py:142
-#: glance/api/v3/artifacts.py:502 glance/search/api/v0_1/search.py:125
+#: glance/api/v3/artifacts.py:502
 #: glance/tests/functional/v2/test_metadef_resourcetypes.py:149
 msgid "Body expected in request."
 msgstr ""
@@ -740,7 +740,7 @@ msgstr ""
 #: glance/api/v2/metadef_namespaces.py:418 glance/api/v2/metadef_objects.py:300
 #: glance/api/v2/metadef_properties.py:192
 #: glance/api/v2/metadef_resource_types.py:161
-#: glance/api/v2/metadef_tags.py:349 glance/search/api/v0_1/search.py:133
+#: glance/api/v2/metadef_tags.py:349
 #: glance/tests/functional/v2/test_metadef_resourcetypes.py:157
 #, python-format
 msgid "Attribute '%s' is read-only."
@@ -831,13 +831,13 @@ msgstr ""
 
 #: glance/api/v2/images.py:567 glance/api/v2/metadef_namespaces.py:465
 #: glance/api/v2/metadef_tags.py:296 glance/api/v2/tasks.py:178
-#: glance/registry/api/v1/images.py:268 glance/search/api/v0_1/search.py:177
+#: glance/registry/api/v1/images.py:268
 msgid "limit param must be an integer"
 msgstr ""
 
 #: glance/api/v2/images.py:571 glance/api/v2/metadef_namespaces.py:469
 #: glance/api/v2/metadef_tags.py:300 glance/api/v2/tasks.py:182
-#: glance/registry/api/v1/images.py:271 glance/search/api/v0_1/search.py:181
+#: glance/registry/api/v1/images.py:271
 msgid "limit param must be positive"
 msgstr ""
 
@@ -1260,33 +1260,38 @@ msgstr ""
 msgid "__init__() got unexpected keyword argument '%s'"
 msgstr ""
 
-#: glance/async/taskflow_executor.py:42
+#: glance/async/taskflow_executor.py:41
 msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
 msgstr ""
 
-#: glance/async/taskflow_executor.py:46
+#: glance/async/taskflow_executor.py:45
 msgid ""
 "The number of parallel activities executed at the same time by the "
 "engine. The value can be greater than one when the engine mode is "
 "'parallel'."
 msgstr ""
 
-#: glance/async/taskflow_executor.py:134
+#: glance/async/taskflow_executor.py:133
 msgid "Task failed due to Internal Error"
 msgstr ""
 
-#: glance/async/flows/base_import.py:95
+#: glance/async/flows/base_import.py:98
 #, python-format
 msgid ""
 "%(task_id)s of %(task_type)s not configured properly. Missing work dir: "
 "%(work_dir)s"
 msgstr ""
 
-#: glance/async/flows/base_import.py:126
+#: glance/async/flows/base_import.py:129
 #, python-format
 msgid ""
 "%(task_id)s of %(task_type)s not configured properly. Could not load the "
 "filesystem store"
+msgstr ""
+
+#: glance/async/flows/base_import.py:171
+#, python-format
+msgid "File %(path)s has invalid backing file %(bfile)s, aborting."
 msgstr ""
 
 #: glance/async/flows/convert.py:36
@@ -2202,13 +2207,6 @@ msgstr ""
 msgid "The provided path '%(path)s' is invalid: %(explanation)s"
 msgstr ""
 
-#: glance/common/exception.py:563
-msgid ""
-"The search and index services are not available. Ensure you have the "
-"necessary prerequisite dependencies installed like elasticsearch to use "
-"these services."
-msgstr ""
-
 #: glance/common/jsonpatchvalidator.py:103
 msgid ""
 "Json path should start with a '/', end with no '/', no 2 subsequent '/' "
@@ -2299,57 +2297,57 @@ msgstr ""
 msgid "The config file that has the swift account(s)configs."
 msgstr ""
 
-#: glance/common/utils.py:299
+#: glance/common/utils.py:296
 #, python-format
 msgid "Bad header: %(header_name)s"
 msgstr ""
 
-#: glance/common/utils.py:313
+#: glance/common/utils.py:310
 #, python-format
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr ""
 
-#: glance/common/utils.py:320
+#: glance/common/utils.py:317
 msgid "Cannot be a negative value."
 msgstr ""
 
-#: glance/common/utils.py:547
+#: glance/common/utils.py:544
 #, python-format
 msgid ""
 "There is a problem with your %(error_key_name)s %(error_filename)s.  "
 "Please verify it.  Error: %(ioe)s"
 msgstr ""
 
-#: glance/common/utils.py:554
+#: glance/common/utils.py:551
 #, python-format
 msgid ""
 "There is a problem with your %(error_key_name)s %(error_filename)s.  "
 "Please verify it. OpenSSL error: %(ce)s"
 msgstr ""
 
-#: glance/common/utils.py:575
+#: glance/common/utils.py:572
 #, python-format
 msgid ""
 "There is a problem with your key pair.  Please verify that cert "
 "%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
 msgstr ""
 
-#: glance/common/utils.py:633
+#: glance/common/utils.py:630
 #, python-format
 msgid "Host and port \"%s\" is not valid."
 msgstr ""
 
-#: glance/common/utils.py:636
+#: glance/common/utils.py:633
 #, python-format
 msgid "Port \"%s\" is not valid."
 msgstr ""
 
-#: glance/common/utils.py:645
+#: glance/common/utils.py:642
 #, python-format
 msgid "Host \"%s\" is not valid."
 msgstr ""
 
-#: glance/common/utils.py:648
+#: glance/common/utils.py:645
 #, python-format
 msgid ""
 "%s Please specify a host:port pair, where host is an IPv4 address, IPv6 "
@@ -2357,25 +2355,25 @@ msgid ""
 "brackets separately from the port (i.e., \"[fe80::a:b:c]:9876\")."
 msgstr ""
 
-#: glance/common/utils.py:683
+#: glance/common/utils.py:680
 msgid "Property names can't contain 4 byte unicode."
 msgstr ""
 
-#: glance/common/utils.py:686
+#: glance/common/utils.py:683
 #, python-format
 msgid "%s can't contain 4 byte unicode characters."
 msgstr ""
 
-#: glance/common/utils.py:695
+#: glance/common/utils.py:692
 msgid "Param values can't contain 4 byte unicode."
 msgstr ""
 
-#: glance/common/utils.py:715
+#: glance/common/utils.py:712
 #, python-format
 msgid "Value %(value)d out of range, must not exceed %(max)d"
 msgstr ""
 
-#: glance/common/utils.py:723
+#: glance/common/utils.py:720
 #, python-format
 msgid "'%(param)s' value out of range, must not exceed %(max)d"
 msgstr ""
@@ -3270,52 +3268,7 @@ msgstr ""
 msgid "Could not find required configuration option"
 msgstr ""
 
-#: glance/search/api/v0_1/search.py:146
-#, python-format
-msgid "Index '%s' is not supported."
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:155
-#, python-format
-msgid "Document type '%s' is not supported."
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:164
-msgid "offset param must be an integer"
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:168
-msgid "offset param must be positive"
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:188
-msgid "actions param cannot be empty"
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:208
-#, python-format
-msgid "Invalid action type: '%s'"
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:212
-#, python-format
-msgid "Action type '%s' requires data or script param."
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:216
-#, python-format
-msgid "Action type '%s' requires ID of the document."
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:339
-msgid "Action index is missing and no default index has been set."
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:344
-msgid "Action document type is missing and no default type has been set."
-msgstr ""
-
-#: glance/tests/unit/test_migrations.py:620
+#: glance/tests/unit/test_migrations.py:621
 #, python-format
 msgid "location: %s data lost"
 msgstr ""

@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b3.dev1\n"
+"Project-Id-Version: glance 11.0.0.0b3.dev26\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-31 06:45+0000\n"
+"POT-Creation-Date: 2015-08-14 06:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,20 +16,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.0\n"
-
-#: glance/gateway.py:252
-msgid ""
-"The search and index services are not available. Ensure you have the "
-"necessary prerequisite dependencies installed like elasticsearch to use "
-"these services."
-msgstr ""
-
-#: glance/listener.py:40
-#, python-format
-msgid ""
-"Failed to retrieve supported notification events from search plugins "
-"%(ext)s: %(e)s"
-msgstr ""
 
 #: glance/location.py:404
 #, python-format
@@ -151,17 +137,22 @@ msgstr ""
 msgid "Internal error occurred while trying to process task."
 msgstr ""
 
-#: glance/async/taskflow_executor.py:130
+#: glance/async/taskflow_executor.py:129
 #, python-format
 msgid "Failed to execute task %(task_id)s: %(exc)s"
 msgstr ""
 
-#: glance/async/flows/base_import.py:154
+#: glance/async/flows/base_import.py:162
+#, python-format
+msgid "Failed to execute security checks on the image %(task_id)s: %(exc)s"
+msgstr ""
+
+#: glance/async/flows/base_import.py:180
 #, python-format
 msgid "Task: %(task_id)s failed to import image %(image_id)s to the filesystem."
 msgstr ""
 
-#: glance/async/flows/base_import.py:343
+#: glance/async/flows/base_import.py:369
 #, python-format
 msgid "Task ID %s"
 msgstr ""
@@ -169,11 +160,6 @@ msgstr ""
 #: glance/async/flows/introspect.py:59
 #, python-format
 msgid "Failed to execute introspection %(task_id)s: %(exc)s"
-msgstr ""
-
-#: glance/cmd/index.py:48
-#, python-format
-msgid "Failed to setup index extension %(ext)s: %(e)s"
 msgstr ""
 
 #: glance/common/property_utils.py:81
@@ -228,12 +214,12 @@ msgstr ""
 msgid "Invalid format of swift store config cfg"
 msgstr ""
 
-#: glance/common/utils.py:115
+#: glance/common/utils.py:112
 #, python-format
 msgid "Error: cooperative_iter exception %s"
 msgstr ""
 
-#: glance/common/utils.py:512
+#: glance/common/utils.py:509
 msgid ""
 "Error setting up the debug environment. Verify that the option "
 "pydev_worker_debug_host is pointing to a valid hostname or IP on which a "
@@ -366,11 +352,6 @@ msgstr ""
 #: glance/registry/client/v1/client.py:133
 #, python-format
 msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
-msgstr ""
-
-#: glance/search/api/v0_1/search.py:255
-#, python-format
-msgid "Failed to retrieve RBAC filters from search plugin %(ext)s: %(e)s"
 msgstr ""
 
 #: glance/tests/functional/v2/test_metadef_resourcetypes.py:99
