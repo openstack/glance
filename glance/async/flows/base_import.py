@@ -13,13 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import logging
 import os
 
 import glance_store as store_api
 from glance_store import backend
+from oslo_concurrency import processutils as putils
 from oslo_config import cfg
 from oslo_utils import encodeutils
+from oslo_utils import excutils
 import six
 from stevedore import named
 from taskflow.patterns import linear_flow as lf
@@ -147,6 +150,29 @@ class _ImportToFS(task.Task):
         data = script_utils.get_image_data_iter(self.uri)
 
         path = self.store.add(image_id, data, 0, context=None)[0]
+
+        try:
+            # NOTE(flaper87): Consider moving this code to a common
+            # place that other tasks can consume as well.
+            stdout, stderr = putils.trycmd('qemu-img', 'info',
+                                           '--output=json', path,
+                                           log_errors=putils.LOG_ALL_ERRORS)
+        except OSError as exc:
+            with excutils.save_and_reraise_exception():
+                msg = (_LE('Failed to execute security checks on the image '
+                           '%(task_id)s: %(exc)s') %
+                       {'task_id': self.task_id, 'exc': exc.message})
+                LOG.error(msg)
+
+        metadata = json.loads(stdout)
+
+        backing_file = metadata.get('backing-filename')
+        if backing_file is not None:
+            msg = _("File %(path)s has invalid backing file "
+                    "%(bfile)s, aborting.") % {'path': path,
+                                               'bfile': backing_file}
+            raise RuntimeError(msg)
+
         return path
 
     def revert(self, image_id, result, **kwargs):

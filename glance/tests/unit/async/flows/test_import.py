@@ -13,10 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import mock
 import os
 
 import glance_store
+from oslo_concurrency import processutils as putils
 from oslo_config import cfg
 from six.moves import cStringIO
 from six.moves import urllib
@@ -107,16 +109,23 @@ class TestImportTask(test_utils.BaseTestCase):
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
             dmock.return_value = cStringIO("TEST_IMAGE")
-            executor.begin_processing(self.task.task_id)
-            image_path = os.path.join(self.test_dir, self.image.image_id)
-            tmp_image_path = os.path.join(self.work_dir,
-                                          "%s.tasks_import" % image_path)
-            self.assertFalse(os.path.exists(tmp_image_path))
-            self.assertTrue(os.path.exists(image_path))
-            self.assertEqual(1, len(list(self.image.locations)))
-            self.assertEqual("file://%s/%s" % (self.test_dir,
-                                               self.image.image_id),
-                             self.image.locations[0]['url'])
+
+            with mock.patch.object(putils, 'trycmd') as tmock:
+                tmock.return_value = (json.dumps({
+                    'format': 'qcow2',
+                }), None)
+
+                executor.begin_processing(self.task.task_id)
+                image_path = os.path.join(self.test_dir, self.image.image_id)
+                tmp_image_path = os.path.join(self.work_dir,
+                                              "%s.tasks_import" % image_path)
+
+                self.assertFalse(os.path.exists(tmp_image_path))
+                self.assertTrue(os.path.exists(image_path))
+                self.assertEqual(1, len(list(self.image.locations)))
+                self.assertEqual("file://%s/%s" % (self.test_dir,
+                                                   self.image.image_id),
+                                 self.image.locations[0]['url'])
 
     def test_import_flow_missing_work_dir(self):
         self.config(engine_mode='serial', group='taskflow_executor')
@@ -190,6 +199,54 @@ class TestImportTask(test_utils.BaseTestCase):
                 # the store as the flow failed before ImportToStore Task.
                 self.assertFalse(os.path.exists(image_path))
 
+    def test_import_flow_backed_file_import_to_fs(self):
+        self.config(engine_mode='serial', group='taskflow_executor')
+
+        img_factory = mock.MagicMock()
+
+        executor = taskflow_executor.TaskExecutor(
+            self.context,
+            self.task_repo,
+            self.img_repo,
+            img_factory)
+
+        self.task_repo.get.return_value = self.task
+
+        def create_image(*args, **kwargs):
+            kwargs['image_id'] = UUID1
+            return self.img_factory.new_image(*args, **kwargs)
+
+        self.img_repo.get.return_value = self.image
+        img_factory.new_image.side_effect = create_image
+
+        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
+            dmock.return_value = cStringIO("TEST_IMAGE")
+
+            with mock.patch.object(putils, 'trycmd') as tmock:
+                tmock.return_value = (json.dumps({
+                    'backing-filename': '/etc/password'
+                }), None)
+
+                with mock.patch.object(import_flow._ImportToFS,
+                                       'revert') as rmock:
+                    self.assertRaises(RuntimeError,
+                                      executor.begin_processing,
+                                      self.task.task_id)
+                    self.assertTrue(rmock.called)
+                    self.assertIsInstance(rmock.call_args[1]['result'],
+                                          failure.Failure)
+
+                    image_path = os.path.join(self.test_dir,
+                                              self.image.image_id)
+
+                    fname = "%s.tasks_import" % image_path
+                    tmp_image_path = os.path.join(self.work_dir, fname)
+
+                    self.assertFalse(os.path.exists(tmp_image_path))
+                    # Note(sabari): The image should not have been uploaded to
+                    # the store as the flow failed before ImportToStore Task.
+                    self.assertFalse(os.path.exists(image_path))
+
     def test_import_flow_revert(self):
         self.config(engine_mode='serial',
                     group='taskflow_executor')
@@ -214,20 +271,31 @@ class TestImportTask(test_utils.BaseTestCase):
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
             dmock.return_value = cStringIO("TEST_IMAGE")
 
-            with mock.patch.object(import_flow, "_get_import_flows") as imock:
-                imock.return_value = (x for x in [_ErrorTask()])
-                self.assertRaises(RuntimeError,
-                                  executor.begin_processing, self.task.task_id)
-                image_path = os.path.join(self.test_dir, self.image.image_id)
-                tmp_image_path = os.path.join(self.work_dir,
-                                              "%s.tasks_import" % image_path)
-                self.assertFalse(os.path.exists(tmp_image_path))
+            with mock.patch.object(putils, 'trycmd') as tmock:
+                tmock.return_value = (json.dumps({
+                    'format': 'qcow2',
+                }), None)
 
-                # NOTE(flaper87): Eventually, we want this to be assertTrue.
-                # The current issue is there's no way to tell taskflow to
-                # continue on failures. That is, revert the subflow but keep
-                # executing the parent flow. Under discussion/development.
-                self.assertFalse(os.path.exists(image_path))
+                with mock.patch.object(import_flow,
+                                       "_get_import_flows") as imock:
+                    imock.return_value = (x for x in [_ErrorTask()])
+                    self.assertRaises(RuntimeError,
+                                      executor.begin_processing,
+                                      self.task.task_id)
+
+                    image_path = os.path.join(self.test_dir,
+                                              self.image.image_id)
+                    tmp_image_path = os.path.join(self.work_dir,
+                                                  ("%s.tasks_import" %
+                                                   image_path))
+                    self.assertFalse(os.path.exists(tmp_image_path))
+
+                    # NOTE(flaper87): Eventually, we want this to be assertTrue
+                    # The current issue is there's no way to tell taskflow to
+                    # continue on failures. That is, revert the subflow but
+                    # keep executing the parent flow. Under
+                    # discussion/development.
+                    self.assertFalse(os.path.exists(image_path))
 
     def test_import_flow_no_import_flows(self):
         self.config(engine_mode='serial',
@@ -310,15 +378,20 @@ class TestImportTask(test_utils.BaseTestCase):
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
             dmock.return_value = "test"
 
-            image_id = UUID1
-            path = import_fs.execute(image_id)
-            reader, size = glance_store.get_from_backend(path)
-            self.assertEqual(4, size)
-            self.assertEqual(dmock.return_value, "".join(reader))
+            with mock.patch.object(putils, 'trycmd') as tmock:
+                tmock.return_value = (json.dumps({
+                    'format': 'qcow2',
+                }), None)
 
-            image_path = os.path.join(self.work_dir, image_id)
-            tmp_image_path = os.path.join(self.work_dir, image_path)
-            self.assertTrue(os.path.exists(tmp_image_path))
+                image_id = UUID1
+                path = import_fs.execute(image_id)
+                reader, size = glance_store.get_from_backend(path)
+                self.assertEqual(4, size)
+                self.assertEqual(dmock.return_value, "".join(reader))
+
+                image_path = os.path.join(self.work_dir, image_id)
+                tmp_image_path = os.path.join(self.work_dir, image_path)
+                self.assertTrue(os.path.exists(tmp_image_path))
 
     def test_delete_from_fs(self):
         delete_fs = import_flow._DeleteFromFS(self.task.task_id,
