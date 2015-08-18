@@ -704,7 +704,7 @@ def main():
         sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
 
     # Setup logging
-    logging.setup('glance')
+    logging.setup(CONF, 'glance')
 
     if CONF.token:
         CONF.slavetoken = CONF.token
