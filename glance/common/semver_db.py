@@ -12,8 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import operator
 
 import semantic_version
+from sqlalchemy.orm.properties import CompositeProperty
+from sqlalchemy import sql
 
 from glance.common import exception
 from glance import i18n
@@ -142,3 +145,33 @@ def _strip_leading_zeroes_from_prerelease(string_value):
         else:
             res.append(component)
     return '.'.join(res)
+
+strict_op_map = {
+    operator.ge: operator.gt,
+    operator.le: operator.lt
+}
+
+
+class VersionComparator(CompositeProperty.Comparator):
+    def _get_comparison(self, values, op):
+        columns = self.__clause_element__().clauses
+        if op in strict_op_map:
+            stricter_op = strict_op_map[op]
+        else:
+            stricter_op = op
+
+        return sql.or_(stricter_op(columns[0], values[0]),
+                       sql.and_(columns[0] == values[0],
+                                op(columns[1], values[1])))
+
+    def __gt__(self, other):
+        return self._get_comparison(other.__composite_values__(), operator.gt)
+
+    def __ge__(self, other):
+        return self._get_comparison(other.__composite_values__(), operator.ge)
+
+    def __lt__(self, other):
+        return self._get_comparison(other.__composite_values__(), operator.lt)
+
+    def __le__(self, other):
+        return self._get_comparison(other.__composite_values__(), operator.le)

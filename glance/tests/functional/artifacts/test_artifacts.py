@@ -1213,3 +1213,400 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         result = self._check_artifact_get(url=url)
 
         self.assertEqual(2, len(result))
+
+    def test_transformation_versions(self):
+        data = {'name': 'art1',
+                'version': '1'}
+        art1 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art2',
+                'version': '1.0'}
+        art2 = self._create_artifact('noprop', data=data)
+
+        v1 = art1.get("version")
+        v2 = art2.get("version")
+
+        self.assertEqual('1.0.0', v1)
+        self.assertEqual('1.0.0', v2)
+
+    def test_filter_by_ge_version(self):
+        data = {'name': 'art1',
+                'version': '4.0.0'}
+        art1 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.0.1'}
+        art2 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-1'}
+        art3 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-2'}
+        art4 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0'}
+        art5 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '5.0.0'}
+        art6 = self._create_artifact('noprop', data=data)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:4.0.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:4.0.1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art2, art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-2'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:5.0.0'
+        result = self._check_artifact_get(url=url)
+        actual = [art6]
+        self.assertEqual(actual, result)
+
+    def test_filter_by_gt_version(self):
+        data = {'name': 'art1',
+                'version': '4.0.0'}
+        self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.0.1'}
+        art2 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-1'}
+        art3 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-2'}
+        art4 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0'}
+        art5 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '5.0.0'}
+        art6 = self._create_artifact('noprop', data=data)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=gt:4.0.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art2, art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=gt:4.0.1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=gt:4.2.0-1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=gt:4.2.0-2'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=gt:4.2.0'
+        result = self._check_artifact_get(url=url)
+        actual = [art6]
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=gt:5.0.0'
+        result = self._check_artifact_get(url=url)
+        actual = []
+        self.assertEqual(actual, result)
+
+    def test_filter_by_le_version(self):
+        data = {'name': 'art1',
+                'version': '4.0.0'}
+        art1 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.0.1'}
+        art2 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-1'}
+        art3 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-2'}
+        art4 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0'}
+        art5 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '5.0.0'}
+        art6 = self._create_artifact('noprop', data=data)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:4.0.0'
+        result = self._check_artifact_get(url=url)
+        actual = [art1]
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:4.0.1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-2'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4, art5]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:5.0.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+    def test_filter_by_lt_version(self):
+        data = {'name': 'art1',
+                'version': '4.0.0'}
+        art1 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.0.1'}
+        art2 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-1'}
+        art3 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-2'}
+        art4 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0'}
+        art5 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '5.0.0'}
+        self._create_artifact('noprop', data=data)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=lt:4.0.0'
+        result = self._check_artifact_get(url=url)
+        actual = []
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=lt:4.0.1'
+        result = self._check_artifact_get(url=url)
+        actual = [art1]
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=lt:4.2.0-1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=lt:4.2.0-2'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=lt:4.2.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=lt:5.0.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4, art5]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+    def test_filter_by_ne_version(self):
+        data = {'name': 'art1',
+                'version': '4.0.0'}
+        art1 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.0.1'}
+        art2 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-1'}
+        art3 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-2'}
+        art4 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0'}
+        art5 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '5.0.0'}
+        art6 = self._create_artifact('noprop', data=data)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ne:4.0.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art2, art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ne:4.0.1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art3, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ne:4.2.0-1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art4, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ne:4.2.0-2'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art5, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ne:4.2.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4, art6]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ne:5.0.0'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2, art3, art4, art5]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+    def test_filter_by_pre_release_version(self):
+        data = {'name': 'art1',
+                'version': '4.2.0-1'}
+        art1 = self._create_artifact('noprop', data=data)
+
+        data = {'name': 'art1',
+                'version': '4.2.0-2'}
+        art2 = self._create_artifact('noprop', data=data)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-2'
+        result = self._check_artifact_get(url=url)
+        actual = [art2]
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-2'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-1'
+        result = self._check_artifact_get(url=url)
+        result.sort(key=lambda x: x['id'])
+
+        actual = [art1, art2]
+        actual.sort(key=lambda x: x['id'])
+        self.assertEqual(actual, result)
+
+        url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-1'
+        result = self._check_artifact_get(url=url)
+        actual = [art1]
+        self.assertEqual(actual, result)

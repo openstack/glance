@@ -115,12 +115,14 @@ class Artifact(BASE, ArtifactBase):
     type_version_suffix = Column(String(255))
     type_version_meta = Column(String(255))
     type_version = composite(semver_db.DBVersion, type_version_prefix,
-                             type_version_suffix, type_version_meta)
+                             type_version_suffix, type_version_meta,
+                             comparator_factory=semver_db.VersionComparator)
     version_prefix = Column(BigInteger, nullable=False)
     version_suffix = Column(String(255))
     version_meta = Column(String(255))
     version = composite(semver_db.DBVersion, version_prefix,
-                        version_suffix, version_meta)
+                        version_suffix, version_meta,
+                        comparator_factory=semver_db.VersionComparator)
     description = Column(Text)
     visibility = Column(String(32), nullable=False)
     state = Column(String(32), nullable=False)
