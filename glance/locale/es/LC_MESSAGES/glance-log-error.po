@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-14 06:02+0000\n"
-"PO-Revision-Date: 2015-08-14 01:03+0000\n"
+"POT-Creation-Date: 2015-08-18 06:27+0000\n"
+"PO-Revision-Date: 2015-08-17 14:48+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Spanish (http://www.transifex.com/openstack/glance/language/"
 "es/)\n"
@@ -47,6 +47,10 @@ msgstr "No se puede obtener trabajos de depuración desde cola: %s"
 
 msgid "Cannot use this parameter with the operator IN"
 msgstr "No se puede utilizar este parámetro con el operador IN"
+
+#, python-format
+msgid "Caught error: %s"
+msgstr "Capturado error: %s"
 
 msgid "Checksum header is missing."
 msgstr "Falta la cabecera de suma de comprobación."

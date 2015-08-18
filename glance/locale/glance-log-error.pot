@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b3.dev26\n"
+"Project-Id-Version: glance 11.0.0.0b3.dev36\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-14 06:02+0000\n"
+"POT-Creation-Date: 2015-08-18 06:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -232,6 +232,11 @@ msgstr ""
 msgid "Not respawning child %d, cannot recover from termination"
 msgstr ""
 
+#: glance/common/wsgi.py:886
+#, python-format
+msgid "Caught error: %s"
+msgstr ""
+
 #: glance/common/artifacts/loader.py:96
 #, python-format
 msgid "Unable to load artifacts: %s"
@@ -265,31 +270,31 @@ msgstr ""
 msgid "Task not found for task_id %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:346
+#: glance/db/sqlalchemy/artifacts.py:348
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:532
+#: glance/db/sqlalchemy/artifacts.py:535
 msgid "Cannot use this parameter with the operator IN"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:539
+#: glance/db/sqlalchemy/artifacts.py:542
 #, python-format
 msgid "Operator %s is not supported"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:194
+#: glance/db/sqlalchemy/metadata.py:198
 #, python-format
 msgid "Json schema files not found in %s. Aborting."
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:460
+#: glance/db/sqlalchemy/metadata.py:463
 msgid ""
 "To use --prefer_new or --overwrite you need to combine of these options "
 "with --merge option."
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:465
+#: glance/db/sqlalchemy/metadata.py:468
 msgid ""
 "Please provide no more than one option from this list: --prefer_new, "
 "--overwrite"
