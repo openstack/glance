@@ -17,6 +17,13 @@ from sqlalchemy import (Table, Index, UniqueConstraint)
 from sqlalchemy.schema import (AddConstraint, DropConstraint)
 
 
+def _change_db2_unique_constraint(operation_type, constraint_name, *columns):
+    constraint = migrate.UniqueConstraint(*columns, name=constraint_name)
+
+    operation = getattr(constraint, operation_type)
+    operation()
+
+
 def upgrade(migrate_engine):
     meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
@@ -31,14 +38,37 @@ def upgrade(migrate_engine):
                                    autoload=True)
     metadef_tags = Table('metadef_tags', meta, autoload=True)
 
-    Index('ix_namespaces_namespace', metadef_namespaces.c.namespace).drop()
+    constraints = [('ix_namespaces_namespace',
+                    [metadef_namespaces.c.namespace]),
+                   ('ix_objects_namespace_id_name',
+                    [metadef_objects.c.namespace_id,
+                     metadef_objects.c.name]),
+                   ('ix_metadef_properties_namespace_id_name',
+                    [metadef_properties.c.namespace_id,
+                     metadef_properties.c.name])]
+    metadef_tags_constraints = inspector.get_unique_constraints('metadef_tags')
+    for constraint in metadef_tags_constraints:
+        if set(constraint['column_names']) == set(['namespace_id', 'name']):
+            constraints.append((constraint['name'],
+                                [metadef_tags.c.namespace_id,
+                                 metadef_tags.c.name]))
+    if meta.bind.name == "ibm_db_sa":
+        # For db2, the following constraints need to be dropped first,
+        # otherwise the index like ix_metadef_ns_res_types_namespace_id
+        # will fail to create. These constraints will be added back at
+        # the end. It should not affect the origional logic for other
+        # database backends.
+        for (constraint_name, cols) in constraints:
+            _change_db2_unique_constraint('drop', constraint_name, *cols)
+    else:
+        Index('ix_namespaces_namespace', metadef_namespaces.c.namespace).drop()
 
-    Index('ix_objects_namespace_id_name', metadef_objects.c.namespace_id,
-          metadef_objects.c.name).drop()
+        Index('ix_objects_namespace_id_name', metadef_objects.c.namespace_id,
+              metadef_objects.c.name).drop()
 
-    Index('ix_metadef_properties_namespace_id_name',
-          metadef_properties.c.namespace_id,
-          metadef_properties.c.name).drop()
+        Index('ix_metadef_properties_namespace_id_name',
+              metadef_properties.c.namespace_id,
+              metadef_properties.c.name).drop()
 
     fkc = migrate.ForeignKeyConstraint([metadef_tags.c.namespace_id],
                                        [metadef_namespaces.c.id])
@@ -57,8 +87,9 @@ def upgrade(migrate_engine):
                                       metadef_tags.c.name)
         uc.create()
 
-    Index('ix_tags_namespace_id_name', metadef_tags.c.namespace_id,
-          metadef_tags.c.name).drop()
+    if meta.bind.name != "ibm_db_sa":
+        Index('ix_tags_namespace_id_name', metadef_tags.c.namespace_id,
+              metadef_tags.c.name).drop()
 
     Index('ix_metadef_tags_name', metadef_tags.c.name).create()
 
@@ -158,10 +189,17 @@ def upgrade(migrate_engine):
     Index('ix_metadef_properties_namespace_id',
           metadef_properties.c.namespace_id).create()
 
+    if meta.bind.name == "ibm_db_sa":
+        # For db2, add these constraints back. It should not affect the
+        # origional logic for other database backends.
+        for (constraint_name, cols) in constraints:
+            _change_db2_unique_constraint('create', constraint_name, *cols)
+
 
 def downgrade(migrate_engine):
     meta = sqlalchemy.MetaData()
     meta.bind = migrate_engine
+    inspector = inspect(migrate_engine)
 
     metadef_namespaces = Table('metadef_namespaces', meta, autoload=True)
     metadef_properties = Table('metadef_properties', meta, autoload=True)
@@ -172,14 +210,39 @@ def downgrade(migrate_engine):
                                    autoload=True)
     metadef_tags = Table('metadef_tags', meta, autoload=True)
 
-    Index('ix_namespaces_namespace', metadef_namespaces.c.namespace).create()
+    constraints = [('ix_namespaces_namespace',
+                    [metadef_namespaces.c.namespace]),
+                   ('ix_objects_namespace_id_name',
+                    [metadef_objects.c.namespace_id,
+                     metadef_objects.c.name]),
+                   ('ix_metadef_properties_namespace_id_name',
+                    [metadef_properties.c.namespace_id,
+                     metadef_properties.c.name])]
+    metadef_tags_constraints = inspector.get_unique_constraints('metadef_tags')
+    for constraint in metadef_tags_constraints:
+        if set(constraint['column_names']) == set(['namespace_id', 'name']):
+            constraints.append((constraint['name'],
+                                [metadef_tags.c.namespace_id,
+                                 metadef_tags.c.name]))
 
-    Index('ix_objects_namespace_id_name', metadef_objects.c.namespace_id,
-          metadef_objects.c.name).create()
+    if meta.bind.name == "ibm_db_sa":
+        # For db2, the following constraints need to be dropped first,
+        # otherwise the index like ix_metadef_ns_res_types_namespace_id
+        # will fail to drop. These constraints will be added back at
+        # the end. It should not affect the origional logic for other
+        # database backends.
+        for (constraint_name, cols) in constraints:
+            _change_db2_unique_constraint('drop', constraint_name, *cols)
+    else:
+        Index('ix_namespaces_namespace',
+              metadef_namespaces.c.namespace).create()
 
-    Index('ix_metadef_properties_namespace_id_name',
-          metadef_properties.c.namespace_id,
-          metadef_properties.c.name).create()
+        Index('ix_objects_namespace_id_name', metadef_objects.c.namespace_id,
+              metadef_objects.c.name).create()
+
+        Index('ix_metadef_properties_namespace_id_name',
+              metadef_properties.c.namespace_id,
+              metadef_properties.c.name).create()
 
     Index('ix_metadef_tags_name', metadef_tags.c.name).drop()
 
@@ -191,8 +254,10 @@ def downgrade(migrate_engine):
                                            [metadef_namespaces.c.id])
         fkc.drop()
 
-        Index('ix_tags_namespace_id_name', metadef_tags.c.namespace_id,
-              metadef_tags.c.name).create()
+        if meta.bind.name != "ibm_db_sa":
+            # This index would not be created when it is db2 backend.
+            Index('ix_tags_namespace_id_name', metadef_tags.c.namespace_id,
+                  metadef_tags.c.name).create()
     else:
         # NOTE(ochuprykov): fkc can't be dropped via `migrate` in sqlite,so it
         # is necessary to recreate table manually and populate it with data
@@ -293,3 +358,9 @@ def downgrade(migrate_engine):
 
     Index('ix_metadef_properties_namespace_id',
           metadef_properties.c.namespace_id).drop()
+
+    if meta.bind.name == "ibm_db_sa":
+        # For db2, add these constraints back. It should not affect the
+        # origional logic for other database backends.
+        for (constraint_name, cols) in constraints:
+            _change_db2_unique_constraint('create', constraint_name, *cols)
