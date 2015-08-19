@@ -118,6 +118,20 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPInternalServerError,
                           middleware.process_request, req)
 
+    def test_response(self):
+        req = self._build_request()
+        req.context = glance.context.RequestContext()
+        request_id = req.context.request_id
+
+        resp = webob.Response()
+        resp.request = req
+        self._build_middleware().process_response(resp)
+        self.assertEqual(request_id, resp.headers['x-openstack-request-id'])
+        resp_req_id = resp.headers['x-openstack-request-id']
+        # Validate that request-id do not starts with 'req-req-'
+        self.assertFalse(resp_req_id.startswith(b'req-req-'))
+        self.assertTrue(resp_req_id.startswith(b'req-'))
+
 
 class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
     def test_request(self):
@@ -139,5 +153,8 @@ class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
         resp = webob.Response()
         resp.request = req
         middleware.process_response(resp)
-        self.assertEqual(resp.headers['x-openstack-request-id'],
-                         'req-%s' % request_id)
+        self.assertEqual(request_id, resp.headers['x-openstack-request-id'])
+        resp_req_id = resp.headers['x-openstack-request-id']
+        # Validate that request-id do not starts with 'req-req-'
+        self.assertFalse(resp_req_id.startswith(b'req-req-'))
+        self.assertTrue(resp_req_id.startswith(b'req-'))
