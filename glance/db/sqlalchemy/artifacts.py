@@ -22,6 +22,7 @@ from oslo_db import exception as db_exc
 from oslo_utils import timeutils
 import sqlalchemy
 from sqlalchemy import and_
+from sqlalchemy import case
 from sqlalchemy import or_
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import joinedload
@@ -361,34 +362,53 @@ def _do_paginate_query(query, sort_keys=None, sort_dirs=None,
                 order_by(sort_dir_func(getattr(models.ArtifactProperty,
                                                prop_type))))
 
+    default = ''
+
     # Add pagination
     if marker is not None:
         marker_values = []
         for sort_key in sort_keys:
             v = getattr(marker, sort_key[0])
+            if v is None:
+                v = default
             marker_values.append(v)
 
         # Build up an array of sort criteria as in the docstring
         criteria_list = []
         for i in range(len(sort_keys)):
             crit_attrs = []
+            if marker_values[i] is None:
+                continue
             for j in range(i):
                 if sort_keys[j][1] is None:
                     model_attr = getattr(models.Artifact, sort_keys[j][0])
                 else:
                     model_attr = getattr(models.ArtifactProperty,
                                          sort_keys[j][1] + "_value")
-                crit_attrs.append((model_attr == marker_values[j]))
+                default = None if isinstance(
+                    model_attr.property.columns[0].type,
+                    sqlalchemy.DateTime) else ''
+                attr = case([(model_attr != None,
+                              model_attr), ],
+                            else_=default)
+                crit_attrs.append((attr == marker_values[j]))
 
             if sort_keys[i][1] is None:
-                model_attr = getattr(models.Artifact, sort_keys[j][0])
+                model_attr = getattr(models.Artifact, sort_keys[i][0])
             else:
                 model_attr = getattr(models.ArtifactProperty,
-                                     sort_keys[j][1] + "_value")
+                                     sort_keys[i][1] + "_value")
+
+            default = None if isinstance(model_attr.property.columns[0].type,
+                                         sqlalchemy.DateTime) else ''
+            attr = case([(model_attr != None,
+                          model_attr), ],
+                        else_=default)
+
             if sort_dirs[i] == 'desc':
-                crit_attrs.append((model_attr < marker_values[i]))
+                crit_attrs.append((attr < marker_values[i]))
             else:
-                crit_attrs.append((model_attr > marker_values[i]))
+                crit_attrs.append((attr > marker_values[i]))
 
             criteria = and_(*crit_attrs)
             criteria_list.append(criteria)

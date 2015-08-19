@@ -256,36 +256,67 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
     def test_list_any_artifacts(self):
         """Returns information about all draft artifacts with given endpoint"""
         self._create_artifact('noprop')
-        artifacts = self._check_artifact_get('/noprop/drafts')
+        artifacts = self._check_artifact_get('/noprop/drafts')["artifacts"]
         self.assertEqual(1, len(artifacts))
 
     def test_list_last_version(self):
         """/artifacts/endpoint == /artifacts/endpoint/all-versions"""
         self._create_artifact('noprop')
-        artifacts = self._check_artifact_get('/noprop/drafts')
+        artifacts = self._check_artifact_get('/noprop/drafts')["artifacts"]
         self.assertEqual(1, len(artifacts))
         # the same result can be achieved if asked for artifact with
         # type_version=last version
-        artifacts_precise = self._check_artifact_get('/noprop/v1.0/drafts')
+        artifacts_precise = self._check_artifact_get(
+            '/noprop/v1.0/drafts')["artifacts"]
         self.assertEqual(artifacts, artifacts_precise)
 
     def test_list_artifacts_by_state(self):
         """Returns last version of artifacts with given state"""
         self._create_artifact('noprop')
-        creating_state = self._check_artifact_get('/noprop/drafts')
+        creating_state = self._check_artifact_get(
+            '/noprop/drafts')["artifacts"]
         self.assertEqual(1, len(creating_state))
         # no active [/type_name/active == /type_name]
-        active_state = self._check_artifact_get('/noprop')
+        active_state = self._check_artifact_get('/noprop')["artifacts"]
         self.assertEqual(0, len(active_state))
 
     def test_list_artifacts_with_version(self):
         """Supplying precise artifact version does not break anything"""
         self._create_artifact('noprop')
-        list_creating = self._check_artifact_get('/noprop/v1.0/drafts')
+        list_creating = self._check_artifact_get(
+            '/noprop/v1.0/drafts')["artifacts"]
         self.assertEqual(1, len(list_creating))
         bad_version = self._check_artifact_get('/noprop/v1.0bad',
                                                status=400)
         self.assertIn("Invalid version string: u'1.0bad'", bad_version)
+
+    def test_list_artifacts_with_pagination(self):
+        """List artifacts with pagination"""
+        # create artifacts
+        art1 = {'name': 'artifact-1',
+                'version': '12'}
+        art2 = {'name': 'artifact-2',
+                'version': '12'}
+        self._create_artifact('noprop', data=art1)
+        self._create_artifact('noprop', data=art2)
+        # sorting is desc by default
+        first_page = self._check_artifact_get(
+            '/noprop/drafts?limit=1&sort=name')
+        # check the first artifacts has returned correctly
+        self.assertEqual(1, len(first_page["artifacts"]))
+        self.assertEqual("artifact-2", first_page["artifacts"][0]["name"])
+        self.assertIn("next", first_page)
+        # check the second page
+        second_page_url = first_page["next"].split("artifacts", 1)[1]
+        second_page = self._check_artifact_get(second_page_url)
+        self.assertIn("next", second_page)
+        self.assertEqual(1, len(second_page["artifacts"]))
+        self.assertEqual("artifact-1", second_page["artifacts"][0]["name"])
+        # check that the latest item is empty
+        last_page_url = second_page["next"].split("artifacts", 1)[1]
+        last_page = self._check_artifact_get(last_page_url)
+        self.assertEqual(0, len(last_page["artifacts"]))
+        self.assertNotIn("next", last_page)
 
     def test_get_artifact_by_id_any_version(self):
         data = self._create_artifact('noprop')
@@ -1051,10 +1082,9 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._check_artifact_post('/withprops/v1/drafts',
                                   artifact_data)
         result = self._check_artifact_get('/withprops/v1/drafts')
-        self.assertEqual(2, len(result))
-
+        self.assertEqual(2, len(result["artifacts"]))
         result = self._check_artifact_get('/withprops/v1/drafts?limit=1')
-        self.assertEqual(1, len(result))
+        self.assertEqual(1, len(result["artifacts"]))
 
     def _check_sorting_order(self, expected, actual):
         for e, a in zip(expected, actual):
@@ -1090,7 +1120,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                          artifact_data)
 
         result = self._check_artifact_get(
-            '/withprops/v1.0/drafts?sort=name')
+            '/withprops/v1.0/drafts?sort=name')["artifacts"]
         self.assertEqual(5, len(result))
 
         # default direction is 'desc'
@@ -1098,14 +1128,14 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._check_sorting_order(expected, result)
 
         result = self._check_artifact_get(
-            '/withprops/v1.0/drafts?sort=name:asc')
+            '/withprops/v1.0/drafts?sort=name:asc')["artifacts"]
         self.assertEqual(5, len(result))
 
         expected = [art1, art2, art3, art4, art5]
         self._check_sorting_order(expected, result)
 
         result = self._check_artifact_get(
-            '/withprops/v1.0/drafts?sort=version:asc,prop1')
+            '/withprops/v1.0/drafts?sort=version:asc,prop1')["artifacts"]
         self.assertEqual(5, len(result))
 
         expected = [art1, art3, art2, art4, art5]
@@ -1296,10 +1326,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                 }
         self._create_artifact('withprops', data=data)
 
-        result = self._check_artifact_get('/withprops/v1.0/drafts?name=art2')
+        result = self._check_artifact_get(
+            '/withprops/v1.0/drafts?name=art2')['artifacts']
         self.assertEqual(1, len(result))
 
-        result = self._check_artifact_get('/withprops/v1.0/drafts?prop2=10')
+        result = self._check_artifact_get(
+            '/withprops/v1.0/drafts?prop2=10')['artifacts']
         self.assertEqual(2, len(result))
 
     def test_filter_by_dict_props(self):
@@ -1377,7 +1409,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art6 = self._create_artifact('noprop', data=data)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:4.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4, art5, art6]
@@ -1385,7 +1417,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:4.0.1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art2, art3, art4, art5, art6]
@@ -1393,7 +1425,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art3, art4, art5, art6]
@@ -1401,7 +1433,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-2'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art4, art5, art6]
@@ -1409,7 +1441,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art5, art6]
@@ -1417,7 +1449,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:5.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = [art6]
         self.assertEqual(actual, result)
 
@@ -1447,7 +1479,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art6 = self._create_artifact('noprop', data=data)
 
         url = '/noprop/v1.0/drafts?name=art1&version=gt:4.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art2, art3, art4, art5, art6]
@@ -1455,7 +1487,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=gt:4.0.1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art3, art4, art5, art6]
@@ -1463,7 +1495,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=gt:4.2.0-1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art4, art5, art6]
@@ -1471,7 +1503,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=gt:4.2.0-2'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art5, art6]
@@ -1479,12 +1511,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=gt:4.2.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = [art6]
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=gt:5.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = []
         self.assertEqual(actual, result)
 
@@ -1514,12 +1546,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art6 = self._create_artifact('noprop', data=data)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:4.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = [art1]
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:4.0.1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2]
@@ -1527,7 +1559,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3]
@@ -1535,7 +1567,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-2'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4]
@@ -1543,7 +1575,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4, art5]
@@ -1551,7 +1583,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:5.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4, art5, art6]
@@ -1584,17 +1616,17 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._create_artifact('noprop', data=data)
 
         url = '/noprop/v1.0/drafts?name=art1&version=lt:4.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = []
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=lt:4.0.1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = [art1]
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=lt:4.2.0-1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2]
@@ -1602,7 +1634,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=lt:4.2.0-2'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3]
@@ -1610,7 +1642,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=lt:4.2.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4]
@@ -1618,7 +1650,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=lt:5.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4, art5]
@@ -1651,7 +1683,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art6 = self._create_artifact('noprop', data=data)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ne:4.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art2, art3, art4, art5, art6]
@@ -1659,7 +1691,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ne:4.0.1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art3, art4, art5, art6]
@@ -1667,7 +1699,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ne:4.2.0-1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art4, art5, art6]
@@ -1675,7 +1707,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ne:4.2.0-2'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art5, art6]
@@ -1683,7 +1715,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ne:4.2.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4, art6]
@@ -1691,7 +1723,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ne:5.0.0'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2, art3, art4, art5]
@@ -1708,12 +1740,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art2 = self._create_artifact('noprop', data=data)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-2'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = [art2]
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-2'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2]
@@ -1721,7 +1753,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=ge:4.2.0-1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         result.sort(key=lambda x: x['id'])
 
         actual = [art1, art2]
@@ -1729,7 +1761,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(actual, result)
 
         url = '/noprop/v1.0/drafts?name=art1&version=le:4.2.0-1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
         actual = [art1]
         self.assertEqual(actual, result)
 
@@ -1752,12 +1784,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._create_artifact('withprops', data=data)
 
         url = '/withprops/v1.0/drafts?prop2=gt:99&prop2=lt:101'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
 
         self.assertEqual(1, len(result))
 
         url = '/withprops/v1.0/drafts?prop2=gt:99&prop2=lt:2000'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
 
         self.assertEqual(2, len(result))
 
@@ -1780,12 +1812,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._create_artifact('withprops', data=data)
 
         url = '/withprops/v1.0/drafts?tags=hyhyhy'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
 
         self.assertEqual(2, len(result))
 
         url = '/withprops/v1.0/drafts?tags=cicici&tags=hyhyhy'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
 
         self.assertEqual(1, len(result))
 
@@ -1831,11 +1863,11 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._create_artifact('withprops', data=data)
 
         url = '/withprops/v1.0/drafts?version=gt:4.0&version=lt:10.1'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
 
         self.assertEqual(2, len(result))
 
         url = '/withprops/v1.0/drafts?version=gt:4.0&version=ne:4.3'
-        result = self._check_artifact_get(url=url)
+        result = self._check_artifact_get(url=url)['artifacts']
 
         self.assertEqual(1, len(result))
