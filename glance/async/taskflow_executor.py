@@ -134,6 +134,9 @@ class TaskExecutor(glance.async.TaskExecutor):
                 max_workers=CONF.taskflow_executor.max_workers)
             with llistener.DynamicLoggingListener(engine, log=LOG):
                 engine.run()
+        except exception.UploadException as exc:
+            task.fail(encodeutils.exception_to_unicode(exc))
+            self.task_repo.save(task)
         except Exception as exc:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s') %
