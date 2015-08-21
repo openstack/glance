@@ -1325,9 +1325,9 @@ Optional. Default: ``True``
 Defines which version(s) of the Registry API will be enabled.
 If the Glance API server parameter ``enable_v1_api`` has been set to ``True`` the
 ``enable_v1_registry`` has to be ``True`` as well.
-If the Glance API server parameter ``enable_v2_api`` has been set to ``True`` and
-the parameter ``data_api`` has been set to ``glance.db.registry.api`` the
-``enable_v2_registry`` has to be set to ``True``
+If the Glance API server parameter ``enable_v2_api`` or ``enable_v3_api`` has been
+set to ``True`` and the parameter ``data_api`` has been set to
+``glance.db.registry.api`` the ``enable_v2_registry`` has to be set to ``True``
 
 
 Configuring Notifications
@@ -1382,9 +1382,9 @@ Optional. Default: ``roles``.
 Configuring Glance APIs
 -----------------------
 
-The glance-api service implements versions 1 and 2 of the OpenStack
-Images API. Disable either version of the Images API using the
-following options:
+The glance-api service implements versions 1, 2 and 3 of
+the OpenStack Images API. Disable any version of
+the Images API using the following options:
 
 * ``enable_v1_api=<True|False>``
 
@@ -1394,11 +1394,12 @@ Optional. Default: ``True``
 
 Optional. Default: ``True``
 
-**IMPORTANT NOTE**: The v1 API is implemented on top of the
-glance-registry service while the v2 API is not. This means that
-in order to use the v2 API, you must copy the necessary sql
-configuration from your glance-registry service to your
-glance-api configuration file.
+* ``enable_v3_api=<True|False>``
+
+Optional. Default: ``False``
+
+**IMPORTANT NOTE**: To use v2 registry in v2 or v3 API, you must set
+``data_api`` to glance.db.registry.api in glance-api.conf.
 
 Configuring Glance Tasks
 ------------------------
