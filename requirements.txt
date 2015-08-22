@@ -20,7 +20,7 @@ argparse
 boto<2.35.0,>=2.32.1
 sqlalchemy-migrate==0.9.1
 httplib2<=0.9,>=0.7.5
-kombu<=3.0.7,>=2.5.0
+kombu<=3.0.15,>=2.5.0
 pycrypto<=2.6.1,>=2.6
 iso8601<=0.1.10,>=0.1.9
 ordereddict<=1.1
@@ -33,7 +33,7 @@ WSME<=0.6.4,>=0.6
 posix-ipc<=0.9.9
 
 # For Swift storage backend.
-python-swiftclient<=2.3.1,>=2.2.0
+python-swiftclient<2.4.0,>=2.2.0
 
 # For VMware storage backed.
 oslo.vmware<0.9.0,>=0.6.0 # Apache-2.0
