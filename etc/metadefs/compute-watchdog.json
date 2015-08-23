@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::Watchdog",
     "display_name": "Watchdog Behavior",
-    "description": "Compute drivers may enable watchdog behavior over instances.  See: http://docs.openstack.org/admin-guide-cloud/content/customize-flavors.html",
+    "description": "Compute drivers may enable watchdog behavior over instances.  See: http://docs.openstack.org/admin-guide-cloud/compute-flavors.html",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [

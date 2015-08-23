@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::VMwareFlavor",
     "display_name": "VMware Driver Options for Flavors",
-    "description": "VMware Driver Options for Flavors may be used to customize and manage Nova Flavors. These are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova. See: http://docs.openstack.org/admin-guide-cloud/content/customize-flavors.html",
+    "description": "VMware Driver Options for Flavors may be used to customize and manage Nova Flavors. These are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova. See: http://docs.openstack.org/admin-guide-cloud/compute-flavors.html",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [
