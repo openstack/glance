@@ -969,6 +969,29 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             '/withblob/%s/blob1/download' % art['id'])
         self.assertEqual('ZZZZZ', data)
 
+    def test_file_w_unknown_size(self):
+        # Upload and download data provided by an iterator, thus without
+        # knowing the length in advance
+        art = self._create_artifact('withblob')
+        artifact_id = art['id']
+
+        def iterate_string(val):
+            for char in val:
+                yield char
+
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        self._check_artifact_post('/withblob/v1/%s/blob1' % art['id'],
+                                  headers=headers,
+                                  data=iterate_string('ZZZZZ'), status=200)
+
+        art = self._check_artifact_get('/withblob/%s' % artifact_id)
+        self.assertEqual(artifact_id, art['id'])
+        self.assertIn('download_link', art['blob1'])
+
+        data = self._check_artifact_get(
+            '/withblob/%s/blob1/download' % art['id'])
+        self.assertEqual('ZZZZZ', data)
+
     def test_limit(self):
         artifact_data = {'name': 'artifact-1',
                          'version': '12'}
