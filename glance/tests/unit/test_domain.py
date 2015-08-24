@@ -326,7 +326,9 @@ class TestTaskFactory(test_utils.BaseTestCase):
         owner = TENANT1
         task_input = 'input'
         task = self.task_factory.new_task(task_type, owner,
-                                          task_input=task_input)
+                                          task_input=task_input,
+                                          result='test_result',
+                                          message='test_message')
         self.assertIsNotNone(task.task_id)
         self.assertIsNotNone(task.created_at)
         self.assertEqual(task_type, task.type)
@@ -335,8 +337,8 @@ class TestTaskFactory(test_utils.BaseTestCase):
         self.assertIsNone(task.expires_at)
         self.assertEqual(owner, task.owner)
         self.assertEqual(task_input, task.task_input)
-        self.assertEqual(u'', task.message)
-        self.assertIsNone(task.result)
+        self.assertEqual('test_message', task.message)
+        self.assertEqual('test_result', task.result)
 
     def test_new_task_invalid_type(self):
         task_type = 'blah'
