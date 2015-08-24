@@ -29,6 +29,7 @@ from __future__ import print_function
 
 import os
 import sys
+import time
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -46,6 +47,7 @@ import six
 
 from glance.common import config
 from glance.common import exception
+from glance import context
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata
@@ -144,6 +146,26 @@ class DbCommands(object):
         """Export metadefinitions data from database to files"""
         metadata.db_export_metadefs(db_api.get_engine(),
                                     path)
+
+    @args('--age_in_days', type=int,
+          help='Purge deleted rows older than age in days')
+    @args('--max_rows', type=int,
+          help='Limit number of records to delete')
+    def purge(self, age_in_days=30, max_rows=100):
+        """Purge deleted rows older than a given age from glance tables."""
+        age_in_days = int(age_in_days)
+        max_rows = int(max_rows)
+        if age_in_days <= 0:
+            print(_("Must supply a positive, non-zero value for age."))
+            exit(1)
+        if age_in_days >= (int(time.time()) / 86400):
+            print(_("Maximal age is count of days since epoch."))
+            exit(1)
+        if max_rows < 1:
+            print(_("Minimal rows limit is 1."))
+            exit(1)
+        ctx = context.get_admin_context(show_deleted=True)
+        db_api.purge_deleted_rows(ctx, age_in_days, max_rows)
 
 
 class DbLegacyCommands(object):

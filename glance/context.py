@@ -58,3 +58,12 @@ class RequestContext(context.RequestContext):
     def can_see_deleted(self):
         """Admins can see deleted by default"""
         return self.show_deleted or self.is_admin
+
+
+def get_admin_context(show_deleted=False):
+    """Create an administrator context."""
+    return RequestContext(auth_token=None,
+                          tenant=None,
+                          is_admin=True,
+                          show_deleted=show_deleted,
+                          overwrite=False)

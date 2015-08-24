@@ -160,6 +160,15 @@ class TestSqlAlchemyQuota(base.DriverQuotaTests,
         self.addCleanup(db_tests.reset)
 
 
+class TestDBPurge(base.DBPurgeTests,
+                  base.FunctionalInitWrapper):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestDBPurge, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+
 class TestArtifacts(base_artifacts.ArtifactsTestDriver,
                     base_artifacts.ArtifactTests):
     def setUp(self):
