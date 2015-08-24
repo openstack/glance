@@ -491,6 +491,81 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                   data='ZZZZZ', status=200)
         self._check_artifact_delete('/withblob/v1/%s' % art['id'])
 
+    def test_update_nonexistent_property_by_replace_op(self):
+        art = self._create_artifact('withprops', data={'name': 'some art',
+                                                       'version': '4.2'})
+        data = [{'op': 'replace', 'value': 'some value',
+                 'path': '/nonexistent_property'}]
+        result = self._check_artifact_patch('/withprops/v1/%s' %
+                                            art['id'],
+                                            data=data,
+                                            status=400)
+        actual = u'''\
+<html>
+ <head>
+  <title>400 Bad Request</title>
+ </head>
+ <body>
+  <h1>400 Bad Request</h1>
+  Artifact has no property nonexistent_property<br /><br />
+
+
+
+ </body>
+</html>'''
+
+        self.assertEqual(actual, result)
+
+    def test_update_nonexistent_property_by_remove_op(self):
+        art = self._create_artifact('withprops', data={'name': 'some art',
+                                                       'version': '4.2'})
+        data = [{'op': 'replace', 'value': 'some value',
+                 'path': '/nonexistent_property'}]
+        result = self._check_artifact_patch('/withprops/v1/%s' %
+                                            art['id'],
+                                            data=data,
+                                            status=400)
+        actual = u'''\
+<html>
+ <head>
+  <title>400 Bad Request</title>
+ </head>
+ <body>
+  <h1>400 Bad Request</h1>
+  Artifact has no property nonexistent_property<br /><br />
+
+
+
+ </body>
+</html>'''
+
+        self.assertEqual(actual, result)
+
+    def test_update_nonexistent_property_by_add_op(self):
+        art = self._create_artifact('withprops', data={'name': 'some art',
+                                                       'version': '4.2'})
+        data = [{'op': 'replace', 'value': 'some value',
+                 'path': '/nonexistent_property'}]
+        result = self._check_artifact_patch('/withprops/v1/%s' %
+                                            art['id'],
+                                            data=data,
+                                            status=400)
+        actual = u'''\
+<html>
+ <head>
+  <title>400 Bad Request</title>
+ </head>
+ <body>
+  <h1>400 Bad Request</h1>
+  Artifact has no property nonexistent_property<br /><br />
+
+
+
+ </body>
+</html>'''
+
+        self.assertEqual(actual, result)
+
     def test_update_array_property_by_replace_op(self):
         art = self._create_artifact('withprops', data={'name': 'some art',
                                                        'version': '4.2'})

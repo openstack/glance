@@ -37,6 +37,7 @@ class ArtifactProxy(proxy.Artifact):
         path = kwargs.get("path")
         value = kwargs.get("value")
         prop_name, delimiter, path_left = path.lstrip('/').partition('/')
+        super(ArtifactProxy, self).get_type_specific_property(prop_name)
         if not path_left:
             return setattr(self, prop_name, value)
         try:
