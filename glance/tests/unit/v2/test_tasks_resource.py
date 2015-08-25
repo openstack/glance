@@ -366,6 +366,47 @@ class TestTasksController(test_utils.BaseTestCase):
                                task_live_time.seconds / 3600)
         self.assertEqual(CONF.task.task_time_to_live, task_live_time_hour)
 
+    def test_create_with_wrong_import_form(self):
+        request = unit_test_utils.get_fake_request()
+        wrong_import_from = [
+            "swift://cloud.foo/myaccount/mycontainer/path",
+            "file:///path",
+            "s3://accesskey:secretkey@s3.amazonaws.com/bucket/key-id",
+            "cinder://volume-id"
+        ]
+        executor_factory = self.gateway.get_task_executor_factory(
+            request.context)
+        task_repo = self.gateway.get_task_repo(request.context)
+
+        for import_from in wrong_import_from:
+            task = {
+                "type": "import",
+                "input": {
+                    "import_from": import_from,
+                    "import_from_format": "qcow2",
+                    "image_properties": {
+                        "disk_format": "qcow2",
+                        "container_format": "bare",
+                        "name": "test-task"
+                    }
+                }
+            }
+            new_task = self.controller.create(request, task=task)
+            task_executor = executor_factory.new_task_executor(request.context)
+            task_executor.begin_processing(new_task.task_id)
+            final_task = task_repo.get(new_task.task_id)
+
+            self.assertEqual('failure', final_task.status)
+            if import_from.startswith("file:///"):
+                msg = ("File based imports are not allowed. Please use a "
+                       "non-local source of image data.")
+            else:
+                supported = ['http', ]
+                msg = ("The given uri is not valid. Please specify a "
+                       "valid uri from the following list of supported uri "
+                       "%(supported)s") % {'supported': supported}
+            self.assertEqual(msg, final_task.message)
+
     @mock.patch.object(glance.gateway.Gateway, 'get_task_factory')
     def test_notifications_on_create(self, mock_get_task_factory):
         request = unit_test_utils.get_fake_request()

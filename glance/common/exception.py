@@ -352,6 +352,10 @@ class InvalidTaskStatusTransition(TaskException, Invalid):
                 " %(new_status)s is not allowed")
 
 
+class ImportTaskError(TaskException, Invalid):
+    message = _("An import task exception occurred")
+
+
 class DuplicateLocation(Duplicate):
     message = _("The location %(location)s already exists")
 
