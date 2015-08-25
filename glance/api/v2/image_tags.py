@@ -18,6 +18,7 @@ from oslo_utils import encodeutils
 import webob.exc
 
 from glance.api import policy
+from glance.api.v2 import images as v2_api
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -94,8 +95,20 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = 204
 
 
+class RequestDeserializer(wsgi.JSONRequestDeserializer):
+    def update(self, request):
+        try:
+            schema = v2_api.get_schema()
+            schema_format = {"tags": [request.urlvars.get('tag_value')]}
+            schema.validate(schema_format)
+        except exception.InvalidObject as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
+        return super(RequestDeserializer, self).default(request)
+
+
 def create_resource():
     """Images resource factory method"""
     serializer = ResponseSerializer()
+    deserializer = RequestDeserializer()
     controller = Controller()
-    return wsgi.Resource(controller, serializer=serializer)
+    return wsgi.Resource(controller, deserializer, serializer)

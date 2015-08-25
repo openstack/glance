@@ -2554,6 +2554,19 @@ class TestImages(functional.FunctionalTest):
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
+        # Try to add a tag that is too long
+        big_tag = 'a' * 300
+        path = self._url('/v2/images/%s/tags/%s' % (image_id, big_tag))
+        response = requests.put(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
+        # Tags should not have changed since request was over limit
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        tags = jsonutils.loads(response.text)['tags']
+        self.assertEqual(['sniff', 'snozz'], sorted(tags))
+
         self.stop_servers()
 
     def test_images_container(self):
