@@ -349,7 +349,7 @@ class Task(object):
 
     def __init__(self, task_id, task_type, status, owner,
                  expires_at, created_at, updated_at,
-                 task_input, result, message, task_time_to_live=48):
+                 task_input, result, message):
 
         if task_type not in self._supported_task_type:
             raise exception.InvalidTaskType(task_type)
@@ -364,6 +364,7 @@ class Task(object):
         self.expires_at = expires_at
         # NOTE(nikhil): We use '_time_to_live' to determine how long a
         # task should live from the time it succeeds or fails.
+        task_time_to_live = CONF.task.task_time_to_live
         self._time_to_live = datetime.timedelta(hours=task_time_to_live)
         self.created_at = created_at
         self.updated_at = updated_at
@@ -458,7 +459,7 @@ class TaskStub(object):
 
 class TaskFactory(object):
 
-    def new_task(self, task_type, owner, task_time_to_live=48,
+    def new_task(self, task_type, owner,
                  task_input=None, **kwargs):
         task_id = str(uuid.uuid4())
         status = 'pending'
@@ -478,7 +479,6 @@ class TaskFactory(object):
             task_input,
             kwargs.get('message'),
             kwargs.get('result'),
-            task_time_to_live
         )
 
 
