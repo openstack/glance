@@ -22,7 +22,6 @@ from oslo_config import cfg
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
-from glance.common import exception
 from glance import scrubber
 from glance.tests import utils as test_utils
 
@@ -61,13 +60,55 @@ class TestScrubber(test_utils.BaseTestCase):
         scrub._scrub_image(id, [(id, '-', uri)])
         self.mox.VerifyAll()
 
-    def test_store_delete_unsupported_backend_exception(self):
-        ex = glance_store.UnsupportedBackend()
-        self._scrubber_cleanup_with_store_delete_exception(ex)
+    def test_store_delete_successful(self):
+        uri = 'file://some/path/%s' % uuid.uuid4()
+        id = 'helloworldid'
+
+        scrub = scrubber.Scrubber(glance_store)
+        scrub.registry = self.mox.CreateMockAnything()
+        scrub.registry.get_image(id).AndReturn({'status': 'pending_delete'})
+        scrub.registry.update_image(id, {'status': 'deleted'})
+        self.mox.StubOutWithMock(glance_store, "delete_from_backend")
+        glance_store.delete_from_backend(uri, mox.IgnoreArg()).AndReturn('')
+        self.mox.ReplayAll()
+        scrub._scrub_image(id, [(id, '-', uri)])
+        self.mox.VerifyAll()
+
+    def test_store_delete_store_exceptions(self):
+        # While scrubbing image data, all store exceptions, other than
+        # NotFound, cause image scrubbing to fail. Essentially, no attempt
+        # would be made to update the status of image.
+
+        uri = 'file://some/path/%s' % uuid.uuid4()
+        id = 'helloworldid'
+        ex = glance_store.GlanceStoreException()
+
+        scrub = scrubber.Scrubber(glance_store)
+        scrub.registry = self.mox.CreateMockAnything()
+        self.mox.StubOutWithMock(glance_store, "delete_from_backend")
+        glance_store.delete_from_backend(
+            uri,
+            mox.IgnoreArg()).AndRaise(ex)
+        self.mox.ReplayAll()
+        scrub._scrub_image(id, [(id, '-', uri)])
+        self.mox.VerifyAll()
 
     def test_store_delete_notfound_exception(self):
-        ex = exception.NotFound()
-        self._scrubber_cleanup_with_store_delete_exception(ex)
+        # While scrubbing image data, NotFound exception is ignored and image
+        # scrubbing succeeds
+        uri = 'file://some/path/%s' % uuid.uuid4()
+        id = 'helloworldid'
+        ex = glance_store.NotFound(message='random')
+
+        scrub = scrubber.Scrubber(glance_store)
+        scrub.registry = self.mox.CreateMockAnything()
+        scrub.registry.get_image(id).AndReturn({'status': 'pending_delete'})
+        scrub.registry.update_image(id, {'status': 'deleted'})
+        self.mox.StubOutWithMock(glance_store, "delete_from_backend")
+        glance_store.delete_from_backend(uri, mox.IgnoreArg()).AndRaise(ex)
+        self.mox.ReplayAll()
+        scrub._scrub_image(id, [(id, '-', uri)])
+        self.mox.VerifyAll()
 
 
 class TestScrubDBQueue(test_utils.BaseTestCase):
