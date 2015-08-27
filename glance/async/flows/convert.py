@@ -100,6 +100,12 @@ class _Convert(task.Task):
 
 
 def get_flow(**kwargs):
+    """Return task flow for converting images to different formats.
+
+    :param task_id: Task ID.
+    :param task_type: Type of the task.
+    :param image_repo: Image repository used.
+    """
     task_id = kwargs.get('task_id')
     task_type = kwargs.get('task_type')
     image_repo = kwargs.get('image_repo')

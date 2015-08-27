@@ -68,6 +68,9 @@ Installing/Configuring Glance
    configuring
    authentication
    policies
+   image-location-strategy-modules
+   artifact-types
+   flows
 
 Operating Glance
 ================

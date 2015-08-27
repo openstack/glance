@@ -188,3 +188,19 @@ of an *Image* object.
    :alt: Glance images DB schema
 
 .. centered:: Image 1. Glance images DB schema
+
+
+Glance Database Backends
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Migration Backends
+------------------
+
+.. list-plugins:: glance.database.migration_backend
+   :detailed:
+
+Metadata Backends
+-----------------
+
+.. list-plugins:: glance.database.metadata_backend
+   :detailed:

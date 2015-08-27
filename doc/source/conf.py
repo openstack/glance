@@ -47,6 +47,7 @@ extensions = ['sphinx.ext.coverage',
               'sphinx.ext.pngmath',
               'sphinx.ext.graphviz',
               'oslosphinx',
+              'stevedore.sphinxext',
               ]
 
 # Add any paths that contain templates here, relative to this directory.

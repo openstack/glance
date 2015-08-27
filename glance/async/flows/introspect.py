@@ -76,6 +76,13 @@ class _Introspect(utils.OptionalTask):
 
 
 def get_flow(**kwargs):
+    """Return task flow for introspecting images to obtain metadata about the
+    image.
+
+    :param task_id: Task ID
+    :param task_type: Type of the task.
+    :param image_repo: Image repository used.
+    """
     task_id = kwargs.get('task_id')
     task_type = kwargs.get('task_type')
     image_repo = kwargs.get('image_repo')
