@@ -105,14 +105,16 @@ class ArtifactsController(object):
                        state={'value': state})
         if type_version is not None:
             filters['type_version'] = {'value': type_version}
-        if 'version' in filters and filters['version']['value'] == 'latest':
-            if 'name' in filters:
-                filters['version']['value'] = self._get_latest_version(
-                    req, filters['name']['value'], type_name, type_version)
-            else:
-                raise webob.exc.HTTPBadRequest(
-                    'Filtering by version without specifying a name is not'
-                    ' supported.')
+        if 'version' in filters:
+            for filter in filters['version']:
+                if filter['value'] == 'latest':
+                    if 'name' not in filters:
+                        raise webob.exc.HTTPBadRequest(
+                            'Filtering by latest version without specifying'
+                            ' a name is not supported.')
+                    filter['value'] = self._get_latest_version(
+                        req, filters['name'][0]['value'], type_name,
+                        type_version)
 
         return artifact_repo.list(filters=filters,
                                   show_level=Showlevel.BASIC,
@@ -121,14 +123,14 @@ class ArtifactsController(object):
     def _get_latest_version(self, req, name, type_name, type_version=None,
                             state='creating'):
         artifact_repo = self.gateway.get_artifact_repo(req.context)
-        filters = dict(name={"value": name},
+        filters = dict(name=[{"value": name}],
                        type_name={"value": type_name},
                        state={"value": state})
         if type_version is not None:
             filters["type_version"] = {"value": type_version}
         result = artifact_repo.list(filters=filters,
                                     show_level=Showlevel.NONE,
-                                    sort_keys=['version'])
+                                    sort_keys=[('version', None)])
         if len(result):
             return result[0].version
 
@@ -758,9 +760,11 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
                 if op == 'default':
                     op = 'IN' if isinstance(prop_type, list) else 'EQ'
 
-            filters[property_name] = dict(operator=op, position=position,
-                                          value=property_value,
-                                          type=str_type)
+            filters.setdefault(property_name, [])
+
+            filters[property_name].append(dict(operator=op, position=position,
+                                               value=property_value,
+                                               type=str_type))
         return filters
 
     def list(self, req):
@@ -773,10 +777,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
         limit = params.pop('limit', None)
         marker = params.pop('marker', None)
 
-        tags = []
-        while 'tag' in params:
-            tags.append(params.pop('tag').strip())
-
         query_params = dict()
 
         query_params['sort_keys'], query_params['sort_dirs'] = (
@@ -787,9 +787,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
             query_params['marker'] = marker
 
         query_params['limit'] = self._validate_limit(limit)
-
-        if tags:
-            query_params['filters']['tags'] = {'value': tags}
 
         query_params['filters'] = self._get_filters(res['artifact_type'],
                                                     params)
