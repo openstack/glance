@@ -524,7 +524,7 @@ class ServerTest(test_utils.BaseTestCase):
             server.wait()
             mock_server.assert_called_once_with('fake_socket',
                                                 fake_application,
-                                                log=server._wsgi_logger,
+                                                log=server._logger,
                                                 debug=False,
                                                 custom_pool=server.pool,
                                                 keepalive=False,
