@@ -16,7 +16,7 @@
     "properties": {
         "img_config_drive": {
             "title": "Config Drive",
-            "description": "This property specifies whether or not Nova should use a config drive when booting the image. Mandatory means that Nova will always use a config drive when booting the image. OpenStack can be configured to write metadata to a special configuration drive that will be attached to the instance when it boots. The instance can retrieve any information from the config drive. One use case for the config drive is to pass network configuration information to the instance. See also: http://docs.openstack.org/user-guide/content/config-drive.html",
+            "description": "This property specifies whether or not Nova should use a config drive when booting the image. Mandatory means that Nova will always use a config drive when booting the image. OpenStack can be configured to write metadata to a special configuration drive that will be attached to the instance when it boots. The instance can retrieve any information from the config drive. One use case for the config drive is to pass network configuration information to the instance. See also: http://docs.openstack.org/user-guide/cli_config_drive.html",
             "type": "string",
             "enum": [
                 "optional",
