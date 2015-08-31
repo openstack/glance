@@ -25,13 +25,14 @@ Rally concepts https://wiki.openstack.org/wiki/Rally/Concepts
 
 import os
 
-from rally.task.scenarios import base
-from rally.task import utils as task_utils
+from rally.plugins.openstack import scenario
+from rally.task import atomic
+from rally.task import utils
 
 
-class GlancePlugin(base.Scenario):
+class GlancePlugin(scenario.OpenStackScenario):
 
-    @base.atomic_action_timer("glance.create_image_label")
+    @atomic.action_timer("glance.create_image_label")
     def _create_image(self, image_name, container_format,
                       image_location, disk_format, **kwargs):
         """Create a new image.
@@ -62,25 +63,22 @@ class GlancePlugin(base.Scenario):
                 kw["copy_from"] = image_location
 
             image = self.clients("glance").images.create(**kw)
-
-            image = task_utils.wait_for(
-                image,
-                is_ready=task_utils.resource_is("active"),
-                update_resource=task_utils.get_from_manager(),
-                timeout=100,
-                check_interval=0.5)
-
+            image = utils.wait_for(image,
+                                   is_ready=utils.resource_is("active"),
+                                   update_resource=utils.get_from_manager(),
+                                   timeout=100,
+                                   check_interval=0.5)
         finally:
             if "data" in kw:
                 kw["data"].close()
 
         return image
 
-    @base.atomic_action_timer("glance.list_images_label")
+    @atomic.action_timer("glance.list_images_label")
     def _list_images(self):
         return list(self.clients("glance").images.list())
 
-    @base.scenario(context={"cleanup": ["glance"]})
+    @scenario.configure(context={"cleanup": ["glance"]})
     def create_and_list(self, container_format,
                         image_location, disk_format, **kwargs):
         self._create_image(self._generate_random_name(),
