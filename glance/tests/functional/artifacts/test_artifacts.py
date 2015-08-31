@@ -250,11 +250,15 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(status, response.status_code)
         return response.text
 
-    def _check_artifact_patch(self, url, data, status=200):
-        return self._check_artifact_method("patch", url, data, status)
+    def _check_artifact_patch(self, url, data, status=200,
+                              headers={'Content-Type': 'application/json'}):
+        return self._check_artifact_method("patch", url, data, status=status,
+                                           headers=headers)
 
-    def _check_artifact_put(self, url, data, status=200):
-        return self._check_artifact_method("put", url, data, status=status)
+    def _check_artifact_put(self, url, data, status=200,
+                            headers={'Content-Type': 'application/json'}):
+        return self._check_artifact_method("put", url, data, status=status,
+                                           headers=headers)
 
     def test_list_any_artifacts(self):
         """Returns information about all draft artifacts with given endpoint"""
