@@ -154,9 +154,8 @@ function run_tests {
 
   if [ $coverage -eq 1 ]; then
     echo "Generating coverage report in covhtml/"
-    # Don't compute coverage for common code, which is tested elsewhere
     ${wrapper} coverage combine
-    ${wrapper} coverage html --include='glance/*' --omit='glance/openstack/common/*' -d covhtml -i
+    ${wrapper} coverage html --include='glance/*' -d covhtml -i
   fi
 
   return $RESULT
