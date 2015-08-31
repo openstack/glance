@@ -37,7 +37,6 @@ import glance_store
 from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_log import loggers
 from oslo_serialization import jsonutils
 import routes
 import routes.middleware
@@ -252,7 +251,6 @@ class Server(object):
     def __init__(self, threads=1000, initialize_glance_store=False):
         os.umask(0o27)  # ensure files are created with the correct privileges
         self._logger = logging.getLogger("eventlet.wsgi.server")
-        self._wsgi_logger = loggers.WritableLogger(self._logger)
         self.threads = threads
         self.children = set()
         self.stale_children = set()
@@ -454,7 +452,7 @@ class Server(object):
         try:
             eventlet.wsgi.server(self.sock,
                                  self.application,
-                                 log=self._wsgi_logger,
+                                 log=self._logger,
                                  custom_pool=self.pool,
                                  debug=False,
                                  keepalive=CONF.http_keepalive,
@@ -472,7 +470,7 @@ class Server(object):
         """Start a WSGI server in a new green thread."""
         LOG.info(_LI("Starting single process server"))
         eventlet.wsgi.server(sock, application, custom_pool=self.pool,
-                             log=self._wsgi_logger,
+                             log=self._logger,
                              debug=False,
                              keepalive=CONF.http_keepalive,
                              socket_timeout=self.client_socket_timeout)
