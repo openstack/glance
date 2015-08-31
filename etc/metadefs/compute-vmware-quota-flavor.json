@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::VMwareQuotaFlavor",
     "display_name": "VMware Quota for Flavors",
-    "description": "The VMware compute driver allows various compute quotas to be specified on flavors. When specified, the VMWare driver will ensure that the quota is enforced. These are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova. For a list of hypervisors, see: https://wiki.openstack.org/wiki/HypervisorSupportMatrix. For flavor customization, see: http://docs.openstack.org/admin-guide-cloud/content/customize-flavors.html",
+    "description": "The VMware compute driver allows various compute quotas to be specified on flavors. When specified, the VMWare driver will ensure that the quota is enforced. These are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova. For a list of hypervisors, see: https://wiki.openstack.org/wiki/HypervisorSupportMatrix. For flavor customization, see: http://docs.openstack.org/admin-guide-cloud/compute-flavors.html",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [
