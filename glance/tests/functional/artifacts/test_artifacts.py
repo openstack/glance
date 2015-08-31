@@ -639,6 +639,26 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                 '/withprops/v1/%s' % art['id'], data=data)
             self.assertEqual('some value', art_updated['prop1'])
 
+    def test_update_remove_non_existent_artifact_properties(self):
+        art = self._create_artifact('withprops')
+        for prop in ['prop1', 'prop2']:
+            self.assertIsNone(art[prop])
+            data = [{'op': 'remove', 'value': 'some value',
+                     'path': '/non-existent-path/and-another'}]
+            art_updated = self._check_artifact_patch(
+                '/withprops/v1/%s' % art['id'], data=data, status=400)
+            self.assertIn('Artifact has no property', art_updated)
+
+    def test_update_replace_non_existent_artifact_properties(self):
+        art = self._create_artifact('withprops')
+        for prop in ['prop1', 'prop2']:
+            self.assertIsNone(art[prop])
+            data = [{'op': 'replace', 'value': 'some value',
+                     'path': '/non-existent-path/and-another'}]
+            art_updated = self._check_artifact_patch(
+                '/withprops/v1/%s' % art['id'], data=data, status=400)
+            self.assertIn('Artifact has no property', art_updated)
+
     def test_update_artifact_remove_property(self):
         artifact_data = {'name': 'artifact-1',
                          'version': '12',
