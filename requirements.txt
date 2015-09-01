@@ -16,7 +16,7 @@ eventlet!=0.17.0,>=0.16.1
 PasteDeploy>=1.5.0
 Routes!=2.0,>=1.12.3
 WebOb>=1.2.3
-sqlalchemy-migrate>=0.9.5
+sqlalchemy-migrate!=0.9.8,<0.10.0,>=0.9.5
 httplib2>=0.7.5
 kombu>=2.5.0
 pycrypto>=2.6
