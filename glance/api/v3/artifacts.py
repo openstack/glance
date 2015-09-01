@@ -314,11 +314,12 @@ class ArtifactsController(object):
             return artifact
 
         except ValueError as e:
+            exc_message = encodeutils.exception_to_unicode(e)
             LOG.debug("Cannot save data for artifact %(id)s: %(e)s",
-                      {'id': id, 'e': utils.exception_to_str(e)})
+                      {'id': id, 'e': exc_message})
             self._restore(artifact_repo, artifact)
             raise webob.exc.HTTPBadRequest(
-                explanation=utils.exception_to_str(e))
+                explanation=exc_message)
 
         except glance_store.StoreAddDisabled:
             msg = _("Error in store configuration. Adding artifacts to store "
@@ -330,8 +331,7 @@ class ArtifactsController(object):
 
         except (glance_store.Duplicate,
                 exception.InvalidImageStatusTransition) as e:
-            msg = utils.exception_to_str(e)
-            LOG.exception(msg)
+            LOG.exception(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
         except exception.Forbidden as e:
@@ -345,7 +345,7 @@ class ArtifactsController(object):
 
         except glance_store.StorageFull as e:
             msg = _("Artifact storage media "
-                    "is full: %s") % utils.exception_to_str(e)
+                    "is full: %s") % encodeutils.exception_to_unicode(e)
             LOG.error(msg)
             self._restore(artifact_repo, artifact)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
@@ -353,7 +353,7 @@ class ArtifactsController(object):
 
         except exception.StorageQuotaFull as e:
             msg = _("Artifact exceeds the storage "
-                    "quota: %s") % utils.exception_to_str(e)
+                    "quota: %s") % encodeutils.exception_to_unicode(e)
             LOG.error(msg)
             self._restore(artifact_repo, artifact)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
@@ -361,7 +361,7 @@ class ArtifactsController(object):
 
         except exception.ImageSizeLimitExceeded as e:
             msg = _("The incoming artifact blob is "
-                    "too large: %s") % utils.exception_to_str(e)
+                    "too large: %s") % encodeutils.exception_to_unicode(e)
             LOG.error(msg)
             self._restore(artifact_repo, artifact)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
@@ -369,7 +369,7 @@ class ArtifactsController(object):
 
         except glance_store.StorageWriteDenied as e:
             msg = _("Insufficient permissions on artifact "
-                    "storage media: %s") % utils.exception_to_str(e)
+                    "storage media: %s") % encodeutils.exception_to_unicode(e)
             LOG.error(msg)
             self._restore(artifact_repo, artifact)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
