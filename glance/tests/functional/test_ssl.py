@@ -79,6 +79,4 @@ class TestSSL(functional.FunctionalTest):
         path = "https://%s:%d/versions" % ("127.0.0.1", self.api_port)
         https = httplib2.Http(ca_certs=self.ca_file)
         response, content = https.request(path, 'GET')
-
-        # Expect a "300 Multiple Choices"
-        self.assertEqual(300, response.status)
+        self.assertEqual(200, response.status)

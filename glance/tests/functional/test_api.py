@@ -295,7 +295,7 @@ class TestApiPaths(functional.FunctionalTest):
         path = 'http://%s:%d/versions' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(300, response.status)
+        self.assertEqual(200, response.status)
         self.assertEqual(self.versions_json, content)
 
     def test_get_versions_path_with_openstack_header(self):
@@ -307,7 +307,7 @@ class TestApiPaths(functional.FunctionalTest):
         http = httplib2.Http()
         headers = {'Accept': 'application/vnd.openstack.images-v1'}
         response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(300, response.status)
+        self.assertEqual(200, response.status)
         self.assertEqual(self.versions_json, content)
 
     def test_get_v1_versions_path(self):
