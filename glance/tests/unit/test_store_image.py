@@ -16,6 +16,7 @@ import glance_store
 import mock
 
 from glance.common import exception
+from glance.common import signature_utils
 import glance.location
 from glance.tests.unit import base as unit_test_base
 from glance.tests.unit import utils as unit_test_utils
@@ -41,12 +42,13 @@ class ImageRepoStub(object):
 
 class ImageStub(object):
     def __init__(self, image_id, status=None, locations=None,
-                 visibility=None):
+                 visibility=None, extra_properties=None):
         self.image_id = image_id
         self.status = status
         self.locations = locations or []
         self.visibility = visibility
         self.size = 1
+        self.extra_properties = extra_properties or {}
 
     def delete(self):
         self.status = 'deleted'
@@ -60,7 +62,8 @@ class ImageFactoryStub(object):
                   min_disk=0, min_ram=0, protected=False, owner=None,
                   disk_format=None, container_format=None,
                   extra_properties=None, tags=None, **other_args):
-        return ImageStub(image_id, visibility=visibility, **other_args)
+        return ImageStub(image_id, visibility=visibility,
+                         extra_properties=extra_properties, **other_args)
 
 
 class FakeMemberRepo(object):
@@ -184,6 +187,62 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertRaises(glance_store.NotFound,
                           self.store_api.get_from_backend,
                           image.locations[0]['url'], context={})
+
+    def test_image_set_data_valid_signature(self):
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'signature_certificate_uuid': 'UUID',
+            'signature_hash_method': 'METHOD',
+            'signature_key_type': 'TYPE',
+            'signature': 'VALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        self.stubs.Set(signature_utils, 'verify_signature',
+                       unit_test_utils.fake_verify_signature)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api, self.store_utils)
+        image.set_data('YYYY', 4)
+        self.assertEqual(UUID2, image.locations[0]['url'])
+        self.assertEqual('Z', image.checksum)
+        self.assertEqual('active', image.status)
+
+    def test_image_set_data_invalid_signature(self):
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'signature_certificate_uuid': 'UUID',
+            'signature_hash_method': 'METHOD',
+            'signature_key_type': 'TYPE',
+            'signature': 'INVALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        self.stubs.Set(signature_utils, 'verify_signature',
+                       unit_test_utils.fake_verify_signature)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api, self.store_utils)
+        self.assertRaises(exception.SignatureVerificationError,
+                          image.set_data,
+                          'YYYY', 4)
+
+    def test_image_set_data_invalid_signature_missing_metadata(self):
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'signature_hash_method': 'METHOD',
+            'signature_key_type': 'TYPE',
+            'signature': 'INVALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        self.stubs.Set(signature_utils, 'verify_signature',
+                       unit_test_utils.fake_verify_signature)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api, self.store_utils)
+        image.set_data('YYYY', 4)
+        self.assertEqual(UUID2, image.locations[0]['url'])
+        self.assertEqual('Z', image.checksum)
+        # Image is still active, since invalid signature was ignored
+        self.assertEqual('active', image.status)
 
     def _add_image(self, context, image_id, data, len):
         image_stub = ImageStub(image_id, status='queued', locations=[])
