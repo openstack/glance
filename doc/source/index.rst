@@ -55,6 +55,7 @@ Glance Background Concepts
    domain_model
    identifiers
    statuses
+   tasks
    formats
    common-image-properties
    metadefs-concepts
