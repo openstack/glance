@@ -202,7 +202,8 @@ class ArtifactsController(object):
             return self._get_artifact_with_dependencies(artifact_repo, id)
         except (exception.InvalidArtifactPropertyValue,
                 exception.ArtifactInvalidProperty,
-                exception.InvalidJsonPatchPath) as e:
+                exception.InvalidJsonPatchPath,
+                exception.ArtifactCircularDependency) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
