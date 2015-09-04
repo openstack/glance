@@ -14,6 +14,7 @@
 #    under the License.
 
 import base64
+import datetime
 import mock
 
 from cryptography.hazmat.backends import default_backend
@@ -76,11 +77,25 @@ class FakeCastellanCertificate(object):
 
 class FakeCryptoCertificate(object):
 
-    def __init__(self, pub_key):
+    def __init__(self, pub_key=TEST_PRIVATE_KEY.public_key(),
+                 not_valid_before=(datetime.datetime.utcnow() -
+                                   datetime.timedelta(hours=1)),
+                 not_valid_after=(datetime.datetime.utcnow() +
+                                  datetime.timedelta(hours=1))):
         self.pub_key = pub_key
+        self.cert_not_valid_before = not_valid_before
+        self.cert_not_valid_after = not_valid_after
 
     def public_key(self):
         return self.pub_key
+
+    @property
+    def not_valid_before(self):
+        return self.cert_not_valid_before
+
+    @property
+    def not_valid_after(self):
+        return self.cert_not_valid_after
 
 
 class BadPublicKey(object):
@@ -304,7 +319,7 @@ class TestSignatureUtils(test_utils.BaseTestCase):
 
     @mock.patch('glance.common.signature_utils.get_certificate')
     def test_get_public_key(self, mock_get_cert):
-        fake_cert = FakeCryptoCertificate(TEST_PRIVATE_KEY.public_key())
+        fake_cert = FakeCryptoCertificate()
         mock_get_cert.return_value = fake_cert
         result_pub_key = signature_utils.get_public_key(None, None, 'RSA-PSS')
         self.assertEqual(fake_cert.public_key(), result_pub_key)
@@ -323,10 +338,38 @@ class TestSignatureUtils(test_utils.BaseTestCase):
     @mock.patch('castellan.key_manager.API', return_value=FakeKeyManager())
     def test_get_certificate(self, mock_key_manager_API, mock_load_cert):
         cert_uuid = 'valid_format_cert'
-        x509_cert = FakeCryptoCertificate(TEST_PRIVATE_KEY.public_key())
+        x509_cert = FakeCryptoCertificate()
         mock_load_cert.return_value = x509_cert
         self.assertEqual(x509_cert,
                          signature_utils.get_certificate(None, cert_uuid))
+
+    @mock.patch('cryptography.x509.load_der_x509_certificate')
+    @mock.patch('castellan.key_manager.API', return_value=FakeKeyManager())
+    def test_get_expired_certificate(self, mock_key_manager_API,
+                                     mock_load_cert):
+        cert_uuid = 'valid_format_cert'
+        x509_cert = FakeCryptoCertificate(
+            not_valid_after=datetime.datetime.utcnow() -
+            datetime.timedelta(hours=1))
+        mock_load_cert.return_value = x509_cert
+        self.assertRaisesRegexp(exception.SignatureVerificationError,
+                                'Certificate is not valid after: .*',
+                                signature_utils.get_certificate, None,
+                                cert_uuid)
+
+    @mock.patch('cryptography.x509.load_der_x509_certificate')
+    @mock.patch('castellan.key_manager.API', return_value=FakeKeyManager())
+    def test_get_not_yet_valid_certificate(self, mock_key_manager_API,
+                                           mock_load_cert):
+        cert_uuid = 'valid_format_cert'
+        x509_cert = FakeCryptoCertificate(
+            not_valid_before=datetime.datetime.utcnow() +
+            datetime.timedelta(hours=1))
+        mock_load_cert.return_value = x509_cert
+        self.assertRaisesRegexp(exception.SignatureVerificationError,
+                                'Certificate is not valid before: .*',
+                                signature_utils.get_certificate, None,
+                                cert_uuid)
 
     @mock.patch('castellan.key_manager.API', return_value=FakeKeyManager())
     def test_get_certificate_key_manager_fail(self, mock_key_manager_API):
