@@ -38,6 +38,8 @@ context_opts = [
                 help=_('Allow unauthenticated users to access the API with '
                        'read-only privileges. This only applies when using '
                        'ContextMiddleware.')),
+    cfg.IntOpt('max_request_id_length', default=0,
+               help=_('Limits request ID length.')),
 ]
 
 CONF = cfg.CONF
@@ -117,6 +119,13 @@ class ContextMiddleware(BaseContextMiddleware):
                 raise webob.exc.HTTPInternalServerError(
                     _('Invalid service catalog json.'))
 
+        request_id = req.headers.get('X-Openstack-Request-ID')
+        if request_id and (0 < CONF.max_request_id_length <
+                           len(request_id)):
+            msg = (_('x-openstack-request-id is too long, max size %s') %
+                   CONF.max_request_id_length)
+            return webob.exc.HTTPRequestHeaderFieldsTooLarge(comment=msg)
+
         kwargs = {
             'user': req.headers.get('X-User-Id'),
             'tenant': req.headers.get('X-Tenant-Id'),
@@ -126,7 +135,7 @@ class ContextMiddleware(BaseContextMiddleware):
             'owner_is_tenant': CONF.owner_is_tenant,
             'service_catalog': service_catalog,
             'policy_enforcer': self.policy_enforcer,
-            'request_id': req.headers.get('X-Openstack-Request-ID'),
+            'request_id': request_id,
         }
 
         return glance.context.RequestContext(**kwargs)
