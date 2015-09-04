@@ -55,6 +55,7 @@ paste.composite_factory = glance.api:root_app_factory
 /: apiversions
 /v1: apiv1app
 /v2: apiv2app
+/v3: apiv3app
 
 [app:apiversions]
 paste.app_factory = glance.api.versions:create_resource
@@ -64,6 +65,9 @@ paste.app_factory = glance.api.v1.router:API.factory
 
 [app:apiv2app]
 paste.app_factory = glance.api.v2.router:API.factory
+
+[app:apiv3app]
+paste.app_factory = glance.api.v3.router:API.factory
 
 [filter:versionnegotiation]
 paste.filter_factory =
