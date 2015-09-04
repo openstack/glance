@@ -1304,6 +1304,13 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 
         self.assertEqual(actual, response)
 
+    def test_invalid_content_type(self):
+        data = {'name': 'name1', 'version': '2.2'}
+        self._check_artifact_post('/withprops/v1.0/drafts',
+                                  data=data,
+                                  status=400,
+                                  headers={'Content-Type': 'lalala'})
+
     def test_filter_by_non_dict_props(self):
         data = {'name': 'art1',
                 'version': '4.2',

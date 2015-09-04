@@ -564,17 +564,26 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
         except exception.ArtifactPluginNotFound as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
 
+    def _validate_headers(self, req, content_type='application/json'):
+        header = req.headers.get('Content-Type')
+        if header != content_type:
+            msg = _('Invalid headers "Content-Type": %s') % header
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
     def create(self, req):
+        self._validate_headers(req)
         res = self._process_type_from_request(req, True)
         res["artifact_data"] = self._get_request_body(req)
         return res
 
     def update(self, req):
+        self._validate_headers(req)
         res = self._process_type_from_request(req)
         res["changes"] = self.validate_body(req)
         return res
 
     def update_property(self, req):
+        self._validate_headers(req)
         """Data is expected in form {'data': ...}"""
         res = self._process_type_from_request(req)
         data_schema = {
@@ -600,6 +609,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer,
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
     def upload(self, req):
+        self._validate_headers(req, content_type='application/octet-stream')
         res = self._process_type_from_request(req)
         index = req.urlvars.get('path_left')
         try:
