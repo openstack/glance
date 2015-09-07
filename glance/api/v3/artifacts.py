@@ -184,6 +184,10 @@ class ArtifactsController(object):
                                                             type_name,
                                                             type_version)
             self._ensure_write_access(artifact, req.context)
+            if artifact.metadata.attributes.blobs.get(path) is not None:
+                msg = _('Invalid Content-Type for work with %s') % path
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
             # use updater mixin to perform updates: generate update path
             if req.method == "PUT":
                 # replaces existing value or creates a new one
