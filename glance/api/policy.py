@@ -191,9 +191,14 @@ class ImageProxy(glance.domain.proxy.Image):
         self.policy.enforce(self.context, 'upload_image', self.target)
         return self.image.set_data(*args, **kwargs)
 
-    def get_member_repo(self, **kwargs):
-        member_repo = self.image.get_member_repo(**kwargs)
-        return ImageMemberRepoProxy(member_repo, self.context, self.policy)
+
+class ImageMemberProxy(glance.domain.proxy.ImageMember):
+
+    def __init__(self, image_member, context, policy):
+        super(ImageMemberProxy, self).__init__(image_member)
+        self.image_member = image_member
+        self.context = context
+        self.policy = policy
 
 
 class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
@@ -218,15 +223,16 @@ class ImageMemberFactoryProxy(glance.domain.proxy.ImageMembershipFactory):
     def __init__(self, member_factory, context, policy):
         super(ImageMemberFactoryProxy, self).__init__(
             member_factory,
-            image_proxy_class=ImageProxy,
-            image_proxy_kwargs={'context': context, 'policy': policy})
+            proxy_class=ImageMemberProxy,
+            proxy_kwargs={'context': context, 'policy': policy})
 
 
 class ImageMemberRepoProxy(glance.domain.proxy.Repo):
 
-    def __init__(self, member_repo, context, policy):
+    def __init__(self, member_repo, image, context, policy):
         self.member_repo = member_repo
-        self.target = ImageTarget(self.member_repo.image)
+        self.image = image
+        self.target = ImageTarget(image)
         self.context = context
         self.policy = policy
 

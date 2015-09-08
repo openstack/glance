@@ -89,6 +89,20 @@ class Gateway(object):
 
         return authorized_image_repo
 
+    def get_member_repo(self, image, context):
+        image_member_repo = glance.db.ImageMemberRepo(
+            context, self.db_api, image)
+        store_image_repo = glance.location.ImageMemberRepoProxy(
+            image_member_repo, image, context, self.store_api)
+        policy_member_repo = policy.ImageMemberRepoProxy(
+            store_image_repo, image, context, self.policy)
+        notifier_member_repo = glance.notifier.ImageMemberRepoProxy(
+            policy_member_repo, image, context, self.notifier)
+        authorized_member_repo = authorization.ImageMemberRepoProxy(
+            notifier_member_repo, image, context)
+
+        return authorized_member_repo
+
     def get_task_factory(self, context):
         task_factory = glance.domain.TaskFactory()
         policy_task_factory = policy.TaskFactoryProxy(

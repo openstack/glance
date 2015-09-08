@@ -45,11 +45,16 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                                              item_proxy_class=ImageProxy,
                                              item_proxy_kwargs=proxy_kwargs)
 
+        self.db_api = glance.db.get_api()
+
     def _set_acls(self, image):
         public = image.visibility == 'public'
         member_ids = []
         if image.locations and not public:
-            member_repo = image.get_member_repo()
+            member_repo = _get_member_repo_for_store(image,
+                                                     self.context,
+                                                     self.db_api,
+                                                     self.store_api)
             member_ids = [m.member_id for m in member_repo.list()]
         for location in image.locations:
             self.store_api.set_acls(location['url'], public=public,
@@ -65,6 +70,15 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         result = super(ImageRepoProxy, self).save(image, from_state=from_state)
         self._set_acls(image)
         return result
+
+
+def _get_member_repo_for_store(image, context, db_api, store_api):
+        image_member_repo = glance.db.ImageMemberRepo(
+            context, db_api, image)
+        store_image_repo = glance.location.ImageMemberRepoProxy(
+            image_member_repo, image, context, store_api)
+
+        return store_image_repo
 
 
 def _check_location_uri(context, store_api, store_utils, uri):

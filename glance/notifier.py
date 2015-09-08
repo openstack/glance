@@ -133,6 +133,21 @@ def format_image_notification(image):
     }
 
 
+def format_image_member_notification(image_member):
+    """Given a glance.domain.ImageMember object, return a dictionary of relevant
+    notification information.
+    """
+    return {
+        'image_id': image_member.image_id,
+        'member_id': image_member.member_id,
+        'status': image_member.status,
+        'created_at': timeutils.isotime(image_member.created_at),
+        'updated_at': timeutils.isotime(image_member.updated_at),
+        'deleted': False,
+        'deleted_at': None,
+    }
+
+
 def format_task_notification(task):
     # NOTE(nikhil): input is not passed to the notifier payload as it may
     # contain sensitive info.
@@ -436,6 +451,11 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             self.send_notification('image.activate', self.repo)
 
 
+class ImageMemberProxy(NotificationProxy, domain_proxy.ImageMember):
+    def get_super_class(self):
+        return domain_proxy.ImageMember
+
+
 class ImageFactoryProxy(NotificationFactoryProxy, domain_proxy.ImageFactory):
     def get_super_class(self):
         return domain_proxy.ImageFactory
@@ -465,6 +485,43 @@ class ImageRepoProxy(NotificationRepoProxy, domain_proxy.Repo):
     def remove(self, image):
         super(ImageRepoProxy, self).remove(image)
         self.send_notification('image.delete', image, extra_payload={
+            'deleted': True, 'deleted_at': timeutils.isotime()
+        })
+
+
+class ImageMemberRepoProxy(NotificationBase, domain_proxy.MemberRepo):
+
+    def __init__(self, repo, image, context, notifier):
+        self.repo = repo
+        self.image = image
+        self.context = context
+        self.notifier = notifier
+        proxy_kwargs = {'context': self.context, 'notifier': self.notifier}
+
+        proxy_class = self.get_proxy_class()
+        super_class = self.get_super_class()
+        super_class.__init__(self, image, repo, proxy_class, proxy_kwargs)
+
+    def get_super_class(self):
+        return domain_proxy.MemberRepo
+
+    def get_proxy_class(self):
+        return ImageMemberProxy
+
+    def get_payload(self, obj):
+        return format_image_member_notification(obj)
+
+    def save(self, member, from_state=None):
+        super(ImageMemberRepoProxy, self).save(member, from_state=from_state)
+        self.send_notification('image.member.update', member)
+
+    def add(self, member):
+        super(ImageMemberRepoProxy, self).add(member)
+        self.send_notification('image.member.create', member)
+
+    def remove(self, member):
+        super(ImageMemberRepoProxy, self).remove(member)
+        self.send_notification('image.member.delete', member, extra_payload={
             'deleted': True, 'deleted_at': timeutils.isotime()
         })
 

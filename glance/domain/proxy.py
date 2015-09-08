@@ -105,6 +105,37 @@ class Repo(object):
         return self.helper.proxy(result)
 
 
+class MemberRepo(object):
+    def __init__(self, image, base,
+                 member_proxy_class=None, member_proxy_kwargs=None):
+        self.image = image
+        self.base = base
+        self.member_proxy_helper = Helper(member_proxy_class,
+                                          member_proxy_kwargs)
+
+    def get(self, member_id):
+        member = self.base.get(member_id)
+        return self.member_proxy_helper.proxy(member)
+
+    def add(self, member):
+        self.base.add(self.member_proxy_helper.unproxy(member))
+
+    def list(self, *args, **kwargs):
+        members = self.base.list(*args, **kwargs)
+        return [self.member_proxy_helper.proxy(member) for member
+                in members]
+
+    def remove(self, member):
+        base_item = self.member_proxy_helper.unproxy(member)
+        result = self.base.remove(base_item)
+        return self.member_proxy_helper.proxy(result)
+
+    def save(self, member, from_state=None):
+        base_item = self.member_proxy_helper.unproxy(member)
+        result = self.base.save(base_item, from_state=from_state)
+        return self.member_proxy_helper.proxy(result)
+
+
 class ImageFactory(object):
     def __init__(self, base, proxy_class=None, proxy_kwargs=None):
         self.helper = Helper(proxy_class, proxy_kwargs)
@@ -115,16 +146,14 @@ class ImageFactory(object):
 
 
 class ImageMembershipFactory(object):
-    def __init__(self, base, image_proxy_class=None, image_proxy_kwargs=None,
-                 member_proxy_class=None, member_proxy_kwargs=None):
+    def __init__(self, base, proxy_class=None, proxy_kwargs=None):
+        self.helper = Helper(proxy_class, proxy_kwargs)
         self.base = base
-        self.image_helper = Helper(image_proxy_class, image_proxy_kwargs)
-        self.member_helper = Helper(member_proxy_class, member_proxy_kwargs)
 
-    def new_image_member(self, image, member_id):
-        base_image = self.image_helper.unproxy(image)
-        member = self.base.new_image_member(base_image, member_id)
-        return self.member_helper.proxy(member)
+    def new_image_member(self, image, member, **kwargs):
+        return self.helper.proxy(self.base.new_image_member(image,
+                                                            member,
+                                                            **kwargs))
 
 
 class Image(object):
@@ -168,8 +197,17 @@ class Image(object):
     def get_data(self, *args, **kwargs):
         return self.base.get_data(*args, **kwargs)
 
-    def get_member_repo(self):
-        return self.helper.proxy(self.base.get_member_repo())
+
+class ImageMember(object):
+    def __init__(self, base):
+        self.base = base
+
+    id = _proxy('base', 'id')
+    image_id = _proxy('base', 'image_id')
+    member_id = _proxy('base', 'member_id')
+    status = _proxy('base', 'status')
+    created_at = _proxy('base', 'created_at')
+    updated_at = _proxy('base', 'updated_at')
 
 
 class Task(object):

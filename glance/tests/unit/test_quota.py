@@ -605,7 +605,7 @@ class TestImageMemberQuotas(test_utils.BaseTestCase):
         self.image_member_factory.new_image_member(self.image,
                                                    'fake_id')
         nim = self.base_image_member_factory.new_image_member
-        nim .assert_called_once_with(self.image.base, 'fake_id')
+        nim.assert_called_once_with(self.image, 'fake_id')
 
     def test_new_image_member_unlimited_members(self):
         self.config(image_member_quota=-1)
@@ -613,7 +613,7 @@ class TestImageMemberQuotas(test_utils.BaseTestCase):
         self.image_member_factory.new_image_member(self.image,
                                                    'fake_id')
         nim = self.base_image_member_factory.new_image_member
-        nim.assert_called_once_with(self.image.base, 'fake_id')
+        nim.assert_called_once_with(self.image, 'fake_id')
 
     def test_new_image_member_too_many_members(self):
         self.config(image_member_quota=0)

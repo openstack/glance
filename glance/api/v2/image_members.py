@@ -47,6 +47,18 @@ class ImageMembersController(object):
         self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
                                               self.notifier, self.policy)
 
+    def _get_member_repo(self, req, image):
+        try:
+            # For public images, a forbidden exception with message
+            # "Public images do not have members" is thrown.
+            return self.gateway.get_member_repo(image, req.context)
+        except exception.Forbidden as e:
+            msg = (_("Error fetching members of image %(image_id)s: "
+                     "%(inner_msg)s") % {"image_id": image.image_id,
+                                         "inner_msg": e.msg})
+            LOG.warning(msg)
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
     def _lookup_image(self, req, image_id):
         image_repo = self.gateway.get_repo(req.context)
         try:
@@ -60,21 +72,8 @@ class ImageMembersController(object):
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
 
-    @staticmethod
-    def _get_member_repo(image):
-        try:
-            # For public images, a forbidden exception with message
-            # "Public images do not have members" is thrown.
-            return image.get_member_repo()
-        except exception.Forbidden as e:
-            msg = (_("Error fetching members of image %(image_id)s: "
-                     "%(inner_msg)s") % {"image_id": image.image_id,
-                                         "inner_msg": e.msg})
-            LOG.warning(msg)
-            raise webob.exc.HTTPForbidden(explanation=msg)
-
-    def _lookup_member(self, image, member_id):
-        member_repo = self._get_member_repo(image)
+    def _lookup_member(self, req, image, member_id):
+        member_repo = self._get_member_repo(req, image)
         try:
             return member_repo.get(member_id)
         except (exception.NotFound):
@@ -106,7 +105,7 @@ class ImageMembersController(object):
 
         """
         image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(image)
+        member_repo = self._get_member_repo(req, image)
         image_member_factory = self.gateway.get_image_member_factory(
             req.context)
         try:
@@ -148,8 +147,8 @@ class ImageMembersController(object):
 
         """
         image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(image)
-        member = self._lookup_member(image, member_id)
+        member_repo = self._get_member_repo(req, image)
+        member = self._lookup_member(req, image, member_id)
         try:
             member.status = status
             member_repo.save(member)
@@ -182,7 +181,7 @@ class ImageMembersController(object):
             ]}
         """
         image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(image)
+        member_repo = self._get_member_repo(req, image)
         members = []
         try:
             for member in member_repo.list():
@@ -209,7 +208,7 @@ class ImageMembersController(object):
         """
         try:
             image = self._lookup_image(req, image_id)
-            return self._lookup_member(image, member_id)
+            return self._lookup_member(req, image, member_id)
         except webob.exc.HTTPForbidden as e:
             # Convert Forbidden to NotFound to prevent information
             # leakage.
@@ -221,8 +220,8 @@ class ImageMembersController(object):
         Removes a membership from the image.
         """
         image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(image)
-        member = self._lookup_member(image, member_id)
+        member_repo = self._get_member_repo(req, image)
+        member = self._lookup_member(req, image, member_id)
         try:
             member_repo.remove(member)
             return webob.Response(body='', status=204)
