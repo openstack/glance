@@ -59,7 +59,7 @@ bind_opts = [
     cfg.StrOpt('bind_host', default='0.0.0.0',
                help=_('Address to bind the server.  Useful when '
                       'selecting a particular network interface.')),
-    cfg.IntOpt('bind_port',
+    cfg.IntOpt('bind_port', min=1, max=65535,
                help=_('The port on which the server will listen.')),
 ]
 
