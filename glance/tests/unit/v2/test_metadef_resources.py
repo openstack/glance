@@ -255,7 +255,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         actual = set([namespace.namespace for
                       namespace in output['namespaces']])
         expected = set([NAMESPACE1, NAMESPACE3, NAMESPACE5, NAMESPACE6])
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_namespace_index_admin(self):
         request = unit_test_utils.get_fake_request(is_admin=True)
@@ -846,7 +846,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         output = self.property_controller.show(
             request, NAMESPACE6, ''.join([PREFIX1, PROPERTY4]),
             filters={'resource_type': RESOURCE_TYPE4})
-        self.assertEqual(output.name, PROPERTY4)
+        self.assertEqual(PROPERTY4, output.name)
 
     def test_property_show_prefix_mismatch(self):
         request = unit_test_utils.get_fake_request()

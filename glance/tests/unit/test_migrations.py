@@ -996,7 +996,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             r = list(results)
             self.assertEqual(1, len(r))
             self.assertIn('status', r[0])
-            self.assertEqual(r[0]['status'], status_list[idx])
+            self.assertEqual(status_list[idx], r[0]['status'])
 
     def _post_downgrade_033(self, engine):
         image_locations = db_utils.get_table(engine, 'image_locations')
@@ -1857,7 +1857,7 @@ class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
             "AND TABLE_NAME!='migrate_version'"
             % self.migrate_engine.url.database)
         count = noninnodb.scalar()
-        self.assertEqual(count, 0, "%d non InnoDB tables created" % count)
+        self.assertEqual(0, count, "%d non InnoDB tables created" % count)
 
 
 class TestPostgresqlMigrations(test_base.PostgreSQLOpportunisticTestCase,

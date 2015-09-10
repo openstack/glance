@@ -179,7 +179,7 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEqual(4, len(output['tasks']))
         actual = set([task.task_id for task in output['tasks']])
         expected = set([UUID1, UUID2, UUID3, UUID4])
-        self.assertEqual(sorted(actual), sorted(expected))
+        self.assertEqual(sorted(expected), sorted(actual))
 
     def test_index_with_many_filters(self):
         url = '/tasks?status=pending&type=import'
@@ -747,7 +747,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.serializer.create(response, self.fixtures[3])
 
         serialized_task = jsonutils.loads(response.body)
-        self.assertEqual(response.status_int, 201)
+        self.assertEqual(201, response.status_int)
         self.assertEqual(self.fixtures[3].task_id,
                          serialized_task['id'])
         self.assertEqual(self.fixtures[3].task_input,
@@ -761,7 +761,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.serializer.create(response, self.fixtures[0])
 
         serialized_task = jsonutils.loads(response.body)
-        self.assertEqual(response.status_int, 201)
+        self.assertEqual(201, response.status_int)
         self.assertEqual(self.fixtures[0].task_id,
                          serialized_task['id'])
         self.assertEqual(self.fixtures[0].task_input,
@@ -774,7 +774,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.serializer.create(response, self.fixtures[1])
 
         serialized_task = jsonutils.loads(response.body)
-        self.assertEqual(response.status_int, 201)
+        self.assertEqual(201, response.status_int)
         self.assertEqual(self.fixtures[1].task_id,
                          serialized_task['id'])
         self.assertEqual(self.fixtures[1].task_input,

@@ -409,7 +409,7 @@ class MetadefObjectTests(object):
 
         found = self.db_api.metadef_object_get_all(
             self.context, ns_created['namespace'])
-        self.assertEqual(len(found), 2)
+        self.assertEqual(2, len(found))
 
     def test_object_update(self):
         delta = {'name': u'New-name', 'json_schema': u'new-schema',

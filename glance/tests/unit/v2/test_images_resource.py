@@ -816,7 +816,7 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'replace', 'path': ['tags'], 'value': ['king', 'kong']},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(UUID1, output.image_id)
         self.assertEqual(2, len(output.tags))
         self.assertIn('king', output.tags)
         self.assertIn('kong', output.tags)
@@ -1510,8 +1510,8 @@ class TestImagesController(base.IsolatedUnitTest):
             'path': ['name'], 'value': 'fedora'
         }]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.name, 'fedora')
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual('fedora', output.name)
 
     def test_update_add_extra_property_json_schema_version_10(self):
         self.db.image_update(None, UUID1, {'properties': {'foo': 'bar'}})
@@ -1521,8 +1521,8 @@ class TestImagesController(base.IsolatedUnitTest):
             'path': ['foo'], 'value': 'baz'
         }]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.extra_properties, {'foo': 'baz'})
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual({'foo': 'baz'}, output.extra_properties)
 
     def test_update_add_property_already_present_json_schema_version_4(self):
         request = unit_test_utils.get_fake_request()
@@ -1545,15 +1545,15 @@ class TestImagesController(base.IsolatedUnitTest):
         self.db.image_update(None, UUID1, {'properties': properties})
 
         output = self.controller.show(request, UUID1)
-        self.assertEqual(output.extra_properties['foo'], 'bar')
+        self.assertEqual('bar', output.extra_properties['foo'])
 
         changes = [
             {'json_schema_version': 10, 'op': 'add',
              'path': ['foo'], 'value': 'baz'},
         ]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
-        self.assertEqual(output.extra_properties, {'foo': 'baz'})
+        self.assertEqual(UUID1, output.image_id)
+        self.assertEqual({'foo': 'baz'}, output.extra_properties)
 
     def test_update_add_locations(self):
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
@@ -1801,7 +1801,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'remove', 'path': ['locations', '0']}]
         output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(output.image_id, UUID1)
+        self.assertEqual(UUID1, output.image_id)
         self.assertEqual(0, len(output.locations))
         self.assertEqual('queued', output.status)
         self.assertIsNone(output.size)
@@ -2514,7 +2514,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             doc = [{'op': 'replace', 'path': '%s' % encoded, 'value': 'dummy'}]
             request.body = jsonutils.dumps(doc)
             output = self.deserializer.update(request)
-            self.assertEqual(output['changes'][0]['path'], decoded)
+            self.assertEqual(decoded, output['changes'][0]['path'])
 
     def test_update_deep_limited_attributes(self):
         samples = {
@@ -2656,7 +2656,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         path = '/images?marker=%s' % marker
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(output.get('marker'), marker)
+        self.assertEqual(marker, output.get('marker'))
 
     def test_index_marker_not_specified(self):
         request = unit_test_utils.get_fake_request('/images')
@@ -2887,8 +2887,8 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         path = '/images?tag=%s&tag=%s' % ('x86', '64bit')
         request = unit_test_utils.get_fake_request(path)
         output = self.deserializer.index(request)
-        self.assertEqual(sorted(output['filters']['tags']),
-                         sorted(['x86', '64bit']))
+        self.assertEqual(sorted(['x86', '64bit']),
+                         sorted(output['filters']['tags']))
 
 
 class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
@@ -3231,7 +3231,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
-        self.assertEqual(response.status_int, 201)
+        self.assertEqual(201, response.status_int)
         actual = jsonutils.loads(response.body)
         actual['tags'] = sorted(actual['tags'])
         self.assertEqual(expected, actual)
@@ -3390,7 +3390,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
-        self.assertEqual(response.status_int, 201)
+        self.assertEqual(201, response.status_int)
         actual = jsonutils.loads(response.body)
         actual['tags'] = sorted(actual['tags'])
         self.assertEqual(expected, actual)
