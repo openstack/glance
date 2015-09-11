@@ -208,8 +208,7 @@ def _out(artifact, show_level=ga.Showlevel.BASIC, show_text_properties=True):
                         break
                 else:
                     # create new array
-                    deparr = []
-                    deparr.append(_out(dep.dest, new_show_level))
+                    deparr = [_out(dep.dest, new_show_level)]
                     res['dependencies'][dep.name] = deparr
     return res
 
