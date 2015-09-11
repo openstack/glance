@@ -41,7 +41,7 @@ class Controller(object):
 
     """A wsgi controller that reports which API versions are supported."""
 
-    def index(self, req):
+    def index(self, req, explicit=False):
         """Respond to a request for all OpenStack API versions."""
         def build_version_object(version, path, status):
             url = CONF.public_endpoint or req.host_url
@@ -73,8 +73,9 @@ class Controller(object):
                 build_version_object(1.0, 'v1', 'SUPPORTED'),
             ])
 
+        status = explicit and http_client.OK or http_client.MULTIPLE_CHOICES
         response = webob.Response(request=req,
-                                  status=http_client.MULTIPLE_CHOICES,
+                                  status=status,
                                   content_type='application/json')
         json = jsonutils.dumps(dict(versions=version_objs))
         if six.PY3:
