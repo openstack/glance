@@ -105,6 +105,11 @@ class TestMetadefTags(functional.FunctionalTest):
             if(key in checked_values):
                 self.assertEqual(metadata_tag[key], value, key)
 
+        # Try to create a duplicate metadata tag
+        headers = self._headers({'content-type': 'application/json'})
+        response = requests.post(path, headers=headers)
+        self.assertEqual(409, response.status_code)
+
         # The metadata_tag should be mutable
         path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
                          (namespace_name, metadata_tag_name))

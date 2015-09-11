@@ -1621,6 +1621,208 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         self.assert_table(engine, 'artifact_blob_locations', locations_indices,
                           locations_columns)
 
+    def _pre_upgrade_042(self, engine):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        metadef_namespaces = sqlalchemy.Table('metadef_namespaces', meta,
+                                              autoload=True)
+        metadef_objects = sqlalchemy.Table('metadef_objects', meta,
+                                           autoload=True)
+        metadef_properties = sqlalchemy.Table('metadef_properties', meta,
+                                              autoload=True)
+        metadef_tags = sqlalchemy.Table('metadef_tags', meta, autoload=True)
+        metadef_resource_types = sqlalchemy.Table('metadef_resource_types',
+                                                  meta, autoload=True)
+        metadef_ns_res_types = sqlalchemy.Table(
+            'metadef_namespace_resource_types',
+            meta, autoload=True)
+
+        # These will be dropped and recreated as unique constraints.
+        self.assertTrue(index_exist('ix_metadef_namespaces_namespace',
+                                    metadef_namespaces.name, engine))
+        self.assertTrue(index_exist('ix_metadef_objects_namespace_id',
+                                    metadef_objects.name, engine))
+        self.assertTrue(index_exist('ix_metadef_properties_namespace_id',
+                                    metadef_properties.name, engine))
+        self.assertTrue(index_exist('ix_metadef_tags_namespace_id',
+                                    metadef_tags.name, engine))
+        self.assertTrue(index_exist('ix_metadef_resource_types_name',
+                                    metadef_resource_types.name, engine))
+
+        # This one will be dropped - not needed
+        self.assertTrue(index_exist(
+            'ix_metadef_ns_res_types_res_type_id_ns_id',
+            metadef_ns_res_types.name, engine))
+
+        # The rest must remain
+        self.assertTrue(index_exist('ix_metadef_namespaces_owner',
+                                    metadef_namespaces.name, engine))
+        self.assertTrue(index_exist('ix_metadef_objects_name',
+                                    metadef_objects.name, engine))
+        self.assertTrue(index_exist('ix_metadef_properties_name',
+                                    metadef_properties.name, engine))
+        self.assertTrue(index_exist('ix_metadef_tags_name',
+                                    metadef_tags.name, engine))
+        self.assertTrue(index_exist('ix_metadef_ns_res_types_namespace_id',
+                                    metadef_ns_res_types.name, engine))
+
+        # To be created
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_objects_namespace_id_name',
+                          metadef_objects.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_properties_namespace_id_name',
+                          metadef_properties.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_tags_namespace_id_name',
+                          metadef_tags.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_namespaces_namespace',
+                          metadef_namespaces.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_resource_types_name',
+                          metadef_resource_types.name, engine)
+                         )
+
+    def _check_042(self, engine, data):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        metadef_namespaces = sqlalchemy.Table('metadef_namespaces', meta,
+                                              autoload=True)
+        metadef_objects = sqlalchemy.Table('metadef_objects', meta,
+                                           autoload=True)
+        metadef_properties = sqlalchemy.Table('metadef_properties', meta,
+                                              autoload=True)
+        metadef_tags = sqlalchemy.Table('metadef_tags', meta, autoload=True)
+        metadef_resource_types = sqlalchemy.Table('metadef_resource_types',
+                                                  meta, autoload=True)
+        metadef_ns_res_types = sqlalchemy.Table(
+            'metadef_namespace_resource_types',
+            meta, autoload=True)
+
+        # Dropped for unique constraints
+        self.assertFalse(index_exist('ix_metadef_namespaces_namespace',
+                                     metadef_namespaces.name, engine))
+        self.assertFalse(index_exist('ix_metadef_objects_namespace_id',
+                                     metadef_objects.name, engine))
+        self.assertFalse(index_exist('ix_metadef_properties_namespace_id',
+                                     metadef_properties.name, engine))
+        self.assertFalse(index_exist('ix_metadef_tags_namespace_id',
+                                     metadef_tags.name, engine))
+        self.assertFalse(index_exist('ix_metadef_resource_types_name',
+                                     metadef_resource_types.name, engine))
+
+        # Dropped - not needed because of the existing primary key
+        self.assertFalse(index_exist(
+            'ix_metadef_ns_res_types_res_type_id_ns_id',
+            metadef_ns_res_types.name, engine))
+
+        # Still exist as before
+        self.assertTrue(index_exist('ix_metadef_namespaces_owner',
+                                    metadef_namespaces.name, engine))
+        self.assertTrue(index_exist('ix_metadef_ns_res_types_namespace_id',
+                                    metadef_ns_res_types.name, engine))
+        self.assertTrue(index_exist('ix_metadef_objects_name',
+                                    metadef_objects.name, engine))
+        self.assertTrue(index_exist('ix_metadef_properties_name',
+                                    metadef_properties.name, engine))
+        self.assertTrue(index_exist('ix_metadef_tags_name',
+                                    metadef_tags.name, engine))
+
+        self.assertTrue(unique_constraint_exist
+                        ('uq_metadef_namespaces_namespace',
+                         metadef_namespaces.name, engine)
+                        )
+        self.assertTrue(unique_constraint_exist
+                        ('uq_metadef_objects_namespace_id_name',
+                         metadef_objects.name, engine)
+                        )
+        self.assertTrue(unique_constraint_exist
+                        ('uq_metadef_properties_namespace_id_name',
+                         metadef_properties.name, engine)
+                        )
+        self.assertTrue(unique_constraint_exist
+                        ('uq_metadef_tags_namespace_id_name',
+                         metadef_tags.name, engine)
+                        )
+        self.assertTrue(unique_constraint_exist
+                        ('uq_metadef_resource_types_name',
+                         metadef_resource_types.name, engine)
+                        )
+
+    def _post_downgrade_042(self, engine):
+        meta = sqlalchemy.MetaData()
+        meta.bind = engine
+
+        metadef_namespaces = sqlalchemy.Table('metadef_namespaces', meta,
+                                              autoload=True)
+        metadef_objects = sqlalchemy.Table('metadef_objects', meta,
+                                           autoload=True)
+        metadef_properties = sqlalchemy.Table('metadef_properties', meta,
+                                              autoload=True)
+        metadef_tags = sqlalchemy.Table('metadef_tags', meta, autoload=True)
+        metadef_resource_types = sqlalchemy.Table('metadef_resource_types',
+                                                  meta, autoload=True)
+        metadef_ns_res_types = sqlalchemy.Table(
+            'metadef_namespace_resource_types',
+            meta, autoload=True)
+
+        # These have been recreated
+        self.assertTrue(index_exist('ix_metadef_namespaces_namespace',
+                                    metadef_namespaces.name, engine))
+        self.assertTrue(index_exist('ix_metadef_objects_namespace_id',
+                                    metadef_objects.name, engine))
+        self.assertTrue(index_exist('ix_metadef_properties_namespace_id',
+                                    metadef_properties.name, engine))
+        self.assertTrue(index_exist('ix_metadef_tags_namespace_id',
+                                    metadef_tags.name, engine))
+        self.assertTrue(index_exist('ix_metadef_resource_types_name',
+                                    metadef_resource_types.name, engine))
+
+        self.assertTrue(index_exist(
+            'ix_metadef_ns_res_types_res_type_id_ns_id',
+            metadef_ns_res_types.name, engine))
+
+        # The rest must remain
+        self.assertTrue(index_exist('ix_metadef_namespaces_owner',
+                                    metadef_namespaces.name, engine))
+        self.assertTrue(index_exist('ix_metadef_objects_name',
+                                    metadef_objects.name, engine))
+        self.assertTrue(index_exist('ix_metadef_properties_name',
+                                    metadef_properties.name, engine))
+        self.assertTrue(index_exist('ix_metadef_tags_name',
+                                    metadef_tags.name, engine))
+        self.assertTrue(index_exist('ix_metadef_ns_res_types_namespace_id',
+                                    metadef_ns_res_types.name, engine))
+
+        # Dropped
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_objects_namespace_id_name',
+                          metadef_objects.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_properties_namespace_id_name',
+                          metadef_properties.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_tags_namespace_id_name',
+                          metadef_tags.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_namespaces_namespace',
+                          metadef_namespaces.name, engine)
+                         )
+        self.assertFalse(unique_constraint_exist
+                         ('uq_metadef_resource_types_name',
+                          metadef_resource_types.name, engine)
+                         )
+
     def assert_table(self, engine, table_name, indices, columns):
         table = db_utils.get_table(engine, table_name)
         index_data = [(index.name, index.columns.keys()) for index in

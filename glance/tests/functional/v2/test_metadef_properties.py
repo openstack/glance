@@ -99,6 +99,10 @@ class TestNamespaceProperties(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(201, response.status_code)
 
+        # Attempt to insert a duplicate
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(409, response.status_code)
+
         # Get the property created above
         path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
                          (namespace_name, property_name))

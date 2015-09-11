@@ -96,6 +96,10 @@ class TestNamespaces(functional.FunctionalTest):
         for key, value in expected_namespace.items():
             self.assertEqual(namespace[key], value, key)
 
+        # Attempt to insert a duplicate
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(409, response.status_code)
+
         # Get the namespace using the returned Location header
         response = requests.get(namespace_loc_header, headers=self._headers())
         self.assertEqual(200, response.status_code)
