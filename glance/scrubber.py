@@ -42,6 +42,19 @@ scrubber_opts = [
                       'performing a delete.')),
     cfg.BoolOpt('delayed_delete', default=False,
                 help=_('Turn on/off delayed delete.')),
+    cfg.StrOpt('admin_role', default='admin',
+               help=_('Role used to identify an authenticated user as '
+                      'administrator.')),
+    cfg.BoolOpt('send_identity_headers', default=False,
+                help=_("Whether to pass through headers containing user "
+                       "and tenant information when making requests to "
+                       "the registry. This allows the registry to use the "
+                       "context middleware without keystonemiddleware's "
+                       "auth_token middleware, removing calls to the keystone "
+                       "auth service. It is recommended that when using this "
+                       "option, secure communication between glance api and "
+                       "glance registry is ensured by means other than "
+                       "auth_token middleware.")),
 ]
 
 scrubber_cmd_opts = [
@@ -73,12 +86,24 @@ class ScrubDBQueue(object):
         self.metadata_encryption_key = CONF.metadata_encryption_key
         registry.configure_registry_client()
         registry.configure_registry_admin_creds()
-        self.registry = registry.get_registry_client(context.RequestContext())
-        admin_tenant_name = CONF.admin_tenant_name
-        admin_token = self.registry.auth_token
-        self.admin_context = context.RequestContext(user=CONF.admin_user,
-                                                    tenant=admin_tenant_name,
-                                                    auth_token=admin_token)
+        admin_user = CONF.admin_user
+        admin_tenant = CONF.admin_tenant_name
+
+        if CONF.send_identity_headers:
+            # When registry is operating in trusted-auth mode
+            roles = [CONF.admin_role]
+            self.admin_context = context.RequestContext(user=admin_user,
+                                                        tenant=admin_tenant,
+                                                        auth_token=None,
+                                                        roles=roles)
+            self.registry = registry.get_registry_client(self.admin_context)
+        else:
+            ctxt = context.RequestContext()
+            self.registry = registry.get_registry_client(ctxt)
+            admin_token = self.registry.auth_token
+            self.admin_context = context.RequestContext(user=admin_user,
+                                                        tenant=admin_tenant,
+                                                        auth_token=admin_token)
 
     def add_location(self, image_id, location):
         """Adding image location to scrub queue.
@@ -215,15 +240,27 @@ class Scrubber(object):
 
         registry.configure_registry_client()
         registry.configure_registry_admin_creds()
-        self.registry = registry.get_registry_client(context.RequestContext())
 
         # Here we create a request context with credentials to support
         # delayed delete when using multi-tenant backend storage
+        admin_user = CONF.admin_user
         admin_tenant = CONF.admin_tenant_name
-        auth_token = self.registry.auth_token
-        self.admin_context = context.RequestContext(user=CONF.admin_user,
-                                                    tenant=admin_tenant,
-                                                    auth_token=auth_token)
+
+        if CONF.send_identity_headers:
+            # When registry is operating in trusted-auth mode
+            roles = [CONF.admin_role]
+            self.admin_context = context.RequestContext(user=admin_user,
+                                                        tenant=admin_tenant,
+                                                        auth_token=None,
+                                                        roles=roles)
+            self.registry = registry.get_registry_client(self.admin_context)
+        else:
+            ctxt = context.RequestContext()
+            self.registry = registry.get_registry_client(ctxt)
+            auth_token = self.registry.auth_token
+            self.admin_context = context.RequestContext(user=admin_user,
+                                                        tenant=admin_tenant,
+                                                        auth_token=auth_token)
 
         self.db_queue = get_scrub_queue()
 
