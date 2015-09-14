@@ -293,6 +293,19 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return filters
 
+    def _validate_limit(self, limit):
+        try:
+            limit = int(limit)
+        except ValueError:
+            msg = _("limit param must be an integer")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        if limit <= 0:
+            msg = _("limit param must be positive")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        return limit
+
     @classmethod
     def _check_allowed(cls, image):
         for key in cls._disallowed_properties:

@@ -158,6 +158,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
             self.db, self.policy, self.notifier)
         self.tag_controller = tags.TagsController(
             self.db, self.policy, self.notifier)
+        self.deserializer = objects.RequestDeserializer()
 
     def _create_namespaces(self):
         req = unit_test_utils.get_fake_request()
@@ -1164,6 +1165,13 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         actual = set([object.name for object in output['objects']])
         expected = set([OBJECT1, OBJECT2])
         self.assertEqual(expected, actual)
+
+    def test_object_index_zero_limit(self):
+        request = unit_test_utils.get_fake_request('/metadefs/namespaces/'
+                                                   'Namespace3/'
+                                                   'objects?limit=0')
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.index,
+                          request)
 
     def test_object_index_empty(self):
         request = unit_test_utils.get_fake_request()
