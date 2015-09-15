@@ -61,11 +61,9 @@ class TasksController(object):
         task_factory = self.gateway.get_task_factory(req.context)
         executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
-        live_time = CONF.task.task_time_to_live
         try:
             new_task = task_factory.new_task(task_type=task['type'],
                                              owner=req.context.owner,
-                                             task_time_to_live=live_time,
                                              task_input=task['input'])
             task_repo.add(new_task)
             task_executor = executor_factory.new_task_executor(req.context)
