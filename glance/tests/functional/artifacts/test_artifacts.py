@@ -1874,3 +1874,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         result = self._check_artifact_get(url=url)['artifacts']
 
         self.assertEqual(1, len(result))
+
+    def test_filter_by_bad_version(self):
+        bad_versions = ['kkk', '1.k', 'h.0', '1.3.hf', 's.9.2s2']
+        response_string = ('The format of the version %s is not valid. '
+                           'Use semver notation')
+        for bad_version in bad_versions:
+            url = '/withprops/v1.0/drafts?version=gt:%s' % bad_version
+            result = self._check_artifact_get(url=url, status=400)
+            self.assertIn(response_string % bad_version, result)
