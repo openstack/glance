@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from migrate.changeset import *  # noqa
 from sqlalchemy import *  # noqa
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
@@ -54,17 +53,6 @@ def get_images_table(meta):
     return images
 
 
-def get_image_properties_table(meta):
-    """
-    No changes to the image properties table from 002...
-    """
-    (define_image_properties_table,) = from_migration_import(
-        '002_add_image_properties_table', ['define_image_properties_table'])
-
-    image_properties = define_image_properties_table(meta)
-    return image_properties
-
-
 def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
@@ -84,21 +72,3 @@ def upgrade(migrate_engine):
 
         images = get_images_table(meta)
         images.columns['size'].alter(type=BigInteger())
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-
-    # No changes to SQLite stores are necessary, since
-    # there is no BIG INTEGER type in SQLite. Unfortunately,
-    # running the Python 005_size_big_integer.py migration script
-    # on a SQLite datastore results in an error in the sa-migrate
-    # code that does the workarounds for SQLite not having
-    # ALTER TABLE MODIFY COLUMN ability
-
-    dialect = migrate_engine.url.get_dialect().name
-
-    if not dialect.startswith('sqlite'):
-        images = get_images_table(meta)
-        images.columns['size'].alter(type=Integer())

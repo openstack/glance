@@ -38,7 +38,6 @@ from oslo_utils import uuidutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import sqlalchemy
-from sqlalchemy import inspect
 import sqlalchemy.types as types
 
 from glance.common import crypt
@@ -47,9 +46,11 @@ from glance.common import timeutils
 from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
+from glance.db.sqlalchemy.migrate_repo import versions
 from glance.db.sqlalchemy import models
 from glance.db.sqlalchemy import models_glare
 from glance.db.sqlalchemy import models_metadef
+import glance.tests.utils as test_utils
 
 from glance.i18n import _
 
@@ -366,44 +367,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             if row['name'] == 'ramdisk_id':
                 self.assertEqual(row['value'], uuids['ramdisk'])
 
-    def _post_downgrade_012(self, engine):
-        images = db_utils.get_table(engine, 'images')
-        image_members = db_utils.get_table(engine, 'image_members')
-        image_properties = db_utils.get_table(engine, 'image_properties')
-
-        # Find kernel, ramdisk and normal images. Make sure id has been
-        # changed back to an integer
-        ids = {}
-        for name in ('kernel', 'ramdisk', 'normal'):
-            image_name = '%s migration 012 test' % name
-            rows = images.select().where(
-                images.c.name == image_name).execute().fetchall()
-            self.assertEqual(1, len(rows))
-
-            row = rows[0]
-            self.assertFalse(uuidutils.is_uuid_like(row['id']))
-
-            ids[name] = row['id']
-
-        # Find all image_members to ensure image_id has been updated
-        results = image_members.select().where(
-            image_members.c.image_id == ids['normal']).execute().fetchall()
-        self.assertEqual(1, len(results))
-
-        # Find all image_properties to ensure image_id has been updated
-        # as well as ensure kernel_id and ramdisk_id values have been
-        # updated too
-        results = image_properties.select().where(
-            image_properties.c.image_id == ids['normal']).execute().fetchall()
-        self.assertEqual(2, len(results))
-        for row in results:
-            self.assertIn(row['name'], ('kernel_id', 'ramdisk_id'))
-
-            if row['name'] == 'kernel_id':
-                self.assertEqual(row['value'], str(ids['kernel']))
-            if row['name'] == 'ramdisk_id':
-                self.assertEqual(row['value'], str(ids['ramdisk']))
-
     def _assert_invalid_swift_uri_raises_bad_store_uri(self,
                                                        legacy_parse_uri_fn):
         invalid_uri = ('swift://http://acct:usr:pass@example.com'
@@ -718,18 +681,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         self.assertIn((owner_index, columns), index_data)
 
-    def _post_downgrade_028(self, engine):
-        owner_index = "owner_image_idx"
-        columns = ["owner"]
-
-        images_table = db_utils.get_table(engine, 'images')
-
-        index_data = [(idx.name, idx.columns.keys())
-                      for idx in images_table.indexes
-                      if idx.name == owner_index]
-
-        self.assertNotIn((owner_index, columns), index_data)
-
     def _pre_upgrade_029(self, engine):
         image_locations = db_utils.get_table(engine, 'image_locations')
 
@@ -774,19 +725,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             d = jsonutils.loads(r['meta_data'])
             self.assertEqual(d, meta_data)
 
-    def _post_downgrade_029(self, engine):
-        image_id = 'fake_029_id'
-
-        image_locations = db_utils.get_table(engine, 'image_locations')
-
-        records = image_locations.select().where(
-            image_locations.c.image_id == image_id).execute().fetchall()
-
-        for r in records:
-            md = r['meta_data']
-            d = pickle.loads(md)
-            self.assertIsInstance(d, dict)
-
     def _check_030(self, engine, data):
         table = "tasks"
         index_type = ('ix_tasks_type', ['type'])
@@ -827,10 +765,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         # DATETIME which is using by mysql and sqlite.
         col_data = [col.name for col in tasks_table.columns]
         self.assertEqual(expected, col_data)
-
-    def _post_downgrade_030(self, engine):
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine, 'tasks')
 
     def _pre_upgrade_031(self, engine):
         images = db_utils.get_table(engine, 'images')
@@ -928,26 +862,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         self.assertNotIn('result', tasks_table.c)
         self.assertNotIn('message', tasks_table.c)
 
-    def _post_downgrade_032(self, engine):
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine, 'task_info')
-
-        tasks_table = db_utils.get_table(engine, 'tasks')
-        records = tasks_table.select().execute().fetchall()
-        self.assertEqual(2, len(records))
-
-        tasks = {t.id: t for t in records}
-
-        task_1 = tasks.get('task-1')
-        self.assertEqual('some input', task_1.input)
-        self.assertEqual('successful', task_1.result)
-        self.assertIsNone(task_1.message)
-
-        task_2 = tasks.get('task-2')
-        self.assertIsNone(task_2.input)
-        self.assertIsNone(task_2.result)
-        self.assertIsNone(task_2.message)
-
     def _pre_upgrade_033(self, engine):
         images = db_utils.get_table(engine, 'images')
         image_locations = db_utils.get_table(engine, 'image_locations')
@@ -997,10 +911,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             self.assertIn('status', r[0])
             self.assertEqual(status_list[idx], r[0]['status'])
 
-    def _post_downgrade_033(self, engine):
-        image_locations = db_utils.get_table(engine, 'image_locations')
-        self.assertNotIn('status', image_locations.c)
-
     def _pre_upgrade_034(self, engine):
         images = db_utils.get_table(engine, 'images')
 
@@ -1023,10 +933,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                   .where(images.c.id == 'fake_id_034')
                   .execute().fetchone())
         self.assertIsNone(result.virtual_size)
-
-    def _post_downgrade_034(self, engine):
-        images = db_utils.get_table(engine, 'images')
-        self.assertNotIn('virtual_size', images.c)
 
     def _pre_upgrade_035(self, engine):
         self.assertRaises(sqlalchemy.exc.NoSuchTableError,
@@ -1137,19 +1043,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         col_data = [col.name for col in table.columns]
         self.assertEqual(expected_cols, col_data)
 
-    def _post_downgrade_035(self, engine):
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine, 'metadef_namespaces')
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine, 'metadef_properties')
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine, 'metadef_objects')
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine, 'metadef_resource_types')
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine,
-                          'metadef_namespace_resource_types')
-
     def _pre_upgrade_036(self, engine):
         meta = sqlalchemy.MetaData()
         meta.bind = engine
@@ -1201,34 +1094,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                          u'namespace_id',
                          u'name',
                          u'json_schema',
-                         u'created_at',
-                         u'updated_at']
-        col_data = [col.name for col in table.columns]
-        self.assertEqual(expected_cols, col_data)
-
-    def _post_downgrade_036(self, engine):
-        meta = sqlalchemy.MetaData()
-        meta.bind = engine
-
-        # metadef_objects
-        table = sqlalchemy.Table("metadef_objects", meta, autoload=True)
-        expected_cols = [u'id',
-                         u'namespace_id',
-                         u'name',
-                         u'description',
-                         u'required',
-                         u'schema',
-                         u'created_at',
-                         u'updated_at']
-        col_data = [col.name for col in table.columns]
-        self.assertEqual(expected_cols, col_data)
-
-        # metadef_properties
-        table = sqlalchemy.Table("metadef_properties", meta, autoload=True)
-        expected_cols = [u'id',
-                         u'namespace_id',
-                         u'name',
-                         u'schema',
                          u'created_at',
                          u'updated_at']
         col_data = [col.name for col in table.columns]
@@ -1286,62 +1151,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         self.assertEqual('pending', image_member['status'])
 
-    def _post_downgrade_037(self, engine):
-        if engine.name == 'mysql':
-            self.assertTrue(unique_constraint_exist('image_id',
-                                                    'image_properties',
-                                                    engine))
-
-        if engine.name == 'postgresql':
-            self.assertTrue(index_exist('ix_image_properties_image_id_name',
-                                        'image_properties', engine))
-
-            self.assertFalse(unique_constraint_exist(
-                'ix_image_properties_image_id_name',
-                'image_properties',
-                engine))
-
-        image_members = db_utils.get_table(engine, 'image_members')
-        images = db_utils.get_table(engine, 'images')
-
-        self.assertTrue(image_members.c.status.nullable)
-        self.assertTrue(images.c.protected.nullable)
-
-        now = datetime.datetime.now()
-        temp = dict(
-            deleted=False,
-            created_at=now,
-            status='active',
-            is_public=True,
-            min_disk=0,
-            min_ram=0,
-            id='fake_image_035_d'
-        )
-        images.insert().values(temp).execute()
-
-        image = (images.select()
-                 .where(images.c.id == 'fake_image_035_d')
-                 .execute().fetchone())
-
-        self.assertIsNone(image['protected'])
-
-        temp = dict(
-            deleted=False,
-            created_at=now,
-            image_id='fake_image_035_d',
-            member='fake_member',
-            can_share=True,
-            id=4
-        )
-
-        image_members.insert().values(temp).execute()
-
-        image_member = (image_members.select()
-                        .where(image_members.c.id == 4)
-                        .execute().fetchone())
-
-        self.assertIsNone(image_member['status'])
-
     def _pre_upgrade_038(self, engine):
         self.assertRaises(sqlalchemy.exc.NoSuchTableError,
                           db_utils.get_table, engine, 'metadef_tags')
@@ -1359,10 +1168,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                          u'updated_at']
         col_data = [col.name for col in table.columns]
         self.assertEqual(expected_cols, col_data)
-
-    def _post_downgrade_038(self, engine):
-        self.assertRaises(sqlalchemy.exc.NoSuchTableError,
-                          db_utils.get_table, engine, 'metadef_tags')
 
     def _check_039(self, engine, data):
         meta = sqlalchemy.MetaData()
@@ -1415,77 +1220,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         self.assertTrue(index_exist('ix_metadef_properties_namespace_id',
                                     metadef_properties.name, engine))
-
-    def _post_downgrade_039(self, engine):
-        meta = sqlalchemy.MetaData()
-        meta.bind = engine
-
-        metadef_namespaces = sqlalchemy.Table('metadef_namespaces', meta,
-                                              autoload=True)
-        metadef_properties = sqlalchemy.Table('metadef_properties', meta,
-                                              autoload=True)
-        metadef_objects = sqlalchemy.Table('metadef_objects', meta,
-                                           autoload=True)
-        metadef_ns_res_types = sqlalchemy.Table(
-            'metadef_namespace_resource_types',
-            meta, autoload=True)
-        metadef_resource_types = sqlalchemy.Table('metadef_resource_types',
-                                                  meta, autoload=True)
-
-        self.assertFalse(index_exist('ix_metadef_ns_res_types_namespace_id',
-                                     metadef_ns_res_types.name, engine))
-
-        self.assertFalse(index_exist('ix_metadef_namespaces_namespace',
-                                     metadef_namespaces.name, engine))
-
-        self.assertFalse(index_exist('ix_metadef_namespaces_owner',
-                                     metadef_namespaces.name, engine))
-
-        self.assertFalse(index_exist('ix_metadef_objects_name',
-                                     metadef_objects.name, engine))
-
-        self.assertFalse(index_exist('ix_metadef_objects_namespace_id',
-                                     metadef_objects.name, engine))
-
-        self.assertFalse(index_exist('ix_metadef_properties_name',
-                                     metadef_properties.name, engine))
-
-        self.assertFalse(index_exist('ix_metadef_properties_namespace_id',
-                                     metadef_properties.name, engine))
-
-        self.assertTrue(index_exist('ix_namespaces_namespace',
-                                    metadef_namespaces.name, engine))
-
-        self.assertTrue(index_exist('ix_objects_namespace_id_name',
-                                    metadef_objects.name, engine))
-
-        self.assertTrue(index_exist('ix_metadef_properties_namespace_id_name',
-                                    metadef_properties.name, engine))
-
-        if engine.name == 'postgresql':
-            inspector = inspect(engine)
-
-            self.assertEqual(1, len(inspector.get_unique_constraints(
-                'metadef_objects')))
-
-            self.assertEqual(1, len(inspector.get_unique_constraints(
-                'metadef_properties')))
-
-        if engine.name == 'mysql':
-            self.assertTrue(unique_constraint_exist(
-                'namespace_id', metadef_properties.name, engine))
-
-            self.assertTrue(unique_constraint_exist(
-                'namespace_id', metadef_objects.name, engine))
-
-            self.assertTrue(unique_constraint_exist(
-                'resource_type_id', metadef_ns_res_types.name, engine))
-
-            self.assertTrue(unique_constraint_exist(
-                'namespace', metadef_namespaces.name, engine))
-
-            self.assertTrue(unique_constraint_exist(
-                'name', metadef_resource_types.name, engine))
 
     def _check_040(self, engine, data):
         meta = sqlalchemy.MetaData()
@@ -1755,73 +1489,6 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                          metadef_resource_types.name, engine)
                         )
 
-    def _post_downgrade_042(self, engine):
-        meta = sqlalchemy.MetaData()
-        meta.bind = engine
-
-        metadef_namespaces = sqlalchemy.Table('metadef_namespaces', meta,
-                                              autoload=True)
-        metadef_objects = sqlalchemy.Table('metadef_objects', meta,
-                                           autoload=True)
-        metadef_properties = sqlalchemy.Table('metadef_properties', meta,
-                                              autoload=True)
-        metadef_tags = sqlalchemy.Table('metadef_tags', meta, autoload=True)
-        metadef_resource_types = sqlalchemy.Table('metadef_resource_types',
-                                                  meta, autoload=True)
-        metadef_ns_res_types = sqlalchemy.Table(
-            'metadef_namespace_resource_types',
-            meta, autoload=True)
-
-        # These have been recreated
-        self.assertTrue(index_exist('ix_metadef_namespaces_namespace',
-                                    metadef_namespaces.name, engine))
-        self.assertTrue(index_exist('ix_metadef_objects_namespace_id',
-                                    metadef_objects.name, engine))
-        self.assertTrue(index_exist('ix_metadef_properties_namespace_id',
-                                    metadef_properties.name, engine))
-        self.assertTrue(index_exist('ix_metadef_tags_namespace_id',
-                                    metadef_tags.name, engine))
-        self.assertTrue(index_exist('ix_metadef_resource_types_name',
-                                    metadef_resource_types.name, engine))
-
-        self.assertTrue(index_exist(
-            'ix_metadef_ns_res_types_res_type_id_ns_id',
-            metadef_ns_res_types.name, engine))
-
-        # The rest must remain
-        self.assertTrue(index_exist('ix_metadef_namespaces_owner',
-                                    metadef_namespaces.name, engine))
-        self.assertTrue(index_exist('ix_metadef_objects_name',
-                                    metadef_objects.name, engine))
-        self.assertTrue(index_exist('ix_metadef_properties_name',
-                                    metadef_properties.name, engine))
-        self.assertTrue(index_exist('ix_metadef_tags_name',
-                                    metadef_tags.name, engine))
-        self.assertTrue(index_exist('ix_metadef_ns_res_types_namespace_id',
-                                    metadef_ns_res_types.name, engine))
-
-        # Dropped
-        self.assertFalse(unique_constraint_exist
-                         ('uq_metadef_objects_namespace_id_name',
-                          metadef_objects.name, engine)
-                         )
-        self.assertFalse(unique_constraint_exist
-                         ('uq_metadef_properties_namespace_id_name',
-                          metadef_properties.name, engine)
-                         )
-        self.assertFalse(unique_constraint_exist
-                         ('uq_metadef_tags_namespace_id_name',
-                          metadef_tags.name, engine)
-                         )
-        self.assertFalse(unique_constraint_exist
-                         ('uq_metadef_namespaces_namespace',
-                          metadef_namespaces.name, engine)
-                         )
-        self.assertFalse(unique_constraint_exist
-                         ('uq_metadef_resource_types_name',
-                          metadef_resource_types.name, engine)
-                         )
-
     def assert_table(self, engine, table_name, indices, columns):
         table = db_utils.get_table(engine, table_name)
         index_data = [(index.name, index.columns.keys()) for index in
@@ -1829,6 +1496,24 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         column_data = [column.name for column in table.columns]
         self.assertItemsEqual(columns, column_data)
         self.assertItemsEqual(indices, index_data)
+
+
+class TestMigrations(test_base.DbTestCase, test_utils.BaseTestCase):
+
+    def test_no_downgrade(self):
+        migrate_file = versions.__path__[0]
+        for parent, dirnames, filenames in os.walk(migrate_file):
+            for filename in filenames:
+                if filename.split('.')[1] == 'py':
+                    model_name = filename.split('.')[0]
+                    model = __import__(
+                        'glance.db.sqlalchemy.migrate_repo.versions.' +
+                        model_name)
+                    obj = getattr(getattr(getattr(getattr(getattr(
+                        model, 'db'), 'sqlalchemy'), 'migrate_repo'),
+                        'versions'), model_name)
+                    func = getattr(obj, 'downgrade', None)
+                    self.assertIsNone(func)
 
 
 class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,

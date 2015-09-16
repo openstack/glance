@@ -28,10 +28,6 @@ def upgrade(migrate_engine):
     migrate_location_credentials(migrate_engine, to_quoted=True)
 
 
-def downgrade(migrate_engine):
-    migrate_location_credentials(migrate_engine, to_quoted=False)
-
-
 def migrate_location_credentials(migrate_engine, to_quoted):
     """
     Migrate location credentials for swift uri's between the quoted

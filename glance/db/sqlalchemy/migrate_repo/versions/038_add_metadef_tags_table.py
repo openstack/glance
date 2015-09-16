@@ -16,7 +16,7 @@ from sqlalchemy.schema import (
     Column, Index, MetaData, Table, UniqueConstraint)  # noqa
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
-    DateTime, Integer, String, create_tables, drop_tables)  # noqa
+    DateTime, Integer, String, create_tables)  # noqa
 
 
 def define_metadef_tags_table(meta):
@@ -49,10 +49,3 @@ def upgrade(migrate_engine):
     meta.bind = migrate_engine
     tables = [define_metadef_tags_table(meta)]
     create_tables(tables)
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-    tables = [define_metadef_tags_table(meta)]
-    drop_tables(tables)

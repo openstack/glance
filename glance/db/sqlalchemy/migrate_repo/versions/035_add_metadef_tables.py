@@ -18,8 +18,7 @@ from sqlalchemy.schema import (
 
 from glance.common import timeutils
 from glance.db.sqlalchemy.migrate_repo.schema import (
-    Boolean, DateTime, Integer, String, Text, create_tables,
-    drop_tables)  # noqa
+    Boolean, DateTime, Integer, String, Text, create_tables)  # noqa
 
 
 RESOURCE_TYPES = [u'OS::Glance::Image', u'OS::Cinder::Volume',
@@ -207,14 +206,3 @@ def upgrade(migrate_engine):
 
     resource_types_table = _get_metadef_resource_types_table(meta)
     _populate_resource_types(resource_types_table)
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-    tables = [define_metadef_objects_table(meta),
-              define_metadef_properties_table(meta),
-              define_metadef_namespace_resource_types_table(meta),
-              define_metadef_resource_types_table(meta),
-              define_metadef_namespaces_table(meta)]
-    drop_tables(tables)

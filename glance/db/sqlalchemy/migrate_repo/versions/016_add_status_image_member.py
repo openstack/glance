@@ -26,10 +26,3 @@ def upgrade(migrate_engine):
 
     image_members = Table('image_members', meta, autoload=True)
     image_members.create_column(status)
-
-
-def downgrade(migrate_engine):
-    meta.bind = migrate_engine
-
-    image_members = Table('image_members', meta, autoload=True)
-    image_members.drop_column(status)

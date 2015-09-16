@@ -50,10 +50,6 @@ COMMANDS
         This will take an existing database and upgrade it to the
         specified VERSION.
 
-  **db_downgrade <VERSION>**
-        This will take an existing database and downgrade it to the
-        specified VERSION.
-
   **db_version_control**
         Place the database under migration control.
 

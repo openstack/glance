@@ -17,7 +17,7 @@ from sqlalchemy.schema import (
     Column, ForeignKey, Index, MetaData, Table, UniqueConstraint)
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
-    Boolean, DateTime, Integer, String, Text, create_tables, drop_tables,
+    Boolean, DateTime, Integer, String, Text, create_tables,
     from_migration_import)  # noqa
 
 
@@ -76,10 +76,3 @@ def upgrade(migrate_engine):
     meta.bind = migrate_engine
     tables = [define_image_properties_table(meta)]
     create_tables(tables)
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-    tables = [define_image_properties_table(meta)]
-    drop_tables(tables)

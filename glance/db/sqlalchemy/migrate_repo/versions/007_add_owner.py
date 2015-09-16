@@ -13,12 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from migrate.changeset import *  # noqa
 from sqlalchemy import *  # noqa
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, BigInteger, Integer, String,
-    Text, from_migration_import)  # noqa
+    Text)  # noqa
 
 
 def get_images_table(meta):
@@ -56,17 +55,6 @@ def get_images_table(meta):
     return images
 
 
-def get_image_properties_table(meta):
-    """
-    No changes to the image properties table from 006...
-    """
-    (get_image_properties_table,) = from_migration_import(
-        '006_key_to_name', ['get_image_properties_table'])
-
-    image_properties = get_image_properties_table(meta)
-    return image_properties
-
-
 def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
@@ -75,12 +63,3 @@ def upgrade(migrate_engine):
 
     owner = Column('owner', String(255))
     owner.create(images)
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-
-    images = get_images_table(meta)
-
-    images.columns['owner'].drop()

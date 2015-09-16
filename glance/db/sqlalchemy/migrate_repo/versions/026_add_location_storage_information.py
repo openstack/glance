@@ -30,14 +30,3 @@ def upgrade(migrate_engine):
                                   schema.PickleType(),
                                   default={})
     meta_data.create(image_locations_table)
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.schema.MetaData()
-    meta.bind = migrate_engine
-
-    image_locations_table = sqlalchemy.Table('image_locations',
-                                             meta,
-                                             autoload=True)
-
-    image_locations_table.columns['meta_data'].drop()

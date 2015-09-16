@@ -85,17 +85,6 @@ class DbCommands(object):
                           version)
 
     @args('--version', metavar='<version>', help='Database version')
-    def downgrade(self, version=None):
-        """Downgrade the database's migration level"""
-        print("Warning: DB downgrade is deprecated and will be removed in N "
-              "release. Users should make a full database backup of the "
-              "production data before attempting any upgrade.",
-              file=sys.stderr)
-        migration.db_sync(db_api.get_engine(),
-                          db_migration.MIGRATE_REPO_PATH,
-                          version)
-
-    @args('--version', metavar='<version>', help='Database version')
     def version_control(self, version=None):
         """Place a database under migration control"""
         migration.db_version_control(db_api.get_engine(),
@@ -107,7 +96,7 @@ class DbCommands(object):
           help='Current Database version')
     def sync(self, version=None, current_version=None):
         """
-        Place a database under migration control and upgrade/downgrade it,
+        Place a database under migration control and upgrade it,
         creating first if necessary.
         """
         if current_version not in (None, 'None'):
@@ -193,13 +182,6 @@ class DbLegacyCommands(object):
     def upgrade(self, version=None):
         self.command_object.upgrade(CONF.command.version)
 
-    def downgrade(self, version=None):
-        print("Warning: DB downgrade is deprecated and will be removed in N "
-              "release. Users should make a full database backup of the "
-              "production data before attempting any upgrade.",
-              file=sys.stderr)
-        self.command_object.downgrade(CONF.command.version)
-
     def version_control(self, version=None):
         self.command_object.version_control(CONF.command.version)
 
@@ -233,11 +215,6 @@ def add_legacy_command_parsers(command_object, subparsers):
     parser.set_defaults(action_fn=legacy_command_object.upgrade)
     parser.add_argument('version', nargs='?')
     parser.set_defaults(action='db_upgrade')
-
-    parser = subparsers.add_parser('db_downgrade')
-    parser.set_defaults(action_fn=legacy_command_object.downgrade)
-    parser.add_argument('version')
-    parser.set_defaults(action='db_downgrade')
 
     parser = subparsers.add_parser('db_version_control')
     parser.set_defaults(action_fn=legacy_command_object.version_control)

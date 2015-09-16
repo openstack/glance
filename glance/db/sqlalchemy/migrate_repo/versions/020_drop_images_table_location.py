@@ -15,8 +15,6 @@
 
 import sqlalchemy
 
-from glance.db.sqlalchemy.migrate_repo import schema
-
 
 def get_images_table(meta):
     return sqlalchemy.Table('images', meta, autoload=True)
@@ -26,10 +24,3 @@ def upgrade(migrate_engine):
     meta = sqlalchemy.schema.MetaData(migrate_engine)
     images_table = get_images_table(meta)
     images_table.columns['location'].drop()
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.schema.MetaData(migrate_engine)
-    images_table = get_images_table(meta)
-    location = sqlalchemy.Column('location', schema.Text())
-    location.create(images_table)

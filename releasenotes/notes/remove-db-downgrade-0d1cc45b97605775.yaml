@@ -1,0 +1,11 @@
+---
+prelude: >
+    Database downgrades have been removed from the Glance source tree. Please
+    see ``upgrade`` section for more details.
+upgrade:
+  - The ``db_downgrade`` command has been removed from the
+    ``glance-manage`` utility and all database downgrade
+    scripts have been removed.  In accord with OpenStack
+    policy, Glance cannot be downgraded any more.  Operators
+    are advised to make a full database backup of their
+    production data before attempting any upgrade.

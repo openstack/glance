@@ -39,14 +39,3 @@ def upgrade(migrate_engine):
             images_table.c.status == src)
         image_locations_table.update(values={'status': dst}).where(
             image_locations_table.c.image_id.in_(subq)).execute()
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.schema.MetaData()
-    meta.bind = migrate_engine
-
-    image_locations_table = sqlalchemy.Table('image_locations', meta,
-                                             autoload=True)
-
-    # Remove 'status' column from image_locations table
-    image_locations_table.columns['status'].drop()

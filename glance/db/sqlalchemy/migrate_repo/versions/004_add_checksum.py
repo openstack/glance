@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from migrate.changeset import *  # noqa
 from sqlalchemy import *  # noqa
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
@@ -73,12 +72,3 @@ def upgrade(migrate_engine):
 
     checksum = Column('checksum', String(32))
     checksum.create(images)
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-
-    images = get_images_table(meta)
-
-    images.columns['checksum'].drop()
