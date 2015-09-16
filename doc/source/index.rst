@@ -52,6 +52,7 @@ Glance Background Concepts
 
    architecture
    database_architecture
+   domain_model
    identifiers
    statuses
    formats
