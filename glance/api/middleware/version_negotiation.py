@@ -64,7 +64,7 @@ class VersionNegotiationFilter(wsgi.Middleware):
         try:
             version = self._match_version_string(req_version)
         except ValueError:
-            LOG.warn(_LW("Unknown version. Returning version choices."))
+            LOG.debug("Unknown version. Returning version choices.")
             return self.versions_app
 
         req.environ['api.version'] = version
