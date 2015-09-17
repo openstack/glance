@@ -89,28 +89,28 @@ JSON-encoded mapping in the following format::
 
 .. note::
 
-  All timestamps returned are in UTC
+  All timestamps returned are in UTC.
 
   The `updated_at` timestamp is the timestamp when an image's metadata
   was last updated, not its image data, as all image data is immutable
-  once stored in Glance
+  once stored in Glance.
 
   The `properties` field is a mapping of free-form key/value pairs that
-  have been saved with the image metadata
+  have been saved with the image metadata.
 
-  The `checksum` field is an MD5 checksum of the image file data
+  The `checksum` field is an MD5 checksum of the image file data.
 
   The `is_public` field is a boolean indicating whether the image is
-  publicly available
+  publicly available.
 
   The `min_ram` field is an integer specifying the minimum amount of
-  ram needed to run this image on an instance, in megabytes
+  RAM needed to run this image on an instance, in megabytes.
 
   The `min_disk` field is an integer specifying the minimum amount of
-  disk space needed to run this image on an instance, in gigabytes
+  disk space needed to run this image on an instance, in gigabytes.
 
   The `owner` field is a string which may either be null or which will
-  indicate the owner of the image
+  indicate the owner of the image.
 
 Filtering Images Lists
 **********************
@@ -164,13 +164,14 @@ These two resources also accept additional query parameters:
 
 * ``marker=ID``
 
-  An image identifier marker may be specified. When present only images which
-  occur after the identifier ``ID`` will be listed, i.e. the images which have
-  a `sort_key` later than that of the marker ``ID`` in the `sort_dir` direction.
+  An image identifier marker may be specified. When present, only images which
+  occur after the identifier ``ID`` will be listed. (These are the images that
+  have a `sort_key` later than that of the marker ``ID`` in the `sort_dir`
+  direction.)
 
 * ``limit=LIMIT``
 
-  When present the maximum number of results returned will not exceed ``LIMIT``.
+  When present, the maximum number of results returned will not exceed ``LIMIT``.
 
 .. note::
 
@@ -237,25 +238,25 @@ following shows an example of the HTTP headers returned from the above
 
 .. note::
 
-  All timestamps returned are in UTC
+  All timestamps returned are in UTC.
 
   The `x-image-meta-updated_at` timestamp is the timestamp when an
   image's metadata was last updated, not its image data, as all
-  image data is immutable once stored in Glance
+  image data is immutable once stored in Glance.
 
   There may be multiple headers that begin with the prefix
-  `x-image-meta-property-`.  These headers are free-form key/value pairs
+  `x-image-meta-property-`. These headers are free-form key/value pairs
   that have been saved with the image metadata. The key is the string
-  after `x-image-meta-property-` and the value is the value of the header
+  after `x-image-meta-property-` and the value is the value of the header.
 
   The response's `ETag` header will always be equal to the
-  `x-image-meta-checksum` value
+  `x-image-meta-checksum` value.
 
   The response's `x-image-meta-is_public` value is a boolean indicating
-  whether the image is publicly available
+  whether the image is publicly available.
 
   The response's `x-image-meta-owner` value is a string which may either
-  be null or which will indicate the owner of the image
+  be null or which will indicate the owner of the image.
 
 
 Retrieve Raw Image Data
@@ -300,28 +301,28 @@ returned from the above ``GET`` request::
 
 .. note::
 
-  All timestamps returned are in UTC
+  All timestamps returned are in UTC.
 
   The `x-image-meta-updated_at` timestamp is the timestamp when an
   image's metadata was last updated, not its image data, as all
-  image data is immutable once stored in Glance
+  image data is immutable once stored in Glance.
 
   There may be multiple headers that begin with the prefix
-  `x-image-meta-property-`.  These headers are free-form key/value pairs
+  `x-image-meta-property-`. These headers are free-form key/value pairs
   that have been saved with the image metadata. The key is the string
-  after `x-image-meta-property-` and the value is the value of the header
+  after `x-image-meta-property-` and the value is the value of the header.
 
   The response's `Content-Length` header shall be equal to the value of
-  the `x-image-meta-size` header
+  the `x-image-meta-size` header.
 
   The response's `ETag` header will always be equal to the
-  `x-image-meta-checksum` value
+  `x-image-meta-checksum` value.
 
   The response's `x-image-meta-is_public` value is a boolean indicating
-  whether the image is publicly available
+  whether the image is publicly available.
 
   The response's `x-image-meta-owner` value is a string which may either
-  be null or which will indicate the owner of the image
+  be null or which will indicate the owner of the image.
 
   The image data itself will be the body of the HTTP response returned
   from the request, which will have content-type of
@@ -355,7 +356,7 @@ Reserve a New Image
 
 We can also perform the activities described in `Add a New Image`_ using two
 separate calls to the Image API; the first to register the image metadata, and
-the second to add the image disk data.  This is known as "reserving" an image.
+the second to add the image disk data. This is known as "reserving" an image.
 
 The first call should be a ``POST`` to ``http://glance.example.com/v1/images``,
 which will result in a new image id being registered with a status of
@@ -396,23 +397,23 @@ The list of metadata headers that Glance accepts are listed below.
   When present, Glance will use the supplied identifier for the image.
   If the identifier already exists in that Glance node, then a
   **409 Conflict** will be returned by Glance. The value of the header
-  must be an uuid in hexadecimal string notation
-  (i.e. 71c675ab-d94f-49cd-a114-e12490b328d9).
+  must be a uuid in hexadecimal string notation
+  (that is 71c675ab-d94f-49cd-a114-e12490b328d9).
 
   When this header is *not* present, Glance will generate an identifier
-  for the image and return this identifier in the response (see below)
+  for the image and return this identifier in the response (see below).
 
 * ``x-image-meta-store``
 
   This header is optional. Valid values are one of ``file``, ``s3``, ``rbd``,
-  ``swift``, ``cinder``, ``gridfs``, ``sheepdog`` or ``vsphere``
+  ``swift``, ``cinder``, ``gridfs``, ``sheepdog`` or ``vsphere``.
 
   When present, Glance will attempt to store the disk image data in the
   backing store indicated by the value of the header. If the Glance node
   does not support the backing store, Glance will return a **400 Bad Request**.
 
   When not present, Glance will store the disk image data in the backing
-  store that is marked default. See the configuration option ``default_store``
+  store that is marked as default. See the configuration option ``default_store``
   for more information.
 
 * ``x-image-meta-disk_format``
@@ -421,14 +422,14 @@ The list of metadata headers that Glance accepts are listed below.
   ``aki``, ``ari``, ``ami``, ``raw``, ``iso``, ``vhd``, ``vdi``, ``qcow2``, or
   ``vmdk``.
 
-  For more information, see :doc:`About Disk and Container Formats <formats>`
+  For more information, see :doc:`About Disk and Container Formats <formats>`.
 
 * ``x-image-meta-container_format``
 
   This header is required, unless reserving an image. Valid values are one of
   ``aki``, ``ari``, ``ami``, ``bare``, or ``ovf``.
 
-  For more information, see :doc:`About Disk and Container Formats <formats>`
+  For more information, see :doc:`About Disk and Container Formats <formats>`.
 
 * ``x-image-meta-size``
 
@@ -444,11 +445,11 @@ The list of metadata headers that Glance accepts are listed below.
 
 * ``x-image-meta-checksum``
 
-  This header is optional. When present it shall be the expected **MD5**
-  checksum of the image file data.
+  This header is optional. When present, it specifies the **MD5** checksum
+  of the image file data.
 
-  When present, Glance will verify the checksum generated from the backend
-  store when storing your image against this value and return a
+  When present, Glance will verify the checksum generated from the back-end
+  store while storing your image against this value and return a
   **400 Bad Request** if the values do not match.
 
 * ``x-image-meta-is_public``
@@ -456,7 +457,7 @@ The list of metadata headers that Glance accepts are listed below.
   This header is optional.
 
   When Glance finds the string "true" (case-insensitive), the image is marked as
-  a public image, meaning that any user may view its metadata and may read
+  a public one, meaning that any user may view its metadata and may read
   the disk image from Glance.
 
   When not present, the image is assumed to be *not public* and owned by
@@ -464,17 +465,18 @@ The list of metadata headers that Glance accepts are listed below.
 
 * ``x-image-meta-min_ram``
 
-  This header is optional. When present it shall be the expected minimum ram
-  required in megabytes to run this image on a server.
+  This header is optional. When present, it specifies the minimum amount of
+  RAM in megabytes required to run this image on a server.
 
-  When not present, the image is assumed to have a minimum ram requirement of 0.
+  When not present, the image is assumed to have a minimum RAM requirement of 0.
 
 * ``x-image-meta-min_disk``
 
-  This header is optional. When present it shall be the expected minimum disk
-  space required in gigabytes to run this image on a server.
+  This header is optional. When present, it specifies the expected minimum disk
+  space in gigabytes required to run this image on a server.
 
-  When not present, the image is assumed to have a minimum disk space requirement of 0.
+  When not present, the image is assumed to have a minimum disk space
+  requirement of 0.
 
 * ``x-image-meta-owner``
 
@@ -482,7 +484,7 @@ The list of metadata headers that Glance accepts are listed below.
 
   Glance normally sets the owner of an image to be the tenant or user
   (depending on the "owner_is_tenant" configuration option) of the
-  authenticated user issuing the request.  However, if the authenticated user
+  authenticated user issuing the request. However, if the authenticated user
   has the Admin role, this default may be overridden by setting this header to
   null or to a string identifying the owner of the image.
 
@@ -490,7 +492,7 @@ The list of metadata headers that Glance accepts are listed below.
 
   When Glance receives any HTTP header whose key begins with the string prefix
   ``x-image-meta-property-``, Glance adds the key and value to a set of custom,
-  free-form image properties stored with the image.  The key is the
+  free-form image properties stored with the image. The key is a
   lower-cased string following the prefix ``x-image-meta-property-`` with dashes
   and punctuation replaced with underscores.
 
@@ -498,26 +500,27 @@ The list of metadata headers that Glance accepts are listed below.
 
     x-image-meta-property-distro  Ubuntu 10.10
 
-  Then a key/value pair of "distro"/"Ubuntu 10.10" will be stored with the
+  then a key/value pair of "distro"/"Ubuntu 10.10" will be stored with the
   image in Glance.
 
   There is no limit on the number of free-form key/value attributes that can
-  be attached to the image.  However, keep in mind that the 8K limit on the
-  size of all HTTP headers sent in a request will effectively limit the number
-  of image properties.
+  be attached to the image. However, keep in mind that the 8K limit on the
+  size of all the HTTP headers sent in a request will effectively limit the
+  number of image properties.
 
 
 Update an Image
 ***************
 
-Glance will view as image metadata any HTTP header that it receives in a
-``PUT`` request where the header key is prefixed with the strings
-``x-image-meta-`` and ``x-image-meta-property-``.
+Glance will consider any HTTP header that it receives in a ``PUT`` request
+as an instance of image metadata. In this case, the header key should be
+prefixed with the strings ``x-image-meta-`` and ``x-image-meta-property-``.
 
 If an image was previously reserved, and thus is in the ``queued`` state, then
-image data can be added by including it as the request body.  If the image
-already as data associated with it (e.g. not in the ``queued`` state), then
-including a request body will result in a **409 Conflict** exception.
+image data can be added by including it as the request body. If the image
+already has data associated with it (for example, it is not in the ``queued``
+state), then including a request body will result in a **409 Conflict**
+exception.
 
 On success, the ``PUT`` request will return the image metadata encoded as HTTP
 headers.
@@ -530,21 +533,21 @@ List Image Memberships
 
 We want to see a list of the other system tenants (or users, if
 "owner_is_tenant" is False) that may access a given virtual machine image that
-the Glance server knows about.  We take the `uri` field of the image data,
+the Glance server knows about. We take the `uri` field of the image data,
 append ``/members`` to it, and issue a ``GET`` request on the resulting URL.
 
 Continuing from the example above, in order to get the memberships for the
 first image returned, we can issue a ``GET`` request to the Glance
 server for
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
-.  What we will get back is JSON data such as the following::
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``.
+And we will get back JSON data such as the following::
 
   {'members': [
    {'member_id': 'tenant1',
     'can_share': false}
    ...]}
 
-The `member_id` field identifies a tenant with which the image is shared.  If
+The `member_id` field identifies a tenant with which the image is shared. If
 that tenant is authorized to further share the image, the `can_share` field is
 `true`.
 
@@ -552,8 +555,8 @@ that tenant is authorized to further share the image, the `can_share` field is
 List Shared Images
 ******************
 
-We want to see a list of images which are shared with a given tenant.  We issue
-a ``GET`` request to ``http://glance.example.com/v1/shared-images/tenant1``.  We
+We want to see a list of images which are shared with a given tenant. We issue
+a ``GET`` request to ``http://glance.example.com/v1/shared-images/tenant1``. We
 will get back JSON data such as the following::
 
   {'shared_images': [
@@ -562,17 +565,17 @@ will get back JSON data such as the following::
    ...]}
 
 The `image_id` field identifies an image shared with the tenant named by
-*member_id*.  If the tenant is authorized to further share the image, the
+*member_id*. If the tenant is authorized to further share the image, the
 `can_share` field is `true`.
 
 
 Add a Member to an Image
 ************************
 
-We want to authorize a tenant to access a private image.  We issue a ``PUT``
+We want to authorize a tenant to access a private image. We issue a ``PUT``
 request to
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/tenant1``
-.  With no body, this will add the membership to the image, leaving existing
+``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/tenant1``.
+With no body, this will add the membership to the image, leaving existing
 memberships unmodified and defaulting new memberships to have `can_share`
 set to `false`. We may also optionally attach a body of the following form::
 
@@ -581,14 +584,14 @@ set to `false`. We may also optionally attach a body of the following form::
   }
 
 If such a body is provided, both existing and new memberships will have
-`can_share` set to the provided value (either `true` or `false`).  This query
+`can_share` set to the provided value (either `true` or `false`). This query
 will return a 204 ("No Content") status code.
 
 
 Remove a Member from an Image
 *****************************
 
-We want to revoke a tenant's right to access a private image.  We issue a
+We want to revoke a tenant's right to access a private image. We issue a
 ``DELETE`` request to ``http://glance.example.com/v1/images/1/members/tenant1``.
 This query will return a 204 ("No Content") status code.
 
@@ -596,7 +599,7 @@ This query will return a 204 ("No Content") status code.
 Replace a Membership List for an Image
 **************************************
 
-The full membership list for a given image may be replaced.  We issue a ``PUT``
+The full membership list for a given image may be replaced. We issue a ``PUT``
 request to
 ``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
 with a body of the following form::
@@ -608,19 +611,20 @@ with a body of the following form::
 
 All existing memberships which are not named in the replacement body are
 removed, and those which are named have their `can_share` settings changed as
-specified.  (The `can_share` setting may be omitted, which will cause that
-setting to remain unchanged in the existing memberships.)  All new memberships
-will be created, with `can_share` defaulting to `false` if it is not specified.
+specified. (The `can_share` setting may be omitted, which will cause that
+setting to remain unchanged in the existing memberships.) All new memberships
+will be created, with `can_share` defaulting to `false` unless it is specified
+otherwise.
 
 
 Image Membership Changes in Version 2.0
 ---------------------------------------
 
 Version 2.0 of the Images API eliminates the ``can_share`` attribute of image
-membership.  In the version 2.0 model, image sharing is not transitive.
+membership. In the version 2.0 model, image sharing is not transitive.
 
-In version 2.0, image members have a ``status`` attribute that reflects how the
-image should be treated with respect to that image member's image list.
+In version 2.0, image members have a ``status`` attribute that reflects
+how the image should be treated with respect to that image member's image-list.
 
 * The ``status`` attribute may have one of three values: ``pending``,
   ``accepted``, or ``rejected``.
@@ -630,8 +634,8 @@ image should be treated with respect to that image member's image list.
 
 * Only an image member may change his/her own membership status.
 
-* Only an image owner may create members on an image.  The status of a newly
-  created image member is ``pending``.  The image owner cannot change the
+* Only an image owner may create members on an image. The status of a newly
+  created image member is ``pending``. The image owner cannot change the
   status of a member.
 
 
@@ -667,12 +671,12 @@ New API Calls
 
   { "status": "<STATUS_VALUE>" }
 
-  where <STATUS_VALUE> is one of ``pending``, ``accepted``, or ``rejected``.
+  where <STATUS_VALUE> is ``pending``, ``accepted``, or ``rejected``.
   The {memberId} is the tenant ID of the image member.
 
 
 API Message Localization
----------------------------------------
+------------------------
 Glance supports HTTP message localization. For example, an HTTP client can
 receive API messages in Chinese even if the locale language of the server is
 English.
@@ -680,8 +684,8 @@ English.
 How to use it
 *************
 To receive localized API messages, the HTTP client needs to specify the
-**Accept-Language** header to indicate the language to use to translate the
-message. For more info about Accept-Language, please refer http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+**Accept-Language** header to indicate the language that will translate the
+message. For more information about Accept-Language, please refer to http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
 
 A typical curl API request will be like below::
 
@@ -707,5 +711,5 @@ Then the response will be like the following::
    </html>
 
 .. note::
-   Be sure there is the language package under /usr/share/locale-langpack/ on
+   Make sure to have a language package under /usr/share/locale-langpack/ on
    the target Glance server.
