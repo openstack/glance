@@ -333,17 +333,17 @@ def create_mashup_dict(image_meta):
     :param image_meta: metadata of image with core and custom properties
     """
 
-    def get_items():
-        for key, value in six.iteritems(image_meta):
-            if isinstance(value, dict):
-                for subkey, subvalue in six.iteritems(
-                        create_mashup_dict(value)):
-                    if subkey not in image_meta:
-                        yield subkey, subvalue
-            else:
-                yield key, value
+    d = {}
+    for key, value in six.iteritems(image_meta):
+        if isinstance(value, dict):
+            for subkey, subvalue in six.iteritems(
+                    create_mashup_dict(value)):
+                if subkey not in image_meta:
+                    d[subkey] = subvalue
+        else:
+            d[key] = value
 
-    return dict(get_items())
+    return d
 
 
 def safe_mkdirs(path):
