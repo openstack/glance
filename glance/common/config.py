@@ -23,9 +23,7 @@ import logging
 import logging.config
 import logging.handlers
 import os
-import tempfile
 
-from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_policy import policy
 from paste import deploy
@@ -185,9 +183,6 @@ policy.Enforcer(CONF)
 
 
 def parse_args(args=None, usage=None, default_config_files=None):
-    if "OSLO_LOCK_PATH" not in os.environ:
-        lockutils.set_defaults(tempfile.gettempdir())
-
     CONF(args=args,
          project='glance',
          version=version.cached_version_string(),
