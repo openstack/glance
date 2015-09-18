@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b3.dev1\n"
+"Project-Id-Version: glance 11.0.0.0b4.dev25\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-31 06:45+0000\n"
+"POT-Creation-Date: 2015-09-18 06:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,26 +17,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.0\n"
 
-#: glance/scrubber.py:184
+#: glance/location.py:388
+#, python-format
+msgid "Successfully verified signature for image %s"
+msgstr ""
+
+#: glance/scrubber.py:209
 #, python-format
 msgid "Starting Daemon: wakeup_time=%(wakeup_time)s threads=%(threads)s"
 msgstr ""
 
-#: glance/scrubber.py:198
+#: glance/scrubber.py:223
 msgid "Daemon Shutdown on KeyboardInterrupt"
 msgstr ""
 
-#: glance/scrubber.py:210
+#: glance/scrubber.py:235
 #, python-format
 msgid "Initializing scrubber with configuration: %s"
 msgstr ""
 
-#: glance/scrubber.py:256
+#: glance/scrubber.py:293
 #, python-format
 msgid "Scrubbing image %(id)s from %(count)d locations."
 msgstr ""
 
-#: glance/scrubber.py:278
+#: glance/scrubber.py:315
 #, python-format
 msgid "Image %s has been deleted."
 msgstr ""
@@ -84,7 +89,7 @@ msgstr ""
 msgid "Image %s is reactivated"
 msgstr ""
 
-#: glance/async/flows/base_import.py:350
+#: glance/async/flows/base_import.py:376
 #, python-format
 msgid "%(task_id)s of %(task_type)s completed"
 msgstr ""
@@ -109,40 +114,40 @@ msgstr ""
 msgid "Image %s is being synced"
 msgstr ""
 
-#: glance/common/wsgi.py:313
+#: glance/common/wsgi.py:311
 #, python-format
 msgid "Starting %d workers"
 msgstr ""
 
-#: glance/common/wsgi.py:326
+#: glance/common/wsgi.py:324
 #, python-format
 msgid "Removed dead child %s"
 msgstr ""
 
-#: glance/common/wsgi.py:329
+#: glance/common/wsgi.py:327
 #, python-format
 msgid "Removed stale child %s"
 msgstr ""
 
-#: glance/common/wsgi.py:341
+#: glance/common/wsgi.py:339
 msgid "All workers have terminated. Exiting"
 msgstr ""
 
-#: glance/common/wsgi.py:358
+#: glance/common/wsgi.py:356
 msgid "Caught keyboard interrupt. Exiting."
 msgstr ""
 
-#: glance/common/wsgi.py:438
+#: glance/common/wsgi.py:436
 #, python-format
 msgid "Child %d exiting normally"
 msgstr ""
 
-#: glance/common/wsgi.py:443
+#: glance/common/wsgi.py:441
 #, python-format
 msgid "Started child %s"
 msgstr ""
 
-#: glance/common/wsgi.py:473
+#: glance/common/wsgi.py:471
 msgid "Starting single process server"
 msgstr ""
 
@@ -190,31 +195,31 @@ msgstr ""
 msgid "Unable to get deleted image"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:161
+#: glance/db/sqlalchemy/metadata.py:165
 #, python-format
 msgid "Table %s has been cleared"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:232
+#: glance/db/sqlalchemy/metadata.py:236
 #, python-format
 msgid "Overwriting namespace %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:248
+#: glance/db/sqlalchemy/metadata.py:252
 #, python-format
 msgid "Skipping namespace %s. It already exists in the database."
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:339
+#: glance/db/sqlalchemy/metadata.py:343
 #, python-format
 msgid "File %s loaded to database."
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:341
+#: glance/db/sqlalchemy/metadata.py:345
 msgid "Metadata loading finished"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:450
+#: glance/db/sqlalchemy/metadata.py:453
 #, python-format
 msgid "Namespace %(namespace)s saved in %(file)s"
 msgstr ""
@@ -229,13 +234,13 @@ msgstr ""
 msgid "dropping table %(table)s"
 msgstr ""
 
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:72
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:70
 msgid ""
 "'metadata_encryption_key' was not specified in the config file or a "
 "config file was not specified. This means that this migration is a NOOP."
 msgstr ""
 
-#: glance/domain/__init__.py:405
+#: glance/domain/__init__.py:406
 #, python-format
 msgid "Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
 msgstr ""

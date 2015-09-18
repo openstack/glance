@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b3.dev36\n"
+"Project-Id-Version: glance 11.0.0.0b4.dev25\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-18 06:27+0000\n"
+"POT-Creation-Date: 2015-09-18 06:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.0\n"
 
-#: glance/location.py:404
+#: glance/location.py:418
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for image %s but all have "
@@ -29,7 +29,7 @@ msgstr ""
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr ""
 
-#: glance/scrubber.py:234
+#: glance/scrubber.py:271
 #, python-format
 msgid "Can not get scrub jobs from queue: %s"
 msgstr ""
@@ -89,11 +89,21 @@ msgstr ""
 msgid "Unable to restore image %(image_id)s: %(e)s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:157 glance/api/v2/image_data.py:161
+#: glance/api/v2/image_data.py:77
+#, python-format
+msgid "Unable to delete image %(image_id)s: %(e)s"
+msgstr ""
+
+#: glance/api/v2/image_data.py:172
+#, python-format
+msgid "Signature verification failed for image %(id)s: %(e)s"
+msgstr ""
+
+#: glance/api/v2/image_data.py:181 glance/api/v2/image_data.py:185
 msgid "Failed to upload image data due to HTTP error"
 msgstr ""
 
-#: glance/api/v2/image_data.py:166
+#: glance/api/v2/image_data.py:190
 msgid "Failed to upload image data due to internal error"
 msgstr ""
 
@@ -200,6 +210,11 @@ msgid ""
 "%(tb)s"
 msgstr ""
 
+#: glance/common/signature_utils.py:263
+#, python-format
+msgid "Unable to retrieve certificate with ID %(id)s: %(e)s"
+msgstr ""
+
 #: glance/common/store_utils.py:64
 #, python-format
 msgid "Failed to delete image %(image_id)s from store: %(exc)s"
@@ -227,12 +242,12 @@ msgid ""
 "pydev_worker_debug_port."
 msgstr ""
 
-#: glance/common/wsgi.py:337
+#: glance/common/wsgi.py:335
 #, python-format
 msgid "Not respawning child %d, cannot recover from termination"
 msgstr ""
 
-#: glance/common/wsgi.py:886
+#: glance/common/wsgi.py:884
 #, python-format
 msgid "Caught error: %s"
 msgstr ""
@@ -270,15 +285,15 @@ msgstr ""
 msgid "Task not found for task_id %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:348
+#: glance/db/sqlalchemy/artifacts.py:347
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:535
+#: glance/db/sqlalchemy/artifacts.py:534
 msgid "Cannot use this parameter with the operator IN"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:542
+#: glance/db/sqlalchemy/artifacts.py:541
 #, python-format
 msgid "Operator %s is not supported"
 msgstr ""
@@ -301,12 +316,12 @@ msgid ""
 msgstr ""
 
 #: glance/db/sqlalchemy/migrate_repo/versions/015_quote_swift_credentials.py:63
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:97
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:95
 #, python-format
 msgid "Invalid store uri for image: %(image_id)s. Details: %(reason)s"
 msgstr ""
 
-#: glance/domain/__init__.py:412
+#: glance/domain/__init__.py:413
 #, python-format
 msgid ""
 "Task [%(task_id)s] status failed to change from %(cur_status)s to "
