@@ -17,6 +17,7 @@ import calendar
 import time
 
 import eventlet
+from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
@@ -300,25 +301,44 @@ class Scrubber(object):
         LOG.info(_LI("Scrubbing image %(id)s from %(count)d locations.") %
                  {'id': image_id, 'count': len(delete_jobs)})
 
+        success = True
         for img_id, loc_id, uri in delete_jobs:
-            self._delete_image_location_from_backend(img_id, loc_id, uri)
+            try:
+                self._delete_image_location_from_backend(img_id, loc_id, uri)
+            except Exception:
+                success = False
 
-        image = self.registry.get_image(image_id)
-        if image['status'] == 'pending_delete':
-            self.registry.update_image(image_id, {'status': 'deleted'})
+        if success:
+            image = self.registry.get_image(image_id)
+            if image['status'] == 'pending_delete':
+                self.registry.update_image(image_id, {'status': 'deleted'})
+            LOG.info(_LI("Image %s has been scrubbed successfully") % image_id)
+        else:
+            LOG.warn(_LW("One or more image locations couldn't be scrubbed "
+                         "from backend. Leaving image '%s' in 'pending_delete'"
+                         " status") % image_id)
 
     def _delete_image_location_from_backend(self, image_id, loc_id, uri):
         if CONF.metadata_encryption_key:
             uri = crypt.urlsafe_decrypt(CONF.metadata_encryption_key, uri)
-
         try:
-            LOG.debug("Deleting URI from image %s." % image_id)
-            self.store_api.delete_from_backend(uri, self.admin_context)
+            LOG.debug("Scrubbing image %s from a location." % image_id)
+            try:
+                self.store_api.delete_from_backend(uri, self.admin_context)
+            except store_exceptions.NotFound:
+                LOG.info(_LI("Image location for image '%s' not found in "
+                             "backend; Marking image location deleted in "
+                             "db.") % image_id)
+
             if loc_id != '-':
                 db_api.get_api().image_location_delete(self.admin_context,
                                                        image_id,
                                                        int(loc_id),
                                                        'deleted')
-            LOG.info(_LI("Image %s has been deleted.") % image_id)
-        except Exception:
-            LOG.warn(_LW("Unable to delete URI from image %s.") % image_id)
+            LOG.info(_LI("Image %s is scrubbed from a location.") % image_id)
+        except Exception as e:
+            LOG.error(_LE("Unable to scrub image %(id)s from a location. "
+                          "Reason: %(exc)s ") %
+                      {'id': image_id,
+                       'exc': encodeutils.exception_to_unicode(e)})
+            raise
