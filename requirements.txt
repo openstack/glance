@@ -25,6 +25,7 @@ taskflow>=1.25.0 # Apache-2.0
 keystoneauth1>=2.1.0 # Apache-2.0
 keystonemiddleware!=4.1.0,>=4.0.0 # Apache-2.0
 WSME>=0.8 # MIT
+PrettyTable>=0.7,<0.8  # BSD
 
 # For paste.util.template used in keystone.common.template
 Paste # MIT

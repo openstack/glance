@@ -14,6 +14,7 @@ import optparse
 import sys
 
 import mock
+import prettytable
 from six.moves import StringIO
 
 from glance.cmd import cache_manage
@@ -62,7 +63,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
 
     @mock.patch.object(glance.image_cache.client.CacheClient,
                        'get_cached_images')
-    @mock.patch.object(glance.common.utils.PrettyTable, 'make_row')
+    @mock.patch.object(prettytable.PrettyTable, 'add_row')
     def test_list_cached_images(self, mock_row_create, mock_images):
         """
         Verify that list_cached() method correctly processes images with all
@@ -95,7 +96,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
 
     @mock.patch.object(glance.image_cache.client.CacheClient,
                        'get_queued_images')
-    @mock.patch.object(glance.common.utils.PrettyTable, 'make_row')
+    @mock.patch.object(prettytable.PrettyTable, 'add_row')
     def test_list_queued_images(self, mock_row_create, mock_images):
         """Verify that list_queued() method correctly processes images."""
 

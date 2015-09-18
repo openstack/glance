@@ -20,6 +20,7 @@ A simple cache management utility for Glance.
 """
 from __future__ import print_function
 
+import datetime
 import functools
 import optparse
 import os
@@ -27,9 +28,8 @@ import sys
 import time
 
 from oslo_utils import encodeutils
+import prettytable
 
-from glance.common import timeutils
-from glance.common import utils
 from six.moves import input
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
@@ -93,32 +93,31 @@ List all images currently cached.
 
     print("Found %d cached images..." % len(images))
 
-    pretty_table = utils.PrettyTable()
-    pretty_table.add_column(36, label="ID")
-    pretty_table.add_column(19, label="Last Accessed (UTC)")
-    pretty_table.add_column(19, label="Last Modified (UTC)")
-    # 1 TB takes 13 characters to display: len(str(2**40)) == 13
-    pretty_table.add_column(14, label="Size", just="r")
-    pretty_table.add_column(10, label="Hits", just="r")
-
-    print(pretty_table.make_header())
+    pretty_table = prettytable.PrettyTable(("ID",
+                                            "Last Accessed (UTC)",
+                                            "Last Modified (UTC)",
+                                            "Size",
+                                            "Hits"))
+    pretty_table.align['Size'] = "r"
+    pretty_table.align['Hits'] = "r"
 
     for image in images:
-        last_modified = image['last_modified']
-        last_modified = timeutils.iso8601_from_timestamp(last_modified)
-
         last_accessed = image['last_accessed']
         if last_accessed == 0:
             last_accessed = "N/A"
         else:
-            last_accessed = timeutils.iso8601_from_timestamp(last_accessed)
+            last_accessed = datetime.datetime.utcfromtimestamp(
+                last_accessed).isoformat()
 
-        print(pretty_table.make_row(
+        pretty_table.add_row((
             image['image_id'],
             last_accessed,
-            last_modified,
+            datetime.datetime.utcfromtimestamp(
+                image['last_modified']).isoformat(),
             image['size'],
             image['hits']))
+
+    print(pretty_table.get_string())
 
 
 @catch_error('show queued images')
@@ -135,13 +134,12 @@ List all images currently queued for caching.
 
     print("Found %d queued images..." % len(images))
 
-    pretty_table = utils.PrettyTable()
-    pretty_table.add_column(36, label="ID")
-
-    print(pretty_table.make_header())
+    pretty_table = prettytable.PrettyTable(("ID",))
 
     for image in images:
-        print(pretty_table.make_row(image))
+        pretty_table.add_row((image,))
+
+    print(pretty_table.get_string())
 
 
 @catch_error('queue the specified image for caching')

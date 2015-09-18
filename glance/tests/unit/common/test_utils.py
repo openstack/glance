@@ -251,24 +251,6 @@ class TestUtils(test_utils.BaseTestCase):
                             mashup_dict['min_ram'])
         self.assertEqual(image_meta['min_ram'], mashup_dict['min_ram'])
 
-    def test_create_pretty_table(self):
-        class MyPrettyTable(utils.PrettyTable):
-            def __init__(self):
-                self.columns = []
-
-        # Test add column
-        my_pretty_table = MyPrettyTable()
-        my_pretty_table.add_column(1, label='test')
-        # Test make header
-        test_res = my_pretty_table.make_header()
-        self.assertEqual('t\n-', test_res)
-        # Test make row
-        result = my_pretty_table.make_row('t')
-        self.assertEqual("t", result)
-        result = my_pretty_table._clip_and_justify(
-            data='test', width=4, just=1)
-        self.assertEqual("test", result)
-
     def test_mutating(self):
         class FakeContext(object):
             def __init__(self):
