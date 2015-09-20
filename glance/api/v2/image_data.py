@@ -105,7 +105,19 @@ class ImageDataController(object):
                 raise webob.exc.HTTPGone(explanation=msg,
                                          request=req,
                                          content_type='text/plain')
-
+            except exception.NotAuthenticated:
+                msg = (_("Authentication error - the token may have "
+                         "expired during file upload. Deleting image data for "
+                         "%s.") % image_id)
+                LOG.debug(msg)
+                try:
+                    image.delete()
+                except exception.NotAuthenticated:
+                    # NOTE: Ignore this exception
+                    pass
+                raise webob.exc.HTTPUnauthorized(explanation=msg,
+                                                 request=req,
+                                                 content_type='text/plain')
         except ValueError as e:
             LOG.debug("Cannot save data for image %(id)s: %(e)s",
                       {'id': image_id,
