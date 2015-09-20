@@ -323,3 +323,29 @@ class TestUploadUtils(base.StoreClearingUnitTest):
                                   'metadata': {}}, image_meta['id'])
                         mock_safe_kill.assert_called_once_with(
                             req, image_meta['id'], 'saving')
+
+    @mock.patch.object(registry, 'update_image_metadata',
+                       side_effect=exception.NotAuthenticated)
+    @mock.patch.object(upload_utils, 'initiate_deletion')
+    def test_activate_image_with_expired_token(
+            self, mocked_delete, mocked_update):
+        """Test token expiration during image upload.
+
+        If users token expired before image was uploaded then if auth error
+        was caught from registry during changing image status from 'saving'
+        to 'active' then it's required to delete all image data.
+        """
+        context = mock.Mock()
+        req = mock.Mock()
+        req.context = context
+        with self._get_store_and_notifier() as (location, checksum, image_meta,
+                                                image_data, store, notifier,
+                                                update_data):
+            self.assertRaises(webob.exc.HTTPUnauthorized,
+                              upload_utils.upload_data_to_store,
+                              req, image_meta, image_data, store, notifier)
+            self.assertEqual(2, mocked_update.call_count)
+            mocked_delete.assert_called_once_with(
+                req,
+                {'url': 'file://foo/bar', 'status': 'active', 'metadata': {}},
+                'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d')
