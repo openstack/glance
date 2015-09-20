@@ -192,6 +192,23 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
+    def test_upload_with_expired_token(self):
+        def side_effect(image, from_state=None):
+            if from_state == 'saving':
+                raise exception.NotAuthenticated()
+
+        mocked_save = mock.Mock(side_effect=side_effect)
+        mocked_delete = mock.Mock()
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd')
+        image.delete = mocked_delete
+        self.image_repo.result = image
+        self.image_repo.save = mocked_save
+        self.assertRaises(webob.exc.HTTPUnauthorized, self.controller.upload,
+                          request, unit_test_utils.UUID1, 'YYYY', 4)
+        self.assertEqual(3, mocked_save.call_count)
+        mocked_delete.assert_called_once_with()
+
     def test_upload_non_existent_image_during_save_initiates_deletion(self):
         def fake_save_not_found(self):
             raise exception.NotFound()
