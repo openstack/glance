@@ -4,4 +4,4 @@ source = glance
 omit = glance/tests/*,glance/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
