@@ -21,7 +21,7 @@ Domain model
 The main goal of a domain model is refactoring the logic around
 object manipulation by splitting it to independent layers. Each
 subsequent layer wraps the previous one creating an "onion" structure,
-thus realizing a design pattern called "Decorator". The main feature
+thus realizing a design pattern called "Decorator." The main feature
 of domain model is to use a composition instead of inheritance or
 basic decoration while building an architecture. This provides
 flexibility and transparency of an internal organization for a developer,
@@ -35,6 +35,7 @@ Each layer defines its own operations’ implementation through a
 special ``proxy`` class. At first, operations are performed on the
 upper layer, then they successively pass the control to the underlying
 layers.
+
 The nesting of layers can be specified explicitly using a programmer
 interface Gateway or implicitly using ``helper`` classes. Nesting
 may also depend on various conditions, skipping or adding additional
@@ -128,21 +129,21 @@ This example defines three classes:
          return sum(args)
 
  class LoggerProxy(object):
-     """"Class extends functionality by writing message to log"""
+     """"Class extends functionality by writing message to log."""
      def __init__(self, base, logg):
          self.base = base
          self.logg = logg
 
-     # Proxy to provide implicit access to inner layer
+     # Proxy to provide implicit access to inner layer.
      msg = _create_property_proxy('msg')
 
      def print_msg(self):
-         # Write message to log and then pass the control to inner layer
-         self.logg.write("Message %s has written to log") % self.msg
+         # Write message to log and then pass the control to inner layer.
+         self.logg.write("Message %s has been written to the log") % self.msg
          self.base.print_msg()
 
      def sum_numbers(self, *args):
-         # Nothing to do here. Just pass the control to the next layer
+         # Nothing to do here. Just pass the control to the next layer.
          return self.base.sum_numbers(*args)
 
  class ValidatorProxy(object):
@@ -153,14 +154,14 @@ This example defines three classes:
      msg = _create_property_proxy('msg')
 
      def print_msg(self):
-         # There are no checks
+         # There are no checks.
          self.base.print_msg()
 
      def sum_numbers(self, *args):
-         # Validate input numbers and pass them next
+         # Validate input numbers and pass them further.
          for arg in args:
              if arg <= 0:
-                 return "Only positive numbers are supported"
+                 return "Only positive numbers are supported."
          return self.base.sum_numbers(*args)
 
 Thus, the ``gateway`` method for the above example may look like:
@@ -200,13 +201,13 @@ has the following form:
            self.proxy_kwargs = proxy_kwargs or {}
 
        def proxy(self, obj):
-           """Wrap an object"""
+           """Wrap an object."""
            if obj is None or self.proxy_class is None:
                return obj
            return self.proxy_class(obj, **self.proxy_kwargs)
 
        def unproxy(self, obj):
-           """Return object from inner layer"""
+           """Return object from inner layer."""
            if obj is None or self.proxy_class is None:
                return obj
            return obj.base
@@ -221,12 +222,12 @@ previous example. It specifies a ``BaseFactory`` class with a
 ::
 
    class BaseFactory(object):
-       """Simple factory to generate an object"""
+       """Simple factory to generate an object."""
        def generate(self):
            return Base()
 
    class LoggerFactory(object):
-       """Proxy class to add logging functionality"""
+       """Proxy class to add logging functionality."""
        def __init__(self, base, proxy_class=None, proxy_kwargs=None):
            self.helper = Helper(proxy_class, proxy_kwargs)
            self.base = base
@@ -236,7 +237,7 @@ previous example. It specifies a ``BaseFactory`` class with a
            return self.helper.proxy(self.base.generate())
 
    class ValidatorFactory(object):
-       """Proxy class to add validation"""
+       """Proxy class to add validation."""
        def __init__(self, base, only_positive=True, proxy_class=None, proxy_kwargs=None):
            self.helper = Helper(proxy_class, proxy_kwargs)
            self.base = base
@@ -244,7 +245,7 @@ previous example. It specifies a ``BaseFactory`` class with a
 
        def generate(self):
            if self.only_positive:
-               # Wrap in ValidatorProxy if it's required
+               # Wrap in ValidatorProxy if required.
                return self.helper.proxy(self.base.generate())
            return self.base.generate()
 
