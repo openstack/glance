@@ -484,10 +484,10 @@ def _do_query_filters(filters):
         basic_conds.append([models.Artifact.name == name['value']])
         version = filters.pop('version', None)
         if version is not None:
-            # ignore operator. always consider it EQ
-            # TODO(mfedosin) add support of LIKE operator
-            version = semver_db.parse(version['value'])
-            basic_conds.append([models.Artifact.version == version])
+            value = semver_db.parse(version['value'])
+            op = version['operator']
+            fn = op_mappings[op]
+            basic_conds.append([fn(models.Artifact.version, value)])
 
     state = filters.pop('state', None)
     if state is not None:
