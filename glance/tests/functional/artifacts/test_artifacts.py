@@ -1630,3 +1630,110 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         result = self._check_artifact_get(url=url)
         actual = [art1]
         self.assertEqual(actual, result)
+
+    def test_filter_by_range_props(self):
+        data = {'name': 'art1',
+                'version': '4.2',
+                'prop2': 10
+                }
+        self._create_artifact('withprops', data=data)
+        data = {'name': 'art2',
+                'version': '4.2',
+                'prop2': 100
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'art3',
+                'version': '4.2',
+                'prop2': 1000
+                }
+        self._create_artifact('withprops', data=data)
+
+        url = '/withprops/v1.0/drafts?prop2=gt:99&prop2=lt:101'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(1, len(result))
+
+        url = '/withprops/v1.0/drafts?prop2=gt:99&prop2=lt:2000'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(2, len(result))
+
+    def test_filter_by_tags(self):
+        data = {'name': 'art1',
+                'version': '4.2',
+                'tags': ['hyhyhy', 'tytyty']
+                }
+        self._create_artifact('withprops', data=data)
+        data = {'name': 'art2',
+                'version': '4.2',
+                'tags': ['hyhyhy', 'cicici']
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'art3',
+                'version': '4.2',
+                'tags': ['ededed', 'bobobo']
+                }
+        self._create_artifact('withprops', data=data)
+
+        url = '/withprops/v1.0/drafts?tags=hyhyhy'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(2, len(result))
+
+        url = '/withprops/v1.0/drafts?tags=cicici&tags=hyhyhy'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(1, len(result))
+
+    def test_filter_by_latest_version(self):
+        data = {'name': 'art1',
+                'version': '1.2',
+                'tags': ['hyhyhy', 'tytyty']
+                }
+        self._create_artifact('withprops', data=data)
+        data = {'name': 'latest_artifact',
+                'version': '3.2',
+                'tags': ['hyhyhy', 'cicici']
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'latest_artifact',
+                'version': '3.2',
+                'tags': ['ededed', 'bobobo']
+                }
+        self._create_artifact('withprops', data=data)
+
+        url = '/withprops/v1.0/drafts?version=latest&name=latest_artifact'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(2, len(result))
+
+        url = '/withprops/v1.0/drafts?version=latest'
+        self._check_artifact_get(url=url, status=400)
+
+    def test_filter_by_version_only(self):
+        data = {'name': 'art1',
+                'version': '3.2'
+                }
+        self._create_artifact('withprops', data=data)
+        data = {'name': 'art2',
+                'version': '4.2'
+                }
+        self._create_artifact('withprops', data=data)
+
+        data = {'name': 'art3',
+                'version': '4.3'
+                }
+        self._create_artifact('withprops', data=data)
+
+        url = '/withprops/v1.0/drafts?version=gt:4.0&version=lt:10.1'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(2, len(result))
+
+        url = '/withprops/v1.0/drafts?version=gt:4.0&version=ne:4.3'
+        result = self._check_artifact_get(url=url)
+
+        self.assertEqual(1, len(result))

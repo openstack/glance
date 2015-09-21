@@ -577,15 +577,15 @@ class ArtifactTests(object):
         artifacts = self.db_api.artifact_get_all(self.context)
         self.assertEqual(3, len(artifacts))
 
-        filters = {'tags': {
-            'value': ['notag'],
-        }}
+        filters = {'tags': [{
+            'value': 'notag',
+        }]}
         artifacts = self.db_api.artifact_get_all(self.context, filters=filters)
         self.assertEqual(0, len(artifacts))
 
-        filters = {'tags': {
-            'value': ['lalala'],
-        }}
+        filters = {'tags': [{
+            'value': 'lalala',
+        }]}
         artifacts = self.db_api.artifact_get_all(self.context, filters=filters)
         self.assertEqual(2, len(artifacts))
         for artifact in artifacts:
@@ -619,46 +619,46 @@ class ArtifactTests(object):
         self.db_api.artifact_create(self.context, artifact,
                                     TYPE_NAME, TYPE_VERSION)
 
-        filters = {'propname2': {
+        filters = {'propname2': [{
             'value': 4,
             'operator': 'GT',
-            'type': 'int'}}
+            'type': 'int'}]}
         artifacts = self.db_api.artifact_get_all(self.context, filters=filters)
         self.assertEqual(2, len(artifacts))
         for artifact in artifacts:
             self.assertIn(artifact['name'], ['TestArtifact1', 'TestArtifact2'])
 
         # position hasn't been set
-        filters = {'proparray': {
+        filters = {'proparray': [{
             'value': 6,
             'operator': 'LE',
-            'type': 'int'}}
+            'type': 'int'}]}
         artifacts = self.db_api.artifact_get_all(self.context, filters=filters)
         self.assertEqual(0, len(artifacts))
         for artifact in artifacts:
             self.assertIn(artifact['name'], ['TestArtifact1', 'TestArtifact2'])
 
         # position has been set
-        filters = {'proparray': {
+        filters = {'proparray': [{
             'value': 6,
             'position': 0,
             'operator': 'LE',
-            'type': 'int'}}
+            'type': 'int'}]}
         artifacts = self.db_api.artifact_get_all(self.context, filters=filters)
         self.assertEqual(2, len(artifacts))
         for artifact in artifacts:
             self.assertIn(artifact['name'], ['TestArtifact1', 'TestArtifact2'])
 
-        filters = {'proparray': {
+        filters = {'proparray': [{
             'value': 6,
             'operator': 'IN',
-            'type': 'int'}}
+            'type': 'int'}]}
         artifacts = self.db_api.artifact_get_all(self.context, filters=filters)
         self.assertEqual(2, len(artifacts))
         for artifact in artifacts:
             self.assertIn(artifact['name'], ['TestArtifact1', 'TestArtifact2'])
 
-        filters = {'name': {'value': 'new_artifact'}}
+        filters = {'name': [{'value': 'new_artifact'}]}
         artifacts = self.db_api.artifact_get_all(self.context,
                                                  filters=filters,
                                                  show_level=ga.Showlevel.BASIC)
@@ -668,10 +668,10 @@ class ArtifactTests(object):
         for prop in artifact['properties'].keys():
             self.assertNotEqual('proptext', prop)
 
-        filters = {'propname2': {
+        filters = {'propname2': [{
             'value': 4,
             'operator': 'FOO',
-            'type': 'int'}}
+            'type': 'int'}]}
         self.assertRaises(
             exc.ArtifactUnsupportedPropertyOperator,
             self.db_api.artifact_get_all, self.context, filters=filters)

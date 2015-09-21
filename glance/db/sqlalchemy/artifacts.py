@@ -465,7 +465,8 @@ def _do_query_filters(filters):
     visibility = filters.pop('visibility', None)
     if visibility is not None:
         # ignore operator. always consider it EQ
-        basic_conds.append([models.Artifact.visibility == visibility['value']])
+        basic_conds.append(
+            [models.Artifact.visibility == visibility[0]['value']])
 
     type_name = filters.pop('type_name', None)
     if type_name is not None:
@@ -481,9 +482,11 @@ def _do_query_filters(filters):
     name = filters.pop('name', None)
     if name is not None:
         # ignore operator. always consider it EQ
-        basic_conds.append([models.Artifact.name == name['value']])
-        version = filters.pop('version', None)
-        if version is not None:
+        basic_conds.append([models.Artifact.name == name[0]['value']])
+
+    versions = filters.pop('version', None)
+    if versions is not None:
+        for version in versions:
             value = semver_db.parse(version['value'])
             op = version['operator']
             fn = op_mappings[op]
@@ -497,7 +500,7 @@ def _do_query_filters(filters):
     owner = filters.pop('owner', None)
     if owner is not None:
         # ignore operator. always consider it EQ
-        basic_conds.append([models.Artifact.owner == owner['value']])
+        basic_conds.append([models.Artifact.owner == owner[0]['value']])
 
     id_list = filters.pop('id_list', None)
     if id_list is not None:
@@ -509,44 +512,48 @@ def _do_query_filters(filters):
 
     tags = filters.pop('tags', None)
     if tags is not None:
-        for tag in tags['value']:
-            tag_conds.append([models.ArtifactTag.value == tag])
+        for tag in tags:
+            tag_conds.append([models.ArtifactTag.value == tag['value']])
 
     # process remaining filters
-    for filtername, filtervalue in filters.items():
+    for filtername, filtervalues in filters.items():
+        for filtervalue in filtervalues:
 
-        db_prop_op = filtervalue['operator']
-        db_prop_value = filtervalue['value']
-        db_prop_type = filtervalue['type'] + "_value"
-        db_prop_position = filtervalue.get('position')
+            db_prop_op = filtervalue['operator']
+            db_prop_value = filtervalue['value']
+            db_prop_type = filtervalue['type'] + "_value"
+            db_prop_position = filtervalue.get('position')
 
-        conds = [models.ArtifactProperty.name == filtername]
+            conds = [models.ArtifactProperty.name == filtername]
 
-        if db_prop_op in op_mappings:
-            fn = op_mappings[db_prop_op]
-            result = fn(getattr(models.ArtifactProperty, db_prop_type),
-                        db_prop_value)
+            if db_prop_op in op_mappings:
+                fn = op_mappings[db_prop_op]
+                result = fn(getattr(models.ArtifactProperty, db_prop_type),
+                            db_prop_value)
 
-            cond = [result]
-            if db_prop_op == 'IN':
-                if db_prop_position == 'any' or db_prop_position is None:
-                    cond.append(models.ArtifactProperty.position >= 0)
-                else:
-                    msg = _LE("Cannot use this parameter with "
-                              "the operator IN")
-                    LOG.error(msg)
-                    raise exception.ArtifactInvalidPropertyParameter(op='IN')
+                cond = [result]
+                if db_prop_position is not 'any':
+                    cond.append(
+                        models.ArtifactProperty.position == db_prop_position)
+                if db_prop_op == 'IN':
+                    if (db_prop_position is not None and
+                            db_prop_position is not 'any'):
+                        msg = _LE("Cannot use this parameter with "
+                                  "the operator IN")
+                        LOG.error(msg)
+                        raise exception.ArtifactInvalidPropertyParameter(
+                            op='IN')
+                    cond = [result,
+                            models.ArtifactProperty.position >= 0]
             else:
-                cond.append(
-                    models.ArtifactProperty.position == db_prop_position)
-        else:
-            msg = _LE("Operator %s is not supported") % db_prop_op
-            LOG.error(msg)
-            raise exception.ArtifactUnsupportedPropertyOperator(op=db_prop_op)
+                msg = _LE("Operator %s is not supported") % db_prop_op
+                LOG.error(msg)
+                raise exception.ArtifactUnsupportedPropertyOperator(
+                    op=db_prop_op)
 
-        conds.extend(cond)
+            conds.extend(cond)
 
-        prop_conds.append(conds)
+            prop_conds.append(conds)
     return basic_conds, tag_conds, prop_conds
 
 
