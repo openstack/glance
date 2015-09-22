@@ -136,6 +136,8 @@ class ArtifactBlobProxy(proxy.ArtifactBlob):
             LOG.error(msg)
 
     def upload_to_store(self, data, size):
+        if size is None:  # NOTE(ativelkov): None is "unknown size"
+            size = 0
         location, ret_size, checksum, loc_meta = self.store_api.add_to_backend(
             CONF,
             self.blob.item_key,
