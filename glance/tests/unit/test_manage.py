@@ -16,15 +16,16 @@
 import fixtures
 import mock
 from oslo_db.sqlalchemy import migration
-import testtools
+from six.moves import StringIO
 
 from glance.cmd import manage
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata as db_metadata
+from glance.tests import utils as test_utils
 
 
-class TestManageBase(testtools.TestCase):
+class TestManageBase(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestManageBase, self).setUp()
@@ -35,18 +36,15 @@ class TestManageBase(testtools.TestCase):
         clear_conf()
         self.addCleanup(clear_conf)
 
-        self.patcher = mock.patch('glance.db.sqlalchemy.api.get_engine')
-        self.patcher.start()
-        self.addCleanup(self.patcher.stop)
+        self.useFixture(fixtures.MonkeyPatch(
+            'oslo_log.log.setup', lambda product_name, version='test': None))
+
+        patcher = mock.patch('glance.db.sqlalchemy.api.get_engine')
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def _main_test_helper(self, argv, func_name=None, *exp_args, **exp_kwargs):
         self.useFixture(fixtures.MonkeyPatch('sys.argv', argv))
-
-        def setup(product_name, version='unknown'):
-            pass
-
-        self.useFixture(fixtures.MonkeyPatch(
-            'oslo_log.setup', setup))
         manage.main()
         func_name.assert_called_once_with(*exp_args, **exp_kwargs)
 
@@ -55,10 +53,11 @@ class TestLegacyManage(TestManageBase):
 
     @mock.patch.object(migration, 'db_version')
     def test_legacy_db_version(self, db_version):
-        self._main_test_helper(['glance.cmd.manage', 'db_version'],
-                               migration.db_version,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, 0)
+        with mock.patch('sys.stdout', new_callable=StringIO):
+            self._main_test_helper(['glance.cmd.manage', 'db_version'],
+                                   migration.db_version,
+                                   db_api.get_engine(),
+                                   db_migration.MIGRATE_REPO_PATH, 0)
 
     @mock.patch.object(migration, 'db_sync')
     def test_legacy_db_sync(self, db_sync):
@@ -167,10 +166,11 @@ class TestManage(TestManageBase):
 
     @mock.patch.object(migration, 'db_version')
     def test_db_version(self, db_version):
-        self._main_test_helper(['glance.cmd.manage', 'db', 'version'],
-                               migration.db_version,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, 0)
+        with mock.patch('sys.stdout', new_callable=StringIO):
+            self._main_test_helper(['glance.cmd.manage', 'db', 'version'],
+                                   migration.db_version,
+                                   db_api.get_engine(),
+                                   db_migration.MIGRATE_REPO_PATH, 0)
 
     @mock.patch.object(migration, 'db_sync')
     def test_db_sync(self, db_sync):

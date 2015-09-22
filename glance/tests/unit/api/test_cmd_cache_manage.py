@@ -13,6 +13,7 @@
 import optparse
 
 import mock
+from six.moves import StringIO
 
 from glance.cmd import cache_manage
 from glance.common import exception
@@ -21,6 +22,7 @@ import glance.image_cache.client
 from glance.tests import utils as test_utils
 
 
+@mock.patch('sys.stdout', mock.Mock())
 class TestGlanceCmdManage(test_utils.BaseTestCase):
 
     @mock.patch.object(glance.image_cache.client.CacheClient,
@@ -319,13 +321,14 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
 
     @mock.patch.object(glance.cmd.cache_manage, 'lookup_command')
     def test_parse_options_no_parameters(self, mock_lookup):
-        oparser = optparse.OptionParser()
-        cache_manage.create_options(oparser)
+        with mock.patch('sys.stdout', new_callable=StringIO):
+            oparser = optparse.OptionParser()
+            cache_manage.create_options(oparser)
 
-        result = self.assertRaises(SystemExit, cache_manage.parse_options,
-                                   oparser, [])
-        self.assertEqual(0, result.code)
-        self.assertFalse(mock_lookup.called)
+            result = self.assertRaises(SystemExit, cache_manage.parse_options,
+                                       oparser, [])
+            self.assertEqual(0, result.code)
+            self.assertFalse(mock_lookup.called)
 
     @mock.patch.object(optparse.OptionParser, 'print_usage')
     def test_parse_options_no_arguments(self, mock_printout):
