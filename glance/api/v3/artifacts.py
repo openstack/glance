@@ -177,6 +177,7 @@ class ArtifactsController(object):
             artifact = self._get_artifact_with_dependencies(artifact_repo, id,
                                                             type_name,
                                                             type_version)
+            self._ensure_write_access(artifact, req.context)
             # use updater mixin to perform updates: generate update path
             if req.method == "PUT":
                 # replaces existing value or creates a new one
@@ -206,6 +207,7 @@ class ArtifactsController(object):
             artifact = self._get_artifact_with_dependencies(artifact_repo, id,
                                                             type_name,
                                                             type_version)
+            self._ensure_write_access(artifact, req.context)
             updated = artifact
             for change in changes:
                 updated = self._do_update_op(updated, change)
@@ -239,6 +241,7 @@ class ArtifactsController(object):
             artifact = self._get_artifact_with_dependencies(
                 artifact_repo, id, type_name=type_name,
                 type_version=type_version)
+            self._ensure_write_access(artifact, req.context)
             artifact_repo.remove(artifact)
         except exception.Invalid as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
@@ -262,6 +265,7 @@ class ArtifactsController(object):
             artifact = self._get_artifact_with_dependencies(
                 artifact_repo, id, type_name=type_name,
                 type_version=type_version)
+            self._ensure_write_access(artifact, req.context)
             return artifact_repo.publish(artifact, context=req.context)
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
@@ -299,6 +303,7 @@ class ArtifactsController(object):
                                                             id,
                                                             type_name,
                                                             type_version)
+            self._ensure_write_access(artifact, req.context)
             blob_prop = artifact.metadata.attributes.blobs.get(attr)
             if blob_prop is None:
                 raise webob.exc.HTTPBadRequest(
@@ -467,6 +472,13 @@ class ArtifactsController(object):
             response.append(metadata)
 
         return {"artifact_types": response}
+
+    @staticmethod
+    def _ensure_write_access(artifact, context):
+        if context.is_admin:
+            return
+        if context.owner is None or context.owner != artifact.owner:
+            raise exception.ArtifactForbidden(id=artifact.id)
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer,

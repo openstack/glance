@@ -27,8 +27,6 @@ from glance.common.artifacts import loader
 from glance.common import wsgi
 from glance.tests import functional
 
-TENANT1 = str(uuid.uuid4())
-
 
 class Artifact(definitions.ArtifactType):
     __type_name__ = "WithProps"
@@ -87,8 +85,32 @@ class TestRouter(router.API):
 
 
 class TestArtifacts(functional.FunctionalTest):
+
+    users = {
+        'user1': {
+            'id': str(uuid.uuid4()),
+            'tenant_id': str(uuid.uuid4()),
+            'token': str(uuid.uuid4()),
+            'role': 'member'
+        },
+        'user2': {
+            'id': str(uuid.uuid4()),
+            'tenant_id': str(uuid.uuid4()),
+            'token': str(uuid.uuid4()),
+            'role': 'member'
+        },
+        'admin': {
+            'id': str(uuid.uuid4()),
+            'tenant_id': str(uuid.uuid4()),
+            'token': str(uuid.uuid4()),
+            'role': 'admin'
+        }
+    }
+
     def setUp(self):
         super(TestArtifacts, self).setUp()
+        self._set_user('user1')
+        self.api_server.deployment_flavor = 'noauth'
         self.start_servers(**self.__dict__.copy())
 
     def tearDown(self):
@@ -99,13 +121,18 @@ class TestArtifacts(functional.FunctionalTest):
     def _url(self, path):
         return 'http://127.0.0.1:%d/v3/artifacts%s' % (self.api_port, path)
 
+    def _set_user(self, username):
+        if username not in self.users:
+            raise KeyError
+        self.current_user = username
+
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Auth-Token': self.users[self.current_user]['token'],
+            'X-User-Id': self.users[self.current_user]['id'],
+            'X-Tenant-Id': self.users[self.current_user]['tenant_id'],
+            'X-Roles': self.users[self.current_user]['role'],
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -193,6 +220,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                headers=None):
         if not headers:
             headers = self._headers()
+        else:
+            headers = self._headers(headers)
         headers.setdefault("Content-Type", "application/json")
         if 'application/json' in headers['Content-Type']:
             data = jsonutils.dumps(data)
@@ -1134,6 +1163,56 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/dict_prop/bar_list/nosuchkey' % art['id'],
             data={'data': 15}, status=400)
+
+    def test_artifact_inaccessible_by_different_user(self):
+        data = {'name': 'an artifact',
+                'version': '42'}
+        art = self._create_artifact('withprops', data=data)
+        self._set_user('user2')
+        self._check_artifact_get('/withprops/%s' % art['id'], 404)
+
+    def test_artifact_accessible_by_admin(self):
+        data = {'name': 'an artifact',
+                'version': '42'}
+        art = self._create_artifact('withprops', data=data)
+        self._set_user('admin')
+        self._check_artifact_get('/withprops/%s' % art['id'], 200)
+
+    def test_public_artifact_accessible_by_different_user(self):
+        data = {'name': 'an artifact',
+                'version': '42'}
+        art = self._create_artifact('withprops', data=data)
+        self._check_artifact_patch(
+            '/withprops/v1.0/%s' % art['id'],
+            data=[{'op': 'replace', 'value': 'public', 'path': '/visibility'}])
+        self._set_user('user2')
+        self._check_artifact_get('/withprops/%s' % art['id'], 200)
+
+    def test_public_artifact_not_editable_by_different_user(self):
+        data = {'name': 'an artifact',
+                'version': '42'}
+        art = self._create_artifact('withprops', data=data)
+        self._check_artifact_patch(
+            '/withprops/v1.0/%s' % art['id'],
+            data=[{'op': 'replace', 'value': 'public', 'path': '/visibility'}])
+        self._set_user('user2')
+        self._check_artifact_patch(
+            '/withprops/v1.0/%s' % art['id'],
+            data=[{'op': 'replace', 'value': 'private',
+                   'path': '/visibility'}], status=403)
+
+    def test_public_artifact_editable_by_admin(self):
+        data = {'name': 'an artifact',
+                'version': '42'}
+        art = self._create_artifact('withprops', data=data)
+        self._check_artifact_patch(
+            '/withprops/v1.0/%s' % art['id'],
+            data=[{'op': 'replace', 'value': 'public', 'path': '/visibility'}])
+        self._set_user('admin')
+        self._check_artifact_patch(
+            '/withprops/v1.0/%s' % art['id'],
+            data=[{'op': 'replace', 'value': 'private',
+                   'path': '/visibility'}], status=200)
 
     def test_list_artifact_types(self):
         actual = {
