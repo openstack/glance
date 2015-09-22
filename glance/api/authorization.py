@@ -295,7 +295,6 @@ class ImmutableImageProxy(object):
 
     name = _immutable_attr('base', 'name')
     image_id = _immutable_attr('base', 'image_id')
-    name = _immutable_attr('base', 'name')
     status = _immutable_attr('base', 'status')
     created_at = _immutable_attr('base', 'created_at')
     updated_at = _immutable_attr('base', 'updated_at')
