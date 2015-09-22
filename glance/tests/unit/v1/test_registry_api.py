@@ -1766,6 +1766,49 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = req.get_response(api)
         self.assertEqual(res.status_int, 403)
 
+    def test_add_member_delete_create(self):
+        """
+        Test check that the same member can be successfully added after delete
+        it, and the same record will be reused for the same membership.
+        """
+        # add a member
+        UUID8 = _gen_uuid()
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
+
+        db_api.image_create(self.context, extra_fixture)
+        fixture = dict(can_share=True)
+        test_uri = '/images/%s/members/test_add_member_delete_create'
+        body = jsonutils.dumps(dict(member=fixture))
+        self.get_api_response_ext(204, url=test_uri % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
+        memb_list = db_api.image_member_find(self.context, image_id=UUID8)
+        self.assertEqual(1, len(memb_list))
+        memb_list2 = db_api.image_member_find(self.context,
+                                              image_id=UUID8,
+                                              include_deleted=True)
+        self.assertEqual(1, len(memb_list2))
+        # delete the member
+        self.get_api_response_ext(204, method='DELETE',
+                                  url=test_uri % UUID8)
+        memb_list = db_api.image_member_find(self.context, image_id=UUID8)
+        self.assertEqual(0, len(memb_list))
+        memb_list2 = db_api.image_member_find(self.context,
+                                              image_id=UUID8,
+                                              include_deleted=True)
+        self.assertEqual(1, len(memb_list2))
+        # create it again
+        self.get_api_response_ext(204, url=test_uri % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
+        memb_list = db_api.image_member_find(self.context, image_id=UUID8)
+        self.assertEqual(1, len(memb_list))
+        memb_list2 = db_api.image_member_find(self.context,
+                                              image_id=UUID8,
+                                              include_deleted=True)
+        self.assertEqual(1, len(memb_list2))
+
     def test_get_on_image_member(self):
         """
         Test GET on image members raises 405 and produces correct Allow headers

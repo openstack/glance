@@ -677,6 +677,31 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         num_members = len(memb_list)
         self.assertEqual(0, num_members)
 
+    def test_image_member_find_include_deleted(self):
+        """Tests getting member images include the delted member"""
+        values = dict(image_id=UUID2, member='pattieblack')
+        # create a member
+        member = self.client.image_member_create(values=values)
+        memb_list = self.client.image_member_find(member='pattieblack')
+        memb_list2 = self.client.image_member_find(member='pattieblack',
+                                                   include_deleted=True)
+        self.assertEqual(1, len(memb_list))
+        self.assertEqual(1, len(memb_list2))
+        # delete the member
+        self.client.image_member_delete(memb_id=member['id'])
+        memb_list = self.client.image_member_find(member='pattieblack')
+        memb_list2 = self.client.image_member_find(member='pattieblack',
+                                                   include_deleted=True)
+        self.assertEqual(0, len(memb_list))
+        self.assertEqual(1, len(memb_list2))
+        # create it again
+        member = self.client.image_member_create(values=values)
+        memb_list = self.client.image_member_find(member='pattieblack')
+        memb_list2 = self.client.image_member_find(member='pattieblack',
+                                                   include_deleted=True)
+        self.assertEqual(1, len(memb_list))
+        self.assertEqual(2, len(memb_list2))
+
     def test_add_update_members(self):
         """Tests updating image members"""
         values = dict(image_id=UUID2, member='pattieblack')

@@ -454,7 +454,8 @@ def image_property_delete(context, prop_ref, image_ref):
 
 
 @log_call
-def image_member_find(context, image_id=None, member=None, status=None):
+def image_member_find(context, image_id=None, member=None,
+                      status=None, include_deleted=False):
     filters = []
     images = DATA['images']
     members = DATA['members']

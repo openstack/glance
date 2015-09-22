@@ -1075,21 +1075,31 @@ def _image_member_get(context, memb_id, session):
     return query.one()
 
 
-def image_member_find(context, image_id=None, member=None, status=None):
-    """Find all members that meet the given criteria
+def image_member_find(context, image_id=None, member=None,
+                      status=None, include_deleted=False):
+    """Find all members that meet the given criteria.
+
+    Note, currently include_deleted should be true only when create a new
+    image membership, as there may be a deleted image membership between
+    the same image and tenant, the membership will be reused in this case.
+    It should be false in other cases.
 
     :param image_id: identifier of image entity
     :param member: tenant to which membership has been granted
+    :include_deleted: A boolean indicating whether the result should include
+                      the deleted record of image member
     """
     session = get_session()
-    members = _image_member_find(context, session, image_id, member, status)
+    members = _image_member_find(context, session, image_id,
+                                 member, status, include_deleted)
     return [_image_member_format(m) for m in members]
 
 
 def _image_member_find(context, session, image_id=None,
-                       member=None, status=None):
+                       member=None, status=None, include_deleted=False):
     query = session.query(models.ImageMember)
-    query = query.filter_by(deleted=False)
+    if not include_deleted:
+        query = query.filter_by(deleted=False)
 
     if not context.is_admin:
         query = query.join(models.Image)

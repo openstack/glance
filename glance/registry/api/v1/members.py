@@ -158,7 +158,8 @@ class Controller(object):
             # Try to find the corresponding membership
             members = self.db_api.image_member_find(req.context,
                                                     image_id=datum['image_id'],
-                                                    member=datum['member'])
+                                                    member=datum['member'],
+                                                    include_deleted=True)
             try:
                 member = members[0]
             except IndexError:
@@ -257,7 +258,8 @@ class Controller(object):
         # Look up an existing membership...
         members = self.db_api.image_member_find(req.context,
                                                 image_id=image_id,
-                                                member=id)
+                                                member=id,
+                                                include_deleted=True)
         if members:
             if can_share is not None:
                 values = dict(can_share=can_share)
