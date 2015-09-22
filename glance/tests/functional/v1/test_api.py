@@ -761,3 +761,92 @@ class TestApi(functional.FunctionalTest):
         self.assertEqual(404, response.status)
 
         self.stop_servers()
+
+    def test_status_cannot_be_manipulated_directly(self):
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+        headers = minimal_headers('Image1')
+
+        # Create a 'queued' image
+        http = httplib2.Http()
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Disk-Format': 'raw',
+                   'X-Image-Meta-Container-Format': 'bare'}
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=None)
+        self.assertEqual(201, response.status)
+        image = jsonutils.loads(content)['image']
+        self.assertEqual('queued', image['status'])
+
+        # Ensure status of 'queued' image can't be changed
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image['id'])
+        http = httplib2.Http()
+        headers = {'X-Image-Meta-Status': 'active'}
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(403, response.status)
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(200, response.status)
+        self.assertEqual('queued', response['x-image-meta-status'])
+
+        # We allow 'setting' to the same status
+        http = httplib2.Http()
+        headers = {'X-Image-Meta-Status': 'queued'}
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(200, response.status)
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(200, response.status)
+        self.assertEqual('queued', response['x-image-meta-status'])
+
+        # Make image active
+        http = httplib2.Http()
+        headers = {'Content-Type': 'application/octet-stream'}
+        response, content = http.request(path, 'PUT', headers=headers,
+                                         body='data')
+        self.assertEqual(200, response.status)
+        image = jsonutils.loads(content)['image']
+        self.assertEqual('active', image['status'])
+
+        # Ensure status of 'active' image can't be changed
+        http = httplib2.Http()
+        headers = {'X-Image-Meta-Status': 'queued'}
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(403, response.status)
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(200, response.status)
+        self.assertEqual('active', response['x-image-meta-status'])
+
+        # We allow 'setting' to the same status
+        http = httplib2.Http()
+        headers = {'X-Image-Meta-Status': 'active'}
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(200, response.status)
+        response, content = http.request(path, 'HEAD')
+        self.assertEqual(200, response.status)
+        self.assertEqual('active', response['x-image-meta-status'])
+
+        # Create a 'queued' image, ensure 'status' header is ignored
+        http = httplib2.Http()
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Status': 'active'}
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=None)
+        self.assertEqual(201, response.status)
+        image = jsonutils.loads(content)['image']
+        self.assertEqual('queued', image['status'])
+
+        # Create an 'active' image, ensure 'status' header is ignored
+        http = httplib2.Http()
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        headers = {'Content-Type': 'application/octet-stream',
+                   'X-Image-Meta-Disk-Format': 'raw',
+                   'X-Image-Meta-Status': 'queued',
+                   'X-Image-Meta-Container-Format': 'bare'}
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body='data')
+        self.assertEqual(201, response.status)
+        image = jsonutils.loads(content)['image']
+        self.assertEqual('active', image['status'])
+        self.stop_servers()

@@ -358,6 +358,8 @@ class TestApi(base.ApiTest):
         path = "/v1/images"
         response, content = self.http.request(path, 'POST', headers=headers)
         self.assertEqual(201, response.status)
+        image = jsonutils.loads(content)['image']
+        self.assertEqual('active', image['status'])
 
         # 2. HEAD image-location
         # Verify image size is zero and the status is active
