@@ -150,9 +150,10 @@ class KeystoneStrategy(BaseStrategy):
     def _v1_auth(self, token_url):
         creds = self.creds
 
-        headers = {}
-        headers['X-Auth-User'] = creds['username']
-        headers['X-Auth-Key'] = creds['password']
+        headers = {
+            'X-Auth-User': creds['username'],
+            'X-Auth-Key': creds['password']
+        }
 
         tenant = creds.get('tenant')
         if tenant:
@@ -202,8 +203,7 @@ class KeystoneStrategy(BaseStrategy):
             }
         }
 
-        headers = {}
-        headers['Content-Type'] = 'application/json'
+        headers = {'Content-Type': 'application/json'}
         req_body = jsonutils.dumps(creds)
 
         resp, resp_body = self._do_request(

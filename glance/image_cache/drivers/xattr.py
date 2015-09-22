@@ -152,9 +152,7 @@ class Driver(base.Driver):
         for path in get_all_regular_files(self.base_dir):
             image_id = os.path.basename(path)
 
-            entry = {}
-            entry['image_id'] = image_id
-
+            entry = {'image_id': image_id}
             file_info = os.stat(path)
             entry['last_modified'] = file_info[stat.ST_MTIME]
             entry['last_accessed'] = file_info[stat.ST_ATIME]

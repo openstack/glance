@@ -1574,10 +1574,12 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         call_sequence = []
         # use this to determine if we are within a db session i.e. atomic
         # operation, that is setting our active state.
-        test_status = {'activate_session_started': False}
-        # We want first status check to be 'queued' so we get past the first
-        # guard.
-        test_status['queued_guard_passed'] = False
+        # We want first status check to be 'queued' so we get past the
+        # first guard.
+        test_status = {
+            'activate_session_started': False,
+            'queued_guard_passed': False
+        }
 
         state_changes = []
 

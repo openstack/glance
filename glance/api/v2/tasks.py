@@ -243,35 +243,37 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         return '/v2/tasks/%s' % task.task_id
 
     def _format_task(self, schema, task):
-        task_view = {}
-        task_view['id'] = task.task_id
-        task_view['input'] = task.task_input
-        task_view['type'] = task.type
-        task_view['status'] = task.status
-        task_view['owner'] = task.owner
-        task_view['message'] = task.message
-        task_view['result'] = task.result
+        task_view = {
+            'id': task.task_id,
+            'input': task.task_input,
+            'type': task.type,
+            'status': task.status,
+            'owner': task.owner,
+            'message': task.message,
+            'result': task.result,
+            'created_at': timeutils.isotime(task.created_at),
+            'updated_at': timeutils.isotime(task.updated_at),
+            'self': self._get_task_location(task),
+            'schema': '/v2/schemas/task'
+        }
         if task.expires_at:
             task_view['expires_at'] = timeutils.isotime(task.expires_at)
-        task_view['created_at'] = timeutils.isotime(task.created_at)
-        task_view['updated_at'] = timeutils.isotime(task.updated_at)
-        task_view['self'] = self._get_task_location(task)
-        task_view['schema'] = '/v2/schemas/task'
         task_view = schema.filter(task_view)  # domain
         return task_view
 
     def _format_task_stub(self, schema, task):
-        task_view = {}
-        task_view['id'] = task.task_id
-        task_view['type'] = task.type
-        task_view['status'] = task.status
-        task_view['owner'] = task.owner
+        task_view = {
+            'id': task.task_id,
+            'type': task.type,
+            'status': task.status,
+            'owner': task.owner,
+            'created_at': timeutils.isotime(task.created_at),
+            'updated_at': timeutils.isotime(task.updated_at),
+            'self': self._get_task_location(task),
+            'schema': '/v2/schemas/task'
+        }
         if task.expires_at:
             task_view['expires_at'] = timeutils.isotime(task.expires_at)
-        task_view['created_at'] = timeutils.isotime(task.created_at)
-        task_view['updated_at'] = timeutils.isotime(task.updated_at)
-        task_view['self'] = self._get_task_location(task)
-        task_view['schema'] = '/v2/schemas/task'
         task_view = schema.filter(task_view)  # domain
         return task_view
 

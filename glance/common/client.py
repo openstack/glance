@@ -228,10 +228,8 @@ class BaseClient(object):
         self.connect_kwargs = self.get_connect_kwargs()
 
     def get_connect_kwargs(self):
-        connect_kwargs = {}
-
         # Both secure and insecure connections have a timeout option
-        connect_kwargs['timeout'] = self.timeout
+        connect_kwargs = {'timeout': self.timeout}
 
         if self.use_ssl:
             if self.key_file is None:

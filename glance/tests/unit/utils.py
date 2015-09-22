@@ -238,10 +238,11 @@ class FakeNotifier(object):
         self.log = []
 
     def _notify(self, event_type, payload, level):
-        log = {}
-        log['notification_type'] = level
-        log['event_type'] = event_type
-        log['payload'] = payload
+        log = {
+            'notification_type': level,
+            'event_type': event_type,
+            'payload': payload
+        }
         self.log.append(log)
 
     def warn(self, event_type, payload):

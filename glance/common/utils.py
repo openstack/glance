@@ -729,12 +729,13 @@ def stash_conf_values():
     Allows determining if any of these values have changed
     when the config is reloaded.
     """
-    conf = {}
-    conf['bind_host'] = CONF.bind_host
-    conf['bind_port'] = CONF.bind_port
-    conf['tcp_keepidle'] = CONF.cert_file
-    conf['backlog'] = CONF.backlog
-    conf['key_file'] = CONF.key_file
-    conf['cert_file'] = CONF.cert_file
+    conf = {
+        'bind_host': CONF.bind_host,
+        'bind_port': CONF.bind_port,
+        'tcp_keepidle': CONF.cert_file,
+        'backlog': CONF.backlog,
+        'key_file': CONF.key_file,
+        'cert_file': CONF.cert_file
+    }
 
     return conf

@@ -461,14 +461,12 @@ class TestDeclarativeProperties(test_utils.BaseTestCase):
                                                               max_value=99)})
 
         tt = TestType()
-        tt.props = {"foo": "FOO"}
-        tt.props["bar"] = False
+        tt.props = {"foo": "FOO", "bar": False}
         self.assertRaises(exc.InvalidArtifactPropertyValue,
                           tt.props.__setitem__, "bar", 123)
         self.assertRaises(exc.InvalidArtifactPropertyValue,
                           tt.props.__setitem__, "extra", "value")
-        tt.fixed = {"name": "Alex"}
-        tt.fixed["age"] = 42
+        tt.fixed = {"name": "Alex", "age": 42}
         self.assertRaises(exc.InvalidArtifactPropertyValue,
                           tt.fixed.__setitem__, "age", 120)
 
