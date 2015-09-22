@@ -23,6 +23,7 @@ from oslo_utils import encodeutils
 from oslo_utils import excutils
 import semantic_version
 import six
+import six.moves.urllib.parse as urlparse
 import webob.exc
 
 from glance.artifacts import gateway
@@ -116,9 +117,14 @@ class ArtifactsController(object):
                         req, filters['name'][0]['value'], type_name,
                         type_version)
 
-        return artifact_repo.list(filters=filters,
-                                  show_level=Showlevel.BASIC,
-                                  **kwargs)
+        res = artifact_repo.list(filters=filters,
+                                 show_level=Showlevel.BASIC,
+                                 **kwargs)
+        result = {'artifacts': res}
+        limit = kwargs.get("limit")
+        if limit is not None and len(res) != 0 and len(res) == limit:
+            result['next_marker'] = res[-1].id
+        return result
 
     def _get_latest_version(self, req, name, type_name, type_version=None,
                             state='creating'):
@@ -839,11 +845,39 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                 id=artifact.id))
 
     def list(self, response, res):
+        params = dict(response.request.params)
+        params.pop('marker', None)
+        query = urlparse.urlencode(params)
+        type_name = response.request.urlvars.get('type_name')
+        type_version = response.request.urlvars.get('type_version')
+        if response.request.urlvars.get('state') == 'creating':
+            drafts = "/drafts"
+        else:
+            drafts = ""
+
         artifacts_list = [
             serialization.serialize_for_client(a, show_level=Showlevel.NONE)
-            for a in res]
-        body = json.dumps(artifacts_list, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+            for a in res['artifacts']]
+        url = "/v3/artifacts"
+        if type_name:
+            url += "/" + type_name
+        if type_version:
+            url += "/v" + type_version
+        url += drafts
+        if query:
+            first_url = url + "?" + query
+        else:
+            first_url = url
+        body = {
+            "artifacts": artifacts_list,
+            "first": first_url
+        }
+        if 'next_marker' in res:
+            params['marker'] = res['next_marker']
+            next_query = urlparse.urlencode(params)
+            body['next'] = url + '?' + next_query
+        content = json.dumps(body, ensure_ascii=False)
+        response.unicode_body = six.text_type(content)
         response.content_type = 'application/json'
 
     def delete(self, response, result):
