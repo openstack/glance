@@ -6,9 +6,9 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b4.dev25\n"
+"Project-Id-Version: glance 11.0.0.0b4.dev52\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-18 06:12+0000\n"
+"POT-Creation-Date: 2015-09-23 14:29+0000\n"
 "PO-Revision-Date: 2015-08-01 07:46+0000\n"
 "Last-Translator: İşbaran Akçayır <isbaran@gmail.com>\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/openstack/glance/"
@@ -217,10 +217,6 @@ msgstr ""
 "Dönüştürme biçimi Hiçbiri, lütfen çalıştırılacak bu görev için yapılandırma "
 "dosyasında dönüştürme biçimi değeri ekleyin: %s"
 
-#, python-format
-msgid "Unable to delete URI from image %s."
-msgstr "%s imajından URI silinemedi."
-
 msgid "Unable to get deleted image"
 msgstr "Silinen imaj alınamadı"
 
@@ -230,9 +226,6 @@ msgstr "Silinen görev %s alınamadı"
 
 msgid "Unable to get unowned image"
 msgstr "Sahipsiz imaj alınamadı"
-
-msgid "Unknown version. Returning version choices."
-msgstr "Bilinmeyen sürüm. Sürüm seçenekleri döndürülüyor."
 
 #, python-format
 msgid "Unrecognised child %s"

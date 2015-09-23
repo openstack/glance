@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b4.dev25\n"
+"Project-Id-Version: glance 11.0.0.0b4.dev52\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-18 06:12+0000\n"
+"POT-Creation-Date: 2015-09-23 14:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,9 +29,14 @@ msgstr ""
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr ""
 
-#: glance/scrubber.py:271
+#: glance/scrubber.py:280
 #, python-format
 msgid "Can not get scrub jobs from queue: %s"
+msgstr ""
+
+#: glance/scrubber.py:340
+#, python-format
+msgid "Unable to scrub image %(id)s from a location. Reason: %(exc)s "
 msgstr ""
 
 #: glance/api/common.py:57
@@ -69,7 +74,7 @@ msgstr ""
 msgid "Checksum header is missing."
 msgstr ""
 
-#: glance/api/v1/images.py:622
+#: glance/api/v1/images.py:623
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr ""
@@ -112,15 +117,15 @@ msgstr ""
 msgid "Failed to delete namespace %(namespace)s "
 msgstr ""
 
-#: glance/api/v3/artifacts.py:380 glance/api/v3/artifacts.py:385
+#: glance/api/v3/artifacts.py:393 glance/api/v3/artifacts.py:398
 msgid "Failed to upload artifact blob data due to HTTP error"
 msgstr ""
 
-#: glance/api/v3/artifacts.py:391
+#: glance/api/v3/artifacts.py:404
 msgid "Failed to upload artifact blob data due to internal error"
 msgstr ""
 
-#: glance/api/v3/artifacts.py:436
+#: glance/api/v3/artifacts.py:449
 #, python-format
 msgid "Unable to restore artifact %(artifact_id)s: %(e)s"
 msgstr ""
@@ -130,7 +135,7 @@ msgstr ""
 msgid "Failed to delete blob %(blob_id)s from store: %(exc)s"
 msgstr ""
 
-#: glance/artifacts/location.py:168
+#: glance/artifacts/location.py:170
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for blob %s but all have "
@@ -285,15 +290,15 @@ msgstr ""
 msgid "Task not found for task_id %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:347
+#: glance/db/sqlalchemy/artifacts.py:348
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:534
+#: glance/db/sqlalchemy/artifacts.py:561
 msgid "Cannot use this parameter with the operator IN"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:541
+#: glance/db/sqlalchemy/artifacts.py:569
 #, python-format
 msgid "Operator %s is not supported"
 msgstr ""
@@ -374,7 +379,7 @@ msgstr ""
 msgid "Registry client request %(method)s %(action)s raised %(exc_name)s"
 msgstr ""
 
-#: glance/tests/functional/v2/test_metadef_resourcetypes.py:99
+#: glance/tests/functional/v2/test_metadef_resourcetypes.py:97
 #, python-format
 msgid "Forbidden to create resource type. Reason: %(reason)s"
 msgstr ""

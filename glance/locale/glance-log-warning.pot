@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b3.dev1\n"
+"Project-Id-Version: glance 11.0.0.0b4.dev52\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-31 06:45+0000\n"
+"POT-Creation-Date: 2015-09-23 14:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.0\n"
 
-#: glance/scrubber.py:280
+#: glance/scrubber.py:317
 #, python-format
-msgid "Unable to delete URI from image %s."
+msgid ""
+"One or more image locations couldn't be scrubbed from backend. Leaving "
+"image '%s' in 'pending_delete' status"
 msgstr ""
 
 #: glance/api/common.py:170
@@ -36,35 +38,31 @@ msgid ""
 "exceed the quota. %(remaining)d bytes remaining."
 msgstr ""
 
-#: glance/api/middleware/version_negotiation.py:67
-msgid "Unknown version. Returning version choices."
-msgstr ""
-
-#: glance/api/v1/images.py:724
+#: glance/api/v1/images.py:726
 #, python-format
 msgid ""
 "Failed to activate image %s in registry. About to delete image bits from "
 "store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:969
+#: glance/api/v2/images.py:972
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
 "properties"
 msgstr ""
 
-#: glance/api/v2/tasks.py:75
+#: glance/api/v2/tasks.py:73
 #, python-format
 msgid "Forbidden to create task. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:113
+#: glance/api/v2/tasks.py:111
 #, python-format
 msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:119
+#: glance/api/v2/tasks.py:117
 #, python-format
 msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
 msgstr ""
@@ -103,7 +101,7 @@ msgstr ""
 msgid "Failed to delete image %s in store from URI"
 msgstr ""
 
-#: glance/common/wsgi.py:331
+#: glance/common/wsgi.py:329
 #, python-format
 msgid "Unrecognised child %s"
 msgstr ""
@@ -136,17 +134,17 @@ msgstr ""
 msgid "Unable to get unowned image"
 msgstr ""
 
-#: glance/db/simple/api.py:909
+#: glance/db/simple/api.py:910
 #, python-format
 msgid "Could not find task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:914
+#: glance/db/simple/api.py:915
 #, python-format
 msgid "Unable to get deleted task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:1075
+#: glance/db/simple/api.py:1076
 #, python-format
 msgid "Could not find task info %s"
 msgstr ""
@@ -163,41 +161,41 @@ msgstr ""
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:135
+#: glance/db/sqlalchemy/artifacts.py:136
 msgid "Artifact with the specified type, name and version already exists"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:240
+#: glance/db/sqlalchemy/artifacts.py:242
 #, python-format
 msgid "Artifact with id=%s not found"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:243
+#: glance/db/sqlalchemy/artifacts.py:245
 #, python-format
 msgid "Artifact with id=%s is not accessible"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:423
+#: glance/db/sqlalchemy/artifacts.py:445
 #, python-format
 msgid "Show level %s is not supported in this operation"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:655
+#: glance/db/sqlalchemy/artifacts.py:686
 #, python-format
 msgid ""
 "Artifact with the specified type, name and versions already has the "
 "direct dependency=%s"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:685
+#: glance/db/sqlalchemy/artifacts.py:716
 #, python-format
 msgid ""
 "Artifact with the specified type, name and version already has the direct"
 " dependency=%d"
 msgstr ""
 
-#: glance/db/sqlalchemy/metadata.py:349 glance/db/sqlalchemy/metadata.py:357
-#: glance/db/sqlalchemy/metadata.py:366
+#: glance/db/sqlalchemy/metadata.py:353 glance/db/sqlalchemy/metadata.py:361
+#: glance/db/sqlalchemy/metadata.py:370
 #, python-format
 msgid "Duplicate entry for values: %s"
 msgstr ""
@@ -207,7 +205,7 @@ msgstr ""
 msgid "Metadata tag not found for id %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:92
+#: glance/db/sqlalchemy/migrate_repo/versions/017_quote_encrypted_swift_credentials.py:90
 #, python-format
 msgid "Failed to decrypt location value for image %(image_id)s"
 msgstr ""
@@ -257,7 +255,7 @@ msgid "Failed to delete file %(path)s. Got error: %(e)s"
 msgstr ""
 
 #: glance/image_cache/drivers/sqlite.py:495
-#: glance/image_cache/drivers/xattr.py:447
+#: glance/image_cache/drivers/xattr.py:445
 #, python-format
 msgid "Cached image file '%s' doesn't exist, unable to delete"
 msgstr ""
@@ -268,25 +266,25 @@ msgid "Invalid marker. Image %(id)s could not be found."
 msgstr ""
 
 #: glance/registry/api/v1/images.py:132 glance/registry/api/v1/members.py:77
-#: glance/registry/api/v1/members.py:112 glance/registry/api/v1/members.py:230
-#: glance/registry/api/v1/members.py:294
+#: glance/registry/api/v1/members.py:112 glance/registry/api/v1/members.py:231
+#: glance/registry/api/v1/members.py:296
 #, python-format
 msgid "Access denied to image %(id)s but returning 'not found'"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:119 glance/registry/api/v1/members.py:237
-#: glance/registry/api/v1/members.py:301
+#: glance/registry/api/v1/members.py:119 glance/registry/api/v1/members.py:238
+#: glance/registry/api/v1/members.py:303
 #, python-format
 msgid "User lacks permission to share image %(id)s"
 msgstr ""
 
 #: glance/registry/api/v1/members.py:130 glance/registry/api/v1/members.py:147
-#: glance/registry/api/v1/members.py:250
+#: glance/registry/api/v1/members.py:251
 #, python-format
 msgid "Invalid membership association specified for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:340
+#: glance/registry/api/v1/members.py:342
 #, python-format
 msgid "Member %(id)s not found"
 msgstr ""
