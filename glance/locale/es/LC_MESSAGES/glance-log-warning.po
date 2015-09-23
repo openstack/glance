@@ -4,12 +4,13 @@
 #
 # Translators:
 # Adriana Chisco Landazábal <achisco94@gmail.com>, 2015
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: Glance\n"
+"Project-Id-Version: glance 11.0.0.0b4.dev52\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-08-14 06:02+0000\n"
-"PO-Revision-Date: 2015-07-15 00:39+0000\n"
+"POT-Creation-Date: 2015-09-23 14:29+0000\n"
+"PO-Revision-Date: 2015-07-15 12:39+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Spanish (http://www.transifex.com/openstack/glance/language/"
 "es/)\n"
@@ -19,6 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Zanata 3.7.1\n"
 
 #, python-format
 msgid ""
@@ -229,10 +231,6 @@ msgstr ""
 "No hay formato de conversión, por favor agregue un valor para éste en el "
 "fichero de configuración para esta tarea en el trabajo: %s"
 
-#, python-format
-msgid "Unable to delete URI from image %s."
-msgstr "No se puede eliminar URI de imagen %s."
-
 msgid "Unable to get deleted image"
 msgstr "No se ha podido obtener una imagen suprimida"
 
@@ -242,9 +240,6 @@ msgstr "No se puede obtener tarea eliminada %s"
 
 msgid "Unable to get unowned image"
 msgstr "No se ha podido obtener una imagen que no es de su propiedad"
-
-msgid "Unknown version. Returning version choices."
-msgstr "Versión desconocida. Se van a devolver las opciones de versión."
 
 #, python-format
 msgid "Unrecognised child %s"

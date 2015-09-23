@@ -8,9 +8,9 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b4.dev25\n"
+"Project-Id-Version: glance 11.0.0.0b4.dev52\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-18 06:12+0000\n"
+"POT-Creation-Date: 2015-09-23 14:29+0000\n"
 "PO-Revision-Date: 2015-06-23 01:20+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/openstack/"
@@ -98,10 +98,6 @@ msgid ""
 msgstr ""
 "Imagem %s não pôde ser encontrada após o envio. A imagem pode ter sido "
 "excluída durante o envio."
-
-#, python-format
-msgid "Image %s has been deleted."
-msgstr "Imagem %s foi excluída."
 
 #, python-format
 msgid "Image %s is being synced"

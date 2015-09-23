@@ -1,0 +1,2803 @@
+# Portuguese (Brazil) translations for glance.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the glance project.
+#
+# Translators:
+# Gabriel Wainer, 2013
+# Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>, 2014
+# Volmar Oliveira Junior <volmar.oliveira.jr@gmail.com>, 2013
+# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: glance 11.0.0.0b4.dev33\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-09-23 14:29+0000\n"
+"PO-Revision-Date: 2015-09-04 12:45+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"Language-Team: Portuguese (Brazil) (http://www.transifex.com/openstack/"
+"glance/language/pt_BR/)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+#, python-format
+msgid "%(attribute)s have to be string"
+msgstr "%(attribute)s precisa ser uma sequência"
+
+#, python-format
+msgid "%(attribute)s is required"
+msgstr "%(attribute)s é necessário"
+
+#, python-format
+msgid "%(attribute)s may not be longer than %(length)i"
+msgstr "%(attribute)s não pode ser mais longo que %(length)i"
+
+#, python-format
+msgid "%(attribute)s may not be shorter than %(length)i"
+msgstr "%(attribute)s não pode ser mais curto que %(length)i"
+
+#, python-format
+msgid "%(attribute)s should match pattern %(pattern)s"
+msgstr "%(attribute)s deve corresponder ao padrão %(pattern)s"
+
+#, python-format
+msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
+msgstr "exceção %(cls)s foi disparada na última chamada RPC: %(val)s"
+
+#, python-format
+msgid "%(serv)s (pid %(pid)s) is running..."
+msgstr "%(serv)s (pid %(pid)s) está em execução..."
+
+#, python-format
+msgid "%(serv)s appears to already be running: %(pid)s"
+msgstr "%(serv)s parece já estar em execução: %(pid)s"
+
+#, python-format
+msgid ""
+"%(strategy)s is registered as a module twice. %(module)s is not being used."
+msgstr ""
+"%(strategy)s é registrado como um módulo duas vezes. %(module)s não está "
+"sendo usado."
+
+#, python-format
+msgid ""
+"%(task_id)s of %(task_type)s not configured properly. Could not load the "
+"filesystem store"
+msgstr ""
+"%(task_id)s de %(task_type)s não foi configurado adequadamente. Não foi "
+"possível carregar o armazenamento de sistema de arquivos"
+
+#, python-format
+msgid ""
+"%(task_id)s of %(task_type)s not configured properly. Missing work dir: "
+"%(work_dir)s"
+msgstr ""
+"%(task_id)s de %(task_type)s não foi configurado adequadamente. Faltando o "
+"diretório de trabalho: %(work_dir)s"
+
+#, python-format
+msgid "%(verb)sing %(serv)s"
+msgstr "%(verb)sing %(serv)s"
+
+#, python-format
+msgid "%(verb)sing %(serv)s with %(conf)s"
+msgstr "%(verb)sing %(serv)s com %(conf)s"
+
+#, python-format
+msgid ""
+"%s Please specify a host:port pair, where host is an IPv4 address, IPv6 "
+"address, hostname, or FQDN. If using an IPv6 address, enclose it in brackets "
+"separately from the port (i.e., \"[fe80::a:b:c]:9876\")."
+msgstr ""
+"%s Especifique um par host:porta, em que o host é um endereço IPv4, IPv6, "
+"nome do host ou FQDN. Se você estiver usando um endereço IPv6, coloque-o nos "
+"suportes separadamente da porta (ou seja, \"[fe80::a:b:c]:9876\")."
+
+#, python-format
+msgid "%s can't contain 4 byte unicode characters."
+msgstr "%s não pode conter caracteres de unicode de 4 bytes."
+
+#, python-format
+msgid "%s is already stopped"
+msgstr "%s já está parado"
+
+#, python-format
+msgid "%s is stopped"
+msgstr "%s está parado"
+
+msgid ""
+"--os_auth_url option or OS_AUTH_URL environment variable required when "
+"keystone authentication strategy is enabled\n"
+msgstr ""
+"opção --os_auth_url ou variável de ambiente OS_AUTH_URL requerida quando "
+"estratégia de autenticação keystone está ativada\n"
+
+msgid ""
+"A list of artifacts that are allowed in the format name or name-version. "
+"Empty list means that any artifact can be loaded."
+msgstr ""
+"Uma lista de artefatos que são permtiidos no nome do formato ou na versão do "
+"nome. Uma lista vazia significa que qualquer artefato pode ser carregado."
+
+#, python-format
+msgid ""
+"A metadata definition object with name=%(object_name)s already exists in "
+"namespace=%(namespace_name)s."
+msgstr ""
+"Um objeto de definição de metadados com o nome=%(object_name)s já existe no "
+"namespace=%(namespace_name)s."
+
+#, python-format
+msgid ""
+"A metadata definition property with name=%(property_name)s already exists in "
+"namespace=%(namespace_name)s."
+msgstr ""
+"Uma propriedade de definição de metadados com o nome=%(property_name)s já "
+"existe no namespace=%(namespace_name)s."
+
+#, python-format
+msgid ""
+"A metadata definition resource-type with name=%(resource_type_name)s already "
+"exists."
+msgstr ""
+"Um tipo de recurso de definição de metadados com o nome="
+"%(resource_type_name)s já existe."
+
+#, python-format
+msgid ""
+"A metadata tag with name=%(name)s already exists in namespace="
+"%(namespace_name)s."
+msgstr ""
+"Uma identificação de metadados com o nome=%(name)s já existe no namespace="
+"%(namespace_name)s."
+
+msgid "A set of URLs to access the image file kept in external store"
+msgstr ""
+"Um conjunto de URLs para acessar o arquivo de imagem mantido em "
+"armazenamento externo"
+
+msgid ""
+"AES key for encrypting store 'location' metadata. This includes, if used, "
+"Swift or S3 credentials. Should be set to a random string of length 16, 24 "
+"or 32 bytes"
+msgstr ""
+"A chave AES para criptografar metadados 'location' de armazenamento. Isso "
+"inclui, se usado, Credenciais Swift ou S3. Deve ser configurado para uma "
+"sequência aleatória de comprimento de 16, 24 ou 32 bytes"
+
+msgid ""
+"Address to bind the server.  Useful when selecting a particular network "
+"interface."
+msgstr ""
+"Endereço para associar o servidor. Útil quando selecionando uma interface "
+"de  rede particular."
+
+msgid "Address to find the registry server."
+msgstr "Endereço para encontrar o servidor de registro."
+
+msgid ""
+"Allow unauthenticated users to access the API with read-only privileges. "
+"This only applies when using ContextMiddleware."
+msgstr ""
+"Permite usuários não autenticados acessarem a API com privilégios de somente "
+"leitura. Isto só se aplica quando utilizando ContextMiddleware."
+
+#, python-format
+msgid "Allowed values %s are invalid under given validators"
+msgstr "Os valores permitidos %s são inválidos nos validadores fornecidos"
+
+msgid "Amount of disk space (in GB) required to boot image."
+msgstr ""
+"Quantidade de espaço em disco (em GB) necessária para a imagem de "
+"inicialização."
+
+msgid "Amount of ram (in MB) required to boot image."
+msgstr "Quantidade de ram (em MB) necessária para a imagem de inicialização."
+
+msgid "An identifier for the image"
+msgstr "Um identificador para a imagem"
+
+msgid "An identifier for the image member (tenantId)"
+msgstr "Um identificador para o membro de imagem (tenantId)"
+
+msgid "An identifier for the owner of this task"
+msgstr "Um identificador para o proprietário desta tarefa"
+
+msgid "An identifier for the task"
+msgstr "Um identificador para a tarefa"
+
+#, python-format
+msgid "An image with identifier %s already exists"
+msgstr "Uma imagem com o identificador %s já existe"
+
+msgid "An object with the same identifier already exists."
+msgstr "Um objeto com o mesmo identificador já existe."
+
+msgid "An object with the same identifier is currently being operated on."
+msgstr "Um objeto com o mesmo identificador está atualmente sendo operado."
+
+msgid "An object with the specified identifier was not found."
+msgstr "Um objeto com o identificador especificado não foi localizado."
+
+msgid "An unknown exception occurred"
+msgstr "Ocorreu uma exceção desconhecida"
+
+msgid "An unknown task exception occurred"
+msgstr "Ocorreu uma exceção de tarefa desconhecida"
+
+msgid "Array property can't have item_type=Array"
+msgstr "A propriedade matriz não pode ter item_type=Array"
+
+#, python-format
+msgid "Artifact cannot change state from %(source)s to %(target)s"
+msgstr "O artefato não pode alterar o estado de %(source)s para %(target)s"
+
+#, python-format
+msgid "Artifact has no property %(prop)s"
+msgstr "O artefato não possui a propriedade %(prop)s"
+
+#, python-format
+msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
+msgstr "O estado do artefato não pode ser alterado de %(curr)s para %(to)s"
+
+#, python-format
+msgid ""
+"Artifact type with name '%(name)s' and version '%(version)s' is not known"
+msgstr ""
+"O tipo de artefato com nome '%(name)s' e versão '%(version)s' não é conhecido"
+
+#, python-format
+msgid "Artifact with id=%(id)s is not accessible"
+msgstr "O artefato com ID=%(id)s não é acessível"
+
+#, python-format
+msgid "Artifact with id=%(id)s was not found"
+msgstr "O artefato com ID=%(id)s não foi localizado"
+
+msgid "Artifact with the specified type, name and version already exists"
+msgstr "O artefato com o tipo, o nome e a versão especificados já existe"
+
+#, python-format
+msgid ""
+"Artifact with the specified type, name and version already has the direct "
+"dependency=%(dep)s"
+msgstr ""
+"O artefato com o tipo, o nome e a versão especificados já possui a "
+"dependência direta=%(dep)s"
+
+#, python-format
+msgid ""
+"Artifact with the specified type, name and version already has the "
+"transitive dependency=%(dep)s"
+msgstr ""
+"O artefato com o tipo, o nome e a versão especificados já possui a "
+"dependência transitiva=%(dep)s"
+
+msgid "Attempt to set readonly property"
+msgstr "Tentativa de configurar a propriedade somente leitura"
+
+msgid "Attempt to set value of immutable property"
+msgstr "Tentativa de configurar o valor da propriedade imutável"
+
+#, python-format
+msgid "Attempt to upload duplicate image: %s"
+msgstr "Tentativa de fazer upload de imagem duplicada: %s"
+
+msgid "Attempted to update Location field for an image not in queued status."
+msgstr ""
+"Tentativa de atualizar o campo Local para uma imagem não está no status em "
+"fila."
+
+#, python-format
+msgid "Attribute '%(property)s' is read-only."
+msgstr "O atributo '%(property)s' é somente leitura."
+
+#, python-format
+msgid "Attribute '%(property)s' is reserved."
+msgstr "O atributo '%(property)s' é reservado."
+
+#, python-format
+msgid "Attribute '%s' is read-only."
+msgstr "Atributo '%s' é apenas leitura."
+
+#, python-format
+msgid "Attribute '%s' is reserved."
+msgstr "Atributo '%s' é reservado."
+
+msgid "Attribute container_format can be only replaced for a queued image."
+msgstr ""
+"Atributo container_format pode ser apenas substituído por uma imagem na fila."
+
+msgid "Attribute disk_format can be only replaced for a queued image."
+msgstr ""
+"Atributo disk_format pode ser apenas substituído por uma imagem na fila."
+
+msgid ""
+"Auth key for the user authenticating against the Swift authentication "
+"service. (deprecated)"
+msgstr ""
+"A chave de autenticação do usuário autenticado com relação ao serviço de "
+"autenticação Swift. (descontinuado)"
+
+#, python-format
+msgid "Auth service at URL %(url)s not found."
+msgstr "Serviço de autenticação na URL %(url)s não localizado."
+
+msgid "Authorization failed."
+msgstr "Falha de autorização."
+
+#, python-format
+msgid "Bad Command: %s"
+msgstr "Comandos inválidos: %s"
+
+#, python-format
+msgid "Bad header: %(header_name)s"
+msgstr "Cabeçalho inválido: %(header_name)s"
+
+#, python-format
+msgid "Bad value passed to filter %(filter)s got %(val)s"
+msgstr "Valor inválido passado para o filtro %(filter)s obteve %(val)s"
+
+#, python-format
+msgid "Badly formed S3 URI: %(uri)s"
+msgstr "URI S3 malformado: %(uri)s"
+
+#, python-format
+msgid "Badly formed credentials '%(creds)s' in Swift URI"
+msgstr "Credenciais malformadas '%(creds)s' no URI Swift"
+
+msgid "Badly formed credentials in Swift URI."
+msgstr "Credenciais malformadas no URI Swift."
+
+msgid "Base directory that the Image Cache uses."
+msgstr "Diretório base que o Cache de Imagens utiliza."
+
+#, python-format
+msgid "Blob %(name)s may not have multiple values"
+msgstr "O BLOB %(name)s não pode ter diversos valores"
+
+msgid "Blob size is not set"
+msgstr "O tamanho do BLOB não está configurado"
+
+msgid "Body expected in request."
+msgstr "Corpo esperado na solicitação."
+
+msgid "Both file and legacy_image_id may not be specified at the same time"
+msgstr ""
+"O arquivo e o legacy_image_id não podem ser especificados ao mesmo tempo"
+
+msgid "CA certificate file to use to verify connecting clients."
+msgstr ""
+"Arquivo de certificado CA a ser utilizado para verifcar os clientes que se "
+"conectam."
+
+msgid "Cannot be a negative value"
+msgstr "Não pode ser um valor negativo"
+
+#, python-format
+msgid "Cannot convert image %(key)s '%(value)s' to an integer."
+msgstr ""
+"Não é possível converter a imagem %(key)s '%(value)s' para um número inteiro."
+
+msgid "Cannot declare artifact property with reserved name 'metadata'"
+msgstr ""
+"Não é possível declarar a propriedade de artefato com o nome reservado "
+"'metadata'"
+
+#, python-format
+msgid "Cannot load artifact '%(name)s'"
+msgstr "Não é possível carregar o artefato '%(name)s'"
+
+msgid "Cannot replace locations from a non-empty list to a non-empty list."
+msgstr ""
+"Não é possível substituir localidades de uma lista não-vazia para uma lista "
+"não-vazia."
+
+#, python-format
+msgid "Cannot save data for image %(image_id)s: %(error)s"
+msgstr "Não é possível salvar os dados da imagem %(image_id)s: %(error)s"
+
+msgid "Cannot specify 'max_size' explicitly"
+msgstr "Não é possível especificar 'max_size' explicitamente"
+
+msgid "Cannot specify 'min_size' explicitly"
+msgstr "Não é possível especificar 'min_size' explicitamente"
+
+msgid "Cannot upload to an unqueued image"
+msgstr "Não é possível fazer upload para uma imagem fora da fila"
+
+#, python-format
+msgid "Cannot use this parameter with the operator %(op)s"
+msgstr "Não é possível usar este parâmetro com o operador %(op)s"
+
+msgid "Certificate file to use when starting API server securely."
+msgstr ""
+"Arquivo de certificado a ser utilizado quando iniciar o servidor de API de "
+"forma segura."
+
+#, python-format
+msgid "Checksum verification failed. Aborted caching of image '%s'."
+msgstr ""
+"A soma de verificação falhou. Interrompido o armazenamento em cache da "
+"imagem '%s'."
+
+msgid "Client disconnected before sending all data to backend"
+msgstr "Cliente desconectado antes de enviar todos os dados para o backend"
+
+msgid "Command not found"
+msgstr "Comando não encontrado"
+
+msgid "Configuration option was not valid"
+msgstr "A opção de configuração não era válida"
+
+#, python-format
+msgid "Connect error/bad request to Auth service at URL %(url)s."
+msgstr ""
+"Erro de conexão/solicitação inválida para serviço de autenticação na URL "
+"%(url)s."
+
+#, python-format
+msgid "Constructed URL: %s"
+msgstr "URL construída: %s"
+
+msgid "Content-Type must be application/octet-stream"
+msgstr "Tipo de Conteúdo deve ser application/octet-stream"
+
+#, python-format
+msgid "Corrupt image download for image %(image_id)s"
+msgstr "Download de imagem corrompido para a imagem %(image_id)s"
+
+#, python-format
+msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
+msgstr ""
+"Não foi possível ligar a %(host)s:%(port)s depois de tentar por 30 segundos"
+
+#, python-format
+msgid "Could not find metadata object %s"
+msgstr "Não foi possível localizar o objeto de metadados %s"
+
+#, python-format
+msgid "Could not find metadata tag %s"
+msgstr "Não foi possível localizar a identificação de metadados %s"
+
+#, python-format
+msgid "Could not find namespace %s"
+msgstr "Não foi possível localizar o namespace %s"
+
+#, python-format
+msgid "Could not find property %s"
+msgstr "Não é possível localizar a propriedade %s"
+
+msgid "Could not find required configuration option"
+msgstr "Não foi possível localizar a opção de configuração necessária"
+
+#, python-format
+msgid "Could not find task %s"
+msgstr "Não foi possível localizar tarefa %s"
+
+#, python-format
+msgid "Could not update image: %s"
+msgstr "Não foi possível atualizar a imagem: %s"
+
+msgid "Custom validators list should contain tuples '(function, message)'"
+msgstr ""
+"A lista de validadores customizados deve conter tuplas '(função, mensagem)'"
+
+msgid "Data supplied was not valid."
+msgstr "Os dados fornecidos não eram válidos."
+
+msgid "Date and time of image member creation"
+msgstr "Data e hora da criação de membro da imagem"
+
+msgid "Date and time of image registration (READ-ONLY)"
+msgstr "Data e hora do registro da imagem (SOMENTE LEITURA)"
+
+msgid "Date and time of last modification of image member"
+msgstr "Data e hora da última modificação de membro da imagem"
+
+msgid "Date and time of namespace creation (READ-ONLY)"
+msgstr "Data e hora da criação do namespace (SOMENTE LEITURA)"
+
+msgid "Date and time of object creation (READ-ONLY)"
+msgstr "Data e hora da criação do objeto (SOMENTE LEITURA)"
+
+msgid "Date and time of resource type association (READ-ONLY)"
+msgstr "Data e hora da associação do tipo de recurso (SOMENTE LEITURA)"
+
+msgid "Date and time of tag creation (READ-ONLY)"
+msgstr "Data e hora da criação da identificação (SOMENTE LEITURA)"
+
+msgid "Date and time of the last image modification (READ-ONLY)"
+msgstr "Data e hora da última modificação da imagem (SOMENTE  LEITURA)"
+
+msgid "Date and time of the last namespace modification (READ-ONLY)"
+msgstr "Data e hora da última modificação do namespace (SOMENTE LEITURA)"
+
+msgid "Date and time of the last object modification (READ-ONLY)"
+msgstr "Data e hora da última modificação do objeto (SOMENTE LEITURA)"
+
+msgid ""
+"Date and time of the last resource type association modification (READ-ONLY)"
+msgstr ""
+"Data e hora da última modificação de associação de tipo de recurso "
+"(SOMENTELEITURA)"
+
+msgid "Date and time of the last tag modification (READ-ONLY)"
+msgstr "Data e hora da última modificação da identificação (SOMENTE LEITURA)"
+
+msgid "Datetime when this resource was created"
+msgstr "Data/hora quando este recurso foi criado"
+
+msgid "Datetime when this resource was updated"
+msgstr "Data/Hora quando este recurso foi atualizado"
+
+msgid "Datetime when this resource would be subject to removal"
+msgstr "Data/Hora quando este recurso deve ser objeto de remoção"
+
+msgid ""
+"Default value for the number of items returned by a request if not specified "
+"explicitly in the request"
+msgstr ""
+"Valor padrão para o número de itens retornados por uma solicitação se não "
+"especificado explicitamente na solicitação"
+
+msgid "Default value is invalid"
+msgstr "O valor padrão é inválido"
+
+#, python-format
+msgid "Denying attempt to upload image because it exceeds the quota: %s"
+msgstr "Negando a tentativa de upload da imagem porque ela excede a cota: %s"
+
+#, python-format
+msgid "Denying attempt to upload image larger than %d bytes."
+msgstr "Negando tentativa de fazer upload de imagem maior que %d bytes."
+
+msgid "Dependency relations cannot be mutable"
+msgstr "As relações de dependência não podem ser mutáveis"
+
+msgid "Deploy the v1 OpenStack Images API."
+msgstr "Implemente a API de Imagens OpenStack v1."
+
+msgid "Deploy the v1 OpenStack Registry API."
+msgstr "Implemente a API Registry OpenStack v1."
+
+msgid "Deploy the v2 OpenStack Images API."
+msgstr "Implemente a API de Imagens OpenStack v2."
+
+msgid "Deploy the v2 OpenStack Registry API."
+msgstr "Implemente a API Registry OpenStack v2."
+
+msgid "Descriptive name for the image"
+msgstr "Nome descritivo para a imagem"
+
+#, python-format
+msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
+msgstr ""
+"Determinando a versão da solicitação: %(method)s %(path)s Aceitar: %(accept)s"
+
+msgid "Dictionary contains unexpected key(s)"
+msgstr "O dicionário contém chave(s) inesperada(s)"
+
+msgid "Dictionary size is greater than maximum"
+msgstr "O tamanho do dicionário é maior que o máximo"
+
+msgid "Dictionary size is less than minimum"
+msgstr "O tamanho do dicionário é menor que o mínimo"
+
+msgid "Does not match pattern"
+msgstr "Não corresponde ao padrão"
+
+#, python-format
+msgid ""
+"Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
+msgstr ""
+"O driver %(driver_name)s não pôde ser configurado corretamente. Motivo: "
+"%(reason)s"
+
+msgid "Either a file or a legacy_image_id has to be specified"
+msgstr "Um arquivo ou um legacy_image_id precisa ser especificado"
+
+#, python-format
+msgid "Encountered service with no \"type\": %s"
+msgstr "Encontrado serviço sem nenhum \"tipo\": %s"
+
+msgid "Error in store configuration. Adding images to store is disabled."
+msgstr ""
+"Erro na configuração do armazenamento. A inclusão de imagens para "
+"armazenamento está desativada."
+
+#, python-format
+msgid "External sources are not supported: '%s'"
+msgstr "As fontes externas não são suportadas: '%s'"
+
+#, python-format
+msgid "Failed to activate image. Got error: %s"
+msgstr "Falha ao ativar imagem. Erro obtido: %s"
+
+#, python-format
+msgid "Failed to add image metadata. Got error: %s"
+msgstr "Falha ao incluir metadados da imagem. Erro obtido: %s"
+
+#, python-format
+msgid "Failed to find image %(image_id)s to delete"
+msgstr "Falhar ao localizar a imagem %(image_id)s para excluir"
+
+#, python-format
+msgid "Failed to find image to delete: %s"
+msgstr "Falha ao encontrar imagem para excluir: %s"
+
+#, python-format
+msgid "Failed to find image to update: %s"
+msgstr "Falha ao encontrar imagem para atualizar: %s"
+
+#, python-format
+msgid "Failed to find resource type %(resourcetype)s to delete"
+msgstr "Falha ao localizar o tipo de recurso %(resourcetype)s para excluir"
+
+#, python-format
+msgid "Failed to initialize the image cache database. Got error: %s"
+msgstr ""
+"Falha ao inicializar o banco de dados de cache da imagem. Erro obtido: %s"
+
+#, python-format
+msgid "Failed to read %s from config"
+msgstr "Falha ao ler %s da configuração"
+
+#, python-format
+msgid "Failed to reserve image. Got error: %s"
+msgstr "Falha ao reservar imagem. Erro obtido: %s"
+
+#, python-format
+msgid "Failed to update image metadata. Got error: %s"
+msgstr "Falha ao atualizar metadados da imagem. Erro obtido: %s"
+
+#, python-format
+msgid "Failed to upload image %s"
+msgstr "Falha ao enviar imagem %s"
+
+#, python-format
+msgid ""
+"Failed to upload image data for image %(image_id)s due to HTTP error: "
+"%(error)s"
+msgstr ""
+"Falha ao fazer upload dos dados de imagem para a imagem %(image_id)s devido "
+"a erro de HTTP: %(error)s"
+
+#, python-format
+msgid ""
+"Failed to upload image data for image %(image_id)s due to internal error: "
+"%(error)s"
+msgstr ""
+"Falha ao fazer upload dos dados de imagem para a imagem %(image_id)s devido "
+"a erro interno: %(error)s"
+
+msgid ""
+"File based imports are not allowed. Please use a non-local source of image "
+"data."
+msgstr ""
+"Importações baseadas em arquivo não são permitidas. Use uma fonte não local "
+"de dados de imagem."
+
+msgid "File too large"
+msgstr "Arquivo muito grande"
+
+msgid "File too small"
+msgstr "Arquivo muito pequeno"
+
+#, python-format
+msgid "Forbidden to delete a %s image."
+msgstr "Proibido excluir uma imagem %s."
+
+#, python-format
+msgid "Forbidden to delete image: %s"
+msgstr "Proibido excluir imagem: %s"
+
+#, python-format
+msgid "Forbidden to modify '%s' of active image."
+msgstr "Proibido modificar '%s' de imagem ativa."
+
+msgid "Forbidden to reserve image."
+msgstr "Proibido reservar imagem."
+
+msgid "Forbidden to update deleted image."
+msgstr "Proibido atualizar imagem excluída."
+
+#, python-format
+msgid "Forbidden to update image: %s"
+msgstr "Proibido atualizar imagem: %s"
+
+#, python-format
+msgid "Forbidden upload attempt: %s"
+msgstr "Tentativa de upload proibida: %s"
+
+#, python-format
+msgid "Forbidding request, metadata definition namespace=%s is not visible."
+msgstr ""
+"Proibindo solicitação, o namespace de definição de metadados=%s não é "
+"visível."
+
+#, python-format
+msgid "Forbidding request, task %s is not visible"
+msgstr "Proibindo solicitação, a tarefa %s não está visível"
+
+msgid "Format of the container"
+msgstr "Formato do contêiner"
+
+msgid "Format of the disk"
+msgstr "Formato do disco"
+
+#, python-format
+msgid "Get image %(id)s data failed: %(err)s."
+msgstr "Falha ao obter dados de imagem %(id)s: %(err)s."
+
+#, python-format
+msgid "Host \"%s\" is not valid."
+msgstr "Host \"%s\" não é válido."
+
+#, python-format
+msgid "Host and port \"%s\" is not valid."
+msgstr "Host e porta \"%s\" não são válidos."
+
+msgid ""
+"Human-readable informative message only included when appropriate (usually "
+"on failure)"
+msgstr ""
+"Mensagem informativa legível apenas incluída quando apropriado (geralmente "
+"em falha)"
+
+msgid "If False doesn't trace SQL requests."
+msgstr "Se Falso não rastreia as requisições SQL."
+
+msgid "If False fully disable profiling feature."
+msgstr "Se Falso desabilita completamente a funcionalidade de profilling."
+
+msgid ""
+"If False, server will return the header \"Connection: close\", If True, "
+"server will return \"Connection: Keep-Alive\" in its responses. In order to "
+"close the client socket connection explicitly after the response is sent and "
+"read successfully by the client, you simply have to set this option to False "
+"when you create a wsgi server."
+msgstr ""
+"Se False, o servidor retornará o cabeçalho \"Connection: close\", Se True, o "
+"servidor irá retornar \"Connection: Keep-Alive\" em suas respostas. Para "
+"pedir para fechar a conexão do soquete do cliente explicitamente depois que "
+"a resposta for enviada e lida com êxito pelo cliente, você simplesmente terá "
+"que configurar esta opção como False ao criar um servidor wsgi."
+
+msgid "If true, image will not be deletable."
+msgstr "Se true, a imagem não será excluível."
+
+msgid "If true, namespace will not be deletable."
+msgstr "Se verdadeiro, o namespace não poderá ser excluído."
+
+#, python-format
+msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
+msgstr ""
+"A imagem %(id)s não pôde ser excluída, pois ela está sendo usada: %(exc)s"
+
+#, python-format
+msgid "Image %(id)s not found"
+msgstr "Imagem %(id)s não localizada"
+
+#, python-format
+msgid ""
+"Image %(image_id)s could not be found after upload. The image may have been "
+"deleted during the upload: %(error)s"
+msgstr ""
+"Imagem %(image_id)s não pôde ser localizada após o upload. A imagem pode ter "
+"sido excluída durante o upload: %(error)s"
+
+#, python-format
+msgid "Image %(image_id)s is protected and cannot be deleted."
+msgstr "A imagem %(image_id)s está protegida e não pode ser excluída."
+
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload, cleaning up the chunks uploaded."
+msgstr ""
+"A imagem %s não pôde ser localizada após o upload. A imagem pode ter sido "
+"excluída durante o upload, limpando os chunks transferidos por upload."
+
+#, python-format
+msgid "Image %s is deactivated"
+msgstr "Imagem %s está desativada"
+
+#, python-format
+msgid "Image %s is not active"
+msgstr "A imagem %s não está ativa"
+
+#, python-format
+msgid "Image %s not found."
+msgstr "Imagem %s não localizada."
+
+#, python-format
+msgid "Image exceeds the storage quota: %s"
+msgstr "Imagem excede a cota de armazenamento: %s"
+
+msgid "Image id is required."
+msgstr "ID da imagem é obrigatório."
+
+msgid "Image is protected"
+msgstr "A imagem está protegida"
+
+#, python-format
+msgid "Image member limit exceeded for image %(id)s: %(e)s:"
+msgstr "O limite do membro da imagem excedido para imagem %(id)s: %(e)s:"
+
+#, python-format
+msgid "Image name too long: %d"
+msgstr "Nome da imagem muito longo: %d"
+
+msgid "Image operation conflicts"
+msgstr "Conflitos da operação de imagem"
+
+#, python-format
+msgid ""
+"Image status transition from %(cur_status)s to %(new_status)s is not allowed"
+msgstr ""
+"Transição de status de imagem de %(cur_status)s para %(new_status)s não é "
+"permitido"
+
+#, python-format
+msgid "Image storage media is full: %s"
+msgstr "A mídia de armazenamento da imagem está cheia: %s"
+
+#, python-format
+msgid "Image tag limit exceeded for image %(id)s: %(e)s:"
+msgstr ""
+"O limite de identificação da imagem excedeu para a imagem %(id)s: %(e)s:"
+
+#, python-format
+msgid "Image upload problem: %s"
+msgstr "Problema ao fazer upload de imagem: %s"
+
+#, python-format
+msgid "Image with identifier %s already exists!"
+msgstr "A imagem o identificador %s já existe!"
+
+#, python-format
+msgid "Image with identifier %s has been deleted."
+msgstr "Imagem com identificador %s foi excluída."
+
+#, python-format
+msgid "Image with identifier %s not found"
+msgstr "Imagem com identificador %s não localizada"
+
+#, python-format
+msgid ""
+"Incorrect auth strategy, expected \"%(expected)s\" but received "
+"\"%(received)s\""
+msgstr ""
+"Estratégia de autorização incorreta; esperava-se \"%(expected)s\", mas foi "
+"recebido \"%(received)s\""
+
+#, python-format
+msgid "Incorrect request: %s"
+msgstr "Requisição incorreta: %s"
+
+#, python-format
+msgid "Input does not contain '%(key)s' field"
+msgstr "A entrada não contém o campo '%(key)s'"
+
+#, python-format
+msgid "Insufficient permissions on image storage media: %s"
+msgstr "Permissões insuficientes na mídia de armazenamento da imagem: %s"
+
+#, python-format
+msgid "Invalid JSON pointer for this resource: '/%s'"
+msgstr "Ponteiro de JSON inválido para este recurso: '/%s'"
+
+msgid "Invalid configuration in glance-swift conf file."
+msgstr "Configuração inválida no arquivo de configuração glance-swift."
+
+msgid "Invalid configuration in property protection file."
+msgstr "Configuração inválida no arquivo de proteção de propriedade."
+
+#, python-format
+msgid "Invalid container format '%s' for image."
+msgstr "Formato de Contâiner inválido '%s' para imagem."
+
+#, python-format
+msgid "Invalid content type %(content_type)s"
+msgstr "Tipo de conteúdo inválido %(content_type)s"
+
+msgid "Invalid dict property type"
+msgstr "Tipo de propriedade de dicionário inválida"
+
+msgid "Invalid dict property type specification"
+msgstr "Especificação de tipo de propriedade de dicionário inválida"
+
+#, python-format
+msgid "Invalid disk format '%s' for image."
+msgstr "Formato de disco inválido '%s' para imagem."
+
+msgid "Invalid image id format"
+msgstr "Formato de ID da imagem inválido"
+
+msgid "Invalid item type specification"
+msgstr "Especificação de tipo de item inválida"
+
+msgid "Invalid jsonpatch request"
+msgstr "Solicitação de jsonpatch inválida"
+
+msgid "Invalid location"
+msgstr "Local inválido"
+
+#, python-format
+msgid "Invalid location: %s"
+msgstr "Localidade inválida: %s"
+
+#, python-format
+msgid ""
+"Invalid location_strategy option: %(name)s. The valid strategy option(s) "
+"is(are): %(strategies)s"
+msgstr ""
+"Opção location_strategy inválida: %(name)s. A(s) opção(ões) de estratégia(s) "
+"válida(s) é(são): %(strategies)s"
+
+msgid "Invalid locations"
+msgstr "Locais inválidos"
+
+#, python-format
+msgid "Invalid locations: %s"
+msgstr "Localidades inválidas: %s"
+
+msgid "Invalid marker format"
+msgstr "Formato de marcador inválido"
+
+msgid "Invalid marker. Image could not be found."
+msgstr "Marcador inválido. A imagem não pôde ser localizada."
+
+#, python-format
+msgid "Invalid membership association: %s"
+msgstr "Associação inválida: %s"
+
+msgid ""
+"Invalid mix of disk and container formats. When setting a disk or container "
+"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
+"match."
+msgstr ""
+"Combinação inválida de formatos de disco e contêiner. Ao configurar um "
+"formato de disco ou contêiner para um destes, 'aki', 'ari' ou 'ami', os "
+"formatos de contêiner e disco devem corresponder."
+
+msgid "Invalid position for adding a location."
+msgstr "Posição inválida para adicionar uma localidade."
+
+msgid "Invalid position for removing a location."
+msgstr "Posição inválida para remover uma localidade."
+
+msgid "Invalid property definition"
+msgstr "Definição de propriedade inválida"
+
+msgid "Invalid reference list specification"
+msgstr "Especificação de lista de referência inválida"
+
+msgid "Invalid referenced type"
+msgstr "Tipo referenciado inválido"
+
+msgid "Invalid service catalog json."
+msgstr "Catálogo de serviço json inválido."
+
+#, python-format
+msgid "Invalid sort direction: %s"
+msgstr "Direção de classificação inválida: %s"
+
+#, python-format
+msgid ""
+"Invalid sort key: %(sort_key)s. It must be one of the following: "
+"%(available)s."
+msgstr ""
+"Chave de classificação inválida: %(sort_key)s. Deve ser um dos seguintes: "
+"%(available)s."
+
+#, python-format
+msgid "Invalid status value: %s"
+msgstr "Valro de status inválido: %s"
+
+#, python-format
+msgid "Invalid status: %s"
+msgstr "Status inválido: %s"
+
+msgid "Invalid type definition"
+msgstr "Definição de tipo inválida"
+
+#, python-format
+msgid "Invalid type value: %s"
+msgstr "Valor de tipo inválido: %s"
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition namespace "
+"with the same name of %s"
+msgstr ""
+"Atualização inválida. Ela resultaria em uma propriedade de definição de "
+"metadados duplicada com o mesmo nome de %s"
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition object "
+"with the same name=%(name)s  in namespace=%(namespace_name)s."
+msgstr ""
+"Atualização inválida. Ela resultaria em um objeto de definição de metadados "
+"duplicado com o mesmo nome=%(name)s no namespace=%(namespace_name)s."
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition object "
+"with the same name=%(name)s in namespace=%(namespace_name)s."
+msgstr ""
+"Atualização inválida. Ela resultaria em um objeto de definição de metadados "
+"duplicado com o mesmo nome=%(name)s no namespace=%(namespace_name)s."
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition property "
+"with the same name=%(name)s in namespace=%(namespace_name)s."
+msgstr ""
+"Atualização inválida. Ela resultaria em uma propriedade de definição de "
+"metadados duplicada com o mesmo nome=%(name)s no namespace="
+"%(namespace_name)s."
+
+#, python-format
+msgid "Invalid value '%(value)s' for parameter '%(param)s': %(extra_msg)s"
+msgstr "Valor inválido '%(value)s' para o parâmetro '%(param)s': %(extra_msg)s"
+
+#, python-format
+msgid "Invalid value for option %(option)s: %(value)s"
+msgstr "Valor inválido para a opção %(option)s: %(value)s"
+
+#, python-format
+msgid "Invalid visibility value: %s"
+msgstr "Valor de visibilidade inválido: %s"
+
+msgid "Is not allowed value"
+msgstr "Não é um valor permitido"
+
+#, python-format
+msgid ""
+"It appears that the eventlet module has been imported prior to setting "
+"%s='yes'. It is currently necessary to disable eventlet.greendns if using "
+"ipv6 since eventlet.greendns currently breaks with ipv6 addresses. Please "
+"ensure that eventlet is not imported prior to this being set."
+msgstr ""
+"Parece que o módulo eventlet foi importado antes de configurar %s='yes'. "
+"Atualmente é necessário desativar eventlet.greendns se estiver usando ipv6, "
+"visto que o eventlet.greendns atualmente divide com endereços ipv6. Assegure-"
+"se de que eventlet não seja importado antes que este esteja sendo "
+"configurado."
+
+msgid "It's invalid to provide multiple image sources."
+msgstr "é inválido fornecer múltiplas fontes de imagens."
+
+msgid "Items have to be unique"
+msgstr "Os itens precisam ser exclusivos"
+
+msgid ""
+"Json path should start with a '/', end with no '/', no 2 subsequent '/' are "
+"allowed."
+msgstr ""
+"O caminho Json deve iniciar com uma '/', não deve terminar com uma '/' e "
+"duas '/' subsequentes não são permitidas."
+
+msgid "Legacy image was not found"
+msgstr "A imagem anterior não foi localizada"
+
+msgid "Length  is greater than maximum"
+msgstr "O comprimento é maior que o máximo"
+
+msgid "Length is less than minimum"
+msgstr "O comprimento é menor que o mínimo"
+
+msgid "List definitions may hot have defaults"
+msgstr "As definições de lista podem não ter padrões"
+
+msgid "List of strings related to the image"
+msgstr "Lista de sequências relacionadas à imagem"
+
+msgid "List size is greater than maximum"
+msgstr "O tamanho da lista é maior que o máximo"
+
+msgid "List size is less than minimum"
+msgstr "O tamanho da lista é menor que o mínimo"
+
+msgid "Loop time between checking for new items to schedule for delete."
+msgstr ""
+"Tempo de loop entre a verificação de novos itens para planejamento da "
+"exclusão."
+
+#, python-format
+msgid "Malformed Content-Range header: %s"
+msgstr "Cabeçalho de intervalo de conteúdo malformado: %s"
+
+msgid "Malformed JSON in request body."
+msgstr "JSON malformado no corpo da solicitação."
+
+msgid "Max string length may not exceed 255 characters"
+msgstr "O comprimento máximo de sequência não pode exceder 255 caracteres"
+
+msgid ""
+"Maximum line size of message headers to be accepted. max_header_line may "
+"need to be increased when using large tokens (typically those generated by "
+"the Keystone v3 API with big service catalogs"
+msgstr ""
+"Tamanho máximo da linha de cabeçalhos da mensagem a ser aceito. "
+"max_header_line pode precisar ser aumentada ao utilizar tokens grandes "
+"(geralmente aqueles gerados pela API Keystone v3 com catálogos de serviço "
+"grandes"
+
+msgid ""
+"Maximum number of image members per image. Negative values evaluate to "
+"unlimited."
+msgstr ""
+"Número máximo de membros da imagem por imagem. Valores negativos significam "
+"ilimitado."
+
+msgid ""
+"Maximum number of locations allowed on an image. Negative values evaluate to "
+"unlimited."
+msgstr ""
+"Número máximo de localizações permitidas em uma imagem. Valores negativos "
+"significam ilimitado."
+
+msgid ""
+"Maximum number of properties allowed on an image. Negative values evaluate "
+"to unlimited."
+msgstr ""
+"Número máximo de propriedades permitidas em uma imagem. Valores negativos "
+"significam ilimitado."
+
+msgid ""
+"Maximum number of tags allowed on an image. Negative values evaluate to "
+"unlimited."
+msgstr ""
+"Número máximo de tags permitidas em uma imagem. Valores negativos significam "
+"ilimitado."
+
+msgid "Maximum permissible number of items that could be returned by a request"
+msgstr ""
+"Número máximo permitido de itens que puderam ser retornados por uma "
+"solicitação"
+
+#, python-format
+msgid "Maximum redirects (%(redirects)s) was exceeded."
+msgstr "O máximo de redirecionamentos (%(redirects)s) foi excedido."
+
+msgid ""
+"Maximum size of image a user can upload in bytes. Defaults to 1099511627776 "
+"bytes (1 TB).WARNING: this value should only be increased after careful "
+"consideration and must be set to a value under 8 EB (9223372036854775808)."
+msgstr ""
+"Tamanho máximo de imagem que um usuário pode transferir por upload em bytes. "
+"O padrão é definido como 1099511627776 bytes (1 TB). AVISO: este valor só "
+"deve ser aumentado após uma consideração cuidadosa e deve ser configurado "
+"para um valor inferior a 8 EB (9223372036854775808)."
+
+#, python-format
+msgid "Member %(member_id)s is duplicated for image %(image_id)s"
+msgstr "O membro %(member_id)s é duplicado para a imagem %(image_id)s"
+
+msgid "Member can't be empty"
+msgstr "Membro não pode ser vazio"
+
+msgid "Member to be added not specified"
+msgstr "Membro a ser incluído não especificado"
+
+msgid "Membership could not be found."
+msgstr "Associação não pôde ser localizada."
+
+#, python-format
+msgid ""
+"Metadata definition namespace %(namespace)s is protected and cannot be "
+"deleted."
+msgstr ""
+"O namespace de definição de metadados %(namespace)s é protegido e não pode "
+"ser excluída."
+
+#, python-format
+msgid "Metadata definition namespace not found for id=%s"
+msgstr "Namespace de definição de metadados não localizado para o id=%s"
+
+#, python-format
+msgid "Metadata definition namespace=%(namespace_name)swas not found."
+msgstr ""
+"O namespace=%(namespace_name)s de definição de metadados não foi localizado."
+
+#, python-format
+msgid ""
+"Metadata definition object %(object_name)s is protected and cannot be "
+"deleted."
+msgstr ""
+"O objeto de definição de metadados %(object_name)s é protegido e não pode "
+"ser excluída."
+
+#, python-format
+msgid "Metadata definition object not found for id=%s"
+msgstr "Objeto de definição de metadados não localizado para o id=%s"
+
+#, python-format
+msgid ""
+"Metadata definition property %(property_name)s is protected and cannot be "
+"deleted."
+msgstr ""
+"A propriedade de definição de metadados %(property_name)s é protegida e não "
+"pode ser excluída."
+
+#, python-format
+msgid "Metadata definition property not found for id=%s"
+msgstr "Propriedade de definição de metadados não localizada para id=%s"
+
+#, python-format
+msgid ""
+"Metadata definition resource-type %(resource_type_name)s is a seeded-system "
+"type and cannot be deleted."
+msgstr ""
+"A definição de metadados resource-type %(resource_type_name)s é um tipo de "
+"sistema com valor sementee não pode ser excluída."
+
+#, python-format
+msgid ""
+"Metadata definition resource-type-association %(resource_type)s is protected "
+"and cannot be deleted."
+msgstr ""
+"A definição de metadados resource-type-association %(resource_type)s é "
+"protegida e não poderá ser excluída."
+
+#, python-format
+msgid ""
+"Metadata definition tag %(tag_name)s is protected and cannot be deleted."
+msgstr ""
+"A identificação da definição de metadados %(tag_name)s é protegida e não "
+"pode ser excluída."
+
+#, python-format
+msgid "Metadata definition tag not found for id=%s"
+msgstr "Identificação de definição de metadados não localizada para o id=%s"
+
+msgid "Min string length may not be negative"
+msgstr "O comprimento mín. de sequência não pode ser negativo"
+
+#, python-format
+msgid "Missing required credential: %(required)s"
+msgstr "Credencial necessária ausente: %(required)s"
+
+#, python-format
+msgid ""
+"Multiple 'image' service matches for region %(region)s. This generally means "
+"that a region is required and you have not supplied one."
+msgstr ""
+"Diversas correspondências do serviço de 'imagem' para a região %(region)s. "
+"Isso geralmente significa que uma região é necessária e você não a forneceu."
+
+msgid "Name of the paste configuration file."
+msgstr "Nome do arquivo de cola de configuração."
+
+msgid "No authenticated user"
+msgstr "Usuário não autenticado"
+
+msgid "No image data could be found"
+msgstr "Nenhum dado de imagem pôde ser localizado"
+
+#, python-format
+msgid "No image found with ID %s"
+msgstr "Nenhuma imagem encontrada com o ID %s"
+
+#, python-format
+msgid "No location found with ID %(loc)s from image %(img)s"
+msgstr "Nenhum local localizado com o ID %(loc)s da imagem %(img)s"
+
+msgid "No permission to share that image"
+msgstr "Nenhum permissão para compartilhar essa imagem"
+
+#, python-format
+msgid "No plugin for '%(name)s' has been loaded"
+msgstr "Nenhum plug-in para '%(name)s' foi carregado"
+
+msgid "Not a valid value type"
+msgstr "Não é um tipo de valor válido"
+
+#, python-format
+msgid "Not allowed to create members for image %s."
+msgstr "Não é permitido criar membros para a imagem %s."
+
+#, python-format
+msgid "Not allowed to deactivate image in status '%s'"
+msgstr "Não é permitido desativar a imagem no status '%s'"
+
+#, python-format
+msgid "Not allowed to delete members for image %s."
+msgstr "Não é permitido excluir membros para a imagem %s."
+
+#, python-format
+msgid "Not allowed to delete tags for image %s."
+msgstr "Não é permitido excluir identificações para a imagem %s."
+
+#, python-format
+msgid "Not allowed to list members for image %s."
+msgstr "Não é permitido listar os membros para a imagem %s."
+
+#, python-format
+msgid "Not allowed to reactivate image in status '%s'"
+msgstr "Não é permitido reativar a imagem no status '%s'"
+
+#, python-format
+msgid "Not allowed to update members for image %s."
+msgstr "Não é permitido atualizar os membros para a imagem %s."
+
+#, python-format
+msgid "Not allowed to update tags for image %s."
+msgstr "Não é permitido atualizar as identificações para a imagem %s."
+
+#, python-format
+msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
+msgstr ""
+"Não é permitido fazer upload de dados de imagem para a imagem %(image_id)s: "
+"%(error)s"
+
+msgid "Number of sort dirs does not match the number of sort keys"
+msgstr ""
+"O número de diretórios de classificação não corresponde ao número de chaves "
+"de classificação"
+
+msgid "Old and new sorting syntax cannot be combined"
+msgstr "A sintaxe de classificação nova e antiga não podem ser combinadas"
+
+#, python-format
+msgid "Operation \"%s\" requires a member named \"value\"."
+msgstr "A operação \"%s\" requer um membro denominado \"valor\"."
+
+msgid ""
+"Operation objects must contain exactly one member named \"add\", \"remove\", "
+"or \"replace\"."
+msgstr ""
+"Objetos de operação devem conter exatamente um membro denominado \"incluir"
+"\", \"remover\" ou \"substituir\"."
+
+msgid ""
+"Operation objects must contain only one member named \"add\", \"remove\", or "
+"\"replace\"."
+msgstr ""
+"Objetos de operação devem conter apenas um membro denominado \"incluir\", "
+"\"remover\" ou \"substituir\"."
+
+msgid "Operations must be JSON objects."
+msgstr "As operações devem ser objetos JSON."
+
+#, python-format
+msgid "Operator %(op)s is not supported"
+msgstr "O operador %(op)s não é suportado"
+
+#, python-format
+msgid "Original locations is not empty: %s"
+msgstr "Localidade original não está vazia: %s"
+
+msgid "Owner must be specified to create a tag."
+msgstr "O proprietário deve ser especificado para criar uma identificação."
+
+msgid "Owner of the image"
+msgstr "Proprietário da imagem"
+
+msgid "Owner of the namespace."
+msgstr "Proprietário do namespace."
+
+msgid "Param values can't contain 4 byte unicode."
+msgstr "Valores de parâmetro não podem conter unicode de 4 bytes."
+
+msgid ""
+"Partial name of a pipeline in your paste configuration file with the service "
+"name removed. For example, if your paste section name is [pipeline:glance-"
+"api-keystone] use the value \"keystone\""
+msgstr ""
+"Nome parcial de um pipeline no seu arquivo de cola de configuração com o "
+"nome de serviço removido. Por exemplo se sua seção de cola é [pipeline:"
+"glance-api-keystone] utilize o valor \"keystone\""
+
+msgid "Path to the directory where json metadata files are stored"
+msgstr ""
+"O caminho ao diretório em que os arquivos de metadados json estão armazenados"
+
+#, python-format
+msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
+msgstr ""
+"O nome do plug-in '%(plugin)s' deve corresponder ao nome do tipo de artefato "
+"'%(name)s'"
+
+#, python-format
+msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
+msgstr ""
+"O ponteiro `%s` contém \"~\" não parte de uma sequência de escape "
+"reconhecida."
+
+#, python-format
+msgid "Pointer `%s` contains adjacent \"/\"."
+msgstr "O ponteiro `%s` contém uma \"/\" adjacente."
+
+#, python-format
+msgid "Pointer `%s` does not contains valid token."
+msgstr "O ponteiro `%s` não contém um token válido."
+
+#, python-format
+msgid "Pointer `%s` does not start with \"/\"."
+msgstr "O ponteiro `%s` não começa com \"/\"."
+
+#, python-format
+msgid "Pointer `%s` end with \"/\"."
+msgstr "O ponteiro `%s` termina com \"/\"."
+
+msgid ""
+"Pointer contains '~' which is not part of a recognized escape sequence [~0, "
+"~1]."
+msgstr ""
+"O ponteiro contém '~', que não faz parte de uma sequência de escape "
+"reconhecida [~0, ~1]."
+
+#, python-format
+msgid "Port \"%s\" is not valid."
+msgstr "Porta \"%s\" não é válida."
+
+msgid "Port the registry server is listening on."
+msgstr "A porta em que o servidor de registro está escutando."
+
+#, python-format
+msgid "Prerelease numeric component is too large (%d characters max)"
+msgstr ""
+"O componente numérico pré-liberação é muito extenso (%d caracteres máx.)"
+
+msgid "Private key file to use when starting API server securely."
+msgstr ""
+"Chave privada a ser utilizada quando iniciar o servidor de API de forma "
+"segura."
+
+#, python-format
+msgid "Process %d not running"
+msgstr "O processo %d não está em execução"
+
+#, python-format
+msgid "Properties %s must be set prior to saving data."
+msgstr "As propriedades %s devem ser configuradas antes de salvar os dados."
+
+#, python-format
+msgid ""
+"Property %(property_name)s does not start with the expected resource type "
+"association prefix of '%(prefix)s'."
+msgstr ""
+"A propriedade %(property_name)s não começa com o prefixo de associação do "
+"tipo de recurso esperado de ‘%(prefix)s‘."
+
+#, python-format
+msgid "Property %s already present."
+msgstr "Propriedade %s já presente."
+
+#, python-format
+msgid "Property %s does not exist."
+msgstr "A propriedade %s não existe."
+
+#, python-format
+msgid "Property %s may not be removed."
+msgstr "A propriedade %s pode não ser removida."
+
+#, python-format
+msgid "Property %s must be set prior to saving data."
+msgstr "A propriedade %s deve ser configurada antes de salvar os dados."
+
+#, python-format
+msgid "Property '%(name)s' may not have value '%(val)s': %(msg)s"
+msgstr "A propriedade '%(name)s' pode não ter o valor '%(val)s': %(msg)s"
+
+#, python-format
+msgid "Property '%s' is protected"
+msgstr "Propriedade '%s' é protegida"
+
+msgid "Property names can't contain 4 byte unicode."
+msgstr "Os nomes de propriedade não podem conter unicode de 4 bytes."
+
+#, python-format
+msgid ""
+"Property protection on operation %(operation)s for rule %(rule)s is not "
+"found. No role will be allowed to perform this operation."
+msgstr ""
+"Proteção de propriedade na operação %(operation)s para a regra %(rule)s não "
+"localizada. Nenhuma função será permitida para executar esta operação."
+
+#, python-format
+msgid "Property's %(prop)s value has not been found"
+msgstr "O valor %(prop)s da propriedade não foi localizado"
+
+#, python-format
+msgid "Provided header feature is unsupported: %(feature)s"
+msgstr "O recurso de cabeçalho fornecido não é suportado: %(feature)s"
+
+#, python-format
+msgid ""
+"Provided image size must match the stored image size. (provided size: "
+"%(ps)d, stored size: %(ss)d)"
+msgstr ""
+"O tamanho da imagem fornecida deve corresponder ao tamanho da imagem "
+"armazenada. (tamanho fornecido: %(ps)d, tamanho armazenado:%(ss)d)"
+
+#, python-format
+msgid "Provided object does not match schema '%(schema)s': %(reason)s"
+msgstr "O objeto fornecido não corresponde ao esquema '%(schema)s': %(reason)s"
+
+#, python-format
+msgid "Provided status of task is unsupported: %(status)s"
+msgstr "Status de tarefa fornecido não é suportado: %(status)s"
+
+#, python-format
+msgid "Provided type of task is unsupported: %(type)s"
+msgstr "Tipo de tarefa fornecido não é suportado: %(type)s"
+
+msgid "Provides a user friendly description of the namespace."
+msgstr "Fornece uma descrição fácil do namespace."
+
+msgid "Public images do not have members."
+msgstr "As imagens não têm membros."
+
+msgid ""
+"Public url to use for versions endpoint. The default is None, which will use "
+"the request's host_url attribute to populate the URL base. If Glance is "
+"operating behind a proxy, you will want to change this to represent the "
+"proxy's URL."
+msgstr ""
+"URL pública para usar com terminal de versões. O padrão é Nenhum, que irá "
+"usar o atributo host_url da solicitação para preencher a base da URL. Se "
+"Glance estiver operacional por trás de um proxy, você desejará alterá-lo "
+"para representar a URL do proxy."
+
+msgid "Python module path of data access API"
+msgstr "Caminho do módulo Python do acesso de dados de API"
+
+msgid "Received invalid HTTP redirect."
+msgstr "Redirecionamento de HTTP inválido recebido."
+
+#, python-format
+msgid "Redirecting to %(uri)s for authorization."
+msgstr "Redirecionando para %(uri)s para obter autorização."
+
+#, python-format
+msgid "Registry service can't use %s"
+msgstr "Serviço de registro não pode utilizar %s"
+
+#, python-format
+msgid "Registry was not configured correctly on API server. Reason: %(reason)s"
+msgstr ""
+"O registro não foi configurado corretamente no servidor de API. Motivo: "
+"%(reason)s"
+
+#, python-format
+msgid "Relation %(name)s may not have multiple values"
+msgstr "A relação %(name)s não pode ter diversos valores"
+
+#, python-format
+msgid "Reload of %(serv)s not supported"
+msgstr "Recarregamento de %(serv)s não suportado"
+
+#, python-format
+msgid "Reloading %(serv)s (pid %(pid)s) with signal(%(sig)s)"
+msgstr "Recarregando %(serv)s (pid %(pid)s) com sinal (%(sig)s)"
+
+#, python-format
+msgid "Removing stale pid file %s"
+msgstr "Removendo o arquivo pid %s antigo"
+
+msgid "Request body must be a JSON array of operation objects."
+msgstr ""
+"O corpo da solicitação deve ser uma matriz JSON de objetos de operação."
+
+msgid "Request must be a list of commands"
+msgstr "Requisição deve ser uma lista de comandos"
+
+#, python-format
+msgid "Required store %s is invalid"
+msgstr "O armazenamento necessário %s é inválido"
+
+msgid ""
+"Resource type names should be aligned with Heat resource types whenever "
+"possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
+"html"
+msgstr ""
+"Os nomes do tipo de recurso devem estar alinhados aos tipos de recurso do "
+"Heat sempre que possível: http://docs.openstack.org/developer/heat/"
+"template_guide/openstack.html"
+
+msgid "Response from Keystone does not contain a Glance endpoint."
+msgstr "A resposta de Keystone não contém um terminal de Visão Rápida."
+
+msgid "Role used to identify an authenticated user as administrator."
+msgstr ""
+"Papel utilizado para identificar um usuário autenticado como administrador."
+
+msgid ""
+"Run as a long-running process. When not specified (the default) run the "
+"scrub operation once and then exits. When specified do not exit and run "
+"scrub on wakeup_time interval as specified in the config."
+msgstr ""
+"Executar como um processo de execução longa. Quando não especificado (o "
+"padrão), executa a operação de limpeza uma vez e depois sai. Quando "
+"especificado, não saia e execute a limpeza dentro do intervalo wakeup_time, "
+"conforme especificado na configuração."
+
+msgid "Scope of image accessibility"
+msgstr "Escopo de acessibilidade de imagem"
+
+msgid "Scope of namespace accessibility."
+msgstr "Escopo da acessibilidade do namespace."
+
+#, python-format
+msgid "Server %(serv)s is stopped"
+msgstr "O servidor %(serv)s foi interrompido"
+
+#, python-format
+msgid "Server worker creation failed: %(reason)s."
+msgstr "Falha na criação do trabalhador do servidor: %(reason)s."
+
+msgid ""
+"Set a system wide quota for every user. This value is the total capacity "
+"that a user can use across all storage systems. A value of 0 means unlimited."
+"Optional unit can be specified for the value. Accepted units are B, KB, MB, "
+"GB and TB representing Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes "
+"respectively. If no unit is specified then Bytes is assumed. Note that there "
+"should not be any space between value and unit and units are case sensitive."
+msgstr ""
+"Configure uma cota ampla do sistema para cada usuário. Esse valor é a "
+"capacidade total que um usuário pode usar em todos os sistemas de "
+"armazenamento. Um valor de 0 significa ilimitada. A unidade opcional pode "
+"ser especificada para o valor. Unidades aceitas são B, KB, MB, GB e TB que "
+"representa Bytes, Kilobytes, MegaBytes, GigaBytes e TeraBytes "
+"respectivamente. Se nenhuma unidade for especificada, então Bytes é "
+"assumido. Observe que não deve haver nenhum espaço entre o valor e unidade e "
+"unidades fazem distinção entre maiúsculas e minúsculas."
+
+#, python-format
+msgid "Show level %(shl)s is not supported in this operation"
+msgstr "Mostrar o nível %(shl)s não é suportado nesta operação"
+
+msgid "Size of image file in bytes (READ-ONLY)"
+msgstr "Tamanho da imagem em bytes (SOMENTE LEITURA)"
+
+msgid ""
+"Some resource types allow more than one key / value pair per instance.  For "
+"example, Cinder allows user and image metadata on volumes. Only the image "
+"properties metadata is evaluated by Nova (scheduling or drivers). This "
+"property allows a namespace target to remove the ambiguity."
+msgstr ""
+"Alguns tipos de recurso permitem mais de um par de chave/valor por "
+"instância.  Por exemplo, o Cinder permite metadados do usuário e da imagem "
+"em volumes. Somente os metadados de propriedades da imagem são avaliados "
+"pelo Nova (planejamento ou drivers). Essa propriedade permite que um destino "
+"de namespace remova a ambiguidade."
+
+msgid "Sort direction supplied was not valid."
+msgstr "A direção de classificação fornecida não era válida."
+
+msgid "Sort key supplied was not valid."
+msgstr "A chave de classificação fornecida não era válida."
+
+msgid ""
+"Specifies the prefix to use for the given resource type. Any properties in "
+"the namespace should be prefixed with this prefix when being applied to the "
+"specified resource type. Must include prefix separator (e.g. a colon :)."
+msgstr ""
+"Especifica o prefixo a ser usado para o tipo de recurso determinado. "
+"Qualquer propriedade no namespace deve ter esse prefixo ao ser aplicada ao "
+"tipo de recurso especificado. O separador de prefixo deve ser incluído (p. "
+"ex., dois pontos :)."
+
+msgid "Specifies which task executor to be used to run the task scripts."
+msgstr ""
+"Especifica qual executor da tarefa a ser utilizado para executar os scripts "
+"da tarefa."
+
+msgid "Status must be \"pending\", \"accepted\" or \"rejected\"."
+msgstr "O status deve ser \"pendente\", \"aceito\" ou \"rejeitado\"."
+
+msgid "Status not specified"
+msgstr "Status não especificado"
+
+msgid "Status of the image (READ-ONLY)"
+msgstr "Status da imagem (SOMENTE LEITURA)"
+
+#, python-format
+msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
+msgstr ""
+"Status de transição de %(cur_status)s para %(new_status)s não é permitido"
+
+#, python-format
+msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
+msgstr "Parando %(serv)s (pid %(pid)s) com sinal (%(sig)s)"
+
+#, python-format
+msgid "Store for image_id not found: %s"
+msgstr "Armazenamento de image_id não localizado: %s"
+
+#, python-format
+msgid "Store for scheme %s not found"
+msgstr "Armazenamento do esquema %s não localizado"
+
+#, python-format
+msgid ""
+"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
+"(%(actual)s) did not match. Setting image status to 'killed'."
+msgstr ""
+"%(attr)s fornecido (%(supplied)s) e %(attr)s gerado da imagem transferida "
+"por upload (%(actual)s) não corresponderam. Configurando o status da imagem "
+"para 'eliminado'."
+
+msgid "Supported values for the 'container_format' image attribute"
+msgstr "Valores suportados para o atributo de imagem 'container_format'"
+
+msgid "Supported values for the 'disk_format' image attribute"
+msgstr "Valores suportados para o atributo de imagem 'disk_format'"
+
+#, python-format
+msgid "Suppressed respawn as %(serv)s was %(rsn)s."
+msgstr "Novo spawn suprimido já que %(serv)s era %(rsn)s."
+
+msgid "System SIGHUP signal received."
+msgstr "Sinal SIGHUP do sistema recebido."
+
+#, python-format
+msgid "Task '%s' is required"
+msgstr "Tarefa '%s é obrigatória"
+
+msgid "Task does not exist"
+msgstr "A tarefa não existe"
+
+msgid "Task was not configured properly"
+msgstr "A tarefa não foi configurada adequadamente"
+
+#, python-format
+msgid "Task with the given id %(task_id)s was not found"
+msgstr "Tarefa com o ID fornecido %(task_id)s não foi localizada"
+
+msgid "The \"changes-since\" filter is no longer available on v2."
+msgstr "O filtro \" changes-since \" não está mais disponível na v2."
+
+#, python-format
+msgid "The CA file you specified %s does not exist"
+msgstr "O arquivo CA especificado %s não existe"
+
+#, python-format
+msgid ""
+"The Image %(image_id)s object being created by this task %(task_id)s, is no "
+"longer in valid status for further processing."
+msgstr ""
+"O objeto da Imagem %(image_id)s que está sendo criado por esta tarefa "
+"%(task_id)s não está mais no status válido para processamento adicional."
+
+msgid "The Store URI was malformed."
+msgstr "O URI de Armazenamento foi malformado."
+
+msgid ""
+"The URL to the keystone service. If \"use_user_token\" is not in effect and "
+"using keystone auth, then URL of keystone can be specified."
+msgstr ""
+"A URL para o serviço do keystone. Se \"use_user_token\" não estiver em vigor "
+"e utilizando uma autorização do keystone, então a URL do keystone pode ser "
+"especificada."
+
+msgid ""
+"The address where the Swift authentication service is listening.(deprecated)"
+msgstr ""
+"O endereço no qual o serviço de autenticação Swift está atendendo."
+"(descontinuado)"
+
+msgid ""
+"The administrators password. If \"use_user_token\" is not in effect, then "
+"admin credentials can be specified."
+msgstr ""
+"A senha do administrador. Se \"use_user_token\" não estiver em vigor, então "
+"as credenciais do administrador podem ser especificadas."
+
+msgid ""
+"The administrators user name. If \"use_user_token\" is not in effect, then "
+"admin credentials can be specified."
+msgstr ""
+"O nome de usuário do administrador. Se \"use_user_token\" não estiver em "
+"vigor, então as credenciais do administrador podem ser especificadas."
+
+msgid "The amount of time in seconds to delay before performing a delete."
+msgstr ""
+"A quantidade de tempo em segundos para esperar antes de realizar uma "
+"exclusão."
+
+msgid ""
+"The amount of time to let an image remain in the cache without being "
+"accessed."
+msgstr ""
+"O tempo para permitir que uma imagem permaneça no cache sem ser acessado."
+
+msgid ""
+"The backlog value that will be used when creating the TCP listener socket."
+msgstr ""
+"O valor de backlog que será utilizado quando se estiver criando o socket de "
+"escuta TCP."
+
+#, python-format
+msgid "The cert file you specified %s does not exist"
+msgstr "O arquivo de certificado especificado %s não existe"
+
+msgid "The config file that has the swift account(s)configs."
+msgstr "O arquivo de configuração que possui as configurações da conta swift."
+
+msgid "The current status of this task"
+msgstr "O status atual desta tarefa"
+
+#, python-format
+msgid ""
+"The device housing the image cache directory %(image_cache_dir)s does not "
+"support xattr. It is likely you need to edit your fstab and add the "
+"user_xattr option to the appropriate line for the device housing the cache "
+"directory."
+msgstr ""
+"O dispositivo no qual reside o diretório de cache de imagem "
+"%(image_cache_dir)s não suporta xattr. É provável que você precise editar "
+"fstab e incluir a opção user_xattr na linha apropriada do dispositivo que "
+"contém o diretório de cache."
+
+msgid "The driver to use for image cache management."
+msgstr "O driver a ser utilizado para o gerenciamento de cache de imagens."
+
+#, python-format
+msgid ""
+"The given uri is not valid. Please specify a valid uri from the following "
+"list of supported uri %(supported)s"
+msgstr ""
+"O URI fornecido não é válido. Especifique um uri válido a partir da seguinte "
+"lista de URI suportados %(supported)s"
+
+msgid "The hostname/IP of the pydev process listening for debug connections"
+msgstr ""
+"O nome do host/IP do processo pydev que atende às conexões de depuração"
+
+#, python-format
+msgid ""
+"The image %s is already present on the slave, but our check for it did not "
+"find it. This indicates that we do not have permissions to see all the "
+"images on the slave server."
+msgstr ""
+"A imagem %s já está presente no escravo, mas nossa verificação por ela não a "
+"encontrou. Isto indica que nós não possuímos permissões para ver toras as "
+"imagens no servidor escravo."
+
+#, python-format
+msgid "The incoming image is too large: %s"
+msgstr "A imagem recebida é muito grande: %s"
+
+#, python-format
+msgid "The key file you specified %s does not exist"
+msgstr "O arquivo-chave especificado %s não existe"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image locations. "
+"Attempted: %(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"O limite foi excedido no número de localizações de imagens permitidas. "
+"Tentativa: %(attempted)s, Máximo: %(maximum)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image members for this "
+"image. Attempted: %(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"O limite foi excedido no número de membros de imagem permitidos para esta "
+"imagem. Tentativa: %(attempted)s, Máximo: %(maximum)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image properties. "
+"Attempted: %(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"O limite foi excedido no número de propriedades de imagem permitidas. "
+"Tentativa: %(attempted)s, Máximo: %(maximum)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image properties. "
+"Attempted: %(num)s, Maximum: %(quota)s"
+msgstr ""
+"O limite foi excedido no número de propriedades de imagem permitidas. "
+"Tentativa: %(num)s, Máximo: %(quota)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image tags. Attempted: "
+"%(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"O limite foi excedido no número de tags de imagem permitidas. Tentativa: "
+"%(attempted)s, Máximo: %(maximum)s"
+
+#, python-format
+msgid "The location %(location)s already exists"
+msgstr "O local %(location)s já existe"
+
+#, python-format
+msgid "The location data has an invalid ID: %d"
+msgstr "Os dados da localização têm um ID inválido: %d"
+
+msgid ""
+"The location of the property protection file.This file contains the rules "
+"for property protections and the roles/policies associated with it. If this "
+"config value is not specified, by default, property protections won't be "
+"enforced. If a value is specified and the file is not found, then the glance-"
+"api service will not start."
+msgstr ""
+"O local do arquivo de proteção de propriedade. Esse arquivo contém as regras "
+"para proteções de propriedade e as funções/políticas associadas a ele. Se "
+"este valor de configuração não for especificado, por padrão, as proteções de "
+"propriedade não serão impostas. Se um valor for especificado e o arquivo não "
+"for encontrado, então o serviço glance-api não iniciará."
+
+#, python-format
+msgid ""
+"The metadata definition %(record_type)s with name=%(record_name)s not "
+"deleted. Other records still refer to it."
+msgstr ""
+"Definição de metadados %(record_type)s com o nome=%(record_name)s não "
+"excluída. Outros registros ainda se referem a ela."
+
+#, python-format
+msgid "The metadata definition namespace=%(namespace_name)s already exists."
+msgstr "O namespace de definição de metadados=%(namespace_name)s já existe."
+
+#, python-format
+msgid ""
+"The metadata definition object with name=%(object_name)s was not found in "
+"namespace=%(namespace_name)s."
+msgstr ""
+"O objeto de definição de metadados com o nome=%(object_name)s não foi "
+"localizado no namespace=%(namespace_name)s."
+
+#, python-format
+msgid ""
+"The metadata definition property with name=%(property_name)s was not found "
+"in namespace=%(namespace_name)s."
+msgstr ""
+"A propriedade de definição de metadados com o nome=%(property_name)s não foi "
+"localizada no namespace=%(namespace_name)s."
+
+#, python-format
+msgid ""
+"The metadata definition resource-type association of resource-type="
+"%(resource_type_name)s to namespace=%(namespace_name)s already exists."
+msgstr ""
+"A associação do tipo de recurso de definição de metadados do tipo derecurso="
+"%(resource_type_name)s ao namespace=%(namespace_name)s já existe."
+
+#, python-format
+msgid ""
+"The metadata definition resource-type association of resource-type="
+"%(resource_type_name)s to namespace=%(namespace_name)s, was not found."
+msgstr ""
+"A associação do tipo de recurso de definição de metadados do tipo derecurso="
+"%(resource_type_name)s ao namespace=%(namespace_name)s, não foi localizada."
+
+#, python-format
+msgid ""
+"The metadata definition resource-type with name=%(resource_type_name)s, was "
+"not found."
+msgstr ""
+"O tipo de recurso de definição de metadados com o nome="
+"%(resource_type_name)s, não foi localizado."
+
+#, python-format
+msgid ""
+"The metadata definition tag with name=%(name)s was not found in namespace="
+"%(namespace_name)s."
+msgstr ""
+"A identificação da definição de metadados com o nome=%(name)s não foi "
+"localizada no namespace=%(namespace_name)s."
+
+msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
+msgstr ""
+"O modo no qual o mecanismo será executado. Pode ser 'serial' ou 'parallel'."
+
+msgid ""
+"The number of child process workers that will be created to service "
+"requests. The default will be equal to the number of CPUs available."
+msgstr ""
+"O número de trabalhadores de processo-filho que será criado para as "
+"solicitações de serviço. O padrão será igual ao número de CPUs disponíveis."
+
+msgid ""
+"The number of parallel activities executed at the same time by the engine. "
+"The value can be greater than one when the engine mode is 'parallel'."
+msgstr ""
+"O número de atividades paralelas executadas ao mesmo tempo pelo mecanismo. O "
+"valor pode ser maior que um quando o modo de mecanismo está 'parallel'."
+
+msgid "The parameters required by task, JSON blob"
+msgstr "Os parâmetros requeridos pela tarefa, blob JSON"
+
+msgid ""
+"The path to the cert file to use in SSL connections to the registry server, "
+"if any. Alternately, you may set the GLANCE_CLIENT_CERT_FILE environment "
+"variable to a filepath of the CA cert file"
+msgstr ""
+"O caminho para o arquivo de certificado a ser usado em conexões SSL com o "
+"servidor de registro, se houver. Alternativamente, você pode configurar a "
+"variável de ambiente GLANCE_CLIENT_CERT_FILE para um caminho de arquivo do "
+"arquivo de certificado CA"
+
+msgid ""
+"The path to the certifying authority cert file to use in SSL connections to "
+"the registry server, if any. Alternately, you may set the "
+"GLANCE_CLIENT_CA_FILE environment variable to a filepath of the CA cert file."
+msgstr ""
+"O caminho para o arquivo de certificado da autoridade de certificação, a ser "
+"usado em conexões SSL com o servidor de registro, se houver. "
+"Alternativamente, você pode configurar a variável de ambiente "
+"GLANCE_CLIENT_CA_FILE para um caminho do arquivo do certificado CA ."
+
+msgid ""
+"The path to the key file to use in SSL connections to the registry server, "
+"if any. Alternately, you may set the GLANCE_CLIENT_KEY_FILE environment "
+"variable to a filepath of the key file"
+msgstr ""
+"O caminho para o arquivo-chave a ser usado em conexões SSL com o servidor de "
+"registro, se houver. Alternativamente, é possível configurar a variável de "
+"ambiente GLANCE_CLIENT_KEY_FILE para um caminho de arquivo de chave"
+
+msgid ""
+"The path to the sqlite file database that will be used for image cache "
+"management."
+msgstr ""
+"O caminho para o arquivo de base de dados sqlite que será utilizado para "
+"gerenciamento do cache de imagens."
+
+msgid ""
+"The period of time, in seconds, that the API server will wait for a registry "
+"request to complete. A value of 0 implies no timeout."
+msgstr ""
+"O perído de tempo, em segundos que o servidor de API irá esperar por uma "
+"requisição de registro para completar. Um valor de 0 implica em nenhum tempo "
+"limite."
+
+msgid "The port on which a pydev process is listening for connections."
+msgstr "A porta na qual um processo pydev está atendendo às conexões."
+
+msgid "The port on which the server will listen."
+msgstr "A porta em que o servidor irá escutar."
+
+msgid ""
+"The protocol to use for communication with the registry server.  Either http "
+"or https."
+msgstr ""
+"O protocolo para utilizar para comunicação com o servidor de registro. Tanto "
+"HTTP ou HTTPS."
+
+#, python-format
+msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
+msgstr ""
+"O corpo fornecido %(body)s é inválido sob o esquema especificado: %(schema)s"
+
+msgid "The provided image is too large."
+msgstr "A imagem fornecida é muito grande."
+
+#, python-format
+msgid "The provided path '%(path)s' is invalid: %(explanation)s"
+msgstr "O caminho fornecido '%(path)s' é inválido: %(explanation)s"
+
+msgid ""
+"The reference to the default swift account/backing store parameters to use "
+"for adding new images."
+msgstr ""
+"A referência aos parâmetros de armazenamento para conta/auxiliar swift "
+"padrão usa para incluir novas imagens."
+
+msgid ""
+"The region for the authentication service. If \"use_user_token\" is not in "
+"effect and using keystone auth, then region name can be specified."
+msgstr ""
+"A região para o serviço de autenticação. Se \"use_user_token\" não estiver "
+"em vigor e utilizando a autorização do keystone, então o nome da região pode "
+"ser especificado."
+
+msgid "The request returned 500 Internal Server Error."
+msgstr "A solicitação retornou 500 Erro Interno do Servidor."
+
+msgid ""
+"The request returned 503 Service Unavailable. This generally occurs on "
+"service overload or other transient outage."
+msgstr ""
+"A solicitação retornou 503 Serviço Indisponível. Isso geralmente ocorre em "
+"sobrecarga de serviço ou outra interrupção temporária."
+
+#, python-format
+msgid ""
+"The request returned a 302 Multiple Choices. This generally means that you "
+"have not included a version indicator in a request URI.\n"
+"\n"
+"The body of response returned:\n"
+"%(body)s"
+msgstr ""
+"A solicitação retornou 302 Várias Opções. Isso geralmente significa que você "
+"não incluiu um indicador de versão em um URI de solicitação.\n"
+"\n"
+"O corpo da resposta retornou:\n"
+"%(body)s"
+
+#, python-format
+msgid ""
+"The request returned a 413 Request Entity Too Large. This generally means "
+"that rate limiting or a quota threshold was breached.\n"
+"\n"
+"The response body:\n"
+"%(body)s"
+msgstr ""
+"A solicitação retornou 413 Entidade de Solicitação Muito Grande. Isso "
+"geralmente significa que a taxa de limitação ou um limite de cota foi "
+"violado.\n"
+"\n"
+"O corpo de resposta:\n"
+"%(body)s"
+
+#, python-format
+msgid ""
+"The request returned an unexpected status: %(status)s.\n"
+"\n"
+"The response body:\n"
+"%(body)s"
+msgstr ""
+"A solicitação retornou um status inesperado: %(status)s.\n"
+"\n"
+"O corpo de resposta:\n"
+"%(body)s"
+
+msgid ""
+"The requested image has been deactivated. Image data download is forbidden."
+msgstr ""
+"A imagem solicitada foi desativada. O download de dados da imagem é proibido."
+
+msgid "The result of current task, JSON blob"
+msgstr "O resultado da tarefa atual, blob JSON"
+
+#, python-format
+msgid ""
+"The size of the data %(image_size)s will exceed the limit. %(remaining)s "
+"bytes remaining."
+msgstr ""
+"O tamanho dos dados que %(image_size)s irá exceder do limite. %(remaining)s "
+"bytes restantes."
+
+#, python-format
+msgid "The specified member %s could not be found"
+msgstr "O membro especificado %s não pôde ser localizado"
+
+#, python-format
+msgid "The specified metadata object %s could not be found"
+msgstr "O objeto de metadados especificado %s não pôde ser localizado"
+
+#, python-format
+msgid "The specified metadata tag %s could not be found"
+msgstr "A identificação de metadados especificada %s não pôde ser localizada"
+
+#, python-format
+msgid "The specified namespace %s could not be found"
+msgstr "O namespace especificado %s não pôde ser localizado"
+
+#, python-format
+msgid "The specified property %s could not be found"
+msgstr "A propriedade especificada %s não pôde ser localizada"
+
+#, python-format
+msgid "The specified resource type %s could not be found "
+msgstr "O tipo de recurso especificado %s não pôde ser localizado "
+
+msgid ""
+"The status of deleted image location can only be set to 'pending_delete' or "
+"'deleted'"
+msgstr ""
+"O status de local da imagem excluída só pode ser definido como "
+"'pending_delete' ou 'deleted'"
+
+msgid ""
+"The status of deleted image location can only be set to 'pending_delete' or "
+"'deleted'."
+msgstr ""
+"O status de local da imagem excluída só pode ser definido como "
+"'pending_delete' ou 'deleted'."
+
+msgid "The status of this image member"
+msgstr "O status desse membro da imagem"
+
+msgid ""
+"The store names to use to get store preference order. The name must be "
+"registered by one of the stores defined by the 'stores' config option. This "
+"option will be applied when you using 'store_type' option as image location "
+"strategy defined by the 'location_strategy' config option."
+msgstr ""
+"Os nomes de armazenamento a ser usados para obter a ordem de preferência de "
+"armazenamento. O nome deve ser registrado por um dos armazenamentos "
+"definidos pela opção de configuração de ‘armazenamentos'. Essa opção será "
+"aplicada ao usar a opção 'store_type' como estratégia do local de imagem "
+"definida pela opção de configuração 'location_strategy'."
+
+msgid ""
+"The strategy to use for authentication. If \"use_user_token\" is not in "
+"effect, then auth strategy can be specified."
+msgstr ""
+"A estratégia a ser utilizada para autenticação. Se \"use_user_token\" não "
+"estiver em vigor, então a estratégia de autorização pode ser especificada."
+
+#, python-format
+msgid ""
+"The target member %(member_id)s is already associated with image "
+"%(image_id)s."
+msgstr ""
+"O membro de destino %(member_id)s já está associado à imagem %(image_id)s."
+
+msgid ""
+"The tenant name of the administrative user. If \"use_user_token\" is not in "
+"effect, then admin tenant name can be specified."
+msgstr ""
+"O nome de locatário do usuário administrativo. Se \"use_user_token\" não "
+"estiver em vigor, então o nome de locatário do administrador pode ser "
+"especificado."
+
+msgid "The type of task represented by this content"
+msgstr "O tipo de tarefa representada por este conteúdo"
+
+msgid "The unique namespace text."
+msgstr "O texto do namespace exclusivo."
+
+msgid ""
+"The upper limit (the maximum size of accumulated cache in bytes) beyond "
+"which pruner, if running, starts cleaning the images cache."
+msgstr ""
+"O limite superior (o tamanho máximo do cache acumulado, em bytes) além da "
+"remoção que, se estiver em execução, inicia a limpeza do cache de imagens."
+
+msgid "The user friendly name for the namespace. Used by UI if available."
+msgstr ""
+"O nome fácil do namespace. Usando pela interface com o usuário, se "
+"disponível."
+
+msgid ""
+"The user to authenticate against the Swift authentication service "
+"(deprecated)"
+msgstr ""
+"O usuário a ser autenticado com relação ao serviço de autenticação Swift "
+"(descontinuado)"
+
+msgid ""
+"The value for the socket option TCP_KEEPIDLE.  This is the time in seconds "
+"that the connection must be idle before TCP starts sending keepalive probes."
+msgstr ""
+"O valor para a opção de soquete TCP_KEEPIDLE. Esse é o tempo em segundos que "
+"a conexão deve ficar inativa antes que o TCP comece a enviar análises keep-"
+"alive."
+
+#, python-format
+msgid ""
+"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
+"verify it.  Error: %(ioe)s"
+msgstr ""
+"Há um problema com o %(error_key_name)s %(error_filename)s.  Verifique-o. "
+"Erro: %(ioe)s"
+
+#, python-format
+msgid ""
+"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
+"verify it. OpenSSL error: %(ce)s"
+msgstr ""
+"Há um problema com o %(error_key_name)s %(error_filename)s.  Verifique-o. "
+"Erro de OpenSSL: %(ce)s"
+
+#, python-format
+msgid ""
+"There is a problem with your key pair.  Please verify that cert "
+"%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
+msgstr ""
+"Há um problema com seu par de chaves. Verifique se o certificado "
+"%(cert_file)s e a chave %(key_file)s estão juntos.  Erro de OpenSSL %(ce)s"
+
+msgid "There was an error configuring the client."
+msgstr "Houve um erro ao configurar o cliente."
+
+msgid "There was an error connecting to a server"
+msgstr "Houve um erro ao conectar a um servidor"
+
+msgid ""
+"This config value indicates whether \"roles\" or \"policies\" are used in "
+"the property protection file."
+msgstr ""
+"Esse valor de configuração indica se \"funções\" ou \"políticas\" são usados "
+"no arquivo de proteção de propriedade."
+
+msgid ""
+"This operation is currently not permitted on Glance Tasks. They are auto "
+"deleted after reaching the time based on their expires_at property."
+msgstr ""
+"Esta operação não é atualmente permitida em Tarefas do Glance. Elas são "
+"automaticamente excluídas após atingir o tempo com base em sua propriedade "
+"expires_at."
+
+msgid "This operation is currently not permitted on Glance images details."
+msgstr ""
+"Esta operação não é atualmente permitida em detalhes de imagens do Glance."
+
+msgid ""
+"This value sets what strategy will be used to determine the image location "
+"order. Currently two strategies are packaged with Glance 'location_order' "
+"and 'store_type'."
+msgstr ""
+"Este valor define qual estratégia será utilizada para determinar a ordem do "
+"local da imagem. Atualmente, duas estratégias são empacotadas com "
+"'location_order' e 'store_type' de Glance."
+
+msgid ""
+"Time in hours for which a task lives after, either succeeding or failing"
+msgstr "Tempo em horas durante o qual uma tarefa é mantida, com êxito ou falha"
+
+msgid "Too few arguments."
+msgstr "Muito poucos argumentos."
+
+msgid "Too few locations"
+msgstr "Poucos locais"
+
+msgid "Too many locations"
+msgstr "Muitos locais"
+
+#, python-format
+msgid "Total size is %(size)d bytes across %(img_count)d images"
+msgstr "Tamanho total é %(size)d bytes em %(img_count)d imagens"
+
+msgid "Turn on/off delayed delete."
+msgstr "Liga/desliga a exclusão atrasada."
+
+msgid "Type version has to be a valid semver string"
+msgstr "A versão do tipo precisa ser uma sequência semver válida"
+
+msgid ""
+"URI cannot contain more than one occurrence of a scheme.If you have "
+"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
+"you need to change it to use the swift+http:// scheme, like so: swift+http://"
+"user:pass@authurl.com/v1/container/obj"
+msgstr ""
+"URI não pode conter mais de uma ocorrência de um esquema. Se você tiver "
+"especificado um URI como swift://user:pass@http://authurl.com/v1/container/"
+"obj, precisará alterá-lo para usar o esquema swift+http://, desta forma: "
+"swift+http://user:pass@authurl.com/v1/container/obj"
+
+msgid "URL to access the image file kept in external store (READ-ONLY)"
+msgstr ""
+"URL para acessar o arquivo de imagem mantido no armazenamento externo "
+"(SOMENTE LEITURA)"
+
+#, python-format
+msgid ""
+"Unable to create pid file %(pid)s.  Running as non-root?\n"
+"Falling back to a temp file, you can stop %(service)s service using:\n"
+"  %(file)s %(server)s stop --pid-file %(fb)s"
+msgstr ""
+"Impossível criar arquivo pid %(pid)s.  Executando como não raiz?\n"
+"Voltando para um arquivo temporário, é possível parar o serviço %(service)s "
+"usando:\n"
+"  %(file)s %(server)s stop --pid-file %(fb)s"
+
+msgid "Unable to filter on a range with a non-numeric value."
+msgstr "Não é possível filtrar um intervalo com um valor não numérico."
+
+msgid "Unable to filter using the specified range."
+msgstr "Não é possível filtrar usando o intervalo especificado."
+
+#, python-format
+msgid "Unable to find '%s' in JSON Schema change"
+msgstr "Não é possível localizar '%s' na mudança de Esquema JSON"
+
+msgid "Unable to get legacy image"
+msgstr "Não é possível obter a imagem anterior"
+
+msgid "Unable to increase file descriptor limit.  Running as non-root?"
+msgstr ""
+"Não é possível aumentar o limite do descritor de arquivo. Executando como "
+"não-raiz?"
+
+#, python-format
+msgid ""
+"Unable to load %(app_name)s from configuration file %(conf_file)s.\n"
+"Got: %(e)r"
+msgstr ""
+"Não é possível carregar %(app_name)s do arquivo de configuração "
+"%(conf_file)s.\n"
+"Obtido: %(e)r"
+
+#, python-format
+msgid "Unable to load schema: %(reason)s"
+msgstr "Não é possível carregar o esquema: %(reason)s"
+
+#, python-format
+msgid "Unable to locate paste config file for %s."
+msgstr "Impossível localizar o arquivo de configuração de colagem para %s."
+
+msgid "Unable to modify collection in immutable or readonly property"
+msgstr ""
+"Não é possível modificar a coleção na propriedade imutável ou somente leitura"
+
+msgid "Unable to retrieve request id from context"
+msgstr "Não é possível recuperar o ID da solicitação do contexto"
+
+msgid "Unable to specify artifact type explicitly"
+msgstr "Não é possível especificar o tipo de artefato explicitamente"
+
+msgid "Unable to specify artifact type version explicitly"
+msgstr "Não é possível especificar a versão do tipo de artefato explicitamente"
+
+msgid "Unable to specify version if multiple types are possible"
+msgstr "Não é possível especificar a versão se vários tipos forem possíveis"
+
+msgid "Unable to specify version if type is not specified"
+msgstr "Não é possível especificar a versão se o tipo não for especificado"
+
+#, python-format
+msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
+msgstr ""
+"Não é possível fazer upload de dados de imagem duplicados para a imagem "
+"%(image_id)s: %(error)s"
+
+msgid "Unauthorized image access"
+msgstr "Acesso à imagem desautorizado"
+
+#, python-format
+msgid "Unexpected response: %s"
+msgstr "Resposta inesperada: %s"
+
+#, python-format
+msgid "Unknown auth strategy '%s'"
+msgstr "Estratégia de autenticação desconhecida %s'"
+
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Comando desconhecido: %s"
+
+msgid "Unknown sort direction, must be 'desc' or 'asc'"
+msgstr "Direção de classificação desconhecida; deve ser 'desc' ou 'asc'"
+
+msgid "Unrecognized JSON Schema draft version"
+msgstr "Versão rascunho do Esquema JSON não reconhecida"
+
+msgid "Unrecognized changes-since value"
+msgstr "Valor desde as alterações não reconhecido"
+
+#, python-format
+msgid "Unsupported sort_dir. Acceptable values: %s"
+msgstr "sort_dir não suportado. Valores aceitáveis: %s"
+
+#, python-format
+msgid "Unsupported sort_key. Acceptable values: %s"
+msgstr "sort_key não suportado. Valores aceitáveis: %s"
+
+msgid "Value is greater than maximum"
+msgstr "O valor é maior que o máximo"
+
+msgid "Value is less than minimum"
+msgstr "O valor é menor que o mínimo"
+
+msgid "Value is required"
+msgstr "O valor é necessário"
+
+#, python-format
+msgid "Version component is too large (%d max)"
+msgstr "O componente da versão é muito extenso (%d máx.)"
+
+#, python-format
+msgid "Version is invalid: %(reason)s"
+msgstr "A versão é inválida: %(reason)s"
+
+msgid "Virtual size of image in bytes (READ-ONLY)"
+msgstr "Tamanho virtual de imagem em bytes (SOMENTE LEITURA)"
+
+msgid "Visibility must be either \"public\" or \"private\""
+msgstr "Visibilidade deve ser \"público\" ou \"privado\""
+
+#, python-format
+msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
+msgstr ""
+"Esperou 15 segundos para pid %(pid)s (%(file)s) ser eliminado; desistindo"
+
+msgid ""
+"When false, no artifacts can be loaded regardless of available_plugins. When "
+"true, artifacts can be loaded."
+msgstr ""
+"Quando false, nenhum artefato pode ser carregado independentemente de "
+"available_plugins. Quando true, os artefatos podem ser carregados."
+
+msgid ""
+"When running server in SSL mode, you must specify both a cert_file and "
+"key_file option value in your configuration file"
+msgstr ""
+"Ao executar o servidor no modo SSL, você deve especificar um valor de opção "
+"cert_file e key_file no seu arquivo de configuração"
+
+msgid ""
+"When true, this option sets the owner of an image to be the tenant. "
+"Otherwise, the owner of the  image will be the authenticated user issuing "
+"the request."
+msgstr ""
+"Quando verdadeiro, esta opção seta o dono da image para ser o tenant. Caso "
+"contrário o dono da imagem será o usuário autenticado realizando a "
+"requisição."
+
+msgid ""
+"When using SSL in connections to the registry server, do not require "
+"validation via a certifying authority. This is the registry's equivalent of "
+"specifying --insecure on the command line using glanceclient for the API."
+msgstr ""
+"Ao usar SSL nas conexões com o servidor de registro, não é necessária a "
+"validação por meio de uma autoridade de certificação. Esse é o equivalente "
+"do registro de especificação --insecure na linha de comandos usando "
+"glanceclient para o API."
+
+msgid ""
+"Whether to allow users to specify image properties beyond what the image "
+"schema provides"
+msgstr ""
+"Se permite que os usuários especifiquem propriedades de imagem além do que o "
+"esquema de imagem fornece"
+
+msgid ""
+"Whether to include the backend image locations in image properties. For "
+"example, if using the file system store a URL of \"file:///path/to/image\" "
+"will be returned to the user in the 'direct_url' meta-data field. Revealing "
+"storage location can be a security risk, so use this setting with caution!  "
+"The overrides show_image_direct_url."
+msgstr ""
+"Se incluir locais de imagem de backend nas propriedades de imagem. Por por "
+"exemplo, se estiver usando o sistema de arquivos de armazenamento de uma URL "
+"de \"file:///path/to/image\" será retornado para o usuário no campo de "
+"metadados 'direct_url'. Revelar o local de armazenamento pode ser um risco "
+"de segurança, por isso, use essa configuração com cuidado! As substituições "
+"show_image_direct_url."
+
+msgid ""
+"Whether to include the backend image storage location in image properties. "
+"Revealing storage location can be a security risk, so use this setting with "
+"caution!"
+msgstr ""
+"Se inclui o local de armazenamento de imagem de backend nas propriedades de "
+"imagem. A revelação do local de armazenamento pode ser um risco de "
+"segurança, por isso, use essa configuração com cuidado!"
+
+msgid ""
+"Whether to pass through headers containing user and tenant information when "
+"making requests to the registry. This allows the registry to use the context "
+"middleware without keystonemiddleware's auth_token middleware, removing "
+"calls to the keystone auth service. It is recommended that when using this "
+"option, secure communication between glance api and glance registry is "
+"ensured by means other than auth_token middleware."
+msgstr ""
+"Decida se deve passar por cabeçalhos contendo informações de usuário e de "
+"locatário ao fazer solicitações para o registro. Isso permite que o registro "
+"use o middleware de contexto sem o auth_token middleware keystonemiddleware, "
+"removendo chamadas para o serviço de autenticação keystone. É recomendável "
+"que, ao usar essa opção, uma comunicação segura entre a api de glance e o "
+"registro de glance seja assegurada por um meio diferente de auth_token "
+"middleware."
+
+msgid ""
+"Work dir for asynchronous task operations. The directory set here will be "
+"used to operate over images - normally before they are imported in the "
+"destination store. When providing work dir, make sure enough space is "
+"provided for concurrent tasks to run efficiently without running out of "
+"space. A rough estimation can be done by multiplying the number of "
+"`max_workers` - or the N of workers running - by an average image size (e.g "
+"500MB). The image size estimation should be done based on the average size "
+"in your deployment. Note that depending on the tasks running you may need to "
+"multiply this number by some factor depending on what the task does. For "
+"example, you may want to double the available size if image conversion is "
+"enabled. All this being said, remember these are just estimations and you "
+"should do them based on the worst case scenario and be prepared to act in "
+"case they were wrong."
+msgstr ""
+"O diretório de trabalho para operações de tarefa assíncrona. O diretório "
+"definido aqui será usado para operar sobre imagens – normalmente antes de "
+"serem importados no armazenamento de destino. Ao fornecer o diretório de "
+"trabalho, certifique-se de que espaço suficiente seja fornecido para tarefas "
+"simultâneas para executar de forma eficiente sem execução fora do espaço. "
+"Uma estimativa aproximada pode ser feita multiplicando o número de "
+"`max_workers` – ou o N de trabalhadores em execução – por um tamanho médio "
+"de imagem (por exemplo, 500 MB). A estimativa de tamanho da imagem deve ser "
+"feita com base no tamanho médio em sua implementação. Observe que, "
+"dependendo das tarefas em execução pode ser necessário multiplicar este "
+"número por algum fator, dependendo do que a tarefa faz. Por exemplo, você "
+"pode desejar duplicar o tamanho disponível se a conversão de imagem estiver "
+"ativada. Com tudo isto que está sendo dito, lembre-se que estas são apenas "
+"estimativas e é necessário fazê-las com base no pior cenário e estar "
+"preparado para agir em caso deles estarem errados."
+
+#, python-format
+msgid "Wrong command structure: %s"
+msgstr "Estrutura de comandos incorreta: %s"
+
+msgid "You are not authenticated."
+msgstr "Você não está autenticado."
+
+msgid "You are not authorized to complete this action."
+msgstr "Você não está autorizado a concluir esta ação."
+
+#, python-format
+msgid "You are not permitted to create a tag in the namespace owned by '%s'"
+msgstr ""
+"Você não tem permissão para criar uma identificação no namespace de "
+"propriedade de '%s'"
+
+msgid "You are not permitted to create image members for the image."
+msgstr "Você não tem permissão para criar membros da imagem."
+
+#, python-format
+msgid "You are not permitted to create images owned by '%s'."
+msgstr "Você não tem permissão para criar imagens de propriedade de '%s'."
+
+#, python-format
+msgid "You are not permitted to create namespace owned by '%s'"
+msgstr "Você não tem permissão para criar namespace de propriedade de '%s'"
+
+#, python-format
+msgid "You are not permitted to create object owned by '%s'"
+msgstr "Você não tem permissão para criar objeto de propriedade de '%s'"
+
+#, python-format
+msgid "You are not permitted to create property owned by '%s'"
+msgstr ""
+"Você não tem permissão para criar essa propriedade de propriedade de '%s'"
+
+#, python-format
+msgid "You are not permitted to create resource_type owned by '%s'"
+msgstr "Você não tem permissão para criar resource_type de propriedade de '%s'"
+
+#, python-format
+msgid "You are not permitted to create this task with owner as: %s"
+msgstr ""
+"Você não tem permissão para criar essa tarefa com proprietário como: %s"
+
+msgid "You are not permitted to delete this image."
+msgstr "Você não tem permissão para excluir esta imagem."
+
+msgid "You are not permitted to delete this meta_resource_type."
+msgstr "Você não tem permissão para excluir esse meta_resource_type."
+
+msgid "You are not permitted to delete this namespace."
+msgstr "Você não tem permissão para excluir esse namespace."
+
+msgid "You are not permitted to delete this object."
+msgstr "Você não tem permissão para excluir esse objeto."
+
+msgid "You are not permitted to delete this property."
+msgstr "Você não tem permissão para excluir essa propriedade."
+
+msgid "You are not permitted to delete this tag."
+msgstr "Você não tem permissão para excluir esta identificação."
+
+#, python-format
+msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
+msgstr "Você não ter permissão para modificar '%(attr)s' nesse %(resource)s."
+
+#, python-format
+msgid "You are not permitted to modify '%s' on this image."
+msgstr "Você não tem permissão para modificar '%s' nesta imagem."
+
+msgid "You are not permitted to modify locations for this image."
+msgstr "Você não tem permissão para modificar locais para esta imagem."
+
+msgid "You are not permitted to modify tags on this image."
+msgstr "Você não tem permissão para modificar tags nesta imagem."
+
+msgid "You are not permitted to modify this image."
+msgstr "Você não tem permissão para modificar esta imagem."
+
+msgid "You are not permitted to set status on this task."
+msgstr "Você não tem permissão para definir o status dessa tarefa."
+
+msgid "You are not permitted to update this namespace."
+msgstr "Você não tem permissão para editar esse namespace."
+
+msgid "You are not permitted to update this object."
+msgstr "Você não tem permissão para atualizar esse objeto."
+
+msgid "You are not permitted to update this property."
+msgstr "Você não tem permissão para atualizar essa propriedade."
+
+msgid "You are not permitted to update this tag."
+msgstr "Você não tem permissão para atualizar esta identificação."
+
+msgid "You are not permitted to upload data for this image."
+msgstr "Você não tem permissão para fazer upload de dados para esta imagem."
+
+#, python-format
+msgid "You cannot add image member for %s"
+msgstr "Não é possível incluir o membro da imagem para %s"
+
+#, python-format
+msgid "You cannot delete image member for %s"
+msgstr "Não é possível excluir o membro da imagem para %s"
+
+#, python-format
+msgid "You cannot get image member for %s"
+msgstr "Não é possível obter o membro da imagem para %s"
+
+#, python-format
+msgid "You cannot update image member %s"
+msgstr "Não é possível atualizar o membro da imagem %s"
+
+msgid "You do not own this image"
+msgstr "Você não possui essa imagem"
+
+msgid ""
+"You have selected to use SSL in connecting, and you have supplied a cert, "
+"however you have failed to supply either a key_file parameter or set the "
+"GLANCE_CLIENT_KEY_FILE environ variable"
+msgstr ""
+"Você optou por usar SSL na conexão e forneceu um certificado, mas falhou em "
+"fornecer um parâmetro key_file ou configurar a variável de ambiente "
+"GLANCE_CLIENT_KEY_FILE"
+
+msgid ""
+"You have selected to use SSL in connecting, and you have supplied a key, "
+"however you have failed to supply either a cert_file parameter or set the "
+"GLANCE_CLIENT_CERT_FILE environ variable"
+msgstr ""
+"Você optou por usar SSL na conexão e forneceu uma chave, mas falhou em "
+"fornecer um parâmetro cert_file ou configurar a variável de ambiente "
+"GLANCE_CLIENT_CERT_FILE"
+
+msgid ""
+"^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
+"fA-F]){12}$"
+msgstr ""
+"^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
+"fA-F]){12}$"
+
+#, python-format
+msgid "__init__() got unexpected keyword argument '%s'"
+msgstr "__init__() obteve argumento de palavra-chave inesperado '%s'"
+
+#, python-format
+msgid ""
+"cannot transition from %(current)s to %(next)s in update (wanted from_state="
+"%(from)s)"
+msgstr ""
+"Não é possível a transição de %(current)s para %(next)s na atualização "
+"(desejado from_state=%(from)s)"
+
+#, python-format
+msgid "custom properties (%(props)s) conflict with base properties"
+msgstr ""
+"conflito de propriedades customizadas (%(props)s) com propriedades de base"
+
+msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
+msgstr ""
+"nem o hub 'poll' nem o 'selects' do eventlet estão disponíveis nesta "
+"plataforma"
+
+msgid "is_public must be None, True, or False"
+msgstr "is_public deve ser Nenhum, True ou False"
+
+msgid "limit param must be an integer"
+msgstr "o parâmetro limit deve ser um número inteiro"
+
+msgid "limit param must be positive"
+msgstr "o parâmetro limit deve ser positivo"
+
+#, python-format
+msgid "location: %s data lost"
+msgstr "local: %s dados perdidos"
+
+msgid "md5 hash of image contents. (READ-ONLY)"
+msgstr "hash md5 do conteúdo da imagem. (SOMENTE LEITURA)"
+
+#, python-format
+msgid "new_image() got unexpected keywords %s"
+msgstr "new_image() obteve palavras-chave inesperadas %s"
+
+msgid "protected must be True, or False"
+msgstr "protegido deve ser True, ou False"
+
+#, python-format
+msgid "unable to launch %(serv)s. Got error: %(e)s"
+msgstr "Não é possível ativar %(serv)s. Obteve erro: %(e)s"

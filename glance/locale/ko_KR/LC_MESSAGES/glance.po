@@ -1,0 +1,2660 @@
+# Korean (South Korea) translations for glance.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the glance project.
+#
+# Translators:
+# HyunWoo Jo <showaid@gmail.com>, 2014
+# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: glance 11.0.0.0b4.dev33\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-09-23 14:29+0000\n"
+"PO-Revision-Date: 2015-09-04 12:45+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"Language-Team: Korean (Korea) (http://www.transifex.com/openstack/glance/"
+"language/ko_KR/)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+#, python-format
+msgid "%(attribute)s have to be string"
+msgstr "%(attribute)s 속성은 문자열이어야 함"
+
+#, python-format
+msgid "%(attribute)s is required"
+msgstr "%(attribute)s 속성이 필요함"
+
+#, python-format
+msgid "%(attribute)s may not be longer than %(length)i"
+msgstr "%(attribute)s의 길이는 %(length)i 이하여야 함"
+
+#, python-format
+msgid "%(attribute)s may not be shorter than %(length)i"
+msgstr "%(attribute)s의 길이는 %(length)i 이상이어야 함"
+
+#, python-format
+msgid "%(attribute)s should match pattern %(pattern)s"
+msgstr "%(attribute)s은(는) 패턴 %(pattern)s과(와) 일치해야 함"
+
+#, python-format
+msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
+msgstr "%(cls)s 예외가 마지막 rpc 호출에서 발생: %(val)s"
+
+#, python-format
+msgid "%(serv)s (pid %(pid)s) is running..."
+msgstr "%(serv)s(pid %(pid)s)이(가) 실행 중..."
+
+#, python-format
+msgid "%(serv)s appears to already be running: %(pid)s"
+msgstr "%(serv)s이(가) 이미 실행 중으로 표시됨: %(pid)s"
+
+#, python-format
+msgid ""
+"%(strategy)s is registered as a module twice. %(module)s is not being used."
+msgstr ""
+"%(strategy)s이(가) 모듈로 두 번 등록되었습니다. %(module)s이(가) 사용되지 사"
+"용됩니다."
+
+#, python-format
+msgid ""
+"%(task_id)s of %(task_type)s not configured properly. Could not load the "
+"filesystem store"
+msgstr ""
+"%(task_type)s의 %(task_id)s가 제대로 구성되지 않았습니다. 파일 시스템 저장소"
+"를 로드할 수 없습니다."
+
+#, python-format
+msgid ""
+"%(task_id)s of %(task_type)s not configured properly. Missing work dir: "
+"%(work_dir)s"
+msgstr ""
+"%(task_type)s의 %(task_id)s가 제대로 구성되지 않았습니다. 누락 작업 디렉토"
+"리: %(work_dir)s"
+
+#, python-format
+msgid "%(verb)sing %(serv)s"
+msgstr "%(serv)s을(를) %(verb)s 중"
+
+#, python-format
+msgid "%(verb)sing %(serv)s with %(conf)s"
+msgstr "%(serv)s에서 %(conf)s과(와) 함께 %(verb)s 중"
+
+#, python-format
+msgid ""
+"%s Please specify a host:port pair, where host is an IPv4 address, IPv6 "
+"address, hostname, or FQDN. If using an IPv6 address, enclose it in brackets "
+"separately from the port (i.e., \"[fe80::a:b:c]:9876\")."
+msgstr ""
+"%s 호스트:포트 쌍을 지정하십시오. 여기서 호스트는 IPv4 주소, IPv6 주소, 호스"
+"트 이름 또는 FQDN입니다. IPv6 주소를 사용하는 경우에는 포트와 분리하여 대괄호"
+"로 묶으십시오(예: \"[fe80::a:b:c]:9876\")."
+
+#, python-format
+msgid "%s can't contain 4 byte unicode characters."
+msgstr "%s에는 4바이트 유니코드 문자를 포함할 수 없습니다."
+
+#, python-format
+msgid "%s is already stopped"
+msgstr "%s이(가) 이미 중지되었습니다."
+
+#, python-format
+msgid "%s is stopped"
+msgstr "%s이(가) 중지됨"
+
+msgid ""
+"--os_auth_url option or OS_AUTH_URL environment variable required when "
+"keystone authentication strategy is enabled\n"
+msgstr ""
+"키스톤 인증 전략이 사용될 경우 --os_auth_url 옵션 또는 OS_AUTH_URL 환경 변수"
+"가 필요합니다.\n"
+
+msgid ""
+"A list of artifacts that are allowed in the format name or name-version. "
+"Empty list means that any artifact can be loaded."
+msgstr ""
+"형식 이름 또는 이름-버전에 허용되는 아티팩트 목록입니다.목록이 비어 있으면 모"
+"든 아티팩트를 로드할 수 있습니다."
+
+#, python-format
+msgid ""
+"A metadata definition object with name=%(object_name)s already exists in "
+"namespace=%(namespace_name)s."
+msgstr ""
+"name=%(object_name)s인 메타데이터 정의 오브젝트가 namespace="
+"%(namespace_name)s에서 찾을 수 없습니다."
+
+#, python-format
+msgid ""
+"A metadata definition property with name=%(property_name)s already exists in "
+"namespace=%(namespace_name)s."
+msgstr ""
+"name=%(property_name)s인 메타데이터 정의 특성이 namespace=%(namespace_name)s"
+"에 이미 존재합니다."
+
+#, python-format
+msgid ""
+"A metadata definition resource-type with name=%(resource_type_name)s already "
+"exists."
+msgstr ""
+"name=%(resource_type_name)s인 메타데이터 정의 자원 유형이 이미 존재합니다."
+
+#, python-format
+msgid ""
+"A metadata tag with name=%(name)s already exists in namespace="
+"%(namespace_name)s."
+msgstr ""
+"name=%(name)s인 메타데이터 태그가 이미 namespace=%(namespace_name)s에서 찾을 "
+"수 없습니다."
+
+msgid "A set of URLs to access the image file kept in external store"
+msgstr "외부 저장소에 보관된 이미지 파일에 액세스하기 위한 URL 세트"
+
+msgid ""
+"AES key for encrypting store 'location' metadata. This includes, if used, "
+"Swift or S3 credentials. Should be set to a random string of length 16, 24 "
+"or 32 bytes"
+msgstr ""
+"암호화 저장소 '위치' 메타데이터의 AES 키. 이를 사용하는 경우스위프트 또는 S3 "
+"신임 정보를 포함합니다. 길이 16, 24 또는 32바이트자의 랜덤 문자열로 설정해야 "
+"합니다."
+
+msgid ""
+"Address to bind the server.  Useful when selecting a particular network "
+"interface."
+msgstr "서버를 바인드할 주소. 특정 네트워크 인터페이스를 선택할 때유용합니다. "
+
+msgid "Address to find the registry server."
+msgstr "레지스트리 서버를 찾기 위한 주소입니다. "
+
+msgid ""
+"Allow unauthenticated users to access the API with read-only privileges. "
+"This only applies when using ContextMiddleware."
+msgstr ""
+"인증되지 않은 사용자가 읽기 전용 권한으로 API에 액세스하도록 허용합니다. "
+"ContextMiddleware를 사용하는 경우에만 적용됩니다. "
+
+#, python-format
+msgid "Allowed values %s are invalid under given validators"
+msgstr "허용되는 값 %s은(는) 지정된 유효성 검증기에서 올바르지 않음"
+
+msgid "Amount of disk space (in GB) required to boot image."
+msgstr "이미지를 부팅하는 데 필요한 디스크 공간의 양(MB)"
+
+msgid "Amount of ram (in MB) required to boot image."
+msgstr "이미지를 부팅하는 데 필요한 RAM의 양(MB)"
+
+msgid "An identifier for the image"
+msgstr "이미지에 대한 ID"
+
+msgid "An identifier for the image member (tenantId)"
+msgstr "이미지 멤버에 대한 ID(tenantId)"
+
+msgid "An identifier for the owner of this task"
+msgstr "이 태스크 소유자의 ID"
+
+msgid "An identifier for the task"
+msgstr "태스크의 ID"
+
+#, python-format
+msgid "An image with identifier %s already exists"
+msgstr "ID가 %s인 이미지가 이미 존재함"
+
+msgid "An object with the same identifier already exists."
+msgstr "동일한 ID를 갖는 오브젝트가 이미 존재합니다. "
+
+msgid "An object with the same identifier is currently being operated on."
+msgstr "동일한 ID가 있는 오브젝트가 현재 작동됩니다."
+
+msgid "An object with the specified identifier was not found."
+msgstr "지정된 ID를 갖는 오브젝트를 찾을 수 없습니다. "
+
+msgid "An unknown exception occurred"
+msgstr "알 수 없는 예외가 발생했음"
+
+msgid "An unknown task exception occurred"
+msgstr "알 수 없는 태스크 예외 발생"
+
+msgid "Array property can't have item_type=Array"
+msgstr "배열 특성에 item_type=Array를 사용할 수 없음"
+
+#, python-format
+msgid "Artifact cannot change state from %(source)s to %(target)s"
+msgstr "아티팩트의 상태를 %(source)s에서 %(target)s(으)로 변경할 수 없음"
+
+#, python-format
+msgid "Artifact has no property %(prop)s"
+msgstr "아티팩트에 특성 %(prop)s이(가) 없음"
+
+#, python-format
+msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
+msgstr "아티팩트 상태를 %(curr)s에서 %(to)s(으)로 변경할 수 없음"
+
+#, python-format
+msgid ""
+"Artifact type with name '%(name)s' and version '%(version)s' is not known"
+msgstr ""
+"이름이 '%(name)s'(이)며 버전이 '%(version)s'인 아티팩트 유형이 알 수 없는 유"
+"형임"
+
+#, python-format
+msgid "Artifact with id=%(id)s is not accessible"
+msgstr "ID가 %(id)s인 아티팩트에 액세스할 수 없음"
+
+#, python-format
+msgid "Artifact with id=%(id)s was not found"
+msgstr "ID가 %(id)s인 아티팩트를 찾을 수 없음"
+
+msgid "Artifact with the specified type, name and version already exists"
+msgstr "지정된 유형, 이름, 버전을 사용하는 아티팩트가 이미 있음"
+
+#, python-format
+msgid ""
+"Artifact with the specified type, name and version already has the direct "
+"dependency=%(dep)s"
+msgstr ""
+"지정된 유형, 이름, 버전을 사용하는 아티팩트에 이미 직접  종속성 %(dep)s이"
+"(가) 있음"
+
+#, python-format
+msgid ""
+"Artifact with the specified type, name and version already has the "
+"transitive dependency=%(dep)s"
+msgstr ""
+"지정된 유형, 이름, 버전을 사용하는 아티팩트에 상태 전이 종속성 %(dep)s이(가) "
+"있음"
+
+msgid "Attempt to set readonly property"
+msgstr "읽기 전용 특성 설정 시도"
+
+msgid "Attempt to set value of immutable property"
+msgstr "불변 특성 값 설정 시도"
+
+#, python-format
+msgid "Attempt to upload duplicate image: %s"
+msgstr "중복 이미지를 업로드하려고 시도 중: %s"
+
+msgid "Attempted to update Location field for an image not in queued status."
+msgstr ""
+"큐에 들어간 상태에 있지 않은 이미지에 대한 위치 필드를 업데이트하려고 시도함"
+
+#, python-format
+msgid "Attribute '%(property)s' is read-only."
+msgstr "'%(property)s' 속성은 읽기 전용입니다."
+
+#, python-format
+msgid "Attribute '%(property)s' is reserved."
+msgstr "'%(property)s' 속성은 예약되어 있습니다."
+
+#, python-format
+msgid "Attribute '%s' is read-only."
+msgstr "'%s' 속성은 읽기 전용입니다."
+
+#, python-format
+msgid "Attribute '%s' is reserved."
+msgstr "'%s' 속성은 예약되어 있습니다."
+
+msgid "Attribute container_format can be only replaced for a queued image."
+msgstr "큐에 있는 이미지에 대해 속성 container_format을 대체할 수 있습니다."
+
+msgid "Attribute disk_format can be only replaced for a queued image."
+msgstr "큐에 있는 이미지에 대해 속성 disk_format을 대체할 수 있습니다."
+
+msgid ""
+"Auth key for the user authenticating against the Swift authentication "
+"service. (deprecated)"
+msgstr ""
+"Swift 인증 서비스에 대한 사용자 인증을 위한인증 키입니다. (더 이상 사용되지 "
+"않음)"
+
+#, python-format
+msgid "Auth service at URL %(url)s not found."
+msgstr "URL %(url)s의 Auth 서비스를 찾을 수 없습니다. "
+
+msgid "Authorization failed."
+msgstr "권한 부여에 실패했습니다. "
+
+#, python-format
+msgid "Bad Command: %s"
+msgstr "잘못된 명령: %s"
+
+#, python-format
+msgid "Bad header: %(header_name)s"
+msgstr "잘못된 헤더: %(header_name)s"
+
+#, python-format
+msgid "Bad value passed to filter %(filter)s got %(val)s"
+msgstr "잘못된 값이 %(filter)s 필터에 전달됨, %(val)s 제공"
+
+#, python-format
+msgid "Badly formed S3 URI: %(uri)s"
+msgstr "양식이 잘못된 S3 URI: %(uri)s"
+
+#, python-format
+msgid "Badly formed credentials '%(creds)s' in Swift URI"
+msgstr "Swift URI에 양식이 잘못된 신임 정보 '%(creds)s'"
+
+msgid "Badly formed credentials in Swift URI."
+msgstr "Swift URI에 양식이 잘못된 신임 정보가 있습니다."
+
+msgid "Base directory that the Image Cache uses."
+msgstr "이미지 캐시가 사용하는 기본 디렉토리입니다. "
+
+#, python-format
+msgid "Blob %(name)s may not have multiple values"
+msgstr "Blob %(name)s에 값이 여러 개일 수 없음"
+
+msgid "Blob size is not set"
+msgstr "Blob 크기를 설정하지 않음"
+
+msgid "Body expected in request."
+msgstr "요청에 본문이 있어야 합니다."
+
+msgid "Both file and legacy_image_id may not be specified at the same time"
+msgstr "파일 및 legacy_image_id를 동시에 지정할 수 없음"
+
+msgid "CA certificate file to use to verify connecting clients."
+msgstr "클라이언트 연결을 확인하기 위해 사용하는 CA 인증 파일"
+
+msgid "Cannot be a negative value"
+msgstr "음수 값일 수 없음"
+
+#, python-format
+msgid "Cannot convert image %(key)s '%(value)s' to an integer."
+msgstr "이미지 %(key)s '%(value)s'을(를) 정수로 변환할 수 없습니다."
+
+msgid "Cannot declare artifact property with reserved name 'metadata'"
+msgstr "예약된 이름 'metadata'를 사용하는 아티팩트 특성을 선언할 수 없음"
+
+#, python-format
+msgid "Cannot load artifact '%(name)s'"
+msgstr "아티팩트 '%(name)s'을(를) 로드할 수 없음"
+
+msgid "Cannot replace locations from a non-empty list to a non-empty list."
+msgstr ""
+"비어 있지 않은 목록에서 비어 있지 않은 목록으로 위치를 변경할 수 없습니다. "
+
+#, python-format
+msgid "Cannot save data for image %(image_id)s: %(error)s"
+msgstr "이미지 %(image_id)s 에 대한 데이터 저장 불가: %(error)s"
+
+msgid "Cannot specify 'max_size' explicitly"
+msgstr "'max_size'를 명시적으로 지정할 수 없음"
+
+msgid "Cannot specify 'min_size' explicitly"
+msgstr "'min_size'를 명시적으로 지정할 수 없음"
+
+msgid "Cannot upload to an unqueued image"
+msgstr "큐에 들어가지 않은 이미지에 업로드할 수 없음"
+
+#, python-format
+msgid "Cannot use this parameter with the operator %(op)s"
+msgstr "연산자 %(op)s(으)로 이 매개변수를 사용할 수 없음"
+
+msgid "Certificate file to use when starting API server securely."
+msgstr "API 서버를 안전하게 시작할 때 사용하는 인증 파일"
+
+#, python-format
+msgid "Checksum verification failed. Aborted caching of image '%s'."
+msgstr "체크섬 검증에 실패했습니다. '%s' 이미지 캐시가 중단되었습니다."
+
+msgid "Client disconnected before sending all data to backend"
+msgstr "모든 데이터를 백엔드로 전송하기 전에 클라이언트 연결이 끊어짐 "
+
+msgid "Command not found"
+msgstr "명령을 찾을 수 없음"
+
+msgid "Configuration option was not valid"
+msgstr "구성 옵션이 올바르지 않음"
+
+#, python-format
+msgid "Connect error/bad request to Auth service at URL %(url)s."
+msgstr "연결 오류/URL %(url)s에서 Auth 서비스에 대한 잘못된 요청입니다."
+
+#, python-format
+msgid "Constructed URL: %s"
+msgstr "URL을 구성함: %s"
+
+msgid "Content-Type must be application/octet-stream"
+msgstr "Content-Type은 application/octet-stream이어야 함"
+
+#, python-format
+msgid "Corrupt image download for image %(image_id)s"
+msgstr "%(image_id)s 이미지에 대한 손상된 이미지 다운로드"
+
+#, python-format
+msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
+msgstr "30초 동안 시도한 후 %(host)s:%(port)s에 바인드할 수 없음"
+
+#, python-format
+msgid "Could not find metadata object %s"
+msgstr "메타데이터 오브젝트 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "Could not find metadata tag %s"
+msgstr "메타데이터 태그 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "Could not find namespace %s"
+msgstr "%s 네임스페이스를 찾을 수 없음"
+
+#, python-format
+msgid "Could not find property %s"
+msgstr "특성 %s을(를) 찾을 수 없음"
+
+msgid "Could not find required configuration option"
+msgstr "필요한 구성 옵션을 찾을 수 없음"
+
+#, python-format
+msgid "Could not find task %s"
+msgstr "태스크 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "Could not update image: %s"
+msgstr "이미지를 업데이트할 수 없음: %s"
+
+msgid "Custom validators list should contain tuples '(function, message)'"
+msgstr ""
+"사용자 정의 유효성 검증기 목록에 튜플 '(function, message)'을 포함해야 함"
+
+msgid "Data supplied was not valid."
+msgstr "제공된 데이터가 올바르지 않습니다. "
+
+msgid "Date and time of image member creation"
+msgstr "이미지 멤버 작성 날짜 및 시간"
+
+msgid "Date and time of image registration (READ-ONLY)"
+msgstr "이미지 등록 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of last modification of image member"
+msgstr "이미지 멤버의 최종 수정 날짜 및 시간"
+
+msgid "Date and time of namespace creation (READ-ONLY)"
+msgstr "네임스페이스 작성 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of object creation (READ-ONLY)"
+msgstr "오브젝트 작성 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of resource type association (READ-ONLY)"
+msgstr "자원 유형 연관 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of tag creation (READ-ONLY)"
+msgstr "태그 작성 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of the last image modification (READ-ONLY)"
+msgstr "최종 이미지 수정의 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of the last namespace modification (READ-ONLY)"
+msgstr "최종 네임스페이스 수정의 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of the last object modification (READ-ONLY)"
+msgstr "최종 오브젝트 수정의 날짜 및 시간(읽기 전용)"
+
+msgid ""
+"Date and time of the last resource type association modification (READ-ONLY)"
+msgstr "최종 자원 유형 연관 수정의 날짜 및 시간(읽기 전용)"
+
+msgid "Date and time of the last tag modification (READ-ONLY)"
+msgstr "최종 태그 수정 날짜 및 시간(읽기 전용)"
+
+msgid "Datetime when this resource was created"
+msgstr "이 자원이 작성된 Datetime"
+
+msgid "Datetime when this resource was updated"
+msgstr "이 자원이 업데이트된 Datetime"
+
+msgid "Datetime when this resource would be subject to removal"
+msgstr "이 자원이 제거되는 Datetime"
+
+msgid ""
+"Default value for the number of items returned by a request if not specified "
+"explicitly in the request"
+msgstr ""
+"요청에 명시적으로 지정하지 않은 경우 요청에 의해 리턴되는 항목 수의 기본값"
+
+msgid "Default value is invalid"
+msgstr "기본값이 올바르지 않음"
+
+#, python-format
+msgid "Denying attempt to upload image because it exceeds the quota: %s"
+msgstr "할당량을 초과하기 때문에 이미지 업로드를 거부하는 중: %s"
+
+#, python-format
+msgid "Denying attempt to upload image larger than %d bytes."
+msgstr "%d바이트를 초과하는 이미지의 업로드를 거부하는 중입니다."
+
+msgid "Dependency relations cannot be mutable"
+msgstr "종속성 관계는 변경할 수 없음"
+
+msgid "Deploy the v1 OpenStack Images API."
+msgstr "v1 OpenStack 이미지 API를 배치하십시오."
+
+msgid "Deploy the v1 OpenStack Registry API."
+msgstr "v1 OpenStack 레지스트리 API를 배치하십시오."
+
+msgid "Deploy the v2 OpenStack Images API."
+msgstr "v2 OpenStack 이미지 API를 배치하십시오. "
+
+msgid "Deploy the v2 OpenStack Registry API."
+msgstr "v2 OpenStack 레지스트리 API를 배치하십시오."
+
+msgid "Descriptive name for the image"
+msgstr "이미지에 대한 설명식 이름"
+
+#, python-format
+msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
+msgstr "요청의 버전 판별 중: %(method)s %(path)s 허용: %(accept)s"
+
+msgid "Dictionary contains unexpected key(s)"
+msgstr "사전에 예상치 않은 키가 있음"
+
+msgid "Dictionary size is greater than maximum"
+msgstr "사전 크기가 최대값보다 큼"
+
+msgid "Dictionary size is less than minimum"
+msgstr "사전 크기가 최소값보다 작음"
+
+msgid "Does not match pattern"
+msgstr "패턴과 일치하지 않음"
+
+#, python-format
+msgid ""
+"Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
+msgstr ""
+"%(driver_name)s 드라이버가 올바르게 구성되지 않았습니다. 이유: %(reason)s"
+
+msgid "Either a file or a legacy_image_id has to be specified"
+msgstr "파일을 지정하거나 legacy_image_id를 지정해야 함"
+
+#, python-format
+msgid "Encountered service with no \"type\": %s"
+msgstr "\"유형\"이 없는 서비스가 발견됨: %s"
+
+msgid "Error in store configuration. Adding images to store is disabled."
+msgstr "저장소 구성에 오류가 있습니다. 이미지를 저장소에 추가할 수 없습니다."
+
+#, python-format
+msgid "External sources are not supported: '%s'"
+msgstr "외부 소스가 지원되지 않음: '%s'"
+
+#, python-format
+msgid "Failed to activate image. Got error: %s"
+msgstr "이미지 활성화에 실패했습니다. 오류 발생: %s"
+
+#, python-format
+msgid "Failed to add image metadata. Got error: %s"
+msgstr "이미지 메타데이터 추가 실패. 오류 발생: %s"
+
+#, python-format
+msgid "Failed to find image %(image_id)s to delete"
+msgstr "삭제할 %(image_id)s 이미지를 찾는 데 실패함"
+
+#, python-format
+msgid "Failed to find image to delete: %s"
+msgstr "삭제할 image 가 발견되지 않음 : %s"
+
+#, python-format
+msgid "Failed to find image to update: %s"
+msgstr "업데이트할 이미지를 찾는 데 실패함: %s"
+
+#, python-format
+msgid "Failed to find resource type %(resourcetype)s to delete"
+msgstr "삭제하기 위한 리소스 타입 %(resourcetype)s 검색 실패"
+
+#, python-format
+msgid "Failed to initialize the image cache database. Got error: %s"
+msgstr "이미지 캐시 데이터베이스를 초기화하지 못했습니다. 오류 발생: %s"
+
+#, python-format
+msgid "Failed to read %s from config"
+msgstr "구성에서 %s을(를) 읽지 못했음"
+
+#, python-format
+msgid "Failed to reserve image. Got error: %s"
+msgstr "이미지 예약 실패, 오류 발생: %s"
+
+#, python-format
+msgid "Failed to update image metadata. Got error: %s"
+msgstr "이미지 메타데이터 업데이트 실패. 오류 발생: %s"
+
+#, python-format
+msgid "Failed to upload image %s"
+msgstr "이미지 %s을(를) 업로드하지 못했습니다. "
+
+#, python-format
+msgid ""
+"Failed to upload image data for image %(image_id)s due to HTTP error: "
+"%(error)s"
+msgstr ""
+"HTTP 오류로 인해 이미지 %(image_id)s의 이미지 데이터 업로드 실패: %(error)s"
+
+#, python-format
+msgid ""
+"Failed to upload image data for image %(image_id)s due to internal error: "
+"%(error)s"
+msgstr ""
+"내부 오류로 인해 이미지 %(image_id)s의 이미지 데이터 업로드 실패: %(error)s"
+
+msgid ""
+"File based imports are not allowed. Please use a non-local source of image "
+"data."
+msgstr ""
+"파일 기반 가져오기는 허용되지 않습니다. 이미지 데이터의 로컬이 아닌 소스를 사"
+"용하십시오."
+
+msgid "File too large"
+msgstr "파일이 너무 큼"
+
+msgid "File too small"
+msgstr "파일이 너무 작음"
+
+#, python-format
+msgid "Forbidden to delete a %s image."
+msgstr "%s 이미지를 삭제하는 것은 금지되어 있습니다. "
+
+#, python-format
+msgid "Forbidden to delete image: %s"
+msgstr "이미지 삭제가 금지됨: %s"
+
+#, python-format
+msgid "Forbidden to modify '%s' of active image."
+msgstr "활성 이미지의 '%s'을(를) 수정하는 것이 금지되어 있습니다. "
+
+msgid "Forbidden to reserve image."
+msgstr "이미지 예약은 금지되어 있습니다."
+
+msgid "Forbidden to update deleted image."
+msgstr "삭제된 이미지를 업데이트하는 것은 금지되어 있습니다."
+
+#, python-format
+msgid "Forbidden to update image: %s"
+msgstr "이미지 업데이트가 금지됨: %s"
+
+#, python-format
+msgid "Forbidden upload attempt: %s"
+msgstr "금지된 업로드 시도: %s"
+
+#, python-format
+msgid "Forbidding request, metadata definition namespace=%s is not visible."
+msgstr "요청이 금지되고 메타데이터 정의 namespace=%s이(가) 표시되지 않습니다."
+
+#, python-format
+msgid "Forbidding request, task %s is not visible"
+msgstr "요청 금지. 태스크 %s이(가) 표시되지 않음"
+
+msgid "Format of the container"
+msgstr "컨테이너의 형식"
+
+msgid "Format of the disk"
+msgstr "디스크의 형식"
+
+#, python-format
+msgid "Get image %(id)s data failed: %(err)s."
+msgstr "이미지 %(id)s 데이터를 불러올 수 없음: %(err)s"
+
+#, python-format
+msgid "Host \"%s\" is not valid."
+msgstr "\"%s\" 호스트가 올바르지 않습니다."
+
+#, python-format
+msgid "Host and port \"%s\" is not valid."
+msgstr "호스트 및 포트 \"%s\"이(가) 올바르지 않습니다."
+
+msgid ""
+"Human-readable informative message only included when appropriate (usually "
+"on failure)"
+msgstr ""
+"사용자가 읽을 수 있는 정보 메시지는 적절한 경우에만 포함됨 (일반적으로 실패 "
+"시)"
+
+msgid "If False doesn't trace SQL requests."
+msgstr "false인 경우 SQL 요청을 추적하지 않습니다."
+
+msgid "If False fully disable profiling feature."
+msgstr "false인 경우 프로파일링 기능을 전부 사용 안함으로 설정합니다."
+
+msgid ""
+"If False, server will return the header \"Connection: close\", If True, "
+"server will return \"Connection: Keep-Alive\" in its responses. In order to "
+"close the client socket connection explicitly after the response is sent and "
+"read successfully by the client, you simply have to set this option to False "
+"when you create a wsgi server."
+msgstr ""
+"False인 경우 서버는 헤더 \"연결: 닫음\"을 리턴합니다. True인 경우 서버는 응답"
+"에서 \"연결: 유휴\"를 리턴합니다. 응답을 보내고 클라이언트에서 이를 읽은 후"
+"에 클라이언트 소켓 연결을 명시적으로 닫으려면 wsgi 서버를 작성할 때 이 옵션"
+"을 False로 설정하면 됩니다. "
+
+msgid "If true, image will not be deletable."
+msgstr "true일 경우 이미지는 삭제 불가능합니다."
+
+msgid "If true, namespace will not be deletable."
+msgstr "true일 경우 네임스페이스는 삭제 불가능합니다."
+
+#, python-format
+msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
+msgstr "이미지 %(id)s이(가) 사용 중이므로 이를 삭제할 수 없음: %(exc)s"
+
+#, python-format
+msgid "Image %(id)s not found"
+msgstr "%(id)s 이미지를 찾을 수 없음"
+
+#, python-format
+msgid ""
+"Image %(image_id)s could not be found after upload. The image may have been "
+"deleted during the upload: %(error)s"
+msgstr ""
+"업로드 후에 이미지 %(image_id)s을(를) 찾을 수 없음. 이미지는 업로드 중에 삭제"
+"되었을 수 있음: %(error)s"
+
+#, python-format
+msgid "Image %(image_id)s is protected and cannot be deleted."
+msgstr "%(image_id)s 이미지는 보호되므로 삭제할 수 없습니다."
+
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload, cleaning up the chunks uploaded."
+msgstr ""
+"업로드 후에 %s 이미지를 찾을 수 없습니다. 업로드 동안 이미지가 삭제되었을 수 "
+"있습니다. 업로드된 청크를 정리합니다."
+
+#, python-format
+msgid "Image %s is deactivated"
+msgstr "%s 이미지가 비활성화됨"
+
+#, python-format
+msgid "Image %s is not active"
+msgstr "%s 이미지가 활성 상태가 아님"
+
+#, python-format
+msgid "Image %s not found."
+msgstr "%s 이미지를 찾을 수 없음"
+
+#, python-format
+msgid "Image exceeds the storage quota: %s"
+msgstr "이미지가 스토리지 할당량을 초과함: %s"
+
+msgid "Image id is required."
+msgstr "이미지 ID가 필요합니다."
+
+msgid "Image is protected"
+msgstr "이미지가 보호됨"
+
+#, python-format
+msgid "Image member limit exceeded for image %(id)s: %(e)s:"
+msgstr "이미지 %(id)s에 대한 이미지 멤버 한계 초과: %(e)s:"
+
+#, python-format
+msgid "Image name too long: %d"
+msgstr "이미지 이름이 너무 김: %d"
+
+msgid "Image operation conflicts"
+msgstr "이미지 조작이 충돌함"
+
+#, python-format
+msgid ""
+"Image status transition from %(cur_status)s to %(new_status)s is not allowed"
+msgstr ""
+"%(cur_status)s에서 %(new_status)s(으)로의 이미지 상태 전이가 허용되지 않음"
+
+#, python-format
+msgid "Image storage media is full: %s"
+msgstr "이미지 스토리지 미디어 공간이 꽉 참: %s"
+
+#, python-format
+msgid "Image tag limit exceeded for image %(id)s: %(e)s:"
+msgstr "이미지 %(id)s에 대한 이미지 태그 한계 초과: %(e)s:"
+
+#, python-format
+msgid "Image upload problem: %s"
+msgstr "이미지 업로드 문제: %s"
+
+#, python-format
+msgid "Image with identifier %s already exists!"
+msgstr "ID가 %s인 이미지가 이미 존재합니다!"
+
+#, python-format
+msgid "Image with identifier %s has been deleted."
+msgstr "ID가 %s인 이미지가 삭제되었습니다."
+
+#, python-format
+msgid "Image with identifier %s not found"
+msgstr "ID가 %s인 이미지를 찾을 수 없음"
+
+#, python-format
+msgid ""
+"Incorrect auth strategy, expected \"%(expected)s\" but received "
+"\"%(received)s\""
+msgstr ""
+"인증 전략이 올바르지 않음. 예상: \"%(expected)s\", 수신: \"%(received)s\""
+
+#, python-format
+msgid "Incorrect request: %s"
+msgstr "올바르지 않은 요청: %s"
+
+#, python-format
+msgid "Input does not contain '%(key)s' field"
+msgstr "입력에 '%(key)s' 필드가 포함되어 있지 않음"
+
+#, python-format
+msgid "Insufficient permissions on image storage media: %s"
+msgstr "이미지 스토리지 미디어 권한 부족 : %s"
+
+#, python-format
+msgid "Invalid JSON pointer for this resource: '/%s'"
+msgstr "이 자원에 대해 올바르지 않은 JSON 포인터: '/%s'"
+
+msgid "Invalid configuration in glance-swift conf file."
+msgstr "glance-swift 구성 파일의 구성이 올바르지 않습니다."
+
+msgid "Invalid configuration in property protection file."
+msgstr "특성 보호 파일의 올바르지 않은 구성입니다."
+
+#, python-format
+msgid "Invalid container format '%s' for image."
+msgstr "이미지에 대한 컨테이너 형식 '%s'이(가) 올바르지 않습니다."
+
+#, python-format
+msgid "Invalid content type %(content_type)s"
+msgstr "올바르지 않은 컨텐츠 유형 %(content_type)s"
+
+msgid "Invalid dict property type"
+msgstr "올바르지 않은 사전 특성 유형"
+
+msgid "Invalid dict property type specification"
+msgstr "올바르지 않은 사전 특성 유형 스펙"
+
+#, python-format
+msgid "Invalid disk format '%s' for image."
+msgstr "이미지에 대한 디스크 형식 '%s'이(가) 올바르지 않습니다."
+
+msgid "Invalid image id format"
+msgstr "올바르지 않은 이미지 ID 형식"
+
+msgid "Invalid item type specification"
+msgstr "올바르지 않은 항목 유형 스펙"
+
+msgid "Invalid jsonpatch request"
+msgstr "올바르지 않은 jsonpatch 요청"
+
+msgid "Invalid location"
+msgstr "부적합한 위치"
+
+#, python-format
+msgid "Invalid location: %s"
+msgstr "올바르지 않은 위치: %s"
+
+#, python-format
+msgid ""
+"Invalid location_strategy option: %(name)s. The valid strategy option(s) "
+"is(are): %(strategies)s"
+msgstr ""
+"올바르지 않은 location_strategy 옵션: %(name)s. 올바른 전략 옵션 : "
+"%(strategies)s"
+
+msgid "Invalid locations"
+msgstr "부적합한 위치들"
+
+#, python-format
+msgid "Invalid locations: %s"
+msgstr "올바르지 않은 위치: %s"
+
+msgid "Invalid marker format"
+msgstr "올바르지 않은 마커 형식"
+
+msgid "Invalid marker. Image could not be found."
+msgstr "올바르지 않은 마커입니다. 이미지를 찾을 수 없습니다. "
+
+#, python-format
+msgid "Invalid membership association: %s"
+msgstr "올바르지 않은 멤버십 연관: %s"
+
+msgid ""
+"Invalid mix of disk and container formats. When setting a disk or container "
+"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
+"match."
+msgstr ""
+"디스크와 컨테이너 형식의 조합이 올바르지 않습니다. 디스크나 컨테이너 형식을 "
+"'aki', 'ari', 또는 'ami' 중 하나로 설정할 경우 컨테이너와 디스크형식이 일치해"
+"야 합니다. "
+
+msgid "Invalid position for adding a location."
+msgstr "위치를 추가하기에 올바르지 않은 포지션입니다. "
+
+msgid "Invalid position for removing a location."
+msgstr "위치를 제거하기에 올바르지 않은 포지션입니다. "
+
+msgid "Invalid property definition"
+msgstr "올바르지 않은 특성 정의"
+
+msgid "Invalid reference list specification"
+msgstr "올바르지 않은 참조 목록 스펙"
+
+msgid "Invalid referenced type"
+msgstr "올바르지 않은 참조 유형"
+
+msgid "Invalid service catalog json."
+msgstr "올바르지 않은 서비스 카탈로그 json입니다. "
+
+#, python-format
+msgid "Invalid sort direction: %s"
+msgstr "올바르지 않은 정렬 방향: %s"
+
+#, python-format
+msgid ""
+"Invalid sort key: %(sort_key)s. It must be one of the following: "
+"%(available)s."
+msgstr ""
+"올바르지 않은 정렬 키: %(sort_key)s. 다음 중 하나여야 합니다. %(available)s."
+
+#, python-format
+msgid "Invalid status value: %s"
+msgstr "올바르지 않은 상태 값: %s"
+
+#, python-format
+msgid "Invalid status: %s"
+msgstr "올바르지 않은 상태: %s"
+
+msgid "Invalid type definition"
+msgstr "올바르지 않은 유형 정의"
+
+#, python-format
+msgid "Invalid type value: %s"
+msgstr "올바르지 않은 유형 값: %s"
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition namespace "
+"with the same name of %s"
+msgstr ""
+"올바르지 않은 업데이트입니다. %s과(와) 동일한 이름의 메타데이터 정의 네임스페"
+"이스가 중복됩니다."
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition object "
+"with the same name=%(name)s  in namespace=%(namespace_name)s."
+msgstr ""
+"올바르지 않은 업데이트입니다. namespace=%(namespace_name)s에서 name=%(name)s"
+"과(와) 동일한 이름의 메타데이터 정의 오브젝트가 중복됩니다."
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition object "
+"with the same name=%(name)s in namespace=%(namespace_name)s."
+msgstr ""
+"올바르지 않은 업데이트입니다. namespace=%(namespace_name)s에서 name=%(name)s"
+"과(와) 동일한 이름의 메타데이터 정의 오브젝트가 중복됩니다."
+
+#, python-format
+msgid ""
+"Invalid update. It would result in a duplicate metadata definition property "
+"with the same name=%(name)s in namespace=%(namespace_name)s."
+msgstr ""
+"올바르지 않은 업데이트입니다. 네임스페이스=%(namespace_name)s의 동일한 이름="
+"%(name)s(으)로 메타데이터 정의 특성이 중복됩니다."
+
+#, python-format
+msgid "Invalid value '%(value)s' for parameter '%(param)s': %(extra_msg)s"
+msgstr "매개변수 '%(param)s'의 올바르지 않은 값 '%(value)s': %(extra_msg)s"
+
+#, python-format
+msgid "Invalid value for option %(option)s: %(value)s"
+msgstr "옵션 %(option)s에 올바르지 않은 값: %(value)s"
+
+#, python-format
+msgid "Invalid visibility value: %s"
+msgstr "올바르지 않은 가시성 값: %s"
+
+msgid "Is not allowed value"
+msgstr "허용되는 값이 아님"
+
+#, python-format
+msgid ""
+"It appears that the eventlet module has been imported prior to setting "
+"%s='yes'. It is currently necessary to disable eventlet.greendns if using "
+"ipv6 since eventlet.greendns currently breaks with ipv6 addresses. Please "
+"ensure that eventlet is not imported prior to this being set."
+msgstr ""
+"다음과 같이 설정하기 전에 eventlet 모듈을 가져왔습니다. %s='yes'. eventlet."
+"greendns가 현재 ipv6 주소로 나뉘므로 ipv6를 사용 중인 경우 지금 eventlet."
+"greendns를 사용 안함으로 설정해야 합니다. 이와 같이 설정하기 전에 eventlet을 "
+"가져오지 않아야 합니다."
+
+msgid "It's invalid to provide multiple image sources."
+msgstr "여러 개의 이미지 소스를 제공하면 안 됩니다. "
+
+msgid "Items have to be unique"
+msgstr "항목이 고유해야 함"
+
+msgid ""
+"Json path should start with a '/', end with no '/', no 2 subsequent '/' are "
+"allowed."
+msgstr ""
+"Json 경로는 '/'로 시작해야 하며 '/'로 끝나지 않아야 합니다. 두 개의 후속 "
+"'/'는 허용되지 않습니다."
+
+msgid "Legacy image was not found"
+msgstr "레거시 이미지를 찾을 수 없음"
+
+msgid "Length  is greater than maximum"
+msgstr "길이가 최대값보다 큼"
+
+msgid "Length is less than minimum"
+msgstr "길이가 최소값보다 작음"
+
+msgid "List definitions may hot have defaults"
+msgstr "목록 정의에 기본값을 사용할 수 없음"
+
+msgid "List of strings related to the image"
+msgstr "이미지와 관련된 문자열 목록"
+
+msgid "List size is greater than maximum"
+msgstr "목록 크기가 최대값보다 큼"
+
+msgid "List size is less than minimum"
+msgstr "목록 크기가 최소값보다 작음"
+
+msgid "Loop time between checking for new items to schedule for delete."
+msgstr "삭제를 위해 스케줄에 대한 새 항목을 확인하는 사이의 루프 시간입니다."
+
+#, python-format
+msgid "Malformed Content-Range header: %s"
+msgstr "잘못된 형식의 컨텐츠 범위 헤더: %s"
+
+msgid "Malformed JSON in request body."
+msgstr "요청 본문에서 JSON의 형식이 올바르지 않습니다."
+
+msgid "Max string length may not exceed 255 characters"
+msgstr "최대 문자열 길이는 255자를 초과할 수 없음"
+
+msgid ""
+"Maximum line size of message headers to be accepted. max_header_line may "
+"need to be increased when using large tokens (typically those generated by "
+"the Keystone v3 API with big service catalogs"
+msgstr ""
+"허용할 메시지 헤더의 최대 행 크기입니다. 더 큰 토큰 사용 시 max_header_line"
+"을 늘려야 할 수 있습니다(일반적으로 큰 서비스 카탈로그가 있는 키스톤 v3 API에"
+"서 생성됨)."
+
+msgid ""
+"Maximum number of image members per image. Negative values evaluate to "
+"unlimited."
+msgstr "이미지당 이미지 멤버의 최대 수입니다. 음수 값은 무제한을 의미합니다."
+
+msgid ""
+"Maximum number of locations allowed on an image. Negative values evaluate to "
+"unlimited."
+msgstr "이미지에 허용된 최대 위치 수입니다. 음수 값은 무제한을 의미합니다."
+
+msgid ""
+"Maximum number of properties allowed on an image. Negative values evaluate "
+"to unlimited."
+msgstr "이미지에서 허용된 최대 특성 수입니다. 음수 값은 무제한을 의미합니다."
+
+msgid ""
+"Maximum number of tags allowed on an image. Negative values evaluate to "
+"unlimited."
+msgstr "이미지에 허용된 최대 태그 수입니다. 음수 값은 무제한을 의미합니다."
+
+msgid "Maximum permissible number of items that could be returned by a request"
+msgstr "요청에서 리턴할 수 있는 허용 가능한 최대 항목 수"
+
+#, python-format
+msgid "Maximum redirects (%(redirects)s) was exceeded."
+msgstr "최대 경로 재지정(%(redirects)s)에 도달했습니다. "
+
+msgid ""
+"Maximum size of image a user can upload in bytes. Defaults to 1099511627776 "
+"bytes (1 TB).WARNING: this value should only be increased after careful "
+"consideration and must be set to a value under 8 EB (9223372036854775808)."
+msgstr ""
+"사용자가 업로드할 수 있는 이미지의 최대 크기(바이트).1099511627776바이트"
+"(1TB). 경고: 이 값은 신중하게 고려하고 늘려야 하며 8EB(9223372036854775808) "
+"이하의 값으로 설정해야 합니다. "
+
+#, python-format
+msgid "Member %(member_id)s is duplicated for image %(image_id)s"
+msgstr "멤버 %(member_id)s이(가) 이미지 %(image_id)s에 대해 중복됨"
+
+msgid "Member can't be empty"
+msgstr "멤버는 비어 있을 수 없음"
+
+msgid "Member to be added not specified"
+msgstr "추가할 멤버를 지정하지 않음"
+
+msgid "Membership could not be found."
+msgstr "멤버십을 찾을 수 없습니다."
+
+#, python-format
+msgid ""
+"Metadata definition namespace %(namespace)s is protected and cannot be "
+"deleted."
+msgstr ""
+"메타데이터 정의 네임스페이스 %(namespace)s이(가) 보호되고 삭제되었을 수 있습"
+"니다. "
+
+#, python-format
+msgid "Metadata definition namespace not found for id=%s"
+msgstr "id=%s에 대한 메타데이터 정의 네임스페이스를 찾을 수 없음"
+
+#, python-format
+msgid "Metadata definition namespace=%(namespace_name)swas not found."
+msgstr "메타데이터 정의 namespace=%(namespace_name)s을(를) 찾을 수 없습니다."
+
+#, python-format
+msgid ""
+"Metadata definition object %(object_name)s is protected and cannot be "
+"deleted."
+msgstr ""
+"메타데이터 정의 오브젝트 %(object_name)s이(가) 보호되고 삭제되었을 수 있습니"
+"다. "
+
+#, python-format
+msgid "Metadata definition object not found for id=%s"
+msgstr "id=%s에 대한 메타데이터 정의 오브젝트를 찾을 수 없음"
+
+#, python-format
+msgid ""
+"Metadata definition property %(property_name)s is protected and cannot be "
+"deleted."
+msgstr ""
+"메타데이터 정의 특성 %(property_name)s이(가) 보호되고 삭제되었을 수 있습니"
+"다. "
+
+#, python-format
+msgid "Metadata definition property not found for id=%s"
+msgstr "id=%s에 대한 메타데이터 정의 특성을 찾을 수 없음"
+
+#, python-format
+msgid ""
+"Metadata definition resource-type %(resource_type_name)s is a seeded-system "
+"type and cannot be deleted."
+msgstr ""
+"메타데이터 정의 resource-type %(resource_type_name)s은(는) 시드(seed) 시스템 "
+"유형이고 삭제할 수 없습니다."
+
+#, python-format
+msgid ""
+"Metadata definition resource-type-association %(resource_type)s is protected "
+"and cannot be deleted."
+msgstr ""
+"메타데이터 정의 resource-type-association %(resource_type)s이(가) 보호되고 삭"
+"제할 수 없습니다."
+
+#, python-format
+msgid ""
+"Metadata definition tag %(tag_name)s is protected and cannot be deleted."
+msgstr "메타데이터 정의 태그 %(tag_name)s은(는) 보호되므로 삭제할 수 없습니다."
+
+#, python-format
+msgid "Metadata definition tag not found for id=%s"
+msgstr "id=%s에 대한 메타데이터 정의 태그를 찾을 수 없음"
+
+msgid "Min string length may not be negative"
+msgstr "최소 문자열 길이는 음수일 수 없음"
+
+#, python-format
+msgid "Missing required credential: %(required)s"
+msgstr "필수 신임 정보 누락: %(required)s"
+
+#, python-format
+msgid ""
+"Multiple 'image' service matches for region %(region)s. This generally means "
+"that a region is required and you have not supplied one."
+msgstr ""
+"다중 '이미지' 서비스가 %(region)s 리젼에 일치합니다. 이는 일반적으로 리젼이 "
+"필요하지만 아직 리젼을 제공하지 않은 경우 발생합니다. "
+
+msgid "Name of the paste configuration file."
+msgstr "붙여넣기 구성 파일의 이름입니다. "
+
+msgid "No authenticated user"
+msgstr "인증된 사용자가 없음"
+
+msgid "No image data could be found"
+msgstr "이미지 데이터를 찾을 수 없음"
+
+#, python-format
+msgid "No image found with ID %s"
+msgstr "ID가 %s인 이미지를 찾을 수 없음"
+
+#, python-format
+msgid "No location found with ID %(loc)s from image %(img)s"
+msgstr "%(img)s 이미지에서 ID가 %(loc)s인 위치를 찾을 수 없음 "
+
+msgid "No permission to share that image"
+msgstr "해당 이미지를 공유한 권한이 없음"
+
+#, python-format
+msgid "No plugin for '%(name)s' has been loaded"
+msgstr "'%(name)s'용 플러그인을 로드하지 않음"
+
+msgid "Not a valid value type"
+msgstr "올바른 값 유형이 아님"
+
+#, python-format
+msgid "Not allowed to create members for image %s."
+msgstr "이미지 %s의 멤버를 작성할 수 없습니다."
+
+#, python-format
+msgid "Not allowed to deactivate image in status '%s'"
+msgstr "'%s' 상태의 이미지를 비활성화할 수 없음"
+
+#, python-format
+msgid "Not allowed to delete members for image %s."
+msgstr "이미지 %s의 멤버를 삭제할 수 없습니다."
+
+#, python-format
+msgid "Not allowed to delete tags for image %s."
+msgstr "이미지 %s의 태그를 삭제할 수 없습니다."
+
+#, python-format
+msgid "Not allowed to list members for image %s."
+msgstr "이미지 %s의 멤버를 나열할 수 없습니다."
+
+#, python-format
+msgid "Not allowed to reactivate image in status '%s'"
+msgstr "'%s' 상태의 이미지를 다시 활성화할 수 없음"
+
+#, python-format
+msgid "Not allowed to update members for image %s."
+msgstr "이미지 %s의 멤버를 업데이트할 수 없습니다."
+
+#, python-format
+msgid "Not allowed to update tags for image %s."
+msgstr "이미지 %s의 태그를 업데이트할 수 없습니다."
+
+#, python-format
+msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
+msgstr ""
+"이미지 %(image_id)s에 대한 이미지 데이터의 업로드가 허용되지 않음: %(error)s"
+
+msgid "Number of sort dirs does not match the number of sort keys"
+msgstr "정렬 디렉토리 수가 정렬 키 수와 일치하지 않음"
+
+msgid "Old and new sorting syntax cannot be combined"
+msgstr "이전 및 새 저장 구문은 결합할 수 없음"
+
+#, python-format
+msgid "Operation \"%s\" requires a member named \"value\"."
+msgstr "\"%s\" 오퍼레이션에는 \"value\"라는 이름의 멤버가 필요합니다."
+
+msgid ""
+"Operation objects must contain exactly one member named \"add\", \"remove\", "
+"or \"replace\"."
+msgstr ""
+"조작 오브젝트에는 \"add\", \"remove\", 또는 \"replace\" 멤버 중 하나만 포함되"
+"어야 합니다. "
+
+msgid ""
+"Operation objects must contain only one member named \"add\", \"remove\", or "
+"\"replace\"."
+msgstr ""
+"조작 오브젝트에는 \"add\", \"remove\",또는 \"replace\" 멤버 중 하나만 포함되"
+"어야 합니다."
+
+msgid "Operations must be JSON objects."
+msgstr "오퍼레이션은 JSON 오브젝트여야 합니다."
+
+#, python-format
+msgid "Operator %(op)s is not supported"
+msgstr "연산자 %(op)s은(는) 지원되지 않음"
+
+#, python-format
+msgid "Original locations is not empty: %s"
+msgstr "원본 위치가 비어있지 않음: %s"
+
+msgid "Owner must be specified to create a tag."
+msgstr "태그를 작성하려면 소유자로 지정되어야 합니다."
+
+msgid "Owner of the image"
+msgstr "이미지의 소유자"
+
+msgid "Owner of the namespace."
+msgstr "네임스페이스의 소유자입니다."
+
+msgid "Param values can't contain 4 byte unicode."
+msgstr "매개변수 값에 4바이트 유니코드를 포함할 수 없습니다."
+
+msgid ""
+"Partial name of a pipeline in your paste configuration file with the service "
+"name removed. For example, if your paste section name is [pipeline:glance-"
+"api-keystone] use the value \"keystone\""
+msgstr ""
+"서비스 이름이 제거된 붙여넣기 구성 파일에 있는 파이프라인의 부분 이름입니다. "
+"예를 들어 붙여넣기 섹션 이름이 [pipeline:glance-api-keystone]이면 값으로 "
+"\"keystone\"을 사용합니다. "
+
+msgid "Path to the directory where json metadata files are stored"
+msgstr "Json 메타데이터 파일이 저장된 디렉토리 경로"
+
+#, python-format
+msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
+msgstr ""
+"플러그인 이름 '%(plugin)s'은(는) 아티팩트 유형 이름 '%(name)s'과(와) 일치해"
+"야 함"
+
+#, python-format
+msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
+msgstr ""
+"`%s` 포인터에 인식되는 이스케이프 시퀀스가 아닌 \"~\"가 포함되어 있습니다."
+
+#, python-format
+msgid "Pointer `%s` contains adjacent \"/\"."
+msgstr "포인터 `%s`에 인접 \"/\"가 포함됩니다. "
+
+#, python-format
+msgid "Pointer `%s` does not contains valid token."
+msgstr "포인터 `%s`에 올바른 토큰이 포함되어 있지 않습니다. "
+
+#, python-format
+msgid "Pointer `%s` does not start with \"/\"."
+msgstr "`%s` 포인터가 \"/\"로 시작하지 않습니다."
+
+#, python-format
+msgid "Pointer `%s` end with \"/\"."
+msgstr "포인터 `%s`이(가) \"/\"로 끝납니다. "
+
+msgid ""
+"Pointer contains '~' which is not part of a recognized escape sequence [~0, "
+"~1]."
+msgstr ""
+"포인터에 인식되는 이스케이프 시퀀스 [~0, ~1]의 일부가 아닌 '~'가 포함되어 있"
+"습니다."
+
+#, python-format
+msgid "Port \"%s\" is not valid."
+msgstr "\"%s\" 포트가 올바르지 않습니다."
+
+msgid "Port the registry server is listening on."
+msgstr "레지스트리 서버가 청취 중인 포트입니다. "
+
+#, python-format
+msgid "Prerelease numeric component is too large (%d characters max)"
+msgstr "사전 릴리스 숫자 컴포넌트가 너무 큼(최대 %d자)"
+
+msgid "Private key file to use when starting API server securely."
+msgstr "API 서버를 안전하게 시작할 때 사용할 개인 키 파일"
+
+#, python-format
+msgid "Process %d not running"
+msgstr "프로세스 %d이(가) 실행 중이지 않음"
+
+#, python-format
+msgid "Properties %s must be set prior to saving data."
+msgstr "데이터를 저장하기 전에 %s 특성을 설정해야 합니다."
+
+#, python-format
+msgid ""
+"Property %(property_name)s does not start with the expected resource type "
+"association prefix of '%(prefix)s'."
+msgstr ""
+"특성 %(property_name)s이(가) 예상 자원 유형 연관 접두부인 '%(prefix)s'(으)로 "
+"시작하지 않습니다."
+
+#, python-format
+msgid "Property %s already present."
+msgstr "%s 특성이 이미 존재합니다."
+
+#, python-format
+msgid "Property %s does not exist."
+msgstr "%s 특성이 존재하지 않습니다."
+
+#, python-format
+msgid "Property %s may not be removed."
+msgstr "%s 특성을 제거할 수 없습니다."
+
+#, python-format
+msgid "Property %s must be set prior to saving data."
+msgstr "데이터를 저장하기 전에 %s 특성을 설정해야 합니다."
+
+#, python-format
+msgid "Property '%(name)s' may not have value '%(val)s': %(msg)s"
+msgstr "특성 '%(name)s'에 값 '%(val)s'이(가) 없음: %(msg)s"
+
+#, python-format
+msgid "Property '%s' is protected"
+msgstr "'%s' 특성이 보호됨 "
+
+msgid "Property names can't contain 4 byte unicode."
+msgstr "특성 이름에 4바이트 유니코드를 포함할 수 없습니다."
+
+#, python-format
+msgid ""
+"Property protection on operation %(operation)s for rule %(rule)s is not "
+"found. No role will be allowed to perform this operation."
+msgstr ""
+"규칙 %(rule)s에 대한 조작 %(operation)s의 특성 보호를 찾을 수 없습니다. 이 조"
+"작 수행을 위해 허용된 역할이 없습니다."
+
+#, python-format
+msgid "Property's %(prop)s value has not been found"
+msgstr "특성의 %(prop)s 값을 찾지 못함"
+
+#, python-format
+msgid "Provided header feature is unsupported: %(feature)s"
+msgstr "제공된 헤더 기능은 지원되지 않음: %(feature)s"
+
+#, python-format
+msgid ""
+"Provided image size must match the stored image size. (provided size: "
+"%(ps)d, stored size: %(ss)d)"
+msgstr ""
+"제공된 이미지 크기가 저장된 이미지 크기와 일치해야 합니다(제공된 크기: "
+"%(ps)d, 저장된 크기: %(ss)d)."
+
+#, python-format
+msgid "Provided object does not match schema '%(schema)s': %(reason)s"
+msgstr "제공된 오브젝트가 스키마 '%(schema)s'에 일치하지 않음: %(reason)s"
+
+#, python-format
+msgid "Provided status of task is unsupported: %(status)s"
+msgstr "제공된 태스크의 상태가 지원되지 않음: %(status)s"
+
+#, python-format
+msgid "Provided type of task is unsupported: %(type)s"
+msgstr "제공된 태스크 유형이 지원되지 않음: %(type)s"
+
+msgid "Provides a user friendly description of the namespace."
+msgstr "사용자에게 익숙한 네임스페이스 설명을 제공합니다."
+
+msgid "Public images do not have members."
+msgstr "공용 이미지에 멤버가 없습니다."
+
+msgid ""
+"Public url to use for versions endpoint. The default is None, which will use "
+"the request's host_url attribute to populate the URL base. If Glance is "
+"operating behind a proxy, you will want to change this to represent the "
+"proxy's URL."
+msgstr ""
+"버전 엔드포인트에 사용할 공용 url입니다. 기본값은 None이며 이를 사용하면 요청"
+"의 host_url 속성을 사용하여 URL의 기본을 채웁니다. 글랜스를 프록시 배후에서 "
+"작동 중이면 프록시 URL을 나타내도록 이를 변경할 수 있습니다."
+
+msgid "Python module path of data access API"
+msgstr "데이터 액세스 API의 Python 모듈 경로"
+
+msgid "Received invalid HTTP redirect."
+msgstr "올바르지 않은 HTTP 경로 재지정을 수신했습니다. "
+
+#, python-format
+msgid "Redirecting to %(uri)s for authorization."
+msgstr "권한 부여를 위해 %(uri)s(으)로 경로 재지정 중입니다. "
+
+#, python-format
+msgid "Registry service can't use %s"
+msgstr "레지스트리 서비스에서 %s을(를) 사용할 수 없음"
+
+#, python-format
+msgid "Registry was not configured correctly on API server. Reason: %(reason)s"
+msgstr ""
+"API 서버에서 레지스트리가 올바르게 구성되지 않았습니다. 이유: %(reason)s"
+
+#, python-format
+msgid "Relation %(name)s may not have multiple values"
+msgstr "관계 %(name)s에 값이 여러 개일 수 없음"
+
+#, python-format
+msgid "Reload of %(serv)s not supported"
+msgstr "%(serv)s을(를) 다시 로드할 수 없음"
+
+#, python-format
+msgid "Reloading %(serv)s (pid %(pid)s) with signal(%(sig)s)"
+msgstr "신호(%(sig)s)와 함께 %(serv)s(pid %(pid)s) 다시 로드 중"
+
+#, python-format
+msgid "Removing stale pid file %s"
+msgstr "시간이 경과된 pid 파일 %s을(를) 제거하는 중 "
+
+msgid "Request body must be a JSON array of operation objects."
+msgstr "요청 본문은 오퍼레이션 오브젝트의 JSON 배열이어야 합니다."
+
+msgid "Request must be a list of commands"
+msgstr "요청은 쉼표로 구분한 목록이어야 합니다. "
+
+#, python-format
+msgid "Required store %s is invalid"
+msgstr "필수 저장소 %s이(가) 올바르지 않음"
+
+msgid ""
+"Resource type names should be aligned with Heat resource types whenever "
+"possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
+"html"
+msgstr ""
+"자원 유형 이름은 히트 자원 유형에 맞게 지정되어야 합니다.사용 가능: http://"
+"docs.openstack.org/developer/heat/template_guide/openstack.html"
+
+msgid "Response from Keystone does not contain a Glance endpoint."
+msgstr "키스톤의 응답에 글랜스 엔드포인트가 들어있지 않습니다. "
+
+msgid "Role used to identify an authenticated user as administrator."
+msgstr "인증된 사용자를 관리자로 식별하는 데 사용되는 역할."
+
+msgid ""
+"Run as a long-running process. When not specified (the default) run the "
+"scrub operation once and then exits. When specified do not exit and run "
+"scrub on wakeup_time interval as specified in the config."
+msgstr ""
+"장기 실행 프로세스로 실행됩니다. 지정하지 않는 경우(기본값) 삭제 조작을 한 "
+"번 실행한 다음 종료합니다. 종료하지 않도록 지정된 경우 구성에 지정된 "
+"wakeup_time 간격으로 삭제를 실행하십시오."
+
+msgid "Scope of image accessibility"
+msgstr "이미지 접근성의 범위"
+
+msgid "Scope of namespace accessibility."
+msgstr "네임스페이스 접근성의 범위입니다."
+
+#, python-format
+msgid "Server %(serv)s is stopped"
+msgstr "서버 %(serv)s이(가) 중지됨"
+
+#, python-format
+msgid "Server worker creation failed: %(reason)s."
+msgstr "서버 작업자 작성에 실패함: %(reason)s."
+
+msgid ""
+"Set a system wide quota for every user. This value is the total capacity "
+"that a user can use across all storage systems. A value of 0 means unlimited."
+"Optional unit can be specified for the value. Accepted units are B, KB, MB, "
+"GB and TB representing Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes "
+"respectively. If no unit is specified then Bytes is assumed. Note that there "
+"should not be any space between value and unit and units are case sensitive."
+msgstr ""
+"각 사용자에 대한 시스템 차원의 할당량을 설정하십시오. 이 값은 모든 스토리지 "
+"시스템에서 사용자가 사용할 수 있는 전체 용량입니다. 0 값은 무제한을 의미합니"
+"다. 값에 선택적 단위를 지정할 수 있습니다. 허용되는 단위는 각각 바이트, 킬로"
+"바이트, 메가바이트, 기가바이트 및 테라바이트를 나타내는 B, KB, MB, GB 및 TB입"
+"니다. 단위를 지정하지 않으면 바이트로 가정합니다. 값과 단위 사이에 공백을 사"
+"용하지 않아야 하며 단위는 대소문자를 구분합니다."
+
+#, python-format
+msgid "Show level %(shl)s is not supported in this operation"
+msgstr "이 조작에서는 표시 레벨 %(shl)s이(가) 지원되지 않음"
+
+msgid "Size of image file in bytes (READ-ONLY)"
+msgstr "이미지 파일의 크기(바이트)(읽기 전용)"
+
+msgid ""
+"Some resource types allow more than one key / value pair per instance.  For "
+"example, Cinder allows user and image metadata on volumes. Only the image "
+"properties metadata is evaluated by Nova (scheduling or drivers). This "
+"property allows a namespace target to remove the ambiguity."
+msgstr ""
+"일부 자원 유형은 인스턴스 당 둘 이상의 키 / 값 쌍을 허용합니다.예를 들어, "
+"Cinder는 볼륨에 사용자 및 이미지 메타데이터를 허용합니다. 이미지 특성 메타데"
+"이터만 Nova(스케줄링 또는 드라이버)에 의해 평가됩니다. 이 특성은 모호성을 제"
+"거하기 위해 네임스페이스 대상을 허용합니다."
+
+msgid "Sort direction supplied was not valid."
+msgstr "제공된 정렬 방향이 올바르지 않습니다."
+
+msgid "Sort key supplied was not valid."
+msgstr "제공되는 정렬 키가 올바르지 않습니다. "
+
+msgid ""
+"Specifies the prefix to use for the given resource type. Any properties in "
+"the namespace should be prefixed with this prefix when being applied to the "
+"specified resource type. Must include prefix separator (e.g. a colon :)."
+msgstr ""
+"제공된 자원 유형에 사용할 접두부를 지정합니다. 지정된 자원 유형에 적용되는 경"
+"우 네임스페이스의 모든 특성은 이 접두부로 시작해야 합니다. 접두부 구분 기호"
+"(예: 콜론 :)를 포함해야 합니다."
+
+msgid "Specifies which task executor to be used to run the task scripts."
+msgstr ""
+"태스크 스크립트를 실행하는 데 사용할 태스크 실행 프로그램을 지정합니다."
+
+msgid "Status must be \"pending\", \"accepted\" or \"rejected\"."
+msgstr "상태는 \"보류 중\", \"수락됨\" 또는 \"거부됨\"이어야 합니다."
+
+msgid "Status not specified"
+msgstr "상태를 지정하지 않음"
+
+msgid "Status of the image (READ-ONLY)"
+msgstr "이미지의 상태(읽기 전용) "
+
+#, python-format
+msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
+msgstr "%(cur_status)s에서 %(new_status)s(으)로의 상태 전이가 허용되지 않음"
+
+#, python-format
+msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
+msgstr "신호(%(sig)s)와 함께 %(serv)s(pid %(pid)s) 중지 중"
+
+#, python-format
+msgid "Store for image_id not found: %s"
+msgstr "image_id에 대한 저장소를 찾을 수 없음: %s"
+
+#, python-format
+msgid "Store for scheme %s not found"
+msgstr "%s 스키마에 대한 저장소를 찾을 수 없음"
+
+#, python-format
+msgid ""
+"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
+"(%(actual)s) did not match. Setting image status to 'killed'."
+msgstr ""
+"제공된 %(attr)s (%(supplied)s) 및 %(attr)s (업로드된 이미지 %(actual)s(으)로"
+"부터 생성됨)이(가) 일치하지 않음. 이미지 상태를 '강제 종료됨'으로 설정. "
+
+msgid "Supported values for the 'container_format' image attribute"
+msgstr "'container_format' 이미지 속성에 대해 지원되는 값"
+
+msgid "Supported values for the 'disk_format' image attribute"
+msgstr "'disk_format' 이미지 속성에 대해 지원되는 값"
+
+#, python-format
+msgid "Suppressed respawn as %(serv)s was %(rsn)s."
+msgstr "%(serv)s이(가) %(rsn)s이므로 재파생이 억제되었습니다."
+
+msgid "System SIGHUP signal received."
+msgstr "시스템 SIGHUP 신호를 수신했습니다."
+
+#, python-format
+msgid "Task '%s' is required"
+msgstr "태스크 '%s'이(가) 필요함"
+
+msgid "Task does not exist"
+msgstr "태스크가 존재하지 않음"
+
+msgid "Task was not configured properly"
+msgstr "태스크가 제대로 구성되지 않음"
+
+#, python-format
+msgid "Task with the given id %(task_id)s was not found"
+msgstr "지정된 ID가 %(task_id)s인 태스크를 찾을 수 없음"
+
+msgid "The \"changes-since\" filter is no longer available on v2."
+msgstr "\"changes-since\" 필터는 v2에서 더 이상 사용할 수 없습니다."
+
+#, python-format
+msgid "The CA file you specified %s does not exist"
+msgstr "사용자가 지정한 CA 파일 %s이(가) 존재하지 않음"
+
+#, python-format
+msgid ""
+"The Image %(image_id)s object being created by this task %(task_id)s, is no "
+"longer in valid status for further processing."
+msgstr ""
+"이 태스크 %(task_id)s에서 작성 중인 이미지 %(image_id)s 오브젝트는 더 이상 향"
+"후 처리에 사용할 수 있는 올바른 상태가 아닙니다."
+
+msgid "The Store URI was malformed."
+msgstr "저장소 URI의 형식이 올바르지 않습니다."
+
+msgid ""
+"The URL to the keystone service. If \"use_user_token\" is not in effect and "
+"using keystone auth, then URL of keystone can be specified."
+msgstr ""
+"키스톤 서비스에 대한 URL입니다. \"use_user_token\"이(가) 적용되지 않는 경우 "
+"키스톤 권한을 사용한 다음 키스톤의 URL을 지정할 수 있습니다."
+
+msgid ""
+"The address where the Swift authentication service is listening.(deprecated)"
+msgstr "Swift 인증 서비스가 청취 중인 주소입니다.(더 이상 사용되지 않음)"
+
+msgid ""
+"The administrators password. If \"use_user_token\" is not in effect, then "
+"admin credentials can be specified."
+msgstr ""
+"관리자 비밀번호입니다. \"use_user_token\"이(가) 적용되지 않는 경우 관리 신임 "
+"정보를 지정할 수 있습니다."
+
+msgid ""
+"The administrators user name. If \"use_user_token\" is not in effect, then "
+"admin credentials can be specified."
+msgstr ""
+"관리 사용자 이름입니다. \"use_user_token\"이(가) 적용되지 않는 경우 관리 신"
+"임 정보를 지정할 수 있습니다."
+
+msgid "The amount of time in seconds to delay before performing a delete."
+msgstr "삭제를 수행하기 전에 지연되는 시간(초)입니다. "
+
+msgid ""
+"The amount of time to let an image remain in the cache without being "
+"accessed."
+msgstr "액세스되지 않고 캐시에 이미지가 남아 있게 하는시간입니다."
+
+msgid ""
+"The backlog value that will be used when creating the TCP listener socket."
+msgstr "TCP 리스너 소켓을 작성할 때 사용하는 백로그 값입니다. "
+
+#, python-format
+msgid "The cert file you specified %s does not exist"
+msgstr "사용자가 지정한 인증 파일 %s이(가) 존재하지 않음"
+
+msgid "The config file that has the swift account(s)configs."
+msgstr "swift 계정 구성이 있는 구성 파일입니다."
+
+msgid "The current status of this task"
+msgstr "이 태스크의 현재 상태"
+
+#, python-format
+msgid ""
+"The device housing the image cache directory %(image_cache_dir)s does not "
+"support xattr. It is likely you need to edit your fstab and add the "
+"user_xattr option to the appropriate line for the device housing the cache "
+"directory."
+msgstr ""
+"디바이스 하우징 이미지 캐시 디렉터리 %(image_cache_dir)s의 Device 는 xattr을 "
+"지원하지 않습니다. fstab을 수정하거나 user_xattr 옵션을 디바이스 하우징 캐시 "
+"디렉터리의 적합한 행에 추가하기 바랍니다."
+
+msgid "The driver to use for image cache management."
+msgstr "이미지 캐시를 관리하는 데 사용되는 드라이버입니다. "
+
+#, python-format
+msgid ""
+"The given uri is not valid. Please specify a valid uri from the following "
+"list of supported uri %(supported)s"
+msgstr ""
+"제공된 uri가 올바르지 않습니다. 다음 지원 uri 목록에서 올바른 uri를 지정하십"
+"시오. %(supported)s"
+
+msgid "The hostname/IP of the pydev process listening for debug connections"
+msgstr "디버그 연결을 청취하는 pydev 프로세스의 hostname/IP"
+
+#, python-format
+msgid ""
+"The image %s is already present on the slave, but our check for it did not "
+"find it. This indicates that we do not have permissions to see all the "
+"images on the slave server."
+msgstr ""
+"이미지 %s이(가) 이미 슬레이브에 존재하지만 해당 이미지를 검색할 때발견하지 못"
+"했습니다. 슬레이브 서버에 있는 이미지 전체를 볼 수 있는 권한이없기 때문입니"
+"다. "
+
+#, python-format
+msgid "The incoming image is too large: %s"
+msgstr "수신 이미지가 너무 큼: %s"
+
+#, python-format
+msgid "The key file you specified %s does not exist"
+msgstr "사용자가 지정한 키 파일 %s이(가) 존재하지 않음"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image locations. "
+"Attempted: %(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"허용된 이미지 위치 수의 한계가 초과되었습니다. 시도함: %(attempted)s, 최대: "
+"%(maximum)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image members for this "
+"image. Attempted: %(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"이 이미지에 대해 허용된 이미지 멤버 수의 한계가 초과되었습니다. 시도함: "
+"%(attempted)s, 최대: %(maximum)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image properties. "
+"Attempted: %(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"허용된 이미지 특성 수의 한계가 초과되었습니다. 시도함: %(attempted)s, 최대: "
+"%(maximum)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image properties. "
+"Attempted: %(num)s, Maximum: %(quota)s"
+msgstr ""
+"허용된 이미지 특성 수의 한계가 초과되었습니다. 시도함: %(num)s, 최대: "
+"%(quota)s"
+
+#, python-format
+msgid ""
+"The limit has been exceeded on the number of allowed image tags. Attempted: "
+"%(attempted)s, Maximum: %(maximum)s"
+msgstr ""
+"허용된 이미지 태그 수의 한계가 초과되었습니다. 시도함: %(attempted)s, 최대: "
+"%(maximum)s"
+
+#, python-format
+msgid "The location %(location)s already exists"
+msgstr "위치 %(location)s이(가) 이미 있음"
+
+#, python-format
+msgid "The location data has an invalid ID: %d"
+msgstr "위치 데이터의 ID가 올바르지 않음: %d"
+
+msgid ""
+"The location of the property protection file.This file contains the rules "
+"for property protections and the roles/policies associated with it. If this "
+"config value is not specified, by default, property protections won't be "
+"enforced. If a value is specified and the file is not found, then the glance-"
+"api service will not start."
+msgstr ""
+"특성 보호 파일의 위치. 이 파일에는 특성 보호 규칙 및 해당 규칙과 연관된 역할/"
+"정책이 포함되어 있습니다. 이 구성 값을 지정하지 않으면 기본적으로 특성 보호"
+"가 적용되지 않습니다. 값을 지정했지만 파일을 찾을 수 없는 경우에는 glance-"
+"api 서비스가 시작되지 않습니다."
+
+#, python-format
+msgid ""
+"The metadata definition %(record_type)s with name=%(record_name)s not "
+"deleted. Other records still refer to it."
+msgstr ""
+"name=%(record_name)s인 메타데이터 정의 %(record_type)s이(가) 삭제되지 않습니"
+"다. 기타 레코드를 여전히 참조합니다."
+
+#, python-format
+msgid "The metadata definition namespace=%(namespace_name)s already exists."
+msgstr "메타데이터 정의 namespace=%(namespace_name)s이(가) 이미 존재합니다."
+
+#, python-format
+msgid ""
+"The metadata definition object with name=%(object_name)s was not found in "
+"namespace=%(namespace_name)s."
+msgstr ""
+"name=%(object_name)s인 메타데이터 정의 오브젝트를 namespace="
+"%(namespace_name)s에서 찾을 수 없습니다."
+
+#, python-format
+msgid ""
+"The metadata definition property with name=%(property_name)s was not found "
+"in namespace=%(namespace_name)s."
+msgstr ""
+"name=%(property_name)s인 메타데이터 정의 특성을 namespace=%(namespace_name)s"
+"에서 찾을 수 없습니다."
+
+#, python-format
+msgid ""
+"The metadata definition resource-type association of resource-type="
+"%(resource_type_name)s to namespace=%(namespace_name)s already exists."
+msgstr ""
+"resource-type=%(resource_type_name)s의 메타데이터 정의 자원 유형 연관이 "
+"namespace=%(namespace_name)s에 이미 존재합니다. "
+
+#, python-format
+msgid ""
+"The metadata definition resource-type association of resource-type="
+"%(resource_type_name)s to namespace=%(namespace_name)s, was not found."
+msgstr ""
+"resource-type=%(resource_type_name)s의 메타데이터 정의 자원 유형 연관이 "
+"namespace=%(namespace_name)s에서 찾을 수 없습니다. "
+
+#, python-format
+msgid ""
+"The metadata definition resource-type with name=%(resource_type_name)s, was "
+"not found."
+msgstr ""
+"name=%(resource_type_name)s인 메타데이터 정의 자원 유형을 찾을 수 없습니다. "
+
+#, python-format
+msgid ""
+"The metadata definition tag with name=%(name)s was not found in namespace="
+"%(namespace_name)s."
+msgstr ""
+"name=%(name)s인 메타데이터 정의 태그를 namespace=%(namespace_name)s에서 찾을 "
+"수 없습니다."
+
+msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
+msgstr "엔진이 실행되는 모드. '직렬' 또는 '병렬' 모드입니다. "
+
+msgid ""
+"The number of child process workers that will be created to service "
+"requests. The default will be equal to the number of CPUs available."
+msgstr ""
+"요청을 처리하기 위해 작성하는 하위 프로세스 작업자 수입니다. 기본값은 사용 가"
+"능한 CPU 수와 동일합니다."
+
+msgid ""
+"The number of parallel activities executed at the same time by the engine. "
+"The value can be greater than one when the engine mode is 'parallel'."
+msgstr ""
+"동일한 시간에 엔진에서 실행되는 병렬 활동 수입니다. 엔진 모드가 '병렬'인 경"
+"우 이 값은 1보다 클 수 있습니다."
+
+msgid "The parameters required by task, JSON blob"
+msgstr "태스크에서 필요로 하는 매개변수, JSON blob"
+
+msgid ""
+"The path to the cert file to use in SSL connections to the registry server, "
+"if any. Alternately, you may set the GLANCE_CLIENT_CERT_FILE environment "
+"variable to a filepath of the CA cert file"
+msgstr ""
+"레지스트리 서버에 대한 SSL 연결에 사용할 인증 파일에 대한 경로(있는 경우). 또"
+"는 GLANCE_CLIENT_CERT_FILE 환경 변수를 CA 인증 파일의 파일 경로로 설정할 수 "
+"있습니다."
+
+msgid ""
+"The path to the certifying authority cert file to use in SSL connections to "
+"the registry server, if any. Alternately, you may set the "
+"GLANCE_CLIENT_CA_FILE environment variable to a filepath of the CA cert file."
+msgstr ""
+"레지스트리 서버에 대한 SSL 연결에서 사용할 권한 인증 파일을인증하는 경로(있"
+"는 경우). 또는 GLANCE_CLIENT_CA_FILE 환경 변수를 CA 인증 파일의 파일 경로로 "
+"설정할 수 있습니다. "
+
+msgid ""
+"The path to the key file to use in SSL connections to the registry server, "
+"if any. Alternately, you may set the GLANCE_CLIENT_KEY_FILE environment "
+"variable to a filepath of the key file"
+msgstr ""
+"레지스트리 서버에 대한 SSL 연결에서 사용할 키 파일의 경로(있는 경우). 또는 "
+"GLANCE_CLIENT_KEY_FILE 환경 변수를 키 파일의 파일 경로로 설정할 수 있습니다."
+
+msgid ""
+"The path to the sqlite file database that will be used for image cache "
+"management."
+msgstr "이미지 캐시 관리에 사용되는 sqlite 파일 데이터베이스에 대한경로."
+
+msgid ""
+"The period of time, in seconds, that the API server will wait for a registry "
+"request to complete. A value of 0 implies no timeout."
+msgstr ""
+"레지스트리 요청을 완료하도록 API 서버가 대기하는 시간(초)입니다. 0 값은 제한"
+"시간 초과를 의미합니다. "
+
+msgid "The port on which a pydev process is listening for connections."
+msgstr "pydev 프로세스가 연결을 청취하는 포트입니다."
+
+msgid "The port on which the server will listen."
+msgstr "서버가 청취할 포트입니다. "
+
+msgid ""
+"The protocol to use for communication with the registry server.  Either http "
+"or https."
+msgstr "레지스트리 서버와의 통신을 위해 사용할 프로토콜. http 또는 https."
+
+#, python-format
+msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
+msgstr "제공된 본문 %(body)s이(가) 지정된 스키마에서 올바르지 않음: %(schema)s"
+
+msgid "The provided image is too large."
+msgstr "제공된 이미지가 너무 큽니다."
+
+#, python-format
+msgid "The provided path '%(path)s' is invalid: %(explanation)s"
+msgstr "제공된 경로 '%(path)s'이(가) 올바르지 않음: %(explanation)s"
+
+msgid ""
+"The reference to the default swift account/backing store parameters to use "
+"for adding new images."
+msgstr ""
+"새 이미지를 추가하는 데 사용할 기본 swift 계정/백업 저장소 매개변수에 대한 참"
+"조입니다."
+
+msgid ""
+"The region for the authentication service. If \"use_user_token\" is not in "
+"effect and using keystone auth, then region name can be specified."
+msgstr ""
+"인증 서비스에 대한 리젼입니다. If \"use_user_token\"이(가) 적용되지 않는 경"
+"우 키스톤 권한을 사용한 다음 리젼 이름을 지정할 수 있습니다."
+
+msgid "The request returned 500 Internal Server Error."
+msgstr "요청 시 500 내부 서버 오류가 리턴되었습니다."
+
+msgid ""
+"The request returned 503 Service Unavailable. This generally occurs on "
+"service overload or other transient outage."
+msgstr ""
+"요청에서 '503 서비스 사용 불가능'을 리턴했습니다. 이는 일반적으로 서비스 과부"
+"하나 기타 일시적 정전일 경우 발생합니다. "
+
+#, python-format
+msgid ""
+"The request returned a 302 Multiple Choices. This generally means that you "
+"have not included a version indicator in a request URI.\n"
+"\n"
+"The body of response returned:\n"
+"%(body)s"
+msgstr ""
+"요청이 302 다중 선택사항을 리턴했습니다. 이는 일반적으로 요청 URI에 버전 표시"
+"기를 포함하지 않았음을 의미합니다.\n"
+"\n"
+"리턴된 응답의 본문:\n"
+"%(body)s"
+
+#, python-format
+msgid ""
+"The request returned a 413 Request Entity Too Large. This generally means "
+"that rate limiting or a quota threshold was breached.\n"
+"\n"
+"The response body:\n"
+"%(body)s"
+msgstr ""
+"요청에서 '413 요청 엔티티가 너무 큼'을 리턴했습니다. 이는 일반적으로 등급 한"
+"도나 할당량 임계값을 위반했음을 의미합니다.\n"
+"\n"
+"응답 본문:\n"
+"%(body)s"
+
+#, python-format
+msgid ""
+"The request returned an unexpected status: %(status)s.\n"
+"\n"
+"The response body:\n"
+"%(body)s"
+msgstr ""
+"요청이 예상치 않은 상태를 리턴함: %(status)s.\n"
+"\n"
+"응답 본문:\n"
+"%(body)s"
+
+msgid ""
+"The requested image has been deactivated. Image data download is forbidden."
+msgstr ""
+"요청된 이미지가 비활성화되었습니다. 이미지 데이터 다운로드가 금지됩니다."
+
+msgid "The result of current task, JSON blob"
+msgstr "현재 태스크의 결과, JSON blob"
+
+#, python-format
+msgid ""
+"The size of the data %(image_size)s will exceed the limit. %(remaining)s "
+"bytes remaining."
+msgstr ""
+"데이터 크기 %(image_size)s이(가) 남은 한도 바이트 %(remaining)s을(를) 초과합"
+"니다."
+
+#, python-format
+msgid "The specified member %s could not be found"
+msgstr "지정된 멤버 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "The specified metadata object %s could not be found"
+msgstr "지정된 메타데이터 오브젝트 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "The specified metadata tag %s could not be found"
+msgstr "지정된 메타데이터 태그 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "The specified namespace %s could not be found"
+msgstr "지정된 네임스페이스 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "The specified property %s could not be found"
+msgstr "지정된 특성 %s을(를) 찾을 수 없음"
+
+#, python-format
+msgid "The specified resource type %s could not be found "
+msgstr "지정된 자원 유형 %s을(를) 찾을 수 없음"
+
+msgid ""
+"The status of deleted image location can only be set to 'pending_delete' or "
+"'deleted'"
+msgstr ""
+"삭제된 이미지 위치의 상태는 'pending_delete' 또는 'deleted'로만 설정할 수 있"
+"음"
+
+msgid ""
+"The status of deleted image location can only be set to 'pending_delete' or "
+"'deleted'."
+msgstr ""
+"삭제된 이미지 위치의 상태는 'pending_delete' 또는 'deleted'로만 설정할 수 있"
+"습니다."
+
+msgid "The status of this image member"
+msgstr "이 이미지 멤버의 상태"
+
+msgid ""
+"The store names to use to get store preference order. The name must be "
+"registered by one of the stores defined by the 'stores' config option. This "
+"option will be applied when you using 'store_type' option as image location "
+"strategy defined by the 'location_strategy' config option."
+msgstr ""
+"저장소 환경 설정 순서를 가져오는 데 사용하는 저장소 이름입니다. 이름은 "
+"'stores' 구성 옵션에서 정의하는 저장소 중 하나를 사용하여 등록해야 합니다. "
+"이 옵션은 'store_type' 옵션을 'location_strategy' 구성 옵션에서 정의하는 이미"
+"지 위치 전략으로 사용할 때 적용됩니다."
+
+msgid ""
+"The strategy to use for authentication. If \"use_user_token\" is not in "
+"effect, then auth strategy can be specified."
+msgstr ""
+"인증에 사용할 전략입니다. If \"use_user_token\"이(가) 적용되지 않는 경우인증 "
+"전략을 지정할 수 있습니다."
+
+#, python-format
+msgid ""
+"The target member %(member_id)s is already associated with image "
+"%(image_id)s."
+msgstr "대상 멤버 %(member_id)s이(가) 이미 이미지 %(image_id)s."
+
+msgid ""
+"The tenant name of the administrative user. If \"use_user_token\" is not in "
+"effect, then admin tenant name can be specified."
+msgstr ""
+"관리 사용자의 테넌트 이름입니다. \"use_user_token\"이(가) 적용되지 않는 경우"
+"관리 테넌트 이름을 지정할 수 있습니다."
+
+msgid "The type of task represented by this content"
+msgstr "이 컨텐츠에서 나타내는 태스크의 유형"
+
+msgid "The unique namespace text."
+msgstr "고유 네임스페이스 텍스트입니다."
+
+msgid ""
+"The upper limit (the maximum size of accumulated cache in bytes) beyond "
+"which pruner, if running, starts cleaning the images cache."
+msgstr ""
+"실행 중인 경우 프루너(pruner)가 이미지 캐시 지우기를 시작하는 상한(누적된 최"
+"대 캐시 크기(바이트))."
+
+msgid "The user friendly name for the namespace. Used by UI if available."
+msgstr ""
+"사용자에게 익숙한 네임스페이스의 이름입니다. 가능한 경우 UI에서 사용됩니다."
+
+msgid ""
+"The user to authenticate against the Swift authentication service "
+"(deprecated)"
+msgstr "Swift 인증 서비스에 대해 인증할 사용자입니다.(더 이상 사용되지 않음)"
+
+msgid ""
+"The value for the socket option TCP_KEEPIDLE.  This is the time in seconds "
+"that the connection must be idle before TCP starts sending keepalive probes."
+msgstr ""
+"소켓 옵션 TCP_KEEPIDLE의 값입니다. 이는 TCP가 활성 유지 프로브 전송을 시작하"
+"기 전에 연결이 유휴되어야 하는 시간(초)입니다."
+
+#, python-format
+msgid ""
+"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
+"verify it.  Error: %(ioe)s"
+msgstr ""
+"%(error_key_name)s %(error_filename)s에 문제점이 있습니다. 문제점을 확인하십"
+"시오. 오류: %(ioe)s"
+
+#, python-format
+msgid ""
+"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
+"verify it. OpenSSL error: %(ce)s"
+msgstr ""
+"%(error_key_name)s %(error_filename)s에 문제점이 있습니다. 문제점을 확인하십"
+"시오. OpenSSL 오류: %(ce)s"
+
+#, python-format
+msgid ""
+"There is a problem with your key pair.  Please verify that cert "
+"%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
+msgstr ""
+"키 쌍에 문제점이 있습니다. 인증 %(cert_file)s 및 키 %(key_file)s이(가) 함께 "
+"있는지 확인하십시오. OpenSSL 오류 %(ce)s"
+
+msgid "There was an error configuring the client."
+msgstr "클라이언트 구성 오류가 있었습니다. "
+
+msgid "There was an error connecting to a server"
+msgstr "서버 연결 오류가 있었습니다. "
+
+msgid ""
+"This config value indicates whether \"roles\" or \"policies\" are used in "
+"the property protection file."
+msgstr ""
+"이 구성 값은 \"roles\" 또는 \"policies\"가 특성 보호 파일에서 사용되는지 여부"
+"를 표시합니다."
+
+msgid ""
+"This operation is currently not permitted on Glance Tasks. They are auto "
+"deleted after reaching the time based on their expires_at property."
+msgstr ""
+"이 조작은 현재 Glance 태스크에 대해서는 허용되지 않습니다. 이들은 expires_at "
+"특성에 기반한 시간에 도달하면 자동으로 삭제됩니다."
+
+msgid "This operation is currently not permitted on Glance images details."
+msgstr "이 조작은 현재 Glance 이미지 세부사항에 대해서는 허용되지 않습니다."
+
+msgid ""
+"This value sets what strategy will be used to determine the image location "
+"order. Currently two strategies are packaged with Glance 'location_order' "
+"and 'store_type'."
+msgstr ""
+"이 값은 이미지 위치 순서를 판별하는 데 사용되는 전략을 설정합니다. 현재 두 개"
+"의 전략이 글랜스 'location_order' 및 'store_type'으로 패키징됩니다."
+
+msgid ""
+"Time in hours for which a task lives after, either succeeding or failing"
+msgstr "이후에 태스크가 활성이 되는 시간(시), 성공 또는 실패"
+
+msgid "Too few arguments."
+msgstr "인수가 너무 적습니다."
+
+msgid "Too few locations"
+msgstr "위치가 너무 적음"
+
+msgid "Too many locations"
+msgstr "위치가 너무 많음"
+
+#, python-format
+msgid "Total size is %(size)d bytes across %(img_count)d images"
+msgstr "%(size)d 이미지에 걸쳐 전체 크기는 %(img_count)d 바이트임"
+
+msgid "Turn on/off delayed delete."
+msgstr "지연된 삭제를 켜기/끄기입니다. "
+
+msgid "Type version has to be a valid semver string"
+msgstr "유형 버전은 올바른 semver 문자열이어야 함"
+
+msgid ""
+"URI cannot contain more than one occurrence of a scheme.If you have "
+"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
+"you need to change it to use the swift+http:// scheme, like so: swift+http://"
+"user:pass@authurl.com/v1/container/obj"
+msgstr ""
+"URI는 스킴의 둘 이상의 발생을 포함할 수 없습니다. 다음과 유사한 URI를 지정한 "
+"경우 swift://user:pass@http://authurl.com/v1/container/obj, 다음과 같이 swift"
+"+http:// 스킴을 사용하도록 변경해야 합니다. swift+http://user:pass@authurl."
+"com/v1/container/obj"
+
+msgid "URL to access the image file kept in external store (READ-ONLY)"
+msgstr "내부 저장소에 보관된 이미지 파일에 액세스하기 위한 URL(읽기 전용) "
+
+#, python-format
+msgid ""
+"Unable to create pid file %(pid)s.  Running as non-root?\n"
+"Falling back to a temp file, you can stop %(service)s service using:\n"
+"  %(file)s %(server)s stop --pid-file %(fb)s"
+msgstr ""
+"pid 파일 %(pid)s을(를) 작성할 수 없습니다. 비루트로 실행 중인지 확인하십시"
+"오.\n"
+"임시 파일로 돌아가 다음을 사용하여 %(service)s 서비스를 중지할 수 있습니다.\n"
+"  %(file)s %(server)s stop --pid-file %(fb)s"
+
+msgid "Unable to filter on a range with a non-numeric value."
+msgstr "숫자가 아닌 값을 사용하여 범위에서 필터링할 수 없습니다."
+
+msgid "Unable to filter using the specified range."
+msgstr "지정된 범위를 사용하여 필터링할 수 없습니다."
+
+#, python-format
+msgid "Unable to find '%s' in JSON Schema change"
+msgstr "JSON 스키마 변경에서 '%s'을(를) 찾을 수 없음"
+
+msgid "Unable to get legacy image"
+msgstr "레거시 이미지를 가져올 수 없음"
+
+msgid "Unable to increase file descriptor limit.  Running as non-root?"
+msgstr ""
+"파일 디스크립터 한계를 늘릴 수 없습니다. 비루트로 실행 중인지 확인하십시오."
+
+#, python-format
+msgid ""
+"Unable to load %(app_name)s from configuration file %(conf_file)s.\n"
+"Got: %(e)r"
+msgstr ""
+"구성 파일 %(conf_file)s에서 %(app_name)s을(를) 로드할 수 없습니다.\n"
+"오류 발생: %(e)r"
+
+#, python-format
+msgid "Unable to load schema: %(reason)s"
+msgstr "스키마를 로드할 수 없음: %(reason)s"
+
+#, python-format
+msgid "Unable to locate paste config file for %s."
+msgstr "%s에 대한 붙여넣기 구성 파일을 찾을 수 없습니다."
+
+msgid "Unable to modify collection in immutable or readonly property"
+msgstr "불변 특성 또는 읽기 전용 특성의 콜렉션을 수정할 수 없음"
+
+msgid "Unable to retrieve request id from context"
+msgstr "컨텍스트에서 요청 ID를 검색할 수 없음"
+
+msgid "Unable to specify artifact type explicitly"
+msgstr "아티팩트 유형을 명시적으로 지정할 수 없음"
+
+msgid "Unable to specify artifact type version explicitly"
+msgstr "아티팩트 유형 버전을 명시적으로 지정할 수 없음"
+
+msgid "Unable to specify version if multiple types are possible"
+msgstr "유형이 여러 개인 경우 버전을 지정할 수 없음"
+
+msgid "Unable to specify version if type is not specified"
+msgstr "유형을 지정하지 않은 경우 버전을 지정할 수 없음"
+
+#, python-format
+msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
+msgstr ""
+"이미지 %(image_id)s에 대한 중복 이미지 데이터를 업로드할 수 없음: %(error)s"
+
+msgid "Unauthorized image access"
+msgstr "권한 없는 이미지 액세스"
+
+#, python-format
+msgid "Unexpected response: %s"
+msgstr "예상치 않은 응답: %s"
+
+#, python-format
+msgid "Unknown auth strategy '%s'"
+msgstr "알 수 없는 auth 전략 '%s'"
+
+#, python-format
+msgid "Unknown command: %s"
+msgstr "알 수 없는 명령: %s"
+
+msgid "Unknown sort direction, must be 'desc' or 'asc'"
+msgstr "알 수 없는 정렬 방향입니다. 'desc' 또는 'asc'여야 함"
+
+msgid "Unrecognized JSON Schema draft version"
+msgstr "인식되지 않는 JSON 스키마 드래프트 버전"
+
+msgid "Unrecognized changes-since value"
+msgstr "인식되지 않는 changes-since 값"
+
+#, python-format
+msgid "Unsupported sort_dir. Acceptable values: %s"
+msgstr "지원되지 않는 sort_dir. 허용 가능한 값: %s"
+
+#, python-format
+msgid "Unsupported sort_key. Acceptable values: %s"
+msgstr "지원되지 않는 sort_key. 허용 가능한 값: %s"
+
+msgid "Value is greater than maximum"
+msgstr "값이 최대값보다 큼"
+
+msgid "Value is less than minimum"
+msgstr "값이 최소값보다 작음"
+
+msgid "Value is required"
+msgstr "값이 필요함"
+
+#, python-format
+msgid "Version component is too large (%d max)"
+msgstr "버전 컴포넌트가 너무 큼(최대 %d)"
+
+#, python-format
+msgid "Version is invalid: %(reason)s"
+msgstr "버전이 올바르지 않음: %(reason)s"
+
+msgid "Virtual size of image in bytes (READ-ONLY)"
+msgstr "이미지의 가상 크기(바이트)(읽기 전용)"
+
+msgid "Visibility must be either \"public\" or \"private\""
+msgstr "가시성은 \"공용\" 또는 \"개인용\" 중 하나여야 합니다. "
+
+#, python-format
+msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
+msgstr "pid %(pid)s(%(file)s)이 종료될 때까지 15초 대기함, 포기하는 중"
+
+msgid ""
+"When false, no artifacts can be loaded regardless of available_plugins. When "
+"true, artifacts can be loaded."
+msgstr ""
+"false이면 available_plugins와 관계 없이 아티팩트를 로드할 수 없습니다.true이"
+"면 아티팩트를 로드할 수 있습니다."
+
+msgid ""
+"When running server in SSL mode, you must specify both a cert_file and "
+"key_file option value in your configuration file"
+msgstr ""
+"서버를 SSL 모드에서 실행할 때 구성 파일에 cert_file 및 key_file 옵션 값을 모"
+"두 지정해야 함"
+
+msgid ""
+"When true, this option sets the owner of an image to be the tenant. "
+"Otherwise, the owner of the  image will be the authenticated user issuing "
+"the request."
+msgstr ""
+"true인 경우 이 옵션은 이미지의 소유자를 테넌트로 설정합니다. 그렇지 않은 경"
+"우 이미지의 소유자는 요청을 발행한 인증된사용자가 됩니다. "
+
+msgid ""
+"When using SSL in connections to the registry server, do not require "
+"validation via a certifying authority. This is the registry's equivalent of "
+"specifying --insecure on the command line using glanceclient for the API."
+msgstr ""
+"레지스트리 서버에 대한 연결에서 SSL을 사용할 때 권한 인증을 통한유효성 검증"
+"이 필요하지 않습니다. 이는 API의 glanceclient를 사용하여 명령행에서 --"
+"insecure를 지정하는 레지스트리와 자원입니다."
+
+msgid ""
+"Whether to allow users to specify image properties beyond what the image "
+"schema provides"
+msgstr ""
+"이미지 스키마가 제공하는 것 이상으로 이미지 특성을 지정할 수 있도록 허용할지"
+"의 여부"
+
+msgid ""
+"Whether to include the backend image locations in image properties. For "
+"example, if using the file system store a URL of \"file:///path/to/image\" "
+"will be returned to the user in the 'direct_url' meta-data field. Revealing "
+"storage location can be a security risk, so use this setting with caution!  "
+"The overrides show_image_direct_url."
+msgstr ""
+"이미지 특성에 백엔드 이미지 위치를 포함시킬지의 여부. 예를 들어 파일 시스템 "
+"저장소를 사용하는 경우 URL\"file:///path/to/image\"가 사용자에게 "
+"'direct_url' 메타데이터 필드로 리턴됩니다. 스토리지 위치를 드러내면 보안 위험"
+"이 있을 수 있으므로 이 설정을 주의하여 사용하십시오! 이는 "
+"show_image_direct_url을 대체합니다. "
+
+msgid ""
+"Whether to include the backend image storage location in image properties. "
+"Revealing storage location can be a security risk, so use this setting with "
+"caution!"
+msgstr ""
+"이미지 특성에 백엔드 이미지 스토리지 위치를 포함시킬지의 여부.  스토리지 위치"
+"를 드러낼 경우 보안상 위험할 수 있으므로이 설정은 주의하여 사용하십시오. "
+
+msgid ""
+"Whether to pass through headers containing user and tenant information when "
+"making requests to the registry. This allows the registry to use the context "
+"middleware without keystonemiddleware's auth_token middleware, removing "
+"calls to the keystone auth service. It is recommended that when using this "
+"option, secure communication between glance api and glance registry is "
+"ensured by means other than auth_token middleware."
+msgstr ""
+"레지스트리에 대한 요청을 작성할 때 사용자 및 테넌트 정보를 포함하는 헤더를 전"
+"달할지 여부이를 통해 레지스트리는 키스톤 인증 서비스에 대한 호출을 제거하면"
+"서 키스톤 미들웨어의 auth_token 미들웨어 없이 컨텍스트 미들웨어를 사용할 수 "
+"있습니다. 이 옵션을 사용할 경우 auth_token 미들웨어 외의 다른 수단을 통해 글"
+"랜스 api 및 글랜스 레지스트리 간의 통신을 보호해야 합니다."
+
+msgid ""
+"Work dir for asynchronous task operations. The directory set here will be "
+"used to operate over images - normally before they are imported in the "
+"destination store. When providing work dir, make sure enough space is "
+"provided for concurrent tasks to run efficiently without running out of "
+"space. A rough estimation can be done by multiplying the number of "
+"`max_workers` - or the N of workers running - by an average image size (e.g "
+"500MB). The image size estimation should be done based on the average size "
+"in your deployment. Note that depending on the tasks running you may need to "
+"multiply this number by some factor depending on what the task does. For "
+"example, you may want to double the available size if image conversion is "
+"enabled. All this being said, remember these are just estimations and you "
+"should do them based on the worst case scenario and be prepared to act in "
+"case they were wrong."
+msgstr ""
+"비동기 태스크 조작을 위한 작업 디렉토리입니다. 이 디렉토리 세트는이미지에서 "
+"작업하는 데 사용됩니다. 일반적으로 대상 저장소에서 가져오기 전에 사용됩니다. "
+"작업 디렉토리를 제공하는 경우 공간 외부에서 실행하지 않고도 동시 태스크를 효"
+"율적으로 실행하기에 충분한 공간이 제공되었는지 확인하십시오. `max_workers` 수"
+"(또는 실행 중인 작업자 수 N)에 평균 이미지 크기(예: 500MB)를 곱하여 대략의 추"
+"정값을 계산할 수 있습니다. 이미지 크기 추정은 배치의 평균 크기를 기반으로 하"
+"여 수행되어야 합니다. 실행 중인 태스크에 따라 이 수를 태스크 수행 항목에 따"
+"른 여러 요인으로 곱해야 할 수 있습니다. 예를 들어 이미지 변환이 사용으로 설정"
+"된 경우 사용 가능 크기를 두 배로 하려고 할 수 있습니다. 여기서는 추정일 뿐이"
+"며,최악의 시나리오를 기반으로 하여 이를 수행해야 하고 잘못되는 경우에 대비하"
+"여 조치를 준비해야 함을 기억하십시오."
+
+#, python-format
+msgid "Wrong command structure: %s"
+msgstr "잘못된 명령 구조: %s"
+
+msgid "You are not authenticated."
+msgstr "인증되지 않은 사용자입니다."
+
+msgid "You are not authorized to complete this action."
+msgstr "이 조치를 완료할 권한이 없습니다. "
+
+#, python-format
+msgid "You are not permitted to create a tag in the namespace owned by '%s'"
+msgstr "'%s' 소유의 네임스페이스에 태그를 작성할 권한이 없습니다."
+
+msgid "You are not permitted to create image members for the image."
+msgstr "이미지에 대한 이미지 멤버를 작성할 권한이 없습니다."
+
+#, python-format
+msgid "You are not permitted to create images owned by '%s'."
+msgstr "'%s' 소유의 이미지를 작성할 권한이 없습니다."
+
+#, python-format
+msgid "You are not permitted to create namespace owned by '%s'"
+msgstr "'%s' 소유의 네임스페이스를 작성할 권한이 없습니다."
+
+#, python-format
+msgid "You are not permitted to create object owned by '%s'"
+msgstr "'%s' 소유의 오브젝트를 작성할 권한이 없습니다."
+
+#, python-format
+msgid "You are not permitted to create property owned by '%s'"
+msgstr "'%s' 소유의 특성을 작성할 권한이 없습니다."
+
+#, python-format
+msgid "You are not permitted to create resource_type owned by '%s'"
+msgstr "'%s' 소유의 resource_type을 작성할 권한이 없습니다."
+
+#, python-format
+msgid "You are not permitted to create this task with owner as: %s"
+msgstr "다음 소유자로 이 태스크를 작성하도록 허용되지 않았습니다. %s"
+
+msgid "You are not permitted to delete this image."
+msgstr "이 이미지를 삭제할 권한이 없습니다."
+
+msgid "You are not permitted to delete this meta_resource_type."
+msgstr "이  meta_resource_type을 삭제할 권한이 없습니다."
+
+msgid "You are not permitted to delete this namespace."
+msgstr "이 네임스페이스를 삭제할 권한이 없습니다."
+
+msgid "You are not permitted to delete this object."
+msgstr "이 오브젝트를 삭제할 권한이 없습니다."
+
+msgid "You are not permitted to delete this property."
+msgstr "이 특성을 삭제할 권한이 없습니다."
+
+msgid "You are not permitted to delete this tag."
+msgstr "이 태그를 삭제할 권한이 없습니다."
+
+#, python-format
+msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
+msgstr "이 %(resource)s에서 '%(attr)s'을(를) 수정하도록 허용되지 않았습니다."
+
+#, python-format
+msgid "You are not permitted to modify '%s' on this image."
+msgstr "이 이미지에서 '%s'을(를) 수정할 권한이 없습니다."
+
+msgid "You are not permitted to modify locations for this image."
+msgstr "이 이미지의 위치를 수정할 권한이 없습니다."
+
+msgid "You are not permitted to modify tags on this image."
+msgstr "이 이미지의 태그를 수정할 권한이 없습니다."
+
+msgid "You are not permitted to modify this image."
+msgstr "이 이미지를 수정할 권한이 없습니다."
+
+msgid "You are not permitted to set status on this task."
+msgstr "이 태스크에서 상태를 설정하도록 허용되지 않았습니다."
+
+msgid "You are not permitted to update this namespace."
+msgstr "이 네임스페이스를 업데이트할 권한이 없습니다."
+
+msgid "You are not permitted to update this object."
+msgstr "이 오브젝트를 업데이트할 권한이 없습니다."
+
+msgid "You are not permitted to update this property."
+msgstr "이 특성을 업데이트할 권한이 없습니다."
+
+msgid "You are not permitted to update this tag."
+msgstr "이 태그를 업데이트할 권한이 없습니다."
+
+msgid "You are not permitted to upload data for this image."
+msgstr "이 이미지에 대한 데이터를 작성할 권한이 없습니다."
+
+#, python-format
+msgid "You cannot add image member for %s"
+msgstr "%s에 대한 이미지 멤버를 추가할 수 없음"
+
+#, python-format
+msgid "You cannot delete image member for %s"
+msgstr "%s에 대한 이미지 멤버를 삭제할 수 없음"
+
+#, python-format
+msgid "You cannot get image member for %s"
+msgstr "%s에 대한 이미지 멤버를 가져올 수 없음"
+
+#, python-format
+msgid "You cannot update image member %s"
+msgstr "이미지 멤버 %s을(를) 업데이트할 수 없음"
+
+msgid "You do not own this image"
+msgstr "이 이미지를 소유하지 않음"
+
+msgid ""
+"You have selected to use SSL in connecting, and you have supplied a cert, "
+"however you have failed to supply either a key_file parameter or set the "
+"GLANCE_CLIENT_KEY_FILE environ variable"
+msgstr ""
+"연결에 SSL을 사용하도록 선택하고 인증을 제공했지만 key_file 매개변수를 제공하"
+"지 못했거나 GLANCE_CLIENT_KEY_FILE  환경 변수를 설정하지 못했습니다. "
+
+msgid ""
+"You have selected to use SSL in connecting, and you have supplied a key, "
+"however you have failed to supply either a cert_file parameter or set the "
+"GLANCE_CLIENT_CERT_FILE environ variable"
+msgstr ""
+"연결에 SSL을 사용하도록 선택하고 키를 제공했지만 cert_file 매개변수를 제공하"
+"지 못했거나 GLANCE_CLIENT_CERT_FILE 환경 변수를 설정하지 못했습니다. "
+
+msgid ""
+"^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
+"fA-F]){12}$"
+msgstr ""
+"^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
+"fA-F]){12}$"
+
+#, python-format
+msgid "__init__() got unexpected keyword argument '%s'"
+msgstr "__init__()가 예상치 못한 키워드 인수 '%s'을(를) 가져옴 "
+
+#, python-format
+msgid ""
+"cannot transition from %(current)s to %(next)s in update (wanted from_state="
+"%(from)s)"
+msgstr ""
+"업데이트에서 %(current)s에서 %(next)s(으)로 상태 전이할 수 (from_state="
+"%(from)s을(를) 원함)"
+
+#, python-format
+msgid "custom properties (%(props)s) conflict with base properties"
+msgstr "사용자 정의 특성 (%(props)s)이(가) 기본 특성과 충돌함"
+
+msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
+msgstr "이 플랫폼에서 eventlet 'poll'이나 'selects' 허브를 모두 사용할 수 없음"
+
+msgid "is_public must be None, True, or False"
+msgstr "is_public은 None, True 또는 False여야 함"
+
+msgid "limit param must be an integer"
+msgstr "limit 매개변수는 정수여야 함"
+
+msgid "limit param must be positive"
+msgstr "limit 매개변수가 양수여야 함"
+
+#, python-format
+msgid "location: %s data lost"
+msgstr "위치: %s 데이터 유실"
+
+msgid "md5 hash of image contents. (READ-ONLY)"
+msgstr "이미지 컨텐츠의 md5 해시입니다(읽기 전용)."
+
+#, python-format
+msgid "new_image() got unexpected keywords %s"
+msgstr "new_image()가 예상치 못한 키워드 %s을(를) 가져옴 "
+
+msgid "protected must be True, or False"
+msgstr "protected는 True 또는 False여야 함"
+
+#, python-format
+msgid "unable to launch %(serv)s. Got error: %(e)s"
+msgstr "%(serv)s을(를) 실행할 수 없음. 오류 발생: %(e)s"
