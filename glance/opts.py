@@ -25,6 +25,7 @@ import itertools
 
 import glance.api.middleware.context
 import glance.api.versions
+import glance.async.taskflow_executor
 import glance.common.config
 import glance.common.location_strategy
 import glance.common.location_strategy.store_type
@@ -51,6 +52,7 @@ _api_opts = [
         glance.common.wsgi.bind_opts,
         glance.common.wsgi.eventlet_opts,
         glance.common.wsgi.socket_opts,
+        glance.common.wsgi.profiler_opts,
         glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,
         glance.notifier.notifier_opts,
@@ -61,6 +63,8 @@ _api_opts = [
         glance.scrubber.scrubber_opts))),
     ('image_format', glance.common.config.image_format_opts),
     ('task', glance.common.config.task_opts),
+    ('taskflow_executor',
+     glance.async.taskflow_executor.taskflow_executor_opts),
     ('store_type_location_strategy',
      glance.common.location_strategy.store_type.store_type_opts),
     ('paste_deploy', glance.common.config.paste_deploy_opts)
