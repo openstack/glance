@@ -813,7 +813,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         except socket.error:
             return False
 
-    def wait_for_servers(self, servers, expect_launch=True, timeout=10):
+    def wait_for_servers(self, servers, expect_launch=True, timeout=30):
         """
         Tight loop, waiting for the given server port(s) to be available.
         Returns when all are pingable. There is a timeout on waiting
@@ -822,7 +822,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         :param servers: Glance server ports to ping
         :param expect_launch: Optional, true iff the server(s) are
                               expected to successfully start
-        :param timeout: Optional, defaults to 3 seconds
+        :param timeout: Optional, defaults to 30 seconds
         :return: None if launch expectation is met, otherwise an
                  assertion message
         """
