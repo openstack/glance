@@ -48,7 +48,7 @@ class TestSchemasController(test_utils.BaseTestCase):
     def test_member(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.member(req)
-        self.assertEqual(output['name'], 'member')
+        self.assertEqual('member', output['name'])
         expected = set(['status', 'created_at', 'updated_at', 'image_id',
                         'member_id', 'schema'])
         self.assertEqual(expected, set(output['properties'].keys()))
@@ -56,6 +56,6 @@ class TestSchemasController(test_utils.BaseTestCase):
     def test_members(self):
         req = unit_test_utils.get_fake_request()
         output = self.controller.members(req)
-        self.assertEqual(output['name'], 'members')
+        self.assertEqual('members', output['name'])
         expected = set(['schema', 'members'])
         self.assertEqual(expected, set(output['properties'].keys()))

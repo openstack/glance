@@ -372,12 +372,10 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         cache_filter = ProcessRequestTestCacheFilter()
         response = cache_filter._process_v2_request(
             request, image_id, dummy_img_iterator, image_meta)
-        self.assertEqual(response.headers['Content-Type'],
-                         'application/octet-stream')
-        self.assertEqual(response.headers['Content-MD5'],
-                         'c1234')
-        self.assertEqual(response.headers['Content-Length'],
-                         '123456789')
+        self.assertEqual('application/octet-stream',
+                         response.headers['Content-Type'])
+        self.assertEqual('c1234', response.headers['Content-MD5'])
+        self.assertEqual('123456789', response.headers['Content-Length'])
 
     def test_process_request_without_download_image_policy(self):
         """
@@ -732,7 +730,7 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         request.context = context.RequestContext(roles=['member'])
         resp = webob.Response(request=request)
         actual = cache_filter.process_response(resp)
-        self.assertEqual(actual, resp)
+        self.assertEqual(resp, actual)
 
     def test_v1_process_response_image_meta_not_found(self):
         """
@@ -837,4 +835,4 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         request.context = context.RequestContext(roles=['member'])
         resp = webob.Response(request=request)
         actual = cache_filter.process_response(resp)
-        self.assertEqual(actual, resp)
+        self.assertEqual(resp, actual)

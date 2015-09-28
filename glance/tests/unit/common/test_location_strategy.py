@@ -172,7 +172,7 @@ class TestStoreTypeStrategyModule(base.IsolatedUnitTest):
         ordered_locs = store_type.get_ordered_locations(copy.deepcopy(locs))
         locs.sort(key=lambda loc: loc['metadata']['idx'])
         # The result will ordered by preferred store type order.
-        self.assertEqual(ordered_locs, locs)
+        self.assertEqual(locs, ordered_locs)
 
     def test_get_ordered_locations_with_invalid_store_name(self):
         self.config(store_type_preference=['  rbd', 'sheepdog ', 'invalid',
@@ -190,4 +190,4 @@ class TestStoreTypeStrategyModule(base.IsolatedUnitTest):
         ordered_locs = store_type.get_ordered_locations(copy.deepcopy(locs))
         locs.sort(key=lambda loc: loc['metadata']['idx'])
         # The result will ordered by preferred store type order.
-        self.assertEqual(ordered_locs, locs)
+        self.assertEqual(locs, ordered_locs)

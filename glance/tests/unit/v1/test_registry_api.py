@@ -1402,7 +1402,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res_dict = jsonutils.loads(res.body)
 
         new_num_images = len(res_dict['images'])
-        self.assertEqual(new_num_images, orig_num_images - 1)
+        self.assertEqual(orig_num_images - 1, new_num_images)
 
     def test_delete_image_response(self):
         """Tests that the registry API delete returns the image metadata"""
@@ -1463,7 +1463,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         memb_list = jsonutils.loads(res.body)
         num_members = len(memb_list['members'])
-        self.assertEqual(num_members, 0)
+        self.assertEqual(0, num_members)
 
     def test_get_image_members_not_existing(self):
         """
@@ -1498,7 +1498,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         memb_list = jsonutils.loads(res.body)
         num_members = len(memb_list['shared_images'])
-        self.assertEqual(num_members, 0)
+        self.assertEqual(0, num_members)
 
     def test_replace_members(self):
         """
@@ -1525,7 +1525,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.content_type = 'application/json'
         req.body = jsonutils.dumps(dict(image_memberships=fixture))
         res = req.get_response(self.api)
-        self.assertEqual(res.status_int, 404)
+        self.assertEqual(404, res.status_int)
 
     def test_update_all_image_members_invalid_membership_association(self):
         """
@@ -1547,7 +1547,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         memb_list = jsonutils.loads(res.body)
         num_members = len(memb_list['members'])
-        self.assertEqual(num_members, 1)
+        self.assertEqual(1, num_members)
 
         fixture = dict(member_id='test1')
         body = jsonutils.dumps(dict(image_memberships=fixture))
@@ -1573,7 +1573,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.body = jsonutils.dumps(dict(image_memberships=fixture))
 
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 403)
+        self.assertEqual(403, res.status_int)
 
     def test_update_all_image_members(self):
         """
@@ -1695,7 +1695,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.body = jsonutils.dumps(dict(member=fixture))
 
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 403)
+        self.assertEqual(403, res.status_int)
 
     def test_add_member_to_image_bad_request(self):
         """
@@ -1764,7 +1764,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.content_type = 'application/json'
 
         res = req.get_response(api)
-        self.assertEqual(res.status_int, 403)
+        self.assertEqual(403, res.status_int)
 
     def test_add_member_delete_create(self):
         """
@@ -1948,10 +1948,10 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
                          image['location_data'][1]['metadata'])
 
         image_entry = db_api.image_get(self.context, image['id'])
-        self.assertEqual(image_entry['locations'][0]['url'],
-                         encrypted_location_url1)
-        self.assertEqual(image_entry['locations'][1]['url'],
-                         encrypted_location_url2)
+        self.assertEqual(encrypted_location_url1,
+                         image_entry['locations'][0]['url'])
+        self.assertEqual(encrypted_location_url2,
+                         image_entry['locations'][1]['url'])
         decrypted_location_url1 = crypt.urlsafe_decrypt(
             encryption_key, image_entry['locations'][0]['url'])
         decrypted_location_url2 = crypt.urlsafe_decrypt(

@@ -1129,7 +1129,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 req.headers[k] = v
 
             res = req.get_response(self.api)
-            self.assertEqual(res.status_int, 409)
+            self.assertEqual(409, res.status_int)
 
     def test_add_location_with_invalid_location_on_conflict_image_size(self):
         """Tests creates an image from location and conflict image size"""
@@ -1670,7 +1670,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                         # Ensure cleanup occurred.
                         self.assertEqual(1, mock_init_del.call_count)
 
-                        self.assertEqual(state_changes, ['saving', 'active'])
+                        self.assertEqual(['saving', 'active'], state_changes)
 
     def test_register_and_upload(self):
         """
@@ -2305,7 +2305,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res_dict = jsonutils.loads(res.body)
         images = res_dict['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], UUID4)
+        self.assertEqual(UUID4, images[0]['id'])
 
         # Expect 0 images (0 deleted)
         req = webob.Request.blank('/images/detail?changes-since=%s' %
@@ -2333,9 +2333,9 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             res_dict = jsonutils.loads(res.body)
             images = res_dict['images']
             self.assertEqual(3, len(images))
-            self.assertEqual(images[0]['id'], UUID4)
-            self.assertEqual(images[1]['id'], UUID3)  # deleted
-            self.assertEqual(images[2]['id'], UUID2)
+            self.assertEqual(UUID4, images[0]['id'])
+            self.assertEqual(UUID3, images[1]['id'])  # deleted
+            self.assertEqual(UUID2, images[2]['id'])
 
         # Bad request (empty changes-since param)
         req = webob.Request.blank('/images/detail?changes-since=')
@@ -2399,8 +2399,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
         images = jsonutils.loads(res.body)['images']
         self.assertEqual(2, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
-        self.assertEqual(images[1]['id'], image1_id)
+        self.assertEqual(image2_id, images[0]['id'])
+        self.assertEqual(image1_id, images[1]['id'])
 
         # Test index with filter containing one user-defined property but
         # non-existent value. Filter is 'property-distro=fedora'.
@@ -2419,7 +2419,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
         images = jsonutils.loads(res.body)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image1_id)
+        self.assertEqual(image1_id, images[0]['id'])
 
         # Test index with filter containing one user-defined property but
         # unique value. Filter is 'property-arch=x86_64'.
@@ -2429,7 +2429,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
         images = jsonutils.loads(res.body)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(image2_id, images[0]['id'])
 
         # Test index with filter containing unique user-defined property.
         # Filter is 'property-foo=bar'.
@@ -2439,7 +2439,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
         images = jsonutils.loads(res.body)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(image2_id, images[0]['id'])
 
         # Test index with filter containing unique user-defined property but
         # .value is non-existent. Filter is 'property-foo=baz'.
@@ -2459,7 +2459,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
         images = jsonutils.loads(res.body)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image2_id)
+        self.assertEqual(image2_id, images[0]['id'])
 
         # Test index with filter containing multiple user-defined properties
         # Filter is 'property-arch=i386&property-distro=ubuntu'.
@@ -2470,7 +2470,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(200, res.status_int)
         images = jsonutils.loads(res.body)['images']
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0]['id'], image1_id)
+        self.assertEqual(image1_id, images[0]['id'])
 
         # Test index with filter containing multiple user-defined properties.
         # Filter is 'property-arch=random&property-distro=ubuntu'.
@@ -3066,9 +3066,8 @@ class TestGlanceAPI(base.IsolatedUnitTest):
                 res = req.get_response(self.api)
                 self.assertEqual(403, res.status_int)
                 prop = k[len('x-image-meta-'):]
-                self.assertNotEqual(res.body.find("Forbidden to modify '%s' "
-                                                  "of active "
-                                                  "image" % prop), -1)
+                self.assertNotEqual(-1, res.body.find(
+                    "Forbidden to modify '%s' of active image" % prop))
 
                 req = webob.Request.blank('/images/%s' % UUID2)
                 req.method = 'HEAD'
@@ -3654,7 +3653,7 @@ class TestImageSerializer(base.IsolatedUnitTest):
         for chunk in response.app_iter:
             pass
 
-        self.assertNotEqual(response.request.environ['eventlet.posthooks'], [])
+        self.assertNotEqual([], response.request.environ['eventlet.posthooks'])
 
     def test_image_send_notification(self):
         req = webob.Request.blank("/images/%s" % UUID2)

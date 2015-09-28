@@ -329,7 +329,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         prepare_updated_at = output_log[0]['payload']['updated_at']
         del output_log[0]['payload']['updated_at']
         self.assertTrue(prepare_updated_at <= output['meta']['updated_at'])
-        self.assertEqual(output_log[0], prepare_log)
+        self.assertEqual(prepare_log, output_log[0])
 
     def _test_upload_download_upload_notification(self):
         request = unit_test_utils.get_fake_request()
@@ -343,7 +343,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             'payload': upload_payload,
         }
         self.assertEqual(3, len(output_log))
-        self.assertEqual(output_log[1], upload_log)
+        self.assertEqual(upload_log, output_log[1])
 
     def _test_upload_download_activate_notification(self):
         request = unit_test_utils.get_fake_request()
@@ -357,7 +357,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             'payload': activate_payload,
         }
         self.assertEqual(3, len(output_log))
-        self.assertEqual(output_log[2], activate_log)
+        self.assertEqual(activate_log, output_log[2])
 
     def test_restore_image_when_upload_failed(self):
         request = unit_test_utils.get_fake_request()
