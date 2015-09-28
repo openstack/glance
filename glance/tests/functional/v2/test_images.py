@@ -420,7 +420,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         def _verify_image_checksum_and_status(checksum, status):
             # Checksum should be populated and status should be active
