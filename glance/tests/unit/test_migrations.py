@@ -53,9 +53,7 @@ from glance.db.sqlalchemy import models
 from glance.db.sqlalchemy import models_artifacts
 from glance.db.sqlalchemy import models_metadef
 
-from glance import i18n
-
-_ = i18n._
+from glance.i18n import _
 
 CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')

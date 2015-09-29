@@ -28,10 +28,8 @@ from taskflow.listeners import logging as llistener
 import glance.async
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
-from glance import i18n
+from glance.i18n import _, _LE
 
-_ = i18n._
-_LE = i18n._LE
 LOG = logging.getLogger(__name__)
 
 _deprecated_opt = cfg.DeprecatedOpt('eventlet_executor_pool_size',

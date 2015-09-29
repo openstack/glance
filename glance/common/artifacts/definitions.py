@@ -21,10 +21,7 @@ import six
 
 from glance.common.artifacts import declarative
 import glance.common.exception as exc
-from glance import i18n
-
-
-_ = i18n._
+from glance.i18n import _
 
 
 class Text(declarative.PropertyDefinition):

@@ -22,14 +22,12 @@ from six.moves import configparser
 
 import glance.api.policy
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _, _LE
 
 # NOTE(bourke): The default dict_type is collections.OrderedDict in py27, but
 # we must set manually for compatibility with py26
 CONFIG = configparser.SafeConfigParser(dict_type=OrderedDict)
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
 
 property_opts = [
     cfg.StrOpt('property_protection_file',

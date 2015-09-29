@@ -21,15 +21,10 @@ from stevedore import enabled
 
 from glance.common.artifacts import definitions
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _, _LE, _LI, _LW
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
-_LW = i18n._LW
-_LI = i18n._LI
-
 
 plugins_opts = [
     cfg.BoolOpt('load_enabled', default=True,

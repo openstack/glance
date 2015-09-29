@@ -18,10 +18,7 @@ from oslo_log import log as logging
 from six.moves import configparser
 
 from glance.common import exception
-from glance import i18n
-
-_ = i18n._
-_LE = i18n._LE
+from glance.i18n import _, _LE
 
 swift_opts = [
     cfg.StrOpt('default_swift_reference',

@@ -33,12 +33,10 @@ from sqlalchemy import Text
 
 import glance.artifacts as ga
 from glance.common import semver_db
-from glance import i18n
 from oslo_log import log as os_logging
 
 BASE = declarative.declarative_base()
 LOG = os_logging.getLogger(__name__)
-_LW = i18n._LW
 
 
 class ArtifactBase(models.ModelBase, models.TimestampMixin):

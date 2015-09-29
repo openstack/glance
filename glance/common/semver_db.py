@@ -19,12 +19,10 @@ from sqlalchemy.orm.properties import CompositeProperty
 from sqlalchemy import sql
 
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _
 
 MAX_COMPONENT_LENGTH = pow(2, 16) - 1
 MAX_NUMERIC_PRERELEASE_LENGTH = 6
-
-_ = i18n._
 
 
 class DBVersion(object):

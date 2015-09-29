@@ -18,9 +18,7 @@ import copy
 
 from glance.common import exception
 import glance.domain.proxy
-from glance import i18n
-
-_ = i18n._
+from glance.i18n import _
 
 
 def is_image_mutable(context, image):

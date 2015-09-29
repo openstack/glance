@@ -23,12 +23,9 @@ from oslo_utils import units
 
 from glance.common import exception
 from glance.common import wsgi
-from glance import i18n
+from glance.i18n import _, _LE, _LW
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
-_LW = i18n._LW
 CONF = cfg.CONF
 
 _CACHED_THREAD_POOL = {}

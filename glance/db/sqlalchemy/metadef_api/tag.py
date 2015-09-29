@@ -23,10 +23,9 @@ from glance.common import exception as exc
 from glance.db.sqlalchemy.metadef_api import namespace as namespace_api
 import glance.db.sqlalchemy.metadef_api.utils as metadef_utils
 from glance.db.sqlalchemy import models_metadef as models
-from glance import i18n
+from glance.i18n import _LW
 
 LOG = logging.getLogger(__name__)
-_LW = i18n._LW
 
 
 def _get(context, id, session):

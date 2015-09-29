@@ -20,10 +20,8 @@ from glance import artifacts as ga
 from glance.common.artifacts import declarative
 from glance.common.artifacts import definitions
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _
 
-
-_ = i18n._
 
 COMMON_ARTIFACT_PROPERTIES = ['id',
                               'type_name',

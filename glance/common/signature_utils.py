@@ -31,11 +31,9 @@ from oslo_utils import encodeutils
 import six
 
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _LE
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
 
 
 # Note: This is the signature hash method, which is independent from the

@@ -24,7 +24,7 @@ from oslo_policy import policy
 
 from glance.common import exception
 import glance.domain.proxy
-from glance import i18n
+from glance.i18n import _
 
 
 LOG = logging.getLogger(__name__)
@@ -35,8 +35,6 @@ DEFAULT_RULES = policy.Rules.from_dict({
     'default': '@',
     'manage_image_cache': 'role:admin',
 })
-
-_ = i18n._
 
 
 class Enforcer(policy.Enforcer):

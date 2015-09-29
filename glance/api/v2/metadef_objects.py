@@ -29,12 +29,11 @@ from glance.common import exception
 from glance.common import wsgi
 from glance.common import wsme_utils
 import glance.db
-from glance import i18n
+from glance.i18n import _
 import glance.notifier
 import glance.schema
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 CONF = cfg.CONF
 

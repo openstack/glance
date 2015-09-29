@@ -27,15 +27,10 @@ from glance.common import crypt
 from glance.common import exception
 from glance import context
 import glance.db as db_api
-from glance import i18n
+from glance.i18n import _, _LE, _LI, _LW
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
-
-_ = i18n._
-_LI = i18n._LI
-_LW = i18n._LW
-_LE = i18n._LE
 
 scrubber_opts = [
     cfg.IntOpt('scrub_time', default=0,

@@ -15,11 +15,10 @@
 
 from oslo_log import log as logging
 
-from glance import i18n
+from glance.i18n import _LE
 
 
 LOG = logging.getLogger(__name__)
-_LE = i18n._LE
 
 
 class TaskExecutor(object):

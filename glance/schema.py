@@ -18,9 +18,7 @@ from oslo_utils import encodeutils
 import six
 
 from glance.common import exception
-from glance import i18n
-
-_ = i18n._
+from glance.i18n import _
 
 
 class Schema(object):

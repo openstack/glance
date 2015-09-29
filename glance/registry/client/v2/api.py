@@ -23,11 +23,10 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _
 from glance.registry.client.v2 import client
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 CONF = cfg.CONF
 _registry_client = 'glance.registry.client'

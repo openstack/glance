@@ -29,9 +29,7 @@ from glance.common import exception
 from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
-from glance import i18n
-
-_ = i18n._
+from glance.i18n import _
 
 CONF = cfg.CONF
 CONF.import_opt('image_size_cap', 'glance.common.config')

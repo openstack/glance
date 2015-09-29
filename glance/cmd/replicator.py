@@ -34,13 +34,9 @@ from webob import exc
 from glance.common import config
 from glance.common import exception
 from glance.common import utils
-from glance import i18n
+from glance.i18n import _, _LE, _LI, _LW
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LI = i18n._LI
-_LE = i18n._LE
-_LW = i18n._LW
 
 
 # NOTE: positional arguments <args> will be parsed before <command> until

@@ -66,14 +66,10 @@ import six
 import xattr
 
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _, _LI, _LW
 from glance.image_cache.drivers import base
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
-_LW = i18n._LW
 
 CONF = cfg.CONF
 

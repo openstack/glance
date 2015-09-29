@@ -43,13 +43,11 @@ import six
 from webob import exc
 
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _, _LE
 
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
 
 # Whitelist of v1 API headers of form x-image-meta-xxx
 IMAGE_META_HEADERS = ['x-image-meta-location', 'x-image-meta-size',
@@ -376,7 +374,7 @@ class PrettyTable(object):
     def make_header(self):
         label_parts = []
         break_parts = []
-        for width, label, _ in self.columns:
+        for width, label, just in self.columns:
             # NOTE(sirp): headers are always left justified
             label_part = self._clip_and_justify(label, width, 'l')
             label_parts.append(label_part)
@@ -391,7 +389,7 @@ class PrettyTable(object):
     def make_row(self, *args):
         row = args
         row_parts = []
-        for data, (width, _, just) in zip(row, self.columns):
+        for data, (width, label, just) in zip(row, self.columns):
             row_part = self._clip_and_justify(data, width, just)
             row_parts.append(row_part)
 

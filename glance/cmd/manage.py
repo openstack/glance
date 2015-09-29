@@ -49,12 +49,11 @@ from glance.common import exception
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata
-from glance import i18n
+from glance.i18n import _
 
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 
 # Decorators for actions

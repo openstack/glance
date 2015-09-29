@@ -24,9 +24,7 @@ import re
 import jsonschema
 
 import glance.common.exception as exc
-from glance import i18n
-
-_ = i18n._
+from glance.i18n import _
 
 
 class JsonPatchValidatorMixin(object):

@@ -26,12 +26,9 @@ from oslo_log import log as logging
 from six.moves import urllib
 
 from glance.common import exception
-from glance import i18n
-
+from glance.i18n import _, _LE
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
 
 
 def get_task(task_repo, task_id):

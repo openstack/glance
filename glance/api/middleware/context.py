@@ -21,9 +21,8 @@ import webob.exc
 from glance.api import policy
 from glance.common import wsgi
 import glance.context
-from glance import i18n
+from glance.i18n import _
 
-_ = i18n._
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True,

@@ -20,11 +20,10 @@ Various conveniences used for migration scripts
 from oslo_log import log as logging
 import sqlalchemy.types
 
-from glance import i18n
+from glance.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
-_LI = i18n._LI
 
 
 String = lambda length: sqlalchemy.types.String(

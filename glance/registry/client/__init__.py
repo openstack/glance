@@ -15,9 +15,8 @@
 
 from oslo_config import cfg
 
-from glance import i18n
+from glance.i18n import _
 
-_ = i18n._
 
 registry_client_opts = [
     cfg.StrOpt('registry_client_protocol', default='http',

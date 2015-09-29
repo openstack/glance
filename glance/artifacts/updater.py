@@ -14,9 +14,7 @@
 
 from glance.artifacts.domain import proxy
 from glance.common import exception as exc
-from glance import i18n
-
-_ = i18n._
+from glance.i18n import _
 
 
 class ArtifactProxy(proxy.Artifact):

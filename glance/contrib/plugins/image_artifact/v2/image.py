@@ -19,10 +19,7 @@ import glance.contrib.plugins.image_artifact.v1_1.image as v1_1
 import glanceclient
 
 
-from glance import i18n
-
-
-_ = i18n._
+from glance.i18n import _
 
 
 class ImageAsAnArtifact(v1_1.ImageAsAnArtifact):

@@ -24,11 +24,10 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _
 from glance.registry.client.v1 import client
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 registry_client_ctx_opts = [
     cfg.BoolOpt('send_identity_headers', default=False,
