@@ -341,8 +341,7 @@ class Controller(object):
         """Return data about the given image id."""
         try:
             image = self.db_api.image_get(req.context, id)
-            msg = "Successfully retrieved image %(id)s" % {'id': id}
-            LOG.debug(msg)
+            LOG.debug("Successfully retrieved image %(id)s", {'id': id})
         except exception.ImageNotFound:
             LOG.info(_LI("Image %(id)s not found"), {'id': id})
             raise exc.HTTPNotFound()

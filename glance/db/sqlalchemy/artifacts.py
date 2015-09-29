@@ -425,7 +425,7 @@ def _do_paginate_query(query, sort_keys=None, sort_dirs=None,
 def _do_artifacts_query(context, session, show_level=ga.Showlevel.NONE):
     """Build the query to get all artifacts based on the context"""
 
-    LOG.debug("context.is_admin=%(is_admin)s; context.owner=%(owner)s" %
+    LOG.debug("context.is_admin=%(is_admin)s; context.owner=%(owner)s",
               {'is_admin': context.is_admin, 'owner': context.owner})
 
     if show_level == ga.Showlevel.NONE:

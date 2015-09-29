@@ -132,10 +132,9 @@ def create_image(image_repo, image_factory, image_properties, task_id):
         try:
             properties[key] = image_properties.pop(key)
         except KeyError:
-            msg = ("Task ID %(task_id)s: Ignoring property %(k)s for setting "
-                   "base properties while creating "
-                   "Image.") % {'task_id': task_id, 'k': key}
-            LOG.debug(msg)
+            LOG.debug("Task ID %(task_id)s: Ignoring property %(k)s for "
+                      "setting base properties while creating "
+                      "Image.", {'task_id': task_id, 'k': key})
 
     # NOTE: get the rest of the properties and pass them as
     # extra_properties for Image to be created with them.

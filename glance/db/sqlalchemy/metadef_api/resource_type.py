@@ -32,8 +32,8 @@ def get(context, name, session):
         query = session.query(models.MetadefResourceType).filter_by(name=name)
         resource_type = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = "No metadata definition resource-type found with name %s" % name
-        LOG.debug(msg)
+        LOG.debug("No metadata definition resource-type found with name %s",
+                  name)
         raise exc.MetadefResourceTypeNotFound(resource_type_name=name)
 
     return resource_type.to_dict()
@@ -61,10 +61,9 @@ def create(context, values, session):
     try:
         resource_type.save(session=session)
     except db_exc.DBDuplicateEntry:
-        msg = ("Can not create the metadata definition resource-type."
-               " A resource-type with name=%s already exists."
-               % resource_type.name)
-        LOG.debug(msg)
+        LOG.debug("Can not create the metadata definition resource-type. "
+                  "A resource-type with name=%s already exists.",
+                  resource_type.name)
         raise exc.MetadefDuplicateResourceType(
             resource_type_name=resource_type.name)
 
@@ -88,9 +87,8 @@ def delete(context, name, session):
 
     db_rec = get(context, name, session)
     if db_rec.protected is True:
-        msg = ("Delete forbidden. Metadata definition resource-type %s is a"
-               " seeded-system type and can not be deleted.") % name
-        LOG.debug(msg)
+        LOG.debug("Delete forbidden. Metadata definition resource-type %s is a"
+                  " seeded-system type and can not be deleted.", name)
         raise exc.ProtectedMetadefResourceTypeSystemDelete(
             resource_type_name=name)
 
@@ -99,9 +97,8 @@ def delete(context, name, session):
         session.flush()
     except db_exc.DBError as e:
         if isinstance(e.inner_exception, sa_exc.IntegrityError):
-            msg = ("Could not delete Metadata definition resource-type %s"
-                   ". It still has content") % name
-            LOG.debug(msg)
+            LOG.debug("Could not delete Metadata definition resource-type %s"
+                      ". It still has content", name)
             raise exc.MetadefIntegrityError(
                 record_type='resource-type', record_name=name)
         else:

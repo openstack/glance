@@ -41,14 +41,13 @@ class BaseController(object):
         try:
             return registry.get_image_metadata(context, image_id)
         except exception.NotFound:
-            msg = "Image with identifier %s not found" % image_id
-            LOG.debug(msg)
+            LOG.debug("Image with identifier %s not found", image_id)
+            msg = _("Image with identifier %s not found") % image_id
             raise webob.exc.HTTPNotFound(
                 msg, request=request, content_type='text/plain')
         except exception.Forbidden:
-            msg = "Forbidden image access"
-            LOG.debug(msg)
-            raise webob.exc.HTTPForbidden(msg,
+            LOG.debug("Forbidden image access")
+            raise webob.exc.HTTPForbidden(_("Forbidden image access"),
                                           request=request,
                                           content_type='text/plain')
 
@@ -59,14 +58,12 @@ class BaseController(object):
         """
         image = self.get_image_meta_or_404(request, image_id)
         if image['status'] == 'deactivated':
-            msg = "Image %s is deactivated" % image_id
-            LOG.debug(msg)
+            LOG.debug("Image %s is deactivated", image_id)
             msg = _("Image %s is deactivated") % image_id
             raise webob.exc.HTTPForbidden(
                 msg, request=request, content_type='text/plain')
         if image['status'] != 'active':
-            msg = "Image %s is not active" % image_id
-            LOG.debug(msg)
+            LOG.debug("Image %s is not active", image_id)
             msg = _("Image %s is not active") % image_id
             raise webob.exc.HTTPNotFound(
                 msg, request=request, content_type='text/plain')

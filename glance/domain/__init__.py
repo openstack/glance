@@ -254,9 +254,8 @@ class Image(object):
             # Noop if already deactive
             pass
         else:
-            msg = ("Not allowed to deactivate image in status '%s'"
-                   % self.status)
-            LOG.debug(msg)
+            LOG.debug("Not allowed to deactivate image in status '%s'",
+                      self.status)
             msg = (_("Not allowed to deactivate image in status '%s'")
                    % self.status)
             raise exception.Forbidden(message=msg)
@@ -268,9 +267,8 @@ class Image(object):
             # Noop if already active
             pass
         else:
-            msg = ("Not allowed to reactivate image in status '%s'"
-                   % self.status)
-            LOG.debug(msg)
+            LOG.debug("Not allowed to reactivate image in status '%s'",
+                      self.status)
             msg = (_("Not allowed to reactivate image in status '%s'")
                    % self.status)
             raise exception.Forbidden(message=msg)
@@ -507,7 +505,7 @@ class TaskExecutorFactory(object):
 
             executor_cls = ('glance.async.%s_executor.'
                             'TaskExecutor' % task_executor)
-            LOG.debug("Loading %s executor" % task_executor)
+            LOG.debug("Loading %s executor", task_executor)
             executor = importutils.import_class(executor_cls)
             return executor(context,
                             self.task_repo,

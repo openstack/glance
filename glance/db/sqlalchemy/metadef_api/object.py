@@ -48,10 +48,9 @@ def _get_by_name(context, namespace_name, name, session):
             name=name, namespace_id=namespace['id'])
         metadef_object = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = ("The metadata definition object with name=%(name)s"
-               " was not found in namespace=%(namespace_name)s."
-               % {'name': name, 'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("The metadata definition object with name=%(name)s"
+                  " was not found in namespace=%(namespace_name)s.",
+                  {'name': name, 'namespace_name': namespace_name})
         raise exc.MetadefObjectNotFound(object_name=name,
                                         namespace_name=namespace_name)
 
@@ -80,11 +79,10 @@ def create(context, namespace_name, values, session):
     try:
         md_object.save(session=session)
     except db_exc.DBDuplicateEntry:
-        msg = ("A metadata definition object with name=%(name)s"
-               " in namespace=%(namespace_name)s already exists."
-               % {'name': md_object.name,
-                  'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("A metadata definition object with name=%(name)s"
+                  " in namespace=%(namespace_name)s already exists.",
+                  {'name': md_object.name,
+                   'namespace_name': namespace_name})
         raise exc.MetadefDuplicateObject(
             object_name=md_object.name, namespace_name=namespace_name)
 
@@ -108,11 +106,10 @@ def update(context, namespace_name, object_id, values, session):
         md_object.update(values.copy())
         md_object.save(session=session)
     except db_exc.DBDuplicateEntry:
-        msg = ("Invalid update. It would result in a duplicate"
-               " metadata definition object with same name=%(name)s"
-               " in namespace=%(namespace_name)s."
-               % {'name': md_object.name, 'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("Invalid update. It would result in a duplicate"
+                  " metadata definition object with same name=%(name)s"
+                  " in namespace=%(namespace_name)s.",
+                  {'name': md_object.name, 'namespace_name': namespace_name})
         emsg = (_("Invalid update. It would result in a duplicate"
                   " metadata definition object with the same name=%(name)s"
                   " in namespace=%(namespace_name)s.")

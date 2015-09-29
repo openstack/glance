@@ -68,7 +68,7 @@ class _CreateImage(task.Task):
             self.image_repo, self.image_factory,
             task_input.get('image_properties'), self.task_id)
 
-        LOG.debug("Task %(task_id)s created image %(image_id)s" %
+        LOG.debug("Task %(task_id)s created image %(image_id)s",
                   {'task_id': task.task_id, 'image_id': image.image_id})
         return image.image_id
 
