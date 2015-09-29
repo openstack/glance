@@ -18,15 +18,12 @@ RPC Controller
 """
 
 from oslo_config import cfg
-from oslo_log import log as logging
 
 from glance.common import rpc
 from glance.common import wsgi
 import glance.db
 from glance import i18n
 
-
-LOG = logging.getLogger(__name__)
 _ = i18n._
 
 CONF = cfg.CONF

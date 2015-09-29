@@ -128,7 +128,7 @@ class ArtifactsPluginLoader(object):
 
         def _all_allowed(ext):
             LOG.info(
-                _LI("Artifact %s has been successfully loaded") % ext.name)
+                _LI("Artifact %s has been successfully loaded"), ext.name)
             return True
 
         if not CONF.load_enabled:
@@ -152,7 +152,7 @@ class ArtifactsPluginLoader(object):
                              " available_plugins list") % ext.name)
                 raise exception.ArtifactLoadError(name=ext.name)
             LOG.info(
-                _LI("Artifact %s has been successfully loaded") % ext.name)
+                _LI("Artifact %s has been successfully loaded"), ext.name)
             return True
 
         return _check_ext

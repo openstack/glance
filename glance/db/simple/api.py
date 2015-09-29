@@ -60,12 +60,12 @@ def log_call(func):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
         LOG.info(_LI('Calling %(funcname)s: args=%(args)s, '
-                     'kwargs=%(kwargs)s') %
+                     'kwargs=%(kwargs)s'),
                  {"funcname": func.__name__,
                   "args": args,
                   "kwargs": kwargs})
         output = func(*args, **kwargs)
-        LOG.info(_LI('Returning %(funcname)s: %(output)s') %
+        LOG.info(_LI('Returning %(funcname)s: %(output)s'),
                  {"funcname": func.__name__,
                   "output": output})
         return output
@@ -2000,7 +2000,7 @@ def _artifact_get(context, artifact_id, type_name,
                  artifact['type_version'] != type_version)):
             raise KeyError
     except KeyError:
-        LOG.info(_LI('Could not find artifact %s') % artifact_id)
+        LOG.info(_LI('Could not find artifact %s'), artifact_id)
         raise exception.NotFound()
 
     if artifact['deleted_at']:

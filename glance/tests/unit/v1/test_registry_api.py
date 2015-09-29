@@ -45,7 +45,6 @@ UUID2 = _gen_uuid()
 
 
 class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
-
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPI, self).setUp()
@@ -1285,10 +1284,11 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
             id='0564c64c-3545-4e34-abfb-9d18e5f2f2f9')
         self.log_image_id = False
 
-        def fake_log_info(msg):
-            if ('Successfully created image '
-               '0564c64c-3545-4e34-abfb-9d18e5f2f2f9' in msg):
+        def fake_log_info(msg, image_data):
+            if ('0564c64c-3545-4e34-abfb-9d18e5f2f2f9' == image_data['id'] and
+                    'Successfully created image' in msg):
                 self.log_image_id = True
+
         self.stubs.Set(rserver.images.LOG, 'info', fake_log_info)
 
         self.get_api_response_ext(200, content_type='json', method='POST',
@@ -1837,7 +1837,6 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
 class TestRegistryAPILocations(base.IsolatedUnitTest,
                                test_utils.RegistryAPIMixIn):
-
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryAPILocations, self).setUp()
@@ -1961,7 +1960,6 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
 
 
 class TestSharability(test_utils.BaseTestCase):
-
     def setUp(self):
         super(TestSharability, self).setUp()
         self.setup_db()

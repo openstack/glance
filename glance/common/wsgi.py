@@ -308,7 +308,7 @@ class Server(object):
             self.pool.spawn_n(self._single_run, self.application, self.sock)
             return
         else:
-            LOG.info(_LI("Starting %d workers") % CONF.workers)
+            LOG.info(_LI("Starting %d workers"), CONF.workers)
             signal.signal(signal.SIGTERM, self.kill_children)
             signal.signal(signal.SIGINT, self.kill_children)
             signal.signal(signal.SIGHUP, self.hup)
@@ -321,10 +321,10 @@ class Server(object):
     def _remove_children(self, pid):
         if pid in self.children:
             self.children.remove(pid)
-            LOG.info(_LI('Removed dead child %s') % pid)
+            LOG.info(_LI('Removed dead child %s'), pid)
         elif pid in self.stale_children:
             self.stale_children.remove(pid)
-            LOG.info(_LI('Removed stale child %s') % pid)
+            LOG.info(_LI('Removed stale child %s'), pid)
         else:
             LOG.warn(_LW('Unrecognised child %s') % pid)
 
@@ -433,12 +433,12 @@ class Server(object):
             # exit on sighup
             self._sock = None
             self.run_server()
-            LOG.info(_LI('Child %d exiting normally') % os.getpid())
+            LOG.info(_LI('Child %d exiting normally'), os.getpid())
             # self.pool.waitall() is now called in wsgi's server so
             # it's safe to exit here
             sys.exit(0)
         else:
-            LOG.info(_LI('Started child %s') % pid)
+            LOG.info(_LI('Started child %s'), pid)
             self.children.add(pid)
 
     def run_server(self):

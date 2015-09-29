@@ -327,8 +327,8 @@ class ImageProxy(glance.domain.proxy.Image):
                 image_id=self.image.image_id)
         except exception.StorageQuotaFull:
             with excutils.save_and_reraise_exception():
-                LOG.info(_LI('Cleaning up %s after exceeding the quota.')
-                         % self.image.image_id)
+                LOG.info(_LI('Cleaning up %s after exceeding the quota.'),
+                         self.image.image_id)
                 self.store_utils.safe_delete_from_backend(
                     self.context, self.image.image_id, self.image.locations[0])
 

@@ -82,5 +82,5 @@ class Prefetcher(base.CacheApp):
                          "images in queue."))
             return False
 
-        LOG.info(_LI("Successfully cached all %d images") % num_images)
+        LOG.info(_LI("Successfully cached all %d images"), num_images)
         return True

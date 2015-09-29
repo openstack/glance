@@ -64,9 +64,9 @@ def build_image_owner_map(owner_map, db, context):
 
         image_owner_map[image_id] = owner_id
 
-        msg = (_LI('Image "%(image)s" owner "%(owner)s" -> "%(owner_id)s"'),
-               {'image': image_id, 'owner': owner_name, 'owner_id': owner_id})
-        LOG.info(msg)
+        LOG.info(_LI('Image "%(image)s" owner "%(owner)s" -> "%(owner_id)s"'),
+                 {'image': image_id, 'owner': owner_name,
+                  'owner_id': owner_id})
 
     return image_owner_map
 
@@ -74,7 +74,7 @@ def build_image_owner_map(owner_map, db, context):
 def update_image_owners(image_owner_map, db, context):
     for (image_id, image_owner) in image_owner_map.items():
         db.image_update(context, image_id, {'owner': image_owner})
-        LOG.info(_LI('Image %s successfully updated.') % image_id)
+        LOG.info(_LI('Image %s successfully updated.'), image_id)
 
 
 if __name__ == "__main__":

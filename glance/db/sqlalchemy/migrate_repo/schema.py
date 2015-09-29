@@ -98,11 +98,11 @@ def from_migration_import(module_name, fromlist):
 
 def create_tables(tables):
     for table in tables:
-        LOG.info(_LI("creating table %(table)s") % {'table': table})
+        LOG.info(_LI("creating table %(table)s"), {'table': table})
         table.create()
 
 
 def drop_tables(tables):
     for table in tables:
-        LOG.info(_LI("dropping table %(table)s") % {'table': table})
+        LOG.info(_LI("dropping table %(table)s"), {'table': table})
         table.drop()

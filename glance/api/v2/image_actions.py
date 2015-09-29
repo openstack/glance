@@ -48,7 +48,7 @@ class ImageActionsController(object):
             image = image_repo.get(image_id)
             image.deactivate()
             image_repo.save(image)
-            LOG.info(_LI("Image %s is deactivated") % image_id)
+            LOG.info(_LI("Image %s is deactivated"), image_id)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
@@ -64,7 +64,7 @@ class ImageActionsController(object):
             image = image_repo.get(image_id)
             image.reactivate()
             image_repo.save(image)
-            LOG.info(_LI("Image %s is reactivated") % image_id)
+            LOG.info(_LI("Image %s is reactivated"), image_id)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:

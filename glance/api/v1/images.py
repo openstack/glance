@@ -709,7 +709,7 @@ class Controller(controller.BaseController):
         location_data = self._upload(req, image_meta)
         image_id = image_meta['id']
         LOG.info(_LI("Uploaded data of image %s from request "
-                     "payload successfully.") % image_id)
+                     "payload successfully."), image_id)
 
         if location_data:
             try:

@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import glance_store
-from oslo_log import log as logging
 
 from glance.api import authorization
 from glance.api import policy
@@ -26,9 +25,6 @@ import glance.domain
 import glance.location
 import glance.notifier
 import glance.quota
-
-
-LOG = logging.getLogger(__name__)
 
 
 class Gateway(object):
