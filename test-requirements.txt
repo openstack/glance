@@ -31,3 +31,4 @@ python-swiftclient>=2.2.0
 
 # Documentation
 oslosphinx>=2.5.0 # Apache-2.0
+reno>=0.1.1  # Apache2
