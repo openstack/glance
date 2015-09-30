@@ -220,7 +220,11 @@ class ArtifactsController(object):
             self._ensure_write_access(artifact, req.context)
             updated = artifact
             for change in changes:
-                updated = self._do_update_op(updated, change)
+                if artifact.metadata.attributes.blobs.get(change['path']):
+                    msg = _('Invalid request PATCH for work with blob')
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
+                else:
+                    updated = self._do_update_op(updated, change)
             artifact_repo.save(updated)
             return self._get_artifact_with_dependencies(artifact_repo, id)
         except (exception.InvalidJsonPatchPath,
