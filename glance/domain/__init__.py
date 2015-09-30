@@ -477,8 +477,8 @@ class TaskFactory(object):
             created_at,
             updated_at,
             task_input,
-            kwargs.get('message'),
             kwargs.get('result'),
+            kwargs.get('message')
         )
 
 
