@@ -30,3 +30,4 @@ xattr>=0.4
 
 # Documentation
 oslosphinx>=2.5.0 # Apache-2.0
+reno[sphinx]>=0.1.1  # Apache2
