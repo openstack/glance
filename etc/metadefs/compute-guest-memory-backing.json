@@ -1,0 +1,29 @@
+{
+    "namespace": "OS::Compute::GuestMemoryBacking",
+    "display_name": "Guest Memory Backing",
+    "description": "This provides the preferred backing option for guest RAM. Guest's memory can be backed by hugepages to limit TLB lookups. See also: https://wiki.openstack.org/wiki/VirtDriverGuestCPUMemoryPlacement",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "hw:"
+        },
+        {
+            "name": "OS::Glance::Image",
+            "prefix": "hw_"
+        },
+        {
+            "name": "OS::Cinder::Volume",
+            "prefix": "hw_",
+            "properties_target": "image"
+        }
+    ],
+    "properties": {
+        "mem_page_size": {
+            "title": "Size of memory page",
+            "description": "Page size to be used for Guest memory backing. Value can be specified as <number><unit> (i.e.: 2MB, 1GB) or 'any', 'small', 'large'. If this property is set in Image metadata then only 'any' and 'large' values are accepted in Flavor metadata by Nova API.",
+            "type": "string"
+        }
+    }
+}
