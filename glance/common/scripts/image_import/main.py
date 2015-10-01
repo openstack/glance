@@ -110,7 +110,8 @@ def import_image(image_repo, image_factory, task_input, task_id, uri):
                     "processing.") % {"image_id": image_id,
                                       "task_id": task_id}
             raise exception.Conflict(msg)
-    except (exception.Conflict, exception.NotFound):
+    except (exception.Conflict, exception.NotFound,
+            exception.NotAuthenticated):
         with excutils.save_and_reraise_exception():
             if new_image.locations:
                 for location in new_image.locations:
