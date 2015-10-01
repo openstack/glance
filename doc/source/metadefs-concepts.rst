@@ -39,7 +39,7 @@ virtual CPU topology property in the list and know that it must be an integer.
 When the user adds the property its key and value will be stored in the
 service that owns that resource (for example, Nova for flavors and in Glance
 for images). The catalog also includes any additional prefix required when
-the property is applied to different types of resources, such as "hw_" for
+the property is applied to different types of resources, such as "hw\_" for
 images and "hw:" for flavors.  So, on an image, the user would know to set the
 property as "hw_cpu_cores=1".
 
