@@ -55,4 +55,4 @@ OPTIONS
   **--respawn**
         Restart service on unexpected death
 
-  .. include:: footer.rst
+.. include:: footer.rst

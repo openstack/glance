@@ -60,4 +60,4 @@ FILES
   **/etc/glance/glance-scrubber.conf**
       Default configuration file for the Glance Scrubber
 
- .. include:: footer.rst
+. include:: footer.rst
