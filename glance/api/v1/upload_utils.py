@@ -171,6 +171,13 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                     raise exception.ImageNotFound()
                 else:
                     raise
+        except exception.NotAuthenticated as e:
+            # Delete image data due to possible token expiration.
+            LOG.debug("Authentication error - the token may have "
+                      "expired during file upload. Deleting image data for "
+                      " %s " % image_id)
+            initiate_deletion(req, location_data, image_id)
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg, request=req)
         except exception.ImageNotFound:
             msg = _LI("Image %s could not be found after upload. The image may"
                       " have been deleted during the upload.") % image_id
