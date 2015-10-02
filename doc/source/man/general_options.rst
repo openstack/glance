@@ -42,8 +42,7 @@
         --config-file <file1> --config-file <file2>. Values in latter
         files take precedence.
 
-  **--log-config-append PATH**
-  **--log-config PATH**
+  **--log-config-append PATH** **--log-config PATH**
         The name of logging configuration file. It does not
         disable existing loggers, but just appends specified
         logging configuration to any other existing logging

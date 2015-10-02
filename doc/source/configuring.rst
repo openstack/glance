@@ -292,36 +292,42 @@ To prevent failures with token expiration during big files upload,
 it is recommended to set this parameter to False.
 
 * ``admin_user=USER``
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the username.
 
 Optional. Default: None
 
 * ``admin_password=PASSWORD``
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the password.
 
 Optional. Default: None
 
 * ``admin_tenant_name=TENANTNAME``
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the tenant name.
 
 Optional. Default: None
 
 * ``auth_url=URL``
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the Keystone endpoint.
 
 Optional. Default: None
 
 * ``auth_strategy=STRATEGY``
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the auth strategy.
 
 Optional. Default: keystone
 
 * ``auth_region=REGION``
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the region.
 
