@@ -93,8 +93,6 @@ class API(wsgi.Router):
         mapper.connect('/artifacts',
                        controller=reject_method_resource,
                        action='reject',
-                       allowed_methods='GET',
-                       conditions={'method': ['POST', 'PUT', 'DELETE',
-                                              'PATCH', 'HEAD']})
+                       allowed_methods='GET')
 
         super(API, self).__init__(mapper)
