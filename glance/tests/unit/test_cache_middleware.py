@@ -29,7 +29,9 @@ from glance.tests.unit import utils as unit_test_utils
 
 
 class ImageStub(object):
-    def __init__(self, image_id, extra_properties={}, visibility='private'):
+    def __init__(self, image_id, extra_properties=None, visibility='private'):
+        if extra_properties is None:
+            extra_properties = {}
         self.image_id = image_id
         self.visibility = visibility
         self.status = 'active'

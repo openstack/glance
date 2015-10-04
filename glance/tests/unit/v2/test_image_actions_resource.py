@@ -71,8 +71,11 @@ class TestImageActionsController(base.IsolatedUnitTest):
         self.controller.gateway.store_utils = self.store_utils
         store.create_stores()
 
-    def _get_fake_context(self, user=USER1, tenant=TENANT1, roles=['member'],
+    def _get_fake_context(self, user=USER1, tenant=TENANT1, roles=None,
                           is_admin=False):
+        if roles is None:
+            roles = ['member']
+
         kwargs = {
             'user': user,
             'tenant': tenant,

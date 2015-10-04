@@ -604,8 +604,10 @@ def artifact_get(client, artifact_id,
 
 @_get_client
 def artifact_get_all(client, marker=None, limit=None, sort_key=None,
-                     sort_dir=None, filters={},
+                     sort_dir=None, filters=None,
                      show_level=artifacts.Showlevel.NONE, session=None):
+    if filters is None:
+        filters = {}
     return client.artifact_create(marker, limit, sort_key,
                                   sort_dir, filters, show_level)
 
