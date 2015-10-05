@@ -62,6 +62,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
+import six
 import xattr
 
 from glance.common import exception
@@ -101,7 +102,7 @@ class Driver(base.Driver):
         image_cache_dir = self.base_dir
         fake_image_filepath = os.path.join(image_cache_dir, 'checkme')
         with open(fake_image_filepath, 'wb') as fake_file:
-            fake_file.write("XXX")
+            fake_file.write(b"XXX")
             fake_file.flush()
         try:
             set_xattr(fake_image_filepath, 'hits', '1')
@@ -489,7 +490,11 @@ def set_xattr(path, key, value):
     If xattrs aren't supported by the file-system, we skip setting the value.
     """
     namespaced_key = _make_namespaced_xattr_key(key)
-    xattr.setxattr(path, namespaced_key, str(value))
+    if not isinstance(value, six.binary_type):
+        value = str(value)
+        if six.PY3:
+            value = value.encode('utf-8')
+    xattr.setxattr(path, namespaced_key, value)
 
 
 def inc_xattr(path, key, n=1):

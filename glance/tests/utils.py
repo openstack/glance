@@ -392,17 +392,17 @@ def xattr_writes_supported(path):
         return False
 
     def set_xattr(path, key, value):
-        xattr.setxattr(path, "user.%s" % key, str(value))
+        xattr.setxattr(path, "user.%s" % key, value)
 
     # We do a quick attempt to write a user xattr to a temporary file
     # to check that the filesystem is even enabled to support xattrs
     fake_filepath = os.path.join(path, 'testing-checkme')
     result = True
     with open(fake_filepath, 'wb') as fake_file:
-        fake_file.write("XXX")
+        fake_file.write(b"XXX")
         fake_file.flush()
     try:
-        set_xattr(fake_filepath, 'hits', '1')
+        set_xattr(fake_filepath, 'hits', b'1')
     except IOError as e:
         if e.errno == errno.EOPNOTSUPP:
             result = False
