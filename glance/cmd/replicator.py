@@ -25,6 +25,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
+import six
 from six.moves import http_client
 import six.moves.urllib.parse as urlparse
 from webob import exc
@@ -373,7 +374,11 @@ def replication_dump(options, args):
             LOG.info(_LI('Storing: %s') % image['id'])
 
             # Dump glance information
-            with open(data_path, 'w') as f:
+            if six.PY3:
+                f = open(data_path, 'w', encoding='utf-8')
+            else:
+                f = open(data_path, 'w')
+            with f:
                 f.write(jsonutils.dumps(image))
 
             if image['status'] == 'active' and not options.metaonly:

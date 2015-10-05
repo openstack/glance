@@ -77,8 +77,7 @@ class FakeHTTPConnection(object):
         if not url.startswith('/'):
             url = '/' + url
         url = unit_test_utils.sort_url_by_qs_keys(url)
-        hkeys = in_headers.keys()
-        hkeys.sort()
+        hkeys = sorted(in_headers.keys())
         hashable = (method, url, in_body, ' '.join(hkeys))
 
         flat_headers = []
@@ -90,8 +89,7 @@ class FakeHTTPConnection(object):
     def request(self, method, url, body, headers):
         self.count += 1
         url = unit_test_utils.sort_url_by_qs_keys(url)
-        hkeys = headers.keys()
-        hkeys.sort()
+        hkeys = sorted(headers.keys())
         hashable = (method, url, body, ' '.join(hkeys))
 
         if hashable not in self.reqs:
@@ -245,7 +243,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
 class FakeHttpResponse(object):
     def __init__(self, headers, data):
         self.headers = headers
-        self.data = six.StringIO(data)
+        self.data = six.BytesIO(data)
 
     def getheaders(self):
         return self.headers
@@ -284,7 +282,7 @@ class FakeImageService(object):
         return FAKEIMAGES
 
     def get_image(self, id):
-        return FakeHttpResponse({}, 'data')
+        return FakeHttpResponse({}, b'data')
 
     def get_image_meta(self, id):
         for img in FAKEIMAGES:

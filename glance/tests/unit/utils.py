@@ -13,12 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import urllib
 
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
-import six.moves.urllib.parse as urlparse
+from six.moves import urllib
 
 from glance.common import exception
 from glance.common import store_utils
@@ -50,17 +49,17 @@ def sort_url_by_qs_keys(url):
     # non-deterministic ordering of the query string causing problems with unit
     # tests.
 
-    parsed = urlparse.urlparse(url)
-    queries = urlparse.parse_qsl(parsed.query, True)
+    parsed = urllib.parse.urlparse(url)
+    queries = urllib.parse.parse_qsl(parsed.query, True)
     sorted_query = sorted(queries, key=lambda x: x[0])
 
-    encoded_sorted_query = urllib.urlencode(sorted_query, True)
+    encoded_sorted_query = urllib.parse.urlencode(sorted_query, True)
 
     url_parts = (parsed.scheme, parsed.netloc, parsed.path,
                  parsed.params, encoded_sorted_query,
                  parsed.fragment)
 
-    return urlparse.urlunparse(url_parts)
+    return urllib.parse.urlunparse(url_parts)
 
 
 def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
@@ -150,7 +149,7 @@ class FakeStoreUtils(object):
             self.safe_delete_from_backend(context, image_id, location)
 
     def validate_external_location(self, uri):
-        if uri and urlparse.urlparse(uri).scheme:
+        if uri and urllib.parse.urlparse(uri).scheme:
             return store_utils.validate_external_location(uri)
         else:
             return True
