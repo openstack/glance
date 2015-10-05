@@ -62,7 +62,7 @@ class TestClient(testtools.TestCase):
 
         # Lets fake the response
         # returned by http_client
-        fake = utils.FakeHTTPResponse(data="Ok")
+        fake = utils.FakeHTTPResponse(data=b"Ok")
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
@@ -80,7 +80,7 @@ class TestClient(testtools.TestCase):
 
         # Lets fake the response
         # returned by http_client
-        fake = utils.FakeHTTPResponse(data="Ok")
+        fake = utils.FakeHTTPResponse(data=b"Ok")
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 

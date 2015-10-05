@@ -42,6 +42,7 @@ rpc_opts = [
     # from oslo rpc.
     cfg.ListOpt('allowed_rpc_exception_modules',
                 default=['glance.common.exception',
+                         'builtins',
                          'exceptions',
                          ],
                 help='Modules of exceptions that are permitted to be recreated'
