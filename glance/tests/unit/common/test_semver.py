@@ -60,7 +60,7 @@ class SemVerTestCase(test_utils.BaseTestCase):
             semver_db.parse("1.1.1-0.11.z.24.y.255").__composite_values__()[1],
             semver_db.parse("1.1.1-1.11.z.24.y.255").__composite_values__()[1],
             semver_db.parse("1.1.1-alp.1.2.3.4.5.6").__composite_values__()[1]]
-        for i in xrange(len(versions) - 1):
+        for i in range(len(versions) - 1):
             self.assertLess(versions[i], versions[i + 1])
 
     def test_too_large_version(self):

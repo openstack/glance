@@ -40,13 +40,13 @@ class TestPasteApp(test_utils.BaseTestCase):
                                 paste_append=None):
 
         def _writeto(path, str):
-            with open(path, 'wb') as f:
+            with open(path, 'w') as f:
                 f.write(str or '')
                 f.flush()
 
         def _appendto(orig, copy, str):
             shutil.copy(orig, copy)
-            with open(copy, 'ab') as f:
+            with open(copy, 'a') as f:
                 f.write(str or '')
                 f.flush()
 
