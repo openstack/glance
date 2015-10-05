@@ -163,5 +163,5 @@ def set_image_data(image, uri, task_id):
                          " %(image_data)s"), {"image_data": uri,
                                               "task_id": task_id})
     finally:
-        if isinstance(data_iter, file):
+        if hasattr(data_iter, 'close'):
             data_iter.close()

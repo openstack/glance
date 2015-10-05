@@ -19,6 +19,7 @@ import futurist
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
+import six
 from stevedore import driver
 from taskflow import engines
 from taskflow.listeners import logging as llistener
@@ -127,7 +128,7 @@ class TaskExecutor(glance.async.TaskExecutor):
         except Exception as exc:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s') %
-                          {'task_id': task_id, 'exc': exc.message})
+                          {'task_id': task_id, 'exc': six.text_type(exc)})
                 # TODO(sabari): Check for specific exceptions and update the
                 # task failure message.
                 task.fail(_('Task failed due to Internal Error'))
