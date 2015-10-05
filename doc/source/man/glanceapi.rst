@@ -36,4 +36,4 @@ FILES
   **/etc/glance/glance-api.conf**
         Default configuration file for Glance API
 
-  .. include:: footer.rst
+.. include:: footer.rst

@@ -85,4 +85,4 @@ OPTIONS
 
   .. include:: openstack_options.rst
 
-  .. include:: footer.rst
+.. include:: footer.rst

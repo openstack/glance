@@ -38,4 +38,4 @@ FILES
   **/etc/glance/glance-cache.conf**
         Default configuration file for the Glance Cache
 
-  .. include:: footer.rst
+.. include:: footer.rst

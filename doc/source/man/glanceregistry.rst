@@ -37,4 +37,4 @@ FILES
   **/etc/glance/glance-registry.conf**
         Default configuration file for Glance Registry
 
-  .. include:: footer.rst
+.. include:: footer.rst

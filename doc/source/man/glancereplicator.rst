@@ -87,4 +87,4 @@ OPTIONS
   **-v, --verbose**
          Print more verbose output
 
-  .. include:: footer.rst
+.. include:: footer.rst

@@ -86,7 +86,7 @@ OPTIONS
         A proper SQLAlchemy connection string as described
         `here <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html?highlight=engine#sqlalchemy.create_engine>`_
 
-  .. include:: footer.rst
+.. include:: footer.rst
 
 CONFIGURATION
 =============
