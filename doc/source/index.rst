@@ -94,3 +94,12 @@ Using Glance
    glanceapi
    glanceclient
    glancemetadefcatalogapi
+
+Glance Manual Pages
+===================
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   man/*

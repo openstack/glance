@@ -93,6 +93,15 @@ version = glance_version.canonical_version_string()
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
 exclude_trees = ['api']
+exclude_patterns = [
+    # The man directory includes some snippet files that are included
+    # in other documents during the build but that should not be
+    # included in the toctree themselves, so tell Sphinx to ignore
+    # them when scanning for input files.
+    'man/footer.rst',
+    'man/general_options.rst',
+    'man/openstack_options.rst',
+]
 
 # The reST default role (for this markup: `text`) to use for all documents.
 #default_role = None
