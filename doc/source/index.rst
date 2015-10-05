@@ -72,6 +72,7 @@ Installing/Configuring Glance
    image-location-strategy-modules
    artifact-types
    flows
+   property-protections
 
 Operating Glance
 ================
