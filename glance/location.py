@@ -407,7 +407,12 @@ class ImageProxy(glance.domain.proxy.Image):
 
     def get_data(self, offset=0, chunk_size=None):
         if not self.image.locations:
-            raise store.NotFound(_("No image data could be found"))
+            # NOTE(mclaren): This is the only set of arguments
+            # which work with this exception currently, see:
+            # https://bugs.launchpad.net/glance-store/+bug/1501443
+            # When the above glance_store bug is fixed we can
+            # add a msg as usual.
+            raise store.NotFound(image=None)
         err = None
         for loc in self.image.locations:
             try:
