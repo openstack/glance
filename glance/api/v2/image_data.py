@@ -211,8 +211,6 @@ class ImageDataController(object):
                 msg = _('The requested image has been deactivated. '
                         'Image data download is forbidden.')
                 raise exception.Forbidden(message=msg)
-            if not image.locations:
-                raise exception.ImageDataNotFound()
         except exception.ImageDataNotFound as e:
             raise webob.exc.HTTPNoContent(explanation=e.msg)
         except exception.NotFound as e:
@@ -260,7 +258,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             response.app_iter = iter(image.get_data(offset=offset,
                                                     chunk_size=chunk_size))
         except glance_store.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
+            raise webob.exc.HTTPNoContent(explanation=e.msg)
         except glance_store.RemoteServiceUnavailable as e:
             raise webob.exc.HTTPServiceUnavailable(explanation=e.msg)
         except (glance_store.StoreGetNotSupported,

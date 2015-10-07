@@ -122,10 +122,12 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, str(uuid.uuid4()))
 
     def test_download_no_location(self):
+        # NOTE(mclaren): NoContent will be raised by the ResponseSerializer
+        # That's tested below.
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = FakeImage('abcd')
-        self.assertRaises(webob.exc.HTTPNoContent, self.controller.download,
-                          request, unit_test_utils.UUID2)
+        image = self.controller.download(request, unit_test_utils.UUID2)
+        self.assertEqual('abcd', image.image_id)
 
     def test_download_non_existent_image(self):
         request = unit_test_utils.get_fake_request()
@@ -139,7 +141,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
                           request, str(uuid.uuid4()))
 
-    def test_download_get_image_location_forbidden(self):
+    def test_download_ok_when_get_image_location_forbidden(self):
         class ImageLocations(object):
             def __len__(self):
                 raise exception.Forbidden()
@@ -148,8 +150,8 @@ class TestImagesController(base.StoreClearingUnitTest):
         image = FakeImage('abcd')
         self.image_repo.result = image
         image.locations = ImageLocations()
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
-                          request, str(uuid.uuid4()))
+        image = self.controller.download(request, unit_test_utils.UUID1)
+        self.assertEqual('abcd', image.image_id)
 
     def test_upload(self):
         request = unit_test_utils.get_fake_request()
@@ -510,11 +512,11 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
                           self.serializer.download,
                           response, image)
 
-    def test_download_not_found(self):
-        """Test image download returns HTTPNotFound.
+    def test_download_no_content(self):
+        """Test image download returns HTTPNoContent
 
-        Make sure that serializer returns 404 not found error in case of
-        image is not available at specified location.
+        Make sure that serializer returns 204 no content error in case of
+        image data is not available at specified location.
         """
         with mock.patch.object(glance.api.policy.ImageProxy,
                                'get_data') as mock_get_data:
@@ -525,7 +527,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
             response.request = request
             image = FakeImage(size=3, data=iter('ZZZ'))
             image.get_data = mock_get_data
-            self.assertRaises(webob.exc.HTTPNotFound,
+            self.assertRaises(webob.exc.HTTPNoContent,
                               self.serializer.download,
                               response, image)
 
