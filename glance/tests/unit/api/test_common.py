@@ -55,9 +55,9 @@ class TestSizeCheckedIter(testtools.TestCase):
         checked_image = glance.api.common.size_checked_iter(
             resp, meta, 4, ['AB', 'CD'], None)
 
-        self.assertEqual('AB', checked_image.next())
-        self.assertEqual('CD', checked_image.next())
-        self.assertRaises(StopIteration, checked_image.next)
+        self.assertEqual('AB', next(checked_image))
+        self.assertEqual('CD', next(checked_image))
+        self.assertRaises(StopIteration, next, checked_image)
 
     def test_small_last_chunk(self):
         resp = self._get_webob_response()
@@ -65,9 +65,9 @@ class TestSizeCheckedIter(testtools.TestCase):
         checked_image = glance.api.common.size_checked_iter(
             resp, meta, 3, ['AB', 'C'], None)
 
-        self.assertEqual('AB', checked_image.next())
-        self.assertEqual('C', checked_image.next())
-        self.assertRaises(StopIteration, checked_image.next)
+        self.assertEqual('AB', next(checked_image))
+        self.assertEqual('C', next(checked_image))
+        self.assertRaises(StopIteration, next, checked_image)
 
     def test_variable_chunk_size(self):
         resp = self._get_webob_response()
@@ -75,11 +75,11 @@ class TestSizeCheckedIter(testtools.TestCase):
         checked_image = glance.api.common.size_checked_iter(
             resp, meta, 6, ['AB', '', 'CDE', 'F'], None)
 
-        self.assertEqual('AB', checked_image.next())
-        self.assertEqual('', checked_image.next())
-        self.assertEqual('CDE', checked_image.next())
-        self.assertEqual('F', checked_image.next())
-        self.assertRaises(StopIteration, checked_image.next)
+        self.assertEqual('AB', next(checked_image))
+        self.assertEqual('', next(checked_image))
+        self.assertEqual('CDE', next(checked_image))
+        self.assertEqual('F', next(checked_image))
+        self.assertRaises(StopIteration, next, checked_image)
 
     def test_too_many_chunks(self):
         """An image should streamed regardless of expected_size"""
@@ -88,10 +88,10 @@ class TestSizeCheckedIter(testtools.TestCase):
         checked_image = glance.api.common.size_checked_iter(
             resp, meta, 4, ['AB', 'CD', 'EF'], None)
 
-        self.assertEqual('AB', checked_image.next())
-        self.assertEqual('CD', checked_image.next())
-        self.assertEqual('EF', checked_image.next())
-        self.assertRaises(exception.GlanceException, checked_image.next)
+        self.assertEqual('AB', next(checked_image))
+        self.assertEqual('CD', next(checked_image))
+        self.assertEqual('EF', next(checked_image))
+        self.assertRaises(exception.GlanceException, next, checked_image)
 
     def test_too_few_chunks(self):
         resp = self._get_webob_response()
@@ -100,9 +100,9 @@ class TestSizeCheckedIter(testtools.TestCase):
                                                             ['AB', 'CD'],
                                                             None)
 
-        self.assertEqual('AB', checked_image.next())
-        self.assertEqual('CD', checked_image.next())
-        self.assertRaises(exception.GlanceException, checked_image.next)
+        self.assertEqual('AB', next(checked_image))
+        self.assertEqual('CD', next(checked_image))
+        self.assertRaises(exception.GlanceException, next, checked_image)
 
     def test_too_much_data(self):
         resp = self._get_webob_response()
@@ -111,9 +111,9 @@ class TestSizeCheckedIter(testtools.TestCase):
                                                             ['AB', 'CD'],
                                                             None)
 
-        self.assertEqual('AB', checked_image.next())
-        self.assertEqual('CD', checked_image.next())
-        self.assertRaises(exception.GlanceException, checked_image.next)
+        self.assertEqual('AB', next(checked_image))
+        self.assertEqual('CD', next(checked_image))
+        self.assertRaises(exception.GlanceException, next, checked_image)
 
     def test_too_little_data(self):
         resp = self._get_webob_response()
@@ -122,10 +122,10 @@ class TestSizeCheckedIter(testtools.TestCase):
                                                             ['AB', 'CD', 'E'],
                                                             None)
 
-        self.assertEqual('AB', checked_image.next())
-        self.assertEqual('CD', checked_image.next())
-        self.assertEqual('E', checked_image.next())
-        self.assertRaises(exception.GlanceException, checked_image.next)
+        self.assertEqual('AB', next(checked_image))
+        self.assertEqual('CD', next(checked_image))
+        self.assertEqual('E', next(checked_image))
+        self.assertRaises(exception.GlanceException, next, checked_image)
 
 
 class TestMalformedRequest(test_utils.BaseTestCase):
