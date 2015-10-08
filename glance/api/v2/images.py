@@ -478,7 +478,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             msg = _("Attribute '%s' is reserved.") % path_root
             raise webob.exc.HTTPForbidden(explanation=six.text_type(msg))
 
-        if change['op'] == 'delete':
+        if change['op'] == 'remove':
             return
 
         partial_image = None
@@ -557,7 +557,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
             if not op == 'remove':
                 change['value'] = self._get_change_value(raw_change, op)
-                self._validate_change(change)
+
+            self._validate_change(change)
 
             changes.append(change)
 
