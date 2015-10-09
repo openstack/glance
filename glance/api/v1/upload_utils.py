@@ -124,7 +124,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
         except exception.StorageQuotaFull:
             with excutils.save_and_reraise_exception():
                 LOG.info(_LI('Cleaning up %s after exceeding '
-                             'the quota') % image_id)
+                             'the quota'), image_id)
                 store_utils.safe_delete_from_backend(
                     req.context, image_meta['id'], location_data)
 
@@ -179,8 +179,8 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             initiate_deletion(req, location_data, image_id)
             raise webob.exc.HTTPUnauthorized(explanation=e.msg, request=req)
         except exception.ImageNotFound:
-            msg = _LI("Image %s could not be found after upload. The image may"
-                      " have been deleted during the upload.") % image_id
+            msg = _("Image %s could not be found after upload. The image may"
+                    " have been deleted during the upload.") % image_id
             LOG.info(msg)
 
             # NOTE(jculp): we need to clean up the datastore if an image

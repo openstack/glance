@@ -450,7 +450,7 @@ def _export_data_to_file(meta, path):
                 json_file.write(json.dumps(values))
         except Exception as e:
             LOG.exception(encodeutils.exception_to_unicode(e))
-        LOG.info(_LI("Namespace %(namespace)s saved in %(file)s") % {
+        LOG.info(_LI("Namespace %(namespace)s saved in %(file)s"), {
             'namespace': namespace_file_name, 'file': file_name})
 
 

@@ -371,7 +371,7 @@ def replication_dump(options, args):
 
         data_path = os.path.join(path, image['id'])
         if not os.path.exists(data_path):
-            LOG.info(_LI('Storing: %s') % image['id'])
+            LOG.info(_LI('Storing: %s'), image['id'])
 
             # Dump glance information
             if six.PY3:
@@ -448,7 +448,7 @@ def replication_load(options, args):
     for ent in os.listdir(path):
         if utils.is_uuid_like(ent):
             image_uuid = ent
-            LOG.info(_LI('Considering: %s') % image_uuid)
+            LOG.info(_LI('Considering: %s'), image_uuid)
 
             meta_file_name = os.path.join(path, image_uuid)
             with open(meta_file_name) as meta_file:
@@ -474,8 +474,7 @@ def replication_load(options, args):
                         del headers[key]
 
                 if _dict_diff(meta, headers):
-                    LOG.info(_LI('Image %s metadata has changed') %
-                             image_uuid)
+                    LOG.info(_LI('Image %s metadata has changed'), image_uuid)
                     headers, body = client.add_image_meta(meta)
                     _check_upload_response_headers(headers, body)
                     updated.append(meta['id'])
@@ -549,14 +548,13 @@ def replication_livecopy(options, args):
                         del headers[key]
 
                 if _dict_diff(image, headers):
-                    LOG.info(_LI('Image %s metadata has changed') %
-                             image['id'])
+                    LOG.info(_LI('Image %s metadata has changed'), image['id'])
                     headers, body = slave_client.add_image_meta(image)
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
 
         elif image['status'] == 'active':
-            LOG.info(_LI('Image %s is being synced') % image['id'])
+            LOG.info(_LI('Image %s is being synced'), image['id'])
             if not options.metaonly:
                 image_response = master_client.get_image(image['id'])
                 try:

@@ -240,7 +240,7 @@ class Daemon(object):
 
 class Scrubber(object):
     def __init__(self, store_api):
-        LOG.info(_LI("Initializing scrubber with configuration: %s") %
+        LOG.info(_LI("Initializing scrubber with configuration: %s"),
                  six.text_type({'registry_host': CONF.registry_host,
                                 'registry_port': CONF.registry_port}))
 
@@ -298,7 +298,7 @@ class Scrubber(object):
         if len(delete_jobs) == 0:
             return
 
-        LOG.info(_LI("Scrubbing image %(id)s from %(count)d locations.") %
+        LOG.info(_LI("Scrubbing image %(id)s from %(count)d locations."),
                  {'id': image_id, 'count': len(delete_jobs)})
 
         success = True
@@ -312,7 +312,7 @@ class Scrubber(object):
             image = self.registry.get_image(image_id)
             if image['status'] == 'pending_delete':
                 self.registry.update_image(image_id, {'status': 'deleted'})
-            LOG.info(_LI("Image %s has been scrubbed successfully") % image_id)
+            LOG.info(_LI("Image %s has been scrubbed successfully"), image_id)
         else:
             LOG.warn(_LW("One or more image locations couldn't be scrubbed "
                          "from backend. Leaving image '%s' in 'pending_delete'"
@@ -328,14 +328,14 @@ class Scrubber(object):
             except store_exceptions.NotFound:
                 LOG.info(_LI("Image location for image '%s' not found in "
                              "backend; Marking image location deleted in "
-                             "db.") % image_id)
+                             "db."), image_id)
 
             if loc_id != '-':
                 db_api.get_api().image_location_delete(self.admin_context,
                                                        image_id,
                                                        int(loc_id),
                                                        'deleted')
-            LOG.info(_LI("Image %s is scrubbed from a location.") % image_id)
+            LOG.info(_LI("Image %s is scrubbed from a location."), image_id)
         except Exception as e:
             LOG.error(_LE("Unable to scrub image %(id)s from a location. "
                           "Reason: %(exc)s ") %

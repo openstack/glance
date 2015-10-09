@@ -80,8 +80,7 @@ class Controller(object):
             raise webob.exc.HTTPNotFound()
 
         members = self.db_api.image_member_find(req.context, image_id=image_id)
-        msg = "Returning member list for image %(id)s" % {'id': image_id}
-        LOG.debug(msg)
+        LOG.debug("Returning member list for image %(id)s", {'id': image_id})
         return dict(members=make_member_list(members,
                                              member_id='member',
                                              can_share='can_share'))
@@ -197,9 +196,8 @@ class Controller(object):
             self.db_api.image_member_create(req.context, memb)
 
         # Make an appropriate result
-        msg = (_LI("Successfully updated memberships for image %(id)s") %
-               {'id': image_id})
-        LOG.info(msg)
+        LOG.info(_LI("Successfully updated memberships for image %(id)s"),
+                 {'id': image_id})
         return webob.exc.HTTPNoContent()
 
     @utils.mutating
@@ -271,9 +269,8 @@ class Controller(object):
                           can_share=bool(can_share))
             self.db_api.image_member_create(req.context, values)
 
-        msg = (_LI("Successfully updated a membership for image %(id)s") %
-               {'id': image_id})
-        LOG.info(msg)
+        LOG.info(_LI("Successfully updated a membership for image %(id)s"),
+                 {'id': image_id})
         return webob.exc.HTTPNoContent()
 
     @utils.mutating
@@ -313,21 +310,19 @@ class Controller(object):
         if members:
             self.db_api.image_member_delete(req.context, members[0]['id'])
         else:
-            msg = ("%(id)s is not a member of image %(image_id)s" %
-                   {'id': id, 'image_id': image_id})
-            LOG.debug(msg)
+            LOG.debug("%(id)s is not a member of image %(image_id)s",
+                      {'id': id, 'image_id': image_id})
             msg = _("Membership could not be found.")
             raise webob.exc.HTTPNotFound(explanation=msg)
 
         # Make an appropriate result
-        msg = (_LI("Successfully deleted a membership from image %(id)s") %
-               {'id': image_id})
-        LOG.info(msg)
+        LOG.info(_LI("Successfully deleted a membership from image %(id)s"),
+                 {'id': image_id})
         return webob.exc.HTTPNoContent()
 
     def default(self, req, *args, **kwargs):
         """This will cover the missing 'show' and 'create' actions"""
-        LOG.debug("The method %s is not allowed for this resource" %
+        LOG.debug("The method %s is not allowed for this resource",
                   req.environ['REQUEST_METHOD'])
         raise webob.exc.HTTPMethodNotAllowed(
             headers=[('Allow', 'PUT, DELETE')])
@@ -344,8 +339,8 @@ class Controller(object):
             msg = _("Membership could not be found.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
-        msg = "Returning list of images shared with member %(id)s" % {'id': id}
-        LOG.debug(msg)
+        LOG.debug("Returning list of images shared with member %(id)s",
+                  {'id': id})
         return dict(shared_images=make_member_list(members,
                                                    image_id='image_id',
                                                    can_share='can_share'))

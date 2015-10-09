@@ -410,19 +410,16 @@ class Driver(base.Driver):
         :param image_id: Image ID
         """
         if self.is_cached(image_id):
-            msg = _LI("Not queueing image '%s'. Already cached.") % image_id
-            LOG.info(msg)
+            LOG.info(_LI("Not queueing image '%s'. Already cached."), image_id)
             return False
 
         if self.is_being_cached(image_id):
-            msg = _LI("Not queueing image '%s'. Already being "
-                      "written to cache") % image_id
-            LOG.info(msg)
+            LOG.info(_LI("Not queueing image '%s'. Already being "
+                         "written to cache"), image_id)
             return False
 
         if self.is_queued(image_id):
-            msg = _LI("Not queueing image '%s'. Already queued.") % image_id
-            LOG.info(msg)
+            LOG.info(_LI("Not queueing image '%s'. Already queued."), image_id)
             return False
 
         path = self.get_image_filepath(image_id, 'queue')
@@ -439,7 +436,7 @@ class Driver(base.Driver):
         """
         for path in self.get_cache_files(self.invalid_dir):
             os.unlink(path)
-            LOG.info(_LI("Removed invalid cache file %s") % path)
+            LOG.info(_LI("Removed invalid cache file %s"), path)
 
     def delete_stalled_files(self, older_than):
         """
@@ -453,7 +450,7 @@ class Driver(base.Driver):
             if os.path.getmtime(path) < older_than:
                 try:
                     os.unlink(path)
-                    LOG.info(_LI("Removed stalled cache file %s") % path)
+                    LOG.info(_LI("Removed stalled cache file %s"), path)
                 except Exception as e:
                     msg = (_LW("Failed to delete file %(path)s. "
                                "Got error: %(e)s"),

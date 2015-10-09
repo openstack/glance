@@ -39,7 +39,7 @@ _LW = i18n._LW
 
 def run(t_id, context, task_repo, image_repo, image_factory):
     LOG.info(_LI('Task %(task_id)s beginning import '
-                 'execution.') % {'task_id': t_id})
+                 'execution.'), {'task_id': t_id})
     _execute(t_id, task_repo, image_repo, image_factory)
 
 
@@ -151,7 +151,7 @@ def set_image_data(image, uri, task_id):
     data_iter = None
     try:
         LOG.info(_LI("Task %(task_id)s: Got image data uri %(data_uri)s to be "
-                 "imported") % {"data_uri": uri, "task_id": task_id})
+                 "imported"), {"data_uri": uri, "task_id": task_id})
         data_iter = script_utils.get_image_data_iter(uri)
         image.set_data(data_iter)
     except Exception as e:
@@ -160,8 +160,8 @@ def set_image_data(image, uri, task_id):
                      {"error": encodeutils.exception_to_unicode(e),
                       "task_id": task_id})
             LOG.info(_LI("Task %(task_id)s: Could not import image file"
-                         " %(image_data)s") % {"image_data": uri,
-                                               "task_id": task_id})
+                         " %(image_data)s"), {"image_data": uri,
+                                              "task_id": task_id})
     finally:
         if isinstance(data_iter, file):
             data_iter.close()

@@ -395,9 +395,8 @@ class ImageProxy(glance.domain.proxy.Image):
             result = signature_utils.verify_signature(
                 self.context, checksum, self.image.extra_properties)
             if result:
-                msg = (_LI("Successfully verified signature for image "
-                           "%s") % self.image.image_id)
-                LOG.info(msg)
+                LOG.info(_LI("Successfully verified signature for image %s"),
+                         self.image.image_id)
 
         self.image.locations = [{'url': location, 'metadata': loc_meta,
                                  'status': 'active'}]

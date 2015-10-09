@@ -373,7 +373,7 @@ class _CompleteTask(task.Task):
         finally:
             self.task_repo.save(task)
 
-        LOG.info(_LI("%(task_id)s of %(task_type)s completed") %
+        LOG.info(_LI("%(task_id)s of %(task_type)s completed"),
                  {'task_id': self.task_id, 'task_type': self.task_type})
 
 

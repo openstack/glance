@@ -69,8 +69,7 @@ class ImageCache(object):
         driver_module = (__name__ + '.drivers.' + driver_name + '.Driver')
         try:
             self.driver_class = importutils.import_class(driver_module)
-            LOG.info(_LI("Image cache loaded driver '%s'.") %
-                     driver_name)
+            LOG.info(_LI("Image cache loaded driver '%s'."), driver_name)
         except ImportError as import_err:
             LOG.warn(_LW("Image cache driver "
                          "'%(driver_name)s' failed to load. "

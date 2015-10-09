@@ -403,18 +403,16 @@ class Task(object):
     def _set_task_status(self, new_status):
         if self._validate_task_status_transition(self.status, new_status):
             self._status = new_status
-            log_msg = (_LI("Task [%(task_id)s] status changing from "
-                           "%(cur_status)s to %(new_status)s") %
-                       {'task_id': self.task_id, 'cur_status': self.status,
-                        'new_status': new_status})
-            LOG.info(log_msg)
+            LOG.info(_LI("Task [%(task_id)s] status changing from "
+                         "%(cur_status)s to %(new_status)s"),
+                     {'task_id': self.task_id, 'cur_status': self.status,
+                      'new_status': new_status})
             self._status = new_status
         else:
-            log_msg = (_LE("Task [%(task_id)s] status failed to change from "
-                           "%(cur_status)s to %(new_status)s") %
-                       {'task_id': self.task_id, 'cur_status': self.status,
-                        'new_status': new_status})
-            LOG.error(log_msg)
+            LOG.error(_LE("Task [%(task_id)s] status failed to change from "
+                          "%(cur_status)s to %(new_status)s"),
+                      {'task_id': self.task_id, 'cur_status': self.status,
+                       'new_status': new_status})
             raise exception.InvalidTaskStatusTransition(
                 cur_status=self.status,
                 new_status=new_status

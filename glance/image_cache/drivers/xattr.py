@@ -339,19 +339,16 @@ class Driver(base.Driver):
         :param image_id: Image ID
         """
         if self.is_cached(image_id):
-            msg = _LI("Not queueing image '%s'. Already cached.") % image_id
-            LOG.info(msg)
+            LOG.info(_LI("Not queueing image '%s'. Already cached."), image_id)
             return False
 
         if self.is_being_cached(image_id):
-            msg = _LI("Not queueing image '%s'. Already being "
-                      "written to cache") % image_id
-            LOG.info(msg)
+            LOG.info(_LI("Not queueing image '%s'. Already being "
+                         "written to cache"), image_id)
             return False
 
         if self.is_queued(image_id):
-            msg = _LI("Not queueing image '%s'. Already queued.") % image_id
-            LOG.info(msg)
+            LOG.info(_LI("Not queueing image '%s'. Already queued."), image_id)
             return False
 
         path = self.get_image_filepath(image_id, 'queue')
