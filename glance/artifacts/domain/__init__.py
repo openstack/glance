@@ -65,7 +65,7 @@ class ArtifactFactory(object):
                           version=version,
                           visibility='private',
                           state='creating',
-                          # XXX FIXME remove after using authentification
+                          # XXX FIXME remove after using authentication
                           # paste-flavor
                           # (no or '' as owner will always be there)
                           owner=self.context.owner or '',
