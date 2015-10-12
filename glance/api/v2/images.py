@@ -824,7 +824,7 @@ def get_base_properties():
             'type': 'string',
             'description': _('Status of the image (READ-ONLY)'),
             'enum': ['queued', 'saving', 'active', 'killed',
-                     'deleted', 'pending_delete'],
+                     'deleted', 'pending_delete', 'deactivated'],
         },
         'visibility': {
             'type': 'string',
