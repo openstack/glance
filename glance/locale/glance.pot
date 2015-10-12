@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.dev42\n"
+"Project-Id-Version: glance 12.0.0.dev52\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-07 06:36+0000\n"
+"POT-Creation-Date: 2015-10-12 06:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr ""
 msgid "Original locations is not empty: %s"
 msgstr ""
 
-#: glance/location.py:427
+#: glance/location.py:426
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr ""
@@ -472,7 +472,7 @@ msgstr ""
 msgid "Attempted to update Location field for an image not in queued status."
 msgstr ""
 
-#: glance/api/v1/images.py:1029 glance/registry/api/v1/images.py:487
+#: glance/api/v1/images.py:1029 glance/registry/api/v1/images.py:478
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
 msgstr ""
@@ -561,6 +561,13 @@ msgstr ""
 msgid ""
 "Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded "
 "image (%(actual)s) did not match. Setting image status to 'killed'."
+msgstr ""
+
+#: glance/api/v1/upload_utils.py:182
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted"
+" during the upload."
 msgstr ""
 
 #: glance/api/v1/upload_utils.py:198 glance/api/v2/image_data.py:130
@@ -1450,8 +1457,8 @@ msgid ""
 msgstr ""
 
 #: glance/cmd/replicator.py:329 glance/cmd/replicator.py:361
-#: glance/cmd/replicator.py:437 glance/cmd/replicator.py:513
-#: glance/cmd/replicator.py:584
+#: glance/cmd/replicator.py:437 glance/cmd/replicator.py:512
+#: glance/cmd/replicator.py:582
 msgid "Too few arguments."
 msgstr ""
 
@@ -1460,7 +1467,7 @@ msgstr ""
 msgid "Total size is %(size)d bytes across %(img_count)d images"
 msgstr ""
 
-#: glance/cmd/replicator.py:698
+#: glance/cmd/replicator.py:696
 #, python-format
 msgid "Unknown command: %s"
 msgstr ""
@@ -3100,7 +3107,7 @@ msgstr ""
 msgid "Base directory that the Image Cache uses."
 msgstr ""
 
-#: glance/image_cache/__init__.py:262
+#: glance/image_cache/__init__.py:261
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr ""
@@ -3170,42 +3177,42 @@ msgstr ""
 msgid "is_public must be None, True, or False"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:419
+#: glance/registry/api/v1/images.py:412
 msgid "Invalid image id format"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:434
+#: glance/registry/api/v1/images.py:426
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:438
+#: glance/registry/api/v1/images.py:430
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:71 glance/registry/api/v1/members.py:106
-#: glance/registry/api/v1/members.py:225 glance/registry/api/v1/members.py:290
+#: glance/registry/api/v1/members.py:71 glance/registry/api/v1/members.py:105
+#: glance/registry/api/v1/members.py:223 glance/registry/api/v1/members.py:287
 #, python-format
 msgid "Image %(id)s not found"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:122 glance/registry/api/v1/members.py:241
-#: glance/registry/api/v1/members.py:306
+#: glance/registry/api/v1/members.py:121 glance/registry/api/v1/members.py:239
+#: glance/registry/api/v1/members.py:303
 msgid "No permission to share that image"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:133 glance/registry/api/v1/members.py:150
-#: glance/registry/api/v1/members.py:254
+#: glance/registry/api/v1/members.py:132 glance/registry/api/v1/members.py:149
+#: glance/registry/api/v1/members.py:252
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:319 glance/registry/api/v1/members.py:344
+#: glance/registry/api/v1/members.py:315 glance/registry/api/v1/members.py:339
 msgid "Membership could not be found."
 msgstr ""
 
-#: glance/registry/api/v2/rpc.py:44
+#: glance/registry/api/v2/rpc.py:41
 #, python-format
 msgid "Registry service can't use %s"
 msgstr ""
