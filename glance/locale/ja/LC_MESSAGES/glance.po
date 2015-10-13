@@ -10,10 +10,10 @@
 # Yuko Katabami <yukokatabami@gmail.com>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.dev42\n"
+"Project-Id-Version: glance 12.0.0.dev52\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-07 06:36+0000\n"
-"PO-Revision-Date: 2015-10-06 04:55+0000\n"
+"POT-Creation-Date: 2015-10-12 06:02+0000\n"
+"PO-Revision-Date: 2015-10-09 05:17+0000\n"
 "Last-Translator: Akihiro Motoki <amotoki@gmail.com>\n"
 "Language: ja\n"
 "Language-Team: Japanese (http://www.transifex.com/openstack/glance/language/"
@@ -109,7 +109,6 @@ msgstr "%s は既に停止しています"
 msgid "%s is stopped"
 msgstr "%s は停止しています"
 
-#, fuzzy
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
 "keystone authentication strategy is enabled\n"
@@ -458,7 +457,7 @@ msgid "Could not find property %s"
 msgstr "プロパティー %s が見つかりませんでした"
 
 msgid "Could not find required configuration option"
-msgstr "必要な構成オプションが見つかりませんでした"
+msgstr "必要な設定オプションが見つかりませんでした"
 
 #, python-format
 msgid "Could not find task %s"
@@ -629,7 +628,7 @@ msgstr ""
 
 #, python-format
 msgid "Failed to read %s from config"
-msgstr "構成から %s を読み取ることができませんでした"
+msgstr "設定から %s を読み取ることができませんでした"
 
 #, python-format
 msgid "Failed to reserve image. Got error: %s"
@@ -1242,7 +1241,6 @@ msgstr ""
 msgid "Name of the paste configuration file."
 msgstr "paste 設定ファイルの名前。"
 
-#, fuzzy
 msgid "No authenticated user"
 msgstr "認証されていないユーザー"
 
@@ -1257,7 +1255,6 @@ msgstr "ID が %s であるイメージは見つかりません"
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr "イメージ %(img)s 内で ID が %(loc)s のロケーションは見つかりません"
 
-#, fuzzy
 msgid "No permission to share that image"
 msgstr "そのイメージを共有する許可がありません"
 
@@ -1457,7 +1454,7 @@ msgstr "プロパティー '%s' は保護されています"
 msgid "Property names can't contain 4 byte unicode."
 msgstr "プロパティー名に 4 バイトの Unicode が含まれていてはなりません。"
 
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Property protection on operation %(operation)s for rule %(rule)s is not "
 "found. No role will be allowed to perform this operation."
@@ -1567,7 +1564,6 @@ msgstr ""
 msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "Keystone からの応答に Glance エンドポイントが含まれていません。"
 
-#, fuzzy
 msgid "Role used to identify an authenticated user as administrator."
 msgstr "認証ユーザーを管理者として識別するために使用される役割。"
 
@@ -1866,7 +1862,6 @@ msgstr "ロケーション %(location)s は既に存在します"
 msgid "The location data has an invalid ID: %d"
 msgstr "ロケーションデータの ID が無効です: %d"
 
-#, fuzzy
 msgid ""
 "The location of the property protection file.This file contains the rules "
 "for property protections and the roles/policies associated with it. If this "
@@ -2684,7 +2679,7 @@ msgstr ""
 "更新で %(current)s から %(next)s に移行できません (from_state=%(from)s が必"
 "要)"
 
-#, fuzzy, python-format
+#, python-format
 msgid "custom properties (%(props)s) conflict with base properties"
 msgstr "カスタムプロパティー (%(props)s) が基本プロパティーと矛盾しています"
 
