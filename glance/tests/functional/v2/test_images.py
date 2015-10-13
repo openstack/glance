@@ -574,6 +574,49 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_update_readonly_prop(self):
+        self.start_servers(**self.__dict__.copy())
+        # Create an image (with two deployer-defined properties)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1'})
+        response = requests.post(path, headers=headers, data=data)
+
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+
+        props = ['/id', '/file', '/location', '/schema', '/self']
+
+        for prop in props:
+            doc = [{'op': 'replace',
+                    'path': prop,
+                    'value': 'value1'}]
+            data = jsonutils.dumps(doc)
+            response = requests.patch(path, headers=headers, data=data)
+            self.assertEqual(403, response.status_code)
+
+        for prop in props:
+            doc = [{'op': 'remove',
+                    'path': prop,
+                    'value': 'value1'}]
+            data = jsonutils.dumps(doc)
+            response = requests.patch(path, headers=headers, data=data)
+            self.assertEqual(403, response.status_code)
+
+        for prop in props:
+            doc = [{'op': 'add',
+                    'path': prop,
+                    'value': 'value1'}]
+            data = jsonutils.dumps(doc)
+            response = requests.patch(path, headers=headers, data=data)
+            self.assertEqual(403, response.status_code)
+
+        self.stop_servers()
+
     def test_download_random_access(self):
         self.start_servers(**self.__dict__.copy())
         # Create another image (with two deployer-defined properties)
