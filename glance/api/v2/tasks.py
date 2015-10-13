@@ -22,6 +22,7 @@ from oslo_log import log as logging
 import oslo_serialization.jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import six
 import six.moves.urllib.parse as urlparse
 import webob.exc
@@ -29,7 +30,6 @@ import webob.exc
 from glance.api import common
 from glance.api import policy
 from glance.common import exception
-from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.gateway
@@ -164,7 +164,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return filters
 
     def _validate_marker(self, marker):
-        if marker and not utils.is_uuid_like(marker):
+        if marker and not uuidutils.is_uuid_like(marker):
             msg = _('Invalid marker format')
             raise webob.exc.HTTPBadRequest(explanation=msg)
         return marker

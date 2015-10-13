@@ -38,6 +38,7 @@ from oslo_db.sqlalchemy import test_migrations
 from oslo_db.sqlalchemy import utils as db_utils
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import sqlalchemy
@@ -45,7 +46,6 @@ from sqlalchemy import inspect
 
 from glance.common import crypt
 from glance.common import exception
-from glance.common import utils
 from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
@@ -346,7 +346,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             self.assertEqual(1, len(rows))
 
             row = rows[0]
-            self.assertTrue(utils.is_uuid_like(row['id']))
+            self.assertTrue(uuidutils.is_uuid_like(row['id']))
 
             uuids[name] = row['id']
 
@@ -385,7 +385,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             self.assertEqual(1, len(rows))
 
             row = rows[0]
-            self.assertFalse(utils.is_uuid_like(row['id']))
+            self.assertFalse(uuidutils.is_uuid_like(row['id']))
 
             ids[name] = row['id']
 

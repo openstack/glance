@@ -25,6 +25,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
+from oslo_utils import uuidutils
 import six
 from six.moves import http_client
 import six.moves.urllib.parse as urlparse
@@ -446,7 +447,7 @@ def replication_load(options, args):
     updated = []
 
     for ent in os.listdir(path):
-        if utils.is_uuid_like(ent):
+        if uuidutils.is_uuid_like(ent):
             image_uuid = ent
             LOG.info(_LI('Considering: %s'), image_uuid)
 
