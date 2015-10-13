@@ -250,6 +250,8 @@ class ImagesController(object):
                     "exc": e.msg})
             LOG.warn(msg)
             raise webob.exc.HTTPConflict(explanation=msg)
+        except exception.InvalidImageStatusTransition as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
