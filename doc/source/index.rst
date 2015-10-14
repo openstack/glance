@@ -104,3 +104,11 @@ Glance Manual Pages
    :maxdepth: 1
 
    man/*
+
+Contributing to Glance
+======================
+
+.. toctree::
+   :maxdepth: 1
+
+   contributing/index
