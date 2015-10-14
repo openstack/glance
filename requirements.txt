@@ -11,7 +11,7 @@ eventlet>=0.17.4
 PasteDeploy>=1.5.0
 Routes!=2.0,!=2.1,>=1.12.3;python_version=='2.7'
 Routes!=2.0,>=1.12.3;python_version!='2.7'
-WebOb<1.5.0,>=1.2.3
+WebOb>=1.2.3
 sqlalchemy-migrate>=0.9.6
 httplib2>=0.7.5
 pycrypto>=2.6
