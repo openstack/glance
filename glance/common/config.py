@@ -127,7 +127,9 @@ common_opts = [
                        'in the \'direct_url\' meta-data field. '
                        'Revealing storage location can '
                        'be a security risk, so use this setting with '
-                       'caution!  The overrides show_image_direct_url.')),
+                       'caution! '
+                       'Setting this to true overrides the '
+                       'show_image_direct_url option.')),
     cfg.IntOpt('image_size_cap', default=1099511627776,
                max=9223372036854775808,
                help=_("Maximum size of image a user can upload in bytes. "
