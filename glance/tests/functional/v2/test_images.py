@@ -572,6 +572,27 @@ class TestImages(functional.FunctionalTest):
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
+        # Create image that tries to send True should return 400
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = 'true'
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(400, response.status_code)
+
+        # Create image that tries to send a string should return 400
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = '"hello"'
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(400, response.status_code)
+
+        # Create image that tries to send 123 should return 400
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = '123'
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(400, response.status_code)
+
         self.stop_servers()
 
     def test_update_readonly_prop(self):

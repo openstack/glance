@@ -786,7 +786,11 @@ class JSONRequestDeserializer(object):
 
     def from_json(self, datastring):
         try:
-            return jsonutils.loads(datastring, object_hook=self._sanitizer)
+            jsondata = jsonutils.loads(datastring, object_hook=self._sanitizer)
+            if not isinstance(jsondata, (dict, list)):
+                msg = _('Unexpected body type. Expected list/dict.')
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+            return jsondata
         except ValueError:
             msg = _('Malformed JSON in request body.')
             raise webob.exc.HTTPBadRequest(explanation=msg)
