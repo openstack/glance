@@ -768,6 +768,12 @@ class TestImmutableImage(utils.BaseTestCase):
         self.assertRaises(exception.Forbidden,
                           self.image.set_data, 'blah', 4)
 
+    def test_deactivate_image(self):
+        self.assertRaises(exception.Forbidden, self.image.deactivate)
+
+    def test_activate_image(self):
+        self.assertRaises(exception.Forbidden, self.image.activate)
+
     def test_get_data(self):
         class FakeImage(object):
             def get_data(self):
