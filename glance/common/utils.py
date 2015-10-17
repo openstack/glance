@@ -30,10 +30,7 @@ from eventlet.green import socket
 
 import functools
 import os
-import platform
 import re
-import subprocess
-import sys
 import uuid
 
 from OpenSSL import crypto
@@ -354,14 +351,6 @@ def safe_mkdirs(path):
             raise
 
 
-def safe_remove(path):
-    try:
-        os.remove(path)
-    except OSError as e:
-        if e.errno != errno.ENOENT:
-            raise
-
-
 class PrettyTable(object):
     """Creates an ASCII art table for use in bin/glance
 
@@ -422,74 +411,6 @@ class PrettyTable(object):
             justified = clipped_data.ljust(width)
 
         return justified
-
-
-def get_terminal_size():
-
-    def _get_terminal_size_posix():
-        import fcntl
-        import struct
-        import termios
-
-        height_width = None
-
-        try:
-            height_width = struct.unpack('hh', fcntl.ioctl(sys.stderr.fileno(),
-                                         termios.TIOCGWINSZ,
-                                         struct.pack('HH', 0, 0)))
-        except Exception:
-            pass
-
-        if not height_width:
-            try:
-                p = subprocess.Popen(['stty', 'size'],
-                                     shell=False,
-                                     stdout=subprocess.PIPE,
-                                     stderr=open(os.devnull, 'w'))
-                result = p.communicate()
-                if p.returncode == 0:
-                    return tuple(int(x) for x in result[0].split())
-            except Exception:
-                pass
-
-        return height_width
-
-    def _get_terminal_size_win32():
-        try:
-            from ctypes import create_string_buffer
-            from ctypes import windll
-            handle = windll.kernel32.GetStdHandle(-12)
-            csbi = create_string_buffer(22)
-            res = windll.kernel32.GetConsoleScreenBufferInfo(handle, csbi)
-        except Exception:
-            return None
-        if res:
-            import struct
-            unpack_tmp = struct.unpack("hhhhHhhhhhh", csbi.raw)
-            (bufx, bufy, curx, cury, wattr,
-             left, top, right, bottom, maxx, maxy) = unpack_tmp
-            height = bottom - top + 1
-            width = right - left + 1
-            return (height, width)
-        else:
-            return None
-
-    def _get_terminal_size_unknownOS():
-        raise NotImplementedError
-
-    func = {'posix': _get_terminal_size_posix,
-            'win32': _get_terminal_size_win32}
-
-    height_width = func.get(platform.os.name, _get_terminal_size_unknownOS)()
-
-    if height_width is None:
-        raise exception.Invalid()
-
-    for i in height_width:
-        if not isinstance(i, int) or i <= 0:
-            raise exception.Invalid()
-
-    return height_width[0], height_width[1]
 
 
 def mutating(func):
