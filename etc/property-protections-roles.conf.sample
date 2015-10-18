@@ -20,10 +20,10 @@
 # be comma separated.
 
 [^x_.*]
-create = admin,member
-read = admin,member
-update = admin,member
-delete = admin,member
+create = admin,member,_member_
+read = admin,member,_member_
+update = admin,member,_member_
+delete = admin,member,_member_
 
 [.*]
 create = admin
