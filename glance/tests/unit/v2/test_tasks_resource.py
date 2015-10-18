@@ -357,9 +357,11 @@ class TestTasksController(test_utils.BaseTestCase):
         task_executor.begin_processing(new_task.task_id)
         success_task = self.controller.get(request, new_task.task_id)
 
-        # ignore microsecond
-        task_live_time = (success_task.expires_at.replace(microsecond=0) -
-                          success_task.updated_at.replace(microsecond=0))
+        # ignore second and microsecond to avoid flaky runs
+        task_live_time = (success_task.expires_at.replace(second=0,
+                                                          microsecond=0) -
+                          success_task.updated_at.replace(second=0,
+                                                          microsecond=0))
         task_live_time_hour = (task_live_time.days * 24 +
                                task_live_time.seconds / 3600)
         self.assertEqual(CONF.task.task_time_to_live, task_live_time_hour)
