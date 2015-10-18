@@ -33,6 +33,7 @@ from webob.exc import HTTPMethodNotAllowed
 from webob.exc import HTTPNotFound
 from webob.exc import HTTPRequestEntityTooLarge
 from webob.exc import HTTPServiceUnavailable
+from webob.exc import HTTPUnauthorized
 from webob import Response
 
 from glance.api import common
@@ -374,6 +375,8 @@ class Controller(controller.BaseController):
                 self._enforce_read_protected_props(image, req)
         except exception.Invalid as e:
             raise HTTPBadRequest(explanation=e.msg, request=req)
+        except exception.NotAuthenticated as e:
+            raise HTTPUnauthorized(explanation=e.msg, request=req)
         return dict(images=images)
 
     def _get_query_params(self, req):
