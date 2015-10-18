@@ -774,7 +774,7 @@ class JSONRequestDeserializer(object):
         is_valid_encoding = request_encoding in self.valid_transfer_encoding
         if is_valid_encoding and request.is_body_readable:
             return True
-        elif request.content_length > 0:
+        elif request.content_length is not None and request.content_length > 0:
             return True
 
         return False
@@ -817,7 +817,10 @@ class JSONResponseSerializer(object):
 
     def default(self, response, result):
         response.content_type = 'application/json'
-        response.body = self.to_json(result)
+        body = self.to_json(result)
+        if isinstance(body, six.text_type):
+            body = body.encode('utf-8')
+        response.body = body
 
 
 def translate_exception(req, e):
@@ -883,7 +886,8 @@ class Resource(object):
                                           request, **action_args)
         except webob.exc.WSGIHTTPException as e:
             exc_info = sys.exc_info()
-            six.reraise(translate_exception(request, e), None, exc_info[2])
+            e = translate_exception(request, e)
+            six.reraise(type(e), e, exc_info[2])
         except Exception as e:
             LOG.exception(_LE("Caught error: %s"), six.text_type(e))
             response = webob.exc.HTTPInternalServerError()

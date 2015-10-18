@@ -19,6 +19,7 @@ import datetime
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 import routes
+import six
 import webob
 
 from glance.common import exception
@@ -28,6 +29,13 @@ from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
+
+
+def json_dump_as_bytes(obj):
+    body = jsonutils.dumps(obj)
+    if isinstance(body, six.text_type):
+        body = body.encode('utf-8')
+    return body
 
 
 class FakeResource(object):
@@ -118,7 +126,7 @@ class TestRPCController(base.IsolatedUnitTest):
         api = create_api()
         req = webob.Request.blank('/rpc')
         req.method = 'POST'
-        req.body = jsonutils.dumps([
+        req.body = json_dump_as_bytes([
             {
                 "command": "get_images",
                 "kwargs": {"keyword": 1}
@@ -133,7 +141,7 @@ class TestRPCController(base.IsolatedUnitTest):
         api = create_api()
         req = webob.Request.blank('/rpc')
         req.method = 'POST'
-        req.body = jsonutils.dumps([
+        req.body = json_dump_as_bytes([
             {
                 "command": "get_all_images",
                 "kwargs": {"keyword": 1}
@@ -153,27 +161,27 @@ class TestRPCController(base.IsolatedUnitTest):
         req.content_type = 'application/json'
 
         # Body is not a list, it should fail
-        req.body = jsonutils.dumps({})
+        req.body = json_dump_as_bytes({})
         res = req.get_response(api)
         self.assertEqual(400, res.status_int)
 
         # cmd is not dict, it should fail.
-        req.body = jsonutils.dumps([None])
+        req.body = json_dump_as_bytes([None])
         res = req.get_response(api)
         self.assertEqual(400, res.status_int)
 
         # No command key, it should fail.
-        req.body = jsonutils.dumps([{}])
+        req.body = json_dump_as_bytes([{}])
         res = req.get_response(api)
         self.assertEqual(400, res.status_int)
 
         # kwargs not dict, it should fail.
-        req.body = jsonutils.dumps([{"command": "test", "kwargs": 200}])
+        req.body = json_dump_as_bytes([{"command": "test", "kwargs": 200}])
         res = req.get_response(api)
         self.assertEqual(400, res.status_int)
 
         # Command does not exist, it should fail.
-        req.body = jsonutils.dumps([{"command": "test"}])
+        req.body = json_dump_as_bytes([{"command": "test"}])
         res = req.get_response(api)
         self.assertEqual(404, res.status_int)
 
@@ -183,14 +191,15 @@ class TestRPCController(base.IsolatedUnitTest):
         req.method = 'POST'
         req.content_type = 'application/json'
 
-        req.body = jsonutils.dumps([{"command": "raise_value_error"}])
+        req.body = json_dump_as_bytes([{"command": "raise_value_error"}])
         res = req.get_response(api)
         self.assertEqual(200, res.status_int)
 
         returned = jsonutils.loads(res.body)[0]
-        self.assertEqual('exceptions.ValueError', returned['_error']['cls'])
+        err_cls = 'builtins.ValueError' if six.PY3 else 'exceptions.ValueError'
+        self.assertEqual(err_cls, returned['_error']['cls'])
 
-        req.body = jsonutils.dumps([{"command": "raise_weird_error"}])
+        req.body = json_dump_as_bytes([{"command": "raise_weird_error"}])
         res = req.get_response(api)
         self.assertEqual(200, res.status_int)
 
@@ -209,6 +218,8 @@ class TestRPCClient(base.IsolatedUnitTest):
 
     def fake_request(self, method, url, body, headers):
         req = webob.Request.blank(url.path)
+        if isinstance(body, six.text_type):
+            body = body.encode('utf-8')
         req.body = body
         req.method = method
 
@@ -281,11 +292,11 @@ class TestRPCJSONSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         rpc.RPCJSONSerializer().default(response, fixture)
         self.assertEqual(200, response.status_int)
-        content_types = filter(lambda h: h[0] == 'Content-Type',
-                               response.headerlist)
+        content_types = [h for h in response.headerlist
+                         if h[0] == 'Content-Type']
         self.assertEqual(1, len(content_types))
         self.assertEqual('application/json', response.content_type)
-        self.assertEqual('{"key": "value"}', response.body)
+        self.assertEqual(b'{"key": "value"}', response.body)
 
 
 class TestRPCJSONDeserializer(test_utils.BaseTestCase):
@@ -293,21 +304,21 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
     def test_has_body_no_content_length(self):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
-        request.body = 'asdf'
+        request.body = b'asdf'
         request.headers.pop('Content-Length')
         self.assertFalse(rpc.RPCJSONDeserializer().has_body(request))
 
     def test_has_body_zero_content_length(self):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
-        request.body = 'asdf'
+        request.body = b'asdf'
         request.headers['Content-Length'] = 0
         self.assertFalse(rpc.RPCJSONDeserializer().has_body(request))
 
     def test_has_body_has_content_length(self):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
-        request.body = 'asdf'
+        request.body = b'asdf'
         self.assertIn('Content-Length', request.headers)
         self.assertTrue(rpc.RPCJSONDeserializer().has_body(request))
 
@@ -335,7 +346,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
     def test_default_with_body(self):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
-        request.body = '{"key": "value"}'
+        request.body = b'{"key": "value"}'
         actual = rpc.RPCJSONDeserializer().default(request)
         expected = {"body": {"key": "value"}}
         self.assertEqual(expected, actual)
@@ -343,7 +354,7 @@ class TestRPCJSONDeserializer(test_utils.BaseTestCase):
     def test_has_body_has_transfer_encoding(self):
         request = wsgi.Request.blank('/')
         request.method = 'POST'
-        request.body = 'fake_body'
+        request.body = b'fake_body'
         request.headers['transfer-encoding'] = ''
         self.assertIn('transfer-encoding', request.headers)
         self.assertTrue(rpc.RPCJSONDeserializer().has_body(request))

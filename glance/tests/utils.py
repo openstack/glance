@@ -570,8 +570,8 @@ class FakeAuthMiddleware(wsgi.Middleware):
 
 class FakeHTTPResponse(object):
     def __init__(self, status=200, headers=None, data=None, *args, **kwargs):
-        data = data or 'I am a teapot, short and stout\n'
-        self.data = six.StringIO(data)
+        data = data or b'I am a teapot, short and stout\n'
+        self.data = six.BytesIO(data)
         self.read = self.data.read
         self.status = status
         self.headers = headers or {'content-length': len(data)}
