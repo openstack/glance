@@ -20,7 +20,7 @@ import os
 import glance_store
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
-from six.moves import cStringIO
+import six
 from six.moves import urllib
 from taskflow import task
 from taskflow.types import failure
@@ -108,7 +108,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = cStringIO("TEST_IMAGE")
+            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -149,7 +149,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = cStringIO("TEST_IMAGE")
+            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(import_flow._ImportToFS, 'execute') as emk:
                 executor.begin_processing(self.task.task_id)
@@ -220,7 +220,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = cStringIO("TEST_IMAGE")
+            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -269,7 +269,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = cStringIO("TEST_IMAGE")
+            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -319,8 +319,8 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(urllib.request, 'urlopen') as umock:
-            content = "TEST_IMAGE"
-            umock.return_value = cStringIO(content)
+            content = b"TEST_IMAGE"
+            umock.return_value = six.BytesIO(content)
 
             with mock.patch.object(import_flow, "_get_import_flows") as imock:
                 imock.return_value = (x for x in [])
@@ -332,7 +332,7 @@ class TestImportTask(test_utils.BaseTestCase):
                 self.assertTrue(os.path.exists(image_path))
                 self.assertEqual(1, umock.call_count)
 
-                with open(image_path) as ifile:
+                with open(image_path, 'rb') as ifile:
                     self.assertEqual(content, ifile.read())
 
     def test_create_image(self):
@@ -376,7 +376,8 @@ class TestImportTask(test_utils.BaseTestCase):
                                             'http://example.com/image.qcow2')
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = "test"
+            content = b"test"
+            dmock.return_value = [content]
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -387,7 +388,7 @@ class TestImportTask(test_utils.BaseTestCase):
                 path = import_fs.execute(image_id)
                 reader, size = glance_store.get_from_backend(path)
                 self.assertEqual(4, size)
-                self.assertEqual(dmock.return_value, "".join(reader))
+                self.assertEqual(content, b"".join(reader))
 
                 image_path = os.path.join(self.work_dir, image_id)
                 tmp_image_path = os.path.join(self.work_dir, image_path)
@@ -397,7 +398,7 @@ class TestImportTask(test_utils.BaseTestCase):
         delete_fs = import_flow._DeleteFromFS(self.task.task_id,
                                               self.task_type)
 
-        data = "test"
+        data = [b"test"]
 
         store = glance_store.get_store_from_scheme('file')
         path = glance_store.store_add_to_backend(mock.sentinel.image_id, data,
