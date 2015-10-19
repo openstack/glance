@@ -370,14 +370,21 @@ filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
 """
         self.paste_conf_base = """[pipeline:glance-api]
-pipeline = healthcheck versionnegotiation gzip unauthenticated-context rootapp
+pipeline =
+    cors
+    healthcheck
+    versionnegotiation
+    gzip
+    unauthenticated-context
+    rootapp
 
 [pipeline:glance-api-caching]
-pipeline = healthcheck versionnegotiation gzip unauthenticated-context
+pipeline = cors healthcheck versionnegotiation gzip unauthenticated-context
  cache rootapp
 
 [pipeline:glance-api-cachemanagement]
 pipeline =
+    cors
     healthcheck
     versionnegotiation
     gzip
@@ -387,10 +394,10 @@ pipeline =
     rootapp
 
 [pipeline:glance-api-fakeauth]
-pipeline = healthcheck versionnegotiation gzip fakeauth context rootapp
+pipeline = cors healthcheck versionnegotiation gzip fakeauth context rootapp
 
 [pipeline:glance-api-noauth]
-pipeline = healthcheck versionnegotiation gzip context rootapp
+pipeline = cors healthcheck versionnegotiation gzip context rootapp
 
 [composite:rootapp]
 paste.composite_factory = glance.api:root_app_factory
@@ -439,6 +446,10 @@ paste.filter_factory =
 
 [filter:fakeauth]
 paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
+
+[filter:cors]
+paste.filter_factory = oslo_middleware.cors:filter_factory
+allowed_origin=http://valid.example.com
 """
 
 
