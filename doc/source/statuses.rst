@@ -39,6 +39,12 @@ Images in Glance can be in one the following statuses:
   the image data is uploaded, or the image size is explicitly set to
   zero on creation.
 
+* ``deactivated``
+
+  Denotes that access to image data is not allowed to any non-admin user.
+  Prohibiting downloads of an image also prohibits operations like image
+  export and image cloning that may require image data.
+
 * ``killed``
 
   Denotes that an error occurred during the uploading of an image's data,
