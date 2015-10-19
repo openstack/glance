@@ -58,7 +58,8 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
 
         # check
         mock_get_cached_images.assert_called_with(request)
-        self.assertEqual('"' + self.stub_value + '"', resource.body)
+        self.assertEqual('"' + self.stub_value + '"',
+                         resource.body.decode('utf-8'))
 
     @mock.patch.object(cached_images.Controller, "delete_cached_image")
     def test_delete_cached_image(self,
@@ -76,7 +77,8 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         # check
         mock_delete_cached_image.assert_called_with(request,
                                                     image_id=self.image_id)
-        self.assertEqual('"' + self.stub_value + '"', resource.body)
+        self.assertEqual('"' + self.stub_value + '"',
+                         resource.body.decode('utf-8'))
 
     @mock.patch.object(cached_images.Controller, "delete_cached_images")
     def test_delete_cached_images(self,
@@ -93,7 +95,8 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
 
         # check
         mock_delete_cached_images.assert_called_with(request)
-        self.assertEqual('"' + self.stub_value + '"', resource.body)
+        self.assertEqual('"' + self.stub_value + '"',
+                         resource.body.decode('utf-8'))
 
     @mock.patch.object(cached_images.Controller, "queue_image")
     def test_put_queued_image(self,
@@ -110,7 +113,8 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
 
         # check
         mock_queue_image.assert_called_with(request, image_id=self.image_id)
-        self.assertEqual('"' + self.stub_value + '"', resource.body)
+        self.assertEqual('"' + self.stub_value + '"',
+                         resource.body.decode('utf-8'))
 
     @mock.patch.object(cached_images.Controller, "get_queued_images")
     def test_get_queued_images(self,
@@ -126,7 +130,8 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
 
         # check
         mock_get_queued_images.assert_called_with(request)
-        self.assertEqual('"' + self.stub_value + '"', resource.body)
+        self.assertEqual('"' + self.stub_value + '"',
+                         resource.body.decode('utf-8'))
 
     @mock.patch.object(cached_images.Controller, "delete_queued_image")
     def test_delete_queued_image(self,
@@ -144,7 +149,8 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         # check
         mock_delete_queued_image.assert_called_with(request,
                                                     image_id=self.image_id)
-        self.assertEqual('"' + self.stub_value + '"', resource.body)
+        self.assertEqual('"' + self.stub_value + '"',
+                         resource.body.decode('utf-8'))
 
     @mock.patch.object(cached_images.Controller, "delete_queued_images")
     def test_delete_queued_images(self,
@@ -161,4 +167,5 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
 
         # check
         mock_delete_queued_images.assert_called_with(request)
-        self.assertEqual('"' + self.stub_value + '"', resource.body)
+        self.assertEqual('"' + self.stub_value + '"',
+                         resource.body.decode('utf-8'))
