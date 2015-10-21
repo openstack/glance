@@ -97,9 +97,9 @@ def validate_location_uri(location):
     elif location.startswith(("file:///", "filesystem:///")):
         msg = _("File based imports are not allowed. Please use a non-local "
                 "source of image data.")
-        # NOTE: raise Exception and let the encompassing block save
-        # the error msg in the task.message.
-        raise StandardError(msg)
+        # NOTE: raise BadStoreUri and let the encompassing block save the error
+        # msg in the task.message.
+        raise exception.BadStoreUri(msg)
 
     else:
         # TODO(nikhil): add other supported uris

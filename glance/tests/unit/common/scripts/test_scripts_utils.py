@@ -89,9 +89,10 @@ class TestScriptsUtils(test_utils.BaseTestCase):
                           script_utils.validate_location_uri, '')
 
     def test_validate_location_file_location_error(self):
-        self.assertRaises(StandardError, script_utils.validate_location_uri,
-                          "file:///tmp")
-        self.assertRaises(StandardError, script_utils.validate_location_uri,
+        self.assertRaises(exception.BadStoreUri,
+                          script_utils.validate_location_uri, "file:///tmp")
+        self.assertRaises(exception.BadStoreUri,
+                          script_utils.validate_location_uri,
                           "filesystem:///tmp")
 
     def test_validate_location_unsupported_error(self):
