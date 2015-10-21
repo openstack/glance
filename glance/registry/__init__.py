@@ -26,8 +26,8 @@ _ = i18n._
 registry_addr_opts = [
     cfg.StrOpt('registry_host', default='0.0.0.0',
                help=_('Address to find the registry server.')),
-    cfg.IntOpt('registry_port', default=9191, min=1, max=65535,
-               help=_('Port the registry server is listening on.')),
+    cfg.PortOpt('registry_port', default=9191,
+                help=_('Port the registry server is listening on.')),
 ]
 
 CONF = cfg.CONF
