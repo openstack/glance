@@ -372,6 +372,32 @@ class ResourceTest(test_utils.BaseTestCase):
         e = wsgi.translate_exception(req, e)
         self.assertEqual('No Encontrado', e.explanation)
 
+    def test_response_headers_encoded(self):
+        # prepare environment
+        for_openstack_comrades =  \
+            u'\u0417\u0430 \u043e\u043f\u0435\u043d\u0441\u0442\u0435\u043a, ' \
+            u'\u0442\u043e\u0432\u0430\u0440\u0438\u0449\u0438'
+
+        class FakeController(object):
+            def index(self, shirt, pants=None):
+                return (shirt, pants)
+
+        class FakeSerializer(object):
+            def index(self, response, result):
+                response.headers['unicode_test'] = for_openstack_comrades
+
+        # make request
+        resource = wsgi.Resource(FakeController(), None, FakeSerializer())
+        actions = {'action': 'index'}
+        env = {'wsgiorg.routing_args': [None, actions]}
+        request = wsgi.Request.blank('/tests/123', environ=env)
+        response = resource.__call__(request)
+
+        # ensure it has been encoded correctly
+        value = (response.headers['unicode_test'].decode('utf-8')
+                 if six.PY2 else response.headers['unicode_test'])
+        self.assertEqual(for_openstack_comrades, value)
+
 
 class JSONResponseSerializerTest(test_utils.BaseTestCase):
 
