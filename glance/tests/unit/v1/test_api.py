@@ -1059,7 +1059,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
                            'x-glance-api-copy-from':
-                               'http://example.com/i.ovf',
+                               self._http_loc_url('/non_existing_image_path'),
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F'}
 
@@ -1181,19 +1181,19 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_create_image_with_nonexistent_location_url(self):
         # Ensure HTTP 404 response returned when try to create
         # image with non-existent http location URL.
+
         fixture_headers = {
             'x-image-meta-name': 'bogus',
-            'x-image-meta-location': 'http://example.com/images/123',
+            'x-image-meta-location':
+                self._http_loc_url('/non_existing_image_path'),
             'x-image-meta-disk-format': 'qcow2',
             'x-image-meta-container-format': 'bare',
         }
-
         req = webob.Request.blank("/images")
         req.method = 'POST'
 
         for k, v in six.iteritems(fixture_headers):
             req.headers[k] = v
-
         res = req.get_response(self.api)
         self.assertEqual(404, res.status_int)
 

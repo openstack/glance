@@ -18,6 +18,7 @@ from six.moves import urllib
 
 import glance.common.exception as exception
 from glance.common.scripts.image_import import main as image_import_script
+from glance.common.scripts import utils
 from glance.common import store_utils
 
 import glance.tests.utils as test_utils
@@ -83,9 +84,11 @@ class TestImageImport(test_utils.BaseTestCase):
                                                           image_properties,
                                                           None))
 
-    def test_set_image_data_http(self):
+    @mock.patch.object(utils, 'get_image_data_iter')
+    def test_set_image_data_http(self, mock_image_iter):
         uri = 'http://www.example.com'
         image = mock.Mock()
+        mock_image_iter.return_value = test_utils.FakeHTTPResponse()
         self.assertEqual(None,
                          image_import_script.set_image_data(image, uri, None))
 

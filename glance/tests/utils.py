@@ -444,7 +444,12 @@ def start_http_server(image_id, image_data):
                 return
 
             def do_HEAD(self):
-                self.send_response(200)
+                # reserve non_existing_image_path for the cases where we expect
+                # 404 from the server
+                if 'non_existing_image_path' in self.path:
+                    self.send_response(404)
+                else:
+                    self.send_response(200)
                 self.send_header('Content-Length', str(len(fixture)))
                 self.end_headers()
                 return
