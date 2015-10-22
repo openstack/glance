@@ -171,7 +171,7 @@ common_opts = [
     cfg.StrOpt('digest_algorithm', default='sha256',
                help=_('Digest algorithm which will be used for digital '
                       'signature. Use the command "openssl list-message-'
-                      'digest-algorithms" to get the available algorithms'
+                      'digest-algorithms" to get the available algorithms '
                       'supported by the version of OpenSSL on the platform.'
                       ' Examples are "sha1", "sha256", "sha512", etc.')),
 ]
