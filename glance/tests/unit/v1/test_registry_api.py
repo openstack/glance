@@ -208,7 +208,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         when a malformed marker is provided
         """
         res = self.get_api_response_ext(400, url='/images?marker=4')
-        self.assertIn('marker', res.body)
+        self.assertIn(b'marker', res.body)
 
     def test_get_index_forbidden_marker(self):
         """
@@ -711,7 +711,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         when a malformed marker is provided
         """
         res = self.get_api_response_ext(400, url='/images/detail?marker=4')
-        self.assertIn('marker', res.body)
+        self.assertIn(b'marker', res.body)
 
     def test_get_details_forbidden_marker(self):
         """
@@ -1206,7 +1206,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """Tests that the /images POST registry API creates the image"""
 
         fixture = self.get_minimal_fixture()
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
@@ -1221,7 +1221,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_create_image_with_min_disk(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture(min_disk=5)
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
@@ -1232,7 +1232,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_create_image_with_min_ram(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture(min_ram=256)
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
@@ -1243,7 +1243,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_create_image_with_min_ram_default(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture()
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
@@ -1254,7 +1254,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_create_image_with_min_disk_default(self):
         """Tests that the /images POST registry API creates the image"""
         fixture = self.get_minimal_fixture()
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(200, body=body,
                                         method='POST', content_type='json')
@@ -1265,18 +1265,19 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_create_image_with_bad_status(self):
         """Tests proper exception is raised if a bad status is set"""
         fixture = self.get_minimal_fixture(id=_gen_uuid(), status='bad status')
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(400, body=body,
                                         method='POST', content_type='json')
-        self.assertIn('Invalid image status', res.body)
+        self.assertIn(b'Invalid image status', res.body)
 
     def test_create_image_with_bad_id(self):
         """Tests proper exception is raised if a bad disk_format is set"""
         fixture = self.get_minimal_fixture(id='asdf')
 
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
         self.get_api_response_ext(400, content_type='json', method='POST',
-                                  body=jsonutils.dumps(dict(image=fixture)))
+                                  body=body)
 
     def test_create_image_with_image_id_in_log(self):
         """Tests correct image id in log message when creating image"""
@@ -1291,8 +1292,9 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         self.stubs.Set(rserver.images.LOG, 'info', fake_log_info)
 
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
         self.get_api_response_ext(200, content_type='json', method='POST',
-                                  body=jsonutils.dumps(dict(image=fixture)))
+                                  body=body)
         self.assertTrue(self.log_image_id)
 
     def test_update_image(self):
@@ -1301,7 +1303,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                    'min_disk': 5,
                    'min_ram': 256,
                    'disk_format': 'raw'}
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(200, url='/images/%s' % UUID2,
                                         body=body, method='PUT',
@@ -1330,7 +1332,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                    'min_ram': 256,
                    'disk_format': 'raw',
                    'location': 'fake://image'}
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         log_debug.side_effect = fake_log_debug
 
@@ -1352,7 +1354,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         non-existing image
         """
         fixture = {'status': 'killed'}
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         self.get_api_response_ext(404, url='/images/%s' % _gen_uuid(),
                                   method='PUT', body=body, content_type='json')
@@ -1360,12 +1362,12 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_update_image_with_bad_status(self):
         """Tests that exception raised trying to set a bad status"""
         fixture = {'status': 'invalid'}
-        body = jsonutils.dumps(dict(image=fixture))
+        body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(400, method='PUT', body=body,
                                         url='/images/%s' % UUID2,
                                         content_type='json')
-        self.assertIn('Invalid image status', res.body)
+        self.assertIn(b'Invalid image status', res.body)
 
     def test_update_private_image_no_admin(self):
         """
@@ -1379,7 +1381,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
         test_rserv = rserver.API(self.mapper)
         api = test_utils.FakeAuthMiddleware(test_rserv, is_admin=False)
-        body = jsonutils.dumps(dict(image=extra_fixture))
+        body = jsonutils.dump_as_bytes(dict(image=extra_fixture))
         self.get_api_response_ext(404, body=body, api=api,
                                   url='/images/%s' % UUID8, method='PUT',
                                   content_type='json')
@@ -1507,7 +1509,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.api = test_utils.FakeAuthMiddleware(rserver.API(self.mapper),
                                                  is_admin=False)
         fixture = dict(member_id='pattieblack')
-        body = jsonutils.dumps(dict(image_memberships=fixture))
+        body = jsonutils.dump_as_bytes(dict(image_memberships=fixture))
 
         self.get_api_response_ext(401, method='PUT', body=body,
                                   url='/images/%s/members' % UUID2,
@@ -1523,7 +1525,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.method = 'PUT'
         self.context.tenant = 'test2'
         req.content_type = 'application/json'
-        req.body = jsonutils.dumps(dict(image_memberships=fixture))
+        req.body = jsonutils.dump_as_bytes(dict(image_memberships=fixture))
         res = req.get_response(self.api)
         self.assertEqual(404, res.status_int)
 
@@ -1550,7 +1552,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.assertEqual(1, num_members)
 
         fixture = dict(member_id='test1')
-        body = jsonutils.dumps(dict(image_memberships=fixture))
+        body = jsonutils.dump_as_bytes(dict(image_memberships=fixture))
         self.get_api_response_ext(400, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1570,7 +1572,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.headers['X-Auth-Token'] = 'test1:test1:'
         req.method = 'PUT'
         req.content_type = 'application/json'
-        req.body = jsonutils.dumps(dict(image_memberships=fixture))
+        req.body = jsonutils.dump_as_bytes(dict(image_memberships=fixture))
 
         res = req.get_response(api)
         self.assertEqual(403, res.status_int)
@@ -1591,7 +1593,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.get_response(self.api)
 
         fixture = [dict(member_id='test2', can_share=True)]
-        body = jsonutils.dumps(dict(memberships=fixture))
+        body = jsonutils.dump_as_bytes(dict(memberships=fixture))
         self.get_api_response_ext(204, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1612,7 +1614,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.method = 'PUT'
         req.get_response(self.api)
         fixture = dict(member_id='test3')
-        body = jsonutils.dumps(dict(memberships=fixture))
+        body = jsonutils.dump_as_bytes(dict(memberships=fixture))
         self.get_api_response_ext(400, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1633,7 +1635,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.get_response(self.api)
 
         fixture = [dict(member_id='test1', can_share=False)]
-        body = jsonutils.dumps(dict(memberships=fixture))
+        body = jsonutils.dump_as_bytes(dict(memberships=fixture))
         self.get_api_response_ext(204, url='/images/%s/members' % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1659,7 +1661,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_positive'
-        body = jsonutils.dumps(dict(member=fixture))
+        body = jsonutils.dump_as_bytes(dict(member=fixture))
         self.get_api_response_ext(204, url=test_uri % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1671,7 +1673,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         """
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_positive'
-        body = jsonutils.dumps(dict(member=fixture))
+        body = jsonutils.dump_as_bytes(dict(member=fixture))
         self.get_api_response_ext(404, url=test_uri % _gen_uuid(),
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1692,7 +1694,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         req.headers['X-Auth-Token'] = 'test1:test1:'
         req.method = 'PUT'
         req.content_type = 'application/json'
-        req.body = jsonutils.dumps(dict(member=fixture))
+        req.body = jsonutils.dump_as_bytes(dict(member=fixture))
 
         res = req.get_response(api)
         self.assertEqual(403, res.status_int)
@@ -1709,7 +1711,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         fixture = [dict(can_share=True)]
         test_uri = '/images/%s/members/test_add_member_bad_request'
-        body = jsonutils.dumps(dict(member=fixture))
+        body = jsonutils.dump_as_bytes(dict(member=fixture))
         self.get_api_response_ext(400, url=test_uri % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1733,7 +1735,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         res = self.get_api_response_ext(404, method='DELETE',
                                         url=('/images/%s/members/pattieblack' %
                                              UUID2))
-        self.assertIn('Membership could not be found', res.body)
+        self.assertIn(b'Membership could not be found', res.body)
 
     def test_delete_member_from_non_exist_image(self):
         """
@@ -1779,7 +1781,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         db_api.image_create(self.context, extra_fixture)
         fixture = dict(can_share=True)
         test_uri = '/images/%s/members/test_add_member_delete_create'
-        body = jsonutils.dumps(dict(member=fixture))
+        body = jsonutils.dump_as_bytes(dict(member=fixture))
         self.get_api_response_ext(204, url=test_uri % UUID8,
                                   method='PUT', body=body,
                                   content_type='json')
@@ -1927,7 +1929,7 @@ class TestRegistryAPILocations(base.IsolatedUnitTest,
         req = webob.Request.blank('/images')
         req.method = 'POST'
         req.content_type = 'application/json'
-        req.body = jsonutils.dumps(dict(image=fixture))
+        req.body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = req.get_response(self.api)
         self.assertEqual(200, res.status_int)

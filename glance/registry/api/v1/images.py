@@ -206,7 +206,9 @@ class Controller(object):
             # Only admin gets to look for non-public images
             params['is_public'] = self._get_is_public(req)
 
-        for key, value in params.items():
+        # need to coy items because the params is modified in the loop body
+        items = list(params.items())
+        for key, value in items:
             if value is None:
                 del params[key]
 

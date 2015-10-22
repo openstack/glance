@@ -43,11 +43,8 @@ class UtilsTestCase(test_utils.BaseTestCase):
         for key in key_list:
             for plaintext in plaintext_list:
                 ciphertext = crypt.urlsafe_encrypt(key, plaintext, blocksize)
-                self.assertIsInstance(ciphertext, bytes)
-                if six.PY3:
-                    self.assertNotEqual(ciphertext, plaintext.encode('utf-8'))
-                else:
-                    self.assertNotEqual(ciphertext, plaintext)
+                self.assertIsInstance(ciphertext, str)
+                self.assertNotEqual(ciphertext, plaintext)
                 text = crypt.urlsafe_decrypt(key, ciphertext)
                 self.assertIsInstance(text, str)
                 self.assertEqual(plaintext, text)

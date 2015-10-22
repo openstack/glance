@@ -475,7 +475,7 @@ class RegistryAPIMixIn(object):
             db_api.image_create(self.context, fixture)
             with open(os.path.join(self.test_dir, fixture['id']),
                       'wb') as image:
-                image.write("chunk00000remainder")
+                image.write(b"chunk00000remainder")
 
     def destroy_fixtures(self):
         db_models.unregister_models(db_api.get_engine())

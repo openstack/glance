@@ -455,7 +455,10 @@ def _make_conditions_from_filters(filters, is_public=None):
 
     filters = {k: v for k, v in filters.items() if v is not None}
 
-    for (k, v) in filters.items():
+    # need to copy items because filters is modified in the loop body
+    # (filters.pop(k))
+    keys = list(filters.keys())
+    for k in keys:
         key = k
         if k.endswith('_min') or k.endswith('_max'):
             key = key[0:-4]
@@ -471,8 +474,7 @@ def _make_conditions_from_filters(filters, is_public=None):
             if k.endswith('_max'):
                 image_conditions.append(getattr(models.Image, key) <= v)
 
-    for (k, v) in filters.items():
-        value = filters.pop(k)
+    for (k, value) in filters.items():
         if hasattr(models.Image, k):
             image_conditions.append(getattr(models.Image, k) == value)
         else:
