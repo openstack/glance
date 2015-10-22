@@ -134,23 +134,3 @@ class TestScriptsUtils(test_utils.BaseTestCase):
         location = 'cinder://'
         self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
-
-    def test_get_image_data_http(self):
-        uri = "http://example.com"
-        response = urllib.request.urlopen(uri)
-        expected = response.read()
-        self.assertEqual(expected,
-                         script_utils.get_image_data_iter(uri).read())
-
-    def test_get_image_data_https(self):
-        uri = "https://example.com"
-        response = urllib.request.urlopen(uri)
-        expected = response.read()
-        self.assertEqual(expected,
-                         script_utils.get_image_data_iter(uri).read())
-
-    def test_get_image_data_http_error(self):
-        uri = "http:/example.com"
-        self.assertRaises(urllib.error.URLError,
-                          script_utils.get_image_data_iter,
-                          uri)
