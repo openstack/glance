@@ -127,7 +127,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             db_api.image_create(self.context, fixture)
             # We write a fake image file to the filesystem
             with open("%s/%s" % (self.test_dir, fixture['id']), 'wb') as image:
-                image.write("chunk00000remainder")
+                image.write(b"chunk00000remainder")
                 image.flush()
 
     def destroy_fixtures(self):

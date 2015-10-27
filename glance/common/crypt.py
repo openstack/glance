@@ -57,7 +57,10 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
     init_vector = Random.get_random_bytes(16)
     cypher = AES.new(key, AES.MODE_CBC, init_vector)
     padded = cypher.encrypt(pad(six.binary_type(plaintext)))
-    return base64.urlsafe_b64encode(init_vector + padded)
+    encoded = base64.urlsafe_b64encode(init_vector + padded)
+    if six.PY3:
+        encoded = encoded.decode('ascii')
+    return encoded
 
 
 def urlsafe_decrypt(key, ciphertext):
@@ -71,7 +74,9 @@ def urlsafe_decrypt(key, ciphertext):
     :returns : Resulting plaintext
     """
     # Cast from unicode
-    ciphertext = base64.urlsafe_b64decode(six.binary_type(ciphertext))
+    if isinstance(ciphertext, six.text_type):
+        ciphertext = ciphertext.encode('utf-8')
+    ciphertext = base64.urlsafe_b64decode(ciphertext)
     cypher = AES.new(key, AES.MODE_CBC, ciphertext[:16])
     padded = cypher.decrypt(ciphertext[16:])
     text = padded[:padded.rfind(b'\0')]
