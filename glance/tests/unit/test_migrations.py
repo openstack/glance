@@ -420,7 +420,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         invalid_scheme_uri = ('http://acct:usr:pass@example.com'
                               '/container/obj-id')
-        self.assertRaises(AssertionError,
+        self.assertRaises(exception.BadStoreUri,
                           legacy_parse_uri_fn,
                           invalid_scheme_uri,
                           True)

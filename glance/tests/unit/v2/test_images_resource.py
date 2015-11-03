@@ -1899,8 +1899,8 @@ class TestImagesController(base.IsolatedUnitTest):
         change = {'op': 'test', 'path': 'options', 'value': 'puts'}
         try:
             self.controller.update(request, UUID1, [change])
-        except AssertionError:
-            pass  # AssertionError is the desired behavior
+        except AttributeError:
+            pass  # AttributeError is the desired behavior
         else:
             self.fail('Failed to raise AssertionError on %s' % change)
 

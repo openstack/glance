@@ -108,7 +108,7 @@ class TestRPCController(base.IsolatedUnitTest):
         controller = rpc.Controller()
 
         # Not callable
-        self.assertRaises(AssertionError,
+        self.assertRaises(TypeError,
                           controller.register,
                           res, refiner="get_all_images")
 
