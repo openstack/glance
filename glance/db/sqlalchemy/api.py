@@ -762,12 +762,8 @@ def _image_update(context, values, image_id, purge_props=False,
             # Validate fields for Images table. This is similar to what is done
             # for the query result update except that we need to do it prior
             # in this case.
-            # TODO(dosaboy): replace this with a dict comprehension once py26
-            #                support is deprecated.
-            keys = values.keys()
-            for k in keys:
-                if k not in image_ref.to_dict():
-                    del values[k]
+            values = {key: values[key] for key in values
+                      if key in image_ref.to_dict()}
             updated = query.update(values, synchronize_session='fetch')
 
             if not updated:
