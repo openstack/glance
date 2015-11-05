@@ -711,6 +711,30 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, image={}, extra_properties={},
                           tags=tags)
 
+    def test_create_with_owner_non_admin(self):
+        request = unit_test_utils.get_fake_request()
+        request.context.is_admin = False
+        image = {'owner': '12345'}
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.create,
+                          request, image=image, extra_properties={},
+                          tags=[])
+
+        request = unit_test_utils.get_fake_request()
+        request.context.is_admin = False
+        image = {'owner': TENANT1}
+        output = self.controller.create(request, image=image,
+                                        extra_properties={}, tags=[])
+        self.assertEqual(TENANT1, output.owner)
+
+    def test_create_with_owner_admin(self):
+        request = unit_test_utils.get_fake_request()
+        request.context.is_admin = True
+        image = {'owner': '12345'}
+        output = self.controller.create(request, image=image,
+                                        extra_properties={}, tags=[])
+        self.assertEqual('12345', output.owner)
+
     def test_create_with_duplicate_location(self):
         request = unit_test_utils.get_fake_request()
         location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
