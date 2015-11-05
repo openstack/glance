@@ -211,8 +211,6 @@ class ImageDataController(object):
                 msg = _('The requested image has been deactivated. '
                         'Image data download is forbidden.')
                 raise exception.Forbidden(message=msg)
-        except exception.ImageDataNotFound as e:
-            raise webob.exc.HTTPNoContent(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
