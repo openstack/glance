@@ -15,7 +15,7 @@
 
 """Support signature verification."""
 
-import base64
+import binascii
 
 from castellan import key_manager
 from cryptography import exceptions as crypto_exception
@@ -25,7 +25,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
 from cryptography import x509
 from oslo_log import log as logging
+from oslo_serialization import base64
 from oslo_utils import encodeutils
+import six
 
 from glance.common import exception
 from glance import i18n
@@ -112,6 +114,9 @@ def verify_signature(context, checksum_hash, image_properties):
             'Required image properties for signature verification do not'
             ' exist. Cannot verify signature.')
 
+    if isinstance(checksum_hash, six.text_type):
+        checksum_hash = checksum_hash.encode('utf-8')
+
     signature = get_signature(image_properties[SIGNATURE])
     hash_method = get_hash_method(image_properties[HASH_METHOD])
     signature_key_type = get_signature_key_type(
@@ -179,8 +184,8 @@ def get_signature(signature_data):
     :raises: SignatureVerificationError if the signature data is malformatted
     """
     try:
-        signature = base64.b64decode(signature_data)
-    except TypeError:
+        signature = base64.decode_as_bytes(signature_data)
+    except (TypeError, binascii.Error):
         raise exception.SignatureVerificationError(
             'The signature data was not properly encoded using base64')
 

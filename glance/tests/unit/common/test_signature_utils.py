@@ -119,9 +119,9 @@ class TestSignatureUtils(test_utils.BaseTestCase):
 
     @mock.patch('glance.common.signature_utils.get_public_key')
     def test_verify_signature_PSS(self, mock_get_pub_key):
-        checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
+        checksum_hash = b'224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
-        for hash_name, hash_alg in signature_utils.HASH_METHODS.iteritems():
+        for hash_name, hash_alg in signature_utils.HASH_METHODS.items():
             signer = TEST_PRIVATE_KEY.signer(
                 padding.PSS(
                     mgf=padding.MGF1(hash_alg),
@@ -143,10 +143,10 @@ class TestSignatureUtils(test_utils.BaseTestCase):
 
     @mock.patch('glance.common.signature_utils.get_public_key')
     def test_verify_signature_custom_PSS_salt(self, mock_get_pub_key):
-        checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
+        checksum_hash = b'224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
         custom_salt_length = 32
-        for hash_name, hash_alg in signature_utils.HASH_METHODS.iteritems():
+        for hash_name, hash_alg in signature_utils.HASH_METHODS.items():
             signer = TEST_PRIVATE_KEY.signer(
                 padding.PSS(
                     mgf=padding.MGF1(hash_alg),
@@ -269,7 +269,7 @@ class TestSignatureUtils(test_utils.BaseTestCase):
                                 None, checksum_hash, image_properties)
 
     def test_get_signature(self):
-        signature = 'A' * 256
+        signature = b'A' * 256
         data = base64.b64encode(signature)
         self.assertEqual(signature,
                          signature_utils.get_signature(data))
