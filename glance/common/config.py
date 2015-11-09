@@ -70,7 +70,6 @@ task_opts = [
                help=_("Specifies which task executor to be used to run the "
                       "task scripts.")),
     cfg.StrOpt('work_dir',
-               default=None,
                help=_('Work dir for asynchronous task operations. '
                       'The directory set here will be used to operate over '
                       'images - normally before they are imported in the '
