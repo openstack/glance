@@ -441,7 +441,7 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dumps({
+        request.body = jsonutils.dump_as_bytes({
             'type': 'import',
             'input': {'import_from':
                       'swift://cloud.foo/myaccount/mycontainer/path',
