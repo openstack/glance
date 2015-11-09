@@ -674,6 +674,88 @@ New API Calls
   where <STATUS_VALUE> is ``pending``, ``accepted``, or ``rejected``.
   The {memberId} is the tenant ID of the image member.
 
+Images v2 Tasks API
+-------------------
+
+Version 2 of the OpenStack Images API introduces a Task resource that is used
+to create and monitor long-running asynchronous image-related processes.  See
+the :doc:`Tasks <tasks>` section of the Glance documentation for more
+information.
+
+The following Task calls are available:
+
+Create a Task
+*************
+
+A user wants to initiate a task.  The user issues a ``POST`` request to
+``/v2/tasks``.  The request body is of Content-type ``application/json`` and
+must contain the following fields:
+
+* ``type``: a string specified by the enumeration defined in the Task schema
+
+* ``input``: a JSON object.  The content is defined by the cloud provider who
+  has exposed the endpoint being contacted
+
+The response is a Task entity as defined by the Task schema.  It includes an
+``id`` field that can be used in a subsequent call to poll the task for status
+changes.
+
+A task is created in ``pending`` status.
+
+Show a Task
+***********
+
+A user wants to see detailed information about a task the user owns.  The user
+issues a ``GET`` request to ``/v2/tasks/{taskId}``.
+
+The response is in ``application/json`` format.  The exact structure is given
+by the task schema located at ``/v2/schemas/task``.
+
+List Tasks
+**********
+
+A user wants to see what tasks have been created in his or her project.  The
+user issues a ``GET`` request to ``/v2/tasks``.
+
+The response is in ``application/json`` format.  The exact structure is given
+by the task schema located at ``/v2/schemas/tasks``.
+
+Note that, as indicated by the schema, the list of tasks is provided in a
+sparse format.  To see more information about a particular task in the list,
+the user would use the show task call described above.
+
+Filtering and Sorting the Tasks List
+************************************
+
+The ``GET /v2/tasks`` request takes query parameters that server to filter the
+returned list of tasks.  The following list details these query parameters.
+
+* ``status={status}``
+
+  Filters the list to display only those tasks in the specified status.  See
+  the task schema or the :doc:`Task Statuses <statuses>` section of this
+  documentation for the legal values to use for ``{status}``.
+
+  For example, a request to ``GET /v2/tasks?status=pending`` would return only
+  those tasks whose current status is ``pending``.
+
+* ``type={type}``
+
+  Filters the list to display only those tasks of the specified type.  See the
+  enumeration defined in the task schema for the legal values to use for
+  ``{type}``.
+
+  For example, a request to ``GET /v2/tasks?type=import`` would return only
+  import tasks.
+
+* ``sort_dir={direction}``
+
+  Sorts the list of tasks according to ``updated_at`` datetime.  Legal values
+  are ``asc`` (ascending) and ``desc`` (descending).  By default, the task list
+  is sorted by ``created_at`` time in descending chronological order.
+
+
+
 
 API Message Localization
 ------------------------
