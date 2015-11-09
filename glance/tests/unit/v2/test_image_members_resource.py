@@ -345,7 +345,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
         member_id = TENANT4
         image_id = UUID2
         res = self.controller.delete(request, image_id, member_id)
-        self.assertEqual('', res.body)
+        self.assertEqual(b'', res.body)
         self.assertEqual(204, res.status_code)
         found_member = self.db.image_member_find(
             request.context, image_id=image_id, member=member_id)
@@ -518,14 +518,14 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dumps({'member': TENANT1})
+        request.body = jsonutils.dump_as_bytes({'member': TENANT1})
         output = self.deserializer.create(request)
         expected = {'member_id': TENANT1}
         self.assertEqual(expected, output)
 
     def test_create_invalid(self):
         request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dumps({'mem': TENANT1})
+        request.body = jsonutils.dump_as_bytes({'mem': TENANT1})
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
                           request)
 
@@ -536,20 +536,20 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_create_member_empty(self):
         request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dumps({'member': ''})
+        request.body = jsonutils.dump_as_bytes({'member': ''})
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
                           request)
 
     def test_update(self):
         request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dumps({'status': 'accepted'})
+        request.body = jsonutils.dump_as_bytes({'status': 'accepted'})
         output = self.deserializer.update(request)
         expected = {'status': 'accepted'}
         self.assertEqual(expected, output)
 
     def test_update_invalid(self):
         request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dumps({'mem': TENANT1})
+        request.body = jsonutils.dump_as_bytes({'mem': TENANT1})
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.update,
                           request)
 
