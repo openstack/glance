@@ -377,13 +377,13 @@ class JSONResponseSerializerTest(test_utils.BaseTestCase):
 
     def test_to_json(self):
         fixture = {"key": "value"}
-        expected = '{"key": "value"}'
+        expected = b'{"key": "value"}'
         actual = wsgi.JSONResponseSerializer().to_json(fixture)
         self.assertEqual(expected, actual)
 
     def test_to_json_with_date_format_value(self):
         fixture = {"date": datetime.datetime(1901, 3, 8, 2)}
-        expected = '{"date": "1901-03-08T02:00:00.000000"}'
+        expected = b'{"date": "1901-03-08T02:00:00.000000"}'
         actual = wsgi.JSONResponseSerializer().to_json(fixture)
         self.assertEqual(expected, actual)
 
@@ -397,7 +397,7 @@ class JSONResponseSerializerTest(test_utils.BaseTestCase):
 
     def test_to_json_with_set(self):
         fixture = set(["foo"])
-        expected = '["foo"]'
+        expected = b'["foo"]'
         actual = wsgi.JSONResponseSerializer().to_json(fixture)
         self.assertEqual(expected, actual)
 

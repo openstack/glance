@@ -265,7 +265,7 @@ class TestRPCJSONSerializer(test_utils.BaseTestCase):
 
     def test_to_json(self):
         fixture = {"key": "value"}
-        expected = '{"key": "value"}'
+        expected = b'{"key": "value"}'
         actual = rpc.RPCJSONSerializer().to_json(fixture)
         self.assertEqual(expected, actual)
 
