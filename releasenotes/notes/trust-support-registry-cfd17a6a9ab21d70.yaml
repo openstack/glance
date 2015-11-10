@@ -1,0 +1,7 @@
+---
+features:
+  - Implemented re-authentication with trusts when updating image status in
+    registry after image upload. When long-running image upload takes some a lot
+    of time (more than token expiration time) glance uses trusts to receive new
+    token and update image status in registry. It allows users to upload big
+    size images without increasing token expiration time.
