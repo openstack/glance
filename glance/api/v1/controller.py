@@ -63,7 +63,7 @@ class BaseController(object):
             LOG.debug(msg)
             msg = _("Image %s is deactivated") % image_id
             raise webob.exc.HTTPForbidden(
-                msg, request=request, content_type='type/plain')
+                msg, request=request, content_type='text/plain')
         if image['status'] != 'active':
             msg = "Image %s is not active" % image_id
             LOG.debug(msg)
