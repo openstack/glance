@@ -47,7 +47,6 @@ class VersionNegotiationFilter(wsgi.Middleware):
         LOG.debug(msg % args)
 
         # If the request is for /versions, just return the versions container
-        # TODO(bcwaldon): deprecate this behavior
         if req.path_info_peek() == "versions":
             return self.versions_app.index(req, explicit=True)
 
