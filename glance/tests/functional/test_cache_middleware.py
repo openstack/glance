@@ -386,12 +386,12 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'GET')
         self.assertEqual(403, response.status)
 
-        # Download the image with v2. Ensure it is forbidden
+        # Download the image with v2.
         path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(403, response.status)
+        self.assertEqual(200, response.status)
 
         # Reactivate the image using v2
         path = "http://%s:%d/v2/images/%s/actions/reactivate"

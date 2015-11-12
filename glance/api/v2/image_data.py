@@ -207,9 +207,10 @@ class ImageDataController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
-            if image.status == 'deactivated':
-                msg = _('The requested image has been deactivated. '
-                        'Image data download is forbidden.')
+            if (image.status != 'active' and (image.status != 'deactivated'
+                                              or not req.context.is_admin)):
+                msg = _('The requested image is in status %s. '
+                        'Image data download is forbidden.') % image.status
                 raise exception.Forbidden(message=msg)
         except exception.ImageDataNotFound as e:
             raise webob.exc.HTTPNoContent(explanation=e.msg)
