@@ -502,7 +502,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             'file://foo',
         ]
         result = images.select().execute()
-        locations = map(lambda x: x['location'], result)
+        locations = list(map(lambda x: x['location'], result))
         for loc in quoted_locations:
             self.assertIn(loc, locations)
 
@@ -598,7 +598,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         quoted = 'swift://acct%3Ausr:pass@example.com/container/obj-id'
         images = db_utils.get_table(engine, 'images')
         result = images.select().execute()
-        locations = map(lambda x: x['location'], result)
+        locations = list(map(lambda x: x['location'], result))
         actual_location = []
         for location in locations:
             if location:
@@ -638,8 +638,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             # not be migrated
             {'id': 'fake-19-2', 'location': None},
         ]
-        map(lambda image: image.update(base_values), data)
         for image in data:
+            image.update(base_values)
             images.insert().values(image).execute()
         return data
 
@@ -906,8 +906,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                 'result': None
             },
         ]
-        map(lambda task: task.update(base_values), data)
         for task in data:
+            task.update(base_values)
             tasks.insert().values(task).execute()
         return data
 
