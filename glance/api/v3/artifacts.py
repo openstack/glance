@@ -424,7 +424,7 @@ class ArtifactsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except (glance_store.NotFound, exception.NotFound) as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except (glance_store.Invalid, exception.Invalid) as e:
+        except exception.Invalid as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
 
     def _restore(self, artifact_repo, artifact):
