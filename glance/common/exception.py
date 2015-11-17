@@ -176,6 +176,10 @@ class InvalidSwiftStoreConfiguration(Invalid):
     message = _("Invalid configuration in glance-swift conf file.")
 
 
+class InvalidFilterOperatorValue(Invalid):
+    message = _("Unable to filter using the specified operator.")
+
+
 class InvalidFilterRangeValue(Invalid):
     message = _("Unable to filter using the specified range.")
 

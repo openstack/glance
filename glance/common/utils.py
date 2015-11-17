@@ -648,3 +648,54 @@ def stash_conf_values():
     }
 
     return conf
+
+
+def split_filter_op(expression):
+    """Split operator from threshold in an expression.
+    Designed for use on a comparative-filtering query field.
+    When no operator is found, default to an equality comparison.
+
+    :param expression: the expression to parse
+
+    :returns a tuple (operator, threshold) parsed from expression
+    """
+    left, sep, right = expression.partition(':')
+    if sep:
+        op = left
+        threshold = right
+    else:
+        op = 'eq'  # default operator
+        threshold = left
+
+    # NOTE stevelle decoding escaped values may be needed later
+    return op, threshold
+
+
+def evaluate_filter_op(value, operator, threshold):
+    """Evaluate a comparison operator.
+    Designed for use on a comparative-filtering query field.
+
+    :param value: evaluated against the operator, as left side of expression
+    :param operator: any supported filter operation
+    :param threshold: to compare value against, as right side of expression
+
+    :raises InvalidFilterOperatorValue if an unknown operator is provided
+
+    :returns boolean result of applied comparison
+
+    """
+    if operator == 'gt':
+        return value > threshold
+    elif operator == 'gte':
+        return value >= threshold
+    elif operator == 'lt':
+        return value < threshold
+    elif operator == 'lte':
+        return value <= threshold
+    elif operator == 'neq':
+        return value != threshold
+    elif operator == 'eq':
+        return value == threshold
+
+    msg = _("Unable to filter on a unknown operator.")
+    raise exception.InvalidFilterOperatorValue(msg)

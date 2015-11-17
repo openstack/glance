@@ -488,6 +488,22 @@ class DriverTests(object):
                                            filters={'poo': 'bear'})
         self.assertEqual(0, len(images))
 
+    def test_image_get_all_with_filter_comparative_created_at(self):
+        anchor = timeutils.isotime(self.fixtures[0]['created_at'])
+        time_expr = 'lt:' + anchor
+
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'created_at': time_expr})
+        self.assertEqual(0, len(images))
+
+    def test_image_get_all_with_filter_comparative_updated_at(self):
+        anchor = timeutils.isotime(self.fixtures[0]['updated_at'])
+        time_expr = 'lt:' + anchor
+
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'updated_at': time_expr})
+        self.assertEqual(0, len(images))
+
     def test_image_get_all_size_min_max(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={

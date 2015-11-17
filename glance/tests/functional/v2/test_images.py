@@ -22,6 +22,7 @@ import requests
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
+from six.moves import urllib
 
 from glance.tests import functional
 from glance.tests import utils as test_utils
@@ -2471,6 +2472,26 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(7, len(body['images']))
         self.assertEqual('/v2/images', body['first'])
         self.assertNotIn('next', jsonutils.loads(response.text))
+
+        # Image list filters by created_at time
+        url_template = '/v2/images?created_at=lt:%s'
+        path = self._url(url_template % images[0]['created_at'])
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        body = jsonutils.loads(response.text)
+        self.assertEqual(0, len(body['images']))
+        self.assertEqual(url_template % images[0]['created_at'],
+                         urllib.parse.unquote(body['first']))
+
+        # Image list filters by updated_at time
+        url_template = '/v2/images?updated_at=lt:%s'
+        path = self._url(url_template % images[2]['updated_at'])
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        body = jsonutils.loads(response.text)
+        self.assertGreaterEqual(3, len(body['images']))
+        self.assertEqual(url_template % images[2]['updated_at'],
+                         urllib.parse.unquote(body['first']))
 
         # Begin pagination after the first image
         template_url = ('/v2/images?limit=2&sort_dir=asc&sort_key=name'
