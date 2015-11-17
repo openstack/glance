@@ -479,6 +479,26 @@ class TestImages(functional.FunctionalTest):
         response = requests.post(path, data={}, headers=self._headers())
         self.assertEqual(204, response.status_code)
 
+        # Change the image to public so TENANT2 can see it
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.0-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = jsonutils.dumps([{"replace": "/visibility", "value": "public"}])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(200, response.status_code, response.text)
+
+        # Tennant2 should get Forbidden when deactivating the public image
+        path = self._url('/v2/images/%s/actions/deactivate' % image_id)
+        response = requests.post(path, data={}, headers=self._headers(
+            {'X-Tenant-Id': TENANT2}))
+        self.assertEqual(403, response.status_code)
+
+        # Tennant2 should get Forbidden when reactivating the public image
+        path = self._url('/v2/images/%s/actions/reactivate' % image_id)
+        response = requests.post(path, data={}, headers=self._headers(
+            {'X-Tenant-Id': TENANT2}))
+        self.assertEqual(403, response.status_code)
+
         # Deactivating a deactivated image succeeds (no-op)
         path = self._url('/v2/images/%s/actions/deactivate' % image_id)
         response = requests.post(path, data={}, headers=self._headers())
