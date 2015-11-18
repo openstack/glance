@@ -421,11 +421,11 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
     def test_upload(self):
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
-        request.body = 'YYY'
+        request.body = b'YYY'
         request.headers['Content-Length'] = 3
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual('YYY', data.read())
+        self.assertEqual(b'YYY', data.read())
         expected = {'size': 3}
         self.assertEqual(expected, output)
 
@@ -444,13 +444,13 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
     def test_upload_chunked_with_content_length(self):
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
-        request.body_file = six.StringIO('YYY')
+        request.body_file = six.BytesIO(b'YYY')
         # The deserializer shouldn't care if the Content-Length is
         # set when the user is attempting to send chunked data.
         request.headers['Content-Length'] = 3
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual('YYY', data.read())
+        self.assertEqual(b'YYY', data.read())
         expected = {'size': 3}
         self.assertEqual(expected, output)
 
@@ -460,24 +460,24 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         # The deserializer shouldn't care if the Content-Length and
         # actual request body length differ. That job is left up
         # to the controller
-        request.body = 'YYY'
+        request.body = b'YYY'
         request.headers['Content-Length'] = 4
         output = self.deserializer.upload(request)
         data = output.pop('data')
-        self.assertEqual('YYY', data.read())
+        self.assertEqual(b'YYY', data.read())
         expected = {'size': 4}
         self.assertEqual(expected, output)
 
     def test_upload_wrong_content_type(self):
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/json'
-        request.body = 'YYYYY'
+        request.body = b'YYYYY'
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
                           self.deserializer.upload, request)
 
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-st'
-        request.body = 'YYYYY'
+        request.body = b'YYYYY'
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
                           self.deserializer.upload, request)
 
@@ -493,9 +493,9 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         request.environ = {}
         response = webob.Response()
         response.request = request
-        image = FakeImage(size=3, data=iter('ZZZ'))
+        image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
         self.serializer.download(response, image)
-        self.assertEqual('ZZZ', response.body)
+        self.assertEqual(b'ZZZ', response.body)
         self.assertEqual('3', response.headers['Content-Length'])
         self.assertNotIn('Content-MD5', response.headers)
         self.assertEqual('application/octet-stream',
@@ -507,9 +507,9 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         response.request = request
         checksum = '0745064918b49693cca64d6b6a13d28a'
-        image = FakeImage(size=3, checksum=checksum, data=iter('ZZZ'))
+        image = FakeImage(size=3, checksum=checksum, data=[b'Z', b'Z', b'Z'])
         self.serializer.download(response, image)
-        self.assertEqual('ZZZ', response.body)
+        self.assertEqual(b'ZZZ', response.body)
         self.assertEqual('3', response.headers['Content-Length'])
         self.assertEqual(checksum, response.headers['Content-MD5'])
         self.assertEqual('application/octet-stream',
