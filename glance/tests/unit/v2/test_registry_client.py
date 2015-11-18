@@ -26,6 +26,7 @@ import uuid
 
 from mock import patch
 from oslo_utils import timeutils
+from six.moves import reload_module
 
 from glance.common import config
 from glance.common import exception
@@ -592,7 +593,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         next_state = 'saving'
         fixture = {'name': 'fake image',
                    'disk_format': 'vmdk',
-                   'min_disk': str(2 ** 31 + 1),
+                   'min_disk': 2 ** 31 + 1,
                    'status': next_state}
 
         image = self.client.image_get(image_id=UUID2)
@@ -611,7 +612,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         next_state = 'saving'
         fixture = {'name': 'fake image',
                    'disk_format': 'vmdk',
-                   'min_ram': str(2 ** 31 + 1),
+                   'min_ram': 2 ** 31 + 1,
                    'status': next_state}
 
         image = self.client.image_get(image_id=UUID2)
@@ -731,7 +732,7 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
     def setUp(self):
         """Establish a clean test environment"""
         super(TestRegistryV2ClientApi, self).setUp()
-        reload(rapi)
+        reload_module(rapi)
 
     def tearDown(self):
         """Clear the test environment"""

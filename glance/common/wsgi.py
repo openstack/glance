@@ -813,7 +813,7 @@ class JSONResponseSerializer(object):
         return jsonutils.to_primitive(obj)
 
     def to_json(self, data):
-        return jsonutils.dumps(data, default=self._sanitizer)
+        return jsonutils.dump_as_bytes(data, default=self._sanitizer)
 
     def default(self, response, result):
         response.content_type = 'application/json'

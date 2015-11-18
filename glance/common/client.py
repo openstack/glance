@@ -456,7 +456,7 @@ class BaseClient(object):
                 return method.lower() in ('post', 'put')
 
             def _simple(body):
-                return body is None or isinstance(body, six.string_types)
+                return body is None or isinstance(body, bytes)
 
             def _filelike(body):
                 return hasattr(body, 'read')
