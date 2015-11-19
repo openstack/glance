@@ -538,7 +538,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
     def test_legacy_parse_swift_uri_017(self):
         metadata_encryption_key = 'a' * 16
-        CONF.set_override('metadata_encryption_key', metadata_encryption_key)
+        CONF.set_override('metadata_encryption_key', metadata_encryption_key,
+                          enforce_type=True)
         self.addCleanup(CONF.reset)
         (legacy_parse_uri, encrypt_location) = from_migration_import(
             '017_quote_encrypted_swift_credentials', ['legacy_parse_uri',
@@ -553,7 +554,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
     def _pre_upgrade_017(self, engine):
         metadata_encryption_key = 'a' * 16
-        CONF.set_override('metadata_encryption_key', metadata_encryption_key)
+        CONF.set_override('metadata_encryption_key', metadata_encryption_key,
+                          enforce_type=True)
         self.addCleanup(CONF.reset)
         images = db_utils.get_table(engine, 'images')
         unquoted = 'swift://acct:usr:pass@example.com/container/obj-id'
