@@ -112,7 +112,8 @@ class ImagesController(object):
             if len(images) != 0 and len(images) == limit:
                 result['next_marker'] = images[-1].image_id
         except (exception.NotFound, exception.InvalidSortKey,
-                exception.InvalidFilterRangeValue) as e:
+                exception.InvalidFilterRangeValue,
+                exception.InvalidParameterValue) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to retrieve images index")
