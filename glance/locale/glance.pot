@@ -6,16 +6,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.0.0b4.dev52\n"
+"Project-Id-Version: glance 11.0.1.dev13\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-23 14:29+0000\n"
+"POT-Creation-Date: 2015-11-20 06:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.0\n"
+"Generated-By: Babel 2.1.1\n"
 
 #: glance/location.py:89
 msgid "Invalid location"
@@ -30,23 +30,19 @@ msgstr ""
 msgid "Original locations is not empty: %s"
 msgstr ""
 
-#: glance/location.py:400 glance/common/exception.py:360
-msgid "No image data could be found"
-msgstr ""
-
-#: glance/location.py:412
+#: glance/location.py:417
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr ""
 
-#: glance/notifier.py:380 glance/api/v1/upload_utils.py:222
-#: glance/api/v2/image_data.py:140
+#: glance/notifier.py:380 glance/api/v1/upload_utils.py:229
+#: glance/api/v2/image_data.py:152
 #, python-format
 msgid "Image storage media is full: %s"
 msgstr ""
 
-#: glance/notifier.py:385 glance/api/v1/upload_utils.py:232
-#: glance/api/v2/image_data.py:164
+#: glance/notifier.py:385 glance/api/v1/upload_utils.py:239
+#: glance/api/v2/image_data.py:176
 #, python-format
 msgid "Insufficient permissions on image storage media: %s"
 msgstr ""
@@ -343,194 +339,194 @@ msgstr ""
 msgid "Data for image_id not found: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:81
+#: glance/api/v1/images.py:82
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr ""
 
-#: glance/api/v1/images.py:86
+#: glance/api/v1/images.py:87
 #, python-format
 msgid "Invalid container format '%s' for image."
 msgstr ""
 
-#: glance/api/v1/images.py:96
+#: glance/api/v1/images.py:97
 msgid ""
 "Invalid mix of disk and container formats. When setting a disk or "
 "container format to one of 'aki', 'ari', or 'ami', the container and disk"
 " formats must match."
 msgstr ""
 
-#: glance/api/v1/images.py:110
+#: glance/api/v1/images.py:111
 #, python-format
 msgid "Image name too long: %d"
 msgstr ""
 
-#: glance/api/v1/images.py:117
+#: glance/api/v1/images.py:118
 #, python-format
 msgid "Invalid checksum '%s': can't exceed 32 characters"
 msgstr ""
 
-#: glance/api/v1/images.py:195
+#: glance/api/v1/images.py:196
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(num)s, Maximum: %(quota)s"
 msgstr ""
 
-#: glance/api/v1/images.py:217 glance/api/v1/images.py:261
-#: glance/api/v1/images.py:295
+#: glance/api/v1/images.py:218 glance/api/v1/images.py:262
+#: glance/api/v1/images.py:296
 #, python-format
 msgid "Property '%s' is protected"
 msgstr ""
 
-#: glance/api/v1/images.py:358
+#: glance/api/v1/images.py:359
 msgid "This operation is currently not permitted on Glance images details."
 msgstr ""
 
-#: glance/api/v1/images.py:409
+#: glance/api/v1/images.py:412
 #, python-format
 msgid "Bad value passed to filter %(filter)s got %(val)s"
 msgstr ""
 
-#: glance/api/v1/images.py:445
+#: glance/api/v1/images.py:448
 #, python-format
 msgid "External sources are not supported: '%s'"
 msgstr ""
 
-#: glance/api/v1/images.py:541
+#: glance/api/v1/images.py:544
 #, python-format
 msgid "Required store %s is invalid"
 msgstr ""
 
-#: glance/api/v1/images.py:553
+#: glance/api/v1/images.py:556
 #, python-format
 msgid "Invalid location %s"
 msgstr ""
 
-#: glance/api/v1/images.py:576
+#: glance/api/v1/images.py:579
 #, python-format
 msgid "An image with identifier %s already exists"
 msgstr ""
 
-#: glance/api/v1/images.py:583
+#: glance/api/v1/images.py:586
 #, python-format
 msgid "Failed to reserve image. Got error: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:590
+#: glance/api/v1/images.py:593
 msgid "Forbidden to reserve image."
 msgstr ""
 
-#: glance/api/v1/images.py:634
+#: glance/api/v1/images.py:637
 msgid "Content-Type must be application/octet-stream"
 msgstr ""
 
-#: glance/api/v1/images.py:691
+#: glance/api/v1/images.py:694
 #, python-format
 msgid "Failed to activate image. Got error: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:763
+#: glance/api/v1/images.py:766
 msgid "It's invalid to provide multiple image sources."
 msgstr ""
 
-#: glance/api/v1/images.py:798
+#: glance/api/v1/images.py:801
 #, python-format
 msgid ""
 "Provided image size must match the stored image size. (provided size: "
 "%(ps)d, stored size: %(ss)d)"
 msgstr ""
 
-#: glance/api/v1/images.py:817
+#: glance/api/v1/images.py:820
 msgid "Disk format is not specified."
 msgstr ""
 
-#: glance/api/v1/images.py:822
+#: glance/api/v1/images.py:825
 msgid "Container format is not specified."
 msgstr ""
 
-#: glance/api/v1/images.py:928
+#: glance/api/v1/images.py:931
 msgid "Forbidden to update deleted image."
 msgstr ""
 
-#: glance/api/v1/images.py:939
+#: glance/api/v1/images.py:942
 #, python-format
 msgid "Forbidden to modify '%s' of active image."
 msgstr ""
 
-#: glance/api/v1/images.py:947
+#: glance/api/v1/images.py:950
 #, python-format
 msgid "Forbidden to modify '%s' of image."
 msgstr ""
 
-#: glance/api/v1/images.py:965
+#: glance/api/v1/images.py:968
 msgid "Cannot upload to an unqueued image"
 msgstr ""
 
-#: glance/api/v1/images.py:982 glance/common/scripts/utils.py:90
+#: glance/api/v1/images.py:985 glance/common/scripts/utils.py:90
 #, python-format
 msgid "Invalid location: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:989
+#: glance/api/v1/images.py:992
 msgid "Attempted to update Location field for an image not in queued status."
 msgstr ""
 
-#: glance/api/v1/images.py:1029 glance/registry/api/v1/images.py:487
+#: glance/api/v1/images.py:1032 glance/registry/api/v1/images.py:487
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1036
+#: glance/api/v1/images.py:1039
 #, python-format
 msgid "Failed to find image to update: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1043
+#: glance/api/v1/images.py:1046
 #, python-format
 msgid "Forbidden to update image: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1051
+#: glance/api/v1/images.py:1054
 msgid "Image operation conflicts"
 msgstr ""
 
-#: glance/api/v1/images.py:1082
+#: glance/api/v1/images.py:1085
 msgid "Image is protected"
 msgstr ""
 
-#: glance/api/v1/images.py:1089
+#: glance/api/v1/images.py:1092
 #, python-format
 msgid "Forbidden to delete a %s image."
 msgstr ""
 
-#: glance/api/v1/images.py:1096 glance/api/v2/image_members.py:56
+#: glance/api/v1/images.py:1099 glance/api/v2/image_members.py:56
 #: glance/api/v2/image_tags.py:52 glance/api/v2/image_tags.py:81
 #, python-format
 msgid "Image %s not found."
 msgstr ""
 
-#: glance/api/v1/images.py:1131
+#: glance/api/v1/images.py:1134
 #, python-format
 msgid "Failed to find image to delete: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1138
+#: glance/api/v1/images.py:1141
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1145 glance/api/v2/images.py:247
+#: glance/api/v1/images.py:1148 glance/api/v2/images.py:247
 #, python-format
 msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr ""
 
-#: glance/api/v1/images.py:1169
+#: glance/api/v1/images.py:1172
 #, python-format
 msgid "Store for scheme %s not found"
 msgstr ""
 
-#: glance/api/v1/images.py:1208 glance/api/v1/upload_utils.py:242
+#: glance/api/v1/images.py:1211 glance/api/v1/upload_utils.py:249
 #, python-format
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr ""
@@ -567,30 +563,30 @@ msgid ""
 "image (%(actual)s) did not match. Setting image status to 'killed'."
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:191 glance/api/v2/image_data.py:118
+#: glance/api/v1/upload_utils.py:198 glance/api/v2/image_data.py:130
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:200
+#: glance/api/v1/upload_utils.py:207
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:212
+#: glance/api/v1/upload_utils.py:219
 #, python-format
 msgid "Forbidden upload attempt: %s"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:252 glance/api/v2/images.py:166
+#: glance/api/v1/upload_utils.py:259 glance/api/v2/images.py:166
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:273
+#: glance/api/v1/upload_utils.py:280
 msgid "Client disconnected before sending all data to backend"
 msgstr ""
 
-#: glance/api/v1/upload_utils.py:281
+#: glance/api/v1/upload_utils.py:288
 #, python-format
 msgid "Failed to upload image %s"
 msgstr ""
@@ -602,17 +598,24 @@ msgid ""
 " during the upload, cleaning up the chunks uploaded."
 msgstr ""
 
-#: glance/api/v2/image_data.py:148
+#: glance/api/v2/image_data.py:109
+#, python-format
+msgid ""
+"Authentication error - the token may have expired during file upload. "
+"Deleting image data for %s."
+msgstr ""
+
+#: glance/api/v2/image_data.py:160
 #, python-format
 msgid "Image exceeds the storage quota: %s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:156
+#: glance/api/v2/image_data.py:168
 #, python-format
 msgid "The incoming image is too large: %s"
 msgstr ""
 
-#: glance/api/v2/image_data.py:199
+#: glance/api/v2/image_data.py:211
 msgid ""
 "The requested image has been deactivated. Image data download is "
 "forbidden."
@@ -2020,6 +2023,10 @@ msgstr ""
 #: glance/common/exception.py:356
 #, python-format
 msgid "The location %(location)s already exists"
+msgstr ""
+
+#: glance/common/exception.py:360
+msgid "No image data could be found"
 msgstr ""
 
 #: glance/common/exception.py:364
