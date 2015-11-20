@@ -164,6 +164,63 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             for value in ('aki', 'ari', 'ami'):
                 self._do_test_defaulted_format(key, value)
 
+    def test_bad_time_create_minus_int(self):
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-created_at': '-42',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_bad_time_create_string(self):
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-created_at': 'foo',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_bad_time_create_low_year(self):
+        # 'strftime' only allows values after 1900 in glance v1
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-created_at': '1100',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_bad_time_create_string_in_date(self):
+        fixture_headers = {'x-image-meta-store': 'file',
+                           'x-image-meta-disk-format': 'vhd',
+                           'x-image-meta-container-format': 'ovf',
+                           'x-image-meta-created_at': '2012-01-01hey12:32:12',
+                           'x-image-meta-name': 'fake image #3'}
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
     def test_bad_min_disk_size_create(self):
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
@@ -610,7 +667,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
                            'x-image-meta-container-format': 'ovf',
-                           'x-image-meta-name': 'fake image #3'}
+                           'x-image-meta-name': 'fake image #3',
+                           'x-image-created_at': '2015-11-20',
+                           'x-image-updated_at': '2015-12-01 12:10:01',
+                           'x-image-deleted_at': '2000'}
 
         req = webob.Request.blank("/images")
         req.method = 'POST'

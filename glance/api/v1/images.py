@@ -50,6 +50,7 @@ from glance.common import wsgi
 from glance import i18n
 from glance import notifier
 import glance.registry.client.v1.api as registry
+from oslo_utils import timeutils
 
 LOG = logging.getLogger(__name__)
 _ = i18n._
@@ -66,6 +67,22 @@ CONF.import_opt('disk_formats', 'glance.common.config', group='image_format')
 CONF.import_opt('container_formats', 'glance.common.config',
                 group='image_format')
 CONF.import_opt('image_property_quota', 'glance.common.config')
+
+
+def _validate_time(req, values):
+    """Validates time formats for updated_at, created_at and deleted_at.
+    'strftime' only allows values after 1900 in glance v1 so this is enforced
+    here. This was introduced to keep modularity.
+    """
+    for time_field in ['created_at', 'updated_at', 'deleted_at']:
+        if time_field in values and values[time_field]:
+            try:
+                time = timeutils.parse_isotime(values[time_field])
+                values[time_field] = time.strftime(
+                    timeutils.PERFECT_TIME_FORMAT)
+            except ValueError:
+                msg = (_("Invalid time format for %s.") % time_field)
+                raise HTTPBadRequest(explanation=msg, request=req)
 
 
 def _validate_format(req, values):
@@ -103,6 +120,7 @@ def _validate_format(req, values):
 
 def validate_image_meta(req, values):
     _validate_format(req, values)
+    _validate_time(req, values)
 
     name = values.get('name')
     checksum = values.get('checksum')
