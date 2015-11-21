@@ -2585,13 +2585,15 @@ class TestImages(functional.FunctionalTest):
         # Create 7 images
         images = []
         fixtures = [
-            {'name': 'image-3', 'type': 'kernel', 'ping': 'pong'},
-            {'name': 'image-4', 'type': 'kernel', 'ping': 'pong'},
+            {'name': 'image-3', 'type': 'kernel', 'ping': 'pong',
+             'container_format': 'ami', 'disk_format': 'ami'},
+            {'name': 'image-4', 'type': 'kernel', 'ping': 'pong',
+             'container_format': 'bare', 'disk_format': 'ami'},
             {'name': 'image-1', 'type': 'kernel', 'ping': 'pong'},
             {'name': 'image-3', 'type': 'ramdisk', 'ping': 'pong'},
             {'name': 'image-2', 'type': 'kernel', 'ping': 'ding'},
             {'name': 'image-3', 'type': 'kernel', 'ping': 'pong'},
-            {'name': 'image-2', 'type': 'kernel', 'ping': 'pong'},
+            {'name': 'image-2,image-5', 'type': 'kernel', 'ping': 'pong'},
         ]
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
@@ -2648,6 +2650,33 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images?name=%FF')
         response = requests.get(path, headers=self._headers())
         self.assertEqual(400, response.status_code)
+
+        # Image list filters by name with in operator
+        url_template = '/v2/images?name=in:%s'
+        filter_value = 'image-1,image-2'
+        path = self._url(url_template % filter_value)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        body = jsonutils.loads(response.text)
+        self.assertGreaterEqual(3, len(body['images']))
+
+        # Image list filters by container_format with in operator
+        url_template = '/v2/images?container_format=in:%s'
+        filter_value = 'bare,ami'
+        path = self._url(url_template % filter_value)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        body = jsonutils.loads(response.text)
+        self.assertGreaterEqual(2, len(body['images']))
+
+        # Image list filters by disk_format with in operator
+        url_template = '/v2/images?disk_format=in:%s'
+        filter_value = 'bare,ami,iso'
+        path = self._url(url_template % filter_value)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        body = jsonutils.loads(response.text)
+        self.assertGreaterEqual(2, len(body['images']))
 
         # Begin pagination after the first image
         template_url = ('/v2/images?limit=2&sort_dir=asc&sort_key=name'

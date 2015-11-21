@@ -305,6 +305,20 @@ def _filter_images(images, filters, context,
                 threshold = timeutils.normalize_time(parsed_time)
                 to_add = utils.evaluate_filter_op(attr_value, operator,
                                                   threshold)
+            elif k in ['name', 'id', 'status',
+                       'container_format', 'disk_format']:
+                attr_value = image.get(key)
+                operator, list_value = utils.split_filter_op(value)
+                if operator == 'in':
+                    threshold = utils.split_filter_value_for_quotes(list_value)
+                    to_add = attr_value in threshold
+                elif operator == 'eq':
+                    to_add = (attr_value == list_value)
+                else:
+                    msg = (_("Unable to filter by unknown operator '%s'.")
+                           % operator)
+                    raise exception.InvalidFilterOperatorValue(msg)
+
             elif k != 'is_public' and image.get(k) is not None:
                 to_add = image.get(key) == value
             elif k == 'tags':

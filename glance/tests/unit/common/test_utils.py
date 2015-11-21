@@ -423,6 +423,28 @@ class SplitFilterOpTestCase(test_utils.BaseTestCase):
         returned = utils.split_filter_op(expr)
         self.assertEqual(('eq', 'bar'), returned)
 
+    def test_in_operator(self):
+        expr = 'in:bar'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('in', 'bar'), returned)
+
+    def test_split_filter_value_for_quotes(self):
+        expr = '\"fake\\\"name\",fakename,\"fake,name\"'
+        returned = utils.split_filter_value_for_quotes(expr)
+        list_values = ['fake\\"name', 'fakename', 'fake,name']
+        self.assertEqual(list_values, returned)
+
+    def test_validate_quotes(self):
+        expr = '\"aaa\\\"aa\",bb,\"cc\"'
+        returned = utils.validate_quotes(expr)
+        self.assertIsNone(returned)
+
+        invalid_expr = ['\"aa', 'ss\"', 'aa\"bb\"cc', '\"aa\"\"bb\"']
+        for expr in invalid_expr:
+            self.assertRaises(exception.InvalidParameterValue,
+                              utils.validate_quotes,
+                              expr)
+
     def test_default_operator(self):
         expr = 'bar'
         returned = utils.split_filter_op(expr)

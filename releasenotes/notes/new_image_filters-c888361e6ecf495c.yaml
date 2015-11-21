@@ -1,0 +1,16 @@
+---
+features:
+  - Implement the ability to filter images by the properties `id`,
+    `name`, `status`,`container_format`, `disk_format` using the 'in'
+    operator between the values.
+    Following the pattern of existing filters, new filters are specified as
+    query parameters using the field to filter as the key and the filter
+    criteria as the value in the parameter.
+    Filtering based on the principle of full compliance with the template,
+    for example 'name = in:deb' does not match 'debian'.
+    Changes apply exclusively to the API v2 Image entity listings
+    An example of an acceptance criteria using the 'in' operator for name
+    ?name=in:name1,name2,name3.
+    These filters were added using syntax that conforms to the latest
+    guidelines from the OpenStack API Working Group.
+

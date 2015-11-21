@@ -505,6 +505,64 @@ class DriverTests(object):
                                            filters={'updated_at': time_expr})
         self.assertEqual(0, len(images))
 
+    def test_filter_image_by_invalid_operator(self):
+        self.assertRaises(exception.InvalidFilterOperatorValue,
+                          self.db_api.image_get_all,
+                          self.context, filters={'status': 'lala:active'})
+
+    def test_image_get_all_with_filter_in_status(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'status': 'in:active'})
+        self.assertEqual(3, len(images))
+
+    def test_image_get_all_with_filter_in_name(self):
+        data = 'in:%s' % self.fixtures[0]['name']
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'name': data})
+        self.assertEqual(3, len(images))
+
+    def test_image_get_all_with_filter_in_container_format(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'container_format':
+                                                    'in:ami,bare,ovf'})
+        self.assertEqual(3, len(images))
+
+    def test_image_get_all_with_filter_in_disk_format(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'disk_format':
+                                                    'in:vhd'})
+        self.assertEqual(3, len(images))
+
+    def test_image_get_all_with_filter_in_id(self):
+        data = 'in:%s,%s' % (UUID1, UUID2)
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'id': data})
+        self.assertEqual(2, len(images))
+
+    def test_image_get_all_with_quotes(self):
+        fixture = {'name': 'fake\\\"name'}
+        self.db_api.image_update(self.adm_context, UUID3, fixture)
+
+        fixture = {'name': 'fake,name'}
+        self.db_api.image_update(self.adm_context, UUID2, fixture)
+
+        fixture = {'name': 'fakename'}
+        self.db_api.image_update(self.adm_context, UUID1, fixture)
+
+        data = 'in:\"fake\\\"name\",fakename,\"fake,name\"'
+
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'name': data})
+        self.assertEqual(3, len(images))
+
+    def test_image_get_all_with_invalid_quotes(self):
+        invalid_expr = ['in:\"name', 'in:\"name\"name', 'in:name\"dd\"',
+                        'in:na\"me', 'in:\"name\"\"name\"']
+        for expr in invalid_expr:
+            self.assertRaises(exception.InvalidParameterValue,
+                              self.db_api.image_get_all,
+                              self.context, filters={'name': expr})
+
     def test_image_get_all_size_min_max(self):
         images = self.db_api.image_get_all(self.context,
                                            filters={
