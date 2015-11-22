@@ -518,6 +518,8 @@ Required when using the Swift storage backend.
 
 Can only be specified in configuration files.
 
+Deprecated. Use ``auth_address`` in the Swift back-end configuration file instead.
+
 `This option is specific to the Swift storage backend.`
 
 Sets the authentication URL supplied to Swift when making calls to its storage
@@ -536,6 +538,8 @@ Required when using the Swift storage backend.
 
 Can only be specified in configuration files.
 
+Deprecated. Use ``user`` in the Swift back-end configuration file instead.
+
 `This option is specific to the Swift storage backend.`
 
 Sets the user to authenticate against the ``swift_store_auth_address`` with.
@@ -545,6 +549,8 @@ Sets the user to authenticate against the ``swift_store_auth_address`` with.
 Required when using the Swift storage backend.
 
 Can only be specified in configuration files.
+
+Deprecated. Use ``key`` in the Swift back-end configuration file instead.
 
 `This option is specific to the Swift storage backend.`
 
@@ -667,6 +673,9 @@ example: swift_store_admin_tenants = service:glance,*:admin
 
 Can only be specified in configuration files.
 
+Deprecated. Use ``auth_version`` in the Swift back-end configuration
+file instead.
+
 `This option is specific to the Swift storage backend.`
 
 Optional. Default: ``2``
@@ -774,6 +783,105 @@ Can only be specified in configuration files.
 `This option is specific to the Swift storage backend.`
 
 Optional. Default: ``False``
+
+Configuring Swift configuration file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If ``swift_store_config_file`` is set, Glance will use information
+from the file specified under this parameter.
+
+.. note::
+   The ``swift_store_config_file`` is currently used only for single-tenant
+   Swift store configurations. If you configure a multi-tenant Swift store
+   back end (``swift_store_multi_tenant=True``), ensure that both
+   ``swift_store_config_file`` and ``default_swift_reference`` are *not* set.
+
+The file contains a set of references like:
+
+.. code-block:: ini
+
+    [ref1]
+    user = tenant:user1
+    key = key1
+    auth_version = 2
+    auth_address = http://localhost:5000/v2.0
+
+    [ref2]
+    user = project_name:user_name2
+    key = key2
+    user_domain_id = default
+    project_domain_id = default
+    auth_version = 3
+    auth_address = http://localhost:5000/v3
+
+A default reference must be configured. Its parameters will be used when
+creating new images. For example, to specify ``ref2`` as the default
+reference, add the following value to the [glance_store] section of
+:file:`glance-api.conf` file:
+
+.. code-block:: ini
+
+    default_swift_reference = ref2
+
+In the reference, a user can specify the following parameters:
+
+* ``user``
+
+  A *project_name user_name* pair in the ``project_name:user_name`` format
+  to authenticate against the Swift authentication service.
+
+* ``key``
+
+  An authentication key for a user authenticating against the Swift
+  authentication service.
+
+* ``auth_address``
+
+  An address where the Swift authentication service is located.
+
+* ``auth_version``
+
+  A version of the authentication service to use.
+  Valid versions are ``2`` and ``3`` for Keystone and ``1``
+  (deprecated) for Swauth and Rackspace.
+
+  Optional. Default: ``2``
+
+* ``project_domain_id``
+
+  A domain ID of the project which is the requested project-level
+  authorization scope.
+
+  Optional. Default: ``None``
+
+  `This option can be specified if ``auth_version`` is ``3`` .`
+
+* ``project_domain_name``
+
+  A domain name of the project which is the requested project-level
+  authorization scope.
+
+  Optional. Default: ``None``
+
+  `This option can be specified if ``auth_version`` is ``3`` .`
+
+* ``user_domain_id``
+
+  A domain ID of the user which is the requested domain-level
+  authorization scope.
+
+  Optional. Default: ``None``
+
+  `This option can be specified if ``auth_version`` is ``3`` .`
+
+* ``user_domain_name``
+
+  A domain name of the user which is the requested domain-level
+  authorization scope.
+
+  Optional. Default: ``None``
+
+  `This option can be specified if ``auth_version`` is ``3``. `
 
 Configuring the S3 Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

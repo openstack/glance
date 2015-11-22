@@ -13,9 +13,13 @@
 [ref1]
 user = tenant:user1
 key = key1
-auth_address = auth123@example.com
+auth_version = 2
+auth_address = http://localhost:5000/v2.0
 
 [ref2]
-user = user2
+user = project_name:user_name2
 key = key2
-auth_address = http://auth345@example.com
+user_domain_id = default
+project_domain_id = default
+auth_version = 3
+auth_address = http://localhost:5000/v3
