@@ -95,7 +95,7 @@ class _Convert(task.Task):
 
         fs_path = result.split("file://")[-1]
         if os.path.exists(fs_path):
-            os.path.remove(fs_path)
+            os.remove(fs_path)
 
 
 def get_flow(**kwargs):
