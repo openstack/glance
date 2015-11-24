@@ -172,7 +172,7 @@ class RegistryClient(BaseClient):
 
         encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
         image_metadata['image'] = encrypted_metadata
-        body = jsonutils.dumps(image_metadata)
+        body = jsonutils.dump_as_bytes(image_metadata)
 
         res = self.do_request("POST", "/images", body=body, headers=headers)
         # Registry returns a JSONified dict(image=image_info)
@@ -191,7 +191,7 @@ class RegistryClient(BaseClient):
         encrypted_metadata = self.encrypt_metadata(image_metadata['image'])
         image_metadata['image'] = encrypted_metadata
         image_metadata['from_state'] = from_state
-        body = jsonutils.dumps(image_metadata)
+        body = jsonutils.dump_as_bytes(image_metadata)
 
         headers = {
             'Content-Type': 'application/json',
@@ -235,7 +235,7 @@ class RegistryClient(BaseClient):
               'memberships' not in member_data):
             member_data = dict(memberships=[member_data])
 
-        body = jsonutils.dumps(member_data)
+        body = jsonutils.dump_as_bytes(member_data)
 
         headers = {'Content-Type': 'application/json', }
 

@@ -20,6 +20,7 @@ import uuid
 
 from mock import patch
 from oslo_utils import timeutils
+from six.moves import reload_module
 import testtools
 
 from glance.api.v1.images import Controller as acontroller
@@ -843,7 +844,7 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
         """Establish a clean test environment."""
         super(TestRegistryV1ClientApi, self).setUp()
         self.context = context.RequestContext()
-        reload(rapi)
+        reload_module(rapi)
 
     def tearDown(self):
         """Clear the test environment."""
