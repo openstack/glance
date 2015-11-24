@@ -39,7 +39,7 @@ class GlancePlugin(scenario.OpenStackScenario):
 
         :param image_name: String used to name the image
         :param container_format: Container format of image.
-        Acceptable formats: ami, ari, aki, bare, and ovf.
+        Acceptable formats: ami, ari, aki, bare, ovf, and docker.
         :param image_location: image file location used to upload
         :param disk_format: Disk format of image. Acceptable formats:
         ami, ari, aki, vhd, vmdk, raw, qcow2, vdi, and iso.

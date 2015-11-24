@@ -45,7 +45,7 @@ paste_deploy_opts = [
 ]
 image_format_opts = [
     cfg.ListOpt('container_formats',
-                default=['ami', 'ari', 'aki', 'bare', 'ovf', 'ova'],
+                default=['ami', 'ari', 'aki', 'bare', 'ovf', 'ova', 'docker'],
                 help=_("Supported values for the 'container_format' "
                        "image attribute"),
                 deprecated_opts=[cfg.DeprecatedOpt('container_formats',
