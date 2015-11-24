@@ -476,8 +476,14 @@ def _make_conditions_from_filters(filters, is_public=None):
         elif k in ['created_at', 'updated_at']:
             attr_value = getattr(models.Image, key)
             operator, isotime = utils.split_filter_op(filters.pop(k))
-            parsed_time = timeutils.parse_isotime(isotime)
-            threshold = timeutils.normalize_time(parsed_time)
+            try:
+                parsed_time = timeutils.parse_isotime(isotime)
+                threshold = timeutils.normalize_time(parsed_time)
+            except ValueError:
+                msg = (_("Bad \"%s\" query filter format. "
+                         "Use ISO 8601 DateTime notation.") % k)
+                raise exception.InvalidParameterValue(msg)
+
             comparison = utils.evaluate_filter_op(attr_value, operator,
                                                   threshold)
             image_conditions.append(comparison)
