@@ -70,7 +70,8 @@ class TestPropertyQuotaViolations(base.ApiTest):
         self.assertEqual(0, len(image_list))
 
         orig_property_quota = 10
-        CONF.set_override('image_property_quota', orig_property_quota)
+        CONF.set_override('image_property_quota', orig_property_quota,
+                          enforce_type=True)
 
         # Create an image (with deployer-defined properties)
         req_body = {'name': 'testimg',

@@ -21,7 +21,8 @@ from glance.tests.functional.db import base
 
 
 def get_db(config):
-    CONF.set_override('data_api', 'glance.db.simple.api')
+    CONF.set_override('data_api', 'glance.db.simple.api',
+                      enforce_type=True)
     db_api = glance.db.get_api()
     return db_api
 
