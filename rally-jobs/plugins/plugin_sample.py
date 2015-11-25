@@ -81,7 +81,7 @@ class GlancePlugin(scenario.OpenStackScenario):
     @scenario.configure(context={"cleanup": ["glance"]})
     def create_and_list(self, container_format,
                         image_location, disk_format, **kwargs):
-        self._create_image(self._generate_random_name(),
+        self._create_image(self.generate_random_name(),
                            container_format,
                            image_location,
                            disk_format,
