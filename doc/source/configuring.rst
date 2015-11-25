@@ -1673,3 +1673,18 @@ the ``glance-api-paste.ini`` file, looking like so::
 
 For more information see
 `oslo.middleware <http://docs.openstack.org/developer/oslo.middleware/api.html#oslo_middleware.Healthcheck>`_.
+
+Configuring supported disk formats
+----------------------------------
+
+Each image in Glance has an associated disk format property.
+When creating an image the user specifies a disk format. They must
+select a format from the set that the Glance service supports. This
+supported set can be seen by querying the ``/v2/schemas/images`` resource.
+An operator can add or remove disk formats to the supported set.  This is
+done by setting the ``disk_formats`` parameter which is found in the
+``[image_formats]`` section of ``glance-api.conf``.
+
+* ``disk_formats=<Comma seperated list of disk formats>``
+
+Optional. Default: ``ami,ari,aki,vhd,vmdk,raw,qcow2,vdi,iso``
