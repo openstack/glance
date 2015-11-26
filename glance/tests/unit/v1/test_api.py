@@ -179,6 +179,21 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(400, res.status_int)
         self.assertIn('Invalid value', res.body)
 
+    def test_updating_imageid_after_creation(self):
+        # Test incorrect/illegal id update
+        req = webob.Request.blank("/images/%s" % UUID1)
+        req.method = 'PUT'
+        req.headers['x-image-meta-id'] = '000000-000-0000-0000-000'
+        res = req.get_response(self.api)
+        self.assertEqual(403, res.status_int)
+
+        # Test using id of another image
+        req = webob.Request.blank("/images/%s" % UUID1)
+        req.method = 'PUT'
+        req.headers['x-image-meta-id'] = UUID2
+        res = req.get_response(self.api)
+        self.assertEqual(403, res.status_int)
+
     def test_bad_min_disk_size_update(self):
         fixture_headers = {'x-image-meta-disk-format': 'vhd',
                            'x-image-meta-container-format': 'ovf',
