@@ -261,7 +261,7 @@ def user_get_storage_usage(client, owner_id, image_id=None, session=None):
 @_get_client
 def task_get(client, task_id, session=None, force_show_deleted=False):
     """Get a single task object
-    :return: task dictionary
+    :returns: task dictionary
     """
     return client.task_get(task_id=task_id, session=session,
                            force_show_deleted=force_show_deleted)
@@ -280,7 +280,7 @@ def task_get_all(client, filters=None, marker=None, limit=None,
     :param admin_as_user: For backwards compatibility. If true, then return to
                       an admin the equivalent set of tasks which it would see
                       if it were a regular user
-    :return: tasks set
+    :returns: tasks set
     """
     return client.task_get_all(filters=filters, marker=marker, limit=limit,
                                sort_key=sort_key, sort_dir=sort_dir,

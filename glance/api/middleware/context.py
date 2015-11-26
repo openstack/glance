@@ -79,9 +79,10 @@ class ContextMiddleware(BaseContextMiddleware):
         of the req object.
 
         :param req: wsgi request object that will be given the context object
-        :raises webob.exc.HTTPUnauthorized: when value of the X-Identity-Status
-                                            header is not 'Confirmed' and
-                                            anonymous access is disallowed
+        :raises: webob.exc.HTTPUnauthorized: when value of the
+                                            X-Identity-Status  header is not
+                                            'Confirmed' and anonymous access
+                                            is disallowed
         """
         if req.headers.get('X-Identity-Status') == 'Confirmed':
             req.context = self._get_authenticated_context(req)

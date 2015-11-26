@@ -127,7 +127,7 @@ def validate_external_location(uri):
     absent for security reasons, see LP bug #1334196.
 
     :param uri: The URI of external image location.
-    :return: Whether given URI of external image location are OK.
+    :returns: Whether given URI of external image location are OK.
     """
 
     # TODO(zhiyan): This function could be moved to glance_store.

@@ -154,7 +154,7 @@ def publish(context, artifact_id, session, type_name,
     manually by calling this function.
     It creates transitive dependencies for the given artifact_id and saves
     them in DB.
-    :returns artifact dict with Transitive show level
+    :returns: artifact dict with Transitive show level
     """
     values = {'state': 'active'}
     return _out(_create_or_update(context, values, artifact_id, session,
@@ -184,7 +184,7 @@ def _out(artifact, show_level=ga.Showlevel.BASIC, show_text_properties=True):
     :param show_level: constant from Showlevel class
     :param show_text_properties: for performance optimization it's possible
     to disable loading of massive text properties
-    :return: generated dict
+    :returns: generated dict
     """
     res = artifact.to_dict(show_level=show_level,
                            show_text_properties=show_text_properties)

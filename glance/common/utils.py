@@ -657,7 +657,7 @@ def split_filter_op(expression):
 
     :param expression: the expression to parse
 
-    :returns a tuple (operator, threshold) parsed from expression
+    :returns: a tuple (operator, threshold) parsed from expression
     """
     left, sep, right = expression.partition(':')
     if sep:
@@ -679,9 +679,9 @@ def evaluate_filter_op(value, operator, threshold):
     :param operator: any supported filter operation
     :param threshold: to compare value against, as right side of expression
 
-    :raises InvalidFilterOperatorValue if an unknown operator is provided
+    :raises: InvalidFilterOperatorValue if an unknown operator is provided
 
-    :returns boolean result of applied comparison
+    :returns: boolean result of applied comparison
 
     """
     if operator == 'gt':

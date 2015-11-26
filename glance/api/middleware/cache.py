@@ -78,7 +78,7 @@ class CacheFilter(wsgi.Middleware):
     def _match_request(request):
         """Determine the version of the url and extract the image id
 
-        :returns tuple of version and image id if the url is a cacheable,
+        :returns: tuple of version and image id if the url is a cacheable,
                  otherwise None
         """
         for ((version, method), pattern) in PATTERNS.items():

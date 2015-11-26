@@ -246,7 +246,7 @@ def load_paste_app(app_name, flavor=None, conf_file=None):
     :param flavor: name of the variant of the application to load
     :param conf_file: path to the paste config file
 
-    :raises RuntimeError when config file cannot be located or application
+    :raises: RuntimeError when config file cannot be located or application
             cannot be loaded from config file
     """
     # append the deployment flavor to the application name,

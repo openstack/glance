@@ -92,7 +92,7 @@ def get_ordered_locations(locations, **kwargs):
 
     :param locations: The original image location list.
     :param kwargs: Strategy-specific arguments for under layer strategy module.
-    :return: The image location list with strategy-specific order.
+    :returns: The image location list with strategy-specific order.
     """
     if not locations:
         return []
@@ -107,7 +107,7 @@ def choose_best_location(locations, **kwargs):
 
     :param locations: The original image location list.
     :param kwargs: Strategy-specific arguments for under layer strategy module.
-    :return: The best location from image location list.
+    :returns: The best location from image location list.
     """
     locations = get_ordered_locations(locations, **kwargs)
     if locations:
