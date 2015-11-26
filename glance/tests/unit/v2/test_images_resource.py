@@ -26,6 +26,7 @@ from six.moves import range
 import testtools
 import webob
 
+import glance.api.v2.image_actions
 import glance.api.v2.images
 from glance.common import exception
 from glance import domain
@@ -129,6 +130,11 @@ class TestImagesController(base.IsolatedUnitTest):
                                                                 self.policy,
                                                                 self.notifier,
                                                                 self.store)
+        self.action_controller = (glance.api.v2.image_actions.
+                                  ImageActionsController(self.db,
+                                                         self.policy,
+                                                         self.notifier,
+                                                         self.store))
         self.controller.gateway.store_utils = self.store_utils
         store.create_stores()
 
@@ -2015,6 +2021,15 @@ class TestImagesController(base.IsolatedUnitTest):
                        fake_safe_delete_from_backend)
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPConflict, self.controller.delete,
+                          request, UUID1)
+
+    def test_delete_to_unallowed_status(self):
+        # from deactivated to pending-delete
+        self.config(delayed_delete=True)
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        self.action_controller.deactivate(request, UUID1)
+
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.delete,
                           request, UUID1)
 
     def test_index_with_invalid_marker(self):
