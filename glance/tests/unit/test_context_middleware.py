@@ -129,8 +129,10 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         self.assertEqual(request_id, resp.headers['x-openstack-request-id'])
         resp_req_id = resp.headers['x-openstack-request-id']
         # Validate that request-id do not starts with 'req-req-'
-        self.assertFalse(resp_req_id.startswith(b'req-req-'))
-        self.assertTrue(resp_req_id.startswith(b'req-'))
+        if isinstance(resp_req_id, bytes):
+            resp_req_id = resp_req_id.decode('utf-8')
+        self.assertFalse(resp_req_id.startswith('req-req-'))
+        self.assertTrue(resp_req_id.startswith('req-'))
 
 
 class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
@@ -155,6 +157,8 @@ class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
         middleware.process_response(resp)
         self.assertEqual(request_id, resp.headers['x-openstack-request-id'])
         resp_req_id = resp.headers['x-openstack-request-id']
+        if isinstance(resp_req_id, bytes):
+            resp_req_id = resp_req_id.decode('utf-8')
         # Validate that request-id do not starts with 'req-req-'
-        self.assertFalse(resp_req_id.startswith(b'req-req-'))
-        self.assertTrue(resp_req_id.startswith(b'req-'))
+        self.assertFalse(resp_req_id.startswith('req-req-'))
+        self.assertTrue(resp_req_id.startswith('req-'))
