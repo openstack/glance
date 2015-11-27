@@ -615,7 +615,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         """
         Process sorting params.
         Currently glance supports two sorting syntax: classic and new one,
-        that is uniform for all Openstack projects.
+        that is uniform for all OpenStack projects.
         Classic syntax: sort_key=name&sort_dir=asc&sort_key=size&sort_dir=desc
         New syntax: sort=name:asc,size:desc
         """

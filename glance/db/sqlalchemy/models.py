@@ -79,7 +79,7 @@ class GlanceBase(models.ModelBase, models.TimestampMixin):
     created_at = Column(DateTime, default=lambda: timeutils.utcnow(),
                         nullable=False)
     # TODO(vsergeyev): Column `updated_at` have no default value in
-    #                  openstack common code. We should decide, is this value
+    #                  OpenStack common code. We should decide, is this value
     #                  required and make changes in oslo (if required) or
     #                  in glance (if not).
     updated_at = Column(DateTime, default=lambda: timeutils.utcnow(),
