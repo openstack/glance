@@ -78,6 +78,12 @@ def _validate_time(req, values):
         if time_field in values and values[time_field]:
             try:
                 time = timeutils.parse_isotime(values[time_field])
+                # On Python 2, datetime.datetime.strftime() raises a ValueError
+                # for years older than 1900. On Python 3, years older than 1900
+                # are accepted. But we explicitly want to reject timestamps
+                # older than January 1st, 1900 for Glance API v1.
+                if time.year < 1900:
+                    raise ValueError
                 values[time_field] = time.strftime(
                     timeutils.PERFECT_TIME_FORMAT)
             except ValueError:
