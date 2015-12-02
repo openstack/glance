@@ -550,7 +550,6 @@ class ScrubberDaemon(Server):
         self.conf_base = """[DEFAULT]
 verbose = %(verbose)s
 debug = %(debug)s
-filesystem_store_datadir=%(image_dir)s
 log_file = %(log_file)s
 daemon = %(daemon)s
 wakeup_time = 2
@@ -563,6 +562,8 @@ sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
 send_identity_headers = %(send_identity_headers)s
 admin_role = %(admin_role)s
+[glance_store]
+filesystem_store_datadir=%(image_dir)s
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
