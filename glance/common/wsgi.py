@@ -888,6 +888,11 @@ class Resource(object):
             exc_info = sys.exc_info()
             e = translate_exception(request, e)
             six.reraise(type(e), e, exc_info[2])
+        except UnicodeDecodeError:
+            msg = _("Error decoding your request. Either the URL or the "
+                    "request body contained characters that could not be "
+                    "decoded by Glance")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except Exception as e:
             LOG.exception(_LE("Caught error: %s"), six.text_type(e))
             response = webob.exc.HTTPInternalServerError()
