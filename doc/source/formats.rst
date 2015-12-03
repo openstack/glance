@@ -106,3 +106,8 @@ You can set your image's container format to one of the following:
 * **ova**
 
   This indicates what is stored in Glance is an OVA tar archive file
+
+* **docker**
+
+  This indicates what is stored in Glance is a Docker tar archive of
+  the container filesystem

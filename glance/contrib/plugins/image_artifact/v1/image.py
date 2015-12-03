@@ -27,7 +27,8 @@ class ImageAsAnArtifact(definitions.ArtifactType):
                                      mutable=False)
     container_format = definitions.String(allowed_values=['ami', 'ari',
                                                           'aki', 'bare',
-                                                          'ovf', 'ova'],
+                                                          'ovf', 'ova',
+                                                          'docker'],
                                           required=True,
                                           mutable=False)
     min_disk = definitions.Integer(min_value=0, default=0)

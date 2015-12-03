@@ -3755,7 +3755,7 @@ class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
 
     def test_default_container_formats(self):
         schema = glance.api.v2.images.get_schema()
-        expected = [None, 'ami', 'ari', 'aki', 'bare', 'ovf', 'ova']
+        expected = [None, 'ami', 'ari', 'aki', 'bare', 'ovf', 'ova', 'docker']
         actual = schema.properties['container_format']['enum']
         self.assertEqual(expected, actual)
 
