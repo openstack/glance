@@ -17,7 +17,7 @@
 Database Management
 ===================
 
-The default metadata driver for glance uses sqlalchemy, which implies there
+The default metadata driver for Glance uses sqlalchemy, which implies there
 exists a backend database which must be managed. The ``glance-manage`` binary
 provides a set of commands for making this easier.
 
@@ -39,7 +39,7 @@ Determining the Database Version
 
     glance-manage db version
 
-This will print the current migration level of a glance database.
+This will print the current migration level of a Glance database.
 
 
 Upgrading an Existing Database
