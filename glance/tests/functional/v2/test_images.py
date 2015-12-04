@@ -338,6 +338,24 @@ class TestImages(functional.FunctionalTest):
         self.assertTrue(image['updated_at'])
         self.assertEqual(image['updated_at'], image['created_at'])
 
+        # The URI file:// should return a 400 rather than a 500
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        url = ('file://')
+        changes = [{
+            'op': 'add',
+            'path': '/locations/-',
+            'value': {
+                'url': url,
+                'metadata': {}
+            }
+        }]
+
+        data = jsonutils.dumps(changes)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(400, response.status_code, response.text)
+
         # The image should be mutable, including adding and removing properties
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'

@@ -57,11 +57,15 @@ def _calc_required_size(context, image, locations):
     else:
         for location in locations:
             size_from_backend = None
+
             try:
                 size_from_backend = store.get_size_from_backend(
                     location['url'], context=context)
             except (store.UnknownScheme, store.NotFound):
                 pass
+            except store.BadStoreUri:
+                raise exception.BadStoreUri
+
             if size_from_backend:
                 required_size = size_from_backend * len(locations)
                 break
