@@ -20,11 +20,13 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
 import six
+from six.moves import urllib
 from stevedore import driver
 from taskflow import engines
 from taskflow.listeners import logging as llistener
 
 import glance.async
+from glance.common import exception
 from glance.common.scripts import utils as script_utils
 from glance import i18n
 
@@ -101,8 +103,22 @@ class TaskExecutor(glance.async.TaskExecutor):
             return driver.DriverManager('glance.flows', task.type,
                                         invoke_on_load=True,
                                         invoke_kwds=kwds).driver
+        except urllib.error.URLError as exc:
+            raise exception.ImportTaskError(message=exc.reason)
+        except exception.BadStoreUri as exc:
+            raise exception.ImportTaskError(message=exc.msg)
         except RuntimeError:
             raise NotImplementedError()
+
+    def begin_processing(self, task_id):
+        try:
+            super(TaskExecutor, self).begin_processing(task_id)
+        except exception.ImportTaskError as exc:
+            LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s') %
+                      {'task_id': task_id, 'exc': exc.msg})
+            task = self.task_repo.get(task_id)
+            task.fail(exc.msg)
+            self.task_repo.save(task)
 
     def _run(self, task_id, task_type):
         LOG.debug('Taskflow executor picked up the execution of task ID '
