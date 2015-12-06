@@ -109,16 +109,16 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.context = glance.context.RequestContext(is_admin=True)
         db_api.get_engine()
         self.destroy_fixtures()
+        self.addCleanup(self.destroy_fixtures)
         self.create_fixtures()
         # Used to store/track image status changes for post-analysis
         self.image_status = []
+        self.http_server_pid = None
+        self.addCleanup(self._cleanup_server)
         ret = test_utils.start_http_server("foo_image_id", "foo_image")
         self.http_server_pid, self.http_port = ret
 
-    def tearDown(self):
-        """Clear the test environment"""
-        super(TestGlanceAPI, self).tearDown()
-        self.destroy_fixtures()
+    def _cleanup_server(self):
         if self.http_server_pid is not None:
             os.kill(self.http_server_pid, signal.SIGKILL)
 
