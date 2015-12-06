@@ -1258,9 +1258,8 @@ def _task_info_get(context, task_id, session=None):
     try:
         task_info_ref = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = ("TaskInfo was not found for task with id %(task_id)s" %
-               {'task_id': task_id})
-        LOG.debug(msg)
+        LOG.debug("TaskInfo was not found for task with id %(task_id)s",
+                  {'task_id': task_id})
         task_info_ref = None
 
     return task_info_ref
@@ -1423,8 +1422,7 @@ def _task_get(context, task_id, session=None, force_show_deleted=False):
     try:
         task_ref = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = "No task found with ID %s" % task_id
-        LOG.debug(msg)
+        LOG.debug("No task found with ID %s", task_id)
         raise exception.TaskNotFound(task_id=task_id)
 
     # Make sure the task is visible

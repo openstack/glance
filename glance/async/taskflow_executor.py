@@ -123,8 +123,8 @@ class TaskExecutor(glance.async.TaskExecutor):
     def _run(self, task_id, task_type):
         LOG.debug('Taskflow executor picked up the execution of task ID '
                   '%(task_id)s of task type '
-                  '%(task_type)s' % {'task_id': task_id,
-                                     'task_type': task_type})
+                  '%(task_type)s', {'task_id': task_id,
+                                    'task_type': task_type})
 
         task = script_utils.get_task(self.task_repo, task_id)
         if task is None:

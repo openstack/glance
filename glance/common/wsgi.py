@@ -645,7 +645,7 @@ class APIMapper(routes.Mapper):
 
 class RejectMethodController(object):
     def reject(self, req, allowed_methods, *args, **kwargs):
-        LOG.debug("The method %s is not allowed for this resource" %
+        LOG.debug("The method %s is not allowed for this resource",
                   req.environ['REQUEST_METHOD'])
         raise webob.exc.HTTPMethodNotAllowed(
             headers=[('Allow', allowed_methods)])

@@ -195,7 +195,7 @@ class Controller(controller.BaseController):
         try:
             self.policy.enforce(req.context, action, target)
         except exception.Forbidden:
-            LOG.debug("User not permitted to perform '%s' action" % action)
+            LOG.debug("User not permitted to perform '%s' action", action)
             raise HTTPForbidden()
 
     def _enforce_image_property_quota(self,
@@ -577,8 +577,8 @@ class Controller(controller.BaseController):
             try:
                 backend = store.get_store_from_location(location)
             except (store.UnknownScheme, store.BadStoreUri):
+                LOG.debug("Invalid location %s", location)
                 msg = _("Invalid location %s") % location
-                LOG.debug(msg)
                 raise HTTPBadRequest(explanation=msg,
                                      request=req,
                                      content_type="text/plain")
@@ -711,7 +711,7 @@ class Controller(controller.BaseController):
                 # Delete image data since it has been superseded by another
                 # upload and re-raise.
                 LOG.debug("duplicate operation - deleting image data for "
-                          " %(id)s (location:%(location)s)" %
+                          " %(id)s (location:%(location)s)",
                           {'id': image_id, 'location': image_meta['location']})
                 upload_utils.initiate_deletion(req, location_data, image_id)
         except exception.Invalid as e:

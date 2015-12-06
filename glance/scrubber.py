@@ -235,7 +235,7 @@ class Daemon(object):
         LOG.debug("Running application")
         self.daemon_pool.spawn_n(application.run, self.event)
         eventlet.spawn_after(self.wakeup_time, self._run, application)
-        LOG.debug("Next run scheduled in %s seconds" % self.wakeup_time)
+        LOG.debug("Next run scheduled in %s seconds", self.wakeup_time)
 
 
 class Scrubber(object):
@@ -322,7 +322,7 @@ class Scrubber(object):
         if CONF.metadata_encryption_key:
             uri = crypt.urlsafe_decrypt(CONF.metadata_encryption_key, uri)
         try:
-            LOG.debug("Scrubbing image %s from a location." % image_id)
+            LOG.debug("Scrubbing image %s from a location.", image_id)
             try:
                 self.store_api.delete_from_backend(uri, self.admin_context)
             except store_exceptions.NotFound:

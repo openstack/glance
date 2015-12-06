@@ -892,8 +892,7 @@ def task_update(context, task_id, values):
     try:
         task = DATA['tasks'][task_id]
     except KeyError:
-        msg = "No task found with ID %s" % task_id
-        LOG.debug(msg)
+        LOG.debug("No task found with ID %s", task_id)
         raise exception.TaskNotFound(task_id=task_id)
 
     task.update(task_values)
@@ -924,8 +923,7 @@ def _task_get(context, task_id, force_show_deleted=False):
         raise exception.TaskNotFound(task_id=task_id)
 
     if not _is_task_visible(context, task):
-        msg = "Forbidding request, task %s is not visible" % task_id
-        LOG.debug(msg)
+        LOG.debug("Forbidding request, task %s is not visible", task_id)
         msg = _("Forbidding request, task %s is not visible") % task_id
         raise exception.Forbidden(msg)
 
@@ -943,8 +941,7 @@ def task_delete(context, task_id):
         DATA['tasks'][task_id]['updated_at'] = timeutils.utcnow()
         return copy.deepcopy(DATA['tasks'][task_id])
     except KeyError:
-        msg = "No task found with ID %s" % task_id
-        LOG.debug(msg)
+        LOG.debug("No task found with ID %s", task_id)
         raise exception.TaskNotFound(task_id=task_id)
 
 
@@ -1064,8 +1061,7 @@ def _task_info_update(task_id, values):
     try:
         task_info = DATA['task_info'][task_id]
     except KeyError:
-        msg = "No task info found with task id %s" % task_id
-        LOG.debug(msg)
+        LOG.debug("No task info found with task id %s", task_id)
         raise exception.TaskNotFound(task_id=task_id)
 
     task_info.update(values)
@@ -1109,9 +1105,8 @@ def metadef_namespace_create(context, values):
 
     for namespace in DATA['metadef_namespaces']:
         if namespace['namespace'] == namespace_name:
-            msg = ("Can not create the metadata definition namespace. "
-                   "Namespace=%s already exists.") % namespace_name
-            LOG.debug(msg)
+            LOG.debug("Can not create the metadata definition namespace. "
+                      "Namespace=%s already exists.", namespace_name)
             raise exception.MetadefDuplicateNamespace(
                 namespace_name=namespace_name)
 
@@ -1140,11 +1135,9 @@ def metadef_namespace_update(context, namespace_id, values):
     if namespace['namespace'] != values['namespace']:
         for db_namespace in DATA['metadef_namespaces']:
             if db_namespace['namespace'] == values['namespace']:
-                msg = ("Invalid update. It would result in a duplicate"
-                       " metadata definition namespace with the same"
-                       " name of %s"
-                       % values['namespace'])
-                LOG.debug(msg)
+                LOG.debug("Invalid update. It would result in a duplicate "
+                          "metadata definition namespace with the same "
+                          "name of %s", values['namespace'])
                 emsg = (_("Invalid update. It would result in a duplicate"
                           " metadata definition namespace with the same"
                           " name of %s")
@@ -1172,11 +1165,10 @@ def metadef_namespace_get_by_id(context, namespace_id):
         raise exception.MetadefNamespaceNotFound(msg)
 
     if not _is_namespace_visible(context, namespace):
-        msg = ("Forbidding request, metadata definition namespace=%s"
-               " is not visible.") % namespace.namespace
-        LOG.debug(msg)
-        emsg = _("Forbidding request, metadata definition namespace=%s"
-                 " is not visible.") % namespace.namespace
+        LOG.debug("Forbidding request, metadata definition namespace=%s "
+                  "is not visible.", namespace.namespace)
+        emsg = _("Forbidding request, metadata definition namespace=%s "
+                 "is not visible.") % namespace.namespace
         raise exception.MetadefForbidden(emsg)
 
     return namespace
@@ -1189,8 +1181,7 @@ def metadef_namespace_get(context, namespace_name):
         namespace = next(namespace for namespace in DATA['metadef_namespaces']
                          if namespace['namespace'] == namespace_name)
     except StopIteration:
-        msg = "No namespace found with name %s" % namespace_name
-        LOG.debug(msg)
+        LOG.debug("No namespace found with name %s", namespace_name)
         raise exception.MetadefNamespaceNotFound(
             namespace_name=namespace_name)
 
@@ -1280,10 +1271,9 @@ def metadef_object_get(context, namespace_name, object_name):
                 object['name'] == object_name):
             return object
     else:
-        msg = ("The metadata definition object with name=%(name)s"
-               " was not found in namespace=%(namespace_name)s."
-               % {'name': object_name, 'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("The metadata definition object with name=%(name)s"
+                  " was not found in namespace=%(namespace_name)s.",
+                  {'name': object_name, 'namespace_name': namespace_name})
         raise exception.MetadefObjectNotFound(namespace_name=namespace_name,
                                               object_name=object_name)
 
@@ -1337,10 +1327,9 @@ def metadef_object_create(context, namespace_name, values):
     for object in DATA['metadef_objects']:
         if (object['name'] == object_name and
                 object['namespace_id'] == namespace['id']):
-            msg = ("A metadata definition object with name=%(name)s"
-                   " in namespace=%(namespace_name)s already exists."
-                   % {'name': object_name, 'namespace_name': namespace_name})
-            LOG.debug(msg)
+            LOG.debug("A metadata definition object with name=%(name)s "
+                      "in namespace=%(namespace_name)s already exists.",
+                      {'name': object_name, 'namespace_name': namespace_name})
             raise exception.MetadefDuplicateObject(
                 object_name=object_name, namespace_name=namespace_name)
 
@@ -1377,12 +1366,11 @@ def metadef_object_update(context, namespace_name, object_id, values):
         for db_object in DATA['metadef_objects']:
             if (db_object['name'] == values['name'] and
                     db_object['namespace_id'] == namespace['id']):
-                msg = ("Invalid update. It would result in a duplicate"
-                       " metadata definition object with same name=%(name)s "
-                       " in namespace=%(namespace_name)s."
-                       % {'name': object['name'],
-                          'namespace_name': namespace_name})
-                LOG.debug(msg)
+                LOG.debug("Invalid update. It would result in a duplicate "
+                          "metadata definition object with same name=%(name)s "
+                          "in namespace=%(namespace_name)s.",
+                          {'name': object['name'],
+                           'namespace_name': namespace_name})
                 emsg = (_("Invalid update. It would result in a duplicate"
                           " metadata definition object with the same"
                           " name=%(name)s "
@@ -1462,12 +1450,11 @@ def metadef_property_create(context, namespace_name, values):
     for property in DATA['metadef_properties']:
         if (property['name'] == property_name and
                 property['namespace_id'] == namespace['id']):
-            msg = ("Can not create metadata definition property. A property"
-                   " with name=%(name)s already exists in"
-                   " namespace=%(namespace_name)s."
-                   % {'name': property_name,
-                      'namespace_name': namespace_name})
-            LOG.debug(msg)
+            LOG.debug("Can not create metadata definition property. A property"
+                      " with name=%(name)s already exists in"
+                      " namespace=%(namespace_name)s.",
+                      {'name': property_name,
+                       'namespace_name': namespace_name})
             raise exception.MetadefDuplicateProperty(
                 property_name=property_name,
                 namespace_name=namespace_name)
@@ -1505,13 +1492,12 @@ def metadef_property_update(context, namespace_name, property_id, values):
         for db_property in DATA['metadef_properties']:
             if (db_property['name'] == values['name'] and
                     db_property['namespace_id'] == namespace['id']):
-                msg = ("Invalid update. It would result in a duplicate"
-                       " metadata definition property with the same"
-                       " name=%(name)s"
-                       " in namespace=%(namespace_name)s."
-                       % {'name': property['name'],
-                          'namespace_name': namespace_name})
-                LOG.debug(msg)
+                LOG.debug("Invalid update. It would result in a duplicate"
+                          " metadata definition property with the same"
+                          " name=%(name)s"
+                          " in namespace=%(namespace_name)s.",
+                          {'name': property['name'],
+                           'namespace_name': namespace_name})
                 emsg = (_("Invalid update. It would result in a duplicate"
                           " metadata definition property with the same"
                           " name=%(name)s"
@@ -1574,10 +1560,9 @@ def metadef_property_get(context, namespace_name, property_name):
                 property['name'] == property_name):
             return property
     else:
-        msg = ("No property found with name=%(name)s in"
-               " namespace=%(namespace_name)s "
-               % {'name': property_name, 'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("No property found with name=%(name)s in"
+                  " namespace=%(namespace_name)s ",
+                  {'name': property_name, 'namespace_name': namespace_name})
         raise exception.MetadefPropertyNotFound(namespace_name=namespace_name,
                                                 property_name=property_name)
 
@@ -1641,8 +1626,7 @@ def metadef_resource_type_get(context, resource_type_name):
                              if resource_type['name'] ==
                              resource_type_name)
     except StopIteration:
-        msg = "No resource type found with name %s" % resource_type_name
-        LOG.debug(msg)
+        LOG.debug("No resource type found with name %s", resource_type_name)
         raise exception.MetadefResourceTypeNotFound(
             resource_type_name=resource_type_name)
 
@@ -1667,12 +1651,11 @@ def metadef_resource_type_association_create(context, namespace_name,
     for association in DATA['metadef_namespace_resource_types']:
         if (association['namespace_id'] == namespace['id'] and
                 association['resource_type'] == resource_type['id']):
-            msg = ("The metadata definition resource-type association of"
-                   " resource_type=%(resource_type_name)s to"
-                   " namespace=%(namespace_name)s, already exists."
-                   % {'resource_type_name': resource_type_name,
-                      'namespace_name': namespace_name})
-            LOG.debug(msg)
+            LOG.debug("The metadata definition resource-type association of"
+                      " resource_type=%(resource_type_name)s to"
+                      " namespace=%(namespace_name)s, already exists.",
+                      {'resource_type_name': resource_type_name,
+                       'namespace_name': namespace_name})
             raise exception.MetadefDuplicateResourceTypeAssociation(
                 resource_type_name=resource_type_name,
                 namespace_name=namespace_name)
@@ -1704,9 +1687,9 @@ def metadef_resource_type_association_get(context, namespace_name,
                 association['resource_type'] == resource_type['id']):
             return association
     else:
-        msg = ("No resource type association found associated with namespace "
-               "%s and resource type %s" % namespace_name, resource_type_name)
-        LOG.debug(msg)
+        LOG.debug("No resource type association found associated with "
+                  "namespace %s and resource type %s", namespace_name,
+                  resource_type_name)
         raise exception.MetadefResourceTypeAssociationNotFound(
             resource_type_name=resource_type_name,
             namespace_name=namespace_name)
@@ -1748,10 +1731,9 @@ def metadef_tag_get(context, namespace_name, name):
         if tag['namespace_id'] == namespace['id'] and tag['name'] == name:
             return tag
     else:
-        msg = ("The metadata definition tag with name=%(name)s"
-               " was not found in namespace=%(namespace_name)s."
-               % {'name': name, 'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("The metadata definition tag with name=%(name)s"
+                  " was not found in namespace=%(namespace_name)s.",
+                  {'name': name, 'namespace_name': namespace_name})
         raise exception.MetadefTagNotFound(name=name,
                                            namespace_name=namespace_name)
 
@@ -1802,10 +1784,9 @@ def metadef_tag_create(context, namespace_name, values):
 
     for tag in DATA['metadef_tags']:
         if tag['name'] == tag_name and tag['namespace_id'] == namespace['id']:
-            msg = ("A metadata definition tag with name=%(name)s"
-                   " in namespace=%(namespace_name)s already exists."
-                   % {'name': tag_name, 'namespace_name': namespace_name})
-            LOG.debug(msg)
+            LOG.debug("A metadata definition tag with name=%(name)s"
+                      " in namespace=%(namespace_name)s already exists.",
+                      {'name': tag_name, 'namespace_name': namespace_name})
             raise exception.MetadefDuplicateTag(
                 name=tag_name, namespace_name=namespace_name)
 
@@ -1853,10 +1834,9 @@ def metadef_tag_create_tags(context, namespace_name, tag_list):
                 'The keys %s are not valid' % str(incorrect_keys))
 
         if tag_name in tag_name_list:
-            msg = ("A metadata definition tag with name=%(name)s"
-                   " in namespace=%(namespace_name)s already exists."
-                   % {'name': tag_name, 'namespace_name': namespace_name})
-            LOG.debug(msg)
+            LOG.debug("A metadata definition tag with name=%(name)s"
+                      " in namespace=%(namespace_name)s already exists.",
+                      {'name': tag_name, 'namespace_name': namespace_name})
             raise exception.MetadefDuplicateTag(
                 name=tag_name, namespace_name=namespace_name)
         else:
@@ -1886,12 +1866,11 @@ def metadef_tag_update(context, namespace_name, id, values):
         for db_tag in DATA['metadef_tags']:
             if (db_tag['name'] == values['name'] and
                     db_tag['namespace_id'] == namespace['id']):
-                msg = ("Invalid update. It would result in a duplicate"
-                       " metadata definition tag with same name=%(name)s "
-                       " in namespace=%(namespace_name)s."
-                       % {'name': tag['name'],
-                          'namespace_name': namespace_name})
-                LOG.debug(msg)
+                LOG.debug("Invalid update. It would result in a duplicate"
+                          " metadata definition tag with same name=%(name)s "
+                          " in namespace=%(namespace_name)s.",
+                          {'name': tag['name'],
+                           'namespace_name': namespace_name})
                 raise exception.MetadefDuplicateTag(
                     name=tag['name'], namespace_name=namespace_name)
 
@@ -2130,9 +2109,8 @@ def _is_namespace_visible(context, namespace):
 
 def _check_namespace_visibility(context, namespace, namespace_name):
     if not _is_namespace_visible(context, namespace):
-        msg = ("Forbidding request, metadata definition namespace=%s"
-               " is not visible." % namespace_name)
-        LOG.debug(msg)
+        LOG.debug("Forbidding request, metadata definition namespace=%s "
+                  "is not visible.", namespace_name)
         emsg = _("Forbidding request, metadata definition namespace=%s"
                  " is not visible.") % namespace_name
         raise exception.MetadefForbidden(emsg)

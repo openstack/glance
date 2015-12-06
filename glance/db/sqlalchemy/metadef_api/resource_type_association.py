@@ -66,12 +66,11 @@ def _get(context, namespace_name, resource_type_name,
             namespace_id=namespace_id, resource_type_id=resource_type_id)
         db_rec = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = ("The metadata definition resource-type association of"
-               " resource_type=%(resource_type_name)s to"
-               " namespace_name=%(namespace_name)s was not found."
-               % {'resource_type_name': resource_type_name,
-                  'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("The metadata definition resource-type association of"
+                  " resource_type=%(resource_type_name)s to"
+                  " namespace_name=%(namespace_name)s was not found.",
+                  {'resource_type_name': resource_type_name,
+                   'namespace_name': namespace_name})
         raise exc.MetadefResourceTypeAssociationNotFound(
             resource_type_name=resource_type_name,
             namespace_name=namespace_name)
@@ -91,12 +90,11 @@ def _create_association(
     try:
         namespace_resource_type_rec.save(session=session)
     except db_exc.DBDuplicateEntry:
-        msg = ("The metadata definition resource-type association of"
-               " resource_type=%(resource_type_name)s to"
-               " namespace=%(namespace_name)s, already exists."
-               % {'resource_type_name': resource_type_name,
-                  'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("The metadata definition resource-type association of"
+                  " resource_type=%(resource_type_name)s to"
+                  " namespace=%(namespace_name)s, already exists.",
+                  {'resource_type_name': resource_type_name,
+                   'namespace_name': namespace_name})
         raise exc.MetadefDuplicateResourceTypeAssociation(
             resource_type_name=resource_type_name,
             namespace_name=namespace_name)
@@ -172,7 +170,7 @@ def create(context, namespace_name, values, session):
             context, resource_type_name, session)
     except exc.NotFound:
         resource_type = None
-        LOG.debug("Creating resource-type %s" % resource_type_name)
+        LOG.debug("Creating resource-type %s", resource_type_name)
 
     if resource_type is None:
         resource_type_dict = {'name': resource_type_name, 'protected': False}

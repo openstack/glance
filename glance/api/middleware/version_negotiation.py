@@ -41,10 +41,9 @@ class VersionNegotiationFilter(wsgi.Middleware):
 
     def process_request(self, req):
         """Try to find a version first in the accept header, then the URL"""
-        msg = _("Determining version of request: %(method)s %(path)s"
-                " Accept: %(accept)s")
         args = {'method': req.method, 'path': req.path, 'accept': req.accept}
-        LOG.debug(msg % args)
+        LOG.debug("Determining version of request: %(method)s %(path)s "
+                  "Accept: %(accept)s", args)
 
         # If the request is for /versions, just return the versions container
         if req.path_info_peek() == "versions":

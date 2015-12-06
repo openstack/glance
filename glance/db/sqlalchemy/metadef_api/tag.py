@@ -47,10 +47,9 @@ def _get_by_name(context, namespace_name, name, session):
             name=name, namespace_id=namespace['id']))
         metadef_tag = query.one()
     except sa_orm.exc.NoResultFound:
-        msg = ("The metadata tag with name=%(name)s"
-               " was not found in namespace=%(namespace_name)s."
-               % {'name': name, 'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("The metadata tag with name=%(name)s"
+                  " was not found in namespace=%(namespace_name)s.",
+                  {'name': name, 'namespace_name': namespace_name})
         raise exc.MetadefTagNotFound(name=name,
                                      namespace_name=namespace_name)
     return metadef_tag
@@ -101,11 +100,10 @@ def create(context, namespace_name, values, session):
     try:
         metadef_tag.save(session=session)
     except db_exc.DBDuplicateEntry:
-        msg = ("A metadata tag name=%(name)s"
-               " in namespace=%(namespace_name)s already exists."
-               % {'name': metadef_tag.name,
-                  'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("A metadata tag name=%(name)s"
+                  " in namespace=%(namespace_name)s already exists.",
+                  {'name': metadef_tag.name,
+                   'namespace_name': namespace_name})
         raise exc.MetadefDuplicateTag(
             name=metadef_tag.name, namespace_name=namespace_name)
 
@@ -133,11 +131,10 @@ def create_tags(context, namespace_name, tag_list, session):
                     metadef_tag.save(session=session)
                     metadef_tags_list.append(metadef_tag.to_dict())
         except db_exc.DBDuplicateEntry:
-            msg = ("A metadata tag name=%(name)s"
-                   " in namespace=%(namespace_name)s already exists."
-                   % {'name': metadef_tag.name,
-                      'namespace_name': namespace_name})
-            LOG.debug(msg)
+            LOG.debug("A metadata tag name=%(name)s"
+                      " in namespace=%(namespace_name)s already exists.",
+                      {'name': metadef_tag.name,
+                       'namespace_name': namespace_name})
             raise exc.MetadefDuplicateTag(
                 name=metadef_tag.name, namespace_name=namespace_name)
 
@@ -160,12 +157,11 @@ def update(context, namespace_name, id, values, session):
         metadata_tag.update(values.copy())
         metadata_tag.save(session=session)
     except db_exc.DBDuplicateEntry:
-        msg = ("Invalid update. It would result in a duplicate"
-               " metadata tag with same name=%(name)s"
-               " in namespace=%(namespace_name)s."
-               % {'name': values['name'],
-                  'namespace_name': namespace_name})
-        LOG.debug(msg)
+        LOG.debug("Invalid update. It would result in a duplicate"
+                  " metadata tag with same name=%(name)s"
+                  " in namespace=%(namespace_name)s.",
+                  {'name': values['name'],
+                   'namespace_name': namespace_name})
         raise exc.MetadefDuplicateTag(
             name=values['name'], namespace_name=namespace_name)
 

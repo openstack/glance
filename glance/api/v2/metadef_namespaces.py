@@ -202,9 +202,8 @@ class NamespaceController(object):
                 namespace_obj = namespace_repo.get(namespace.namespace)
                 namespace_obj.delete()
                 namespace_repo.remove(namespace_obj)
-                msg = ("Cleaned up namespace %(namespace)s "
-                       % {'namespace': namespace.namespace})
-                LOG.debug(msg)
+                LOG.debug("Cleaned up namespace %(namespace)s ",
+                          {'namespace': namespace.namespace})
             except exception:
                 msg = (_LE("Failed to delete namespace %(namespace)s ") %
                        {'namespace': namespace.namespace})

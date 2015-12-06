@@ -70,7 +70,7 @@ class _Introspect(utils.OptionalTask):
         new_image.virtual_size = metadata.get('virtual-size', 0)
         new_image.disk_format = metadata.get('format')
         self.image_repo.save(new_image)
-        LOG.debug("%(task_id)s: Introspection successful: %(file)s" %
+        LOG.debug("%(task_id)s: Introspection successful: %(file)s",
                   {'task_id': self.task_id, 'file': file_path})
         return new_image
 
@@ -87,7 +87,7 @@ def get_flow(**kwargs):
     task_type = kwargs.get('task_type')
     image_repo = kwargs.get('image_repo')
 
-    LOG.debug("Flow: %(task_type)s with ID %(id)s on %(repo)s" %
+    LOG.debug("Flow: %(task_type)s with ID %(id)s on %(repo)s",
               {'task_type': task_type, 'id': task_id, 'repo': image_repo})
 
     return lf.Flow(task_type).add(

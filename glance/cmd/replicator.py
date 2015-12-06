@@ -140,22 +140,22 @@ class ImageService(object):
             headers.setdefault('x-auth-token', self.auth_token)
 
         LOG.debug('Request: %(method)s http://%(server)s:%(port)s'
-                  '%(url)s with headers %(headers)s'
-                  % {'method': method,
-                     'server': self.conn.host,
-                     'port': self.conn.port,
-                     'url': url,
-                     'headers': repr(headers)})
+                  '%(url)s with headers %(headers)s',
+                  {'method': method,
+                   'server': self.conn.host,
+                   'port': self.conn.port,
+                   'url': url,
+                   'headers': repr(headers)})
         self.conn.request(method, url, body, headers)
 
         response = self.conn.getresponse()
         headers = self._header_list_to_dict(response.getheaders())
         code = response.status
         code_description = http_client.responses[code]
-        LOG.debug('Response: %(code)s %(status)s %(headers)s'
-                  % {'code': code,
-                     'status': code_description,
-                     'headers': repr(headers)})
+        LOG.debug('Response: %(code)s %(status)s %(headers)s',
+                  {'code': code,
+                   'status': code_description,
+                   'headers': repr(headers)})
 
         if code == 400:
             raise exc.HTTPBadRequest(
@@ -338,7 +338,7 @@ def replication_size(options, args):
     client = imageservice(http_client.HTTPConnection(server, port),
                           options.slavetoken)
     for image in client.get_images():
-        LOG.debug('Considering image: %(image)s' % {'image': image})
+        LOG.debug('Considering image: %(image)s', {'image': image})
         if image['status'] == 'active':
             total_size += int(image['size'])
             count += 1
@@ -368,7 +368,7 @@ def replication_dump(options, args):
     client = imageservice(http_client.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
-        LOG.debug('Considering: %s' % image['id'])
+        LOG.debug('Considering: %s', image['id'])
 
         data_path = os.path.join(path, image['id'])
         if not os.path.exists(data_path):
@@ -387,7 +387,7 @@ def replication_dump(options, args):
                 # is the same as that which we got from the detailed images
                 # request earlier, so we can ignore it here. Note that we also
                 # only dump active images.
-                LOG.debug('Image %s is active' % image['id'])
+                LOG.debug('Image %s is active', image['id'])
                 image_response = client.get_image(image['id'])
                 with open(data_path + '.img', 'wb') as f:
                     while True:
@@ -407,15 +407,15 @@ def _dict_diff(a, b):
     """
     # Only things the master has which the slave lacks matter
     if set(a.keys()) - set(b.keys()):
-        LOG.debug('metadata diff -- master has extra keys: %(keys)s'
-                  % {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
+        LOG.debug('metadata diff -- master has extra keys: %(keys)s',
+                  {'keys': ' '.join(set(a.keys()) - set(b.keys()))})
         return True
 
     for key in a:
         if str(a[key]) != str(b[key]):
             LOG.debug('metadata diff -- value differs for key '
                       '%(key)s: master "%(master_value)s" vs '
-                      'slave "%(slave_value)s"' %
+                      'slave "%(slave_value)s"',
                       {'key': key,
                        'master_value': a[key],
                        'slave_value': b[key]})
@@ -482,7 +482,7 @@ def replication_load(options, args):
 
             else:
                 if not os.path.exists(os.path.join(path, image_uuid + '.img')):
-                    LOG.debug('%s dump is missing image data, skipping' %
+                    LOG.debug('%s dump is missing image data, skipping',
                               image_uuid)
                     continue
 
@@ -525,7 +525,7 @@ def replication_livecopy(options, args):
     updated = []
 
     for image in master_client.get_images():
-        LOG.debug('Considering %(id)s' % {'id': image['id']})
+        LOG.debug('Considering %(id)s', {'id': image['id']})
         for key in options.dontreplicate.split(' '):
             if key in image:
                 LOG.debug('Stripping %(header)s from master metadata',
@@ -618,8 +618,8 @@ def replication_compare(options, args):
                                 'slave_value': headers.get(key, 'undefined')})
                     differences[image['id']] = 'diff'
                 else:
-                    LOG.debug('%(image_id)s is identical'
-                              % {'image_id': image['id']})
+                    LOG.debug('%(image_id)s is identical',
+                              {'image_id': image['id']})
 
         elif image['status'] == 'active':
             LOG.warn(_LW('Image %s entirely missing from the destination')

@@ -307,9 +307,8 @@ class BaseClient(object):
             if self.DEFAULT_DOC_ROOT:
                 doc_root = self.DEFAULT_DOC_ROOT.lstrip('/')
                 self.doc_root += '/' + doc_root
-                msg = ("Appending doc_root %(doc_root)s to URL %(url)s" %
-                       {'doc_root': doc_root, 'url': url})
-                LOG.debug(msg)
+                LOG.debug("Appending doc_root %(doc_root)s to URL %(url)s",
+                          {'doc_root': doc_root, 'url': url})
 
         # ensure connection kwargs are re-evaluated after the service catalog
         # publicURL is parsed for potential SSL usage

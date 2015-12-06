@@ -283,7 +283,7 @@ class Driver(base.Driver):
             # Make sure that we "pop" the image from the queue...
             if self.is_queued(image_id):
                 LOG.debug("Removing image '%s' from queue after "
-                          "caching it." % image_id)
+                          "caching it.", image_id)
                 os.unlink(self.get_image_filepath(image_id, 'queue'))
 
         def rollback(e):
@@ -292,7 +292,7 @@ class Driver(base.Driver):
             invalid_path = self.get_image_filepath(image_id, 'invalid')
             LOG.debug("Fetch of cache file failed (%(e)s), rolling back by "
                       "moving '%(incomplete_path)s' to "
-                      "'%(invalid_path)s'" %
+                      "'%(invalid_path)s'",
                       {'e': encodeutils.exception_to_unicode(e),
                        'incomplete_path': incomplete_path,
                        'invalid_path': invalid_path})
@@ -437,7 +437,7 @@ def get_all_regular_files(basepath):
 
 def delete_cached_file(path):
     if os.path.exists(path):
-        LOG.debug("Deleting image cache file '%s'" % path)
+        LOG.debug("Deleting image cache file '%s'", path)
         os.unlink(path)
     else:
         LOG.warn(_LW("Cached image file '%s' doesn't exist, unable to"
