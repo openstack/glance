@@ -233,7 +233,7 @@ class Controller(controller.BaseController):
         :param create_props: List of properties to check
         :param req: The WSGI/Webob Request object
 
-        :raises HTTPForbidden if request forbidden to create a property
+        :raises: HTTPForbidden if request forbidden to create a property
         """
         if property_utils.is_property_protection_enabled():
             for key in create_props:
@@ -273,7 +273,7 @@ class Controller(controller.BaseController):
         :param orig_meta: Mapping of existing metadata about image
         :param req: The WSGI/Webob Request object
 
-        :raises HTTPForbidden if request forbidden to create a property
+        :raises: HTTPForbidden if request forbidden to create a property
         """
         if property_utils.is_property_protection_enabled():
             for key in update_props:
@@ -305,7 +305,7 @@ class Controller(controller.BaseController):
         :param orig_meta: Mapping of existing metadata about image
         :param req: The WSGI/Webob Request object
 
-        :raises HTTPForbidden if request forbidden to create a property
+        :raises: HTTPForbidden if request forbidden to create a property
         """
         if property_utils.is_property_protection_enabled():
             for key in delete_props:
@@ -448,7 +448,7 @@ class Controller(controller.BaseController):
         :param id: The opaque image identifier
         :retval similar to 'show' method but without image_data
 
-        :raises HTTPNotFound if image metadata is not available to user
+        :raises: HTTPNotFound if image metadata is not available to user
         """
         self._enforce(req, 'get_image')
         image_meta = self.get_image_meta_or_404(req, id)
@@ -517,7 +517,7 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
-        :raises HTTPNotFound if image is not available to user
+        :raises: HTTPNotFound if image is not available to user
         """
 
         self._enforce(req, 'get_image')
@@ -559,8 +559,8 @@ class Controller(controller.BaseController):
         :param id: The opaque image identifier
         :param image_meta: The image metadata
 
-        :raises HTTPConflict if image already exists
-        :raises HTTPBadRequest if image metadata is not valid
+        :raises: HTTPConflict if image already exists
+        :raises: HTTPBadRequest if image metadata is not valid
         """
         location = self._external_source(image_meta, req)
         scheme = image_meta.get('store')
@@ -630,7 +630,7 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :param image_meta: Mapping of metadata about image
 
-        :raises HTTPConflict if image already exists
+        :raises: HTTPConflict if image already exists
         :retval The location where the image was stored
         """
 
@@ -894,7 +894,7 @@ class Controller(controller.BaseController):
         :param image_meta: Mapping of metadata about image
         :param image_data: Actual image data that is to be stored
 
-        :raises HTTPBadRequest if x-image-meta-location is missing
+        :raises: HTTPBadRequest if x-image-meta-location is missing
                 and the request body is not application/octet-stream
                 image data.
         """
@@ -1099,9 +1099,9 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
-        :raises HttpBadRequest if image registry is invalid
-        :raises HttpNotFound if image or any chunk is not available
-        :raises HttpUnauthorized if image or any chunk is not
+        :raises: HttpBadRequest if image registry is invalid
+        :raises: HttpNotFound if image or any chunk is not available
+        :raises: HttpUnauthorized if image or any chunk is not
                 deleteable by the requesting user
         """
         self._enforce(req, 'delete_image')
@@ -1190,7 +1190,7 @@ class Controller(controller.BaseController):
         :param request: The WSGI/Webob Request object
         :param scheme: The backend store scheme
 
-        :raises HTTPBadRequest if store does not exist
+        :raises: HTTPBadRequest if store does not exist
         """
         try:
             return store.get_store_from_scheme(scheme)

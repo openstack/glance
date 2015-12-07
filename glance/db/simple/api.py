@@ -956,7 +956,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     :param limit: maximum number of tasks to return
     :param sort_key: task attribute by which results should be sorted
     :param sort_dir: direction in which results should be sorted (asc, desc)
-    :return: tasks set
+    :returns: tasks set
     """
     filters = filters or {}
     tasks = DATA['tasks'].values()

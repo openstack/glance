@@ -77,8 +77,8 @@ class VersionNegotiationFilter(wsgi.Middleware):
         minor version number.
 
         :param subject: The string to check
-        :returns version found in the subject
-        :raises ValueError if no acceptable version could be found
+        :returns: version found in the subject
+        :raises: ValueError if no acceptable version could be found
         """
         if subject in ('v1', 'v1.0', 'v1.1') and CONF.enable_v1_api:
             major_version = 1

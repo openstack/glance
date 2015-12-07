@@ -105,7 +105,7 @@ def get_remaining_quota(context, db_api, image_id=None):
     :param context:
     :param db_api:  The db_api in use for this configuration
     :param image_id: The image that will be replaced with this new data size
-    :return: The number of bytes the user has remaining under their quota.
+    :returns: The number of bytes the user has remaining under their quota.
              None means infinity
     """
 
@@ -151,7 +151,7 @@ def check_quota(context, image_size, db_api, image_id=None):
     :param image_size:  The size of the image we hope to store
     :param db_api:  The db_api in use for this configuration
     :param image_id: The image that will be replaced with this new data size
-    :return:
+    :returns:
     """
 
     remaining = get_remaining_quota(context, db_api, image_id=image_id)

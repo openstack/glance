@@ -31,6 +31,6 @@ def get_ordered_locations(locations, **kwargs):
     Order image location list.
 
     :param locations: The original image location list.
-    :return: The image location list with original natural order.
+    :returns: The image location list with original natural order.
     """
     return locations

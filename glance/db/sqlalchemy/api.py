@@ -133,7 +133,7 @@ def image_update(context, image_id, values, purge_props=False,
     """
     Set the given properties on an image and update it.
 
-    :raises ImageNotFound if image does not exist.
+    :raises: ImageNotFound if image does not exist.
     """
     return _image_update(context, values, image_id, purge_props,
                          from_state=from_state)
@@ -210,7 +210,7 @@ def _check_image_id(image_id):
     wrapping the different behaviors between MySql and DB2 when the image id
     length is longer than the defined length in database model.
     :param image_id: The id of the image we want to check
-    :return: Raise NoFound exception if given image id is invalid
+    :returns: Raise NoFound exception if given image id is invalid
     """
     if (image_id and
        len(image_id) > models.Image.id.property.columns[0].type.length):
@@ -322,7 +322,7 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
     :param sort_dirs: per-column array of sort_dirs, corresponding to sort_keys
 
     :rtype: sqlalchemy.orm.query.Query
-    :return: The query with sorting/pagination added.
+    :returns: The query with sorting/pagination added.
     """
 
     if 'id' not in sort_keys:
@@ -970,7 +970,7 @@ def _image_child_entry_delete_all(child_model_cls, image_id, delete_time=None,
     :param session: A SQLAlchemy session to use (if present)
 
     :rtype: int
-    :return: The number of child entries got soft-deleted.
+    :returns: The number of child entries got soft-deleted.
     """
     session = session or get_session()
 
@@ -1346,7 +1346,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     :param admin_as_user: For backwards compatibility. If true, then return to
                       an admin the equivalent set of tasks which it would see
                       if it were a regular user
-    :return: tasks set
+    :returns: tasks set
     """
     filters = filters or {}
 

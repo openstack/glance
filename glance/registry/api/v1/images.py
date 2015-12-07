@@ -65,7 +65,7 @@ def _normalize_image_location_for_db(image_data):
     Image object.
 
     :param image_data: a dict of values representing information in the image
-    :return: a new image data dict
+    :returns: a new image data dict
     """
     if 'locations' not in image_data and 'location_data' not in image_data:
         image_data['locations'] = None

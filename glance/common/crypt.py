@@ -38,7 +38,7 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
     :param plaintext: Input text to be encrypted
     :param blocksize: Non-zero integer multiple of AES blocksize in bytes (16)
 
-    :returns : Resulting ciphertext
+    :returns: Resulting ciphertext
     """
     def pad(text):
         """
@@ -71,7 +71,7 @@ def urlsafe_decrypt(key, ciphertext):
     :param key: AES secret key
     :param ciphertext: The encrypted text to decrypt
 
-    :returns : Resulting plaintext
+    :returns: Resulting plaintext
     """
     # Cast from unicode
     if isinstance(ciphertext, six.text_type):

@@ -824,7 +824,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         :param expect_launch: Optional, true iff the server(s) are
                               expected to successfully start
         :param timeout: Optional, defaults to 30 seconds
-        :return: None if launch expectation is met, otherwise an
+        :returns: None if launch expectation is met, otherwise an
                  assertion message
         """
         now = datetime.datetime.now()

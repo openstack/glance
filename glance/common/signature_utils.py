@@ -95,7 +95,7 @@ def create_verifier_for_pss(signature, hash_method, public_key,
     :param hash_method: the hash method to use, as a cryptography object
     :param public_key: the public key to use, as a cryptography object
     :param image_properties: the key-value properties about the image
-    :return: the verifier to use to verify the signature for RSA-PSS
+    :returns: the verifier to use to verify the signature for RSA-PSS
     :raises: SignatureVerificationError if the RSA-PSS specific properties
                                         are invalid
     """
@@ -142,7 +142,7 @@ def should_verify_signature(image_properties):
     that signature verification should be done.
 
     :param image_properties: the key-value properties about the image
-    :return: True, if signature metadata properties exist, False otherwise
+    :returns: True, if signature metadata properties exist, False otherwise
     """
     return (image_properties is not None and
             CERT_UUID in image_properties and
@@ -157,7 +157,7 @@ def verify_signature(context, checksum_hash, image_properties):
     :param context: the user context for authentication
     :param checksum_hash: the 'checksum' hash of the image data
     :param image_properties: the key-value properties about the image
-    :return: True if verification succeeds
+    :returns: True if verification succeeds
     :raises: SignatureVerificationError if verification fails
     """
     if not should_verify_signature(image_properties):
@@ -201,7 +201,7 @@ def get_signature(signature_data):
     """Decode the signature data and returns the signature.
 
     :param siganture_data: the base64-encoded signature data
-    :return: the decoded signature
+    :returns: the decoded signature
     :raises: SignatureVerificationError if the signature data is malformatted
     """
     try:
@@ -217,7 +217,7 @@ def get_hash_method(hash_method_name):
     """Verify the hash method name and create the hash method.
 
     :param hash_method_name: the name of the hash method to retrieve
-    :return: the hash method, a cryptography object
+    :returns: the hash method, a cryptography object
     :raises: SignatureVerificationError if the hash method name is invalid
     """
     if hash_method_name not in HASH_METHODS:
@@ -231,7 +231,7 @@ def get_signature_key_type(signature_key_type):
     """Verify the signature key type.
 
     :param signature_key_type: the key type of the signature
-    :return: the validated signature key type
+    :returns: the validated signature key type
     :raises: SignatureVerificationError if the signature key type is invalid
     """
     if signature_key_type not in SIGNATURE_KEY_TYPES:
@@ -248,7 +248,7 @@ def get_public_key(context, signature_certificate_uuid, signature_key_type):
     :param signature_certificate_uuid: the uuid to use to retrieve the
                                        certificate
     :param signature_key_type: the key type of the signature
-    :return: the public key cryptography object
+    :returns: the public key cryptography object
     :raises: SignatureVerificationError if public key format is invalid
     """
     certificate = get_certificate(context, signature_certificate_uuid)
@@ -272,7 +272,7 @@ def get_certificate(context, signature_certificate_uuid):
     :param context: the user context for authentication
     :param signature_certificate_uuid: the uuid to use to retrieve the
                                        certificate
-    :return: the certificate cryptography object
+    :returns: the certificate cryptography object
     :raises: SignatureVerificationError if the retrieval fails or the format
              is invalid
     """
