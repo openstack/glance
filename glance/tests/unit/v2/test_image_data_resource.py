@@ -105,7 +105,6 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_download(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd',
-                          status='active',
                           locations=[{'url': 'http://example.com/image',
                                       'metadata': {}, 'status': 'active'}])
         self.image_repo.result = image
@@ -113,7 +112,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('abcd', image.image_id)
 
     def test_download_deactivated(self):
-        request = unit_test_utils.get_fake_request(is_admin=False)
+        request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd',
                           status='deactivated',
                           locations=[{'url': 'http://example.com/image',
@@ -122,33 +121,11 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
                           request, str(uuid.uuid4()))
 
-        request = unit_test_utils.get_fake_request(is_admin=True)
-        image = FakeImage('abcd',
-                          status='deactivated',
-                          locations=[{'url': 'http://example.com/image',
-                                      'metadata': {}, 'status': 'active'}])
-        self.image_repo.result = image
-        image = self.controller.download(request, unit_test_utils.UUID1)
-        self.assertEqual('abcd', image.image_id)
-
-    def test_download_is_not_active(self):
-        state = ['queued', 'deleted', 'saving', 'killed', 'pending_delete']
-        for st in state:
-            request = unit_test_utils.get_fake_request()
-            image = FakeImage('abcd',
-                              status=st,
-                              locations=[{'url': 'http://example.com/image',
-                                          'metadata': {}, 'status': 'active'}])
-            self.image_repo.result = image
-            self.assertRaises(webob.exc.HTTPForbidden,
-                              self.controller.download,
-                              request, str(uuid.uuid4()))
-
     def test_download_no_location(self):
         # NOTE(mclaren): NoContent will be raised by the ResponseSerializer
         # That's tested below.
         request = unit_test_utils.get_fake_request()
-        self.image_repo.result = FakeImage('abcd', status='active')
+        self.image_repo.result = FakeImage('abcd')
         image = self.controller.download(request, unit_test_utils.UUID2)
         self.assertEqual('abcd', image.image_id)
 
@@ -170,7 +147,7 @@ class TestImagesController(base.StoreClearingUnitTest):
                 raise exception.Forbidden()
 
         request = unit_test_utils.get_fake_request()
-        image = FakeImage('abcd', status='active')
+        image = FakeImage('abcd')
         self.image_repo.result = image
         image.locations = ImageLocations()
         image = self.controller.download(request, unit_test_utils.UUID1)

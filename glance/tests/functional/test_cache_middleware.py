@@ -386,7 +386,8 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'GET')
         self.assertEqual(403, response.status)
 
-        # Download the image with v2.
+        # Download the image with v2. This succeeds because
+        # we are in admin context.
         path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
         http = httplib2.Http()
