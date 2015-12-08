@@ -20,6 +20,7 @@ import mock
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
+from debtcollector import removals
 
 from glance.common import exception
 from glance.common import signature_utils
@@ -30,11 +31,12 @@ TEST_PRIVATE_KEY = rsa.generate_private_key(public_exponent=3,
                                             backend=default_backend())
 
 # Required image property names
-(SIGNATURE, HASH_METHOD, KEY_TYPE, CERT_UUID) = (
-    signature_utils.SIGNATURE,
-    signature_utils.HASH_METHOD,
-    signature_utils.KEY_TYPE,
-    signature_utils.CERT_UUID
+# TODO(bpoulos): remove when 'sign-the-hash' approach is no longer supported
+(OLD_SIGNATURE, OLD_HASH_METHOD, OLD_KEY_TYPE, OLD_CERT_UUID) = (
+    signature_utils.OLD_SIGNATURE,
+    signature_utils.OLD_HASH_METHOD,
+    signature_utils.OLD_KEY_TYPE,
+    signature_utils.OLD_CERT_UUID
 )
 
 # Optional image property names for RSA-PSS
@@ -107,33 +109,36 @@ class BadPublicKey(object):
 class TestSignatureUtils(test_utils.BaseTestCase):
     """Test methods of signature_utils"""
 
-    def test_should_verify_signature(self):
-        image_props = {CERT_UUID: 'CERT_UUID',
-                       HASH_METHOD: 'HASH_METHOD',
-                       SIGNATURE: 'SIGNATURE',
-                       KEY_TYPE: 'SIG_KEY_TYPE'}
+    @removals.remove(message="This will be removed in the N cycle.")
+    def test_old_should_verify_signature(self):
+        image_props = {OLD_CERT_UUID: 'OLD_CERT_UUID',
+                       OLD_HASH_METHOD: 'OLD_HASH_METHOD',
+                       OLD_SIGNATURE: 'OLD_SIGNATURE',
+                       OLD_KEY_TYPE: 'SIG_KEY_TYPE'}
         self.assertTrue(signature_utils.should_verify_signature(image_props))
 
-    def test_should_verify_signature_fail(self):
-        bad_image_properties = [{CERT_UUID: 'CERT_UUID',
-                                 HASH_METHOD: 'HASH_METHOD',
-                                 SIGNATURE: 'SIGNATURE'},
-                                {CERT_UUID: 'CERT_UUID',
-                                 HASH_METHOD: 'HASH_METHOD',
-                                 KEY_TYPE: 'SIG_KEY_TYPE'},
-                                {CERT_UUID: 'CERT_UUID',
-                                 SIGNATURE: 'SIGNATURE',
-                                 KEY_TYPE: 'SIG_KEY_TYPE'},
-                                {HASH_METHOD: 'HASH_METHOD',
-                                 SIGNATURE: 'SIGNATURE',
-                                 KEY_TYPE: 'SIG_KEY_TYPE'}]
+    @removals.remove(message="This will be removed in the N cycle.")
+    def test_old_should_verify_signature_fail(self):
+        bad_image_properties = [{OLD_CERT_UUID: 'OLD_CERT_UUID',
+                                 OLD_HASH_METHOD: 'OLD_HASH_METHOD',
+                                 OLD_SIGNATURE: 'OLD_SIGNATURE'},
+                                {OLD_CERT_UUID: 'OLD_CERT_UUID',
+                                 OLD_HASH_METHOD: 'OLD_HASH_METHOD',
+                                 OLD_KEY_TYPE: 'SIG_KEY_TYPE'},
+                                {OLD_CERT_UUID: 'OLD_CERT_UUID',
+                                 OLD_SIGNATURE: 'OLD_SIGNATURE',
+                                 OLD_KEY_TYPE: 'SIG_KEY_TYPE'},
+                                {OLD_HASH_METHOD: 'OLD_HASH_METHOD',
+                                 OLD_SIGNATURE: 'OLD_SIGNATURE',
+                                 OLD_KEY_TYPE: 'SIG_KEY_TYPE'}]
 
         for bad_props in bad_image_properties:
             result = signature_utils.should_verify_signature(bad_props)
             self.assertFalse(result)
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_PSS(self, mock_get_pub_key):
+    def test_old_verify_signature_PSS(self, mock_get_pub_key):
         checksum_hash = b'224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
         for hash_name, hash_alg in signature_utils.HASH_METHODS.items():
@@ -146,18 +151,19 @@ class TestSignatureUtils(test_utils.BaseTestCase):
             )
             signer.update(checksum_hash)
             signature = base64.b64encode(signer.finalize())
-            image_props = {CERT_UUID:
+            image_props = {OLD_CERT_UUID:
                            'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                           HASH_METHOD: hash_name,
-                           KEY_TYPE: 'RSA-PSS',
+                           OLD_HASH_METHOD: hash_name,
+                           OLD_KEY_TYPE: 'RSA-PSS',
                            MASK_GEN_ALG: 'MGF1',
-                           SIGNATURE: signature}
+                           OLD_SIGNATURE: signature}
             self.assertTrue(signature_utils.verify_signature(None,
                                                              checksum_hash,
                                                              image_props))
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_custom_PSS_salt(self, mock_get_pub_key):
+    def test_old_verify_signature_custom_PSS_salt(self, mock_get_pub_key):
         checksum_hash = b'224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
         custom_salt_length = 32
@@ -171,34 +177,36 @@ class TestSignatureUtils(test_utils.BaseTestCase):
             )
             signer.update(checksum_hash)
             signature = base64.b64encode(signer.finalize())
-            image_props = {CERT_UUID:
+            image_props = {OLD_CERT_UUID:
                            'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                           HASH_METHOD: hash_name,
-                           KEY_TYPE: 'RSA-PSS',
+                           OLD_HASH_METHOD: hash_name,
+                           OLD_KEY_TYPE: 'RSA-PSS',
                            MASK_GEN_ALG: 'MGF1',
                            PSS_SALT_LENGTH: custom_salt_length,
-                           SIGNATURE: signature}
+                           OLD_SIGNATURE: signature}
             self.assertTrue(signature_utils.verify_signature(None,
                                                              checksum_hash,
                                                              image_props))
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_bad_signature(self, mock_get_pub_key):
+    def test_old_verify_signature_bad_signature(self, mock_get_pub_key):
         checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
-        image_properties = {CERT_UUID:
+        image_properties = {OLD_CERT_UUID:
                             'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                            HASH_METHOD: 'SHA-256',
-                            KEY_TYPE: 'RSA-PSS',
+                            OLD_HASH_METHOD: 'SHA-256',
+                            OLD_KEY_TYPE: 'RSA-PSS',
                             MASK_GEN_ALG: 'MGF1',
-                            SIGNATURE: 'BLAH'}
+                            OLD_SIGNATURE: 'BLAH'}
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Signature verification failed.',
                                 signature_utils.verify_signature,
                                 None, checksum_hash, image_properties)
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.should_verify_signature')
-    def test_verify_signature_invalid_image_props(self, mock_should):
+    def test_old_verify_signature_invalid_image_props(self, mock_should):
         mock_should.return_value = False
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Required image properties for signature'
@@ -207,76 +215,81 @@ class TestSignatureUtils(test_utils.BaseTestCase):
                                 signature_utils.verify_signature,
                                 None, None, None)
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_bad_sig_key_type(self, mock_get_pub_key):
+    def test_old_verify_signature_bad_sig_key_type(self, mock_get_pub_key):
         checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
-        image_properties = {CERT_UUID:
+        image_properties = {OLD_CERT_UUID:
                             'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                            HASH_METHOD: 'SHA-256',
-                            KEY_TYPE: 'BLAH',
+                            OLD_HASH_METHOD: 'SHA-256',
+                            OLD_KEY_TYPE: 'BLAH',
                             MASK_GEN_ALG: 'MGF1',
-                            SIGNATURE: 'BLAH'}
+                            OLD_SIGNATURE: 'BLAH'}
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Invalid signature key type: .*',
                                 signature_utils.verify_signature,
                                 None, checksum_hash, image_properties)
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_RSA_no_mask_gen(self, mock_get_pub_key):
+    def test_old_verify_signature_RSA_no_mask_gen(self, mock_get_pub_key):
         checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
-        image_properties = {CERT_UUID:
+        image_properties = {OLD_CERT_UUID:
                             'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                            HASH_METHOD: 'SHA-256',
-                            KEY_TYPE: 'RSA-PSS',
-                            SIGNATURE: 'BLAH'}
+                            OLD_HASH_METHOD: 'SHA-256',
+                            OLD_KEY_TYPE: 'RSA-PSS',
+                            OLD_SIGNATURE: 'BLAH'}
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Signature verification failed.',
                                 signature_utils.verify_signature,
                                 None, checksum_hash, image_properties)
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_RSA_bad_mask_gen(self, mock_get_pub_key):
+    def test_old_verify_signature_RSA_bad_mask_gen(self, mock_get_pub_key):
         checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
-        image_properties = {CERT_UUID:
+        image_properties = {OLD_CERT_UUID:
                             'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                            HASH_METHOD: 'SHA-256',
-                            KEY_TYPE: 'RSA-PSS',
+                            OLD_HASH_METHOD: 'SHA-256',
+                            OLD_KEY_TYPE: 'RSA-PSS',
                             MASK_GEN_ALG: 'BLAH',
-                            SIGNATURE: 'BLAH'}
+                            OLD_SIGNATURE: 'BLAH'}
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Invalid mask_gen_algorithm: .*',
                                 signature_utils.verify_signature,
                                 None, checksum_hash, image_properties)
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_bad_pss_salt(self, mock_get_pub_key):
+    def test_old_verify_signature_bad_pss_salt(self, mock_get_pub_key):
         checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = TEST_PRIVATE_KEY.public_key()
-        image_properties = {CERT_UUID:
+        image_properties = {OLD_CERT_UUID:
                             'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                            HASH_METHOD: 'SHA-256',
-                            KEY_TYPE: 'RSA-PSS',
+                            OLD_HASH_METHOD: 'SHA-256',
+                            OLD_KEY_TYPE: 'RSA-PSS',
                             MASK_GEN_ALG: 'MGF1',
                             PSS_SALT_LENGTH: 'BLAH',
-                            SIGNATURE: 'BLAH'}
+                            OLD_SIGNATURE: 'BLAH'}
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Invalid pss_salt_length: .*',
                                 signature_utils.verify_signature,
                                 None, checksum_hash, image_properties)
 
+    @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
-    def test_verify_signature_verifier_none(self, mock_get_pub_key):
+    def test_old_verify_signature_verifier_none(self, mock_get_pub_key):
         checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
         mock_get_pub_key.return_value = BadPublicKey()
-        image_properties = {CERT_UUID:
+        image_properties = {OLD_CERT_UUID:
                             'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
-                            HASH_METHOD: 'SHA-256',
-                            KEY_TYPE: 'RSA-PSS',
+                            OLD_HASH_METHOD: 'SHA-256',
+                            OLD_KEY_TYPE: 'RSA-PSS',
                             MASK_GEN_ALG: 'MGF1',
-                            SIGNATURE: 'BLAH'}
+                            OLD_SIGNATURE: 'BLAH'}
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Error occurred while verifying'
                                 ' the signature',
