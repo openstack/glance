@@ -1344,10 +1344,12 @@ Enabling the Image Cache Management Middleware
 
 There is an optional ``cachemanage`` middleware that allows you to
 directly interact with cache images. Use this flavor in place of the
-``cache`` flavor in your api config file.
+``cache`` flavor in your api config file. There are three types you
+can chose: ``cachemanagement``, ``keystone+cachemanagement`` and
+``trusted-auth+cachemanagement``.::
 
   [paste_deploy]
-  flavor = cachemanage
+  flavor = keystone+cachemanagement
 
 Configuration Options Affecting the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
