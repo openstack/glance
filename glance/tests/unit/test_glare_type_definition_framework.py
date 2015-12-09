@@ -17,10 +17,10 @@ import datetime
 import mock
 import six
 
-from glance.common.artifacts import declarative
-import glance.common.artifacts.definitions as defs
-from glance.common.artifacts import serialization
 import glance.common.exception as exc
+from glance.common.glare import declarative
+import glance.common.glare.definitions as defs
+from glance.common.glare import serialization
 import glance.tests.utils as test_utils
 
 

@@ -13,10 +13,10 @@
 # under the License.
 from datetime import datetime
 
-from glance.artifacts.domain import proxy
-from glance.artifacts import location
-from glance.common.artifacts import definitions
+from glance.common.glare import definitions
 import glance.context
+from glance.glare.domain import proxy
+from glance.glare import location
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils
 

@@ -21,13 +21,13 @@ import mock
 from oslo_config import cfg
 import oslo_utils.importutils
 
-from glance.artifacts import domain as artifacts_domain
 import glance.async
 from glance.async import taskflow_executor
-from glance.common.artifacts import definitions
 from glance.common import exception
+from glance.common.glare import definitions
 from glance.common import timeutils
 from glance import domain
+from glance.glare import domain as artifacts_domain
 import glance.tests.utils as test_utils
 
 

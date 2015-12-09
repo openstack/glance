@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from glance.common.artifacts import definitions
 from glance.common import exception
+from glance.common.glare import definitions
 import glance.contrib.plugins.image_artifact.v1_1.image as v1_1
 
 import glanceclient

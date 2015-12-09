@@ -170,16 +170,6 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v3(self):
-        request = webob.Request.blank('/v3/artifacts')
-        resp = self.middleware.process_request(request)
-        self.assertIsInstance(resp, versions.Controller)
-
-    def test_request_url_v3_0(self):
-        request = webob.Request.blank('/v3.0/artifacts')
-        resp = self.middleware.process_request(request)
-        self.assertIsInstance(resp, versions.Controller)
-
     def test_request_url_v2_3_unsupported(self):
         request = webob.Request.blank('/v2.3/images')
         resp = self.middleware.process_request(request)

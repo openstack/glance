@@ -31,7 +31,7 @@ database back-end.
 
 import functools
 
-from glance import artifacts
+from glance import glare
 from glance.registry.client.v2 import api
 
 
@@ -600,7 +600,7 @@ def artifact_get(client, artifact_id,
 @_get_client
 def artifact_get_all(client, marker=None, limit=None, sort_key=None,
                      sort_dir=None, filters=None,
-                     show_level=artifacts.Showlevel.NONE, session=None):
+                     show_level=glare.Showlevel.NONE, session=None):
     if filters is None:
         filters = {}
     return client.artifact_create(marker, limit, sort_key,

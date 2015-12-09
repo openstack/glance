@@ -77,7 +77,6 @@ class Server(object):
         self.property_protection_file = ''
         self.enable_v1_api = True
         self.enable_v2_api = True
-        self.enable_v3_api = True
         self.enable_v1_registry = True
         self.enable_v2_registry = True
         self.needs_database = False
@@ -348,7 +347,6 @@ show_multiple_locations = %(show_multiple_locations)s
 user_storage_quota = %(user_storage_quota)s
 enable_v1_api = %(enable_v1_api)s
 enable_v2_api = %(enable_v2_api)s
-enable_v3_api = %(enable_v3_api)s
 lock_path = %(lock_path)s
 property_protection_file = %(property_protection_file)s
 property_protection_rule_format = %(property_protection_rule_format)s
@@ -404,7 +402,6 @@ paste.composite_factory = glance.api:root_app_factory
 /: apiversions
 /v1: apiv1app
 /v2: apiv2app
-/v3: apiv3app
 
 [app:apiversions]
 paste.app_factory = glance.api.versions:create_resource
@@ -414,9 +411,6 @@ paste.app_factory = glance.api.v1.router:API.factory
 
 [app:apiv2app]
 paste.app_factory = glance.api.v2.router:API.factory
-
-[app:apiv3app]
-paste.app_factory = glance.api.v3.router:API.factory
 
 [filter:healthcheck]
 paste.filter_factory = oslo_middleware:Healthcheck.factory

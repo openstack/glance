@@ -30,9 +30,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import String
 from sqlalchemy import Text
 
-import glance.artifacts as ga
 from glance.common import semver_db
 from glance.common import timeutils
+import glance.glare as ga
 
 BASE = declarative.declarative_base()
 

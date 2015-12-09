@@ -13,12 +13,12 @@
 # under the License.
 import glance_store
 
-from glance.artifacts import dependency
-from glance.artifacts import domain
-from glance.artifacts import location
-from glance.artifacts import updater
 from glance.common import store_utils
 import glance.db
+from glance.glare import dependency
+from glance.glare import domain
+from glance.glare import location
+from glance.glare import updater
 
 
 class Gateway(object):

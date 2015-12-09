@@ -19,9 +19,9 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 
-from glance.artifacts.domain import proxy
-from glance.common.artifacts import definitions
+from glance.common.glare import definitions
 from glance.common import utils
+from glance.glare.domain import proxy
 from glance.i18n import _, _LE, _LW
 
 CONF = cfg.CONF

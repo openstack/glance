@@ -17,7 +17,8 @@ __all__ = [
     'list_registry_opts',
     'list_scrubber_opts',
     'list_cache_opts',
-    'list_manage_opts'
+    'list_manage_opts',
+    'list_artifacts_opts'
 ]
 
 import copy
@@ -99,6 +100,17 @@ _cache_opts = [
 _manage_opts = [
     (None, [])
 ]
+_artifacts_opts = [
+    (None, list(itertools.chain(
+        glance.api.middleware.context.context_opts,
+        glance.api.versions.versions_opts,
+        glance.common.wsgi.bind_opts,
+        glance.common.wsgi.eventlet_opts,
+        glance.common.wsgi.socket_opts,
+        glance.common.wsgi.profiler_opts,
+        glance.notifier.notifier_opts))),
+    ('paste_deploy', glance.common.config.paste_deploy_opts)
+]
 
 
 def list_api_opts():
@@ -145,3 +157,8 @@ def list_cache_opts():
 def list_manage_opts():
     """Return a list of oslo_config options available in Glance manage."""
     return [(g, copy.deepcopy(o)) for g, o in _manage_opts]
+
+
+def list_artifacts_opts():
+    """Return a list of oslo_config options available in Glance artifacts"""
+    return [(g, copy.deepcopy(o)) for g, o in _artifacts_opts]

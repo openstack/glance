@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from glance.artifacts.domain import proxy
 from glance.common import exception as exc
+from glance.glare.domain import proxy
 from glance.i18n import _
 
 

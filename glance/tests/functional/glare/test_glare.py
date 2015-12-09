@@ -20,10 +20,10 @@ from oslo_serialization import jsonutils
 import pkg_resources
 import requests
 
-from glance.api.v3 import artifacts
-from glance.api.v3 import router
-from glance.common.artifacts import definitions
-from glance.common.artifacts import loader
+from glance.api.glare.v0_1 import glare
+from glance.api.glare.v0_1 import router
+from glance.common.glare import definitions
+from glance.common.glare import loader
 from glance.common import wsgi
 from glance.tests import functional
 
@@ -62,7 +62,7 @@ def _create_resource():
     plugins = None
     mock_this = 'stevedore.extension.ExtensionManager._find_entry_points'
     with mock.patch(mock_this) as fep:
-        path = 'glance.tests.functional.artifacts.test_artifacts'
+        path = 'glance.tests.functional.glare.test_glare'
         fep.return_value = [
             pkg_resources.EntryPoint.parse('WithProps=%s:Artifact' % path),
             pkg_resources.EntryPoint.parse(
@@ -73,9 +73,9 @@ def _create_resource():
                 'WithBlob=%s:ArtifactWithBlob' % path)
         ]
         plugins = loader.ArtifactsPluginLoader('glance.artifacts.types')
-    deserializer = artifacts.RequestDeserializer(plugins=plugins)
-    serializer = artifacts.ResponseSerializer()
-    controller = artifacts.ArtifactsController(plugins=plugins)
+    deserializer = glare.RequestDeserializer(plugins=plugins)
+    serializer = glare.ResponseSerializer()
+    controller = glare.ArtifactsController(plugins=plugins)
     return wsgi.Resource(controller, deserializer, serializer)
 
 
@@ -110,6 +110,8 @@ class TestArtifacts(functional.FunctionalTest):
     def setUp(self):
         super(TestArtifacts, self).setUp()
         self._set_user('user1')
+        self.api_server.server_name = 'glare'
+        self.api_server.server_module = 'glance.cmd.glare'
         self.api_server.deployment_flavor = 'noauth'
         self.start_servers(**self.__dict__.copy())
 
@@ -119,7 +121,7 @@ class TestArtifacts(functional.FunctionalTest):
         super(TestArtifacts, self).tearDown()
 
     def _url(self, path):
-        return 'http://127.0.0.1:%d/v3/artifacts%s' % (self.api_port, path)
+        return 'http://127.0.0.1:%d/v0.1/artifacts%s' % (self.api_port, path)
 
     def _set_user(self, username):
         if username not in self.users:
@@ -138,60 +140,32 @@ class TestArtifacts(functional.FunctionalTest):
         return base_headers
 
     def start_servers(self, **kwargs):
-        new_paste_conf_base = """[pipeline:glance-api]
-pipeline = versionnegotiation gzip unauthenticated-context rootapp
+        # noqa
+        new_paste_conf_base = """[pipeline:glare-api]
+pipeline = versionnegotiation unauthenticated-context rootapp
 
-[pipeline:glance-api-caching]
-pipeline = versionnegotiation gzip unauthenticated-context cache rootapp
+[pipeline:glare-api-fakeauth]
+pipeline = versionnegotiation fakeauth context rootapp
 
-[pipeline:glance-api-cachemanagement]
-pipeline =
-    versionnegotiation
-    gzip
-    unauthenticated-context
-    cache
-    cache_manage
-    rootapp
-
-[pipeline:glance-api-fakeauth]
-pipeline = versionnegotiation gzip fakeauth context rootapp
-
-[pipeline:glance-api-noauth]
-pipeline = versionnegotiation gzip context rootapp
+[pipeline:glare-api-noauth]
+pipeline = versionnegotiation context rootapp
 
 [composite:rootapp]
 paste.composite_factory = glance.api:root_app_factory
 /: apiversions
-/v1: apiv1app
-/v2: apiv2app
-/v3: apiv3app
+/v0.1: glareapi
 
 [app:apiversions]
-paste.app_factory = glance.api.versions:create_resource
+paste.app_factory = glance.api.glare.versions:create_resource
 
-[app:apiv1app]
-paste.app_factory = glance.api.v1.router:API.factory
-
-[app:apiv2app]
-paste.app_factory = glance.api.v2.router:API.factory
-
-[app:apiv3app]
+[app:glareapi]
 paste.app_factory =
- glance.tests.functional.artifacts.test_artifacts:TestRouter.factory
+   glance.tests.functional.glare.test_glare:TestRouter.factory
 
 [filter:versionnegotiation]
 paste.filter_factory =
- glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
-
-[filter:gzip]
-paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
-
-[filter:cache]
-paste.filter_factory = glance.api.middleware.cache:CacheFilter.factory
-
-[filter:cache_manage]
-paste.filter_factory =
- glance.api.middleware.cache_manage:CacheManageFilter.factory
+ glance.api.middleware.version_negotiation:
+   GlareVersionNegotiationFilter.factory
 
 [filter:context]
 paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
@@ -1329,24 +1303,26 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                  u'type_name': u'NoProp',
                  u'versions':
                      [{u'id': u'v0.5',
-                       u'link': u'http://127.0.0.1:%d/v3/artifacts/noprop/v0.5'
+                       u'link': u'http://127.0.0.1:%d/v0.1/'
+                                u'artifacts/noprop/v0.5'
                                 % self.api_port},
                       {u'id': u'v1.0',
-                       u'link': u'http://127.0.0.1:%d/v3/artifacts/noprop/v1.0'
+                       u'link': u'http://127.0.0.1:%d/v0.1/'
+                                u'artifacts/noprop/v1.0'
                                 % self.api_port}]},
                 {u'displayed_name': u'WithBlob',
                  u'type_name': u'WithBlob',
                  u'versions':
                      [{u'id': u'v1.0',
                        u'link':
-                           u'http://127.0.0.1:%d/v3/artifacts/withblob/v1.0'
+                           u'http://127.0.0.1:%d/v0.1/artifacts/withblob/v1.0'
                            % self.api_port}]},
                 {u'displayed_name': u'WithProps',
                  u'type_name': u'WithProps',
                  u'versions':
                      [{u'id': u'v1.0',
                        u'link':
-                           u'http://127.0.0.1:%d/v3/artifacts/withprops/v1.0'
+                           u'http://127.0.0.1:%d/v0.1/artifacts/withprops/v1.0'
                            % self.api_port}]}]}
 
         response = self._check_artifact_get("", status=200)

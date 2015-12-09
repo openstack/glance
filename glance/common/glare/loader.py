@@ -19,8 +19,8 @@ from oslo_config import cfg
 import semantic_version
 from stevedore import enabled
 
-from glance.common.artifacts import definitions
 from glance.common import exception
+from glance.common.glare import definitions
 from glance.i18n import _, _LE, _LI, _LW
 from oslo_log import log as logging
 

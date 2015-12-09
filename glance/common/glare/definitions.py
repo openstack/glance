@@ -19,8 +19,8 @@ import re
 import semantic_version
 import six
 
-from glance.common.artifacts import declarative
 import glance.common.exception as exc
+from glance.common.glare import declarative
 from glance.i18n import _
 
 

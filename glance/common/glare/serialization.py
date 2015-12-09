@@ -16,10 +16,10 @@ import collections
 
 import six
 
-from glance import artifacts as ga
-from glance.common.artifacts import declarative
-from glance.common.artifacts import definitions
 from glance.common import exception
+from glance.common.glare import declarative
+from glance.common.glare import definitions
+from glance import glare as ga
 from glance.i18n import _
 
 

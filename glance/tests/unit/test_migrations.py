@@ -51,7 +51,7 @@ from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 from glance.db.sqlalchemy import models
-from glance.db.sqlalchemy import models_artifacts
+from glance.db.sqlalchemy import models_glare
 from glance.db.sqlalchemy import models_metadef
 
 from glance.i18n import _
@@ -1878,7 +1878,7 @@ class ModelsMigrationSyncMixin(object):
     def get_metadata(self):
         for table in models_metadef.BASE_DICT.metadata.sorted_tables:
             models.BASE.metadata._add_table(table.name, table.schema, table)
-        for table in models_artifacts.BASE.metadata.sorted_tables:
+        for table in models_glare.BASE.metadata.sorted_tables:
             models.BASE.metadata._add_table(table.name, table.schema, table)
         return models.BASE.metadata
 
