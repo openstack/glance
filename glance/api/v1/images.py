@@ -45,12 +45,12 @@ from glance.api.v1 import upload_utils
 from glance.common import exception
 from glance.common import property_utils
 from glance.common import store_utils
+from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
 from glance.i18n import _, _LE, _LI, _LW
 from glance import notifier
 import glance.registry.client.v1.api as registry
-from oslo_utils import timeutils
 
 LOG = logging.getLogger(__name__)
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS

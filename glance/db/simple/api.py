@@ -20,10 +20,10 @@ from operator import itemgetter
 import uuid
 
 from oslo_log import log as logging
-from oslo_utils import timeutils
 import six
 
 from glance.common import exception
+from glance.common import timeutils
 from glance.common import utils
 from glance.i18n import _, _LI, _LW
 

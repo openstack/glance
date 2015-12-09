@@ -20,11 +20,11 @@ import glance_store
 import mock
 from oslo_config import cfg
 import oslo_messaging
-from oslo_utils import timeutils
 import webob
 
 import glance.async
 from glance.common import exception
+from glance.common import timeutils
 import glance.context
 from glance import notifier
 import glance.tests.unit.utils as unit_test_utils

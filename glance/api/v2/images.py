@@ -20,7 +20,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
 from oslo_utils import encodeutils
-from oslo_utils import timeutils
 import six
 import six.moves.urllib.parse as urlparse
 import webob.exc
@@ -28,6 +27,7 @@ import webob.exc
 from glance.api import policy
 from glance.common import exception
 from glance.common import location_strategy
+from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
 import glance.db

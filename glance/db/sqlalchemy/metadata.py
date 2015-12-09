@@ -26,13 +26,13 @@ import re
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
-from oslo_utils import timeutils
 import six
 import sqlalchemy
 from sqlalchemy import and_
 from sqlalchemy.schema import MetaData
 from sqlalchemy.sql import select
 
+from glance.common import timeutils
 from glance.i18n import _, _LE, _LI, _LW
 
 LOG = logging.getLogger(__name__)

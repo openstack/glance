@@ -20,12 +20,12 @@ import uuid
 import mock
 from oslo_config import cfg
 from oslo_serialization import jsonutils
-from oslo_utils import timeutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import webob
 
 import glance.api.v2.tasks
+from glance.common import timeutils
 import glance.domain
 import glance.gateway
 from glance.tests.unit import base

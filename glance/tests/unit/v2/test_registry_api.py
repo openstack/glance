@@ -20,13 +20,13 @@ import uuid
 
 from oslo_config import cfg
 from oslo_serialization import jsonutils
-from oslo_utils import timeutils
 import routes
 import six
 import webob
 
 import glance.api.common
 import glance.common.config
+from glance.common import timeutils
 import glance.context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models

@@ -15,7 +15,6 @@
 import uuid
 
 from oslo_db.sqlalchemy import models
-from oslo_utils import timeutils
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
 from sqlalchemy import Column
@@ -33,6 +32,7 @@ from sqlalchemy import Text
 
 import glance.artifacts as ga
 from glance.common import semver_db
+from glance.common import timeutils
 from oslo_log import log as os_logging
 
 BASE = declarative.declarative_base()

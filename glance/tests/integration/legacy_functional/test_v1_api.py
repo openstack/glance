@@ -16,10 +16,10 @@ import os
 import tempfile
 
 from oslo_serialization import jsonutils
-from oslo_utils import timeutils
 from oslo_utils import units
 import testtools
 
+from glance.common import timeutils
 from glance.tests.integration.legacy_functional import base
 from glance.tests.utils import minimal_headers
 

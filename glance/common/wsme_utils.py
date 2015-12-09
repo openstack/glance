@@ -14,8 +14,9 @@
 
 from datetime import datetime
 
-from oslo_utils import timeutils
 from wsme import types as wsme_types
+
+from glance.common import timeutils
 
 
 class WSMEModelTransformer(object):

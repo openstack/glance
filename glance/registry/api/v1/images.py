@@ -21,11 +21,11 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import strutils
-from oslo_utils import timeutils
 from oslo_utils import uuidutils
 from webob import exc
 
 from glance.common import exception
+from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
 import glance.db

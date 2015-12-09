@@ -19,7 +19,6 @@ import uuid
 from enum import Enum
 from oslo_config import cfg
 from oslo_db import exception as db_exc
-from oslo_utils import timeutils
 import sqlalchemy
 from sqlalchemy import and_
 from sqlalchemy import case
@@ -30,6 +29,7 @@ from sqlalchemy.orm import joinedload
 import glance.artifacts as ga
 from glance.common import exception
 from glance.common import semver_db
+from glance.common import timeutils
 from glance.db.sqlalchemy import models_artifacts as models
 from glance.i18n import _LE, _LW
 from oslo_log import log as os_logging

@@ -20,11 +20,11 @@ import datetime
 import uuid
 
 import mock
-from oslo_utils import timeutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
 from glance.common import exception
+from glance.common import timeutils
 from glance import context
 from glance.tests import functional
 import glance.tests.functional.db as db_tests

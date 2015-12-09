@@ -27,8 +27,8 @@ import sys
 import time
 
 from oslo_utils import encodeutils
-from oslo_utils import timeutils
 
+from glance.common import timeutils
 from glance.common import utils
 from six.moves import input
 

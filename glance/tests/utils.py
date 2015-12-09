@@ -28,7 +28,6 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log
 from oslo_serialization import jsonutils
-from oslo_utils import timeutils
 from oslotest import moxstubout
 import six
 from six.moves import BaseHTTPServer
@@ -38,6 +37,7 @@ import webob
 from glance.common import config
 from glance.common import exception
 from glance.common import property_utils
+from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
 from glance import context

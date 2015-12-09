@@ -12,11 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_utils import timeutils
 import sqlalchemy
 from sqlalchemy.schema import (
     Column, ForeignKey, Index, MetaData, Table, UniqueConstraint)  # noqa
 
+from glance.common import timeutils
 from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, Integer, String, Text, create_tables,
     drop_tables)  # noqa

@@ -16,9 +16,9 @@
 import time
 
 from oslo_serialization import jsonutils as json
-from oslo_utils import timeutils
 
 from glance.api.v2 import tasks
+from glance.common import timeutils
 from glance.tests.integration.v2 import base
 
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'

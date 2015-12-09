@@ -37,7 +37,6 @@ from oslo_db.sqlalchemy import test_base
 from oslo_db.sqlalchemy import test_migrations
 from oslo_db.sqlalchemy import utils as db_utils
 from oslo_serialization import jsonutils
-from oslo_utils import timeutils
 from oslo_utils import uuidutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -46,6 +45,7 @@ from sqlalchemy import inspect
 
 from glance.common import crypt
 from glance.common import exception
+from glance.common import timeutils
 from glance.db import migration
 from glance.db.sqlalchemy import migrate_repo
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import

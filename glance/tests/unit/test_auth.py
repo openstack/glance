@@ -15,13 +15,13 @@
 #    under the License.
 
 from oslo_serialization import jsonutils
-from oslo_utils import timeutils
 from oslotest import moxstubout
 import webob
 
 from glance.api import authorization
 from glance.common import auth
 from glance.common import exception
+from glance.common import timeutils
 import glance.domain
 from glance.tests.unit import utils as unittest_utils
 from glance.tests import utils

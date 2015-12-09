@@ -19,7 +19,6 @@ import os
 import uuid
 
 from mock import patch
-from oslo_utils import timeutils
 from six.moves import reload_module
 import testtools
 
@@ -27,6 +26,7 @@ from glance.api.v1.images import Controller as acontroller
 from glance.common import client as test_client
 from glance.common import config
 from glance.common import exception
+from glance.common import timeutils
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.registry.api.v1.images import Controller as rcontroller

@@ -14,8 +14,7 @@
 
 import uuid
 
-from oslo_utils import timeutils
-
+from glance.common import timeutils
 from glance.i18n import _
 
 
