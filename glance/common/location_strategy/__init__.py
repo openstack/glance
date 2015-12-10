@@ -19,10 +19,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import stevedore
 
-from glance import i18n
-
-_ = i18n._
-_LE = i18n._LE
+from glance.i18n import _, _LE
 
 location_strategy_opts = [
     cfg.StrOpt('location_strategy', default='location_order',

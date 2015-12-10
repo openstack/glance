@@ -48,12 +48,8 @@ from webob import multidict
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
+from glance.i18n import _, _LE, _LI, _LW
 
-
-_ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
-_LW = i18n._LW
 
 bind_opts = [
     cfg.StrOpt('bind_host', default='0.0.0.0',

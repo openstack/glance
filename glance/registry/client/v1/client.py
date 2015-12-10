@@ -24,11 +24,10 @@ from oslo_utils import excutils
 
 from glance.common.client import BaseClient
 from glance.common import crypt
-from glance import i18n
+from glance.i18n import _LE
 from glance.registry.api.v1 import images
 
 LOG = logging.getLogger(__name__)
-_LE = i18n._LE
 
 
 class RegistryClient(BaseClient):

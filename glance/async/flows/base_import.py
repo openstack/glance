@@ -33,13 +33,10 @@ from taskflow.types import failure
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
-from glance import i18n
+from glance.i18n import _, _LE, _LI
 
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
 
 
 CONF = cfg.CONF

@@ -35,12 +35,10 @@ from glance.common import jsonpatchvalidator
 from glance.common import utils
 from glance.common import wsgi
 import glance.db
-from glance import i18n
+from glance.i18n import _, _LE
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
-_LE = i18n._LE
-_ = i18n._
 
 possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                                 os.pardir,

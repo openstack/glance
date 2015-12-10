@@ -31,12 +31,10 @@ import glance.artifacts as ga
 from glance.common import exception
 from glance.common import semver_db
 from glance.db.sqlalchemy import models_artifacts as models
-from glance import i18n
+from glance.i18n import _LE, _LW
 from oslo_log import log as os_logging
 
 LOG = os_logging.getLogger(__name__)
-_LW = i18n._LW
-_LE = i18n._LE
 
 CONF = cfg.CONF
 

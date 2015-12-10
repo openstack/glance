@@ -24,13 +24,10 @@ from oslo_log import log as logging
 
 from glance.api import versions
 from glance.common import wsgi
-from glance import i18n
 
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LW = i18n._LW
 
 
 class VersionNegotiationFilter(wsgi.Middleware):

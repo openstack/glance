@@ -19,10 +19,7 @@ import semantic_version
 import six
 
 from glance.common import exception as exc
-from glance import i18n
-
-
-_ = i18n._
+from glance.i18n import _
 
 
 class AttributeDefinition(object):

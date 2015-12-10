@@ -23,13 +23,11 @@ from oslo_log import log as logging
 
 from glance.common import exception
 from glance import context
-from glance import i18n
+from glance.i18n import _LI, _LW
 from glance.image_cache import base
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
-_LI = i18n._LI
-_LW = i18n._LW
 
 
 class Prefetcher(base.CacheApp):

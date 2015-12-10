@@ -22,10 +22,9 @@ import routes
 
 from glance.api import cached_images
 from glance.common import wsgi
-from glance import i18n
+from glance.i18n import _LI
 
 LOG = logging.getLogger(__name__)
-_LI = i18n._LI
 
 
 class CacheManageFilter(wsgi.Middleware):

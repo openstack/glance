@@ -16,11 +16,9 @@
 from oslo_log import log as logging
 
 from glance.common.scripts.image_import import main as image_import
-from glance import i18n
+from glance.i18n import _LE, _LI
 
 
-_LI = i18n._LI
-_LE = i18n._LE
 LOG = logging.getLogger(__name__)
 
 

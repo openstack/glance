@@ -28,13 +28,9 @@ from oslo_utils import units
 
 from glance.common import exception
 from glance.common import utils
-from glance import i18n
+from glance.i18n import _, _LE, _LI, _LW
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
-_LW = i18n._LW
 
 image_cache_opts = [
     cfg.StrOpt('image_cache_driver', default='sqlite',

@@ -28,10 +28,8 @@ from oslo_config import cfg
 from oslo_policy import policy
 from paste import deploy
 
-from glance import i18n
+from glance.i18n import _
 from glance.version import version_info as version
-
-_ = i18n._
 
 paste_deploy_opts = [
     cfg.StrOpt('flavor',

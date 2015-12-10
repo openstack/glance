@@ -26,12 +26,8 @@ from glance.common import exception
 from glance.common import signature_utils
 from glance.common import utils
 import glance.domain.proxy
-from glance import i18n
+from glance.i18n import _, _LE, _LI
 
-
-_ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)

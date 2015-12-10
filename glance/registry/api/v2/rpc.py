@@ -22,9 +22,8 @@ from oslo_config import cfg
 from glance.common import rpc
 from glance.common import wsgi
 import glance.db
-from glance import i18n
+from glance.i18n import _
 
-_ = i18n._
 
 CONF = cfg.CONF
 

@@ -29,12 +29,11 @@ from glance.common import exception
 from glance.common import wsgi
 import glance.db
 import glance.gateway
-from glance import i18n
+from glance.i18n import _
 import glance.notifier
 import glance.schema
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 
 class NamespacePropertiesController(object):

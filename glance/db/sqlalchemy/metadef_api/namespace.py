@@ -22,10 +22,9 @@ import sqlalchemy.orm as sa_orm
 from glance.common import exception as exc
 import glance.db.sqlalchemy.metadef_api as metadef_api
 from glance.db.sqlalchemy import models_metadef as models
-from glance import i18n
+from glance.i18n import _
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 
 def _is_namespace_visible(context, namespace, status=None):

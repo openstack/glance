@@ -22,11 +22,7 @@ from oslo_utils import encodeutils
 from glance.artifacts.domain import proxy
 from glance.common.artifacts import definitions
 from glance.common import utils
-from glance import i18n
-
-_ = i18n._
-_LE = i18n._LE
-_LW = i18n._LW
+from glance.i18n import _, _LE, _LW
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)

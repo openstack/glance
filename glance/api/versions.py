@@ -20,9 +20,8 @@ from six.moves import http_client
 import webob.dec
 
 from glance.common import wsgi
-from glance import i18n
+from glance.i18n import _
 
-_ = i18n._
 
 versions_opts = [
     cfg.StrOpt('public_endpoint',

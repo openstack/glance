@@ -44,7 +44,7 @@ def fix_greendns_ipv6():
                          "if using ipv6 since eventlet.greendns currently "
                          "breaks with ipv6 addresses. Please ensure that "
                          "eventlet is not imported prior to this being set.")
-            raise ImportError(msg % (nogreendns))
+            raise ImportError(msg % nogreendns)
 
         os.environ[nogreendns] = 'yes'
 

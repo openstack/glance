@@ -28,10 +28,8 @@ import webob
 
 from glance.common import exception
 from glance.domain import proxy as domain_proxy
-from glance import i18n
+from glance.i18n import _, _LE
 
-_ = i18n._
-_LE = i18n._LE
 
 notifier_opts = [
     cfg.StrOpt('default_publisher_id', default="image.localhost",

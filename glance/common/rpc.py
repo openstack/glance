@@ -30,11 +30,9 @@ from webob import exc
 from glance.common import client
 from glance.common import exception
 from glance.common import wsgi
-from glance import i18n
+from glance.i18n import _, _LE
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
 
 
 rpc_opts = [

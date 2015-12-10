@@ -23,15 +23,12 @@ from glance.common import exception
 from glance.common import store_utils
 from glance.common import utils
 import glance.db
-from glance import i18n
+from glance.i18n import _, _LE, _LI
 import glance.registry.client.v1.api as registry
 
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
 
 
 def initiate_deletion(req, location_data, id):

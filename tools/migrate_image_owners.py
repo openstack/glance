@@ -21,13 +21,9 @@ from oslo_log import log as logging
 
 import glance.context
 import glance.db.sqlalchemy.api as db_api
-from glance import i18n
+from glance.i18n import _LC, _LE, _LI
 import glance.registry.context
 
-_ = i18n._
-_LC = i18n._LC
-_LE = i18n._LE
-_LI = i18n._LI
 
 LOG = logging.getLogger(__name__)
 LOG.addHandler(logging.StreamHandler())

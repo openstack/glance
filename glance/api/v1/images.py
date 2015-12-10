@@ -47,16 +47,12 @@ from glance.common import property_utils
 from glance.common import store_utils
 from glance.common import utils
 from glance.common import wsgi
-from glance import i18n
+from glance.i18n import _, _LE, _LI, _LW
 from glance import notifier
 import glance.registry.client.v1.api as registry
 from oslo_utils import timeutils
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
-_LE = i18n._LE
-_LI = i18n._LI
-_LW = i18n._LW
 SUPPORTED_PARAMS = glance.api.v1.SUPPORTED_PARAMS
 SUPPORTED_FILTERS = glance.api.v1.SUPPORTED_FILTERS
 ACTIVE_IMMUTABLE = glance.api.v1.ACTIVE_IMMUTABLE

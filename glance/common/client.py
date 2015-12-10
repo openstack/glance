@@ -50,10 +50,9 @@ import six.moves.urllib.parse as urlparse
 from glance.common import auth
 from glance.common import exception
 from glance.common import utils
-from glance import i18n
+from glance.i18n import _
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 # common chunk size for get and put
 CHUNKSIZE = 65536
@@ -83,7 +82,7 @@ def handle_redirects(func):
 
     @functools.wraps(func)
     def wrapped(self, method, url, body, headers):
-        for _ in range(MAX_REDIRECTS):
+        for i in range(MAX_REDIRECTS):
             try:
                 return func(self, method, url, body, headers)
             except exception.RedirectException as redirect:

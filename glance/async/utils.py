@@ -17,11 +17,10 @@ from oslo_log import log as logging
 import six
 from taskflow import task
 
-from glance import i18n
+from glance.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
-_LW = i18n._LW
 
 
 class OptionalTask(task.Task):

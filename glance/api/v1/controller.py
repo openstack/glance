@@ -18,12 +18,11 @@ from oslo_log import log as logging
 import webob.exc
 
 from glance.common import exception
-from glance import i18n
+from glance.i18n import _
 import glance.registry.client.v1.api as registry
 
 
 LOG = logging.getLogger(__name__)
-_ = i18n._
 
 
 class BaseController(object):
