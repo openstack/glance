@@ -82,6 +82,7 @@ def main():
                                                    "glance", "api",
                                                    cfg.CONF.bind_host)
             osprofiler.notifier.set(_notifier)
+            osprofiler.web.enable(cfg.CONF.profiler.hmac_keys)
         else:
             osprofiler.web.disable()
 
