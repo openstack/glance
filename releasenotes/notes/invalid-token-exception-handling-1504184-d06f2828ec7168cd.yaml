@@ -1,0 +1,3 @@
+---
+fixes:
+  - Bug 1504184 Glance does not error gracefully on token validation error

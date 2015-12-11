@@ -1,0 +1,7 @@
+---
+prelude: >
+   This release has impact on API behavior.
+security:
+  - This release prevents non-admin user to change 'size' and 'checksum' properties of an image after it has been deactivated via Images API v1.
+fixes:
+  - Bug 1517060 Users (without admin privileges) can change ACTIVE_IMMUTABLE properties of their own images when deactivated.

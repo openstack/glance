@@ -1,0 +1,3 @@
+---
+fixes:
+  - Bug 1505710 Wrong logging setup in replicator

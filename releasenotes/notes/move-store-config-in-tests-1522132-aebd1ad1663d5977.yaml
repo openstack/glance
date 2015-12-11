@@ -1,0 +1,3 @@
+---
+fixes:
+  - Bug 1522132 Scrubber tests are broken due to deprecated config filesystem_store_datadir under DEFAULT section

@@ -1,0 +1,3 @@
+---
+fixes:
+  - Bug 1512369 glance should declare a test-requirements.txt on swiftclient (for config generator)

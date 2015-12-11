@@ -1,0 +1,3 @@
+---
+fixes:
+  - Bug 1483353 v1 Updates using x-image-meta-id header provoke E500 or 200

@@ -1,0 +1,3 @@
+---
+fixes:
+  - Bug 1505474 Glance raise 500 error when delete images with unallowed status change
