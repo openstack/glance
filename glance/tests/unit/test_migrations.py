@@ -42,6 +42,7 @@ from oslo_utils import uuidutils
 from six.moves import range
 import sqlalchemy
 from sqlalchemy import inspect
+import sqlalchemy.types as types
 
 from glance.common import crypt
 from glance.common import exception
@@ -1886,6 +1887,28 @@ class ModelsMigrationSyncMixin(object):
 
     def db_sync(self, engine):
         migration.db_sync(engine=engine)
+
+    # TODO(akamyshikova): remove this method as soon as comparison with Variant
+    # will be implemented in oslo.db or alembic
+    def compare_type(self, ctxt, insp_col, meta_col, insp_type, meta_type):
+        if isinstance(meta_type, types.Variant):
+            meta_orig_type = meta_col.type
+            insp_orig_type = insp_col.type
+            meta_col.type = meta_type.impl
+            insp_col.type = meta_type.impl
+
+            try:
+                return self.compare_type(ctxt, insp_col, meta_col, insp_type,
+                                         meta_type.impl)
+            finally:
+                meta_col.type = meta_orig_type
+                insp_col.type = insp_orig_type
+        else:
+            ret = super(ModelsMigrationSyncMixin, self).compare_type(
+                ctxt, insp_col, meta_col, insp_type, meta_type)
+            if ret is not None:
+                return ret
+            return ctxt.impl.compare_type(insp_col, meta_col)
 
     def include_object(self, object_, name, type_, reflected, compare_to):
         if name in ['migrate_version'] and type_ == 'table':

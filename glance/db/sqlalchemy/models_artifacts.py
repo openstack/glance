@@ -109,13 +109,15 @@ class Artifact(BASE, ArtifactBase):
                 default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable=False)
     type_name = Column(String(255), nullable=False)
-    type_version_prefix = Column(BigInteger, nullable=False)
+    type_version_prefix = Column(BigInteger().with_variant(Integer, "sqlite"),
+                                 nullable=False)
     type_version_suffix = Column(String(255))
     type_version_meta = Column(String(255))
     type_version = composite(semver_db.DBVersion, type_version_prefix,
                              type_version_suffix, type_version_meta,
                              comparator_factory=semver_db.VersionComparator)
-    version_prefix = Column(BigInteger, nullable=False)
+    version_prefix = Column(BigInteger().with_variant(Integer, "sqlite"),
+                            nullable=False)
     version_suffix = Column(String(255))
     version_meta = Column(String(255))
     version = composite(semver_db.DBVersion, version_prefix,
@@ -294,7 +296,8 @@ class ArtifactBlob(BASE, ArtifactBase):
                          nullable=False)
     name = Column(String(255), nullable=False)
     item_key = Column(String(329))
-    size = Column(BigInteger(), nullable=False)
+    size = Column(BigInteger().with_variant(Integer, "sqlite"),
+                  nullable=False)
     checksum = Column(String(32))
     position = Column(Integer)
     artifact = relationship(Artifact,

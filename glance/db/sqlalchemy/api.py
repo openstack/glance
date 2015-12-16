@@ -303,6 +303,10 @@ def _get_default_column_value(column_type):
         'integer': 0,
         'string': ''
     }
+
+    if isinstance(column_type, sa_sql.type_api.Variant):
+        return _get_default_column_value(column_type.impl)
+
     return type_schema[column_type.__visit_name__]
 
 
