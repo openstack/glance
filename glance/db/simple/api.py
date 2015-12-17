@@ -128,7 +128,8 @@ def _image_property_format(image_id, name, value):
     }
 
 
-def _image_member_format(image_id, tenant_id, can_share, status='pending'):
+def _image_member_format(image_id, tenant_id, can_share, status='pending',
+                         deleted=False):
     dt = timeutils.utcnow()
     return {
         'id': str(uuid.uuid4()),
@@ -138,6 +139,7 @@ def _image_member_format(image_id, tenant_id, can_share, status='pending'):
         'status': status,
         'created_at': dt,
         'updated_at': dt,
+        'deleted': deleted,
     }
 
 
@@ -503,7 +505,8 @@ def image_member_create(context, values):
     member = _image_member_format(values['image_id'],
                                   values['member'],
                                   values.get('can_share', False),
-                                  values.get('status', 'pending'))
+                                  values.get('status', 'pending'),
+                                  values.get('deleted', False))
     global DATA
     DATA['members'].append(member)
     return copy.deepcopy(member)

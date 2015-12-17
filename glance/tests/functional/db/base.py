@@ -1173,6 +1173,7 @@ class DriverTests(object):
             'image_id': UUID1,
             'can_share': False,
             'status': 'pending',
+            'deleted': False,
         }
         self.assertEqual(expected, actual)
 
@@ -1192,7 +1193,8 @@ class DriverTests(object):
         expected = {'member': TENANT1,
                     'image_id': UUID1,
                     'status': 'pending',
-                    'can_share': False}
+                    'can_share': False,
+                    'deleted': False}
         self.assertEqual(expected, member)
 
         member = self.db_api.image_member_update(self.context,
@@ -1206,7 +1208,8 @@ class DriverTests(object):
         expected = {'member': TENANT1,
                     'image_id': UUID1,
                     'status': 'pending',
-                    'can_share': True}
+                    'can_share': True,
+                    'deleted': False}
         self.assertEqual(expected, member)
 
         members = self.db_api.image_member_find(self.context,
@@ -1233,7 +1236,8 @@ class DriverTests(object):
         expected = {'member': TENANT1,
                     'image_id': UUID1,
                     'status': 'pending',
-                    'can_share': False}
+                    'can_share': False,
+                    'deleted': False}
         self.assertEqual(expected, member)
 
         member = self.db_api.image_member_update(self.context,
@@ -1247,7 +1251,8 @@ class DriverTests(object):
         expected = {'member': TENANT1,
                     'image_id': UUID1,
                     'status': 'accepted',
-                    'can_share': False}
+                    'can_share': False,
+                    'deleted': False}
         self.assertEqual(expected, member)
 
         members = self.db_api.image_member_find(self.context,
