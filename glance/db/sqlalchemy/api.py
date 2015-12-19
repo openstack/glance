@@ -21,6 +21,7 @@
 
 """Defines interface for DB access."""
 
+import datetime
 import threading
 
 from oslo_config import cfg
@@ -33,6 +34,7 @@ import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import sqlalchemy
+from sqlalchemy import MetaData, Table, select
 import sqlalchemy.orm as sa_orm
 import sqlalchemy.sql as sa_sql
 
@@ -50,7 +52,7 @@ from glance.db.sqlalchemy.metadef_api import object as metadef_object_api
 from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
 from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
-from glance.i18n import _, _LW
+from glance.i18n import _, _LW, _LE, _LI
 
 BASE = models.BASE
 sa_logger = None
@@ -1226,6 +1228,69 @@ def image_tag_get_all(context, image_id, session=None):
     return [tag[0] for tag in tags]
 
 
+def purge_deleted_rows(context, age_in_days, max_rows, session=None):
+    """Purges soft deleted rows
+
+    Deletes rows of table images, table tasks and all dependent tables
+    according to given age for relevant models.
+    """
+    try:
+        age_in_days = int(age_in_days)
+    except ValueError:
+        LOG.exception(_LE('Invalid value for age, %(age)d'),
+                      {'age': age_in_days})
+        raise exception.InvalidParameterValue(value=age_in_days,
+                                              param='age_in_days')
+    try:
+        max_rows = int(max_rows)
+    except ValueError:
+        LOG.exception(_LE('Invalid value for max_rows, %(max_rows)d'),
+                      {'max_rows': max_rows})
+        raise exception.InvalidParameterValue(value=max_rows,
+                                              param='max_rows')
+
+    session = session or get_session()
+    metadata = MetaData(get_engine())
+    deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
+
+    tables = []
+    for model_class in models.__dict__.values():
+        if not hasattr(model_class, '__tablename__'):
+            continue
+        if hasattr(model_class, 'deleted'):
+            tables.append(model_class.__tablename__)
+    # get rid of FX constraints
+    for tbl in ('images', 'tasks'):
+        try:
+            tables.remove(tbl)
+        except ValueError:
+            LOG.warning(_LW('Expected table %(tbl)s was not found in DB.'),
+                        **locals())
+        else:
+            tables.append(tbl)
+
+    for tbl in tables:
+        tab = Table(tbl, metadata, autoload=True)
+        LOG.info(
+            _LI('Purging deleted rows older than %(age_in_days)d day(s) '
+                'from table %(tbl)s'),
+            **locals()
+        )
+        with session.begin():
+            result = session.execute(
+                tab.delete().where(
+                    tab.columns.id.in_(
+                        select([tab.columns.id]).where(
+                            tab.columns.deleted_at < deleted_age
+                        ).limit(max_rows)
+                    )
+                )
+            )
+        rows = result.rowcount
+        LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),
+                 **locals())
+
+
 def user_get_storage_usage(context, owner_id, image_id=None, session=None):
     _check_image_id(image_id)
     session = session or get_session()
@@ -1452,7 +1517,8 @@ def _task_get(context, task_id, session=None, force_show_deleted=False):
 
 def _task_update(context, task_ref, values, session=None):
     """Apply supplied dictionary of values to a task object."""
-    values["deleted"] = False
+    if 'deleted' not in values:
+        values["deleted"] = False
     task_ref.update(values)
     task_ref.save(session=session)
     return task_ref
