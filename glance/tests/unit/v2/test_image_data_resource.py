@@ -251,9 +251,24 @@ class TestImagesController(base.StoreClearingUnitTest):
                               request, str(uuid.uuid4()), 'ABC', 3)
             self.assertTrue(image.delete.called)
 
-    def test_upload_non_existent_image_raises_not_found_exception(self):
+    def test_upload_non_existent_image_raises_image_not_found_exception(self):
         def fake_save(self):
             raise exception.ImageNotFound()
+
+        def fake_delete():
+            raise exception.ImageNotFound()
+
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd', locations=['http://example.com/image'])
+        self.image_repo.result = image
+        self.image_repo.save = fake_save
+        image.delete = fake_delete
+        self.assertRaises(webob.exc.HTTPGone, self.controller.upload,
+                          request, str(uuid.uuid4()), 'ABC', 3)
+
+    def test_upload_non_existent_image_raises_store_not_found_exception(self):
+        def fake_save(self):
+            raise glance_store.NotFound()
 
         def fake_delete():
             raise exception.ImageNotFound()

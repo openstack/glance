@@ -88,7 +88,9 @@ class ImageDataController(object):
                 image_repo.save(image)
                 image.set_data(data, size)
                 image_repo.save(image, from_state='saving')
-            except (exception.ImageNotFound, exception.Conflict):
+            except (glance_store.NotFound,
+                    exception.ImageNotFound,
+                    exception.Conflict):
                 msg = (_("Image %s could not be found after upload. "
                          "The image may have been deleted during the "
                          "upload, cleaning up the chunks uploaded.") %
