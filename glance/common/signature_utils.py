@@ -25,6 +25,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
 from cryptography import x509
+import debtcollector
 from oslo_log import log as logging
 from oslo_serialization import base64
 from oslo_utils import encodeutils
@@ -70,7 +71,8 @@ MASK_GEN_ALGORITHMS = {
 }
 
 # Required image property names
-(SIGNATURE, HASH_METHOD, KEY_TYPE, CERT_UUID) = (
+# TODO(bpoulos): remove when 'sign-the-hash' approach is no longer supported
+(OLD_SIGNATURE, OLD_HASH_METHOD, OLD_KEY_TYPE, OLD_CERT_UUID) = (
     'signature',
     'signature_hash_method',
     'signature_key_type',
@@ -78,6 +80,7 @@ MASK_GEN_ALGORITHMS = {
 )
 
 # Optional image property names for RSA-PSS
+# TODO(bpoulos): remove when 'sign-the-hash' approach is no longer supported
 (MASK_GEN_ALG, PSS_SALT_LENGTH) = (
     'mask_gen_algorithm',
     'pss_salt_length'
@@ -133,6 +136,7 @@ KEY_TYPE_METHODS = {
 }
 
 
+@debtcollector.removals.remove(message="This will be removed in the N cycle.")
 def should_verify_signature(image_properties):
     """Determine whether a signature should be verified.
 
@@ -143,12 +147,20 @@ def should_verify_signature(image_properties):
     :returns: True, if signature metadata properties exist, False otherwise
     """
     return (image_properties is not None and
-            CERT_UUID in image_properties and
-            HASH_METHOD in image_properties and
-            SIGNATURE in image_properties and
-            KEY_TYPE in image_properties)
+            OLD_CERT_UUID in image_properties and
+            OLD_HASH_METHOD in image_properties and
+            OLD_SIGNATURE in image_properties and
+            OLD_KEY_TYPE in image_properties)
 
 
+@debtcollector.removals.remove(
+    message="Starting with the Mitaka release, this approach to signature "
+            "verification using the image 'checksum' and signature metadata "
+            "properties that do not start with 'img' will not be supported. "
+            "This functionality will be removed in the N release. This "
+            "approach is being replaced with a signature of the data "
+            "directly, instead of a signature of the hash method, and the new "
+            "approach uses properties that start with 'img_'.")
 def verify_signature(context, checksum_hash, image_properties):
     """Retrieve the image properties and use them to verify the signature.
 
@@ -166,12 +178,12 @@ def verify_signature(context, checksum_hash, image_properties):
     if isinstance(checksum_hash, six.text_type):
         checksum_hash = checksum_hash.encode('utf-8')
 
-    signature = get_signature(image_properties[SIGNATURE])
-    hash_method = get_hash_method(image_properties[HASH_METHOD])
+    signature = get_signature(image_properties[OLD_SIGNATURE])
+    hash_method = get_hash_method(image_properties[OLD_HASH_METHOD])
     signature_key_type = get_signature_key_type(
-        image_properties[KEY_TYPE])
+        image_properties[OLD_KEY_TYPE])
     public_key = get_public_key(context,
-                                image_properties[CERT_UUID],
+                                image_properties[OLD_CERT_UUID],
                                 signature_key_type)
 
     # create the verifier based on the signature key type
