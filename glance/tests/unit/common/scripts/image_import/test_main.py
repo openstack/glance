@@ -89,8 +89,9 @@ class TestImageImport(test_utils.BaseTestCase):
         uri = 'http://www.example.com'
         image = mock.Mock()
         mock_image_iter.return_value = test_utils.FakeHTTPResponse()
-        self.assertEqual(None,
-                         image_import_script.set_image_data(image, uri, None))
+        self.assertIsNone(image_import_script.set_image_data(image,
+                                                             uri,
+                                                             None))
 
     def test_set_image_data_http_error(self):
         uri = 'blahhttp://www.example.com'
