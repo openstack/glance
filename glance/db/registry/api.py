@@ -31,13 +31,8 @@ database back-end.
 
 import functools
 
-from oslo_log import log as logging
-
 from glance import artifacts
 from glance.registry.client.v2 import api
-
-
-LOG = logging.getLogger(__name__)
 
 
 def configure():
