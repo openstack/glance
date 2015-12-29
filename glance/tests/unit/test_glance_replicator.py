@@ -18,6 +18,7 @@ import sys
 import uuid
 
 import fixtures
+import mock
 from oslo_serialization import jsonutils
 import six
 from six import moves
@@ -334,6 +335,17 @@ def check_bad_args(command, args):
 
 
 class ReplicationCommandsTestCase(test_utils.BaseTestCase):
+
+    @mock.patch.object(glance_replicator, 'lookup_command')
+    def test_help(self, mock_lookup_command):
+        option = mock.Mock()
+        mock_lookup_command.return_value = "fake_return"
+
+        glance_replicator.print_help(option, [])
+        glance_replicator.print_help(option, ['dump'])
+        glance_replicator.print_help(option, ['fake_command'])
+        self.assertEqual(2, mock_lookup_command.call_count)
+
     def test_replication_size(self):
         options = moves.UserDict()
         options.slavetoken = 'slavetoken'

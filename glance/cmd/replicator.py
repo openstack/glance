@@ -660,12 +660,12 @@ def print_help(options, args):
     options: the parsed command line options
     args: the command line
     """
-    if len(args) != 1:
+    if not args:
         print(COMMANDS)
-        sys.exit(1)
-    command_name = args.pop()
-    command = lookup_command(command_name)
-    print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
+    else:
+        command_name = args.pop()
+        command = lookup_command(command_name)
+        print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
 
 
 def lookup_command(command_name):
@@ -690,8 +690,10 @@ def lookup_command(command_name):
     try:
         command = commands[command_name]
     except KeyError:
-        sys.exit(_("Unknown command: %s") % command_name)
-
+        if command_name:
+            sys.exit(_("Unknown command: %s") % command_name)
+        else:
+            command = commands['help']
     return command
 
 
@@ -702,6 +704,8 @@ def main():
         config.parse_args()
     except RuntimeError as e:
         sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
+    except SystemExit as e:
+        sys.exit("Please specify one command")
 
     # Setup logging
     logging.setup(CONF, 'glance')
