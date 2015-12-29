@@ -17,10 +17,3 @@ Policies
    core-reviewers
    gate-failure-triage
    code-reviews
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
