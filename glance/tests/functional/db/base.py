@@ -22,6 +22,7 @@ import uuid
 import mock
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
+from six.moves import reduce
 
 from glance.common import exception
 from glance.common import timeutils
