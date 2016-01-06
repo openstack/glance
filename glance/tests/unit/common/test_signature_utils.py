@@ -16,10 +16,13 @@
 import base64
 import datetime
 import mock
+import unittest
 
+from cryptography import exceptions as crypto_exception
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import hashes
 from debtcollector import removals
 
 from glance.common import exception
@@ -136,6 +139,8 @@ class TestSignatureUtils(test_utils.BaseTestCase):
             result = signature_utils.should_verify_signature(bad_props)
             self.assertFalse(result)
 
+    @unittest.skipIf(not default_backend().hash_supported(hashes.SHA256()),
+                     "SHA-2 hash algorithms not supported by backend")
     @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
     def test_old_verify_signature_PSS(self, mock_get_pub_key):
@@ -161,6 +166,8 @@ class TestSignatureUtils(test_utils.BaseTestCase):
                                                              checksum_hash,
                                                              image_props))
 
+    @unittest.skipIf(not default_backend().hash_supported(hashes.SHA256()),
+                     "SHA-2 hash algorithms not supported by backend")
     @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
     def test_old_verify_signature_custom_PSS_salt(self, mock_get_pub_key):
@@ -188,6 +195,8 @@ class TestSignatureUtils(test_utils.BaseTestCase):
                                                              checksum_hash,
                                                              image_props))
 
+    @unittest.skipIf(not default_backend().hash_supported(hashes.SHA256()),
+                     "SHA-2 hash algorithms not supported by backend")
     @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
     def test_old_verify_signature_bad_signature(self, mock_get_pub_key):
@@ -231,6 +240,8 @@ class TestSignatureUtils(test_utils.BaseTestCase):
                                 signature_utils.verify_signature,
                                 None, checksum_hash, image_properties)
 
+    @unittest.skipIf(not default_backend().hash_supported(hashes.SHA256()),
+                     "SHA-2 hash algorithms not supported by backend")
     @removals.remove(message="This will be removed in the N cycle.")
     @mock.patch('glance.common.signature_utils.get_public_key')
     def test_old_verify_signature_RSA_no_mask_gen(self, mock_get_pub_key):
@@ -293,6 +304,29 @@ class TestSignatureUtils(test_utils.BaseTestCase):
         self.assertRaisesRegexp(exception.SignatureVerificationError,
                                 'Error occurred while verifying'
                                 ' the signature',
+                                signature_utils.verify_signature,
+                                None, checksum_hash, image_properties)
+
+    @removals.remove(message="This will be removed in the N cycle.")
+    @mock.patch('glance.common.signature_utils.get_public_key')
+    def test_old_verify_signature_unsupported_algorithm(self,
+                                                        mock_get_pub_key):
+        checksum_hash = '224626ae19824466f2a7f39ab7b80f7f'
+        public_key = TEST_PRIVATE_KEY.public_key()
+        public_key.verifier = mock.MagicMock(
+            side_effect=crypto_exception.UnsupportedAlgorithm(
+                "When OpenSSL is older than 1.0.1 then only SHA1 is "
+                "supported with MGF1.",
+                crypto_exception._Reasons.UNSUPPORTED_HASH))
+        mock_get_pub_key.return_value = public_key
+        image_properties = {OLD_CERT_UUID:
+                            'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
+                            OLD_HASH_METHOD: 'SHA-256',
+                            OLD_KEY_TYPE: 'RSA-PSS',
+                            OLD_SIGNATURE: 'BLAH'}
+        self.assertRaisesRegexp(exception.SignatureVerificationError,
+                                'Unable to verify signature since the '
+                                'algorithm is unsupported on this system',
                                 signature_utils.verify_signature,
                                 None, checksum_hash, image_properties)
 
