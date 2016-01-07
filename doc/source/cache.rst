@@ -34,6 +34,23 @@ requests to ``GET /images/<IMAGE_ID>``, the image cache is not automatically
 managed. Here, we describe the basics of how to manage the local image cache
 on Glance API servers and how to automate this cache management.
 
+Configuration options for the Image Cache
+-----------------------------------------
+
+The cache has a number of configuration options that are in the
+configuration files.
+
+- ``image_cache_dir`` This is the base directory where Glance stores
+  the cache data.
+- ``image_cache_sqlite_db`` Path to the sqlite file database that will
+  be used for cache manangement.
+- ``image_cache_driver`` The driver used for cache management. (Likely
+  sqlite.)
+- ``image_cache_max_size`` The size when the glance-cache-pruner will
+  remove the oldest images, to reduce the bytes until under this value.
+- ``image_cache_stall_time`` The amount of time an incomplete image will
+  stay in the cache, after this the incomplete image will be deleted.
+
 Controlling the Growth of the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
