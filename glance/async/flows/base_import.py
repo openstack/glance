@@ -455,9 +455,10 @@ def get_flow(**kwargs):
             flow.add(delete_flow)
         else:
             flow.add(import_to_store)
-    except exception.BadTaskConfiguration:
+    except exception.BadTaskConfiguration as exc:
         # NOTE(flaper87): If something goes wrong with the load of
         # import tasks, make sure we go on.
+        LOG.error(_LE('Bad task configuration: %s'), exc.message)
         flow.add(import_to_store)
 
     flow.add(
