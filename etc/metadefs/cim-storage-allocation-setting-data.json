@@ -1,0 +1,122 @@
+{
+    "namespace": "CIM::StorageAllocationSettingData",
+    "display_name": "CIM Storage Allocation Setting Data",
+    "description": "Properties related to the allocation of virtual storage from Common Information Model (CIM) schema (http://www.dmtf.org/standards/cim). These properties may be specified to volume, host aggregate and flavor. For each property details, please refer to http://schemas.dmtf.org/wbem/cim-html/2/CIM_StorageAllocationSettingData.html.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Cinder::Volume",
+            "prefix": "CIM_SASD_"
+        },
+        {
+            "name": "OS::Nova::Aggregate",
+            "prefix": "CIM_SASD_"
+        },
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "CIM_SASD_"
+        }
+    ],
+    "properties": {
+        "Access": {
+            "title": "Access",
+            "description": "Access describes whether the allocated storage extent is 1 (readable), 2 (writeable), or 3 (both).",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "Unknown",
+                "Readable",
+                "Writeable",
+                "Read/Write Supported",
+                "DMTF Reserved"
+            ]
+        },
+        "HostExtentName": {
+            "title": "Host Extent Name",
+            "description": "A unique identifier for the host extent.",
+            "type": "string"
+        },
+        "HostExtentNameFormat": {
+            "title": "Host Extent Name Format",
+            "description": "The HostExtentNameFormat property identifies the format that is used for the value of the HostExtentName property.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "Unknown",
+                "Other",
+                "SNVM",
+                "NAA",
+                "EUI64",
+                "T10VID",
+                "OS Device Name",
+                "DMTF Reserved"
+            ]
+        },
+        "HostExtentNameNamespace": {
+            "title": "Host Extent Name Namespace",
+            "description": "If the host extent is a SCSI volume, then the preferred source for SCSI volume names is SCSI VPD Page 83 responses.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "Unknown",
+                "Other",
+                "VPD83Type3",
+                "VPD83Type2",
+                "VPD83Type1",
+                "VPD80",
+                "NodeWWN",
+                "SNVM",
+                "OS Device Namespace",
+                "DMTF Reserved"
+            ]
+        },
+        "HostExtentStartingAddress": {
+            "title": "Host Extent Starting Address",
+            "description": "The HostExtentStartingAddress property identifies the starting address on the host storage extent identified by the value of the HostExtentName property that is used for the allocation of the virtual storage extent.",
+            "type": "string"
+        },
+        "HostResourceBlockSize": {
+            "title": "Host Resource Block Size",
+            "description": "Size in bytes of the blocks that are allocated at the host as the result of this storage resource allocation or storage resource allocation request.",
+            "type": "string"
+        },
+        "Limit": {
+            "title": "Limit",
+            "description": "The maximum amount of blocks that will be granted for this storage resource allocation at the host.",
+            "type": "string"
+        },
+        "OtherHostExtentNameFormat": {
+            "title": "Other Host Extent Name Format",
+            "description": "A string describing the format of the HostExtentName property if the value of the HostExtentNameFormat property is 1 (Other).",
+            "type": "string"
+        },
+        "OtherHostExtentNameNamespace": {
+            "title": "Other Host Extent Name Namespace",
+            "description": "A string describing the namespace of the HostExtentName property if the value of the HostExtentNameNamespace matches 1 (Other).",
+            "type": "string"
+        },
+        "Reservation": {
+            "title": "Reservation",
+            "description": "The amount of blocks that are guaranteed to be available for this storage resource allocation at the host.",
+            "type": "string"
+        },
+        "VirtualQuantity": {
+            "title": "Virtual Quantity",
+            "description": "Number of blocks that are presented to the consumer.",
+            "type": "string"
+        },
+        "VirtualQuantityUnits": {
+            "title": "Virtual Quantity Units",
+            "description": "This property specifies the units used by the VirtualQuantity property.",
+            "type": "string"
+        },
+        "VirtualResourceBlockSize": {
+            "title": "Virtual Resource Block Size",
+            "description": "Size in bytes of the blocks that are presented to the consumer as the result of this storage resource allocation or storage resource allocation request.",
+            "type": "string"
+        }
+    },
+    "objects": []
+}
+
