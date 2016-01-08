@@ -44,10 +44,18 @@ class TestTasks(functional.FunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'admin',
         }
         base_headers.update(custom_headers or {})
         return base_headers
+
+    def test_task_not_allowed_non_admin(self):
+        self.start_servers(**self.__dict__.copy())
+        roles = {'X-Roles': 'member'}
+        # Task list should be empty
+        path = self._url('/v2/tasks')
+        response = requests.get(path, headers=self._headers(roles))
+        self.assertEqual(403, response.status_code)
 
     def test_task_lifecycle(self):
         self.start_servers(**self.__dict__.copy())

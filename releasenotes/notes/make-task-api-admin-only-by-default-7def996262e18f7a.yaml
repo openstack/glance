@@ -1,0 +1,13 @@
+---
+deprecations:
+  - The task API was added to allow users for uploading images asynchronously
+    and for deployers to have more control in the upload process. Unfortunately,
+    this API has not worked the way it was expected to. Therefore, the task API
+    has entered a deprecation period and it is meant to be replaced by the new
+    import API. This change makes the task API admin only by default so that it
+    is not accidentally deployed as a public API.
+upgrade:
+  - The task API is being deprecated and it has been made admin only. If deployers
+    of Glance would like to have this API as a public one, it is necessary to
+    change the `policy.json` file and remove `role:admin` from every `task`
+    related field.

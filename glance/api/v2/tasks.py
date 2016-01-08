@@ -16,6 +16,7 @@
 
 import copy
 
+import debtcollector
 import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -42,6 +43,14 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 CONF.import_opt('task_time_to_live', 'glance.common.config', group='task')
 
+_DEPRECATION_MESSAGE = ("The task API is being deprecated and "
+                        "it will be superseded by the new image import "
+                        "API. Please refer to this link for more "
+                        "information about the aforementioned process: "
+                        "https://specs.openstack.org/openstack/glance-specs/"
+                        "specs/mitaka/approved/image-import/"
+                        "image-import-refactor.html")
+
 
 class TasksController(object):
     """Manages operations on tasks."""
@@ -55,6 +64,7 @@ class TasksController(object):
         self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
                                               self.notifier, self.policy)
 
+    @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def create(self, req, task):
         task_factory = self.gateway.get_task_factory(req.context)
         executor_factory = self.gateway.get_task_executor_factory(req.context)
@@ -74,6 +84,7 @@ class TasksController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return new_task
 
+    @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def index(self, req, marker=None, limit=None, sort_key='created_at',
               sort_dir='desc', filters=None):
         result = {}
@@ -101,6 +112,7 @@ class TasksController(object):
         result['tasks'] = tasks
         return result
 
+    @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def get(self, req, task_id):
         try:
             task_repo = self.gateway.get_task_repo(req.context)
@@ -120,6 +132,7 @@ class TasksController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return task
 
+    @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def delete(self, req, task_id):
         msg = (_("This operation is currently not permitted on Glance Tasks. "
                  "They are auto deleted after reaching the time based on "
