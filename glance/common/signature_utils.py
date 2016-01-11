@@ -187,10 +187,19 @@ def verify_signature(context, checksum_hash, image_properties):
                                 signature_key_type)
 
     # create the verifier based on the signature key type
-    verifier = KEY_TYPE_METHODS[signature_key_type](signature,
-                                                    hash_method,
-                                                    public_key,
-                                                    image_properties)
+    try:
+        verifier = KEY_TYPE_METHODS[signature_key_type](signature,
+                                                        hash_method,
+                                                        public_key,
+                                                        image_properties)
+    except crypto_exception.UnsupportedAlgorithm as e:
+        msg = (_LE("Unable to create verifier since algorithm is "
+                   "unsupported: %(e)s")
+               % {'e': encodeutils.exception_to_unicode(e)})
+        LOG.error(msg)
+        raise exception.SignatureVerificationError(
+            'Unable to verify signature since the algorithm is unsupported '
+            'on this system')
 
     if verifier:
         # Verify the signature
