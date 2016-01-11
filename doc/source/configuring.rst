@@ -1585,7 +1585,27 @@ profiling feature for glance-api and glance-registry service.
 
 * ``enabled=<True|False>``
 
-Optional. Default: ``True``
+Optional. Default: ``False``
+
+There is one more configuration option that needs to be defined to enable
+Glance services profiling. The config value ``hmac_keys`` is used for
+encrypting context data for performance profiling.
+
+* ``hmac_keys=<secret_key_string>``
+
+Optional. Default: ``SECRET_KEY``
+
+**IMPORTANT NOTE**: in order to make profiling work as designed operator needs
+to make those values of HMAC key be consistent for all services in their
+deployment. Without HMAC key the profiling will not be triggered even profiling
+feature is enabled.
+
+**IMPORTANT NOTE**: previously HMAC keys (as well as enabled parameter) were
+placed at /etc/glance/api-paste.ini and /etc/glance/registry-paste.ini files
+for Glance API and Glance Registry services respectively. Starting with
+opsrofiler 0.3.1 release there is no need to set these arguments in the
+*-paste.ini files. This functionality is still supported, although the
+config values are having larger priority.
 
 The config value ``trace_sqlalchemy`` is used to determine whether fully enable
 sqlalchemy engine based SQL execution profiling feature for glance-api and
@@ -1593,15 +1613,7 @@ glance-registry services.
 
 * ``trace_sqlalchemy=<True|False>``
 
-Optional. Default: ``True``
-
-**IMPORTANT NOTE**: The HMAC key which is used for encrypting context data for
-performance profiling is configured in paste config file of glance-api and
-glance-registry service separately, by default they place at
-/etc/glance/api-paste.ini and /etc/glance/registry-paste.ini files, in order
-to make profiling work as designed operator needs to make those values of HMAC
-key be consistent for all services in your deployment. Without HMAC key the
-profiling will not be triggered even profiling feature is enabled.
+Optional. Default: ``False``
 
 Configuring Glance public endpoint
 ----------------------------------

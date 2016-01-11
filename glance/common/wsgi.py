@@ -105,7 +105,10 @@ profiler_opts = [
     cfg.BoolOpt("enabled", default=False,
                 help=_('If False fully disable profiling feature.')),
     cfg.BoolOpt("trace_sqlalchemy", default=False,
-                help=_("If False doesn't trace SQL requests."))
+                help=_("If False doesn't trace SQL requests.")),
+    cfg.StrOpt("hmac_keys", default="SECRET_KEY",
+               help=_("Secret key to use to sign Glance API and Glance "
+                      "Registry services tracing messages.")),
 ]
 
 

@@ -1,0 +1,13 @@
+---
+deprecations:
+  - OSprofiler support requires passing of trace information
+    between various OpenStack services. This information is
+    signed by one of HMAC keys, which we historically defined
+    in glance-api-paste.ini and glance-registry-paste.ini files
+    (together with enabled option, that in fact was duplicated in
+    the corresponding configuration files).
+    OSprofiler 0.3.1 and higher supports passing this information
+    via configuration files, therefore it's recommended to
+    modify the ``[filter:osprofiler]`` section in  \*-paste.ini to look like
+    ``paste.filter_factor = osprofiler.web:WsgiMiddleware.factory``
+    and set the ``hmac_keys`` option in the glance-\*.conf files.
