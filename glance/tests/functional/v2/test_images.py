@@ -2525,6 +2525,11 @@ class TestImages(functional.FunctionalTest):
             response = requests.get(path, headers=self._headers())
             self.assertEqual(400, response.status_code)
 
+        # Image list filters by non-'URL encoding' value
+        path = self._url('/v2/images?name=%FF')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(400, response.status_code)
+
         # Begin pagination after the first image
         template_url = ('/v2/images?limit=2&sort_dir=asc&sort_key=name'
                         '&marker=%s&type=kernel&ping=pong')
