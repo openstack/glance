@@ -114,6 +114,13 @@ class ArtifactsController(object):
                     filter['value'] = self._get_latest_version(
                         req, filters['name'][0]['value'], type_name,
                         type_version)
+                else:
+                    try:
+                        semantic_version.Version(filter['value'], partial=True)
+                    except ValueError:
+                        msg = (_('The format of the version %s is not valid. '
+                                 'Use semver notation') % filter['value'])
+                        raise webob.exc.HTTPBadRequest(explanation=msg)
 
         res = artifact_repo.list(filters=filters,
                                  show_level=Showlevel.BASIC,
