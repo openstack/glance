@@ -37,19 +37,42 @@ on Glance API servers and how to automate this cache management.
 Configuration options for the Image Cache
 -----------------------------------------
 
-The cache has a number of configuration options that are in the
-configuration files.
+The Glance cache uses two files: one for configuring the server and
+another for the utilities. The ``glance-api.conf`` is for the server
+and the ``glance-cache.conf`` is for the utilities.
+
+The following options are in both configuration files. These need the
+same values otherwise the cache will potentially run into problems.
 
 - ``image_cache_dir`` This is the base directory where Glance stores
-  the cache data.
+  the cache data (Required to be set, as does not have a default).
 - ``image_cache_sqlite_db`` Path to the sqlite file database that will
-  be used for cache manangement.
-- ``image_cache_driver`` The driver used for cache management. (Likely
-  sqlite.)
+  be used for cache manangement. This is a relative path from the
+  ``image_cache_dir`` directory (Default:``cache.db``).
+- ``image_cache_driver`` The driver used for cache management.
+  (Default:``sqlite``)
 - ``image_cache_max_size`` The size when the glance-cache-pruner will
   remove the oldest images, to reduce the bytes until under this value.
+  (Default:``10 GB``)
 - ``image_cache_stall_time`` The amount of time an incomplete image will
   stay in the cache, after this the incomplete image will be deleted.
+  (Default:``1 day``)
+
+The following values are the ones that are specific to the
+``glance-cache.conf`` and are only required for the prefetcher to run
+correctly.
+
+- ``admin_user`` The username for an admin account, this is so it can
+  get the image data into the cache.
+- ``admin_password`` The password to the admin account.
+- ``admin_tenant_name`` The tenant of the admin account.
+- ``auth_url`` The URL used to authenticate to keystone. This will
+  be taken from the environment varibles if it exists.
+- ``filesystem_store_datadir`` This is used if using the filesystem
+  store, points to where the data is kept.
+- ``filesystem_store_datadirs`` This is used to point to multiple
+  filesystem stores.
+- ``registry_host`` The URL to the Glance registry.
 
 Controlling the Growth of the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
