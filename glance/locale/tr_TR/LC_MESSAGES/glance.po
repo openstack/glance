@@ -1,15 +1,13 @@
 # Turkish (Turkey) translations for glance.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2016 ORGANIZATION
 # This file is distributed under the same license as the glance project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
 #
-# Translators:
-# Andreas Jaeger <jaegerandi@gmail.com>, 2015
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.dev111\n"
+"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-22 06:09+0000\n"
+"POT-Creation-Date: 2016-01-14 06:55+0000\n"
 "PO-Revision-Date: 2015-09-04 12:45+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language: tr_TR\n"
@@ -18,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.1.1\n"
+"Generated-By: Babel 2.2.0\n"
 
 #, python-format
 msgid "\t%s"
@@ -589,10 +587,6 @@ msgstr "v3 OpenStack Nesneleri API dağıt."
 msgid "Descriptive name for the image"
 msgstr "İmaj için açıklayıcı ad"
 
-#, python-format
-msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
-msgstr "İstek sürümü belirleniyor: %(method)s %(path)s Kabul Et: %(accept)s"
-
 msgid "Dictionary contains unexpected key(s)"
 msgstr "Sözlük beklenmeyen anahtar(lar) içerir"
 
@@ -601,17 +595,6 @@ msgstr "Sözlük boyutu azami değerden daha büyüktür"
 
 msgid "Dictionary size is less than minimum"
 msgstr "Sözlük boyutu asgari değerden daha azdır"
-
-msgid ""
-"Digest algorithm which will be used for digital signature. Use the command "
-"\"openssl list-message-digest-algorithms\" to get the available "
-"algorithmssupported by the version of OpenSSL on the platform. Examples are "
-"\"sha1\", \"sha256\", \"sha512\", etc."
-msgstr ""
-"Dijital imzalama için Digest algoritması kullanılacaktır. Platformdaki "
-"OpenSSL sürümünün desteklediği kullanılabilir algoritmaları almak için "
-"\"openssl list-message-digest-algorithms\" komutunu kullanın. Örnekler, "
-"\"sha1\", \"sha256\", \"sha512\", vb."
 
 msgid "Disk format is not specified."
 msgstr "Disk biçimi belirtilmemiş."
@@ -725,10 +708,6 @@ msgstr "%s imajını silmek yasak."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "İmaj silmek yasak: %s"
-
-#, python-format
-msgid "Forbidden to modify '%s' of active image."
-msgstr "Etkin imajın '%s' değiştirilmesi yasak."
 
 msgid "Forbidden to reserve image."
 msgstr "İmaj ayırmak yasak."
@@ -1353,9 +1332,6 @@ msgstr "%s ile ürün bulunamadı"
 msgid "No authenticated user"
 msgstr "Kimlik denetimi yapılmamış kullanıcı"
 
-msgid "No image data could be found"
-msgstr "İmaj verisi bulunamadı"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "%s bilgileri ile hiçbir imaj bulunamadı"
@@ -1602,10 +1578,6 @@ msgstr ""
 #, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "Özelliklerin %(prop)s değeri bulunamadı"
-
-#, python-format
-msgid "Provided header feature is unsupported: %(feature)s"
-msgstr "Sağlanan başlık özelliği desteklenmiyor: %(feature)s"
 
 #, python-format
 msgid ""
@@ -2229,10 +2201,6 @@ msgstr ""
 "\n"
 "Yanıt:\n"
 "%(body)s"
-
-msgid ""
-"The requested image has been deactivated. Image data download is forbidden."
-msgstr "İstenen imaj devrede değil. İmaj verisi indirmek yasak."
 
 msgid "The result of current task, JSON blob"
 msgstr "Şu anki görevin sonucu, JSON blob"

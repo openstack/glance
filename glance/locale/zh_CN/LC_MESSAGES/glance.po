@@ -1,20 +1,13 @@
 # Chinese (Simplified, China) translations for glance.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2016 ORGANIZATION
 # This file is distributed under the same license as the glance project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
 #
-# Translators:
-# blkart <blkart.org@gmail.com>, 2015
-# Dongliang Yu <yudl.nju@gmail.com>, 2013
-# Kecheng Bi <bikecheng@gmail.com>, 2014
-# Tom Fifield <tom@openstack.org>, 2013
-# 颜海峰 <yanheven@gmail.com>, 2014
-# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.dev111\n"
+"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-22 06:09+0000\n"
+"POT-Creation-Date: 2016-01-14 06:55+0000\n"
 "PO-Revision-Date: 2015-09-04 12:45+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language: zh_Hans_CN\n"
@@ -23,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.1.1\n"
+"Generated-By: Babel 2.2.0\n"
 
 #, python-format
 msgid "%(attribute)s have to be string"
@@ -528,10 +521,6 @@ msgstr "请部署 OpenStack Registry API V2。"
 msgid "Descriptive name for the image"
 msgstr "映像的描述性名称"
 
-#, python-format
-msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
-msgstr "正在确定请求的版本：%(method)s %(path)s 接受：%(accept)s"
-
 msgid "Dictionary contains unexpected key(s)"
 msgstr "字典包含意外的关键字"
 
@@ -637,10 +626,6 @@ msgstr "已禁止对映像%s进行删除。"
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "已禁止删除映像：%s"
-
-#, python-format
-msgid "Forbidden to modify '%s' of active image."
-msgstr "已禁止对活动的映像 '%s'进行修改。"
 
 msgid "Forbidden to reserve image."
 msgstr "已禁止保留映像。"
@@ -1169,9 +1154,6 @@ msgstr "粘贴配置文件的名称。"
 msgid "No authenticated user"
 msgstr "不存在任何已认证的用户"
 
-msgid "No image data could be found"
-msgstr "找不到任何映像数据"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "找不到任何具有标识 %s 的映像"
@@ -1375,10 +1357,6 @@ msgstr ""
 #, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "尚未找到属性 %(prop)s 的值"
-
-#, python-format
-msgid "Provided header feature is unsupported: %(feature)s"
-msgstr "提供的头功能不受支持：%(feature)s"
 
 #, python-format
 msgid ""
@@ -1947,10 +1925,6 @@ msgstr ""
 "\n"
 "响应主体：\n"
 "%(body)s"
-
-msgid ""
-"The requested image has been deactivated. Image data download is forbidden."
-msgstr "所请求映像已取消激活。已禁止下载映像数据。"
 
 msgid "The result of current task, JSON blob"
 msgstr "当前任务 JSON blob 的结果"

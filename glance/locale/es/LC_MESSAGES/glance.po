@@ -1,18 +1,13 @@
 # Spanish translations for glance.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2016 ORGANIZATION
 # This file is distributed under the same license as the glance project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
 #
-# Translators:
-# Adriana Chisco Landazábal <achisco94@gmail.com>, 2015
-# Alfredo Matas <amatas@gmail.com>, 2015
-# Marian Tort <marian.tort@gmail.com>, 2015
-# Pablo Sanchez <furybeat@gmail.com>, 2015
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.dev111\n"
+"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-22 06:09+0000\n"
+"POT-Creation-Date: 2016-01-14 06:55+0000\n"
 "PO-Revision-Date: 2015-09-04 12:45+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language: es\n"
@@ -21,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.1.1\n"
+"Generated-By: Babel 2.2.0\n"
 
 #, python-format
 msgid "\t%s"
@@ -612,12 +607,6 @@ msgstr "Implemente la API de objetos v3 de OpenStack. "
 msgid "Descriptive name for the image"
 msgstr "Nombre descriptivo para la imagen"
 
-#, python-format
-msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
-msgstr ""
-"Determinando la versión de la solicitud: %(method)s %(path)s Aceptar: "
-"%(accept)s"
-
 msgid "Dictionary contains unexpected key(s)"
 msgstr "El diccionario contiene clave(s) inesperadas"
 
@@ -626,17 +615,6 @@ msgstr "El tamaño del diccionario es es mayor que el máximo"
 
 msgid "Dictionary size is less than minimum"
 msgstr "El tamaño del diccioanrio es menor que el mínimo"
-
-msgid ""
-"Digest algorithm which will be used for digital signature. Use the command "
-"\"openssl list-message-digest-algorithms\" to get the available "
-"algorithmssupported by the version of OpenSSL on the platform. Examples are "
-"\"sha1\", \"sha256\", \"sha512\", etc."
-msgstr ""
-"Algoritmo Digest que será usado para la firma digital. Usa el comando "
-"\"openssl list-message-digest-algorithmsl\" para ver los algoritmos "
-"disponibles soportados por la version de OpenSSL en la plataforma. Ejemplos "
-"son \"sha1\", \"sha256\", \"sha512\", etc."
 
 msgid "Disk format is not specified."
 msgstr "No se especificó el formato del disco."
@@ -754,10 +732,6 @@ msgstr "Se prohíbe eliminar una imagen %s."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Está prohibido eliminar imagen: %s"
-
-#, python-format
-msgid "Forbidden to modify '%s' of active image."
-msgstr "Está prohibido modificar  '%s' de imagen activa."
 
 msgid "Forbidden to reserve image."
 msgstr "La reserva de imagen está prohibida."
@@ -1403,9 +1377,6 @@ msgstr "No se encontró artefacto con ID %s"
 msgid "No authenticated user"
 msgstr "Ningún usuario autenticado "
 
-msgid "No image data could be found"
-msgstr "No se han encontrado datos de imagen"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "No se encontró imagen con ID %s"
@@ -1663,11 +1634,6 @@ msgstr ""
 #, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "No se ha encontrado valor de la propiedad %(prop)s "
-
-#, python-format
-msgid "Provided header feature is unsupported: %(feature)s"
-msgstr ""
-"La característica de cabecera proporcionada no está soportada: %(feature)s"
 
 #, python-format
 msgid ""
@@ -2317,12 +2283,6 @@ msgstr ""
 "\n"
 "El cuerpo de la respuesta:\n"
 "%(body)s"
-
-msgid ""
-"The requested image has been deactivated. Image data download is forbidden."
-msgstr ""
-"Se ha desactivado la imagen solicitada. Se prohíbe la descarga de datos de "
-"imagen."
 
 msgid "The result of current task, JSON blob"
 msgstr "El resultado de la tarea, objeto JSON actual"

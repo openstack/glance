@@ -1,27 +1,22 @@
 # Japanese translations for glance.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2016 ORGANIZATION
 # This file is distributed under the same license as the glance project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
 #
-# Translators:
-# Tomoyuki KATO <tomo@dream.daynight.jp>, 2013
-# Akihiro Motoki <amotoki@gmail.com>, 2015. #zanata
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
-# Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
-# Yuko Katabami <yukokatabami@gmail.com>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.dev111\n"
+"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-22 06:09+0000\n"
-"PO-Revision-Date: 2015-10-09 05:17+0000\n"
-"Last-Translator: Akihiro Motoki <amotoki@gmail.com>\n"
+"POT-Creation-Date: 2016-01-14 06:55+0000\n"
+"PO-Revision-Date: 2016-01-12 04:59+0000\n"
+"Last-Translator: Yuta Hono <yuta.hono@ntt.com>\n"
 "Language: ja\n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.1.1\n"
+"Generated-By: Babel 2.2.0\n"
 
 #, python-format
 msgid "%(attribute)s have to be string"
@@ -322,6 +317,14 @@ msgstr "Swift 認証サービスに対して認証するユーザーの認証キ
 msgid "Auth service at URL %(url)s not found."
 msgstr "URL %(url)s の認証サービスが見つかりません。"
 
+#, python-format
+msgid ""
+"Authentication error - the token may have expired during file upload. "
+"Deleting image data for %s."
+msgstr ""
+"認証エラー - トークンがファイルアップロード中に失効した可能性があります。 %s "
+"へのイメージデータを削除します。"
+
 msgid "Authorization failed."
 msgstr "許可が失敗しました。"
 
@@ -428,6 +431,9 @@ msgstr "接続エラー/URL %(url)s の認証サービスに対する正しく�
 msgid "Constructed URL: %s"
 msgstr "URL を構成しました: %s"
 
+msgid "Container format is not specified."
+msgstr "コンテナーフォーマットが指定されていません。"
+
 msgid "Content-Type must be application/octet-stream"
 msgstr "Content-Type は application/octet-stream でなければなりません"
 
@@ -471,6 +477,10 @@ msgid "Custom validators list should contain tuples '(function, message)'"
 msgstr ""
 "カスタム・バリデーター・リストにはタプル「(function, message)」が含まれていな"
 "ければなりません"
+
+#, python-format
+msgid "Data for image_id not found: %s"
+msgstr "image_id のデータが見つかりません: %s"
 
 msgid "Data supplied was not valid."
 msgstr "指定されたデータが無効でした。"
@@ -559,10 +569,6 @@ msgstr "v2 OpenStack レジストリー API をデプロイします。"
 msgid "Descriptive name for the image"
 msgstr "イメージの記述名"
 
-#, python-format
-msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
-msgstr "要求のバージョンの判別中: %(method)s %(path)s 受諾: %(accept)s"
-
 msgid "Dictionary contains unexpected key(s)"
 msgstr "ディクショナリーに予期しないキーが含まれています"
 
@@ -571,6 +577,9 @@ msgstr "ディクショナリーサイズが最大を上回っています"
 
 msgid "Dictionary size is less than minimum"
 msgstr "ディクショナリーサイズが最小を下回っています"
+
+msgid "Disk format is not specified."
+msgstr "ディスクフォーマットが指定されていません。"
 
 msgid "Does not match pattern"
 msgstr "パターンに一致しません"
@@ -668,6 +677,9 @@ msgstr "ファイルが大きすぎます"
 msgid "File too small"
 msgstr "ファイルが小さすぎます"
 
+msgid "Forbidden image access"
+msgstr "イメージにアクセスする権限がありません"
+
 #, python-format
 msgid "Forbidden to delete a %s image."
 msgstr "%s イメージの削除は禁止されています。"
@@ -677,8 +689,8 @@ msgid "Forbidden to delete image: %s"
 msgstr "イメージの削除は禁止されています: %s"
 
 #, python-format
-msgid "Forbidden to modify '%s' of active image."
-msgstr "アクティブなイメージの '%s' を変更することは禁止されています。"
+msgid "Forbidden to modify '%s' of image."
+msgstr "イメージの '%s' を変更することは禁止されています。"
 
 msgid "Forbidden to reserve image."
 msgstr "イメージの予約は禁止されています。"
@@ -781,6 +793,14 @@ msgstr ""
 "す。"
 
 #, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+"アップロード後にイメージ %s が見つかりませんでした。このイメージはアップロー"
+"ド中に削除された可能性があります。"
+
+#, python-format
 msgid "Image %s is deactivated"
 msgstr "イメージ %s は非アクティブ化されています"
 
@@ -868,6 +888,10 @@ msgstr "イメージストレージのメディアに対する許可が不十分
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "このリソースの JSON ポインターは無効です: '/%s'"
 
+#, python-format
+msgid "Invalid checksum '%s': can't exceed 32 characters"
+msgstr "無効なチェックサム '%s': 32文字を超えることはできません"
+
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "glance-swift 設定ファイルの設定が無効です。"
 
@@ -904,6 +928,10 @@ msgstr "jsonpatch 要求が無効です"
 #, fuzzy
 msgid "Invalid location"
 msgstr "無効なロケーション"
+
+#, python-format
+msgid "Invalid location %s"
+msgstr "無効なロケーション %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -981,6 +1009,10 @@ msgstr "状況値が無効です: %s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "無効な状況: %s"
+
+#, python-format
+msgid "Invalid time format for %s."
+msgstr "%s に対する無効な時刻フォーマット。"
 
 msgid "Invalid type definition"
 msgstr "タイプ定義が無効です"
@@ -1243,9 +1275,6 @@ msgstr "paste 設定ファイルの名前。"
 msgid "No authenticated user"
 msgstr "認証されていないユーザー"
 
-msgid "No image data could be found"
-msgstr "イメージデータが見つかりませんでした"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "ID が %s であるイメージは見つかりません"
@@ -1464,10 +1493,6 @@ msgstr ""
 #, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "プロパティーの %(prop)s 値が見つかりませんでした"
-
-#, python-format
-msgid "Provided header feature is unsupported: %(feature)s"
-msgstr "指定されたヘッダーフィーチャーはサポートされていません: %(feature)s"
 
 #, python-format
 msgid ""
@@ -2082,11 +2107,11 @@ msgstr ""
 "応答本体:\n"
 "%(body)s"
 
-msgid ""
-"The requested image has been deactivated. Image data download is forbidden."
+#, python-format
+msgid "The requested image is in status %s. Image data download is forbidden."
 msgstr ""
-"要求されたイメージは非アクティブ化されています。イメージデータのダウンロード"
-"は禁止されています。"
+"リクエストされたイメージは %s ステータスです。イメージデータをダウンロードす"
+"ることは出来ません。"
 
 msgid "The result of current task, JSON blob"
 msgstr "現行タスクの結果、JSON blob"
@@ -2526,6 +2551,14 @@ msgstr "認証されていません。"
 
 msgid "You are not authorized to complete this action."
 msgstr "このアクションの実行を許可されていません。"
+
+#, python-format
+msgid "You are not authorized to lookup image %s."
+msgstr "%s イメージを調べる許可がありません。"
+
+#, python-format
+msgid "You are not authorized to lookup the members of the image %s."
+msgstr "%s イメージのメンバーを調べる許可がありません。"
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"

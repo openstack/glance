@@ -1,18 +1,13 @@
 # Portuguese (Brazil) translations for glance.
-# Copyright (C) 2015 ORGANIZATION
+# Copyright (C) 2016 ORGANIZATION
 # This file is distributed under the same license as the glance project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
 #
-# Translators:
-# Gabriel Wainer, 2013
-# Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>, 2014
-# Volmar Oliveira Junior <volmar.oliveira.jr@gmail.com>, 2013
-# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.dev111\n"
+"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-22 06:09+0000\n"
+"POT-Creation-Date: 2016-01-14 06:55+0000\n"
 "PO-Revision-Date: 2015-09-04 12:45+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language: pt_BR\n"
@@ -21,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.1.1\n"
+"Generated-By: Babel 2.2.0\n"
 
 #, python-format
 msgid "%(attribute)s have to be string"
@@ -573,11 +568,6 @@ msgstr "Implemente a API Registry OpenStack v2."
 msgid "Descriptive name for the image"
 msgstr "Nome descritivo para a imagem"
 
-#, python-format
-msgid "Determining version of request: %(method)s %(path)s Accept: %(accept)s"
-msgstr ""
-"Determinando a versão da solicitação: %(method)s %(path)s Aceitar: %(accept)s"
-
 msgid "Dictionary contains unexpected key(s)"
 msgstr "O dicionário contém chave(s) inesperada(s)"
 
@@ -694,10 +684,6 @@ msgstr "Proibido excluir uma imagem %s."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Proibido excluir imagem: %s"
-
-#, python-format
-msgid "Forbidden to modify '%s' of active image."
-msgstr "Proibido modificar '%s' de imagem ativa."
 
 msgid "Forbidden to reserve image."
 msgstr "Proibido reservar imagem."
@@ -1279,9 +1265,6 @@ msgstr "Nome do arquivo de cola de configuração."
 msgid "No authenticated user"
 msgstr "Usuário não autenticado"
 
-msgid "No image data could be found"
-msgstr "Nenhum dado de imagem pôde ser localizado"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "Nenhuma imagem encontrada com o ID %s"
@@ -1506,10 +1489,6 @@ msgstr ""
 #, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "O valor %(prop)s da propriedade não foi localizado"
-
-#, python-format
-msgid "Provided header feature is unsupported: %(feature)s"
-msgstr "O recurso de cabeçalho fornecido não é suportado: %(feature)s"
 
 #, python-format
 msgid ""
@@ -2148,11 +2127,6 @@ msgstr ""
 "\n"
 "O corpo de resposta:\n"
 "%(body)s"
-
-msgid ""
-"The requested image has been deactivated. Image data download is forbidden."
-msgstr ""
-"A imagem solicitada foi desativada. O download de dados da imagem é proibido."
 
 msgid "The result of current task, JSON blob"
 msgstr "O resultado da tarefa atual, blob JSON"
