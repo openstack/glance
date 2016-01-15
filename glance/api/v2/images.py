@@ -818,7 +818,8 @@ def get_base_properties():
         },
         'status': {
             'type': 'string',
-            'description': _('Status of the image (READ-ONLY)'),
+            'readOnly': True,
+            'description': _('Status of the image'),
             'enum': ['queued', 'saving', 'active', 'killed',
                      'deleted', 'pending_delete', 'deactivated'],
         },
@@ -833,7 +834,8 @@ def get_base_properties():
         },
         'checksum': {
             'type': ['null', 'string'],
-            'description': _('md5 hash of image contents. (READ-ONLY)'),
+            'readOnly': True,
+            'description': _('md5 hash of image contents.'),
             'maxLength': 32,
         },
         'owner': {
@@ -843,11 +845,13 @@ def get_base_properties():
         },
         'size': {
             'type': ['null', 'integer'],
-            'description': _('Size of image file in bytes (READ-ONLY)'),
+            'readOnly': True,
+            'description': _('Size of image file in bytes'),
         },
         'virtual_size': {
             'type': ['null', 'integer'],
-            'description': _('Virtual size of image in bytes (READ-ONLY)'),
+            'readOnly': True,
+            'description': _('Virtual size of image in bytes'),
         },
         'container_format': {
             'type': ['null', 'string'],
@@ -861,16 +865,18 @@ def get_base_properties():
         },
         'created_at': {
             'type': 'string',
+            'readOnly': True,
             'description': _('Date and time of image registration'
-                             ' (READ-ONLY)'),
+                             ),
             # TODO(bcwaldon): our jsonschema library doesn't seem to like the
             # format attribute, figure out why!
             # 'format': 'date-time',
         },
         'updated_at': {
             'type': 'string',
+            'readOnly': True,
             'description': _('Date and time of the last image modification'
-                             ' (READ-ONLY)'),
+                             ),
             # 'format': 'date-time',
         },
         'tags': {
@@ -883,8 +889,9 @@ def get_base_properties():
         },
         'direct_url': {
             'type': 'string',
+            'readOnly': True,
             'description': _('URL to access the image file kept in external '
-                             'store (READ-ONLY)'),
+                             'store'),
         },
         'min_ram': {
             'type': 'integer',
@@ -897,15 +904,18 @@ def get_base_properties():
         },
         'self': {
             'type': 'string',
-            'description': '(READ-ONLY)'
+            'readOnly': True,
+            'description': _('An image self url'),
         },
         'file': {
             'type': 'string',
-            'description': '(READ-ONLY)'
+            'readOnly': True,
+            'description': _('An image file url'),
         },
         'schema': {
             'type': 'string',
-            'description': '(READ-ONLY)'
+            'readOnly': True,
+            'description': _('An image schema url'),
         },
         'locations': {
             'type': 'array',

@@ -703,14 +703,15 @@ def _get_base_properties():
         },
         "created_at": {
             "type": "string",
-            "description": _("Date and time of namespace creation"
-                             " (READ-ONLY)"),
+            "readOnly": True,
+            "description": _("Date and time of namespace creation"),
             "format": "date-time"
         },
         "updated_at": {
             "type": "string",
-            "description": _("Date and time of the last namespace modification"
-                             " (READ-ONLY)"),
+            "readOnly": True,
+            "description": _("Date and time of the last namespace"
+                             " modification"),
             "format": "date-time"
         },
         "schema": {
