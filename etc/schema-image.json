@@ -11,7 +11,7 @@
     },
     "instance_uuid": {
         "type": "string",
-        "description": "ID of instance used to create this image."
+        "description": "Metadata which can be used to record which instance this image is associated with. (Informational only, does not create an instance snapshot.)"
     },
     "architecture": {
         "description": "Operating system architecture as specified in http://docs.openstack.org/trunk/openstack-compute/admin/content/adding-images.html",
