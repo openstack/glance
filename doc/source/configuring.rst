@@ -409,7 +409,7 @@ Optional. Default: ``glance.store.filesystem.Store, glance.store.http.Store``
 A comma separated list of enabled glance stores. Options are specified
 in the format of glance.store.OPTION.Store.  Some available options for this
 option are (``filesystem``, ``http``, ``rbd``, ``s3``, ``swift``, ``sheepdog``,
-``cinder``, ``gridfs``, ``vmware_datastore``)
+``cinder``, ``vmware_datastore``)
 
 Configuring Glance Image Size Limit
 -----------------------------------

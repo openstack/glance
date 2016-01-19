@@ -128,10 +128,6 @@ class TestScriptsUtils(test_utils.BaseTestCase):
         self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
-        location = 'gridfs://'
-        self.assertRaises(urllib.error.URLError,
-                          script_utils.validate_location_uri, location)
-
         location = 'cinder://'
         self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
