@@ -1104,6 +1104,18 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                   headers=headers,
                                   data='ZZZZZ', status=200)
 
+    def test_upload_file_with_invalid_content_type(self):
+        art = self._create_artifact('withblob')
+        data = {'data': 'jjjjjj'}
+        res = self._check_artifact_post('/withblob/v1/%s/blob1' % art['id'],
+                                        data=data, status=400)
+        self.assertIn('Invalid Content-Type for work with blob1', res)
+
+        res = self._check_artifact_post('/withblob/v1/%s/blob_list'
+                                        % art['id'],
+                                        data=data, status=400)
+        self.assertIn('Invalid Content-Type for work with blob_list', res)
+
     def test_upload_list_files(self):
         art = self._create_artifact('withblob')
         headers = self._headers({'Content-Type': 'application/octet-stream'})
