@@ -29,7 +29,7 @@ etc/schema-image.json in the Glance source code.
 ----------------
 
 Operating system architecture as specified in
-http://docs.openstack.org/cli-reference/content/chapter_cli-glance-property.html
+http://docs.openstack.org/cli-reference/glance.html#image-service-property-keys
 
 
 **instance_uuid**
@@ -53,7 +53,7 @@ booting an AMI-style image.
 -------------
 
 The common name of the operating system distribution as specified in
-http://docs.openstack.org/cli-reference/content/chapter_cli-glance-property.html
+http://docs.openstack.org/cli-reference/glance.html#image-service-property-keys
 
 **os_version**
 --------------
