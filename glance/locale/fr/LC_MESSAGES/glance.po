@@ -1,22 +1,30 @@
-# French translations for glance.
-# Copyright (C) 2016 ORGANIZATION
+# Translations template for glance.
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the glance project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
 #
+# Translators:
+# Arnaud Legendre <arnaudleg@gmail.com>, 2013
+# Christophe kryskool <christophe.chauvet@gmail.com>, 2013
+# EVEILLARD <stephane.eveillard@gmail.com>, 2013-2014
+# Maxime COQUEREL <max.coquerel@gmail.com>, 2014
+# EVEILLARD <stephane.eveillard@gmail.com>, 2015. #zanata
+# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+# Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
+"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-14 06:55+0000\n"
+"POT-Creation-Date: 2016-01-15 11:52+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2015-09-14 05:56+0000\n"
 "Last-Translator: EVEILLARD <stephane.eveillard@gmail.com>\n"
 "Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Generated-By: Babel 2.0\n"
+"X-Generator: Zanata 3.7.3\n"
 "Language-Team: French\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.2.0\n"
 
 #, python-format
 msgid "%(attribute)s have to be string"

@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
+"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-14 06:55+0000\n"
+"POT-Creation-Date: 2016-01-18 06:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -92,6 +92,16 @@ msgstr ""
 #: glance/api/v2/image_actions.py:65
 #, python-format
 msgid "Image %s is reactivated"
+msgstr ""
+
+#: glance/api/v2/image_data.py:109
+#, python-format
+msgid "Unable to create trust: %s Use the existing user token."
+msgstr ""
+
+#: glance/api/v2/image_data.py:132
+#, python-format
+msgid "Unable to delete trust %(trust)s: %(msg)s"
 msgstr ""
 
 #: glance/async/flows/base_import.py:374
