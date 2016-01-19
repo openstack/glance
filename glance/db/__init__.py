@@ -161,8 +161,9 @@ class ImageRepo(object):
     def get(self, image_id):
         try:
             db_api_image = dict(self.db_api.image_get(self.context, image_id))
-            assert not db_api_image['deleted']
-        except (exception.ImageNotFound, exception.Forbidden, AssertionError):
+            if db_api_image['deleted']:
+                raise exception.ImageNotFound()
+        except (exception.ImageNotFound, exception.Forbidden):
             msg = _("No image found with ID %s") % image_id
             raise exception.ImageNotFound(msg)
         tags = self.db_api.image_tag_get_all(self.context, image_id)

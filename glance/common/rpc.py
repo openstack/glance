@@ -112,7 +112,7 @@ class Controller(object):
         :params excluded: List of methods to exclude.
         :params refiner: Callable to use as filter for methods.
 
-        :raises: AssertionError: If refiner is not callable.
+        :raises TypeError: If refiner is not callable.
         """
 
         funcs = filter(lambda x: not x.startswith("_"), dir(resource))
@@ -124,7 +124,6 @@ class Controller(object):
             funcs = [f for f in funcs if f not in excluded]
 
         if refiner:
-            assert callable(refiner), "Refiner must be callable"
             funcs = filter(refiner, funcs)
 
         for name in funcs:

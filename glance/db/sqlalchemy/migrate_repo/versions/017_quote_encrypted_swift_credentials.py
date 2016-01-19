@@ -158,7 +158,9 @@ def legacy_parse_uri(uri, to_quote):
         raise exception.BadStoreUri(message=reason)
 
     pieces = urlparse.urlparse(uri)
-    assert pieces.scheme in ('swift', 'swift+http', 'swift+https')
+    if pieces.scheme not in ('swift', 'swift+http', 'swift+https'):
+        raise exception.BadStoreUri(message="Unacceptable scheme: '%s'" %
+                                    pieces.scheme)
     scheme = pieces.scheme
     netloc = pieces.netloc
     path = pieces.path.lstrip('/')

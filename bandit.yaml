@@ -33,7 +33,7 @@ profiles:
         include:
 
             - any_other_function_with_shell_equals_true
-            # - assert_used # TODO: enable this test
+            - assert_used
             - blacklist_calls
             - blacklist_import_func
 

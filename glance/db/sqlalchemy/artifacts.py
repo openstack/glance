@@ -326,14 +326,16 @@ def _get_all(context, session, filters=None, marker=None,
 def _do_paginate_query(query, sort_keys=None, sort_dirs=None,
                        marker=None, limit=None):
     # Default the sort direction to ascending
-    if sort_dirs is None:
-        sort_dir = 'asc'
+    sort_dir = 'asc'
 
     # Ensure a per-column sort direction
     if sort_dirs is None:
-        sort_dirs = [sort_dir for _sort_key in sort_keys]
+        sort_dirs = [sort_dir] * len(sort_keys)
 
-    assert(len(sort_dirs) == len(sort_keys))
+    assert(len(sort_dirs) == len(sort_keys))  # nosec
+    # nosec: This function runs safely if the assertion fails.
+    if len(sort_dirs) < len(sort_keys):
+        sort_dirs += [sort_dir] * (len(sort_keys) - len(sort_dirs))
 
     # Add sorting
     for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):

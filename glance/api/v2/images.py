@@ -142,7 +142,6 @@ class ImagesController(object):
 
             for change in changes:
                 change_method_name = '_do_%s' % change['op']
-                assert hasattr(self, change_method_name)
                 change_method = getattr(self, change_method_name)
                 change_method(req, image, change)
 

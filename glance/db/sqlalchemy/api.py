@@ -349,17 +349,21 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
         # the actual primary key, rather than assuming its id
         LOG.warn(_LW('Id not in sort_keys; is sort_keys unique?'))
 
-    assert(not (sort_dir and sort_dirs))
+    assert(not (sort_dir and sort_dirs))  # nosec
+    # nosec: This function runs safely if the assertion fails.
 
     # Default the sort direction to ascending
-    if sort_dirs is None and sort_dir is None:
+    if sort_dir is None:
         sort_dir = 'asc'
 
     # Ensure a per-column sort direction
     if sort_dirs is None:
-        sort_dirs = [sort_dir for _sort_key in sort_keys]
+        sort_dirs = [sort_dir] * len(sort_keys)
 
-    assert(len(sort_dirs) == len(sort_keys))
+    assert(len(sort_dirs) == len(sort_keys))  # nosec
+    # nosec: This function runs safely if the assertion fails.
+    if len(sort_dirs) < len(sort_keys):
+        sort_dirs += [sort_dir] * (len(sort_keys) - len(sort_dirs))
 
     # Add sorting
     for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
