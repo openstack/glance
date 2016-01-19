@@ -162,6 +162,27 @@ def check_python3_xrange(logical_line):
                  "large loops.")
 
 
+def check_python3_no_iteritems(logical_line):
+    msg = ("G330: Use six.iteritems() or dict.items() instead of "
+           "dict.iteritems().")
+    if re.search(r".*\.iteritems\(\)", logical_line):
+        yield(0, msg)
+
+
+def check_python3_no_iterkeys(logical_line):
+    msg = ("G331: Use six.iterkeys() or dict.keys() instead of "
+           "dict.iterkeys().")
+    if re.search(r".*\.iterkeys\(\)", logical_line):
+        yield(0, msg)
+
+
+def check_python3_no_itervalues(logical_line):
+    msg = ("G332: Use six.itervalues() or dict.values instead of "
+           "dict.itervalues().")
+    if re.search(r".*\.itervalues\(\)", logical_line):
+        yield(0, msg)
+
+
 def factory(register):
     register(assert_true_instance)
     register(assert_equal_type)
@@ -172,3 +193,6 @@ def factory(register):
     register(check_no_contextlib_nested)
     register(dict_constructor_with_list_copy)
     register(check_python3_xrange)
+    register(check_python3_no_iteritems)
+    register(check_python3_no_iterkeys)
+    register(check_python3_no_itervalues)

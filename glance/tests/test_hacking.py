@@ -108,3 +108,33 @@ class HackingTestCase(utils.BaseTestCase):
         self.assertEqual(0, len(list(func('for i in range(10)'))))
         self.assertEqual(0, len(list(func('for i in six.moves.range(10)'))))
         self.assertEqual(0, len(list(func('testxrange(10)'))))
+
+    def test_dict_iteritems(self):
+        self.assertEqual(1, len(list(checks.check_python3_no_iteritems(
+            "obj.iteritems()"))))
+
+        self.assertEqual(0, len(list(checks.check_python3_no_iteritems(
+            "six.iteritems(obj)"))))
+
+        self.assertEqual(0, len(list(checks.check_python3_no_iteritems(
+            "obj.items()"))))
+
+    def test_dict_iterkeys(self):
+        self.assertEqual(1, len(list(checks.check_python3_no_iterkeys(
+            "obj.iterkeys()"))))
+
+        self.assertEqual(0, len(list(checks.check_python3_no_iterkeys(
+            "six.iterkeys(obj)"))))
+
+        self.assertEqual(0, len(list(checks.check_python3_no_iterkeys(
+            "obj.keys()"))))
+
+    def test_dict_itervalues(self):
+        self.assertEqual(1, len(list(checks.check_python3_no_itervalues(
+            "obj.itervalues()"))))
+
+        self.assertEqual(0, len(list(checks.check_python3_no_itervalues(
+            "six.itervalues(ob)"))))
+
+        self.assertEqual(0, len(list(checks.check_python3_no_itervalues(
+            "obj.values()"))))
