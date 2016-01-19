@@ -35,7 +35,8 @@ http://docs.openstack.org/cli-reference/glance.html#image-service-property-keys
 **instance_uuid**
 -----------------
 
-The ID of the instance used to create this image.
+Metadata which can be used to record which instance this image is associated
+with. (Informational only, does not create an instance snapshot.)
 
 **kernel_id**
 -------------
