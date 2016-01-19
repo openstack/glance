@@ -1,0 +1,10 @@
+---
+security:
+  - Fixing bug 1525915; image might be transitioning
+    from active to queued by regular user by removing
+    last location of image (or replacing locations
+    with empty list). This allows user to re-upload
+    data to the image breaking Glance's promise of
+    image data immutability. From now on, last
+    location cannot be removed and locations cannot
+    be replaced with empty list.
