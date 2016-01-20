@@ -14,8 +14,6 @@
 
 import collections
 
-import six
-
 from glance.common import exception as exc
 from glance.domain import proxy as image_proxy
 
@@ -42,7 +40,7 @@ class ArtifactHelper(image_proxy.Helper):
         if not hasattr(obj, 'metadata'):
             return super(ArtifactHelper, self).proxy(obj)
         extra_attrs = {}
-        for att_name in six.iterkeys(obj.metadata.attributes.all):
+        for att_name in obj.metadata.attributes.all.keys():
             extra_attrs[att_name] = _proxy_artifact_property(att_name)
         new_proxy_class = type("%s(%s)" % (obj.metadata.type_name,
                                            self.proxy_class.__module__),
