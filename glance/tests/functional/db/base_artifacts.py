@@ -15,6 +15,7 @@
 import uuid
 
 import six
+from six.moves import range
 
 import glance.artifacts as ga
 from glance.common import exception as exc
@@ -551,7 +552,7 @@ class ArtifactTests(object):
             '1.2.3-release.2',
             '1.2.3+some-metadata',
             '1.2.4']
-        for i in xrange(len(expected_versions)):
+        for i in range(len(expected_versions)):
             self.assertEqual(expected_versions[i], artifacts[i]['version'])
 
     def test_artifact_get_all_show_level(self):
