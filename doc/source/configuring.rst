@@ -1414,6 +1414,7 @@ to or less than this value. The ``glance-cache-pruner`` executable is designed
 to be run via cron on a regular basis. See more about this executable in
 :doc:`Controlling the Growth of the Image Cache <cache>`
 
+.. _configuring-the-glance-registry:
 
 Configuring the Glance Registry
 -------------------------------
