@@ -1060,7 +1060,8 @@ def _image_member_format(member_ref):
         'can_share': member_ref['can_share'],
         'status': member_ref['status'],
         'created_at': member_ref['created_at'],
-        'updated_at': member_ref['updated_at']
+        'updated_at': member_ref['updated_at'],
+        'deleted': member_ref['deleted']
     }
 
 

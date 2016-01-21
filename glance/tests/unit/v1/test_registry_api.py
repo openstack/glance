@@ -1640,6 +1640,34 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
                                   method='PUT', body=body,
                                   content_type='json')
 
+    def test_update_all_image_existing_deleted_members(self):
+        """
+        Test update existing image members
+        """
+        UUID8 = _gen_uuid()
+        extra_fixture = self.get_fixture(id=UUID8, size=19, protected=False,
+                                         owner='test user')
+
+        db_api.image_create(self.context, extra_fixture)
+
+        # Add a new member to an image
+        req = webob.Request.blank('/images/%s/members/test1' % UUID8)
+        req.method = 'PUT'
+        req.get_response(self.api)
+
+        # Delete the existing member
+        self.get_api_response_ext(204, method='DELETE',
+                                  url='/images/%s/members/test1' % UUID8)
+
+        # Re-add the deleted member by replacing membership list
+        fixture = [dict(member_id='test1', can_share=False)]
+        body = jsonutils.dump_as_bytes(dict(memberships=fixture))
+        self.get_api_response_ext(204, url='/images/%s/members' % UUID8,
+                                  method='PUT', body=body,
+                                  content_type='json')
+        memb_list = db_api.image_member_find(self.context, image_id=UUID8)
+        self.assertEqual(1, len(memb_list))
+
     def test_add_member(self):
         """
         Tests adding image members raises right exception

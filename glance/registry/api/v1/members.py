@@ -176,7 +176,8 @@ class Controller(object):
         # memberships to modify.  Let's start by walking through all
         # the existing image memberships...
         existing_members = self.db_api.image_member_find(req.context,
-                                                         image_id=image['id'])
+                                                         image_id=image['id'],
+                                                         include_deleted=True)
         for member in existing_members:
             if member['id'] in existing:
                 # Just update the membership in place
@@ -185,8 +186,9 @@ class Controller(object):
                                                 member['id'],
                                                 update)
             else:
-                # Outdated one; needs to be deleted
-                self.db_api.image_member_delete(req.context, member['id'])
+                if not member['deleted']:
+                    # Outdated one; needs to be deleted
+                    self.db_api.image_member_delete(req.context, member['id'])
 
         # Now add the non-existent ones
         for memb in add:
