@@ -21,7 +21,7 @@ import datetime
 
 import iso8601
 from monotonic import monotonic as now  # noqa
-import six
+from oslo_utils import encodeutils
 
 # ISO 8601 extended time format with microseconds
 _ISO8601_TIME_FORMAT_SUBSECOND = '%Y-%m-%dT%H:%M:%S.%f'
@@ -46,9 +46,9 @@ def parse_isotime(timestr):
     try:
         return iso8601.parse_date(timestr)
     except iso8601.ParseError as e:
-        raise ValueError(six.text_type(e))
+        raise ValueError(encodeutils.exception_to_unicode(e))
     except TypeError as e:
-        raise ValueError(six.text_type(e))
+        raise ValueError(encodeutils.exception_to_unicode(e))
 
 
 def utcnow(with_timezone=False):

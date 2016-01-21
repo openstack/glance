@@ -14,7 +14,7 @@
 #    under the License.
 
 from oslo_log import log as logging
-import six
+from oslo_utils import encodeutils
 from taskflow import task
 
 from glance.i18n import _LW
@@ -61,6 +61,6 @@ class OptionalTask(task.Task):
             except Exception as exc:
                 msg = (_LW("An optional task has failed, "
                            "the failure was: %s") %
-                       six.text_type(exc))
+                       encodeutils.exception_to_unicode(exc))
                 LOG.warn(msg)
         return wrapper
