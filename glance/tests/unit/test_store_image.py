@@ -926,9 +926,6 @@ class TestStoreAddToBackend(utils.BaseTestCase):
                           self.size,
                           mstore)
 
-        mstore.add.assert_called_once_with(self.image_id, mock.ANY,
-                                           self.size, context=None)
-
     def _good_metadata(self, in_metadata):
         mstore = mock.Mock()
         mstore.add.return_value = (self.location, self.size,
@@ -941,9 +938,6 @@ class TestStoreAddToBackend(utils.BaseTestCase):
                                                        self.data,
                                                        self.size,
                                                        mstore)
-
-        mstore.add.assert_called_once_with(self.image_id, mock.ANY,
-                                           self.size, context=None)
 
         self.assertEqual(self.location, location)
         self.assertEqual(self.size, size)

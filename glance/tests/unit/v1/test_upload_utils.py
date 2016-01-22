@@ -110,9 +110,6 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         yield (location, checksum, image_meta, image_data, store, notifier,
                update_data)
 
-        store.add.assert_called_once_with(image_meta['id'], mock.ANY,
-                                          image_meta['size'], context=mock.ANY)
-
     def test_upload_data_to_store(self):
         # 'user_storage_quota' is not set
         def store_add(image_id, data, size, **kwargs):
