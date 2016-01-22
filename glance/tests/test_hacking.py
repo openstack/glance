@@ -100,3 +100,11 @@ class HackingTestCase(utils.BaseTestCase):
 
         self.assertEqual(0, len(list(checks.dict_constructor_with_list_copy(
             "      self._render_dict(xml, data_el, data.__dict__)"))))
+
+    def test_check_python3_xrange(self):
+        func = checks.check_python3_xrange
+        self.assertEqual(1, len(list(func('for i in xrange(10)'))))
+        self.assertEqual(1, len(list(func('for i in xrange    (10)'))))
+        self.assertEqual(0, len(list(func('for i in range(10)'))))
+        self.assertEqual(0, len(list(func('for i in six.moves.range(10)'))))
+        self.assertEqual(0, len(list(func('testxrange(10)'))))
