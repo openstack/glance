@@ -132,7 +132,7 @@ class Image(object):
         self.tags = kwargs.pop('tags', [])
         if kwargs:
             message = _("__init__() got unexpected keyword argument '%s'")
-            raise TypeError(message % kwargs.keys()[0])
+            raise TypeError(message % list(kwargs.keys())[0])
 
     @property
     def status(self):

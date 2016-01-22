@@ -488,13 +488,13 @@ class ArtifactAttributes(object):
     def default_dependency(self):
         """Returns the default dependency relation for an artifact type"""
         if len(self.dependencies) == 1:
-            return self.dependencies.values()[0]
+            return list(self.dependencies.values())[0]
 
     @property
     def default_blob(self):
         """Returns the default blob object for an artifact type"""
         if len(self.blobs) == 1:
-            return self.blobs.values()[0]
+            return list(self.blobs.values())[0]
 
     @property
     def default_properties_dict(self):
