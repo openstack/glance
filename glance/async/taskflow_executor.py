@@ -61,13 +61,6 @@ class TaskExecutor(glance.async.TaskExecutor):
         self.task_repo = task_repo
         self.image_repo = image_repo
         self.image_factory = image_factory
-        self.engine_conf = {
-            'engine': CONF.taskflow_executor.engine_mode,
-        }
-        self.engine_kwargs = {}
-        if CONF.taskflow_executor.engine_mode == 'parallel':
-            self.engine_kwargs['max_workers'] = (
-                CONF.taskflow_executor.max_workers)
         super(TaskExecutor, self).__init__(context, task_repo, image_repo,
                                            image_factory)
 
@@ -135,8 +128,11 @@ class TaskExecutor(glance.async.TaskExecutor):
 
         try:
             with self._executor() as executor:
-                engine = engines.load(flow, self.engine_conf,
-                                      executor=executor, **self.engine_kwargs)
+                engine = engines.load(
+                    flow,
+                    engine=CONF.taskflow_executor.engine_mode,
+                    executor=executor,
+                    max_workers=CONF.taskflow_executor.max_workers)
                 with llistener.DynamicLoggingListener(engine, log=LOG):
                     engine.run()
         except Exception as exc:
