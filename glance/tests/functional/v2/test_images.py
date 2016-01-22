@@ -677,6 +677,79 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_methods_that_dont_accept_illegal_bodies(self):
+        # Check images can be reached
+        self.start_servers(**self.__dict__.copy())
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+
+        # Test all the schemas
+        schema_urls = [
+            '/v2/schemas/images',
+            '/v2/schemas/image',
+            '/v2/schemas/members',
+            '/v2/schemas/member',
+        ]
+        for value in schema_urls:
+            path = self._url(value)
+            data = jsonutils.dumps(["body"])
+            response = requests.get(path, headers=self._headers(), data=data)
+            self.assertEqual(400, response.status_code)
+
+        # Create image for use with tests
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(201, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        test_urls = [
+            ('/v2/images/%s', 'get'),
+            ('/v2/images/%s/actions/deactivate', 'post'),
+            ('/v2/images/%s/actions/reactivate', 'post'),
+            ('/v2/images/%s/tags/mytag', 'put'),
+            ('/v2/images/%s/tags/mytag', 'delete'),
+            ('/v2/images/%s/members', 'get'),
+            ('/v2/images/%s/file', 'get'),
+            ('/v2/images/%s', 'delete'),
+        ]
+
+        for link, method in test_urls:
+            path = self._url(link % image_id)
+            data = jsonutils.dumps(["body"])
+            response = getattr(requests, method)(
+                path, headers=self._headers(), data=data)
+            self.assertEqual(400, response.status_code)
+
+        # DELETE /images/imgid without legal json
+        path = self._url('/v2/images/%s' % image_id)
+        data = '{"hello"]'
+        response = requests.delete(path, headers=self._headers(), data=data)
+        self.assertEqual(400, response.status_code)
+
+        # POST /images/imgid/members
+        path = self._url('/v2/images/%s/members' % image_id)
+        data = jsonutils.dumps({'member': TENANT3})
+        response = requests.post(path, headers=self._headers(), data=data)
+        self.assertEqual(200, response.status_code)
+
+        # GET /images/imgid/members/memid
+        path = self._url('/v2/images/%s/members/%s' % (image_id, TENANT3))
+        data = jsonutils.dumps(["body"])
+        response = requests.get(path, headers=self._headers(), data=data)
+        self.assertEqual(400, response.status_code)
+
+        # DELETE /images/imgid/members/memid
+        path = self._url('/v2/images/%s/members/%s' % (image_id, TENANT3))
+        data = jsonutils.dumps(["body"])
+        response = requests.delete(path, headers=self._headers(), data=data)
+        self.assertEqual(400, response.status_code)
+
+        self.stop_servers()
+
     def test_download_random_access(self):
         self.start_servers(**self.__dict__.copy())
         # Create another image (with two deployer-defined properties)

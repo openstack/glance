@@ -38,6 +38,7 @@ from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import strutils
 import routes
 import routes.middleware
 import six
@@ -876,8 +877,13 @@ class Resource(object):
         """WSGI method that controls (de)serialization and method dispatch."""
         action_args = self.get_action_args(request.environ)
         action = action_args.pop('action', None)
+        body_reject = strutils.bool_from_string(
+            action_args.pop('body_reject', None))
 
         try:
+            if body_reject and self.deserializer.has_body(request):
+                msg = _('A body is not expected with this request.')
+                raise webob.exc.HTTPBadRequest(explanation=msg)
             deserialized_request = self.dispatch(self.deserializer,
                                                  action, request)
             action_args.update(deserialized_request)

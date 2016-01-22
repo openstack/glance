@@ -40,7 +40,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/image',
                        controller=schemas_resource,
                        action='image',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/image',
                        controller=reject_method_resource,
                        action='reject',
@@ -48,7 +49,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/images',
                        controller=schemas_resource,
                        action='images',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/images',
                        controller=reject_method_resource,
                        action='reject',
@@ -56,7 +58,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/member',
                        controller=schemas_resource,
                        action='member',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/member',
                        controller=reject_method_resource,
                        action='reject',
@@ -65,7 +68,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/members',
                        controller=schemas_resource,
                        action='members',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/members',
                        controller=reject_method_resource,
                        action='reject',
@@ -388,11 +392,13 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}',
                        controller=images_resource,
                        action='show',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}',
                        controller=images_resource,
                        action='delete',
-                       conditions={'method': ['DELETE']})
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}',
                        controller=reject_method_resource,
                        action='reject',
@@ -402,11 +408,13 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/actions/deactivate',
                        controller=image_actions_resource,
                        action='deactivate',
-                       conditions={'method': ['POST']})
+                       conditions={'method': ['POST']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/actions/reactivate',
                        controller=image_actions_resource,
                        action='reactivate',
-                       conditions={'method': ['POST']})
+                       conditions={'method': ['POST']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/actions/deactivate',
                        controller=reject_method_resource,
                        action='reject',
@@ -420,7 +428,8 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/file',
                        controller=image_data_resource,
                        action='download',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/file',
                        controller=image_data_resource,
                        action='upload',
@@ -434,11 +443,13 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/tags/{tag_value}',
                        controller=image_tags_resource,
                        action='update',
-                       conditions={'method': ['PUT']})
+                       conditions={'method': ['PUT']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/tags/{tag_value}',
                        controller=image_tags_resource,
                        action='delete',
-                       conditions={'method': ['DELETE']})
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/tags/{tag_value}',
                        controller=reject_method_resource,
                        action='reject',
@@ -448,7 +459,8 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/members',
                        controller=image_members_resource,
                        action='index',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/members',
                        controller=image_members_resource,
                        action='create',
@@ -461,7 +473,8 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=image_members_resource,
                        action='show',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=image_members_resource,
                        action='update',
@@ -469,7 +482,8 @@ class API(wsgi.Router):
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=image_members_resource,
                        action='delete',
-                       conditions={'method': ['DELETE']})
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}/members/{member_id}',
                        controller=reject_method_resource,
                        action='reject',
