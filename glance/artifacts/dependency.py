@@ -121,6 +121,6 @@ class ArtifactFactory(proxy.ArtifactFactory):
                 if p in self.klass.metadata.attributes.dependencies}
         artifact = super(ArtifactFactory, self).new_artifact(*args, **no_deps)
         # now set dependencies
-        for dep_param, dep_value in deps.iteritems():
+        for dep_param, dep_value in deps.items():
             setattr(artifact, dep_param, dep_value)
         return artifact
