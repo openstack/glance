@@ -271,7 +271,7 @@ class SubunitTestResult(testtools.TestResult):
         self.stopTestRun()
 
     def stopTestRun(self):
-        for cls in list(self.results.iterkeys()):
+        for cls in list(self.results.keys()):
             self.writeTestCase(cls)
         self.stream.writeln()
         self.writeSlowTests()
