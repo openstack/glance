@@ -126,6 +126,8 @@ def validate_external_location(uri):
     :param uri: The URI of external image location.
     :returns: Whether given URI of external image location are OK.
     """
+    if not uri:
+        return False
 
     # TODO(zhiyan): This function could be moved to glance_store.
     # TODO(gm): Use a whitelist of allowed schemes

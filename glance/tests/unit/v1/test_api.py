@@ -510,6 +510,32 @@ class TestGlanceAPI(base.IsolatedUnitTest):
             self.assertEqual(400, res.status_int)
             self.assertIn('Disk format is not specified', res.body)
 
+    def test_create_with_empty_location(self):
+        fixture_headers = {
+            'x-image-meta-location': '',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
+    def test_create_with_empty_copy_from(self):
+        fixture_headers = {
+            'x-glance-api-copy-from': '',
+        }
+
+        req = webob.Request.blank("/images")
+        req.method = 'POST'
+        for k, v in six.iteritems(fixture_headers):
+            req.headers[k] = v
+
+        res = req.get_response(self.api)
+        self.assertEqual(400, res.status_int)
+
     def test_create_delayed_image_with_no_disk_and_container_formats(self):
         fixture_headers = {
             'x-image-meta-name': 'delayed',

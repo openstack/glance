@@ -461,26 +461,32 @@ class Controller(controller.BaseController):
         or copy-from headers) are supported. Otherwise we reject
         with 400 "Bad Request".
         """
-        if source:
-            if store_utils.validate_external_location(source):
-                return source
-            else:
+        if store_utils.validate_external_location(source):
+            return source
+        else:
+            if source:
                 msg = _("External sources are not supported: '%s'") % source
-                LOG.warn(msg)
-                raise HTTPBadRequest(explanation=msg,
-                                     request=req,
-                                     content_type="text/plain")
+            else:
+                msg = _("External source should not be empty")
+            LOG.warn(msg)
+            raise HTTPBadRequest(explanation=msg,
+                                 request=req,
+                                 content_type="text/plain")
 
     @staticmethod
     def _copy_from(req):
         return req.headers.get('x-glance-api-copy-from')
 
     def _external_source(self, image_meta, req):
-        source = image_meta.get('location')
-        if source is not None:
+        if 'location' in image_meta:
             self._enforce(req, 'set_image_location')
-        else:
+            source = image_meta['location']
+        elif 'x-glance-api-copy-from' in req.headers:
             source = Controller._copy_from(req)
+        else:
+            # we have an empty external source value
+            # so we are creating "draft" of the image and no need validation
+            return None
         return Controller._validate_source(source, req)
 
     @staticmethod
