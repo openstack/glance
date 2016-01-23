@@ -420,14 +420,18 @@ def print_help(options, args):
     """
     Print help specific to a command
     """
-    if len(args) != 1:
-        sys.exit("Please specify a command")
-
     parser = options.__parser
-    command_name = args.pop()
-    command = lookup_command(parser, command_name)
 
-    print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
+    if not args:
+        parser.print_help()
+    else:
+        number_of_commands = len(args)
+        if number_of_commands == 1:
+            command_name = args.pop()
+            command = lookup_command(parser, command_name)
+            print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
+        else:
+            sys.exit("Please specify one command")
 
 
 def lookup_command(parser, command_name):
