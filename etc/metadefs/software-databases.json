@@ -13,7 +13,8 @@
             "properties_target": "image"
         },
         {
-            "name": "OS::Nova::Instance"
+            "name": "OS::Nova::Instance",
+            "properties_target": "metadata"
         },
         {
             "name": "OS::Trove::Instance"
