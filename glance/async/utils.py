@@ -55,6 +55,9 @@ class OptionalTask(task.Task):
         # The taskflow team is working on improving this and on something that
         # will provide the ability of defining optional tasks. For now, to lie
         # ourselves we must.
+        #
+        # NOTE(harlowja): The upstream change that is hopefully going to make
+        # this easier/built-in is at: https://review.openstack.org/#/c/271116/
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
