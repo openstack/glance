@@ -1,0 +1,11 @@
+---
+upgrade:
+  - Metadata definitions previously associated with OS::Nova::Instance
+    have been changed to be associated with OS::Nova::Server in order to
+    align with Heat and Searchlight. You may either upgrade them using
+    glance-manage db load_metadefs [path] [merge] [prefer_new] or
+    glance-manage db upgrade 44.
+fixes:
+  - Metadata definitions previously associated with OS::Nova::Instance
+    have been changed to be associated with OS::Nova::Server in order to
+    align with Heat and Searchlight.

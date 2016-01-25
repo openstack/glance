@@ -62,8 +62,9 @@ OpenStack services today:
 |  + *extra specs*        |  + *image metadata*       |  + *properties*      |
 | Host Aggregate          |  + *metadata*             |  + *tags*            |
 |  + *metadata*           | VolumeType                |                      |
-| Instances               |  + *extra specs*          |                      |
+| Servers                 |  + *extra specs*          |                      |
 |  + *metadata*           |  + *qos specs*            |                      |
+|  + *scheduler_hints*    |                           |                      |
 |  + *tags*               |                           |                      |
 +-------------------------+---------------------------+----------------------+
 
@@ -182,4 +183,3 @@ aggregate_instance_extra_specs:companyx:fastio=true
 In some cases, there may be multiple different filters that may use
 the same property with different prefixes. In this case, the correct prefix
 needs to be set based on which filter is enabled.
-
