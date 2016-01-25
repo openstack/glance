@@ -38,6 +38,7 @@ from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 from oslo_utils import strutils
 import routes
 import routes.middleware
@@ -899,7 +900,8 @@ class Resource(object):
                     "decoded by Glance")
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except Exception as e:
-            LOG.exception(_LE("Caught error: %s"), six.text_type(e))
+            LOG.exception(_LE("Caught error: %s"),
+                          encodeutils.exception_to_unicode(e))
             response = webob.exc.HTTPInternalServerError()
             return response
 

@@ -192,7 +192,8 @@ class Controller(object):
                 module = cls.__module__
                 if module not in CONF.allowed_rpc_exception_modules:
                     cls = exception.RPCError
-                    val = six.text_type(exception.RPCError(cls=cls, val=val))
+                    val = encodeutils.exception_to_unicode(
+                        exception.RPCError(cls=cls, val=val))
 
                 cls_path = "%s.%s" % (cls.__module__, cls.__name__)
                 result = {"_error": {"cls": cls_path, "val": val}}
