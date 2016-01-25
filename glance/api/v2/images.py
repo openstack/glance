@@ -714,7 +714,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         return base_href
 
     def _format_image(self, image):
-        image_view = dict()
+
+        def _get_image_locations(image):
+            try:
+                return list(image.locations)
+            except exception.Forbidden:
+                return []
+
         try:
             image_view = dict(image.extra_properties)
             attributes = ['name', 'disk_format', 'container_format',
@@ -728,7 +734,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             image_view['updated_at'] = timeutils.isotime(image.updated_at)
 
             if CONF.show_multiple_locations:
-                locations = list(image.locations)
+                locations = _get_image_locations(image)
                 if locations:
                     image_view['locations'] = []
                     for loc in locations:
@@ -745,9 +751,10 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                               "for image %s", image.image_id)
 
             if CONF.show_image_direct_url:
-                if image.locations:
+                locations = _get_image_locations(image)
+                if locations:
                     # Choose best location configured strategy
-                    l = location_strategy.choose_best_location(image.locations)
+                    l = location_strategy.choose_best_location(locations)
                     image_view['direct_url'] = l['url']
                 else:
                     LOG.debug("There is not available location "
@@ -758,9 +765,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             image_view['file'] = self._get_image_href(image, 'file')
             image_view['schema'] = '/v2/schemas/image'
             image_view = self.schema.filter(image_view)  # domain
+            return image_view
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        return image_view
 
     def create(self, response, image):
         response.status_int = 201
