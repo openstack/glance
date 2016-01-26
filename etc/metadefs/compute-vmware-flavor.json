@@ -14,6 +14,11 @@
             "title": "VMware Hardware Version",
             "description": "Specifies the hardware version VMware uses to create images. If the hardware version needs to be compatible with a cluster version, for backward compatibility or other circumstances, the vmware:hw_version key specifies a virtual machine hardware version. In the event that a cluster has mixed host version types, the key will enable the vCenter to place the cluster on the correct host.",
             "type": "string"
+        },
+        "vmware:storage_policy": {
+            "title": "VMware Storage Policy",
+            "description": "Specifies the storage policy to be applied for newly created instance. If not provided, the default storage policy specified in config file will be used. If Storage Policy Based Management (SPBM) is not enabled in config file, this value won't be used.",
+            "type": "string"
         }
     }
 }
