@@ -220,8 +220,7 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
 
     def test_proxy_wrapped_membership(self):
         proxy_factory = proxy.ImageMembershipFactory(
-            self.factory, member_proxy_class=FakeProxy,
-            member_proxy_kwargs={'a': 1})
+            self.factory, proxy_class=FakeProxy, proxy_kwargs={'a': 1})
         self.factory.result = 'tyrion'
         membership = proxy_factory.new_image_member('jaime', 'cersei')
         self.assertIsInstance(membership, FakeProxy)
@@ -232,12 +231,12 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
 
     def test_proxy_wrapped_image(self):
         proxy_factory = proxy.ImageMembershipFactory(
-            self.factory, image_proxy_class=FakeProxy)
+            self.factory, proxy_class=FakeProxy)
         self.factory.result = 'tyrion'
         image = FakeProxy('jaime')
         membership = proxy_factory.new_image_member(image, 'cersei')
-        self.assertEqual('tyrion', membership)
-        self.assertEqual('jaime', self.factory.image)
+        self.assertIsInstance(membership, FakeProxy)
+        self.assertIsInstance(self.factory.image, FakeProxy)
         self.assertEqual('cersei', self.factory.member_id)
 
     def test_proxy_both_wrapped(self):
@@ -246,9 +245,8 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
 
         proxy_factory = proxy.ImageMembershipFactory(
             self.factory,
-            member_proxy_class=FakeProxy,
-            member_proxy_kwargs={'b': 2},
-            image_proxy_class=FakeProxy2)
+            proxy_class=FakeProxy,
+            proxy_kwargs={'b': 2})
 
         self.factory.result = 'tyrion'
         image = FakeProxy2('jaime')
@@ -256,36 +254,13 @@ class TestImageMembershipFactory(test_utils.BaseTestCase):
         self.assertIsInstance(membership, FakeProxy)
         self.assertEqual('tyrion', membership.base)
         self.assertEqual({'b': 2}, membership.kwargs)
-        self.assertEqual('jaime', self.factory.image)
+        self.assertIsInstance(self.factory.image, FakeProxy2)
         self.assertEqual('cersei', self.factory.member_id)
 
 
 class FakeImage(object):
     def __init__(self, result=None):
         self.result = result
-
-    def get_member_repo(self):
-        return self.result
-
-
-class TestImage(test_utils.BaseTestCase):
-    def setUp(self):
-        super(TestImage, self).setUp()
-        self.image = FakeImage()
-
-    def test_normal_member_repo(self):
-        proxy_image = proxy.Image(self.image)
-        self.image.result = 'mormont'
-        self.assertEqual('mormont', proxy_image.get_member_repo())
-
-    def test_proxied_member_repo(self):
-        proxy_image = proxy.Image(self.image,
-                                  member_repo_proxy_class=FakeProxy,
-                                  member_repo_proxy_kwargs={'a': 10})
-        self.image.result = 'corn'
-        member_repo = proxy_image.get_member_repo()
-        self.assertIsInstance(member_repo, FakeProxy)
-        self.assertEqual('corn', member_repo.base)
 
 
 class TestTaskFactory(test_utils.BaseTestCase):

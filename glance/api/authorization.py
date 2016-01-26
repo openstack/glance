@@ -112,13 +112,24 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         return [proxy_image(self.context, i) for i in images]
 
 
-class ImageMemberRepoProxy(glance.domain.proxy.Repo):
+class ImageMemberRepoProxy(glance.domain.proxy.MemberRepo):
 
     def __init__(self, member_repo, image, context):
         self.member_repo = member_repo
         self.image = image
         self.context = context
-        super(ImageMemberRepoProxy, self).__init__(member_repo)
+        proxy_kwargs = {'context': self.context}
+        super(ImageMemberRepoProxy, self).__init__(
+            image,
+            member_repo,
+            member_proxy_class=ImageMemberProxy,
+            member_proxy_kwargs=proxy_kwargs)
+        self._check_image_visibility()
+
+    def _check_image_visibility(self):
+        if self.image.visibility == 'public':
+            message = _("Public images do not have members.")
+            raise exception.Forbidden(message)
 
     def get(self, member_id):
         if (self.context.is_admin or
@@ -189,11 +200,16 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
         return super(ImageFactoryProxy, self).new_image(owner=owner, **kwargs)
 
 
-class ImageMemberFactoryProxy(object):
+class ImageMemberFactoryProxy(glance.domain.proxy.ImageMembershipFactory):
 
     def __init__(self, image_member_factory, context):
         self.image_member_factory = image_member_factory
         self.context = context
+        kwargs = {'context': self.context}
+        super(ImageMemberFactoryProxy, self).__init__(
+            image_member_factory,
+            proxy_class=ImageMemberProxy,
+            proxy_kwargs=kwargs)
 
     def new_image_member(self, image, member_id):
         owner = image.owner
@@ -315,10 +331,6 @@ class ImmutableImageProxy(object):
         message = _("You are not permitted to delete this image.")
         raise exception.Forbidden(message)
 
-    def get_member_repo(self):
-        member_repo = self.base.get_member_repo()
-        return ImageMemberRepoProxy(member_repo, self, self.context)
-
     def get_data(self, *args, **kwargs):
         return self.base.get_data(*args, **kwargs)
 
@@ -401,13 +413,13 @@ class ImageProxy(glance.domain.proxy.Image):
         self.context = context
         super(ImageProxy, self).__init__(image)
 
-    def get_member_repo(self, **kwargs):
-        if self.image.visibility == 'public':
-            message = _("Public images do not have members.")
-            raise exception.Forbidden(message)
-        else:
-            member_repo = self.image.get_member_repo(**kwargs)
-            return ImageMemberRepoProxy(member_repo, self, self.context)
+
+class ImageMemberProxy(glance.domain.proxy.ImageMember):
+
+    def __init__(self, image_member, context):
+        self.image_member = image_member
+        self.context = context
+        super(ImageMemberProxy, self).__init__(image_member)
 
 
 class TaskProxy(glance.domain.proxy.Task):

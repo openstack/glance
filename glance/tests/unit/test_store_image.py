@@ -741,6 +741,18 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.image_repo = glance.location.ImageRepoProxy(self.image_repo_stub,
                                                          {}, self.store_api,
                                                          store_utils)
+        patcher = mock.patch("glance.location._get_member_repo_for_store",
+                             self.get_fake_member_repo)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.fake_member_repo = FakeMemberRepo(self.image, [TENANT1, TENANT2])
+        self.image_member_repo = glance.location.ImageMemberRepoProxy(
+            self.fake_member_repo,
+            self.image,
+            {}, self.store_api)
+
+    def get_fake_member_repo(self, image, context, db_api, store_api):
+        return FakeMemberRepo(self.image, [TENANT1, TENANT2])
 
     def test_add_updates_acls(self):
         self.image_stub.locations = [{'url': 'foo', 'metadata': {},
@@ -794,10 +806,9 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.image_stub.locations = [{'url': 'glug', 'metadata': {},
                                       'status': 'active'}]
         self.image_stub.visibility = 'private'
-        member_repo = self.image.get_member_repo()
         membership = glance.domain.ImageMembership(
             UUID1, TENANT3, None, None, status='accepted')
-        member_repo.add(membership)
+        self.image_member_repo.add(membership)
         self.assertIn('glug', self.store_api.acls)
         acls = self.store_api.acls['glug']
         self.assertFalse(acls['public'])
@@ -808,10 +819,9 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.image_stub.locations = [{'url': 'glug', 'metadata': {},
                                       'status': 'active'}]
         self.image_stub.visibility = 'private'
-        member_repo = self.image.get_member_repo()
         membership = glance.domain.ImageMembership(
             UUID1, TENANT1, None, None, status='accepted')
-        member_repo.remove(membership)
+        self.image_member_repo.remove(membership)
         self.assertIn('glug', self.store_api.acls)
         acls = self.store_api.acls['glug']
         self.assertFalse(acls['public'])

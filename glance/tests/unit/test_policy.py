@@ -349,8 +349,10 @@ class TestMemberPolicy(test_utils.BaseTestCase):
     def setUp(self):
         self.policy = mock.Mock()
         self.policy.enforce = mock.Mock()
+        self.image_stub = ImageStub(UUID1)
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
         self.member_repo = glance.api.policy.ImageMemberRepoProxy(
-            MemberRepoStub(), {}, self.policy)
+            MemberRepoStub(), image, {}, self.policy)
         self.target = self.member_repo.target
         super(TestMemberPolicy, self).setUp()
 

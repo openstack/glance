@@ -303,11 +303,6 @@ class ImageProxy(glance.domain.proxy.Image):
         self.image = image
         super(ImageProxy, self).__init__(image)
 
-    def get_member_repo(self):
-        member_repo = ImageMemberRepo(self.context, self.db_api,
-                                      self.image)
-        return member_repo
-
 
 class ImageMemberRepo(object):
 

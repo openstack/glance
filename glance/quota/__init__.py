@@ -169,8 +169,8 @@ class ImageMemberFactoryProxy(glance.domain.proxy.ImageMembershipFactory):
                         'store_utils': store_utils}
         super(ImageMemberFactoryProxy, self).__init__(
             member_factory,
-            image_proxy_class=ImageProxy,
-            image_proxy_kwargs=proxy_kwargs)
+            proxy_class=ImageMemberProxy,
+            proxy_kwargs=proxy_kwargs)
 
     def _enforce_image_member_quota(self, image):
         if CONF.image_member_quota < 0:
@@ -368,3 +368,13 @@ class ImageProxy(glance.domain.proxy.Image):
     def added_new_properties(self):
         current_props = set(self.image.extra_properties.keys())
         return bool(current_props.difference(self.orig_props))
+
+
+class ImageMemberProxy(glance.domain.proxy.ImageMember):
+
+    def __init__(self, image_member, context, db_api, store_utils):
+        self.image_member = image_member
+        self.context = context
+        self.db_api = db_api
+        self.store_utils = store_utils
+        super(ImageMemberProxy, self).__init__(image_member)
