@@ -156,6 +156,12 @@ def dict_constructor_with_list_copy(logical_line):
         yield (0, msg)
 
 
+def check_python3_xrange(logical_line):
+    if re.search(r"\bxrange\s*\(", logical_line):
+        yield(0, "G329: Do not use xrange. Use range, or six.moves.range for "
+                 "large loops.")
+
+
 def factory(register):
     register(assert_true_instance)
     register(assert_equal_type)
@@ -165,3 +171,4 @@ def factory(register):
     register(validate_log_translations)
     register(check_no_contextlib_nested)
     register(dict_constructor_with_list_copy)
+    register(check_python3_xrange)
