@@ -75,6 +75,7 @@ Installing/Configuring Glance
    artifact-types
    flows
    property-protections
+   opts
 
 Operating Glance
 ================
