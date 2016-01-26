@@ -21,6 +21,7 @@ the Glance Registry API
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
+import six
 
 from glance.common.client import BaseClient
 from glance.common import crypt
@@ -113,13 +114,17 @@ class RegistryClient(BaseClient):
             kwargs['headers'] = kwargs.get('headers', {})
             kwargs['headers'].update(self.identity_headers or {})
             if self._passed_request_id:
-                kwargs['headers']['X-Openstack-Request-ID'] = (
-                    self._passed_request_id)
+                request_id = self._passed_request_id
+                if six.PY3 and isinstance(request_id, bytes):
+                    request_id = request_id.decode('utf-8')
+                kwargs['headers']['X-Openstack-Request-ID'] = request_id
             res = super(RegistryClient, self).do_request(method,
                                                          action,
                                                          **kwargs)
             status = res.status
             request_id = res.getheader('x-openstack-request-id')
+            if six.PY3 and isinstance(request_id, bytes):
+                request_id = request_id.decode('utf-8')
             LOG.debug("Registry request %(method)s %(action)s HTTP %(status)s"
                       " request id %(request_id)s",
                       {'method': method, 'action': action,
@@ -247,7 +252,8 @@ class RegistryClient(BaseClient):
         headers = {}
         # Build up a body if can_share is specified
         if can_share is not None:
-            body = jsonutils.dumps(dict(member=dict(can_share=can_share)))
+            body = jsonutils.dump_as_bytes(
+                dict(member=dict(can_share=can_share)))
             headers['Content-Type'] = 'application/json'
 
         url = "/images/%s/members/%s" % (image_id, member_id)
