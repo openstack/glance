@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
 from oslo_utils import encodeutils
 import six
+from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
@@ -795,7 +796,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
 
     def create(self, response, image):
-        response.status_int = 201
+        response.status_int = http.CREATED
         self.show(response, image)
         response.location = self._get_image_href(image)
 
@@ -831,7 +832,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.content_type = 'application/json'
 
     def delete(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
 
 def get_base_properties():

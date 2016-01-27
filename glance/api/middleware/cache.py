@@ -26,6 +26,7 @@ import re
 import six
 
 from oslo_log import log as logging
+from six.moves import http_client as http
 import webob
 
 from glance.api.common import size_checked_iter
@@ -260,7 +261,7 @@ class CacheFilter(wsgi.Middleware):
         except TypeError:
             return resp
 
-        if method == 'GET' and status_code == 204:
+        if method == 'GET' and status_code == http.NO_CONTENT:
             # Bugfix:1251055 - Don't cache non-existent image files.
             # NOTE: Both GET for an image without locations and DELETE return
             # 204 but DELETE should be processed.
