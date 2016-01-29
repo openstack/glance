@@ -26,10 +26,10 @@
 
     "manage_image_cache": "",
 
-    "get_task": "",
-    "get_tasks": "",
-    "add_task": "",
-    "modify_task": "",
+    "get_task": "role:admin",
+    "get_tasks": "role:admin",
+    "add_task": "role:admin",
+    "modify_task": "role:admin",
 
     "get_metadef_namespace": "",
     "get_metadef_namespaces":"",
