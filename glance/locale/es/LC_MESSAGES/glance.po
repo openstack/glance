@@ -8,16 +8,17 @@
 # Marian Tort <marian.tort@gmail.com>, 2015
 # Pablo Sanchez <furybeat@gmail.com>, 2015
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+# Marshall Margenau <mm8789@att.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.2.dev2\n"
+"Project-Id-Version: glance 11.0.2.dev5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-12 16:33+0000\n"
+"POT-Creation-Date: 2016-01-20 01:01+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-09-04 12:45+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"PO-Revision-Date: 2016-01-28 02:35+0000\n"
+"Last-Translator: Marshall Margenau <mm8789@att.com>\n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -755,6 +756,10 @@ msgstr "Se prohíbe eliminar una imagen %s."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Está prohibido eliminar imagen: %s"
+
+#, python-format
+msgid "Forbidden to modify '%s' of image."
+msgstr "Prohibido modificar '%s' de la imagen."
 
 msgid "Forbidden to reserve image."
 msgstr "La reserva de imagen está prohibida."
@@ -2630,6 +2635,10 @@ msgstr "No es posible especificar la versión si no se especifica el tipo"
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr "No se puede cargar datos de imagen duplicada %(image_id)s: %(error)s"
+
+#, python-format
+msgid "Unable to verify signature: %(reason)s"
+msgstr "No se puede verificar la firma: %(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "Acceso a imagen no autorizado"
