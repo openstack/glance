@@ -283,10 +283,10 @@ class ImageRepo(object):
         image.updated_at = new_values['updated_at']
 
     def remove(self, image):
-        image_values = self._format_image_to_db(image)
         try:
             self.db_api.image_update(self.context, image.image_id,
-                                     image_values, purge_props=True)
+                                     {'status': image.status},
+                                     purge_props=True)
         except (exception.ImageNotFound, exception.Forbidden):
             msg = _("No image found with ID %s") % image.image_id
             raise exception.ImageNotFound(msg)
