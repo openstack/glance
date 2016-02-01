@@ -8,16 +8,19 @@
 # Marian Tort <marian.tort@gmail.com>, 2015
 # Pablo Sanchez <furybeat@gmail.com>, 2015
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# German Alexis Rivera De La Torre <gr720e@att.com>, 2016. #zanata
+# Marshall Margenau <mm8789@att.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev43\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-15 11:52+0000\n"
+"POT-Creation-Date: 2016-01-29 06:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-09-04 12:45+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"PO-Revision-Date: 2016-01-30 06:06+0000\n"
+"Last-Translator: Andreas Jaeger <jaegerandi@gmail.com>\n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -738,6 +741,10 @@ msgstr "Se prohíbe eliminar una imagen %s."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Está prohibido eliminar imagen: %s"
+
+#, python-format
+msgid "Forbidden to modify '%s' of image."
+msgstr "Prohibido modificar '%s' de la imagen."
 
 msgid "Forbidden to reserve image."
 msgstr "La reserva de imagen está prohibida."
@@ -2600,6 +2607,10 @@ msgstr "No es posible especificar la versión si no se especifica el tipo"
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr "No se puede cargar datos de imagen duplicada %(image_id)s: %(error)s"
 
+#, python-format
+msgid "Unable to verify signature: %(reason)s"
+msgstr "No se puede verificar la firma: %(reason)s"
+
 msgid "Unauthorized image access"
 msgstr "Acceso a imagen no autorizado"
 
@@ -2816,6 +2827,9 @@ msgstr "No tiene permiso para crear resource_type propiedad de '%s'"
 msgid "You are not permitted to create this task with owner as: %s"
 msgstr "No tiene permiso para crear esta tarea como propiedad de: '%s"
 
+msgid "You are not permitted to deactivate this image."
+msgstr "No tiene permiso para deactivar esta imagen."
+
 msgid "You are not permitted to delete this image."
 msgstr "No tiene permiso para suprimir esta imagen."
 
@@ -2850,6 +2864,9 @@ msgstr "No tiene permiso para modificar etiquetas en esta imagen."
 
 msgid "You are not permitted to modify this image."
 msgstr "No tiene permiso para modificar esta imagen."
+
+msgid "You are not permitted to reactivate this image."
+msgstr "No tiene permiso para reactivar esta imagen."
 
 msgid "You are not permitted to set status on this task."
 msgstr "No tiene permiso para configurar estado en esta tarea."
