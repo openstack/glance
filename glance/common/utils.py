@@ -349,68 +349,6 @@ def safe_mkdirs(path):
             raise
 
 
-class PrettyTable(object):
-    """Creates an ASCII art table for use in bin/glance
-
-    Example:
-
-        ID  Name              Size         Hits
-        --- ----------------- ------------ -----
-        122 image                       22     0
-    """
-    def __init__(self):
-        self.columns = []
-
-    def add_column(self, width, label="", just='l'):
-        """Add a column to the table
-
-        :param width: number of characters wide the column should be
-        :param label: column heading
-        :param just: justification for the column, 'l' for left,
-                     'r' for right
-        """
-        self.columns.append((width, label, just))
-
-    def make_header(self):
-        label_parts = []
-        break_parts = []
-        for width, label, just in self.columns:
-            # NOTE(sirp): headers are always left justified
-            label_part = self._clip_and_justify(label, width, 'l')
-            label_parts.append(label_part)
-
-            break_part = '-' * width
-            break_parts.append(break_part)
-
-        label_line = ' '.join(label_parts)
-        break_line = ' '.join(break_parts)
-        return '\n'.join([label_line, break_line])
-
-    def make_row(self, *args):
-        row = args
-        row_parts = []
-        for data, (width, label, just) in zip(row, self.columns):
-            row_part = self._clip_and_justify(data, width, just)
-            row_parts.append(row_part)
-
-        row_line = ' '.join(row_parts)
-        return row_line
-
-    @staticmethod
-    def _clip_and_justify(data, width, just):
-        # clip field to column width
-        clipped_data = str(data)[:width]
-
-        if just == 'r':
-            # right justify
-            justified = clipped_data.rjust(width)
-        else:
-            # left justify
-            justified = clipped_data.ljust(width)
-
-        return justified
-
-
 def mutating(func):
     """Decorator to enforce read-only logic"""
     @functools.wraps(func)
