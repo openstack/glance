@@ -504,21 +504,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                             art['id'],
                                             data=data,
                                             status=400)
-        actual = u'''\
-<html>
- <head>
-  <title>400 Bad Request</title>
- </head>
- <body>
-  <h1>400 Bad Request</h1>
-  Artifact has no property nonexistent_property<br /><br />
-
-
-
- </body>
-</html>'''
-
-        self.assertEqual(actual, result)
+        self.assertIn('400 Bad Request', result)
+        self.assertIn('Artifact has no property nonexistent_property', result)
 
     def test_update_nonexistent_property_by_remove_op(self):
         art = self._create_artifact('withprops', data={'name': 'some art',
@@ -529,21 +516,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                             art['id'],
                                             data=data,
                                             status=400)
-        actual = u'''\
-<html>
- <head>
-  <title>400 Bad Request</title>
- </head>
- <body>
-  <h1>400 Bad Request</h1>
-  Artifact has no property nonexistent_property<br /><br />
-
-
-
- </body>
-</html>'''
-
-        self.assertEqual(actual, result)
+        self.assertIn('400 Bad Request', result)
+        self.assertIn('Artifact has no property nonexistent_property', result)
 
     def test_update_nonexistent_property_by_add_op(self):
         art = self._create_artifact('withprops', data={'name': 'some art',
@@ -554,21 +528,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                             art['id'],
                                             data=data,
                                             status=400)
-        actual = u'''\
-<html>
- <head>
-  <title>400 Bad Request</title>
- </head>
- <body>
-  <h1>400 Bad Request</h1>
-  Artifact has no property nonexistent_property<br /><br />
-
-
-
- </body>
-</html>'''
-
-        self.assertEqual(actual, result)
+        self.assertIn('400 Bad Request', result)
+        self.assertIn('Artifact has no property nonexistent_property', result)
 
     def test_update_array_property_by_replace_op(self):
         art = self._create_artifact('withprops', data={'name': 'some art',
