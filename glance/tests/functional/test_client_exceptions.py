@@ -133,5 +133,5 @@ class TestClientExceptions(functional.FunctionalTest):
         path = ('http://%s:%d/server-traceback' %
                 ('127.0.0.1', self.port))
         response, content = http.request(path, 'GET')
-        self.assertTrue('ServerError' not in content)
+        self.assertNotIn(b'ServerError', content)
         self.assertEqual(500, response.status)

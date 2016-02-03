@@ -40,7 +40,7 @@ class TestMultiprocessing(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(200, response.status)
-        self.assertEqual('{"images": []}', content)
+        self.assertEqual(b'{"images": []}', content)
         self.stop_servers()
 
     def _get_children(self):
