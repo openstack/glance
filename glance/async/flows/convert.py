@@ -29,7 +29,8 @@ convert_task_opts = [
     cfg.StrOpt('conversion_format',
                choices=('qcow2', 'raw', 'vmdk'),
                help=_("The format to which images will be automatically "
-                      "converted.")),
+                      "converted. When using the RBD backend, this should be "
+                      "set to 'raw'")),
 ]
 
 CONF = cfg.CONF
