@@ -156,14 +156,11 @@ class DbCommands(object):
         age_in_days = int(age_in_days)
         max_rows = int(max_rows)
         if age_in_days <= 0:
-            print(_("Must supply a positive, non-zero value for age."))
-            exit(1)
+            sys.exit(_("Must supply a positive, non-zero value for age."))
         if age_in_days >= (int(time.time()) / 86400):
-            print(_("Maximal age is count of days since epoch."))
-            exit(1)
+            sys.exit(_("Maximal age is count of days since epoch."))
         if max_rows < 1:
-            print(_("Minimal rows limit is 1."))
-            exit(1)
+            sys.exit(_("Minimal rows limit is 1."))
         ctx = context.get_admin_context(show_deleted=True)
         db_api.purge_deleted_rows(ctx, age_in_days, max_rows)
 
