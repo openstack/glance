@@ -191,14 +191,14 @@ def _get_base_properties():
         },
         "created_at": {
             "type": "string",
-            "description": _("Date and time of object creation"
-                             " (READ-ONLY)"),
+            "readOnly": True,
+            "description": _("Date and time of object creation"),
             "format": "date-time"
         },
         "updated_at": {
             "type": "string",
-            "description": _("Date and time of the last object modification"
-                             " (READ-ONLY)"),
+            "readOnly": True,
+            "description": _("Date and time of the last object modification"),
             "format": "date-time"
         }
     }

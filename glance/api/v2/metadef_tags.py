@@ -194,14 +194,14 @@ def _get_base_properties():
         },
         "created_at": {
             "type": "string",
-            "description": _("Date and time of tag creation"
-                             " (READ-ONLY)"),
+            "readOnly": True,
+            "description": _("Date and time of tag creation"),
             "format": "date-time"
         },
         "updated_at": {
             "type": "string",
-            "description": _("Date and time of the last tag modification"
-                             " (READ-ONLY)"),
+            "readOnly": True,
+            "description": _("Date and time of the last tag modification"),
             "format": "date-time"
         }
     }

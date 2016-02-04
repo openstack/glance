@@ -224,14 +224,15 @@ def _get_base_properties():
         },
         "created_at": {
             "type": "string",
-            "description": _("Date and time of resource type association"
-                             " (READ-ONLY)"),
+            "readOnly": True,
+            "description": _("Date and time of resource type association"),
             "format": "date-time"
         },
         "updated_at": {
             "type": "string",
+            "readOnly": True,
             "description": _("Date and time of the last resource type "
-                             "association modification (READ-ONLY)"),
+                             "association modification"),
             "format": "date-time"
         }
     }
