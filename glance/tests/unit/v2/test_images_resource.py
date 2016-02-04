@@ -1441,26 +1441,6 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
                           another_request, created_image.image_id, changes)
 
-    def test_update_replace_locations(self):
-        self.stubs.Set(store, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
-        output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(UUID1, output.image_id)
-        self.assertEqual(0, len(output.locations))
-        self.assertEqual('queued', output.status)
-        self.assertIsNone(output.size)
-
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        changes = [{'op': 'replace', 'path': ['locations'],
-                    'value': [new_location]}]
-        output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(UUID1, output.image_id)
-        self.assertEqual(1, len(output.locations))
-        self.assertEqual(new_location, output.locations[0])
-        self.assertEqual('active', output.status)
-
     def test_update_replace_locations_non_empty(self):
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
@@ -1472,34 +1452,8 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_update_replace_locations_invalid(self):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
-        output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(UUID1, output.image_id)
-        self.assertEqual(0, len(output.locations))
-        self.assertEqual('queued', output.status)
-
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'replace', 'path': ['locations'],
-                    'value': [{'url': 'unknow://foo', 'metadata': {}}]}]
-        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID1, changes)
-
-    def test_update_replace_locations_status_exception(self):
-        self.stubs.Set(store, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
-        output = self.controller.update(request, UUID2, changes)
-        self.assertEqual(UUID2, output.image_id)
-        self.assertEqual(0, len(output.locations))
-        self.assertEqual('queued', output.status)
-
-        self.db.image_update(None, UUID2, {'disk_format': None})
-
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        changes = [{'op': 'replace', 'path': ['locations'],
-                    'value': [new_location]}]
-        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
-                          request, UUID2, changes)
 
     def test_update_add_property(self):
         request = unit_test_utils.get_fake_request()
@@ -1624,24 +1578,6 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID1, changes)
 
-    def test_update_add_locations_status_exception(self):
-        self.stubs.Set(store, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
-        output = self.controller.update(request, UUID2, changes)
-        self.assertEqual(UUID2, output.image_id)
-        self.assertEqual(0, len(output.locations))
-        self.assertEqual('queued', output.status)
-
-        self.db.image_update(None, UUID2, {'disk_format': None})
-
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        changes = [{'op': 'add', 'path': ['locations', '-'],
-                    'value': new_location}]
-        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
-                          request, UUID2, changes)
-
     def test_update_add_duplicate_locations(self):
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
@@ -1651,23 +1587,6 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(UUID1, output.image_id)
         self.assertEqual(2, len(output.locations))
         self.assertEqual(new_location, output.locations[1])
-
-        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
-                          request, UUID1, changes)
-
-    def test_update_replace_duplicate_locations(self):
-        self.stubs.Set(store, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
-        output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(UUID1, output.image_id)
-        self.assertEqual(0, len(output.locations))
-        self.assertEqual('queued', output.status)
-
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        changes = [{'op': 'replace', 'path': ['locations'],
-                    'value': [new_location, new_location]}]
 
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID1, changes)
@@ -1772,9 +1691,12 @@ class TestImagesController(base.IsolatedUnitTest):
             {'op': 'add', 'path': ['locations', '-'],
              'value': {'url': '%s/fake_location_1' % BASE_URI,
                        'metadata': {}}},
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location_2' % BASE_URI,
+                       'metadata': {}}},
         ]
         self.controller.update(request, UUID1, changes)
-        self.config(image_location_quota=1)
+        self.config(image_location_quota=2)
 
         # We must remove two properties to avoid being
         # over the limit of 1 property
@@ -1787,8 +1709,8 @@ class TestImagesController(base.IsolatedUnitTest):
         ]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(UUID1, output.image_id)
-        self.assertEqual(1, len(output.locations))
-        self.assertIn('fake_location_3', output.locations[0]['url'])
+        self.assertEqual(2, len(output.locations))
+        self.assertIn('fake_location_3', output.locations[1]['url'])
         self.assertNotEqual(output.created_at, output.updated_at)
 
     def test_update_remove_base_property(self):
@@ -1829,24 +1751,23 @@ class TestImagesController(base.IsolatedUnitTest):
                        unit_test_utils.fake_get_size_from_backend)
 
         request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'remove', 'path': ['locations', '0']}]
-        output = self.controller.update(request, UUID1, changes)
-        self.assertEqual(UUID1, output.image_id)
-        self.assertEqual(0, len(output.locations))
-        self.assertEqual('queued', output.status)
-        self.assertIsNone(output.size)
-
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
+        self.controller.update(request, UUID1, changes)
+        changes = [{'op': 'remove', 'path': ['locations', '0']}]
         output = self.controller.update(request, UUID1, changes)
         self.assertEqual(UUID1, output.image_id)
         self.assertEqual(1, len(output.locations))
-        self.assertEqual(new_location, output.locations[0])
         self.assertEqual('active', output.status)
 
     def test_update_remove_location_invalid_pos(self):
         request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location' % BASE_URI,
+                       'metadata': {}}}]
+        self.controller.update(request, UUID1, changes)
         changes = [{'op': 'remove', 'path': ['locations', None]}]
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
                           request, UUID1, changes)
@@ -1868,6 +1789,11 @@ class TestImagesController(base.IsolatedUnitTest):
                        fake_delete_image_location_from_backend)
 
         request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'add', 'path': ['locations', '-'],
+             'value': {'url': '%s/fake_location' % BASE_URI,
+                       'metadata': {}}}]
+        self.controller.update(request, UUID1, changes)
         changes = [{'op': 'remove', 'path': ['locations', '0']}]
         self.assertRaises(webob.exc.HTTPInternalServerError,
                           self.controller.update, request, UUID1, changes)
@@ -2158,16 +2084,6 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
-                          request, UUID1, changes)
-
-        self.stubs.Set(self.store_utils, 'delete_image_location_from_backend',
-                       fake_delete_image_location_from_backend)
-
-        changes = [{'op': 'replace', 'path': ['locations'], 'value': []}]
-        self.controller.update(request, UUID1, changes)
-        changes = [{'op': 'replace', 'path': ['locations'],
-                    'value': [new_location]}]
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID1, changes)
 

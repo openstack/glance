@@ -173,7 +173,10 @@ class ImagesController(object):
         path = change['path']
         path_root = path[0]
         value = change['value']
-        if path_root == 'locations':
+        if path_root == 'locations' and value == []:
+            msg = _("Cannot set locations to empty list.")
+            raise webob.exc.HTTPForbidden(msg)
+        elif path_root == 'locations' and value != []:
             self._do_replace_locations(image, value)
         elif path_root == 'owner' and req.context.is_admin == False:
             msg = _("Owner can't be updated by non admin.")
@@ -209,7 +212,10 @@ class ImagesController(object):
         path = change['path']
         path_root = path[0]
         if path_root == 'locations':
-            self._do_remove_locations(image, path[1])
+            try:
+                self._do_remove_locations(image, path[1])
+            except exception.Forbidden as e:
+                raise webob.exc.HTTPForbidden(e.msg)
         else:
             if hasattr(image, path_root):
                 msg = _("Property %s may not be removed.")
@@ -298,6 +304,11 @@ class ImagesController(object):
                 explanation=encodeutils.exception_to_unicode(e))
 
     def _do_remove_locations(self, image, path_pos):
+        if len(image.locations) == 1:
+            LOG.debug("User forbidden to remove last location of image %s",
+                      image.image_id)
+            msg = _("Cannot remove last location in the image.")
+            raise exception.Forbidden(msg)
         pos = self._get_locations_op_pos(path_pos,
                                          len(image.locations), False)
         if pos is None:
@@ -307,11 +318,11 @@ class ImagesController(object):
             # NOTE(zhiyan): this actually deletes the location
             # from the backend store.
             image.locations.pop(pos)
+        # TODO(jokke): Fix this, we should catch what store throws and
+        # provide definitely something else than IternalServerError to user.
         except Exception as e:
             raise webob.exc.HTTPInternalServerError(
                 explanation=encodeutils.exception_to_unicode(e))
-        if len(image.locations) == 0 and image.status == 'active':
-            image.status = 'queued'
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):

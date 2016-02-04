@@ -561,20 +561,6 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(200, response.status_code, response.text)
 
-        # Remove all locations of the image then the image size shouldn't be
-        # able to access
-        path = self._url('/v2/images/%s' % image2_id)
-        media_type = 'application/openstack-images-v2.1-json-patch'
-        headers = self._headers({'content-type': media_type})
-        doc = [{'op': 'replace', 'path': '/locations', 'value': []}]
-        data = jsonutils.dumps(doc)
-        response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
-        image = jsonutils.loads(response.text)
-        self.assertIsNone(image['size'])
-        self.assertIsNone(image['virtual_size'])
-        self.assertEqual('queued', image['status'])
-
         # Deletion should work. Deleting image-1
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
