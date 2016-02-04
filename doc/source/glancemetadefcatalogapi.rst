@@ -282,7 +282,7 @@ The data is returned as a JSON-encoded mapping in the following format::
         },
         {
             "created_at": "2014-08-28T17:13:04Z",
-            "name": "OS::Nova::Instance",
+            "name": "OS::Nova::Server",
             "updated_at": "2014-08-28T17:13:04Z"
         }
     ]

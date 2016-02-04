@@ -13,7 +13,7 @@
             "properties_target": "image"
         },
         {
-            "name": "OS::Nova::Instance",
+            "name": "OS::Nova::Server",
             "properties_target": "metadata"
         }
     ],

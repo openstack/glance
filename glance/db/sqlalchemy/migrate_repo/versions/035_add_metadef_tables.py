@@ -24,7 +24,7 @@ from glance.db.sqlalchemy.migrate_repo.schema import (
 
 RESOURCE_TYPES = [u'OS::Glance::Image', u'OS::Cinder::Volume',
                   u'OS::Nova::Flavor', u'OS::Nova::Aggregate',
-                  u'OS::Nova::Instance']
+                  u'OS::Nova::Server']
 
 
 def _get_metadef_resource_types_table(meta):
