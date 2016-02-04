@@ -13,8 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import time
-
+import eventlet
 from oslo_serialization import jsonutils as json
 
 from glance.api.v2 import tasks
@@ -83,7 +82,11 @@ class TestTasksApi(base.ApiTest):
                         break
 
             if wait:
-                time.sleep(0.05)
+                # Bug #1541487: we must give time to the server to execute the
+                # task, but the server is run in the same process than the
+                # test. Use eventlet to give the control to the pending server
+                # task.
+                eventlet.sleep(0.05)
                 continue
             else:
                 break
