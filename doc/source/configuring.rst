@@ -1700,6 +1700,6 @@ An operator can add or remove disk formats to the supported set.  This is
 done by setting the ``disk_formats`` parameter which is found in the
 ``[image_formats]`` section of ``glance-api.conf``.
 
-* ``disk_formats=<Comma seperated list of disk formats>``
+* ``disk_formats=<Comma separated list of disk formats>``
 
 Optional. Default: ``ami,ari,aki,vhd,vmdk,raw,qcow2,vdi,iso``
