@@ -37,13 +37,14 @@ image_cache_opts = [
                help=_('The driver to use for image cache management.')),
     cfg.IntOpt('image_cache_max_size', default=10 * units.Gi,  # 10 GB
                help=_('The upper limit (the maximum size of accumulated '
-                      'cache in bytes) beyond which pruner, if running, '
-                      'starts cleaning the images cache.')),
+                      'cache in bytes) beyond which the cache pruner, if '
+                      'running, starts cleaning the image cache.')),
     cfg.IntOpt('image_cache_stall_time', default=86400,  # 24 hours
-               help=_('The amount of time to let an image remain in the '
-                      'cache without being accessed.')),
+               help=_('The amount of time to let an incomplete image remain '
+                      'in the cache, before the cache cleaner, if running, '
+                      'will remove the incomplete image.')),
     cfg.StrOpt('image_cache_dir',
-               help=_('Base directory that the Image Cache uses.')),
+               help=_('Base directory that the image cache uses.')),
 ]
 
 CONF = cfg.CONF
