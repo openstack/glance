@@ -7,9 +7,9 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-15 11:52+0000\n"
+"POT-Creation-Date: 2016-02-05 05:15+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -500,39 +500,8 @@ msgstr "Sağlanan veri geçersizdir."
 msgid "Date and time of image member creation"
 msgstr "İmaj üyesi oluşturma tarih ve saati"
 
-msgid "Date and time of image registration (READ-ONLY)"
-msgstr "İmaj kayıt tarih ve saati (SALT OKUNUR)"
-
 msgid "Date and time of last modification of image member"
 msgstr "İmaj üyesi son değişiklik tarih ve saati"
-
-msgid "Date and time of namespace creation (READ-ONLY)"
-msgstr "Ad alanı oluşturma tarih ve saati (SALT OKUNUR)"
-
-msgid "Date and time of object creation (READ-ONLY)"
-msgstr "Nesne oluşturma tarih ve saati (SALT OKUNUR)"
-
-msgid "Date and time of resource type association (READ-ONLY)"
-msgstr "Kaynak türü ilişkilendirme tarih ve saati (SALT OKUNUR)"
-
-msgid "Date and time of tag creation (READ-ONLY)"
-msgstr "Etiket oluşturma tarih ve saati (SALT OKUNUR)"
-
-msgid "Date and time of the last image modification (READ-ONLY)"
-msgstr "Son imaj değişiklik tarih ve saati (SALT OKUNUR)"
-
-msgid "Date and time of the last namespace modification (READ-ONLY)"
-msgstr "Son ad alanı değişikliğinin tarih ve saati (SALT OKUNUR)"
-
-msgid "Date and time of the last object modification (READ-ONLY)"
-msgstr "Son nesne değişikliği tarih ve saati (SALT OKUNUR)"
-
-msgid ""
-"Date and time of the last resource type association modification (READ-ONLY)"
-msgstr "Son kaynak tür ilişki değişikliğinin tarih ve saati (SALT OKUNUR)"
-
-msgid "Date and time of the last tag modification (READ-ONLY)"
-msgstr "Son etiket değişikliği tarih ve saati (SALT OKUNUR)"
 
 msgid "Datetime when this resource was created"
 msgstr "Bu kaynak oluşturulduğundaki tarih saat"
@@ -1724,9 +1693,6 @@ msgstr ""
 msgid "Show level %(shl)s is not supported in this operation"
 msgstr "Bu işlemde %(shl)s seviyesi gösterme desteklenmez"
 
-msgid "Size of image file in bytes (READ-ONLY)"
-msgstr "İmaj dosyasının bayt olarak boyutu (SALT OKUNUR)"
-
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
 "example, Cinder allows user and image metadata on volumes. Only the image "
@@ -1763,9 +1729,6 @@ msgstr "Durum \"bekliyor\", \"kabul edildi\" ya da \"reddedildi\" olmalıdır."
 
 msgid "Status not specified"
 msgstr "Durum belirtilmemiş"
-
-msgid "Status of the image (READ-ONLY)"
-msgstr "İmajın durumu (SALT OKUNUR)"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -1904,9 +1867,6 @@ msgstr ""
 
 msgid "The driver to use for image cache management."
 msgstr "İmaj önbellek yönetimi için kullanılacak sürücü."
-
-msgid "The format to which images will be automatically converted."
-msgstr "İmajların otomatik olarak dönüştürüleceği biçim."
 
 #, python-format
 msgid ""
@@ -2421,9 +2381,6 @@ msgstr ""
 "şemasını kullanmak için onu değiştirmeniz gerekir, şu şekilde: swift+http://"
 "user:pass@authurl.com/v1/container/obj"
 
-msgid "URL to access the image file kept in external store (READ-ONLY)"
-msgstr "Harici depoda tutulan imaj dosyasına erişilecek URL (SALT OKUNUR)"
-
 msgid "Unable to PUT to non-empty collection"
 msgstr "Boş olmayan koleksiyona PUT işlemi yapılamadı"
 
@@ -2552,9 +2509,6 @@ msgstr "Sürüm bileşeni çok büyük (en fazla %d)"
 #, python-format
 msgid "Version is invalid: %(reason)s"
 msgstr "Sürüm geçersizdir: %(reason)s"
-
-msgid "Virtual size of image in bytes (READ-ONLY)"
-msgstr "İmajın bayt olarak sanal boyutu (SALT OKUNUR)"
 
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "Görünürlük ya \"ortak\" ya da \"özel\" olmalıdır"
@@ -2837,9 +2791,6 @@ msgstr "Sınır parametresi pozitif olmak zorunda"
 #, python-format
 msgid "location: %s data lost"
 msgstr "konum: %s verisi kayıp"
-
-msgid "md5 hash of image contents. (READ-ONLY)"
-msgstr "İmaj içeriklerinin md5 özeti. (SALT OKUNUR)"
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"

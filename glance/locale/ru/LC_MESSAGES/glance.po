@@ -1,20 +1,25 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
+# Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-15 11:52+0000\n"
+"POT-Creation-Date: 2016-02-05 05:15+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-09-04 12:45+0000\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2016-02-03 07:00+0000\n"
+"Last-Translator: Lucas Palm <lapalm@us.ibm.com>\n"
 "Language: ru\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 "Generated-By: Babel 2.0\n"
 "X-Generator: Zanata 3.7.3\n"
 "Language-Team: Russian\n"
+
+#, python-format
+msgid "\t%s"
+msgstr "\t%s"
 
 #, python-format
 msgid "%(attribute)s have to be string"
@@ -40,6 +45,10 @@ msgstr "%(attribute)s должен соответствовать шаблону
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
 msgstr ""
 "В последнем вызове rpc возникла исключительная ситуация %(cls)s: %(val)s"
+
+#, python-format
+msgid "%(m_id)s not found in the member list of the image %(i_id)s."
+msgstr "%(m_id)s не найден в списке элементов образа %(i_id)s."
 
 #, python-format
 msgid "%(serv)s (pid %(pid)s) is running..."
@@ -100,6 +109,12 @@ msgstr "%s уже остановлен"
 #, python-format
 msgid "%s is stopped"
 msgstr "%s остановлен"
+
+#, python-format
+msgid "'%(param)s' value out of range, must not exceed %(max)d"
+msgstr ""
+"Значение %(param)s выходит за пределы диапазона, оно не должно превышать "
+"%(max)d"
 
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
@@ -217,12 +232,24 @@ msgstr "Возникла неизвестная исключительная с�
 msgid "An unknown task exception occurred"
 msgstr "Непредвиденная исключительная ситуация"
 
+#, python-format
+msgid "Array has no element at position %d"
+msgstr "Массив не содержит элементов в позиции %d"
+
 msgid "Array property can't have item_type=Array"
 msgstr "Свойство массива не может иметь item_type=Array"
 
 #, python-format
+msgid "Artifact %s could not be deleted because it is in use: %s"
+msgstr "Не удалось удалить артефакт %s, так как он используется: %s"
+
+#, python-format
 msgid "Artifact cannot change state from %(source)s to %(target)s"
 msgstr "Артефакт не может изменить состояние с %(source)s на %(target)s"
+
+#, python-format
+msgid "Artifact exceeds the storage quota: %s"
+msgstr "Артефакт превышает квоту хранилища: %s"
 
 #, python-format
 msgid "Artifact has no property %(prop)s"
@@ -233,9 +260,16 @@ msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
 msgstr "Состояние артефакта не может быть изменено с %(curr)s на %(to)s"
 
 #, python-format
+msgid "Artifact storage media is full: %s"
+msgstr "Носитель хранилища артефактов заполнен: %s"
+
+#, python-format
 msgid ""
 "Artifact type with name '%(name)s' and version '%(version)s' is not known"
 msgstr "Тип артефакта с именем '%(name)s' и версией '%(version)s' не известен"
+
+msgid "Artifact with a circular dependency can not be created"
+msgstr "Нельзя создать артефакт с циклической зависимостью"
 
 #, python-format
 msgid "Artifact with id=%(id)s is not accessible"
@@ -319,6 +353,9 @@ msgstr "Служба идентификации с URL %(url)s не найден
 msgid "Authorization failed."
 msgstr "Доступ не предоставлен."
 
+msgid "Available categories:"
+msgstr "Доступные категории:"
+
 #, python-format
 msgid "Bad Command: %s"
 msgstr "Неправильная команда: %s"
@@ -364,6 +401,9 @@ msgstr "Файл сертификата CA для проверки подклю�
 
 msgid "Cannot be a negative value"
 msgstr "Значение не может быть отрицательным"
+
+msgid "Cannot be a negative value."
+msgstr "Не может быть отрицательным значением."
 
 #, python-format
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
@@ -424,6 +464,9 @@ msgstr ""
 msgid "Constructed URL: %s"
 msgstr "Сформированный URL: %s"
 
+msgid "Container format is not specified."
+msgstr "Не указан формат контейнера."
+
 msgid "Content-Type must be application/octet-stream"
 msgstr "Content-Type должен быть задан в формате приложение/октет-поток"
 
@@ -468,45 +511,18 @@ msgstr ""
 "Список пользовательских агентов проверки должен содержать кортежи "
 "'(function, message)'"
 
+#, python-format
+msgid "Data for image_id not found: %s"
+msgstr "Не найдены данные для image_id: %s"
+
 msgid "Data supplied was not valid."
 msgstr "Предоставленные данные недопустимы."
 
 msgid "Date and time of image member creation"
 msgstr "Дата и время создания участника образа"
 
-msgid "Date and time of image registration (READ-ONLY)"
-msgstr "Дата и время регистрации образа (ДОСТУПНЫЙ ТОЛЬКО ДЛЯ ЧТЕНИЯ)"
-
 msgid "Date and time of last modification of image member"
 msgstr "Дата и время последней модификации участника образа"
-
-msgid "Date and time of namespace creation (READ-ONLY)"
-msgstr "Дата и время создания пространства имен (ТОЛЬКО ЧТЕНИЕ)"
-
-msgid "Date and time of object creation (READ-ONLY)"
-msgstr "Дата и время создания объекта (ТОЛЬКО ЧТЕНИЕ)"
-
-msgid "Date and time of resource type association (READ-ONLY)"
-msgstr "Дата и время связывания типа ресурса (ТОЛЬКО ЧТЕНИЕ)"
-
-msgid "Date and time of tag creation (READ-ONLY)"
-msgstr "Дата и время создания тега (ТОЛЬКО-ДЛЯ-ЧТЕНИЯ)"
-
-msgid "Date and time of the last image modification (READ-ONLY)"
-msgstr "Дата и время последнего изменения образа (ДОСТУПНЫЙ ТОЛЬКО ДЛЯ ЧТЕНИЯ)"
-
-msgid "Date and time of the last namespace modification (READ-ONLY)"
-msgstr "Дата и время последнего изменения пространства имен (ТОЛЬКО ЧТЕНИЕ)"
-
-msgid "Date and time of the last object modification (READ-ONLY)"
-msgstr "Дата и время последнего изменения объекта (ТОЛЬКО ЧТЕНИЕ)"
-
-msgid ""
-"Date and time of the last resource type association modification (READ-ONLY)"
-msgstr "Дата и время последнего изменения связи типа ресурса (ТОЛЬКОЧТЕНИЕ)"
-
-msgid "Date and time of the last tag modification (READ-ONLY)"
-msgstr "Дата и время последнего изменения тега (ТОЛЬКО-ДЛЯ-ЧТЕНИЯ)"
 
 msgid "Datetime when this resource was created"
 msgstr "Дата и время создания ресурса"
@@ -528,12 +544,20 @@ msgid "Default value is invalid"
 msgstr "Неверное значение по умолчанию"
 
 #, python-format
+msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
+msgstr "Попытка загрузить артефакт с превышением квоты отклонена: %s"
+
+#, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr "Попытка загрузить образ с превышением квоты отклонена: %s"
 
 #, python-format
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr "Попытка загрузить образ размером более %d байт отклонена."
+
+#, python-format
+msgid "Dependency property '%s' has to be deleted first"
+msgstr "Сначала необходимо удалить свойство зависимости '%s'"
 
 msgid "Dependency relations cannot be mutable"
 msgstr "Отношения зависимости не могут быть изменяемыми"
@@ -550,6 +574,9 @@ msgstr "Разверните API образов OpenStack версии 2."
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr "Разверните API реестров OpenStack версии 2."
 
+msgid "Deploy the v3 OpenStack Objects API."
+msgstr "Развернуть API объектов OpenStack v3."
+
 msgid "Descriptive name for the image"
 msgstr "Описательное имя образа"
 
@@ -561,6 +588,9 @@ msgstr "Размер словаря больше максимального"
 
 msgid "Dictionary size is less than minimum"
 msgstr "Размер словаря меньше минимального"
+
+msgid "Disk format is not specified."
+msgstr "Не указан формат диска."
 
 msgid "Does not match pattern"
 msgstr "Не соответствует шаблону"
@@ -578,6 +608,14 @@ msgstr "Необходимо указать file или legacy_image_id"
 msgid "Encountered service with no \"type\": %s"
 msgstr "Обнаружена служба без \"type\": %s"
 
+#, python-format
+msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
+msgstr "Ошибка при выборке элементов образа %(image_id)s: %(inner_msg)s"
+
+msgid "Error in store configuration. Adding artifacts to store is disabled."
+msgstr ""
+"Ошибка в конфигурации хранилища. Добавление артефактов в хранилище отключено."
+
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Ошибка в конфигурации хранилища. Добавление образов в хранилище отключено."
@@ -593,6 +631,10 @@ msgstr "Активировать образ не удалось. Ошибка: %
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "Добавить метаданные образа не удалось. Ошибка: %s"
+
+#, python-format
+msgid "Failed to find artifact %(artifact_id)s to delete"
+msgstr "Не удалось найти артефакт %(artifact_id)s для удаления"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
@@ -645,6 +687,12 @@ msgstr ""
 "Загрузить данные образа %(image_id)s не удалось из-за внутренней ошибки: "
 "%(error)s"
 
+#, python-format
+msgid "File %(path)s has invalid backing file %(bfile)s, aborting."
+msgstr ""
+"Файл %(path)s содержит недопустимый базовый файл %(bfile)s, принудительное "
+"завершение."
+
 msgid ""
 "File based imports are not allowed. Please use a non-local source of image "
 "data."
@@ -665,6 +713,10 @@ msgstr "Удалять образ %s запрещено."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Удалять образ запрещено: %s"
+
+#, python-format
+msgid "Forbidden to modify '%s' of image."
+msgstr "Изменять '%s' образа запрещено."
 
 msgid "Forbidden to reserve image."
 msgstr "Резервировать образ запрещено."
@@ -694,6 +746,11 @@ msgstr "Формат контейнера"
 
 msgid "Format of the disk"
 msgstr "Формат диска"
+
+#, python-format
+msgid "Get blob %(name)s data failed: %(err)s."
+msgstr ""
+"Получение данных большого двоичного объекта %(name)s не выполнено: %(err)s."
 
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
@@ -832,6 +889,10 @@ msgid "Image with identifier %s not found"
 msgstr "Образ с идентификатором %s не найден"
 
 #, python-format
+msgid "Image with the given id %(image_id)s was not found"
+msgstr "Не найден образ с заданным ИД %(image_id)s"
+
+#, python-format
 msgid ""
 "Incorrect auth strategy, expected \"%(expected)s\" but received "
 "\"%(received)s\""
@@ -843,9 +904,19 @@ msgstr ""
 msgid "Incorrect request: %s"
 msgstr "Неправильный запрос: %s"
 
+msgid "Index is out of range"
+msgstr "Индекс выходит за пределы диапазона"
+
+msgid "Index is required"
+msgstr "Требуется индекс"
+
 #, python-format
 msgid "Input does not contain '%(key)s' field"
 msgstr "Ввод не содержит поле %(key)s"
+
+#, python-format
+msgid "Insufficient permissions on artifact storage media: %s"
+msgstr "Недостаточные права для доступа к носителю артефактов: %s"
 
 #, python-format
 msgid "Insufficient permissions on image storage media: %s"
@@ -854,6 +925,11 @@ msgstr "Недостаточные права для доступа к носи�
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Недопустимый указатель JSON для этого ресурса: '%s'"
+
+#, python-format
+msgid "Invalid checksum '%s': can't exceed 32 characters"
+msgstr ""
+"Недопустимая контрольная сумма '%s': длина не может превышать 32 символа"
 
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "Недопустимая конфигурация в файле конфигурации glance-swift."
@@ -885,11 +961,19 @@ msgstr "Недопустимый формат ИД образа"
 msgid "Invalid item type specification"
 msgstr "Недопустимая спецификация типа элемента"
 
+#, python-format
+msgid "Invalid json body: %s"
+msgstr "Недопустимое тело json: %s"
+
 msgid "Invalid jsonpatch request"
 msgstr "Неверный запрос jsonpatch"
 
 msgid "Invalid location"
 msgstr "Недопустимое расположение"
+
+#, python-format
+msgid "Invalid location %s"
+msgstr "Неверное расположение %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -929,6 +1013,13 @@ msgstr ""
 "диска или контейнера равным 'aki', 'ari' или 'ami' форматы контейнера и "
 "диска должны совпадать."
 
+#, python-format
+msgid ""
+"Invalid operation: `%(op)s`. It must be one of the following: %(available)s."
+msgstr ""
+"Недопустимая операция: `%(op)s`. Допускается одна из следующих операций: "
+"%(available)s."
+
 msgid "Invalid position for adding a location."
 msgstr "Недопустимая позиция для добавления расположения."
 
@@ -953,11 +1044,25 @@ msgstr "Недопустимое направление сортировки: %s
 
 #, python-format
 msgid ""
+"Invalid sort key: %(sort_key)s. If type version is not set it must be one of "
+"the following: %(available)s."
+msgstr ""
+"Недопустимый ключ сортировки: %(sort_key)s. Если версия типа не задана, "
+"допускается один из следующих: %(available)s."
+
+#, python-format
+msgid ""
 "Invalid sort key: %(sort_key)s. It must be one of the following: "
 "%(available)s."
 msgstr ""
 "Недопустимый ключ сортировки %(sort_key)s. Допускается один из следующих "
 "ключей: %(available)s."
+
+#, python-format
+msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
+msgstr ""
+"Недопустимый ключ сортировки: %(sort_key)s. Нельзя выполнять сортировку по "
+"этому свойству"
 
 #, python-format
 msgid "Invalid status value: %s"
@@ -1055,6 +1160,19 @@ msgstr "Длина больше максимальной"
 
 msgid "Length is less than minimum"
 msgstr "Длина меньше минимальной"
+
+msgid "Limit param must be an integer"
+msgstr "Параметр ограничения должен быть целым числом"
+
+msgid "Limit param must be positive"
+msgstr "Параметр Limit должен быть положительным числом"
+
+#, python-format
+msgid "Limit param must not be higher than %d"
+msgstr "Параметр ограничения не должен превышать %d"
+
+msgid "Limits request ID length."
+msgstr "Ограничивает длину ИД запроса."
 
 msgid "List definitions may hot have defaults"
 msgstr "Определения списков не могут иметь значений по умолчанию"
@@ -1236,6 +1354,10 @@ msgstr ""
 msgid "Name of the paste configuration file."
 msgstr "Имя файла вставляемой конфигурации."
 
+#, python-format
+msgid "No artifact found with ID %s"
+msgstr "Не найдены артефакты с ИД %s"
+
 msgid "No authenticated user"
 msgstr "Нет идентифицированного пользователя"
 
@@ -1254,8 +1376,33 @@ msgstr "Нет прав на совместное использование э�
 msgid "No plugin for '%(name)s' has been loaded"
 msgstr "Модуль для '%(name)s' не загружен"
 
+msgid "No property to access"
+msgstr "Отсутствует свойство для доступа"
+
+#, python-format
+msgid "No such key '%s' in a dict"
+msgstr "В словаре отсутствует ключ '%s'"
+
+#, python-format
+msgid "Not a blob property '%s'"
+msgstr "Не является свойством большого двоичного объекта '%s'"
+
+msgid "Not a downloadable entity"
+msgstr "Не является загружаемой сущностью"
+
+msgid "Not a list property"
+msgstr "Не является свойством списка"
+
+#, python-format
+msgid "Not a list property '%s'"
+msgstr "Не является свойством списка '%s'"
+
 msgid "Not a valid value type"
 msgstr "Недопустимый тип значения"
+
+#, python-format
+msgid "Not all dependencies are in '%s' state"
+msgstr "Не все зависимости находятся в состоянии '%s'"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1293,11 +1440,18 @@ msgstr "Не разрешено изменять теги для образа %s
 msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr "Загружать данные для образа %(image_id)s не разрешено: %(error)s"
 
+#, python-format
+msgid "Not an array idx '%s'"
+msgstr "Не является индексом массива '%s'"
+
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr "Число направлений сортировки не совпадает с числом ключей сортировки"
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "Прежний и новый синтаксисы сортировки нельзя смешивать"
+
+msgid "Only list indexes are allowed for blob lists"
+msgstr "Для списков больших двоичных объектов разрешены только индексы списков"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1327,6 +1481,9 @@ msgstr "Оператор %(op)s не поддерживается"
 #, python-format
 msgid "Original locations is not empty: %s"
 msgstr "Исходные расположения не пусты: %s"
+
+msgid "Owner can't be updated by non admin."
+msgstr "Обычный пользователь не может изменить владельца."
 
 msgid "Owner must be specified to create a tag."
 msgstr "Для создания тега необходимо указать владельца."
@@ -1602,9 +1759,6 @@ msgstr ""
 msgid "Show level %(shl)s is not supported in this operation"
 msgstr "Уровень отображения %(shl)s не поддерживается в этой операции"
 
-msgid "Size of image file in bytes (READ-ONLY)"
-msgstr "Размер файла образа в байтах (ДОСТУПНЫЙ ТОЛЬКО ДЛЯ ЧТЕНИЯ)"
-
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
 "example, Cinder allows user and image metadata on volumes. Only the image "
@@ -1641,9 +1795,6 @@ msgstr "Состояние должно быть \"pending\", \"accepted\" ил�
 
 msgid "Status not specified"
 msgstr "Состояние не указано"
-
-msgid "Status of the image (READ-ONLY)"
-msgstr "Состояние образа (ДОСТУПНЫЙ ТОЛЬКО ДЛЯ ЧТЕНИЯ)"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -1689,6 +1840,9 @@ msgstr "Требуется задача '%s'"
 
 msgid "Task does not exist"
 msgstr "Задача не существует"
+
+msgid "Task failed due to Internal Error"
+msgstr "Задача не выполнена из-за внутренней ошибки"
 
 msgid "Task was not configured properly"
 msgstr "Задача неправильно настроена"
@@ -1799,6 +1953,10 @@ msgstr ""
 "Образ %s уже присутствует на подчиненном сервере, но наша проверка его не "
 "обнаружила. Это означает, что у нас нет прав на просмотр всех образов на "
 "подчиненном сервере."
+
+#, python-format
+msgid "The incoming artifact blob is too large: %s"
+msgstr "Чересчур большой размер входящего артефакта: %s"
 
 #, python-format
 msgid "The incoming image is too large: %s"
@@ -2087,6 +2245,15 @@ msgstr ""
 "Объем данных %(image_size)s превышает допустимый максимум. Остаток: "
 "%(remaining)s байт."
 
+msgid ""
+"The size of thread pool to be used for scrubbing images. The default is one, "
+"which signifies serial scrubbing. Any value above one indicates the max "
+"number of images that may be scrubbed in parallel."
+msgstr ""
+"Размер пула нитей для очистки образов. Значение по умолчанию: один, что "
+"означает последовательную очистку. Любое значение, превышающее 1, означает "
+"максимальное число образов, которое можно очищать одновременно."
+
 #, python-format
 msgid "The specified member %s could not be found"
 msgstr "Указанный участник %s не найден"
@@ -2255,6 +2422,15 @@ msgstr ""
 "Время (ч) существования задачи после успешного выполнения или завершения с "
 "ошибкой"
 
+msgid ""
+"Timeout for client connections' socket operations. If an incoming connection "
+"is idle for this number of seconds it will be closed. A value of '0' means "
+"wait forever."
+msgstr ""
+"Тайм-аут операций сокета соединений клиента. Если входящее соединение "
+"простаивает в течение этого времени, оно будет закрыто. Значение '0' "
+"означает неограниченное ожидание."
+
 msgid "Too few arguments."
 msgstr "Недостаточно аргументов."
 
@@ -2285,10 +2461,8 @@ msgstr ""
 "изменить его так, чтобы использовалась схема swift+http://, например: swift"
 "+http://user:pass@authurl.com/v1/container/obj"
 
-msgid "URL to access the image file kept in external store (READ-ONLY)"
-msgstr ""
-"URL для доступа к файлу образа, находящемуся во внешнем хранилище (ДОСТУПНЫЙ "
-"ТОЛЬКО ДЛЯ ЧТЕНИЯ)"
+msgid "Unable to PUT to non-empty collection"
+msgstr "Не удалось выполнить операцию PUT в непустой набор"
 
 #, python-format
 msgid ""
@@ -2309,6 +2483,14 @@ msgstr "Отфильтровать согласно указанному диа�
 #, python-format
 msgid "Unable to find '%s' in JSON Schema change"
 msgstr "'%s' не найден в изменении схемы JSON"
+
+#, python-format
+msgid ""
+"Unable to find `op` in JSON Schema change. It must be one of the following: "
+"%(available)s."
+msgstr ""
+"Не удалось найти `op` в изменении схемы JSON. Допускается одно из следующих "
+"значений: %(available)s."
 
 msgid "Unable to get legacy image"
 msgstr "Невозможно получить устаревший образ"
@@ -2359,6 +2541,10 @@ msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 "Не удается загрузить данные для дубликата образа %(image_id)s: %(error)s"
 
+#, python-format
+msgid "Unable to verify signature: %(reason)s"
+msgstr "Не удалось проверить подпись: %(reason)s"
+
 msgid "Unauthorized image access"
 msgstr "Нет прав на доступ к образу"
 
@@ -2391,6 +2577,12 @@ msgstr "Неподдерживаемый sort_dir. Допустимые знач
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "Неподдерживаемый sort_key. Допустимые значения: %s"
 
+#, python-format
+msgid "Value %(value)d out of range, must not exceed %(max)d"
+msgstr ""
+"Значение %(value)d выходит за пределы диапазона, оно не должно превышать "
+"%(max)d"
+
 msgid "Value is greater than maximum"
 msgstr "Значение больше максимального"
 
@@ -2407,9 +2599,6 @@ msgstr "Компонент версии слишком большой (макс.
 #, python-format
 msgid "Version is invalid: %(reason)s"
 msgstr "Недопустимая версия: %(reason)s"
-
-msgid "Virtual size of image in bytes (READ-ONLY)"
-msgstr "Виртуальный размер образа в байтах (ДОСТУПНЫЙ ТОЛЬКО ДЛЯ ЧТЕНИЯ)"
 
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "Видимость должна быть \"public\" или \"private\""
@@ -2485,6 +2674,18 @@ msgstr ""
 "помощи промежуточного программного обеспечения, отличного от auth_token."
 
 msgid ""
+"Whether to pass through the user token when making requests to the registry. "
+"To prevent failures with token expiration during big files upload, it is "
+"recommended to set this parameter to False.If \"use_user_token\" is not in "
+"effect, then admin credentials can be specified."
+msgstr ""
+"Осуществлять ли сквозную передачу пользовательского маркера при создании "
+"запросов в реестр Для предотвращения сбоев, связанных с истечением срока "
+"действия маркера во время передачи больших данных, рекомендуется присваивать "
+"этому параметру значение False. Если \"use_user_token\" не используется, "
+"можно указать идентификационные данные администратора."
+
+msgid ""
 "Work dir for asynchronous task operations. The directory set here will be "
 "used to operate over images - normally before they are imported in the "
 "destination store. When providing work dir, make sure enough space is "
@@ -2522,6 +2723,14 @@ msgstr "Вы не прошли идентификацию."
 
 msgid "You are not authorized to complete this action."
 msgstr "У вас нет прав на выполнение этого действия."
+
+#, python-format
+msgid "You are not authorized to lookup image %s."
+msgstr "У вас нет прав доступа для поиска образа %s."
+
+#, python-format
+msgid "You are not authorized to lookup the members of the image %s."
+msgstr "У вас нет прав доступа для поиска элементов образа %s."
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
@@ -2687,9 +2896,6 @@ msgstr "Параметр limit должен быть положительным"
 msgid "location: %s data lost"
 msgstr "Расположение: данные %s утеряны"
 
-msgid "md5 hash of image contents. (READ-ONLY)"
-msgstr "md5-хэш содержимого образа. (ДОСТУПНЫЙ ТОЛЬКО ДЛЯ ЧТЕНИЯ)"
-
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "В new_image() получены непредвиденные ключевые слова %s"
@@ -2700,3 +2906,7 @@ msgstr "Параметр protected должен быть равен True или 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
 msgstr "не удается запустить %(serv)s. Ошибка: %(e)s"
+
+#, python-format
+msgid "x-openstack-request-id is too long, max size %s"
+msgstr "Слишком большая длина x-openstack-request-id, максимальная длина: %s"

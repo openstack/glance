@@ -11,9 +11,9 @@
 # Yuta Hono <yuta.hono@ntt.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-15 11:52+0000\n"
+"POT-Creation-Date: 2016-02-05 05:15+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -495,39 +495,8 @@ msgstr "指定されたデータが無効でした。"
 msgid "Date and time of image member creation"
 msgstr "イメージメンバーの作成日時"
 
-msgid "Date and time of image registration (READ-ONLY)"
-msgstr "イメージ登録日時 (読み取り専用)"
-
 msgid "Date and time of last modification of image member"
 msgstr "イメージメンバーの最終変更日時"
-
-msgid "Date and time of namespace creation (READ-ONLY)"
-msgstr "名前空間の作成日時 (読み取り専用)"
-
-msgid "Date and time of object creation (READ-ONLY)"
-msgstr "オブジェクトの作成日時 (読み取り専用)"
-
-msgid "Date and time of resource type association (READ-ONLY)"
-msgstr "リソースタイプ関連付けの日時 (読み取り専用)"
-
-msgid "Date and time of tag creation (READ-ONLY)"
-msgstr "タグの作成日時 (読み取り専用)"
-
-msgid "Date and time of the last image modification (READ-ONLY)"
-msgstr "イメージの最終変更日時 (読み取り専用)"
-
-msgid "Date and time of the last namespace modification (READ-ONLY)"
-msgstr "名前空間の最終変更日時 (読み取り専用)"
-
-msgid "Date and time of the last object modification (READ-ONLY)"
-msgstr "オブジェクトの最終変更日時 (読み取り専用)"
-
-msgid ""
-"Date and time of the last resource type association modification (READ-ONLY)"
-msgstr "リソースタイプ関連付けの最終変更日時 (読み取り専用)"
-
-msgid "Date and time of the last tag modification (READ-ONLY)"
-msgstr "タグの最終変更日時 (読み取り専用)"
 
 msgid "Datetime when this resource was created"
 msgstr "このリソースが作成された日時"
@@ -1641,9 +1610,6 @@ msgstr ""
 msgid "Show level %(shl)s is not supported in this operation"
 msgstr "表示レベル %(shl)s はこの操作ではサポートされていません"
 
-msgid "Size of image file in bytes (READ-ONLY)"
-msgstr "イメージファイルのサイズ (バイト) (読み取り専用)"
-
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
 "example, Cinder allows user and image metadata on volumes. Only the image "
@@ -1680,9 +1646,6 @@ msgstr "状況は、\"保留中\"、\"受諾\"、または\"拒否\" でなけ�
 
 msgid "Status not specified"
 msgstr "状況が指定されていません"
-
-msgid "Status of the image (READ-ONLY)"
-msgstr "イメージの状況 (読み取り専用)"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -2324,11 +2287,6 @@ msgstr ""
 "+http:// スキームを使用するよう変更する必要があります。swift+http://user:"
 "pass@authurl.com/v1/container/obj"
 
-msgid "URL to access the image file kept in external store (READ-ONLY)"
-msgstr ""
-"外部ストアに保持されているイメージファイルにアクセスするための URL (読み取り"
-"専用)"
-
 #, python-format
 msgid ""
 "Unable to create pid file %(pid)s.  Running as non-root?\n"
@@ -2447,9 +2405,6 @@ msgstr "バージョンコンポーネントが大きすぎます (最大 %d)"
 #, python-format
 msgid "Version is invalid: %(reason)s"
 msgstr "バージョンが無効です: %(reason)s"
-
-msgid "Virtual size of image in bytes (READ-ONLY)"
-msgstr "イメージの仮想サイズ (バイト) (読み取り専用)"
 
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "可視性は「public」または「private」のいずれかでなければなりません"
@@ -2726,9 +2681,6 @@ msgstr "limit パラメーターは正でなければなりません"
 #, python-format
 msgid "location: %s data lost"
 msgstr "ロケーション: %s データが失われました"
-
-msgid "md5 hash of image contents. (READ-ONLY)"
-msgstr "イメージコンテンツの MD5 ハッシュ。(読み取り専用)"
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"

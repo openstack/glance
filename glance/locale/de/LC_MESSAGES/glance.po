@@ -9,21 +9,26 @@
 # Robert Simai, 2014
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
+# Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-15 11:52+0000\n"
+"POT-Creation-Date: 2016-02-05 05:15+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-09-04 12:45+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"PO-Revision-Date: 2016-02-02 09:43+0000\n"
+"Last-Translator: Tom Cocozzello <tjcocozz@us.ibm.com>\n"
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
 "X-Generator: Zanata 3.7.3\n"
 "Language-Team: German\n"
+
+#, python-format
+msgid "\t%s"
+msgstr "\t%s"
 
 #, python-format
 msgid "%(attribute)s have to be string"
@@ -48,6 +53,10 @@ msgstr "%(attribute)s muss dem Muster %(pattern)s entsprechen"
 #, python-format
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
 msgstr "Eine %(cls)s-Ausnahme ist im letzten RPC-Aufruf aufgetreten: %(val)s"
+
+#, python-format
+msgid "%(m_id)s not found in the member list of the image %(i_id)s."
+msgstr "%(m_id)s in der Mitgliedsliste des Image %(i_id)s nicht gefunden."
 
 #, python-format
 msgid "%(serv)s (pid %(pid)s) is running..."
@@ -110,6 +119,12 @@ msgstr "%s ist bereits gestoppt"
 #, python-format
 msgid "%s is stopped"
 msgstr "%s ist gestoppt"
+
+#, python-format
+msgid "'%(param)s' value out of range, must not exceed %(max)d"
+msgstr ""
+"Wert von '%(param)s' außerhalb des gültigen Bereichs. Darf %(max)d nicht "
+"überschreiten"
 
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
@@ -231,13 +246,25 @@ msgstr "Eine unbekannte Ausnahme ist aufgetreten"
 msgid "An unknown task exception occurred"
 msgstr "Eine unbekannte Taskausnahme ist aufgetreten"
 
+#, python-format
+msgid "Array has no element at position %d"
+msgstr "Array enthält kein Element an Position %d"
+
 msgid "Array property can't have item_type=Array"
 msgstr ""
 "Eigenschaft für Platteneinheit kann nicht über item_type=Array verfügen"
 
 #, python-format
+msgid "Artifact %s could not be deleted because it is in use: %s"
+msgstr "Artefakt %s konnte nicht gelöscht werden, da es verwendet wird: %s"
+
+#, python-format
 msgid "Artifact cannot change state from %(source)s to %(target)s"
 msgstr "Das Artefakt kann den Status nicht von %(source)s in %(target)s ändern"
+
+#, python-format
+msgid "Artifact exceeds the storage quota: %s"
+msgstr "Artefakt überschreitet die Speicherquote: %s"
 
 #, python-format
 msgid "Artifact has no property %(prop)s"
@@ -248,11 +275,18 @@ msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
 msgstr "Artefaktstatus kann nicht von %(curr)s in %(to)s geändert werden"
 
 #, python-format
+msgid "Artifact storage media is full: %s"
+msgstr "Artefaktspeichermedium ist voll: %s"
+
+#, python-format
 msgid ""
 "Artifact type with name '%(name)s' and version '%(version)s' is not known"
 msgstr ""
 "Artefakttyp mit dem Namen '%(name)s' und der Version '%(version)s' ist "
 "unbekannt"
+
+msgid "Artifact with a circular dependency can not be created"
+msgstr "Artefakt mit einer Schleifenabhängigkeit kann nicht erstellt werden"
 
 #, python-format
 msgid "Artifact with id=%(id)s is not accessible"
@@ -338,6 +372,9 @@ msgstr "Authentifizierungsservice unter URL %(url)s nicht gefunden."
 msgid "Authorization failed."
 msgstr "Autorisierung fehlgeschlagen."
 
+msgid "Available categories:"
+msgstr "Verfügbare Kategorien:"
+
 #, python-format
 msgid "Bad Command: %s"
 msgstr "Fehlerhaftes Kommando: %s"
@@ -383,6 +420,9 @@ msgstr "CA-Zertifikatsdatei zur Überprüfung der sich verbindenden Clients."
 
 msgid "Cannot be a negative value"
 msgstr "Darf kein negativer Wert sein"
+
+msgid "Cannot be a negative value."
+msgstr "Darf kein negativer Wert sein."
 
 #, python-format
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
@@ -452,6 +492,9 @@ msgstr ""
 msgid "Constructed URL: %s"
 msgstr "Erstellte URL: %s"
 
+msgid "Container format is not specified."
+msgstr "Containerformat wurde nicht angegeben."
+
 msgid "Content-Type must be application/octet-stream"
 msgstr "Inhaltstyp muss Anwendungs-/Oktett-Stream sein"
 
@@ -496,48 +539,18 @@ msgstr ""
 "Benutzerdefinierte Liste der Validatoren sollte Tupel enthalten '(function, "
 "message)'"
 
+#, python-format
+msgid "Data for image_id not found: %s"
+msgstr "Daten für image_id nicht gefunden: %s"
+
 msgid "Data supplied was not valid."
 msgstr "Angegebene Daten waren nicht gültig."
 
 msgid "Date and time of image member creation"
 msgstr "Datum und Uhrzeit der Erstellung des Imageelements"
 
-msgid "Date and time of image registration (READ-ONLY)"
-msgstr "Datum und Uhrzeit der Imageregistrierung (SCHREIBGESCHÜTZT)"
-
 msgid "Date and time of last modification of image member"
 msgstr "Datum und Uhrzeit der letzten Änderung des Imageelements"
-
-msgid "Date and time of namespace creation (READ-ONLY)"
-msgstr "Datum und Uhrzeit der Erstellung des Namensbereichs (SCHREIBGESCHÜTZT)"
-
-msgid "Date and time of object creation (READ-ONLY)"
-msgstr "Datum und Uhrzeit der Objekterstellung (SCHREIBGESCHÜTZT)"
-
-msgid "Date and time of resource type association (READ-ONLY)"
-msgstr "Datum und Uhrzeit der Ressourcentypzuordnung (SCHREIBGESCHÜTZT)"
-
-msgid "Date and time of tag creation (READ-ONLY)"
-msgstr "Datum und Uhrzeit der Erstellung des Tags (SCHREIBGESCHÜTZT)"
-
-msgid "Date and time of the last image modification (READ-ONLY)"
-msgstr "Datum und Uhrzeit der letzten Imageänderung (SCHREIBGESCHÜTZT)"
-
-msgid "Date and time of the last namespace modification (READ-ONLY)"
-msgstr ""
-"Datum und Uhrzeit der letzten Änderung des Namensbereichs (SCHREIBGESCHÜTZT)"
-
-msgid "Date and time of the last object modification (READ-ONLY)"
-msgstr "Datum und Uhrzeit der letzten Objektänderung (SCHREIBGESCHÜTZT)"
-
-msgid ""
-"Date and time of the last resource type association modification (READ-ONLY)"
-msgstr ""
-"Datum und Uhrzeit der letzten Änderung der Ressourcentypzuordnung "
-"(SCHREIBGESCHÜTZT)"
-
-msgid "Date and time of the last tag modification (READ-ONLY)"
-msgstr "Datum und Uhrzeit der letzten Tagänderung (SCHREIBGESCHÜTZT)"
 
 msgid "Datetime when this resource was created"
 msgstr "Datum/Uhrzeit der Erstellung dieser Ressource"
@@ -560,6 +573,12 @@ msgid "Default value is invalid"
 msgstr "Standardwert ist ungültig"
 
 #, python-format
+msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
+msgstr ""
+"Versuch, das Artefakt hochzuladen, wird verweigert, weil es die Quote "
+"überschreitet: %s"
+
+#, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr ""
 "Versuch, das Image hochzuladen, wird verweigert, weil es die Quote "
@@ -570,6 +589,10 @@ msgid "Denying attempt to upload image larger than %d bytes."
 msgstr ""
 "Versuch, Image hochzuladen, das größer ist als %d Bytes, wird nicht "
 "zugelassen."
+
+#, python-format
+msgid "Dependency property '%s' has to be deleted first"
+msgstr "Abhängigkeitseigenschaft '%s' muss zuerst gelöscht werden"
 
 msgid "Dependency relations cannot be mutable"
 msgstr "Abhängigkeitsbeziehungen können nicht veränderbar sein"
@@ -586,6 +609,9 @@ msgstr "OpenStack-Images-API von Version 2 implementieren. "
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr "OpenStack-Registry-API von Version 2 implementieren."
 
+msgid "Deploy the v3 OpenStack Objects API."
+msgstr "OpenStack-Objects-API von Version 3 implementieren."
+
 msgid "Descriptive name for the image"
 msgstr "Beschreibender Name für das Image"
 
@@ -597,6 +623,9 @@ msgstr "Verzeichnisgröße überschreitet den Maximalwert"
 
 msgid "Dictionary size is less than minimum"
 msgstr "Verzeichnisgröße unterschreitet den Mindestwert"
+
+msgid "Disk format is not specified."
+msgstr "Plattenformat wurde nicht angegeben."
 
 msgid "Does not match pattern"
 msgstr "Entspricht nicht dem Muster"
@@ -615,6 +644,16 @@ msgstr "Entweder eine Datei oder eine legacy_image_id muss angegeben werden"
 msgid "Encountered service with no \"type\": %s"
 msgstr "Vorkommen von Service ohne \"type\": %s"
 
+#, python-format
+msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
+msgstr ""
+"Fehler beim Abrufen der Mitglieder von Image %(image_id)s: %(inner_msg)s"
+
+msgid "Error in store configuration. Adding artifacts to store is disabled."
+msgstr ""
+"Fehler in Speicherkonfiguration. Hinzufügen von Artefakten zu Speicher ist "
+"inaktiviert."
+
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Fehler in Speicherkonfiguration. Hinzufügen von Images zu Speicher ist "
@@ -631,6 +670,10 @@ msgstr "Image wurde nicht aktiviert. Fehler: %s"
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "Imagemetadaten wurden nicht hinzugefügt. Fehler: %s"
+
+#, python-format
+msgid "Failed to find artifact %(artifact_id)s to delete"
+msgstr "Zu löschendes Artefakt %(artifact_id)s wurde nicht gefunden"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
@@ -684,6 +727,10 @@ msgstr ""
 "Fehler beim Hochladen der Abbilddaten für das Abbild %(image_id)s auf Grund "
 "eines internen Fehlers: %(error)s"
 
+#, python-format
+msgid "File %(path)s has invalid backing file %(bfile)s, aborting."
+msgstr "Datei %(path)s hat ungültige Sicherungsdatei %(bfile)s. Abbruch."
+
 msgid ""
 "File based imports are not allowed. Please use a non-local source of image "
 "data."
@@ -704,6 +751,10 @@ msgstr "Es ist nicht erlaubt, ein %s Abbild zu löschen."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Löschen von Image nicht erlaubt: %s"
+
+#, python-format
+msgid "Forbidden to modify '%s' of image."
+msgstr "Ändern von '%s' eines Image nicht erlaubt."
 
 msgid "Forbidden to reserve image."
 msgstr "Reservieren von Image nicht erlaubt."
@@ -734,6 +785,10 @@ msgstr "Format des Containers"
 
 msgid "Format of the disk"
 msgstr "Format der Festplatte"
+
+#, python-format
+msgid "Get blob %(name)s data failed: %(err)s."
+msgstr "Abrufen der Daten von BLOB %(name)s fehlgeschlagen: %(err)s."
 
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
@@ -874,6 +929,10 @@ msgid "Image with identifier %s not found"
 msgstr "Image mit ID %s nicht gefunden"
 
 #, python-format
+msgid "Image with the given id %(image_id)s was not found"
+msgstr "Image mit der angegebenen ID %(image_id)s wurde nicht gefunden"
+
+#, python-format
 msgid ""
 "Incorrect auth strategy, expected \"%(expected)s\" but received "
 "\"%(received)s\""
@@ -885,9 +944,19 @@ msgstr ""
 msgid "Incorrect request: %s"
 msgstr "Falsche Anforderung: %s"
 
+msgid "Index is out of range"
+msgstr "Index liegt außerhalb des gültigen Bereichs"
+
+msgid "Index is required"
+msgstr "Index ist erforderlich"
+
 #, python-format
 msgid "Input does not contain '%(key)s' field"
 msgstr "Eingabe enthält nicht das Feld '%(key)s' "
+
+#, python-format
+msgid "Insufficient permissions on artifact storage media: %s"
+msgstr "Unzureichende Berechtigungen für Artefaktspeichermedium: %s"
 
 #, python-format
 msgid "Insufficient permissions on image storage media: %s"
@@ -896,6 +965,10 @@ msgstr "Nicht ausreichende Berechtigungen auf Imagespeichermedien: %s"
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Ungültiger JSON Zeiger für diese Ressource: : '/%s'"
+
+#, python-format
+msgid "Invalid checksum '%s': can't exceed 32 characters"
+msgstr "Ungültige Kontrollsumme '%s': Darf 32 Zeichen nicht überschreiten"
 
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "Ungültige Konfiguration in der Glance-Swift-Konfigurationsdatei."
@@ -927,11 +1000,19 @@ msgstr "Ungültiges Image-ID-Format"
 msgid "Invalid item type specification"
 msgstr "Ungültiger Elementtyp angegeben"
 
+#, python-format
+msgid "Invalid json body: %s"
+msgstr "Ungültiger JSON-Hauptteil: %s"
+
 msgid "Invalid jsonpatch request"
 msgstr "Ungültige jsonpatch-Anforderung"
 
 msgid "Invalid location"
 msgstr "Ungültige Position"
+
+#, python-format
+msgid "Invalid location %s"
+msgstr "Ungültige Position %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -971,6 +1052,13 @@ msgstr ""
 "eines Platten- oder Containerformats auf 'aki', 'ari' oder 'ami' müssen die "
 "Container- und Plattenformate übereinstimmen."
 
+#, python-format
+msgid ""
+"Invalid operation: `%(op)s`. It must be one of the following: %(available)s."
+msgstr ""
+"Ungültige Operation: '%(op)s'. Es muss eine der folgenden Optionen verwendet "
+"werden: %(available)s."
+
 msgid "Invalid position for adding a location."
 msgstr "Ungültige Position zum Hinzufügen einer Position."
 
@@ -995,11 +1083,26 @@ msgstr "Ungültige Sortierrichtung: %s"
 
 #, python-format
 msgid ""
+"Invalid sort key: %(sort_key)s. If type version is not set it must be one of "
+"the following: %(available)s."
+msgstr ""
+"Ungültiger Sortierschlüssel: %(sort_key)s. Wenn die Typversion nicht "
+"festgelegt wurde, muss eine der folgenden Optionen verwendet werden: "
+"%(available)s."
+
+#, python-format
+msgid ""
 "Invalid sort key: %(sort_key)s. It must be one of the following: "
 "%(available)s."
 msgstr ""
 "Ungültiger Sortierschlüssel: %(sort_key)s. Es muss einer der folgenden sein: "
 "%(available)s."
+
+#, python-format
+msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
+msgstr ""
+"Ungültiger Sortierschlüssel: %(sort_key)s. Sie können nicht nach dieser "
+"Eigenschaft sortieren"
 
 #, python-format
 msgid "Invalid status value: %s"
@@ -1100,6 +1203,19 @@ msgstr "Die Länge überschreitet den Maximalwert"
 
 msgid "Length is less than minimum"
 msgstr "Die Länge unterschreitet den Mindestwert"
+
+msgid "Limit param must be an integer"
+msgstr "Grenzwertparameter muss eine ganze Zahl sein"
+
+msgid "Limit param must be positive"
+msgstr "Grenzwertparameter muss positiv sein"
+
+#, python-format
+msgid "Limit param must not be higher than %d"
+msgstr "Grenzwertparameter darf nicht größer sein als %d"
+
+msgid "Limits request ID length."
+msgstr "Begrenzt die Länge der Anforderungs-ID."
 
 msgid "List definitions may hot have defaults"
 msgstr "Listendefinitionen verfügen möglicherweise über keine Standardwerte"
@@ -1286,6 +1402,10 @@ msgstr ""
 msgid "Name of the paste configuration file."
 msgstr "Name der einzufügenden Konfigurationsdatei."
 
+#, python-format
+msgid "No artifact found with ID %s"
+msgstr "Kein Artefakt mit ID %s gefunden"
+
 msgid "No authenticated user"
 msgstr "Kein authentifizierter Benutzer"
 
@@ -1304,8 +1424,33 @@ msgstr "Keine Berechtigung, dieses Image freizugeben"
 msgid "No plugin for '%(name)s' has been loaded"
 msgstr "Kein Plug-in für '%(name)s' wurde geladen"
 
+msgid "No property to access"
+msgstr "Kein Zugriff auf Eigenschaft"
+
+#, python-format
+msgid "No such key '%s' in a dict"
+msgstr "Kein solcher Schlüssel '%s' in einem Wörterverzeichnis"
+
+#, python-format
+msgid "Not a blob property '%s'"
+msgstr "Keine BLOB-Eigenschaft '%s'"
+
+msgid "Not a downloadable entity"
+msgstr "Keine für den Download verfügbare Entität"
+
+msgid "Not a list property"
+msgstr "Keine Listeneigenschaft"
+
+#, python-format
+msgid "Not a list property '%s'"
+msgstr "Keine Listeneigenschaft '%s'"
+
 msgid "Not a valid value type"
 msgstr "Kein gültiger Werttyp"
+
+#, python-format
+msgid "Not all dependencies are in '%s' state"
+msgstr "Nicht alle Abhängigkeiten befinden sich im Status '%s'"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1344,6 +1489,10 @@ msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr ""
 "Hochladen von Imagedaten für Image %(image_id)s nicht zulässig: %(error)s"
 
+#, python-format
+msgid "Not an array idx '%s'"
+msgstr "Kein Array-IDX '%s'"
+
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr ""
 "Die Anzahl der Sortierverzeichnisse entspricht nicht der Anzahl der "
@@ -1351,6 +1500,9 @@ msgstr ""
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "Die alte und die neue Sortiersyntax können nicht kombiniert werden"
+
+msgid "Only list indexes are allowed for blob lists"
+msgstr "Für BLOB-Listen sind nur Listenindizes zulässig"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1380,6 +1532,11 @@ msgstr "Operator %(op)s wird nicht unterstützt"
 #, python-format
 msgid "Original locations is not empty: %s"
 msgstr "Originalpositionen sind nicht leer: %s"
+
+msgid "Owner can't be updated by non admin."
+msgstr ""
+"Eigner kann durch einen Benutzer, der kein Administrator ist, nicht "
+"aktualisiert werden."
 
 msgid "Owner must be specified to create a tag."
 msgstr "Der Eigentümer muss zum Erstellen eines Tags angegeben werden."
@@ -1661,9 +1818,6 @@ msgid "Show level %(shl)s is not supported in this operation"
 msgstr ""
 "Das Anzeigen von Ebene %(shl)s wird bei dieser Operation nicht unterstützt"
 
-msgid "Size of image file in bytes (READ-ONLY)"
-msgstr "Größe der Imagedatei in Byte (SCHREIBGESCHÜTZT)"
-
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
 "example, Cinder allows user and image metadata on volumes. Only the image "
@@ -1702,9 +1856,6 @@ msgstr "Status muss \"pending\", \"accepted\" oder \"rejected\" sein."
 
 msgid "Status not specified"
 msgstr "Status nicht angegeben"
-
-msgid "Status of the image (READ-ONLY)"
-msgstr "Status des Image (SCHREIBGESCHÜTZT)"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -1751,6 +1902,9 @@ msgstr "Task '%s' ist erforderlich"
 
 msgid "Task does not exist"
 msgstr "Task ist nicht vorhanden"
+
+msgid "Task failed due to Internal Error"
+msgstr "Task fehlgeschlagen. Grund: Interner Fehler"
 
 msgid "Task was not configured properly"
 msgstr "Die Task war nicht ordnungsgemäß konfiguriert"
@@ -1869,6 +2023,10 @@ msgstr ""
 "Das Image %s ist bereits auf dem Slave vorhanden, aber bei der Überprüfung "
 "wurde es nicht gefunden. Dies bedeutet, dass wir nicht über die "
 "Berechtigungen zum Anzeigen aller Images auf dem Slave-Server verfügen."
+
+#, python-format
+msgid "The incoming artifact blob is too large: %s"
+msgstr "Das eingehende Artefakt-BLOB ist zu groß: %s"
 
 #, python-format
 msgid "The incoming image is too large: %s"
@@ -2179,6 +2337,16 @@ msgstr ""
 "Die Größe der Daten, mit denen %(image_size)s den Grenzwert überschreiten "
 "wird. %(remaining)s Byte verbleiben."
 
+msgid ""
+"The size of thread pool to be used for scrubbing images. The default is one, "
+"which signifies serial scrubbing. Any value above one indicates the max "
+"number of images that may be scrubbed in parallel."
+msgstr ""
+"Die Größe des zu verwendenden Thread-Pools für die Bereinigung von Images. "
+"Der Standardwert eins bezeichnet die serielle Bereinigung. Jeder Wert über "
+"eins gibt die maximale Anzahl der Images an, die parallel bereinigt werden "
+"können."
+
 #, python-format
 msgid "The specified member %s could not be found"
 msgstr "Das angegebene Mitglied %s konnte nicht gefunden werden"
@@ -2352,6 +2520,15 @@ msgstr ""
 "Zeit in Stunden, für die eine Task anschließend aktiv bleibt, entweder bei "
 "Erfolg oder bei Fehlschlag"
 
+msgid ""
+"Timeout for client connections' socket operations. If an incoming connection "
+"is idle for this number of seconds it will be closed. A value of '0' means "
+"wait forever."
+msgstr ""
+"Zeitlimit für Socketoperationen für Clientverbindungen. Wenn eine eingehende "
+"Verbindung für diese Anzahl an Sekunden inaktiv ist, wird sie geschlossen. "
+"Der Wert '0' bedeutet, dass für eine unbegrenzte Dauer gewartet wird."
+
 msgid "Too few arguments."
 msgstr "Zu wenig Argumente"
 
@@ -2383,9 +2560,8 @@ msgstr ""
 "müssen Sie ihn ändern, um das swift+http://-Schema verwenden zu können. "
 "Beispiel: swift+http://user:pass@authurl.com/v1/container/obj"
 
-msgid "URL to access the image file kept in external store (READ-ONLY)"
-msgstr ""
-"URL für den Zugriff auf Imagedatei in externem Speicher (SCHREIBGESCHÜTZT)"
+msgid "Unable to PUT to non-empty collection"
+msgstr "PUT-Operation zum Einreihen in nicht leere Sammlung nicht möglich"
 
 #, python-format
 msgid ""
@@ -2408,6 +2584,14 @@ msgstr "Filtern mit dem angegebenen Bereich nicht möglich."
 #, python-format
 msgid "Unable to find '%s' in JSON Schema change"
 msgstr "'%s' kann in JSON-Schemaänderung nicht gefunden werden"
+
+#, python-format
+msgid ""
+"Unable to find `op` in JSON Schema change. It must be one of the following: "
+"%(available)s."
+msgstr ""
+"'op' wurde in JSON-Schemaänderung nicht gefunden. Es muss eine der folgenden "
+"Optionen verwendet werden: %(available)s."
 
 msgid "Unable to get legacy image"
 msgstr "Traditionelles Image kann nicht abgerufen werden"
@@ -2460,6 +2644,10 @@ msgstr ""
 "Hochladen von doppelten Imagedaten für Image %(image_id)s nicht möglich: "
 "%(error)s"
 
+#, python-format
+msgid "Unable to verify signature: %(reason)s"
+msgstr "Signatur kann nicht geprüft werden: %(reason)s"
+
 msgid "Unauthorized image access"
 msgstr "Unautorisierter Imagezugriff"
 
@@ -2492,6 +2680,12 @@ msgstr "Nicht unterstützter Wert für 'sort_dir'. Zulässige Werte: %s"
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "Nicht unterstützter Wert für 'sort_key'. Zulässige Werte: %s"
 
+#, python-format
+msgid "Value %(value)d out of range, must not exceed %(max)d"
+msgstr ""
+"Wert %(value)d außerhalb des gültigen Bereichs. Darf %(max)d nicht "
+"überschreiten"
+
 msgid "Value is greater than maximum"
 msgstr "Der Wert überschreitet den Maximalwert"
 
@@ -2508,9 +2702,6 @@ msgstr "Versionskomponente ist zu groß (maximal %d)"
 #, python-format
 msgid "Version is invalid: %(reason)s"
 msgstr "Version ist ungültig: %(reason)s"
-
-msgid "Virtual size of image in bytes (READ-ONLY)"
-msgstr "Virtuelle Größe des Image in Byte (schreibgeschützt)"
 
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "Sichtbarkeit muss entweder \"öffentlich\" oder \"privat\" sein"
@@ -2591,6 +2782,18 @@ msgstr ""
 "Middleware sicherzustellen."
 
 msgid ""
+"Whether to pass through the user token when making requests to the registry. "
+"To prevent failures with token expiration during big files upload, it is "
+"recommended to set this parameter to False.If \"use_user_token\" is not in "
+"effect, then admin credentials can be specified."
+msgstr ""
+"Gibt an, ob das Benutzertoken durchlaufen werden soll, wenn Anforderungen an "
+"die Registry gesendet werden. Um Fehler mit dem Ablauf des Tokens beim "
+"Hochladen von großen Dateien zu verhindern, wird empfohlen, diesen Parameter "
+"auf False festzulegen. Wenn \"use_user_token\" nicht wirksam ist, können "
+"Berechtigungsnachweise für den Administrator angegeben werden."
+
+msgid ""
 "Work dir for asynchronous task operations. The directory set here will be "
 "used to operate over images - normally before they are imported in the "
 "destination store. When providing work dir, make sure enough space is "
@@ -2632,6 +2835,14 @@ msgstr "Sie sind nicht authentifiziert."
 
 msgid "You are not authorized to complete this action."
 msgstr "Sie sind nicht dazu autorisiert, diese Aktion abzuschließen"
+
+#, python-format
+msgid "You are not authorized to lookup image %s."
+msgstr "Sie sind nicht berechtigt, Image %s zu suchen."
+
+#, python-format
+msgid "You are not authorized to lookup the members of the image %s."
+msgstr "Sie sind nicht berechtigt, die Mitglieder des Image %s zu suchen."
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
@@ -2799,9 +3010,6 @@ msgstr "'limit'-Parameter muss positiv sein"
 msgid "location: %s data lost"
 msgstr "Position: %s Daten verloren"
 
-msgid "md5 hash of image contents. (READ-ONLY)"
-msgstr "md5-Hashwert von Imageinhalten. (SCHREIBGESCHÜTZT)"
-
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() hat unerwartete Schlüsselwörter %s erhalten"
@@ -2812,3 +3020,7 @@ msgstr "'protected' muss 'True' oder 'False' sein"
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
 msgstr "%(serv)s kann nicht gestartet werden. Fehler: %(e)s"
+
+#, python-format
+msgid "x-openstack-request-id is too long, max size %s"
+msgstr "x-openstack-request-id ist zu lang. Max. Größe %s"
