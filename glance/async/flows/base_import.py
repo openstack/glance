@@ -384,7 +384,8 @@ def _get_import_flows(**kwargs):
     # Future patches will keep using NamedExtensionManager but they'll
     # rely on a config option to control this process.
     extensions = named.NamedExtensionManager('glance.flows.import',
-                                             names=['convert',
+                                             names=['ovf_process',
+                                                    'convert',
                                                     'introspect'],
                                              name_order=True,
                                              invoke_on_load=True,
