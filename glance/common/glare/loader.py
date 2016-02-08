@@ -156,9 +156,9 @@ class ArtifactsPluginLoader(object):
     # face to face with an Exception and tries to swallow it and print sth
     # irrelevant instead of expected error message
     def _on_load_failure(self, manager, ep, exc):
-        msg = (_LE("Could not load plugin from %(module)s: %(msg)s") %
-               {"module": ep.module_name, "msg": exc})
-        LOG.error(msg)
+        msg = (_LE("Could not load plugin from %(module)s") %
+               {"module": ep.module_name})
+        LOG.exception(msg)
         raise exc
 
     def _find_class_in_collection(self, collection, name, version=None):
