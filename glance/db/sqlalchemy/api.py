@@ -34,8 +34,10 @@ import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import sqlalchemy
-from sqlalchemy import MetaData, Table, select
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy import MetaData, Table
 import sqlalchemy.orm as sa_orm
+from sqlalchemy import sql
 import sqlalchemy.sql as sa_sql
 
 from glance.common import exception
@@ -1247,6 +1249,24 @@ def image_tag_get_all(context, image_id, session=None):
     return [tag[0] for tag in tags]
 
 
+class DeleteFromSelect(sa_sql.expression.UpdateBase):
+    def __init__(self, table, select, column):
+        self.table = table
+        self.select = select
+        self.column = column
+
+
+# NOTE(abhishekk): MySQL doesn't yet support subquery with
+# 'LIMIT & IN/ALL/ANY/SOME' We need work around this with nesting select.
+@compiles(DeleteFromSelect)
+def visit_delete_from_select(element, compiler, **kw):
+    return "DELETE FROM %s WHERE %s in (SELECT T1.%s FROM (%s) as T1)" % (
+        compiler.process(element.table, asfrom=True),
+        compiler.process(element.column),
+        element.column.name,
+        compiler.process(element.select))
+
+
 def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     """Purges soft deleted rows
 
@@ -1294,16 +1314,19 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             _LI('Purging deleted rows older than %(age_in_days)d day(s) '
                 'from table %(tbl)s'),
             {'age_in_days': age_in_days, 'tbl': tbl})
+
+        column = tab.c.id
+        deleted_at_column = tab.c.deleted_at
+
+        query_delete = sql.select(
+            [column], deleted_at_column < deleted_age).order_by(
+            deleted_at_column).limit(max_rows)
+
+        delete_statement = DeleteFromSelect(tab, query_delete, column)
+
         with session.begin():
-            result = session.execute(
-                tab.delete().where(
-                    tab.columns.id.in_(
-                        select([tab.columns.id]).where(
-                            tab.columns.deleted_at < deleted_age
-                        ).limit(max_rows)
-                    )
-                )
-            )
+            result = session.execute(delete_statement)
+
         rows = result.rowcount
         LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),
                  {'rows': rows, 'tbl': tbl})
