@@ -516,8 +516,12 @@ class BinaryObject(declarative.BlobDefinition, Blob):
         :param max_locations: maximum number of locations in the associated
         Blob
         """
+        mutable = kwargs.pop('mutable', False)
+        if mutable:
+            raise exc.InvalidArtifactTypePropertyDefinition(
+                _("BinaryObject property cannot be declared mutable"))
         super(BinaryObject, self).__init__(default=None, readonly=False,
-                                           mutable=False, **kwargs)
+                                           mutable=mutable, **kwargs)
         self._max_file_size = max_file_size
         self._min_file_size = min_file_size
         self._min_locations = min_locations
