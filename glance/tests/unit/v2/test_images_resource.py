@@ -811,6 +811,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes=[])
 
     def test_update_with_too_many_properties(self):
+        self.config(show_multiple_locations=True)
         self.config(user_storage_quota='1')
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
@@ -1442,11 +1443,31 @@ class TestImagesController(base.IsolatedUnitTest):
                           another_request, created_image.image_id, changes)
 
     def test_update_replace_locations_non_empty(self):
+        self.config(show_multiple_locations=True)
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['locations'],
                     'value': [new_location]}]
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.update,
+                          request, UUID1, changes)
+
+    def test_update_replace_locations_metadata_update(self):
+        self.config(show_multiple_locations=True)
+        location = {'url': '%s/%s' % (BASE_URI, UUID1),
+                    'metadata': {'a': 1}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [location]}]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual({'a': 1}, output.locations[0]['metadata'])
+
+    def test_locations_actions_with_locations_invisible(self):
+        self.config(show_multiple_locations=False)
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [new_location]}]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID1, changes)
 
     def test_update_replace_locations_invalid(self):
@@ -1540,6 +1561,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual({'foo': 'baz'}, output.extra_properties)
 
     def test_update_add_locations(self):
+        self.config(show_multiple_locations=True)
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'add', 'path': ['locations', '-'],
@@ -1550,6 +1572,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(new_location, output.locations[1])
 
     def test_update_add_locations_insertion(self):
+        self.config(show_multiple_locations=True)
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'add', 'path': ['locations', '0'],
@@ -1560,6 +1583,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(new_location, output.locations[0])
 
     def test_update_add_locations_list(self):
+        self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': {'url': 'foo', 'metadata': {}}}]
@@ -1567,6 +1591,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_add_locations_invalid(self):
+        self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': {'url': 'unknow://foo', 'metadata': {}}}]
@@ -1579,6 +1604,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_add_duplicate_locations(self):
+        self.config(show_multiple_locations=True)
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'add', 'path': ['locations', '-'],
@@ -1592,6 +1618,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_add_too_many_locations(self):
+        self.config(show_multiple_locations=True)
         self.config(image_location_quota=1)
         request = unit_test_utils.get_fake_request()
         changes = [
@@ -1607,6 +1634,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           UUID1, changes)
 
     def test_update_add_and_remove_too_many_locations(self):
+        self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
         changes = [
             {'op': 'add', 'path': ['locations', '-'],
@@ -1632,6 +1660,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           UUID1, changes)
 
     def test_update_add_unlimited_locations(self):
+        self.config(show_multiple_locations=True)
         self.config(image_location_quota=-1)
         request = unit_test_utils.get_fake_request()
         changes = [
@@ -1650,6 +1679,7 @@ class TestImagesController(base.IsolatedUnitTest):
         fewer than the limited number of image locations after the
         transaction.
         """
+        self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
         changes = [
             {'op': 'add', 'path': ['locations', '-'],
@@ -1747,6 +1777,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           self.controller.update, request, UUID1, changes)
 
     def test_update_remove_location(self):
+        self.config(show_multiple_locations=True)
         self.stubs.Set(store, 'get_size_from_backend',
                        unit_test_utils.fake_get_size_from_backend)
 
@@ -1762,6 +1793,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('active', output.status)
 
     def test_update_remove_location_invalid_pos(self):
+        self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
         changes = [
             {'op': 'add', 'path': ['locations', '-'],
@@ -1782,6 +1814,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1, changes)
 
     def test_update_remove_location_store_exception(self):
+        self.config(show_multiple_locations=True)
+
         def fake_delete_image_location_from_backend(self, *args, **kwargs):
             raise Exception('fake_backend_exception')
 

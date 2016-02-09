@@ -135,6 +135,7 @@ class TestImages(functional.FunctionalTest):
 
     def test_image_lifecycle(self):
         # Image list should be empty
+        self.api_server.show_multiple_locations = True
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
@@ -178,6 +179,7 @@ class TestImages(functional.FunctionalTest):
             u'checksum',
             u'size',
             u'virtual_size',
+            u'locations',
         ])
         self.assertEqual(checked_keys, set(image.keys()))
         expected_image = {
@@ -241,6 +243,7 @@ class TestImages(functional.FunctionalTest):
             u'checksum',
             u'size',
             u'virtual_size',
+            u'locations',
         ])
         self.assertEqual(checked_keys, set(image.keys()))
         expected_image = {
@@ -980,6 +983,7 @@ class TestImages(functional.FunctionalTest):
 
     def test_download_image_raises_service_unavailable(self):
         """Test image download returns HTTPServiceUnavailable."""
+        self.api_server.show_multiple_locations = True
         self.start_servers(**self.__dict__.copy())
 
         # Create an image
@@ -2810,6 +2814,7 @@ class TestImages(functional.FunctionalTest):
         self.stop_servers()
 
     def test_update_locations(self):
+        self.api_server.show_multiple_locations = True
         self.start_servers(**self.__dict__.copy())
         # Create an image
         path = self._url('/v2/images')
@@ -2845,6 +2850,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(10, image['size'])
 
     def test_update_locations_with_restricted_sources(self):
+        self.api_server.show_multiple_locations = True
         self.start_servers(**self.__dict__.copy())
         # Create an image
         path = self._url('/v2/images')
