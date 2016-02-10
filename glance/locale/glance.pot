@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-06 06:21+0000\n"
+"POT-Creation-Date: 2016-02-10 07:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1353,18 +1353,18 @@ msgstr ""
 msgid "__init__() got unexpected keyword argument '%s'"
 msgstr ""
 
-#: glance/async/taskflow_executor.py:42
+#: glance/async/taskflow_executor.py:40
 msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
 msgstr ""
 
-#: glance/async/taskflow_executor.py:46
+#: glance/async/taskflow_executor.py:44
 msgid ""
 "The number of parallel activities executed at the same time by the "
 "engine. The value can be greater than one when the engine mode is "
 "'parallel'."
 msgstr ""
 
-#: glance/async/taskflow_executor.py:145
+#: glance/async/taskflow_executor.py:144
 msgid "Task failed due to Internal Error"
 msgstr ""
 
@@ -3184,20 +3184,20 @@ msgstr ""
 #: glance/image_cache/__init__.py:39
 msgid ""
 "The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which pruner, if running, starts cleaning the images cache."
+"which the cache pruner, if running, starts cleaning the image cache."
 msgstr ""
 
 #: glance/image_cache/__init__.py:43
 msgid ""
-"The amount of time to let an image remain in the cache without being "
-"accessed."
+"The amount of time to let an incomplete image remain in the cache, before"
+" the cache cleaner, if running, will remove the incomplete image."
 msgstr ""
 
-#: glance/image_cache/__init__.py:46
-msgid "Base directory that the Image Cache uses."
+#: glance/image_cache/__init__.py:47
+msgid "Base directory that the image cache uses."
 msgstr ""
 
-#: glance/image_cache/__init__.py:257
+#: glance/image_cache/__init__.py:258
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr ""

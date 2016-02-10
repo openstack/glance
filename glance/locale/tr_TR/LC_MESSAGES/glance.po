@@ -7,9 +7,9 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-05 05:15+0000\n"
+"POT-Creation-Date: 2016-02-09 22:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -362,9 +362,6 @@ msgstr "Swift URI içinde hatalı oluşturulmuş kimlik bilgileri '%(creds)s'"
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI içinde hatalı oluşturulmuş kimlik bilgileri."
-
-msgid "Base directory that the Image Cache uses."
-msgstr "İmaj Önbellek kullanan taban dizin."
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -1836,11 +1833,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "Bir silme işlemi gerçekleşmeden önce saniye cinsinden gecikme miktarı."
 
 msgid ""
-"The amount of time to let an image remain in the cache without being "
-"accessed."
-msgstr "Bir imajın önbellekte erişilemeden kalmasına izin verilen süre."
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "TCP dinleyici soket oluştururken kullanılacak hizmet bekleyen değeri."
 
@@ -2253,13 +2245,6 @@ msgstr "Bu içerik ile sunulan görev türü"
 
 msgid "The unique namespace text."
 msgstr "Eşsiz ad alanı metni."
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which pruner, if running, starts cleaning the images cache."
-msgstr ""
-"Üst sınır sonrası budayıcı (bayt cinsinde birikmiş azami önbellek boyutu), "
-"çalışıyorsa, imaj önbellek temizliğine başlar."
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""

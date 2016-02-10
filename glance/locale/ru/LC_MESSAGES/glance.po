@@ -2,9 +2,9 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-05 05:15+0000\n"
+"POT-Creation-Date: 2016-02-09 22:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -379,9 +379,6 @@ msgstr ""
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Неправильно сформированные идентификационные данные в URI Swift."
-
-msgid "Base directory that the Image Cache uses."
-msgstr "Базовый каталог, используемый кэшем образов."
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -1898,11 +1895,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "Время задержки перед выполнением удаления, в секундах."
 
 msgid ""
-"The amount of time to let an image remain in the cache without being "
-"accessed."
-msgstr "Время, в течение которого образ может оставаться в кэше без обращения."
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr ""
 "Базовое значение, которое будет использовано при создании приемного сокета "
@@ -2332,14 +2324,6 @@ msgstr "Тип задачи, представленной этим содерж�
 
 msgid "The unique namespace text."
 msgstr "Уникальный текст пространства имен."
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which pruner, if running, starts cleaning the images cache."
-msgstr ""
-"Верхнее ограничение (максимальный размер аккумулированного кэша в байтах), "
-"при превышении которой агент очистки (если выполняется) начинает очистку "
-"кэша образов."
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
