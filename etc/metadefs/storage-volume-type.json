@@ -1,0 +1,20 @@
+{
+    "namespace": "OS::Cinder::Volumetype",
+    "display_name": "Cinder Volume Type",
+    "description": "The Cinder volume type configuration option. Volume type assignment provides a mechanism not only to provide scheduling to a specific storage back-end, but also can be used to specify specific information for a back-end storage device to act upon.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image",
+            "prefix": "cinder_"
+        }
+    ],
+    "properties": {
+        "img_volume_type": {
+            "title": "Image Volume Type",
+            "description": "Specifies the volume type that should be applied during new volume creation with a image. This value is passed to Cinder when creating a new volume. Priority of volume type related parameters are 1.volume_type(via API or CLI), 2.cinder_img_volume_type, 3.default_volume_type(via cinder.conf). If not specified, volume_type or default_volume_type will be referred based on their priority.",
+            "type": "string"
+        }
+    }
+}
