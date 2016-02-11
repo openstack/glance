@@ -13,7 +13,7 @@
 # under the License.
 
 
-from glance.common.artifacts import definitions
+from glance.common.glare import definitions
 import glance.contrib.plugins.image_artifact.v1.image as v1
 
 

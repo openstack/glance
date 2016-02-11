@@ -22,13 +22,13 @@ from oslo_utils import importutils
 from wsme.rest import json
 
 from glance.api.v2.model.metadef_property_type import PropertyType
-from glance import artifacts as ga
-from glance.common.artifacts import serialization
 from glance.common import crypt
 from glance.common import exception
+from glance.common.glare import serialization
 from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
+from glance import glare as ga
 from glance.i18n import _
 
 CONF = cfg.CONF

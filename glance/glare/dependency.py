@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from glance.artifacts.domain import proxy
-import glance.common.artifacts.definitions as definitions
 import glance.common.exception as exc
+import glance.common.glare.definitions as definitions
+from glance.glare.domain import proxy
 from glance.i18n import _
 
 

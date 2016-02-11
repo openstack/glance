@@ -38,11 +38,10 @@ from sqlalchemy import MetaData, Table, select
 import sqlalchemy.orm as sa_orm
 import sqlalchemy.sql as sa_sql
 
-from glance import artifacts as ga
 from glance.common import exception
 from glance.common import timeutils
 from glance.common import utils
-from glance.db.sqlalchemy import artifacts
+from glance.db.sqlalchemy import glare
 from glance.db.sqlalchemy.metadef_api import (resource_type
                                               as metadef_resource_type_api)
 from glance.db.sqlalchemy.metadef_api import (resource_type_association
@@ -52,6 +51,7 @@ from glance.db.sqlalchemy.metadef_api import object as metadef_object_api
 from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
 from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
+from glance import glare as ga
 from glance.i18n import _, _LW, _LE, _LI
 
 BASE = models.BASE
@@ -1816,24 +1816,24 @@ def metadef_tag_count(context, namespace_name, session=None):
 def artifact_create(context, values, type_name,
                     type_version=None, session=None):
     session = session or get_session()
-    artifact = artifacts.create(context, values, session, type_name,
-                                type_version)
+    artifact = glare.create(context, values, session, type_name,
+                            type_version)
     return artifact
 
 
 def artifact_delete(context, artifact_id, type_name,
                     type_version=None, session=None):
     session = session or get_session()
-    artifact = artifacts.delete(context, artifact_id, session, type_name,
-                                type_version)
+    artifact = glare.delete(context, artifact_id, session, type_name,
+                            type_version)
     return artifact
 
 
 def artifact_update(context, values, artifact_id, type_name,
                     type_version=None, session=None):
     session = session or get_session()
-    artifact = artifacts.update(context, values, artifact_id, session,
-                                type_name, type_version)
+    artifact = glare.update(context, values, artifact_id, session,
+                            type_name, type_version)
     return artifact
 
 
@@ -1843,8 +1843,8 @@ def artifact_get(context, artifact_id,
                  show_level=ga.Showlevel.BASIC,
                  session=None):
     session = session or get_session()
-    return artifacts.get(context, artifact_id, session, type_name,
-                         type_version, show_level)
+    return glare.get(context, artifact_id, session, type_name,
+                     type_version, show_level)
 
 
 def artifact_publish(context,
@@ -1853,16 +1853,16 @@ def artifact_publish(context,
                      type_version=None,
                      session=None):
     session = session or get_session()
-    return artifacts.publish(context,
-                             artifact_id,
-                             session,
-                             type_name,
-                             type_version)
+    return glare.publish(context,
+                         artifact_id,
+                         session,
+                         type_name,
+                         type_version)
 
 
 def artifact_get_all(context, marker=None, limit=None, sort_keys=None,
                      sort_dirs=None, filters=None,
                      show_level=ga.Showlevel.NONE, session=None):
     session = session or get_session()
-    return artifacts.get_all(context, session, marker, limit, sort_keys,
-                             sort_dirs, filters, show_level)
+    return glare.get_all(context, session, marker, limit, sort_keys,
+                         sort_dirs, filters, show_level)

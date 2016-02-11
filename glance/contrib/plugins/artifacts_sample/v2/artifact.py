@@ -14,7 +14,7 @@
 #    under the License.
 
 
-from glance.common.artifacts import definitions
+from glance.common.glare import definitions
 from glance.contrib.plugins.artifacts_sample import base
 
 

@@ -26,11 +26,11 @@ from sqlalchemy import or_
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import joinedload
 
-import glance.artifacts as ga
 from glance.common import exception
 from glance.common import semver_db
 from glance.common import timeutils
-from glance.db.sqlalchemy import models_artifacts as models
+from glance.db.sqlalchemy import models_glare as models
+import glance.glare as ga
 from glance.i18n import _LE, _LW
 from oslo_log import log as os_logging
 

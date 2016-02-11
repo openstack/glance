@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from glance.common.artifacts import definitions
+from glance.common.glare import definitions
 
 
 class ImageAsAnArtifact(definitions.ArtifactType):

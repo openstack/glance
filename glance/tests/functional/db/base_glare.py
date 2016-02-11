@@ -17,9 +17,9 @@ import uuid
 import six
 from six.moves import range
 
-import glance.artifacts as ga
 from glance.common import exception as exc
 from glance import context
+import glance.glare as ga
 import glance.tests.functional.db as db_tests
 from glance.tests import utils as test_utils
 

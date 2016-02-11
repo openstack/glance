@@ -17,8 +17,8 @@ import os
 import mock
 import pkg_resources
 
-from glance.common.artifacts import loader
 from glance.common import exception
+from glance.common.glare import loader
 from glance.contrib.plugins.artifacts_sample.v1 import artifact as art1
 from glance.contrib.plugins.artifacts_sample.v2 import artifact as art2
 from glance.tests import utils
