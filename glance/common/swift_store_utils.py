@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from collections import OrderedDict
 from oslo_config import cfg
 from oslo_log import log as logging
 from six.moves import configparser
@@ -39,9 +38,7 @@ swift_opts = [
                       'configs.')),
 ]
 
-# NOTE(bourke): The default dict_type is collections.OrderedDict in py27, but
-# we must set manually for compatibility with py26
-CONFIG = configparser.SafeConfigParser(dict_type=OrderedDict)
+CONFIG = configparser.SafeConfigParser()
 LOG = logging.getLogger(__name__)
 
 
