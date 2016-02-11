@@ -8,9 +8,9 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-05 05:15+0000\n"
+"POT-Creation-Date: 2016-02-09 22:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -356,9 +356,6 @@ msgstr "Swift URI 中認證 '%(creds)s' 的格式不正確"
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 中認證的格式不正確。"
-
-msgid "Base directory that the Image Cache uses."
-msgstr "「映像檔快取」所使用的基本目錄。"
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -1773,11 +1770,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "執行刪除之前要延遲的時間量（以秒為單位）。"
 
 msgid ""
-"The amount of time to let an image remain in the cache without being "
-"accessed."
-msgstr "讓映像檔保留在快取中，而不被存取的時間量。"
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "建立 TCP 接聽器 Socket 時將使用的待辦事項值。"
 
@@ -2167,13 +2159,6 @@ msgstr "此內容所表示的作業類型"
 
 msgid "The unique namespace text."
 msgstr "唯一的名稱空間文字。"
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which pruner, if running, starts cleaning the images cache."
-msgstr ""
-"上限（累計快取的大小上限，以位元組為單位），超出該上限時，刪改程式（如果在執"
-"行中）將開始清除映像檔快取。"
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "對使用者更為友善的名稱空間名稱。如果有的話，則由使用者介面使用。"

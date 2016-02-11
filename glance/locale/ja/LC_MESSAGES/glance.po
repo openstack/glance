@@ -11,9 +11,9 @@
 # Yuta Hono <yuta.hono@ntt.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-05 05:15+0000\n"
+"POT-Creation-Date: 2016-02-09 22:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -357,9 +357,6 @@ msgstr "Swift URI 内の資格情報 '%(creds)s' の形式が正しくありま�
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 内の資格情報の形式が正しくありません。"
-
-msgid "Base directory that the Image Cache uses."
-msgstr "イメージキャッシュで使用される基本ディレクトリー。"
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -1746,11 +1743,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "削除を実際実行するまでの遅延時間 (秒)。"
 
 msgid ""
-"The amount of time to let an image remain in the cache without being "
-"accessed."
-msgstr "イメージがアクセスされずにキャッシュ内に残ることができる時間 "
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "TCP リスナーソケットの作成時に使用されるバックログ値。"
 
@@ -2174,13 +2166,6 @@ msgstr "このコンテンツによって表されるタスクのタイプ"
 
 msgid "The unique namespace text."
 msgstr "固有の名前空間テキスト。"
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which pruner, if running, starts cleaning the images cache."
-msgstr ""
-"この値を超えるとプルーナー (実行されている場合) がイメージキャッシュのクリー"
-"ニングを開始する上限値 (累積キャッシュの最大サイズ (バイト))。"
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "名前空間の分かりやすい名前。存在する場合は、UI によって使用されます。"

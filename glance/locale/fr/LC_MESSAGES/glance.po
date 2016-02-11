@@ -13,9 +13,9 @@
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev67\n"
+"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-05 05:15+0000\n"
+"POT-Creation-Date: 2016-02-09 22:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -396,9 +396,6 @@ msgstr "Données d'identification incorrectes '%(creds)s' dans l'URI Swift"
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Données d'identification incorrectes dans l'URI Swift."
-
-msgid "Base directory that the Image Cache uses."
-msgstr "Répertoire de base que le cache d'image utilise."
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -1973,12 +1970,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "Temps de retard en secondes avant toute suppression."
 
 msgid ""
-"The amount of time to let an image remain in the cache without being "
-"accessed."
-msgstr ""
-"Temps pendant lequel une image doit rester dans le cache sans être consultée."
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr ""
 "Valeur de commandes en attente qui sera utilisée lors de la création du "
@@ -2431,14 +2422,6 @@ msgstr "Le type de tâche représenté par ce contenu"
 
 msgid "The unique namespace text."
 msgstr "Texte unique de l'espace de nom."
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which pruner, if running, starts cleaning the images cache."
-msgstr ""
-"Limite supérieure (taille maximale du cache cumulé en octets) au dessus de "
-"laquelle le programme d'élagage, s'il est exécuté, commence à nettoyer le "
-"cache d'images."
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
