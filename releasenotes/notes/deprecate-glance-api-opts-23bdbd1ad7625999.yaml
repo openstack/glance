@@ -1,0 +1,8 @@
+---
+deprecations:
+
+  - The use_user_token, admin_user, admin_password, admin_tenant_name,
+    auth_url, auth_strategy and auth_region options in the [DEFAULT]
+    configuration section in glance-api.conf are deprecated, and will
+    be removed in the O release.
+    See https://wiki.openstack.org/wiki/OSSN/OSSN-0060

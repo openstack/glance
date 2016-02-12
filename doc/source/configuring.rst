@@ -277,9 +277,20 @@ Optional. Default: ``600``.
 The period of time, in seconds, that the API server will wait for a registry
 request to complete. A value of '0' implies no timeout.
 
+.. note::
+   ``use_user_token``, ``admin_user``, ``admin_password``,
+   ``admin_tenant_name``, ``auth_url``, ``auth_strategy`` and ``auth_region``
+   options were considered harmful and have been deprecated in M release.
+   They will be removed in O release. For more information read
+   `OSSN-0060 <https://wiki.openstack.org/wiki/OSSN/OSSN-0060>`_.
+   Related functionality with uploading big images has been implemented with
+   Keystone trusts support.
+
 * ``use_user_token=True``
 
 Optional. Default: True
+
+DEPRECATED. This option will be removed in O release.
 
 Pass the user token through for API requests to the registry.
 
@@ -288,10 +299,9 @@ specified (see below). If admin credentials are specified then they are
 used to generate a token; this token rather than the original user's
 token is used for requests to the registry.
 
-To prevent failures with token expiration during big files upload,
-it is recommended to set this parameter to False.
-
 * ``admin_user=USER``
+
+DEPRECATED. This option will be removed in O release.
 
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the username.
@@ -300,12 +310,16 @@ Optional. Default: None
 
 * ``admin_password=PASSWORD``
 
+DEPRECATED. This option will be removed in O release.
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the password.
 
 Optional. Default: None
 
 * ``admin_tenant_name=TENANTNAME``
+
+DEPRECATED. This option will be removed in O release.
 
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the tenant name.
@@ -314,6 +328,8 @@ Optional. Default: None
 
 * ``auth_url=URL``
 
+DEPRECATED. This option will be removed in O release.
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the Keystone endpoint.
 
@@ -321,12 +337,16 @@ Optional. Default: None
 
 * ``auth_strategy=STRATEGY``
 
+DEPRECATED. This option will be removed in O release.
+
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the auth strategy.
 
-Optional. Default: keystone
+Optional. Default: noauth
 
 * ``auth_region=REGION``
+
+DEPRECATED. This option will be removed in O release.
 
 If 'use_user_token' is not in effect then admin credentials can be
 specified. Use this parameter to specify the region.
