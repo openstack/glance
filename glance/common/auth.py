@@ -29,6 +29,7 @@ Keystone (an identity management system).
     http://service_endpoint/
 """
 import httplib2
+from keystoneclient import service_catalog as ks_service_catalog
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -268,24 +269,14 @@ def get_endpoint(service_catalog, service_type='image', endpoint_region=None,
     only one -- successful match in the catalog,
     otherwise we will raise an exception.
     """
-    endpoint = None
-    for service in service_catalog:
-        s_type = None
-        try:
-            s_type = service['type']
-        except KeyError:
-            msg = _('Encountered service with no "type": %s') % s_type
-            LOG.warn(msg)
-            continue
-
-        if s_type == service_type:
-            for ep in service['endpoints']:
-                if endpoint_region is None or endpoint_region == ep['region']:
-                    if endpoint is not None:
-                        # This is a second match, abort
-                        raise exception.RegionAmbiguity(region=endpoint_region)
-                    endpoint = ep
-    if endpoint and endpoint.get(endpoint_type):
-        return endpoint[endpoint_type]
-    else:
+    endpoints = ks_service_catalog.ServiceCatalogV2(
+        {'serviceCatalog': service_catalog}
+    ).get_urls(service_type=service_type,
+               region_name=endpoint_region,
+               endpoint_type=endpoint_type)
+    if endpoints is None:
         raise exception.NoServiceEndpoint()
+    elif len(endpoints) == 1:
+        return endpoints[0]
+    else:
+        raise exception.RegionAmbiguity(region=endpoint_region)
