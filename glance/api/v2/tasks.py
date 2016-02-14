@@ -374,8 +374,14 @@ _TASK_SCHEMA = {
         "description": _("Datetime when this resource was updated"),
         "type": "string"
     },
-    'self': {'type': 'string'},
-    'schema': {'type': 'string'}
+    'self': {
+        'readOnly': True,
+        'type': 'string'
+    },
+    'schema': {
+        'readOnly': True,
+        'type': 'string'
+    }
 }
 
 

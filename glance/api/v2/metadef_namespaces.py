@@ -715,9 +715,11 @@ def _get_base_properties():
             "format": "date-time"
         },
         "schema": {
+            'readOnly': True,
             "type": "string"
         },
         "self": {
+            'readOnly': True,
             "type": "string"
         },
         "resource_type_associations": {
