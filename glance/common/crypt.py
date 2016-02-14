@@ -53,6 +53,8 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
 
     if isinstance(plaintext, six.text_type):
         plaintext = plaintext.encode('utf-8')
+    if isinstance(key, six.text_type):
+        key = key.encode('utf-8')
     # random initial 16 bytes for CBC
     init_vector = Random.get_random_bytes(16)
     cypher = AES.new(key, AES.MODE_CBC, init_vector)
@@ -76,6 +78,8 @@ def urlsafe_decrypt(key, ciphertext):
     # Cast from unicode
     if isinstance(ciphertext, six.text_type):
         ciphertext = ciphertext.encode('utf-8')
+    if isinstance(key, six.text_type):
+        key = key.encode('utf-8')
     ciphertext = base64.urlsafe_b64decode(ciphertext)
     cypher = AES.new(key, AES.MODE_CBC, ciphertext[:16])
     padded = cypher.decrypt(ciphertext[16:])
