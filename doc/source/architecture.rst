@@ -18,18 +18,22 @@
 Basic architecture
 ==================
 
-OpenStack Glance has a client-server architecture and provides a user
-REST API through which requests to the server are performed.
+OpenStack Glance has a client-server architecture that provides a REST API
+to the user through which requests to the server can be performed.
 
-Internal server operations are managed by a Glance Domain Controller
-divided into layers. Each layer implements its own task.
+A Glance Domain Controller manages the internal server operations
+that is divided into layers. Specific tasks are implemented
+by each layer.
 
-All the files operations are performed using glance_store library
-which is responsible for interaction with external storage back ends or
-local filesystem, and provides a uniform interface to access.
+All the file (Image data) operations are performed using
+glance_store library, which is responsible for interaction with external
+storage back ends and (or) local filesystem(s). The glance_store library
+provides a uniform interface to access the backend stores.
 
-Glance uses an sql-based central database (Glance DB) that is shared
-with all the components in the system.
+Glance uses a central database (Glance DB) that is shared amongst all
+the components in the system and is sql-based by default. Other types
+of database backends are somewhat supported and used by operators
+but are not extensively tested upstream.
 
 .. figure:: /images/architecture.png
    :figwidth: 100%
@@ -38,21 +42,21 @@ with all the components in the system.
 
 .. centered:: Image 1. OpenStack Glance Architecture
 
-The Glance architecture consists of several components:
+Following components are present in the Glance architecture:
 
-* **A client** - any application that uses Glance server.
+* **A client** - any application that makes use of a Glance server.
 
-* **REST API** - exposes Glance functionality via REST.
+* **REST API** - Glance functionalities are exposed via REST.
 
 * **Database Abstraction Layer (DAL)** - an application programming interface
-  which unifies the communication between Glance and databases.
+(API) that unifies the communication between Glance and databases.
 
 * **Glance Domain Controller** - middleware that implements the main
-  Glance functionalities: authorization, notifications, policies,
-  database connections.
+Glance functionalities such as authorization, notifications, policies,
+database connections.
 
-* **Glance Store** - organizes interactions between Glance and various
-  data stores.
+* **Glance Store** - used to organize interactions between Glance and various
+data stores.
 
-* **Registry Layer** - optional layer organizing secure communication between
-  the domain and the DAL by using a separate service.
+* **Registry Layer** - optional layer that is used to organise secure
+communication between the domain and the DAL by using a separate service.
