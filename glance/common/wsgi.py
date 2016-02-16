@@ -819,8 +819,7 @@ class JSONResponseSerializer(object):
     def default(self, response, result):
         response.content_type = 'application/json'
         body = self.to_json(result)
-        if isinstance(body, six.text_type):
-            body = body.encode('utf-8')
+        body = encodeutils.to_utf8(body)
         response.body = body
 
 

@@ -29,7 +29,6 @@ import debtcollector
 from oslo_log import log as logging
 from oslo_serialization import base64
 from oslo_utils import encodeutils
-import six
 
 from glance.common import exception
 from glance.i18n import _LE
@@ -175,8 +174,7 @@ def verify_signature(context, checksum_hash, image_properties):
             'Required image properties for signature verification do not'
             ' exist. Cannot verify signature.')
 
-    if isinstance(checksum_hash, six.text_type):
-        checksum_hash = checksum_hash.encode('utf-8')
+    checksum_hash = encodeutils.to_utf8(checksum_hash)
 
     signature = get_signature(image_properties[OLD_SIGNATURE])
     hash_method = get_hash_method(image_properties[OLD_HASH_METHOD])

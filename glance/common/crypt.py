@@ -24,6 +24,7 @@ import base64
 from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Random import random
+from oslo_utils import encodeutils
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -51,10 +52,8 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
         # We use chr(0) as a delimiter between text and padding
         return text + b'\0' + pad
 
-    if isinstance(plaintext, six.text_type):
-        plaintext = plaintext.encode('utf-8')
-    if isinstance(key, six.text_type):
-        key = key.encode('utf-8')
+    plaintext = encodeutils.to_utf8(plaintext)
+    key = encodeutils.to_utf8(key)
     # random initial 16 bytes for CBC
     init_vector = Random.get_random_bytes(16)
     cypher = AES.new(key, AES.MODE_CBC, init_vector)
@@ -76,10 +75,8 @@ def urlsafe_decrypt(key, ciphertext):
     :returns: Resulting plaintext
     """
     # Cast from unicode
-    if isinstance(ciphertext, six.text_type):
-        ciphertext = ciphertext.encode('utf-8')
-    if isinstance(key, six.text_type):
-        key = key.encode('utf-8')
+    ciphertext = encodeutils.to_utf8(ciphertext)
+    key = encodeutils.to_utf8(key)
     ciphertext = base64.urlsafe_b64decode(ciphertext)
     cypher = AES.new(key, AES.MODE_CBC, ciphertext[:16])
     padded = cypher.decrypt(ciphertext[16:])

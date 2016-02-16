@@ -18,6 +18,7 @@ import datetime
 
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 import routes
 import six
 import webob
@@ -211,8 +212,7 @@ class TestRPCClient(base.IsolatedUnitTest):
 
     def fake_request(self, method, url, body, headers):
         req = webob.Request.blank(url.path)
-        if isinstance(body, six.text_type):
-            body = body.encode('utf-8')
+        body = encodeutils.to_utf8(body)
         req.body = body
         req.method = method
 
