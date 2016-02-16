@@ -105,6 +105,23 @@ def get_session(autocommit=True, expire_on_commit=False):
                               expire_on_commit=expire_on_commit)
 
 
+def _validate_db_int(**kwargs):
+    """Make sure that all arguments are less than or equal to 2 ** 31 - 1.
+
+    This limitation is introduced because databases stores INT in 4 bytes.
+    If the validation fails for some argument, exception.Invalid is raised with
+    appropriate information.
+    """
+    max_int = (2 ** 31) - 1
+
+    for param_key, param_value in kwargs.items():
+        if param_value and param_value > max_int:
+            msg = _("'%(param)s' value out of range, "
+                    "must not exceed %(max)d.") % {"param": param_key,
+                                                   "max": max_int}
+            raise exception.Invalid(msg)
+
+
 def clear_db_env():
     """
     Unset global configuration variables for database.
@@ -731,8 +748,8 @@ def _validate_image(values, mandatory_status=True):
             raise exception.Invalid(msg)
 
     # validate integer values to eliminate DBError on save
-    utils.validate_mysql_int(min_disk=values.get('min_disk'),
-                             min_ram=values.get('min_ram'))
+    _validate_db_int(min_disk=values.get('min_disk'),
+                     min_ram=values.get('min_ram'))
 
     return values
 
@@ -1273,6 +1290,9 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     Deletes rows of table images, table tasks and all dependent tables
     according to given age for relevant models.
     """
+    # check max_rows for its maximum limit
+    _validate_db_int(max_rows=max_rows)
+
     session = session or get_session()
     metadata = MetaData(get_engine())
     deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
