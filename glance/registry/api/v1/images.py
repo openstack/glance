@@ -455,10 +455,13 @@ class Controller(object):
 
         purge_props = req.headers.get("X-Glance-Registry-Purge-Props", "false")
         try:
+            # These fields hold sensitive data, which should not be printed in
+            # the logs.
+            sensitive_fields = ['locations', 'location_data']
             LOG.debug("Updating image %(id)s with metadata: %(image_data)r",
                       {'id': id,
                        'image_data': {k: v for k, v in image_data.items()
-                                      if k != 'locations'}})
+                                      if k not in sensitive_fields}})
             image_data = _normalize_image_location_for_db(image_data)
             if purge_props == "true":
                 purge_props = True
