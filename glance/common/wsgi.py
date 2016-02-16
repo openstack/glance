@@ -78,7 +78,7 @@ socket_opts = [
 ]
 
 eventlet_opts = [
-    cfg.IntOpt('workers', default=processutils.get_worker_count(),
+    cfg.IntOpt('workers',
                help=_('The number of child process workers that will be '
                       'created to service requests. The default will be '
                       'equal to the number of CPUs available.')),
@@ -123,6 +123,14 @@ CONF.register_opts(eventlet_opts)
 CONF.register_opts(profiler_opts, group="profiler")
 
 ASYNC_EVENTLET_THREAD_POOL_LIST = []
+
+
+def get_num_workers():
+    """Return the configured number of workers."""
+    if CONF.workers is None:
+        # None implies the number of CPUs
+        return processutils.get_worker_count()
+    return CONF.workers
 
 
 def get_bind_addr(default_port=None):
@@ -303,17 +311,18 @@ class Server(object):
         self.start_wsgi()
 
     def start_wsgi(self):
-        if CONF.workers == 0:
+        workers = get_num_workers()
+        if workers == 0:
             # Useful for profiling, test, debug etc.
             self.pool = self.create_pool()
             self.pool.spawn_n(self._single_run, self.application, self.sock)
             return
         else:
-            LOG.info(_LI("Starting %d workers"), CONF.workers)
+            LOG.info(_LI("Starting %d workers"), workers)
             signal.signal(signal.SIGTERM, self.kill_children)
             signal.signal(signal.SIGINT, self.kill_children)
             signal.signal(signal.SIGHUP, self.hup)
-            while len(self.children) < CONF.workers:
+            while len(self.children) < workers:
                 self.run_child()
 
     def create_pool(self):
@@ -340,7 +349,7 @@ class Server(object):
                     _LI('All workers have terminated. Exiting'))
                 self.running = False
         else:
-            if len(self.children) < CONF.workers:
+            if len(self.children) < get_num_workers():
                 self.run_child()
 
     def wait_on_children(self):
