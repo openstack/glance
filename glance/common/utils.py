@@ -36,6 +36,7 @@ import uuid
 from OpenSSL import crypto
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import netutils
 from oslo_utils import strutils
@@ -414,6 +415,10 @@ def validate_key_cert(key_file, cert_file):
 
     try:
         data = str(uuid.uuid4())
+        # On Python 3, explicitly encode to UTF-8 to call crypto.sign() which
+        # requires bytes. Otherwise, it raises a deprecation warning (and
+        # will raise an error later).
+        data = encodeutils.to_utf8(data)
         digest = CONF.digest_algorithm
         if digest == 'sha1':
             LOG.warn('The FIPS (FEDERAL INFORMATION PROCESSING STANDARDS)'
