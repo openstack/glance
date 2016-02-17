@@ -1829,12 +1829,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         index_data = [(index.name, index.columns.keys()) for index in
                       table.indexes]
         column_data = [column.name for column in table.columns]
-        # instead of calling assertItemsEqual, which is not present in py26
-        # asserting equality of lengths and sorted collections
-        self.assertEqual(len(columns), len(column_data))
-        self.assertEqual(sorted(columns), sorted(column_data))
-        self.assertEqual(len(indices), len(index_data))
-        self.assertEqual(sorted(indices), sorted(index_data))
+        self.assertItemsEqual(columns, column_data)
+        self.assertItemsEqual(indices, index_data)
 
 
 class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
