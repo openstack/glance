@@ -346,7 +346,10 @@ _MEMBER_SCHEMA = {
             'rejected'
         ]
     },
-    'schema': {'type': 'string'}
+    'schema': {
+        'readOnly': True,
+        'type': 'string'
+    }
 }
 
 

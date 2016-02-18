@@ -184,9 +184,11 @@ def _get_base_properties():
             "$ref": "#/definitions/property"
         },
         "schema": {
+            'readOnly': True,
             "type": "string"
         },
         "self": {
+            'readOnly': True,
             "type": "string"
         },
         "created_at": {
