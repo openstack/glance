@@ -150,15 +150,16 @@ def create_verifier_for_pss(signature, hash_method, public_key,
     :param public_key: the public key to use, as a cryptography object
     :param image_properties: the key-value properties about the image
     :returns: the verifier to use to verify the signature for RSA-PSS
-    :raises: SignatureVerificationError if the RSA-PSS specific properties
-                                        are invalid
+    :raises glance.common.exception.SignatureVerificationError: if the
+            RSA-PSS specific properties are invalid
     """
     # retrieve other needed properties, or use defaults if not there
     if MASK_GEN_ALG in image_properties:
         mask_gen_algorithm = image_properties[MASK_GEN_ALG]
         if mask_gen_algorithm not in MASK_GEN_ALGORITHMS:
             raise exception.SignatureVerificationError(
-                'Invalid mask_gen_algorithm: %s' % mask_gen_algorithm)
+                _('Invalid mask_gen_algorithm: %s') % mask_gen_algorithm
+            )
         mgf = MASK_GEN_ALGORITHMS[mask_gen_algorithm](hash_method)
     else:
         # default to MGF1
@@ -170,7 +171,8 @@ def create_verifier_for_pss(signature, hash_method, public_key,
             salt_length = int(pss_salt_length)
         except ValueError:
             raise exception.SignatureVerificationError(
-                'Invalid pss_salt_length: %s' % pss_salt_length)
+                _('Invalid pss_salt_length: %s') % pss_salt_length
+            )
     else:
         # default to max salt length
         salt_length = padding.PSS.MAX_LENGTH
@@ -325,12 +327,14 @@ def verify_signature(context, checksum_hash, image_properties):
     :param checksum_hash: the 'checksum' hash of the image data
     :param image_properties: the key-value properties about the image
     :returns: True if verification succeeds
-    :raises: SignatureVerificationError if verification fails
+    :raises glance.common.exception.SignatureVerificationError:
+            if verification fails
     """
     if not should_verify_signature(image_properties):
         raise exception.SignatureVerificationError(
-            'Required image properties for signature verification do not'
-            ' exist. Cannot verify signature.')
+            _('Required image properties for signature verification do not'
+              ' exist. Cannot verify signature.')
+        )
 
     checksum_hash = encodeutils.to_utf8(checksum_hash)
 
@@ -354,8 +358,9 @@ def verify_signature(context, checksum_hash, image_properties):
                % {'e': encodeutils.exception_to_unicode(e)})
         LOG.error(msg)
         raise exception.SignatureVerificationError(
-            'Unable to verify signature since the algorithm is unsupported '
-            'on this system')
+            _('Unable to verify signature since the algorithm is unsupported '
+              'on this system')
+        )
 
     if verifier:
         # Verify the signature
@@ -365,11 +370,13 @@ def verify_signature(context, checksum_hash, image_properties):
             return True
         except crypto_exception.InvalidSignature:
             raise exception.SignatureVerificationError(
-                'Signature verification failed.')
+                _('Signature verification failed.')
+            )
     else:
         # Error creating the verifier
         raise exception.SignatureVerificationError(
-            'Error occurred while verifying the signature')
+            _('Error occurred while verifying the signature')
+        )
 
 
 def get_signature(signature_data):
@@ -377,13 +384,15 @@ def get_signature(signature_data):
 
     :param siganture_data: the base64-encoded signature data
     :returns: the decoded signature
-    :raises: SignatureVerificationError if the signature data is malformatted
+    :raises glance.common.exception.SignatureVerificationError: if the
+            signature data is malformatted
     """
     try:
         signature = base64.decode_as_bytes(signature_data)
     except (TypeError, binascii.Error):
         raise exception.SignatureVerificationError(
-            'The signature data was not properly encoded using base64')
+            _('The signature data was not properly encoded using base64')
+        )
 
     return signature
 
@@ -393,11 +402,13 @@ def get_hash_method(hash_method_name):
 
     :param hash_method_name: the name of the hash method to retrieve
     :returns: the hash method, a cryptography object
-    :raises: SignatureVerificationError if the hash method name is invalid
+    :raises glance.common.exception.SignatureVerificationError: if the
+            hash method name is invalid
     """
     if hash_method_name not in HASH_METHODS:
         raise exception.SignatureVerificationError(
-            'Invalid signature hash method: %s' % hash_method_name)
+            _('Invalid signature hash method: %s') % hash_method_name
+        )
 
     return HASH_METHODS[hash_method_name]
 
@@ -410,7 +421,8 @@ def get_public_key(context, signature_certificate_uuid, signature_key_type):
                                        certificate
     :param signature_key_type: a SignatureKeyType object
     :returns: the public key cryptography object
-    :raises: SignatureVerificationError if public key format is invalid
+    :raises glance.common.exception.SignatureVerificationError: if public
+            key format is invalid
     """
     certificate = get_certificate(context, signature_certificate_uuid)
 
@@ -421,8 +433,9 @@ def get_public_key(context, signature_certificate_uuid, signature_key_type):
     # Confirm the type is of the type expected based on the signature key type
     if not isinstance(public_key, signature_key_type.public_key_type):
         raise exception.SignatureVerificationError(
-            'Invalid public key type for signature key type: %s'
-            % signature_key_type.name)
+            _('Invalid public key type for signature key type: %s')
+            % signature_key_type
+        )
 
     return public_key
 
@@ -434,8 +447,8 @@ def get_certificate(context, signature_certificate_uuid):
     :param signature_certificate_uuid: the uuid to use to retrieve the
                                        certificate
     :returns: the certificate cryptography object
-    :raises: SignatureVerificationError if the retrieval fails or the format
-             is invalid
+    :raises glance.common.exception.SignatureVerificationError: if the
+            retrieval fails or the format is invalid
     """
     keymgr_api = key_manager.API()
 
@@ -451,12 +464,14 @@ def get_certificate(context, signature_certificate_uuid):
                   'e': encodeutils.exception_to_unicode(e)})
         LOG.error(msg)
         raise exception.SignatureVerificationError(
-            'Unable to retrieve certificate with ID: %s'
-            % signature_certificate_uuid)
+            _('Unable to retrieve certificate with ID: %s')
+            % signature_certificate_uuid
+        )
 
     if cert.format not in CERTIFICATE_FORMATS:
         raise exception.SignatureVerificationError(
-            'Invalid certificate format: %s' % cert.format)
+            _('Invalid certificate format: %s') % cert.format
+        )
 
     if cert.format == X_509:
         # castellan always encodes certificates in DER format
@@ -465,7 +480,8 @@ def get_certificate(context, signature_certificate_uuid):
                                                      default_backend())
     else:
         raise exception.SignatureVerificationError(
-            'Certificate format not supported: %s' % cert.format)
+            _('Certificate format not supported: %s') % cert.format
+        )
 
     # verify the certificate
     verify_certificate(certificate)
@@ -477,8 +493,8 @@ def verify_certificate(certificate):
     """Verify that the certificate has not expired.
 
     :param certificate: the cryptography certificate object
-    :raises: SignatureVerificationError if the certificate valid time range
-             does not include now
+    :raises glance.common.exception.SignatureVerificationError: if the
+            certificate valid time range does not include now
     """
     # Get now in UTC, since certificate returns times in UTC
     now = datetime.datetime.utcnow()
@@ -486,9 +502,11 @@ def verify_certificate(certificate):
     # Confirm the certificate valid time range includes now
     if now < certificate.not_valid_before:
         raise exception.SignatureVerificationError(
-            'Certificate is not valid before: %s UTC'
-            % certificate.not_valid_before)
+            _('Certificate is not valid before: %s UTC')
+            % certificate.not_valid_before
+        )
     elif now > certificate.not_valid_after:
         raise exception.SignatureVerificationError(
-            'Certificate is not valid after: %s UTC'
-            % certificate.not_valid_after)
+            _('Certificate is not valid after: %s UTC')
+            % certificate.not_valid_after
+        )
