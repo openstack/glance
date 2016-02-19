@@ -59,7 +59,6 @@ def init():
                'rbd': ['rbd'],
                's3': ['s3', 's3+http', 's3+https'],
                'swift': ['swift', 'swift+https', 'swift+http'],
-               'gridfs': ['gridfs'],
                'sheepdog': ['sheepdog'],
                'cinder': ['cinder'],
                'vmware_datastore': ['vsphere']}
