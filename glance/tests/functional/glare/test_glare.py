@@ -1918,3 +1918,14 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             url = '/withprops/v1.0/drafts?version=gt:%s' % bad_version
             result = self._check_artifact_get(url=url, status=400)
             self.assertIn(response_string % bad_version, result)
+
+    def test_circular_dependency(self):
+        data = {'name': 'artifact',
+                'version': '12'}
+        art = self._create_artifact('withprops', data=data)
+
+        upd = self._check_artifact_post(
+            '/withprops/v1.0/%s/depends_on' % art['id'],
+            data={'data': art['id']}, status=400)
+        self.assertIn(
+            'Artifact with a circular dependency can not be created', upd)
