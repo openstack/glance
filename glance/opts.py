@@ -86,6 +86,7 @@ _scrubber_opts = [
         glance.scrubber.scrubber_opts,
         glance.scrubber.scrubber_cmd_opts,
         glance.scrubber.scrubber_cmd_cli_opts,
+        glance.registry.client.registry_client_opts,
         glance.registry.client.registry_client_ctx_opts,
         glance.registry.registry_addr_opts))),
 ]
