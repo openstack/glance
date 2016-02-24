@@ -50,21 +50,25 @@ an example for ``authtoken``::
 
   [filter:authtoken]
   paste.filter_factory = keystonemiddleware.auth_token:filter_factory
-  identity_uri = http://127.0.0.1:35357
-  admin_user = glance_admin
-  admin_tenant_name = service_admins
-  admin_password = password1234
+  auth_url = http://localhost:35357
+  project_domain_id = default
+  project_name = service_admins
+  user_domain_id = default
+  username = glance_admin
+  password = password1234
 
 The actual values for these variables will need to be set depending on
 your situation.  For more information, please refer to the Keystone
-documentation on the ``auth_token`` middleware, but in short:
+`documentation`_ on the ``auth_token`` middleware, but in short:
+.. _documentation http://docs.openstack.org/developer/keystonemiddleware/middlewarearchitecture.html#configuration
 
-* The ``identity_uri`` variable points to the Keystone Admin service.
+* The ``auth_url`` variable points to the Keystone service.
   This information is used by the middleware to actually query Keystone about
   the validity of the authentication tokens.
-* The admin auth credentials (``admin_user``, ``admin_tenant_name``,
-  ``admin_password``) will be used to retrieve an admin token. That
-  token will be used to authorize user tokens behind the scenes.
+* The auth credentials (``project_name``, ``project_domain_id``,
+  ``user_domain_id``, ``username``, and ``password``) will be used to
+  retrieve a service token. That token will be used to authorize user
+  tokens behind the scenes.
 
 Finally, to actually enable using Keystone authentication, the
 application pipeline must be modified.  By default, it looks like::
