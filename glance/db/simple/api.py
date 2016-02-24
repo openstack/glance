@@ -16,7 +16,6 @@
 
 import copy
 import functools
-from operator import itemgetter
 import uuid
 
 from oslo_log import log as logging
@@ -382,7 +381,7 @@ def _sort_images(images, sort_key, sort_dir):
 
     for key, dir in reversed(list(zip(sort_key, sort_dir))):
         reverse = dir == 'desc'
-        images.sort(key=itemgetter(key), reverse=reverse)
+        images.sort(key=lambda x: x[key] or '', reverse=reverse)
 
     return images
 
