@@ -550,7 +550,7 @@ class TestApi(base.ApiTest):
         data = jsonutils.loads(content)
         self.assertEqual(2, len(data['images']))
         for image in data['images']:
-            self.assertTrue(image['size'] <= 20)
+            self.assertLessEqual(image['size'], 20)
 
         # 8. GET /images with size_min filter
         # Verify correct images returned with size >= expected
@@ -561,7 +561,7 @@ class TestApi(base.ApiTest):
         data = jsonutils.loads(content)
         self.assertEqual(2, len(data['images']))
         for image in data['images']:
-            self.assertTrue(image['size'] >= 20)
+            self.assertGreaterEqual(image['size'], 20)
 
         # 9. Get /images with is_public=None filter
         # Verify correct images returned with property

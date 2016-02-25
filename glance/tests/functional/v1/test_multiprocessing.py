@@ -67,7 +67,7 @@ class TestMultiprocessing(functional.FunctionalTest):
             # set at 0.05. Works most of the time at 0.10
             time.sleep(0.10)
             # ensure number of children hasn't grown
-            self.assertTrue(len(children) >= len(self._get_children()))
+            self.assertGreaterEqual(len(children), len(self._get_children()))
             for child in self._get_children():
                 # ensure no new children spawned
                 self.assertIn(child, children, child)

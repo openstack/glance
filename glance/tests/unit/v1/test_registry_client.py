@@ -497,7 +497,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         self.assertEqual(1, len(images))
         for image in images:
-            self.assertTrue(image['size'] <= 20)
+            self.assertLessEqual(image['size'], 20)
 
     def test_get_image_details_with_minimum_size(self):
         """Tests that a detailed call can be filtered by size_min"""
@@ -509,7 +509,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
         self.assertEqual(1, len(images))
         for image in images:
-            self.assertTrue(image['size'] >= 20)
+            self.assertGreaterEqual(image['size'], 20)
 
     def test_get_image_details_with_changes_since(self):
         """Tests that a detailed call can be filtered by changes-since"""
@@ -565,7 +565,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.assertEqual(1, len(images))
 
         for image in images:
-            self.assertTrue(image['size'] >= 20)
+            self.assertGreaterEqual(image['size'], 20)
 
     def test_get_image_details_by_property(self):
         """Tests that a detailed call can be filtered by a property"""
