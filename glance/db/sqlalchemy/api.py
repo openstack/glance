@@ -510,6 +510,20 @@ def _make_conditions_from_filters(filters, is_public=None):
                                                   threshold)
             image_conditions.append(comparison)
 
+        elif k in ['name', 'id', 'status', 'container_format', 'disk_format']:
+            attr_value = getattr(models.Image, key)
+            operator, list_value = utils.split_filter_op(filters.pop(k))
+            if operator == 'in':
+                threshold = utils.split_filter_value_for_quotes(list_value)
+                comparison = attr_value.in_(threshold)
+                image_conditions.append(comparison)
+            elif operator == 'eq':
+                image_conditions.append(attr_value == list_value)
+            else:
+                msg = (_("Unable to filter by unknown operator '%s'.")
+                       % operator)
+                raise exception.InvalidFilterOperatorValue(msg)
+
     for (k, value) in filters.items():
         if hasattr(models.Image, k):
             image_conditions.append(getattr(models.Image, k) == value)

@@ -612,6 +612,52 @@ def split_filter_op(expression):
     return op, threshold
 
 
+def validate_quotes(value):
+    """Validate filter values
+
+    Validation opening/closing quotes in the expression.
+    """
+    open_quotes = True
+    for i in range(len(value)):
+        if value[i] == '"':
+            if i and value[i - 1] == '\\':
+                continue
+            if open_quotes:
+                if i and value[i - 1] != ',':
+                    msg = _("Invalid filter value %s. There is no comma "
+                            "before opening quotation mark.") % value
+                    raise exception.InvalidParameterValue(message=msg)
+            else:
+                if i + 1 != len(value) and value[i + 1] != ",":
+                    msg = _("Invalid filter value %s. There is no comma "
+                            "after closing quotation mark.") % value
+                    raise exception.InvalidParameterValue(message=msg)
+            open_quotes = not open_quotes
+    if not open_quotes:
+        msg = _("Invalid filter value %s. The quote is not closed.") % value
+        raise exception.InvalidParameterValue(message=msg)
+
+
+def split_filter_value_for_quotes(value):
+    """Split filter values
+
+    Split values by commas and quotes for 'in' operator, according api-wg.
+    """
+    validate_quotes(value)
+    tmp = re.compile(r'''
+        "(                 # if found a double-quote
+           [^\"\\]*        # take characters either non-quotes or backslashes
+           (?:\\.          # take backslashes and character after it
+            [^\"\\]*)*     # take characters either non-quotes or backslashes
+         )                 # before double-quote
+        ",?                # a double-quote with comma maybe
+        | ([^,]+),?        # if not found double-quote take any non-comma
+                           # characters with comma maybe
+        | ,                # if we have only comma take empty string
+        ''', re.VERBOSE)
+    return [val[0] or val[1] for val in re.findall(tmp, value)]
+
+
 def evaluate_filter_op(value, operator, threshold):
     """Evaluate a comparison operator.
     Designed for use on a comparative-filtering query field.
