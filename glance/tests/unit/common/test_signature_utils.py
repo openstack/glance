@@ -20,6 +20,7 @@ import unittest
 
 from cryptography import exceptions as crypto_exception
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -32,6 +33,9 @@ from glance.tests import utils as test_utils
 
 TEST_RSA_PRIVATE_KEY = rsa.generate_private_key(public_exponent=3,
                                                 key_size=1024,
+                                                backend=default_backend())
+
+TEST_DSA_PRIVATE_KEY = dsa.generate_private_key(key_size=3072,
                                                 backend=default_backend())
 
 # secp521r1 is assumed to be available on all supported platforms
@@ -425,6 +429,25 @@ class TestSignatureUtils(test_utils.BaseTestCase):
                 verifier.update(data)
                 verifier.verify()
 
+    @mock.patch('glance.common.signature_utils.get_public_key')
+    def test_verify_signature_DSA(self, mock_get_pub_key):
+        data = b'224626ae19824466f2a7f39ab7b80f7f'
+        mock_get_pub_key.return_value = TEST_DSA_PRIVATE_KEY.public_key()
+        for hash_name, hash_alg in signature_utils.HASH_METHODS.items():
+            signer = TEST_DSA_PRIVATE_KEY.signer(
+                hash_alg
+            )
+            signer.update(data)
+            signature = base64.b64encode(signer.finalize())
+            image_props = {CERT_UUID:
+                           'fea14bc2-d75f-4ba5-bccc-b5c924ad0693',
+                           HASH_METHOD: hash_name,
+                           KEY_TYPE: 'DSA',
+                           SIGNATURE: signature}
+            verifier = signature_utils.get_verifier(None, image_props)
+            verifier.update(data)
+            verifier.verify()
+
     @unittest.skipIf(not default_backend().hash_supported(hashes.SHA256()),
                      "SHA-2 hash algorithms not supported by backend")
     @mock.patch('glance.common.signature_utils.get_public_key')
@@ -549,6 +572,15 @@ class TestSignatureUtils(test_utils.BaseTestCase):
         fake_cert = FakeCryptoCertificate(TEST_ECC_PRIVATE_KEY.public_key())
         mock_get_cert.return_value = fake_cert
         sig_key_type = signature_utils.SignatureKeyType.lookup('ECC_SECP521R1')
+        result_pub_key = signature_utils.get_public_key(None, None,
+                                                        sig_key_type)
+        self.assertEqual(fake_cert.public_key(), result_pub_key)
+
+    @mock.patch('glance.common.signature_utils.get_certificate')
+    def test_get_public_key_dsa(self, mock_get_cert):
+        fake_cert = FakeCryptoCertificate(TEST_DSA_PRIVATE_KEY.public_key())
+        mock_get_cert.return_value = fake_cert
+        sig_key_type = signature_utils.SignatureKeyType.lookup('DSA')
         result_pub_key = signature_utils.get_public_key(None, None,
                                                         sig_key_type)
         self.assertEqual(fake_cert.public_key(), result_pub_key)
