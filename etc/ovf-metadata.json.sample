@@ -1,0 +1,8 @@
+{
+    "cim_pasd": [
+        "ProcessorArchitecture",
+        "InstructionSet",
+        "InstructionSetExtensionName"
+    ]
+}
+
