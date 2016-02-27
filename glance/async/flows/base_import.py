@@ -157,9 +157,10 @@ class _ImportToFS(task.Task):
                                            log_errors=putils.LOG_ALL_ERRORS)
         except OSError as exc:
             with excutils.save_and_reraise_exception():
+                exc_message = encodeutils.exception_to_unicode(exc)
                 msg = (_LE('Failed to execute security checks on the image '
                            '%(task_id)s: %(exc)s') %
-                       {'task_id': self.task_id, 'exc': exc.message})
+                       {'task_id': self.task_id, 'exc': exc_message})
                 LOG.error(msg)
 
         metadata = json.loads(stdout)
