@@ -16,6 +16,7 @@
 import collections
 import copy
 
+from cryptography import exceptions as crypto_exception
 import debtcollector
 import glance_store as store
 from oslo_config import cfg
@@ -391,15 +392,39 @@ class ImageProxy(glance.domain.proxy.Image):
     def set_data(self, data, size=None):
         if size is None:
             size = 0  # NOTE(markwash): zero -> unknown size
+
+        # Create the verifier for signature verification (if correct properties
+        # are present)
+        if (signature_utils.should_create_verifier(
+                self.image.extra_properties)):
+            # NOTE(bpoulos): if creating verifier fails, exception will be
+            # raised
+            verifier = signature_utils.get_verifier(
+                self.context, self.image.extra_properties)
+        else:
+            verifier = None
+
         location, size, checksum, loc_meta = self.store_api.add_to_backend(
             CONF,
             self.image.image_id,
             utils.LimitingReader(utils.CooperativeReader(data),
                                  CONF.image_size_cap),
             size,
-            context=self.context)
+            context=self.context,
+            verifier=verifier)
 
         self._verify_signature_if_needed(checksum)
+
+        # NOTE(bpoulos): if verification fails, exception will be raised
+        if verifier:
+            try:
+                verifier.verify()
+                LOG.info(_LI("Successfully verified signature for image %s"),
+                         self.image.image_id)
+            except crypto_exception.InvalidSignature:
+                raise exception.SignatureVerificationError(
+                    _('Signature verification failed')
+                )
 
         self.image.locations = [{'url': location, 'metadata': loc_meta,
                                  'status': 'active'}]

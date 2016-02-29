@@ -31,7 +31,7 @@ from oslo_serialization import base64
 from oslo_utils import encodeutils
 
 from glance.common import exception
-from glance.i18n import _LE
+from glance.i18n import _, _LE
 
 LOG = logging.getLogger(__name__)
 
@@ -70,6 +70,13 @@ MASK_GEN_ALGORITHMS = {
 }
 
 # Required image property names
+(SIGNATURE, HASH_METHOD, KEY_TYPE, CERT_UUID) = (
+    'img_signature',
+    'img_signature_hash_method',
+    'img_signature_key_type',
+    'img_signature_certificate_uuid'
+)
+
 # TODO(bpoulos): remove when 'sign-the-hash' approach is no longer supported
 (OLD_SIGNATURE, OLD_HASH_METHOD, OLD_KEY_TYPE, OLD_CERT_UUID) = (
     'signature',
@@ -133,6 +140,70 @@ def create_verifier_for_pss(signature, hash_method, public_key,
 KEY_TYPE_METHODS = {
     RSA_PSS: create_verifier_for_pss
 }
+
+
+def should_create_verifier(image_properties):
+    """Determine whether a verifier should be created.
+
+    Using the image properties, determine whether existing properties indicate
+    that signature verification should be done.
+
+    :param image_properties: the key-value properties about the image
+    :return: True, if signature metadata properties exist, False otherwise
+    """
+    return (image_properties is not None and
+            CERT_UUID in image_properties and
+            HASH_METHOD in image_properties and
+            SIGNATURE in image_properties and
+            KEY_TYPE in image_properties)
+
+
+def get_verifier(context, image_properties):
+    """Retrieve the image properties and use them to create a verifier.
+
+    :param context: the user context for authentication
+    :param image_properties: the key-value properties about the image
+    :return: instance of cryptography AsymmetricVerificationContext
+    :raises glance.common.exception.SignatureVerificationError: if building
+            the verifier fails
+    """
+    if not should_create_verifier(image_properties):
+        raise exception.SignatureVerificationError(
+            _('Required image properties for signature verification do not'
+              ' exist. Cannot verify signature.')
+        )
+
+    signature = get_signature(image_properties[SIGNATURE])
+    hash_method = get_hash_method(image_properties[HASH_METHOD])
+    signature_key_type = get_signature_key_type(
+        image_properties[KEY_TYPE])
+    public_key = get_public_key(context,
+                                image_properties[CERT_UUID],
+                                signature_key_type)
+
+    # create the verifier based on the signature key type
+    try:
+        verifier = KEY_TYPE_METHODS[signature_key_type](signature,
+                                                        hash_method,
+                                                        public_key,
+                                                        image_properties)
+    except crypto_exception.UnsupportedAlgorithm as e:
+        msg = (_LE("Unable to create verifier since algorithm is "
+                   "unsupported: %(e)s")
+               % {'e': encodeutils.exception_to_unicode(e)})
+        LOG.error(msg)
+        raise exception.SignatureVerificationError(
+            _('Unable to verify signature since the algorithm is unsupported '
+              'on this system')
+        )
+
+    if verifier:
+        return verifier
+    else:
+        # Error creating the verifier
+        raise exception.SignatureVerificationError(
+            _('Error occurred while creating the verifier')
+        )
 
 
 @debtcollector.removals.remove(message="This will be removed in the N cycle.")

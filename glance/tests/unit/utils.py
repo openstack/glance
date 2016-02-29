@@ -14,7 +14,10 @@
 #    under the License.
 
 
+from cryptography import exceptions as crypto_exception
+from debtcollector import removals
 import glance_store as store
+import mock
 from oslo_config import cfg
 from oslo_log import log as logging
 from six.moves import urllib
@@ -85,13 +88,25 @@ def fake_get_size_from_backend(uri, context=None):
     return 1
 
 
-def fake_verify_signature(context, checksum_hash, image_properties):
+@removals.remove(message="This will be removed in the N cycle.")
+def fake_old_verify_signature(context, checksum_hash, image_properties):
     if (image_properties is not None and 'signature' in image_properties and
             image_properties['signature'] == 'VALID'):
         return True
     else:
         raise exception.SignatureVerificationError(
             'Signature verification failed.')
+
+
+def fake_get_verifier(context, image_properties):
+    verifier = mock.Mock()
+    if (image_properties is not None and 'img_signature' in image_properties
+            and image_properties['img_signature'] == 'VALID'):
+        verifier.verify.return_value = None
+    else:
+        ex = crypto_exception.InvalidSignature()
+        verifier.verify.side_effect = ex
+    return verifier
 
 
 class FakeDB(object):
@@ -197,7 +212,7 @@ class FakeStoreAPI(object):
         return self.get_from_backend(location, context=context)[1]
 
     def add_to_backend(self, conf, image_id, data, size,
-                       scheme=None, context=None):
+                       scheme=None, context=None, verifier=None):
         store_max_size = 7
         current_store_size = 2
         for location in self.data.keys():

@@ -15,6 +15,8 @@
 import glance_store
 import mock
 
+from debtcollector import removals
+
 from glance.common import exception
 from glance.common import signature_utils
 import glance.location
@@ -188,7 +190,8 @@ class TestStoreImage(utils.BaseTestCase):
                           self.store_api.get_from_backend,
                           image.locations[0]['url'], context={})
 
-    def test_image_set_data_valid_signature(self):
+    @removals.remove(message="This will be removed in the N cycle.")
+    def test_old_image_set_data_valid_signature(self):
         context = glance.context.RequestContext(user=USER1)
         extra_properties = {
             'signature_certificate_uuid': 'UUID',
@@ -199,7 +202,7 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub = ImageStub(UUID2, status='queued',
                                extra_properties=extra_properties)
         self.stubs.Set(signature_utils, 'verify_signature',
-                       unit_test_utils.fake_verify_signature)
+                       unit_test_utils.fake_old_verify_signature)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', 4)
@@ -207,7 +210,8 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual('Z', image.checksum)
         self.assertEqual('active', image.status)
 
-    def test_image_set_data_invalid_signature(self):
+    @removals.remove(message="This will be removed in the N cycle.")
+    def test_old_image_set_data_invalid_signature(self):
         context = glance.context.RequestContext(user=USER1)
         extra_properties = {
             'signature_certificate_uuid': 'UUID',
@@ -218,14 +222,15 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub = ImageStub(UUID2, status='queued',
                                extra_properties=extra_properties)
         self.stubs.Set(signature_utils, 'verify_signature',
-                       unit_test_utils.fake_verify_signature)
+                       unit_test_utils.fake_old_verify_signature)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         self.assertRaises(exception.SignatureVerificationError,
                           image.set_data,
                           'YYYY', 4)
 
-    def test_image_set_data_invalid_signature_missing_metadata(self):
+    @removals.remove(message="This will be removed in the N cycle.")
+    def test_old_image_set_data_invalid_signature_missing_metadata(self):
         context = glance.context.RequestContext(user=USER1)
         extra_properties = {
             'signature_hash_method': 'METHOD',
@@ -235,7 +240,65 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub = ImageStub(UUID2, status='queued',
                                extra_properties=extra_properties)
         self.stubs.Set(signature_utils, 'verify_signature',
-                       unit_test_utils.fake_verify_signature)
+                       unit_test_utils.fake_old_verify_signature)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api, self.store_utils)
+        image.set_data('YYYY', 4)
+        self.assertEqual(UUID2, image.locations[0]['url'])
+        self.assertEqual('Z', image.checksum)
+        # Image is still active, since invalid signature was ignored
+        self.assertEqual('active', image.status)
+
+    @mock.patch('glance.location.LOG')
+    def test_image_set_data_valid_signature(self, mock_log):
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'img_signature_certificate_uuid': 'UUID',
+            'img_signature_hash_method': 'METHOD',
+            'img_signature_key_type': 'TYPE',
+            'img_signature': 'VALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        self.stubs.Set(signature_utils, 'get_verifier',
+                       unit_test_utils.fake_get_verifier)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api, self.store_utils)
+        image.set_data('YYYY', 4)
+        self.assertEqual('active', image.status)
+        mock_log.info.assert_called_once_with(
+            u'Successfully verified signature for image %s',
+            UUID2)
+
+    def test_image_set_data_invalid_signature(self):
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'img_signature_certificate_uuid': 'UUID',
+            'img_signature_hash_method': 'METHOD',
+            'img_signature_key_type': 'TYPE',
+            'img_signature': 'INVALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        self.stubs.Set(signature_utils, 'get_verifier',
+                       unit_test_utils.fake_get_verifier)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api, self.store_utils)
+        self.assertRaises(exception.SignatureVerificationError,
+                          image.set_data,
+                          'YYYY', 4)
+
+    def test_image_set_data_invalid_signature_missing_metadata(self):
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'img_signature_hash_method': 'METHOD',
+            'img_signature_key_type': 'TYPE',
+            'img_signature': 'INVALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        self.stubs.Set(signature_utils, 'get_verifier',
+                       unit_test_utils.fake_get_verifier)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', 4)
