@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 11.0.2.dev2\n"
+"Project-Id-Version: glance 11.0.2.dev8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-18 06:25+0000\n"
+"POT-Creation-Date: 2016-02-29 06:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -271,7 +271,7 @@ msgstr ""
 msgid "Corrupt image download for image %(image_id)s"
 msgstr ""
 
-#: glance/api/policy.py:161 glance/quota/__init__.py:355
+#: glance/api/policy.py:161 glance/quota/__init__.py:359
 #, python-format
 msgid "Invalid locations: %s"
 msgstr ""
@@ -516,7 +516,7 @@ msgstr ""
 msgid "Forbidden to delete image: %s"
 msgstr ""
 
-#: glance/api/v1/images.py:1150 glance/api/v2/images.py:247
+#: glance/api/v1/images.py:1150 glance/api/v2/images.py:253
 #, python-format
 msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr ""
@@ -676,7 +676,7 @@ msgstr ""
 msgid "Not allowed to delete members for image %s."
 msgstr ""
 
-#: glance/api/v2/image_members.py:244 glance/api/v2/images.py:355
+#: glance/api/v2/image_members.py:244 glance/api/v2/images.py:366
 #: glance/api/v2/metadef_namespaces.py:410 glance/api/v2/metadef_objects.py:236
 #: glance/api/v2/metadef_properties.py:184
 #: glance/api/v2/metadef_resource_types.py:151
@@ -702,7 +702,7 @@ msgstr ""
 msgid "An identifier for the image member (tenantId)"
 msgstr ""
 
-#: glance/api/v2/image_members.py:326 glance/api/v2/images.py:816
+#: glance/api/v2/image_members.py:326 glance/api/v2/images.py:827
 msgid "An identifier for the image"
 msgstr ""
 
@@ -738,43 +738,51 @@ msgstr ""
 msgid "Not allowed to delete tags for image %s."
 msgstr ""
 
-#: glance/api/v2/images.py:187
+#: glance/api/v2/images.py:185
+msgid "Cannot set locations to empty list."
+msgstr ""
+
+#: glance/api/v2/images.py:190
 msgid "Owner can't be updated by non admin."
 msgstr ""
 
-#: glance/api/v2/images.py:195 glance/api/v2/images.py:228
+#: glance/api/v2/images.py:198 glance/api/v2/images.py:234
 #, python-format
 msgid "Property %s does not exist."
 msgstr ""
 
-#: glance/api/v2/images.py:209
+#: glance/api/v2/images.py:212
 #, python-format
 msgid "Property %s already present."
 msgstr ""
 
-#: glance/api/v2/images.py:223
+#: glance/api/v2/images.py:229
 #, python-format
 msgid "Property %s may not be removed."
 msgstr ""
 
-#: glance/api/v2/images.py:242
+#: glance/api/v2/images.py:248
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr ""
 
-#: glance/api/v2/images.py:272
+#: glance/api/v2/images.py:278
 msgid "Cannot replace locations from a non-empty list to a non-empty list."
 msgstr ""
 
-#: glance/api/v2/images.py:296
+#: glance/api/v2/images.py:302
 msgid "Invalid position for adding a location."
 msgstr ""
 
-#: glance/api/v2/images.py:312
+#: glance/api/v2/images.py:318
+msgid "Cannot remove last location in the image."
+msgstr ""
+
+#: glance/api/v2/images.py:323
 msgid "Invalid position for removing a location."
 msgstr ""
 
-#: glance/api/v2/images.py:363 glance/api/v2/images.py:477
+#: glance/api/v2/images.py:374 glance/api/v2/images.py:488
 #: glance/api/v2/metadef_namespaces.py:418 glance/api/v2/metadef_objects.py:300
 #: glance/api/v2/metadef_properties.py:192
 #: glance/api/v2/metadef_resource_types.py:159
@@ -784,203 +792,203 @@ msgstr ""
 msgid "Attribute '%s' is read-only."
 msgstr ""
 
-#: glance/api/v2/images.py:393
+#: glance/api/v2/images.py:404
 #, python-format
 msgid ""
 "Unable to find `op` in JSON Schema change. It must be one of the "
 "following: %(available)s."
 msgstr ""
 
-#: glance/api/v2/images.py:398
+#: glance/api/v2/images.py:409
 #, python-format
 msgid ""
 "Invalid operation: `%(op)s`. It must be one of the following: "
 "%(available)s."
 msgstr ""
 
-#: glance/api/v2/images.py:410
+#: glance/api/v2/images.py:421
 msgid ""
 "Operation objects must contain only one member named \"add\", \"remove\","
 " or \"replace\"."
 msgstr ""
 
-#: glance/api/v2/images.py:415
+#: glance/api/v2/images.py:426
 msgid ""
 "Operation objects must contain exactly one member named \"add\", "
 "\"remove\", or \"replace\"."
 msgstr ""
 
-#: glance/api/v2/images.py:424
+#: glance/api/v2/images.py:435
 #, python-format
 msgid "Unable to find '%s' in JSON Schema change"
 msgstr ""
 
-#: glance/api/v2/images.py:452
+#: glance/api/v2/images.py:463
 #, python-format
 msgid "Pointer `%s` does not start with \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:455
+#: glance/api/v2/images.py:466
 #, python-format
 msgid "Pointer `%s` contains adjacent \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:458
+#: glance/api/v2/images.py:469
 #, python-format
 msgid "Pointer `%s` end with \"/\"."
 msgstr ""
 
-#: glance/api/v2/images.py:461
+#: glance/api/v2/images.py:472
 #, python-format
 msgid "Pointer `%s` does not contains valid token."
 msgstr ""
 
-#: glance/api/v2/images.py:464
+#: glance/api/v2/images.py:475
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
 msgstr ""
 
-#: glance/api/v2/images.py:470
+#: glance/api/v2/images.py:481
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
 msgstr ""
 
-#: glance/api/v2/images.py:480
+#: glance/api/v2/images.py:491
 #, python-format
 msgid "Attribute '%s' is reserved."
 msgstr ""
 
-#: glance/api/v2/images.py:510
+#: glance/api/v2/images.py:521
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr ""
 
-#: glance/api/v2/images.py:522
+#: glance/api/v2/images.py:533
 msgid "Unrecognized JSON Schema draft version"
 msgstr ""
 
-#: glance/api/v2/images.py:544
+#: glance/api/v2/images.py:555
 msgid "Request body must be a JSON array of operation objects."
 msgstr ""
 
-#: glance/api/v2/images.py:549
+#: glance/api/v2/images.py:560
 msgid "Operations must be JSON objects."
 msgstr ""
 
-#: glance/api/v2/images.py:572 glance/api/v2/metadef_namespaces.py:465
+#: glance/api/v2/images.py:583 glance/api/v2/metadef_namespaces.py:465
 #: glance/api/v2/metadef_tags.py:296 glance/api/v2/tasks.py:176
 #: glance/registry/api/v1/images.py:268
 msgid "limit param must be an integer"
 msgstr ""
 
-#: glance/api/v2/images.py:576 glance/api/v2/metadef_namespaces.py:469
+#: glance/api/v2/images.py:587 glance/api/v2/metadef_namespaces.py:469
 #: glance/api/v2/metadef_tags.py:300 glance/api/v2/tasks.py:180
 #: glance/registry/api/v1/images.py:271
 msgid "limit param must be positive"
 msgstr ""
 
-#: glance/api/v2/images.py:583
+#: glance/api/v2/images.py:594
 #, python-format
 msgid ""
 "Invalid sort key: %(sort_key)s. It must be one of the following: "
 "%(available)s."
 msgstr ""
 
-#: glance/api/v2/images.py:593 glance/api/v2/metadef_namespaces.py:447
+#: glance/api/v2/images.py:604 glance/api/v2/metadef_namespaces.py:447
 #: glance/api/v2/metadef_objects.py:282 glance/api/v2/metadef_tags.py:278
 #: glance/api/v2/tasks.py:146 glance/api/v3/artifacts.py:670
 #, python-format
 msgid "Invalid sort direction: %s"
 msgstr ""
 
-#: glance/api/v2/images.py:600
+#: glance/api/v2/images.py:611
 #, python-format
 msgid "Invalid status: %s"
 msgstr ""
 
-#: glance/api/v2/images.py:609 glance/api/v2/metadef_namespaces.py:456
+#: glance/api/v2/images.py:620 glance/api/v2/metadef_namespaces.py:456
 #: glance/api/v2/metadef_objects.py:291 glance/api/v2/metadef_tags.py:287
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr ""
 
-#: glance/api/v2/images.py:613
+#: glance/api/v2/images.py:624
 msgid "The \"changes-since\" filter is no longer available on v2."
 msgstr ""
 
-#: glance/api/v2/images.py:632
+#: glance/api/v2/images.py:643
 msgid "Old and new sorting syntax cannot be combined"
 msgstr ""
 
-#: glance/api/v2/images.py:663
+#: glance/api/v2/images.py:674
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr ""
 
-#: glance/api/v2/images.py:822
+#: glance/api/v2/images.py:833
 msgid "Descriptive name for the image"
 msgstr ""
 
-#: glance/api/v2/images.py:827
+#: glance/api/v2/images.py:838
 msgid "Status of the image (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:833
+#: glance/api/v2/images.py:844
 msgid "Scope of image accessibility"
 msgstr ""
 
-#: glance/api/v2/images.py:838
+#: glance/api/v2/images.py:849
 msgid "If true, image will not be deletable."
 msgstr ""
 
-#: glance/api/v2/images.py:842
+#: glance/api/v2/images.py:853
 msgid "md5 hash of image contents. (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:847
+#: glance/api/v2/images.py:858
 msgid "Owner of the image"
 msgstr ""
 
-#: glance/api/v2/images.py:852
+#: glance/api/v2/images.py:863
 msgid "Size of image file in bytes (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:856
+#: glance/api/v2/images.py:867
 msgid "Virtual size of image in bytes (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:860
+#: glance/api/v2/images.py:871
 msgid "Format of the container"
 msgstr ""
 
-#: glance/api/v2/images.py:865
+#: glance/api/v2/images.py:876
 msgid "Format of the disk"
 msgstr ""
 
-#: glance/api/v2/images.py:870
+#: glance/api/v2/images.py:881
 msgid "Date and time of image registration (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:878
+#: glance/api/v2/images.py:889
 msgid "Date and time of the last image modification (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:884
+#: glance/api/v2/images.py:895
 msgid "List of strings related to the image"
 msgstr ""
 
-#: glance/api/v2/images.py:892
+#: glance/api/v2/images.py:903
 msgid "URL to access the image file kept in external store (READ-ONLY)"
 msgstr ""
 
-#: glance/api/v2/images.py:897
+#: glance/api/v2/images.py:908
 msgid "Amount of ram (in MB) required to boot image."
 msgstr ""
 
-#: glance/api/v2/images.py:901
+#: glance/api/v2/images.py:912
 msgid "Amount of disk space (in GB) required to boot image."
 msgstr ""
 
-#: glance/api/v2/images.py:931
+#: glance/api/v2/images.py:942
 msgid "A set of URLs to access the image file kept in external store"
 msgstr ""
 
