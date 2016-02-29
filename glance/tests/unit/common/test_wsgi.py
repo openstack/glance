@@ -16,12 +16,14 @@
 
 import datetime
 import gettext
+import os
 import socket
 
 from babel import localedata
 import eventlet.patcher
 import fixtures
 import mock
+from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 import routes
 import six
@@ -529,6 +531,23 @@ class ServerTest(test_utils.BaseTestCase):
                                                 custom_pool=server.pool,
                                                 keepalive=False,
                                                 socket_timeout=900)
+
+    def test_number_of_workers(self):
+        """Ensure the default number of workers matches num cpus."""
+        def pid():
+            i = 1
+            while True:
+                i = i + 1
+                yield i
+
+        with mock.patch.object(os, 'fork') as mock_fork:
+            mock_fork.side_effect = pid
+            server = wsgi.Server()
+            server.configure = mock.Mock()
+            fake_application = "fake-application"
+            server.start(fake_application, None)
+            self.assertEqual(processutils.get_worker_count(),
+                             len(server.children))
 
 
 class TestHelpers(test_utils.BaseTestCase):
