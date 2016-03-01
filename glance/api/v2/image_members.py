@@ -255,6 +255,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         except ValueError:
             msg = _("Member can't be empty")
             raise webob.exc.HTTPBadRequest(explanation=msg)
+        except TypeError:
+            msg = _('Expected a member in the form: '
+                    '{"member": "image_id"}')
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         return dict(member_id=member_id)
 
     def update(self, request):
@@ -263,6 +267,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             status = body['status']
         except KeyError:
             msg = _("Status not specified")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        except TypeError:
+            msg = _('Expected a status in the form: '
+                    '{"status": "status"}')
             raise webob.exc.HTTPBadRequest(explanation=msg)
         return dict(status=status)
 
