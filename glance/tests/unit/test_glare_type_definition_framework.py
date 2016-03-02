@@ -13,6 +13,7 @@
 # under the License.
 
 import datetime
+import functools
 
 import mock
 import six
@@ -224,6 +225,18 @@ class TestDeclarativeProperties(test_utils.BaseTestCase):
                           'with_pattern', 'abc')
         self.assertRaises(exc.InvalidArtifactPropertyValue, setattr, tt,
                           'with_pattern', '.123.')
+
+    def test_binary_object_mutable(self):
+        def declare_blob(mutable):
+            class BLOB(BASE):
+                prop = defs.BinaryObject(mutable=mutable)
+
+            return BLOB
+
+        blob = declare_blob(False)()
+        self.assertFalse(blob.metadata.attributes.all['prop'].mutable)
+        self.assertRaises(exc.InvalidArtifactTypePropertyDefinition,
+                          functools.partial(declare_blob, True))
 
     def test_default_and_allowed_violates_string_constrains(self):
         def declare_wrong_default():
