@@ -21,6 +21,7 @@ import datetime
 from castellan import key_manager
 from cryptography import exceptions as crypto_exception
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -49,6 +50,9 @@ HASH_METHODS = {
 # Currently supported signature key types
 # RSA Options
 RSA_PSS = 'RSA-PSS'
+
+# DSA Options
+DSA = 'DSA'
 
 # ECC curves -- note that only those with key sizes >=384 are included
 # Note also that some of these may not be supported by the cryptography backend
@@ -196,8 +200,26 @@ def create_verifier_for_ecc(signature, hash_method, public_key,
     )
 
 
+def create_verifier_for_dsa(signature, hash_method, public_key,
+                            image_properties):
+    """Create verifier to use when the key type is DSA
+
+    :param signature: the decoded signature to use
+    :param hash_method: the hash method to use, as a cryptography object
+    :param public_key: the public key to use, as a cryptography object
+    :param image_properties: the key-value properties about the image
+    :returns: the verifier to use to verify the signature for DSA
+    """
+    # return the verifier
+    return public_key.verifier(
+        signature,
+        hash_method
+    )
+
+
 # map the key type to the verifier function to use
 SignatureKeyType.register(RSA_PSS, rsa.RSAPublicKey, create_verifier_for_pss)
+SignatureKeyType.register(DSA, dsa.DSAPublicKey, create_verifier_for_dsa)
 
 # Register the elliptic curves which are supported by the backend
 for curve in ECC_CURVES:
