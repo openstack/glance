@@ -1910,6 +1910,38 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 
         self.assertEqual(1, len(result))
 
+    def test_operation_patch_with_blob(self):
+        data = {'name': 'art1',
+                'version': '3.2'
+                }
+        art = self._create_artifact('withblob', data=data)
+
+        msg = 'Invalid request PATCH for work with blob'
+
+        result = self._check_artifact_patch(
+            '/withblob/v1.0/%s' % art['id'],
+            status=400,
+            data=[{'op': 'replace',
+                   'value': 'public',
+                   'path': '/blob1'}])
+        self.assertIn(msg, result)
+
+        result = self._check_artifact_patch(
+            '/withblob/v1.0/%s' % art['id'],
+            status=400,
+            data=[{'op': 'remove',
+                   'value': 'public',
+                   'path': '/blob1'}])
+        self.assertIn(msg, result)
+
+        result = self._check_artifact_patch(
+            '/withblob/v1.0/%s' % art['id'],
+            status=400,
+            data=[{'op': 'add',
+                   'value': 'public',
+                   'path': '/blob1'}])
+        self.assertIn(msg, result)
+
     def test_filter_by_bad_version(self):
         bad_versions = ['kkk', '1.k', 'h.0', '1.3.hf', 's.9.2s2']
         response_string = ('The format of the version %s is not valid. '
