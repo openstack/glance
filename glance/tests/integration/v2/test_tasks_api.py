@@ -57,15 +57,15 @@ class TestTasksApi(base.ApiTest):
         self.api_flavor = 'fakeauth'
         self.registry_flavor = 'fakeauth'
 
-    def _wait_on_task_execution(self):
+    def _wait_on_task_execution(self, max_wait=5):
         """Wait until all the tasks have finished execution and are in
         state of success or failure.
         """
 
         start = timeutils.utcnow()
 
-        # wait for maximum of 5 seconds
-        while timeutils.delta_seconds(start, timeutils.utcnow()) < 5:
+        # wait for maximum of seconds defined by max_wait
+        while timeutils.delta_seconds(start, timeutils.utcnow()) < max_wait:
             wait = False
             # Verify that no task is in status of pending or processing
             path = "/v2/tasks"
@@ -151,7 +151,7 @@ class TestTasksApi(base.ApiTest):
 
         # NOTE(sabari): wait for all task executions to finish before checking
         # task status.
-        self._wait_on_task_execution()
+        self._wait_on_task_execution(max_wait=10)
 
         # 4. GET /tasks
         # Get all tasks (not deleted)
