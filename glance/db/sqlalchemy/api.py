@@ -1284,7 +1284,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             tables.remove(tbl)
         except ValueError:
             LOG.warning(_LW('Expected table %(tbl)s was not found in DB.'),
-                        **locals())
+                        {'tbl': tbl})
         else:
             tables.append(tbl)
 
@@ -1293,8 +1293,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
         LOG.info(
             _LI('Purging deleted rows older than %(age_in_days)d day(s) '
                 'from table %(tbl)s'),
-            **locals()
-        )
+            {'age_in_days': age_in_days, 'tbl': tbl})
         with session.begin():
             result = session.execute(
                 tab.delete().where(
@@ -1307,7 +1306,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             )
         rows = result.rowcount
         LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),
-                 **locals())
+                 {'rows': rows, 'tbl': tbl})
 
 
 def user_get_storage_usage(context, owner_id, image_id=None, session=None):
