@@ -1,0 +1,127 @@
+{
+    "namespace": "CIM::VirtualSystemSettingData",
+    "display_name": "CIM Virtual System Setting Data",
+    "description": "A set of virtualization specific properties from Common Information Model (CIM) schema (http://www.dmtf.org/standards/cim), which define the virtual aspects of a virtual system. These properties may be specified to host aggregate and flavor. For each property details, please refer to http://schemas.dmtf.org/wbem/cim-html/2/CIM_VirtualSystemSettingData.html.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Aggregate",
+            "prefix": "CIM_VSSD_"
+        },
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "CIM_VSSD_"
+        }
+    ],
+    "properties": {
+        "AutomaticRecoveryAction": {
+            "title": "Automatic Recovery Action",
+            "description": "Action to take for the virtual system when the software executed by the virtual system fails.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "None",
+                "Restart",
+                "Revert to snapshot",
+                "DMTF Reserved"
+            ]
+        },
+        "AutomaticShutdownAction": {
+            "title": "Automatic Shutdown Action",
+            "description": "Action to take for the virtual system when the host is shut down.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "Turn Off",
+                "Save state",
+                "Shutdown",
+                "DMTF Reserved"
+            ]
+        },
+        "AutomaticStartupAction": {
+            "title": "Automatic Startup Action",
+            "description": "Action to take for the virtual system when the host is started.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "None",
+                "Restart if previously active",
+                "Always startup",
+                "DMTF Reserved"
+            ]
+        },
+        "AutomaticStartupActionDelay": {
+            "title": "Automatic Startup Action Delay",
+            "description": "Delay applicable to startup action.",
+            "type": "string"
+        },
+        "AutomaticStartupActionSequenceNumber": {
+            "title": "Automatic Startup Action Sequence Number",
+            "description": "Number indicating the relative sequence of virtual system activation when the host system is started.",
+            "type": "string"
+        },
+        "ConfigurationDataRoot": {
+            "title": "Configuration Data Root",
+            "description": "Filepath of a directory where information about the virtual system configuration is stored.",
+            "type": "string"
+        },
+        "ConfigurationFile": {
+            "title": "Configuration File",
+            "description": "Filepath of a file where information about the virtual system configuration is stored.",
+            "type": "string"
+        },
+        "ConfigurationID": {
+            "title": "Configuration ID",
+            "description": "Unique id of the virtual system configuration.",
+            "type": "string"
+        },
+        "CreationTime": {
+            "title": "Creation Time",
+            "description": "Time when the virtual system configuration was created.",
+            "type": "string"
+        },
+        "LogDataRoot": {
+            "title": "Log Data Root",
+            "description": "Filepath of a directory where log information about the virtual system is stored.",
+            "type": "string"
+        },
+        "RecoveryFile": {
+            "title": "Recovery File",
+            "description": "Filepath of a file where recovery relateded information of the virtual system is stored.",
+            "type": "string"
+        },
+        "SnapshotDataRoot": {
+            "title": "Snapshot Data Root",
+            "description": "Filepath of a directory where information about virtual system snapshots is stored.",
+            "type": "string"
+        },
+        "SuspendDataRoot": {
+            "title": "Suspend Data Root",
+            "description": "Filepath of a directory where suspend related information about the virtual system is stored.",
+            "type": "string"
+        },
+        "SwapFileDataRoot": {
+            "title": "Swap File Data Root",
+            "description": "Filepath of a directory where swapfiles of the virtual system are stored.",
+            "type": "string"
+        },
+        "VirtualSystemIdentifier": {
+            "title": "Virtual System Identifier",
+            "description": "VirtualSystemIdentifier shall reflect a unique name for the system as it is used within the virtualization platform.",
+            "type": "string"
+        },
+        "VirtualSystemType": {
+            "title": "Virtual System Type",
+            "description": "VirtualSystemType shall reflect a particular type of virtual system.",
+            "type": "string"
+        },
+        "Notes": {
+            "title": "Notes",
+            "description": "End-user supplied notes that are related to the virtual system.",
+            "type": "string"
+        }
+    },
+    "objects": []
+}
+

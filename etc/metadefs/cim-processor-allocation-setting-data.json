@@ -1,0 +1,154 @@
+{
+    "namespace": "CIM::ProcessorAllocationSettingData",
+    "display_name": "CIM Processor Allocation Setting",
+    "description": "Properties related to the resource allocation settings of a processor (CPU) from Common Information Model (CIM) schema (http://www.dmtf.org/standards/cim). These are properties that identify processor setting data and may be specified to volume, image, host aggregate, flavor and Nova server as scheduler hint. For each property details, please refer to http://schemas.dmtf.org/wbem/cim-html/2/CIM_ProcessorAllocationSettingData.html.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Cinder::Volume",
+            "prefix": "CIM_PASD_",
+            "properties_target": "image"
+        },
+        {
+            "name": "OS::Glance::Image",
+            "prefix": "CIM_PASD_"
+        },
+        {
+            "name": "OS::Nova::Aggregate",
+            "prefix": "CIM_PASD_"
+        },
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "CIM_PASD_"
+        },
+        {
+            "name": "OS::Nova::Server",
+            "properties_target": "scheduler_hint"
+        }
+    ],
+    "properties": {
+        "InstructionSet": {
+            "title": "Instruction Set",
+            "description": "Identifies the instruction set of the processor within a processor architecture.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "x86:i386",
+                "x86:i486",
+                "x86:i586",
+                "x86:i686",
+                "x86:64",
+                "IA-64:IA-64",
+                "AS/400:TIMI",
+                "Power:Power_2.03",
+                "Power:Power_2.04",
+                "Power:Power_2.05",
+                "Power:Power_2.06",
+                "S/390:ESA/390",
+                "S/390:z/Architecture",
+                "S/390:z/Architecture_2",
+                "PA-RISC:PA-RISC_1.0",
+                "PA-RISC:PA-RISC_2.0",
+                "ARM:A32",
+                "ARM:A64",
+                "MIPS:MIPS_I",
+                "MIPS:MIPS_II",
+                "MIPS:MIPS_III",
+                "MIPS:MIPS_IV",
+                "MIPS:MIPS_V",
+                "MIPS:MIPS32",
+                "MIPS64:MIPS64",
+                "Alpha:Alpha",
+                "SPARC:SPARC_V7",
+                "SPARC:SPARC_V8",
+                "SPARC:SPARC_V9",
+                "SPARC:SPARC_JPS1",
+                "SPARC:UltraSPARC2005",
+                "SPARC:UltraSPARC2007",
+                "68k:68000",
+                "68k:68010",
+                "68k:68020",
+                "68k:68030",
+                "68k:68040",
+                "68k:68060"
+            ]
+        },
+        "ProcessorArchitecture": {
+            "title": "Processor Architecture",
+            "description": "Identifies the processor architecture of the processor.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "x86",
+                "IA-64",
+                "AS/400",
+                "Power",
+                "S/390",
+                "PA-RISC",
+                "ARM",
+                "MIPS",
+                "Alpha",
+                "SPARC",
+                "68k"
+            ]
+        },
+        "InstructionSetExtensionName": {
+            "title": "Instruction Set Extension",
+            "description": "Identifies the instruction set extensions of the processor within a processor architecture.",
+            "operators": ["<or>", "<all-in>"],
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "x86:3DNow",
+                    "x86:3DNowExt",
+                    "x86:ABM",
+                    "x86:AES",
+                    "x86:AVX",
+                    "x86:AVX2",
+                    "x86:BMI",
+                    "x86:CX16",
+                    "x86:F16C",
+                    "x86:FSGSBASE",
+                    "x86:LWP",
+                    "x86:MMX",
+                    "x86:PCLMUL",
+                    "x86:RDRND",
+                    "x86:SSE2",
+                    "x86:SSE3",
+                    "x86:SSSE3",
+                    "x86:SSE4A",
+                    "x86:SSE41",
+                    "x86:SSE42",
+                    "x86:FMA3",
+                    "x86:FMA4",
+                    "x86:XOP",
+                    "x86:TBM",
+                    "x86:VT-d",
+                    "x86:VT-x",
+                    "x86:EPT",
+                    "x86:SVM",
+                    "PA-RISC:MAX",
+                    "PA-RISC:MAX2",
+                    "ARM:DSP",
+                    "ARM:Jazelle-DBX",
+                    "ARM:Thumb",
+                    "ARM:Thumb-2",
+                    "ARM:ThumbEE)",
+                    "ARM:VFP",
+                    "ARM:NEON",
+                    "ARM:TrustZone",
+                    "MIPS:MDMX",
+                    "MIPS:MIPS-3D",
+                    "Alpha:BWX",
+                    "Alpha:FIX",
+                    "Alpha:CIX",
+                    "Alpha:MVI"
+                ]
+            }
+        }
+    },
+    "objects": []
+}
+

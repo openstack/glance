@@ -1,0 +1,178 @@
+{
+    "namespace": "CIM::ResourceAllocationSettingData",
+    "display_name": "CIM Resource Allocation Setting Data",
+    "description": "Properties from Common Information Model (CIM) schema (http://www.dmtf.org/standards/cim) that represent settings specifically related to an allocated resource that are outside the scope of the CIM class typically used to represent the resource itself. These properties may be specified to volume, host aggregate and flavor. For each property details, please refer to http://schemas.dmtf.org/wbem/cim-html/2/CIM_ResourceAllocationSettingData.html.",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Cinder::Volume",
+            "prefix": "CIM_RASD_",
+            "properties_target": "image"
+        },
+        {
+            "name": "OS::Nova::Aggregate",
+            "prefix": "CIM_RASD_"
+        },
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "CIM_RASD_"
+        }
+    ],
+    "properties": {
+        "Address": {
+            "title": "Address",
+            "description": "The address of the resource.",
+            "type": "string"
+        },
+        "AddressOnParent": {
+            "title": "Address On Parent",
+            "description": "Describes the address of this resource in the context of the Parent.",
+            "type": "string"
+        },
+        "AllocationUnits": {
+            "title": "Allocation Units",
+            "description": "This property specifies the units of allocation used by the Reservation and Limit properties.",
+            "type": "string"
+        },
+        "AutomaticAllocation": {
+            "title": "Automatic Allocation",
+            "description": "This property specifies if the resource will be automatically allocated.",
+            "type": "boolean"
+        },
+        "AutomaticDeallocation": {
+            "title": "Automatic Deallocation",
+            "description": "This property specifies if the resource will be automatically de-allocated.",
+            "type": "boolean"
+        },
+        "ConsumerVisibility": {
+            "title": "Consumer Visibility",
+            "description": "Describes the consumers visibility to the allocated resource.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "Unknown",
+                "Passed-Through",
+                "Virtualized",
+                "Not represented",
+                "DMTF reserved",
+                "Vendor Reserved"
+            ]
+        },
+        "Limit": {
+            "title": "Limit",
+            "description": "This property specifies the upper bound, or maximum amount of resource that will be granted for this allocation.",
+            "type": "string"
+        },
+        "MappingBehavior": {
+            "title": "Mapping Behavior",
+            "description": "Specifies how this resource maps to underlying resources. If the HostResource array contains any entries, this property reflects how the resource maps to those specific resources.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "Unknown",
+                "Not Supported",
+                "Dedicated",
+                "Soft Affinity",
+                "Hard Affinity",
+                "DMTF Reserved",
+                "Vendor Reserved"
+            ]
+        },
+        "OtherResourceType": {
+            "title": "Other Resource Type",
+            "description": "A string that describes the resource type when a well defined value is not available and ResourceType has the value 'Other'.",
+            "type": "string"
+        },
+        "Parent": {
+            "title": "Parent",
+            "description": "The Parent of the resource.",
+            "type": "string"
+        },
+        "PoolID": {
+            "title": "Pool ID",
+            "description": "This property specifies which ResourcePool the resource is currently allocated from, or which ResourcePool the resource will be allocated from when the allocation occurs.",
+            "type": "string"
+        },
+        "Reservation": {
+            "title": "Reservation",
+            "description": "This property specifies the amount of resource guaranteed to be available for this allocation.",
+            "type": "string"
+        },
+        "ResourceSubType": {
+            "title": "Resource Sub Type",
+            "description": "A string describing an implementation specific sub-type for this resource.",
+            "type": "string"
+        },
+        "ResourceType": {
+            "title": "Resource Type",
+            "description": "The type of resource this allocation setting represents.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "Other",
+                "Computer System",
+                "Processor",
+                "Memory",
+                "IDE Controller",
+                "Parallel SCSI HBA",
+                "FC HBA",
+                "iSCSI HBA",
+                "IB HCA",
+                "Ethernet Adapter",
+                "Other Network Adapter",
+                "I/O Slot",
+                "I/O Device",
+                "Floppy Drive",
+                "CD Drive",
+                "DVD drive",
+                "Disk Drive",
+                "Tape Drive",
+                "Storage Extent",
+                "Other storage device",
+                "Serial port",
+                "Parallel port",
+                "USB Controller",
+                "Graphics controller",
+                "IEEE 1394 Controller",
+                "Partitionable Unit",
+                "Base Partitionable Unit",
+                "Power",
+                "Cooling Capacity",
+                "Ethernet Switch Port",
+                "Logical Disk",
+                "Storage Volume",
+                "Ethernet Connection",
+                "DMTF reserved",
+                "Vendor Reserved"
+            ]
+        },
+        "VirtualQuantity": {
+            "title": "Virtual Quantity",
+            "description": "This property specifies the quantity of resources presented to the consumer.",
+            "type": "string"
+        },
+        "VirtualQuantityUnits": {
+            "title": "Virtual Quantity Units",
+            "description": "This property specifies the units used by the VirtualQuantity property.",
+            "type": "string"
+        },
+        "Weight": {
+            "title": "Weight",
+            "description": "This property specifies a relative priority for this allocation in relation to other allocations from the same ResourcePool.",
+            "type": "string"
+        },
+        "Connection": {
+            "title": "Connection",
+            "description": "The thing to which this resource is connected.",
+            "type": "string"
+        },
+        "HostResource": {
+            "title": "Host Resource",
+            "description": "This property exposes specific assignment of resources.",
+            "type": "string"
+        }
+    },
+    "objects": []
+}
+
