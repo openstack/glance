@@ -332,20 +332,32 @@ def _locations_proxy(target, attr):
             raise exception.BadStoreUri(message=reason)
         ori_value = getattr(getattr(self, target), attr)
         if ori_value != value:
-            # NOTE(zhiyan): Enforced locations list was previously empty list.
-            if len(ori_value) > 0:
+            # NOTE(flwang): If all the URL of passed-in locations are same as
+            # current image locations, that means user would like to only
+            # update the metadata, not the URL.
+            ordered_value = sorted([loc['url'] for loc in value])
+            ordered_ori = sorted([loc['url'] for loc in ori_value])
+            if len(ori_value) > 0 and ordered_value != ordered_ori:
                 raise exception.Invalid(_('Original locations is not empty: '
                                           '%s') % ori_value)
-            # NOTE(zhiyan): Check locations are all valid.
-            for location in value:
-                _check_image_location(self.context,
-                                      self.store_api,
-                                      self.store_utils,
-                                      location)
-                location['status'] = 'active'
-                if _count_duplicated_locations(value, location) > 1:
-                    raise exception.DuplicateLocation(location=location['url'])
-            _set_image_size(self.context, getattr(self, target), value)
+            # NOTE(zhiyan): Check locations are all valid
+            # NOTE(flwang): If all the URL of passed-in locations are same as
+            # current image locations, then it's not necessary to verify those
+            # locations again. Otherwise, if there is any restricted scheme in
+            # existing locations. _check_image_location will fail.
+            if ordered_value != ordered_ori:
+                for loc in value:
+                    _check_image_location(self.context,
+                                          self.store_api,
+                                          self.store_utils,
+                                          loc)
+                    loc['status'] = 'active'
+                    if _count_duplicated_locations(value, loc) > 1:
+                        raise exception.DuplicateLocation(location=loc['url'])
+                _set_image_size(self.context, getattr(self, target), value)
+            else:
+                for loc in value:
+                    loc['status'] = 'active'
             return setattr(getattr(self, target), attr, list(value))
 
     def del_attr(self):

@@ -42,6 +42,7 @@ CONF = cfg.CONF
 CONF.import_opt('disk_formats', 'glance.common.config', group='image_format')
 CONF.import_opt('container_formats', 'glance.common.config',
                 group='image_format')
+CONF.import_opt('show_multiple_locations', 'glance.common.config')
 
 
 class ImagesController(object):
@@ -266,28 +267,29 @@ class ImagesController(object):
         return pos
 
     def _do_replace_locations(self, image, value):
-        if len(image.locations) > 0 and len(value) > 0:
-            msg = _("Cannot replace locations from a non-empty "
-                    "list to a non-empty list.")
-            raise webob.exc.HTTPBadRequest(explanation=msg)
-        if len(value) == 0:
-            # NOTE(zhiyan): this actually deletes the location
-            # from the backend store.
-            del image.locations[:]
-            if image.status == 'active':
-                image.status = 'queued'
-        else:   # NOTE(zhiyan): len(image.locations) == 0
-            try:
-                image.locations = value
-                if image.status == 'queued':
-                    image.status = 'active'
-            except (exception.BadStoreUri, exception.DuplicateLocation) as e:
-                raise webob.exc.HTTPBadRequest(explanation=e.msg)
-            except ValueError as ve:    # update image status failed.
-                raise webob.exc.HTTPBadRequest(
-                    explanation=encodeutils.exception_to_unicode(ve))
+        if CONF.show_multiple_locations == False:
+            msg = _("It's not allowed to update locations if locations are "
+                    "invisible.")
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
+        try:
+            # NOTE(flwang): _locations_proxy's setattr method will check if
+            # the update is acceptable.
+            image.locations = value
+            if image.status == 'queued':
+                image.status = 'active'
+        except (exception.BadStoreUri, exception.DuplicateLocation) as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
+        except ValueError as ve:    # update image status failed.
+            raise webob.exc.HTTPBadRequest(
+                explanation=encodeutils.exception_to_unicode(ve))
 
     def _do_add_locations(self, image, path_pos, value):
+        if CONF.show_multiple_locations == False:
+            msg = _("It's not allowed to add locations if locations are "
+                    "invisible.")
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
         pos = self._get_locations_op_pos(path_pos,
                                          len(image.locations), True)
         if pos is None:
@@ -304,6 +306,11 @@ class ImagesController(object):
                 explanation=encodeutils.exception_to_unicode(e))
 
     def _do_remove_locations(self, image, path_pos):
+        if CONF.show_multiple_locations == False:
+            msg = _("It's not allowed to remove locations if locations are "
+                    "invisible.")
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
         if len(image.locations) == 1:
             LOG.debug("User forbidden to remove last location of image %s",
                       image.image_id)
