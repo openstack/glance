@@ -15,12 +15,9 @@
 #    under the License.
 
 """
-Tests for database migrations. This test case reads the configuration
-file /tests/unit/test_migrations.conf for database connection settings
-to use in the tests. For each connection found in the config file,
-the test case runs a series of test cases to ensure that migrations work
-properly both upgrading and downgrading, and that no data loss occurs
-if possible.
+Tests for database migrations run a series of test cases to ensure that
+migrations work properly both upgrading and downgrading, and that no data loss
+occurs if possible.
 """
 
 from __future__ import print_function
