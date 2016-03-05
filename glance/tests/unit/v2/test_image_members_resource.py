@@ -540,6 +540,18 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
                           request)
 
+    def test_create_list_return_error(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = jsonutils.dump_as_bytes([TENANT1])
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
+                          request)
+
+    def test_update_list_return_error(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = jsonutils.dump_as_bytes([TENANT1])
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.update,
+                          request)
+
     def test_update(self):
         request = unit_test_utils.get_fake_request()
         request.body = jsonutils.dump_as_bytes({'status': 'accepted'})
