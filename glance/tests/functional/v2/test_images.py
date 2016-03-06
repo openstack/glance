@@ -3022,7 +3022,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
-        self.assertTrue(image["locations"] == [])
+        self.assertEqual([], image["locations"])
 
         # Upload some image data, setting the image location
         path = self._url('/v2/images/%s/file' % image_id)
@@ -3038,7 +3038,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         loc = image['locations']
-        self.assertTrue(len(loc) > 0)
+        self.assertGreater(len(loc), 0)
         loc = loc[0]
         self.assertIn('url', loc)
         self.assertIn('metadata', loc)
@@ -3166,7 +3166,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.assertEqual(200, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
-        self.assertTrue(image["locations"] == [])
+        self.assertEqual([], image["locations"])
 
         # Update image locations via PATCH
         path = self._url('/v2/images/%s' % image_id)

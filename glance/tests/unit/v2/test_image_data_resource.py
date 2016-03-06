@@ -415,7 +415,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(3, len(output_log))
         prepare_updated_at = output_log[0]['payload']['updated_at']
         del output_log[0]['payload']['updated_at']
-        self.assertTrue(prepare_updated_at <= output['meta']['updated_at'])
+        self.assertLessEqual(prepare_updated_at, output['meta']['updated_at'])
         self.assertEqual(prepare_log, output_log[0])
 
     def _test_upload_download_upload_notification(self):

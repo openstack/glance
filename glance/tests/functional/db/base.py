@@ -1800,7 +1800,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertIsNone(task['deleted_at'])
         self.assertIsNone(task['expires_at'])
         self.assertEqual(task_values['created_at'], task['created_at'])
-        self.assertTrue(task['updated_at'] > task['created_at'])
+        self.assertGreater(task['updated_at'], task['created_at'])
 
     def test_task_update_with_all_task_info_null(self):
         self.context.tenant = str(uuid.uuid4())
@@ -1825,7 +1825,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertIsNone(task['deleted_at'])
         self.assertIsNone(task['expires_at'])
         self.assertEqual(task_values['created_at'], task['created_at'])
-        self.assertTrue(task['updated_at'] > task['created_at'])
+        self.assertGreater(task['updated_at'], task['created_at'])
 
     def test_task_delete(self):
         task_values = build_task_fixture(owner=self.context.owner)

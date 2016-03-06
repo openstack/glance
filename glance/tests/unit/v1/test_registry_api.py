@@ -888,7 +888,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.assertEqual(2, len(images))
 
         for image in images:
-            self.assertTrue(image['size'] >= 19)
+            self.assertGreaterEqual(image['size'], 19)
 
     def test_get_details_filter_size_max(self):
         """
@@ -911,7 +911,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         self.assertEqual(2, len(images))
 
         for image in images:
-            self.assertTrue(image['size'] <= 19)
+            self.assertLessEqual(image['size'], 19)
 
     def test_get_details_filter_size_min_max(self):
         """

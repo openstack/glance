@@ -859,7 +859,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             data=[{'value': no_prop_art['id'],
                    'op': 'replace',
                    'path': '/depends_on'}])
-        self.assertTrue(art_updated['depends_on'] != [])
+        self.assertNotEqual(0, len(art_updated['depends_on']))
         # artifact can't be published if any dependency is in non-active state
         res = self._check_artifact_post(
             '/withprops/v1/%s/publish' % art['id'], {}, status=400)
