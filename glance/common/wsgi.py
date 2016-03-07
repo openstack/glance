@@ -47,6 +47,7 @@ import webob.dec
 import webob.exc
 from webob import multidict
 
+from glance.common import config
 from glance.common import exception
 from glance.common import utils
 from glance import i18n
@@ -409,6 +410,7 @@ class Server(object):
 
         # Ensure any logging config changes are picked up
         logging.setup(CONF, 'glance')
+        config.set_config_defaults()
 
         self.configure(old_conf, has_changed)
         self.start_wsgi()
