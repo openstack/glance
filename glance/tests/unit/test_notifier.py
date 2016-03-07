@@ -147,7 +147,7 @@ class TestImageNotifications(utils.BaseTestCase):
         self.image = ImageStub(
             image_id=UUID1, name='image-1', status='active', size=1024,
             created_at=DATETIME, updated_at=DATETIME, owner=TENANT1,
-            visibility='public', container_format='ami',
+            visibility='public', container_format='ami', virtual_size=2048,
             tags=['one', 'two'], disk_format='ami', min_ram=128,
             min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91',
             locations=['http://127.0.0.1'])

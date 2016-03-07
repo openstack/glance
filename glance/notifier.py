@@ -125,6 +125,7 @@ def format_image_notification(image):
         'disk_format': image.disk_format,
         'container_format': image.container_format,
         'size': image.size,
+        'virtual_size': image.virtual_size,
         'is_public': image.visibility == 'public',
         'properties': dict(image.extra_properties),
         'tags': list(image.tags),
