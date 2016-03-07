@@ -50,8 +50,17 @@ registry_client_opts = [
                       'value of 0 implies no timeout.')),
 ]
 
+_DEPRECATE_USE_USER_TOKEN_MSG = ('This option was considered harmful and '
+                                 'has been deprecated in M release. It will '
+                                 'be removed in O release. For more '
+                                 'information read OSSN-0060. '
+                                 'Related functionality with uploading big '
+                                 'images has been implemented with Keystone '
+                                 'trusts support.')
+
 registry_client_ctx_opts = [
-    cfg.BoolOpt('use_user_token', default=True,
+    cfg.BoolOpt('use_user_token', default=True, deprecated_for_removal=True,
+                deprecated_reason=_DEPRECATE_USE_USER_TOKEN_MSG,
                 help=_('Whether to pass through the user token when '
                        'making requests to the registry. To prevent '
                        'failures with token expiration during big '
@@ -59,28 +68,34 @@ registry_client_ctx_opts = [
                        'parameter to False.'
                        'If "use_user_token" is not in effect, then '
                        'admin credentials can be specified.')),
-    cfg.StrOpt('admin_user', secret=True,
+    cfg.StrOpt('admin_user', secret=True, deprecated_for_removal=True,
+               deprecated_reason=_DEPRECATE_USE_USER_TOKEN_MSG,
                help=_('The administrators user name. '
                       'If "use_user_token" is not in effect, then '
                       'admin credentials can be specified.')),
-    cfg.StrOpt('admin_password', secret=True,
+    cfg.StrOpt('admin_password', secret=True, deprecated_for_removal=True,
+               deprecated_reason=_DEPRECATE_USE_USER_TOKEN_MSG,
                help=_('The administrators password. '
                       'If "use_user_token" is not in effect, then '
                       'admin credentials can be specified.')),
-    cfg.StrOpt('admin_tenant_name', secret=True,
+    cfg.StrOpt('admin_tenant_name', secret=True, deprecated_for_removal=True,
+               deprecated_reason=_DEPRECATE_USE_USER_TOKEN_MSG,
                help=_('The tenant name of the administrative user. '
                       'If "use_user_token" is not in effect, then '
                       'admin tenant name can be specified.')),
-    cfg.StrOpt('auth_url',
+    cfg.StrOpt('auth_url', deprecated_for_removal=True,
+               deprecated_reason=_DEPRECATE_USE_USER_TOKEN_MSG,
                help=_('The URL to the keystone service. '
                       'If "use_user_token" is not in effect and '
                       'using keystone auth, then URL of keystone '
                       'can be specified.')),
-    cfg.StrOpt('auth_strategy', default='noauth',
+    cfg.StrOpt('auth_strategy', default='noauth', deprecated_for_removal=True,
+               deprecated_reason=_DEPRECATE_USE_USER_TOKEN_MSG,
                help=_('The strategy to use for authentication. '
                       'If "use_user_token" is not in effect, then '
                       'auth strategy can be specified.')),
-    cfg.StrOpt('auth_region',
+    cfg.StrOpt('auth_region', deprecated_for_removal=True,
+               deprecated_reason=_DEPRECATE_USE_USER_TOKEN_MSG,
                help=_('The region for the authentication service. '
                       'If "use_user_token" is not in effect and '
                       'using keystone auth, then region name can '

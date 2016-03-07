@@ -86,7 +86,7 @@ class Server(object):
         self.process_pid = None
         self.server_module = None
         self.stop_kill = False
-        self.use_user_token = False
+        self.use_user_token = True
         self.send_identity_credentials = False
 
     def write_conf(self, **kwargs):
