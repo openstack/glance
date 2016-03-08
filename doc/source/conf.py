@@ -49,6 +49,8 @@ extensions = ['sphinx.ext.coverage',
               'oslosphinx',
               'stevedore.sphinxext',
               'oslo_config.sphinxext',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.viewcode',
               ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -93,7 +95,7 @@ version = glance_version.canonical_version_string()
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = ['api']
+#exclude_trees = ['api']
 exclude_patterns = [
     # The man directory includes some snippet files that are included
     # in other documents during the build but that should not be
@@ -112,7 +114,7 @@ exclude_patterns = [
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-#add_module_names = True
+add_module_names = True
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -209,10 +211,10 @@ html_last_updated_fmt = subprocess.Popen(git_cmd,
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-html_use_modindex = False
+html_use_modindex = True
 
 # If false, no index is generated.
-html_use_index = False
+html_use_index = True
 
 # If true, the index is split into individual pages for each letter.
 #html_split_index = False

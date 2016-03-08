@@ -106,6 +106,7 @@ Glance Manual Pages
    :maxdepth: 1
 
    man/*
+   api/modules
 
 Contributing to Glance
 ======================
@@ -114,3 +115,10 @@ Contributing to Glance
    :maxdepth: 1
 
    contributing/index
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

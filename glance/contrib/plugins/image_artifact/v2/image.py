@@ -16,7 +16,13 @@ from glance.common import exception
 from glance.common.glare import definitions
 import glance.contrib.plugins.image_artifact.v1_1.image as v1_1
 
-import glanceclient
+# Since this is not in the test-requirements.txt and the class below,
+# ImageAsAnArtifact, is pending removal a try except is added to prevent
+# an ImportError when module docs are generated
+try:
+    import glanceclient
+except ImportError:
+    glanceclient = None
 
 
 from glance.i18n import _
@@ -47,6 +53,11 @@ class ImageAsAnArtifact(v1_1.ImageAsAnArtifact):
             glance_endpoint = next(service['endpoints'][0]['publicURL']
                                    for service in context.service_catalog
                                    if service['name'] == 'glance')
+            # Ensure glanceclient is imported correctly since we are catching
+            # the ImportError on initialization
+            if glanceclient == None:
+                raise ImportError(_("Glance client not installed"))
+
             try:
                 client = glanceclient.Client(version=2,
                                              endpoint=glance_endpoint,
