@@ -1138,14 +1138,19 @@ For best performance, this should be a power of two.
 Configuring the Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Note**: Currently Cinder store is a partial implementation.
-After Cinder expose 'brick' library, and 'Readonly-volume-attaching',
-'volume-multiple-attaching' enhancement ready, the store will support
-'Upload' and 'Download' interface finally.
+**Note**: Currently Cinder store is experimental. Current deployers should be
+aware that the use of it in production right now may be risky. It is expected
+to work well with most iSCSI Cinder backends such as LVM iSCSI, but will not
+work with some backends especially if they don't support host-attach.
+
+**Note**: To create a Cinder volume from an image in this store quickly, additional
+settings are required. Please see the
+`Volume-backed image <http://docs.openstack.org/admin-guide-cloud/blockstorage_volume_backed_image.html>`_
+documentation for more information.
 
 * ``cinder_catalog_info=<service_type>:<service_name>:<endpoint_type>``
 
-Optional. Default: ``volume:cinder:publicURL``
+Optional. Default: ``volumev2::publicURL``
 
 Can only be specified in configuration files.
 
@@ -1154,14 +1159,17 @@ Can only be specified in configuration files.
 Sets the info to match when looking for cinder in the service catalog.
 Format is : separated values of the form: <service_type>:<service_name>:<endpoint_type>
 
-* ``cinder_endpoint_template=http://ADDR:PORT/VERSION/%(project_id)s``
+* ``cinder_endpoint_template=http://ADDR:PORT/VERSION/%(tenant)s``
 
 Optional. Default: ``None``
 
 Can only be specified in configuration files.
 
+`This option is specific to the Cinder storage backend.`
+
 Override service catalog lookup with template for cinder endpoint.
-e.g. http://localhost:8776/v1/%(project_id)s
+``%(...)s`` parts are replaced by the value in the request context.
+e.g. http://localhost:8776/v2/%(tenant)s
 
 * ``os_region_name=REGION_NAME``
 
@@ -1169,13 +1177,30 @@ Optional. Default: ``None``
 
 Can only be specified in configuration files.
 
+`This option is specific to the Cinder storage backend.`
+
 Region name of this node.
+
+Deprecated. Use ``cinder_os_region_name`` instead.
+
+* ``cinder_os_region_name=REGION_NAME``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+Region name of this node.  If specified, it is used to locate cinder from
+the service catalog.
 
 * ``cinder_ca_certificates_file=CA_FILE_PATH``
 
 Optional. Default: ``None``
 
 Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
 
 Location of ca certificates file to use for cinder client requests.
 
@@ -1185,7 +1210,19 @@ Optional. Default: ``3``
 
 Can only be specified in configuration files.
 
+`This option is specific to the Cinder storage backend.`
+
 Number of cinderclient retries on failed http calls.
+
+* ``cinder_state_transition_timeout``
+
+Optional. Default: ``300``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+Time period, in seconds, to wait for a cinder volume transition to complete.
 
 * ``cinder_api_insecure=ON_OFF``
 
@@ -1193,7 +1230,70 @@ Optional. Default: ``False``
 
 Can only be specified in configuration files.
 
+`This option is specific to the Cinder storage backend.`
+
 Allow to perform insecure SSL requests to cinder.
+
+* ``cinder_store_user_name=NAME``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+User name to authenticate against Cinder. If <None>, the user of current
+context is used.
+
+**NOTE**: This option is applied only if all of ``cinder_store_user_name``,
+``cinder_store_password``, ``cinder_store_project_name`` and
+``cinder_store_auth_address`` are set.
+These options are useful to put image volumes into the internal service
+project in order to hide the volume from users, and to make the image
+sharable among projects.
+
+* ``cinder_store_password=PASSWORD``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+Password for the user authenticating against Cinder. If <None>, the current
+context auth token is used.
+
+* ``cinder_store_project_name=NAME``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+Project name where the image is stored in Cinder. If <None>, the project
+in current context is used.
+
+* ``cinder_store_auth_address=URL``
+
+Optional. Default: ``None``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+The address where the Cinder authentication service is listening. If <None>,
+the cinder endpoint in the service catalog is used.
+
+* ``rootwrap_config=NAME``
+
+Optional. Default: ``/etc/glance/rootwrap.conf``
+
+Can only be specified in configuration files.
+
+`This option is specific to the Cinder storage backend.`
+
+Path to the rootwrap configuration file to use for running commands as root.
 
 Configuring the VMware Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
