@@ -88,6 +88,10 @@ class DbCommands(object):
     @args('--version', metavar='<version>', help='Database version')
     def downgrade(self, version=None):
         """Downgrade the database's migration level"""
+        print("Warning: DB downgrade is deprecated and will be removed in N "
+              "release. Users should make a full database backup of the "
+              "production data before attempting any upgrade.",
+              file=sys.stderr)
         migration.db_sync(db_api.get_engine(),
                           db_migration.MIGRATE_REPO_PATH,
                           version)
@@ -178,6 +182,10 @@ class DbLegacyCommands(object):
         self.command_object.upgrade(CONF.command.version)
 
     def downgrade(self, version=None):
+        print("Warning: DB downgrade is deprecated and will be removed in N "
+              "release. Users should make a full database backup of the "
+              "production data before attempting any upgrade.",
+              file=sys.stderr)
         self.command_object.downgrade(CONF.command.version)
 
     def version_control(self, version=None):
