@@ -431,39 +431,6 @@ in the format of glance.store.OPTION.Store.  Some available options for this
 option are (``filesystem``, ``http``, ``rbd``, ``s3``, ``swift``, ``sheepdog``,
 ``cinder``, ``vmware_datastore``)
 
-Configuring Glance Image Size Limit
------------------------------------
-
-The following configuration option is specified in the
-``glance-api.conf`` config file in the section ``[DEFAULT]``.
-
-* ``image_size_cap=SIZE``
-
-Optional. Default: ``1099511627776`` (1 TB)
-
-Maximum image size, in bytes, which can be uploaded through the Glance API server.
-
-**IMPORTANT NOTE**: this value should only be increased after careful consideration
-and must be set to a value under 8 EB (9223372036854775808).
-
-Configuring Glance User Storage Quota
--------------------------------------
-
-The following configuration option is specified in the
-``glance-api.conf`` config file in the section ``[DEFAULT]``.
-
-* ``user_storage_quota``
-
-Optional. Default: 0 (Unlimited).
-
-This value specifies the maximum amount of storage that each user can use
-across all storage systems. Optionally unit can be specified for the value.
-Values are accepted in B, KB, MB, GB or TB which are for Bytes, KiloBytes,
-MegaBytes, GigaBytes and TeraBytes respectively. Default unit is Bytes.
-
-Example values would be,
-    user_storage_quota=20GB
-
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -770,7 +737,7 @@ fails.
 Optional. Default: ``0``
 
 Configuring Multiple Swift Accounts/Stores
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to not store Swift account credentials in the database, and to
 have support for multiple accounts (or multiple Swift backing stores), a
@@ -805,7 +772,7 @@ Can only be specified in configuration files.
 Optional. Default: ``False``
 
 Configuring Swift configuration file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If ``swift_store_config_file`` is set, Glance will use information
 from the file specified under this parameter.
@@ -1422,6 +1389,39 @@ Overrides the storage URL returned by auth. The URL should include the
 path up to and excluding the container. The location of an object is
 obtained by appending the container and object to the configured URL.
 e.g. ``https://www.my-domain.com/v1/path_up_to_container``
+
+Configuring Glance Image Size Limit
+-----------------------------------
+
+The following configuration option is specified in the
+``glance-api.conf`` config file in the section ``[DEFAULT]``.
+
+* ``image_size_cap=SIZE``
+
+Optional. Default: ``1099511627776`` (1 TB)
+
+Maximum image size, in bytes, which can be uploaded through the Glance API server.
+
+**IMPORTANT NOTE**: this value should only be increased after careful consideration
+and must be set to a value under 8 EB (9223372036854775808).
+
+Configuring Glance User Storage Quota
+-------------------------------------
+
+The following configuration option is specified in the
+``glance-api.conf`` config file in the section ``[DEFAULT]``.
+
+* ``user_storage_quota``
+
+Optional. Default: 0 (Unlimited).
+
+This value specifies the maximum amount of storage that each user can use
+across all storage systems. Optionally unit can be specified for the value.
+Values are accepted in B, KB, MB, GB or TB which are for Bytes, KiloBytes,
+MegaBytes, GigaBytes and TeraBytes respectively. Default unit is Bytes.
+
+Example values would be,
+    user_storage_quota=20GB
 
 Configuring the Image Cache
 ---------------------------
