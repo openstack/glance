@@ -8,9 +8,9 @@
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-09 22:24+0000\n"
+"POT-Creation-Date: 2016-03-08 22:12+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -430,11 +430,6 @@ msgstr ""
 msgid "Cannot load artifact '%(name)s'"
 msgstr "Impossibile caricare la risorsa utente '%(name)s'"
 
-msgid "Cannot replace locations from a non-empty list to a non-empty list."
-msgstr ""
-"Impossibile sostituire le ubicazioni da un elenco non vuoto ad un elenco non "
-"vuoto."
-
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "Impossibile salvare i dati per l'immagine %(image_id)s: %(error)s"
@@ -624,10 +619,6 @@ msgstr ""
 
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "È necessario specificare un file o un legacy_image_id."
-
-#, python-format
-msgid "Encountered service with no \"type\": %s"
-msgstr "Rilevato servizio senza \"type\": %s"
 
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
@@ -2308,6 +2299,12 @@ msgstr ""
 "\n"
 "Il corpo della risposta \n"
 "%(body)s"
+
+msgid ""
+"The requested image has been deactivated. Image data download is forbidden."
+msgstr ""
+"L'immagine richiesta è stata disattivata. Il download dei dati immagine non "
+"è consentito."
 
 msgid "The result of current task, JSON blob"
 msgstr "Il risultato dell'attività corrente, blob JSON"

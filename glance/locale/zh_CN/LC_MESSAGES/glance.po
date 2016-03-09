@@ -13,9 +13,9 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-09 22:24+0000\n"
+"POT-Creation-Date: 2016-03-08 22:12+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -396,9 +396,6 @@ msgstr "不得使用保留名称“metadata”来声明工件属性"
 msgid "Cannot load artifact '%(name)s'"
 msgstr "无法装入工件“%(name)s”"
 
-msgid "Cannot replace locations from a non-empty list to a non-empty list."
-msgstr "不能替代位置从一个非空列表到另一个非空列表"
-
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "无法为镜像%(image_id)s保存数据: %(error)s"
@@ -573,10 +570,6 @@ msgstr "未能正确配置驱动程序 %(driver_name)s。原因：%(reason)s"
 
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "必须指定 file 或者 legacy_image_id"
-
-#, python-format
-msgid "Encountered service with no \"type\": %s"
-msgstr "遇到不带任何“类型”的服务：%s"
 
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
@@ -2072,6 +2065,10 @@ msgstr ""
 "\n"
 "响应主体：\n"
 "%(body)s"
+
+msgid ""
+"The requested image has been deactivated. Image data download is forbidden."
+msgstr "所请求映像已取消激活。已禁止下载映像数据。"
 
 msgid "The result of current task, JSON blob"
 msgstr "当前任务 JSON blob 的结果"

@@ -8,16 +8,17 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
 # Yuko Katabami <yukokatabami@gmail.com>, 2015. #zanata
+# Akihiro Motoki <amotoki@gmail.com>, 2016. #zanata
 # Yuta Hono <yuta.hono@ntt.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-09 22:24+0000\n"
+"POT-Creation-Date: 2016-03-08 22:12+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-01-12 04:59+0000\n"
+"PO-Revision-Date: 2016-03-05 01:37+0000\n"
 "Last-Translator: Yuta Hono <yuta.hono@ntt.com>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -388,10 +389,6 @@ msgstr "予約名「metadata」で成果物プロパティーを宣言するこ�
 msgid "Cannot load artifact '%(name)s'"
 msgstr "成果物 %(name)s をロードできません"
 
-msgid "Cannot replace locations from a non-empty list to a non-empty list."
-msgstr ""
-"空でないリストから空でないリストへ、ロケーションを置換することはできません。"
-
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "イメージ %(image_id)s のデータを保存できません: %(error)s"
@@ -565,10 +562,6 @@ msgstr ""
 
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "file または legacy_image_id のいずれかを指定する必要があります"
-
-#, python-format
-msgid "Encountered service with no \"type\": %s"
-msgstr "\"type\" のないサービスを検出しました: %s"
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
@@ -2069,11 +2062,11 @@ msgstr ""
 "応答本体:\n"
 "%(body)s"
 
-#, python-format
-msgid "The requested image is in status %s. Image data download is forbidden."
+msgid ""
+"The requested image has been deactivated. Image data download is forbidden."
 msgstr ""
-"リクエストされたイメージは %s ステータスです。イメージデータをダウンロードす"
-"ることは出来ません。"
+"要求されたイメージは非アクティブ化されています。イメージデータのダウンロード"
+"は禁止されています。"
 
 msgid "The result of current task, JSON blob"
 msgstr "現行タスクの結果、JSON blob"
@@ -2499,11 +2492,11 @@ msgstr "認証されていません。"
 msgid "You are not authorized to complete this action."
 msgstr "このアクションの実行を許可されていません。"
 
-#, python-format
+#, fuzzy, python-format
 msgid "You are not authorized to lookup image %s."
 msgstr "%s イメージを調べる許可がありません。"
 
-#, python-format
+#, fuzzy, python-format
 msgid "You are not authorized to lookup the members of the image %s."
 msgstr "%s イメージのメンバーを調べる許可がありません。"
 

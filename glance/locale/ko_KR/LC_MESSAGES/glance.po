@@ -10,9 +10,9 @@
 # Sungjin Kang <gang.sungjin@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-09 22:24+0000\n"
+"POT-Creation-Date: 2016-03-08 22:12+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -411,10 +411,6 @@ msgstr "예약된 이름 'metadata'를 사용하는 아티팩트 특성을 선�
 msgid "Cannot load artifact '%(name)s'"
 msgstr "아티팩트 '%(name)s'을(를) 로드할 수 없음"
 
-msgid "Cannot replace locations from a non-empty list to a non-empty list."
-msgstr ""
-"비어 있지 않은 목록에서 비어 있지 않은 목록으로 위치를 변경할 수 없습니다."
-
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "이미지 %(image_id)s 에 대한 데이터 저장 불가: %(error)s"
@@ -592,10 +588,6 @@ msgstr ""
 
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "파일을 지정하거나 legacy_image_id를 지정해야 함"
-
-#, python-format
-msgid "Encountered service with no \"type\": %s"
-msgstr "\"유형\"이 없는 서비스가 발견됨: %s"
 
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
@@ -2167,6 +2159,11 @@ msgstr ""
 "\n"
 "응답 본문:\n"
 "%(body)s"
+
+msgid ""
+"The requested image has been deactivated. Image data download is forbidden."
+msgstr ""
+"요청된 이미지가 비활성화되었습니다. 이미지 데이터 다운로드가 금지됩니다."
 
 msgid "The result of current task, JSON blob"
 msgstr "현재 태스크의 결과, JSON blob"

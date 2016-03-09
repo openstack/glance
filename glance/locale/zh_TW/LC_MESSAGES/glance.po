@@ -5,17 +5,18 @@
 # Translators:
 # Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+# Jennifer <cristxu@tw.ibm.com>, 2016. #zanata
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b3.dev73\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-02-09 22:24+0000\n"
+"POT-Creation-Date: 2016-03-08 22:12+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-02-03 06:59+0000\n"
-"Last-Translator: Lucas Palm <lapalm@us.ibm.com>\n"
+"PO-Revision-Date: 2016-03-07 08:06+0000\n"
+"Last-Translator: Jennifer <cristxu@tw.ibm.com>\n"
 "Language: zh-TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -121,6 +122,9 @@ msgid ""
 msgstr ""
 "--os_auth_url 選項或 OS_AUTH_URL 環境變數（啟用 Keystone 鑑別策略時需要）\n"
 
+msgid "A body is not expected with this request."
+msgstr "此要求預期不含內文。"
+
 msgid ""
 "A list of artifacts that are allowed in the format name or name-version. "
 "Empty list means that any artifact can be loaded."
@@ -203,9 +207,21 @@ msgstr "此作業的擁有者 ID"
 msgid "An identifier for the task"
 msgstr "作業的 ID"
 
+msgid "An image file url"
+msgstr "映像檔 URL"
+
+msgid "An image schema url"
+msgstr "映像檔綱目 URL"
+
+msgid "An image self url"
+msgstr "映像檔自身 URL"
+
 #, python-format
 msgid "An image with identifier %s already exists"
 msgstr "ID 為 %s 的映像檔已存在"
+
+msgid "An import task exception occurred"
+msgstr "發生匯入作業異常狀況"
 
 msgid "An object with the same identifier already exists."
 msgstr "已存在具有相同 ID 的物件。"
@@ -328,11 +344,21 @@ msgstr "針對 Swift 鑑別服務進行使用者鑑別的鑑別金鑰。（已�
 msgid "Auth service at URL %(url)s not found."
 msgstr "在 URL %(url)s 處找不到鑑別服務。"
 
+#, python-format
+msgid ""
+"Authentication error - the token may have expired during file upload. "
+"Deleting image data for %s."
+msgstr "鑑別錯誤 - 在檔案上傳期間，記號可能已過期。正在刪除 %s 的映像檔資料。"
+
 msgid "Authorization failed."
 msgstr "授權失敗。"
 
 msgid "Available categories:"
 msgstr "可用的種類："
+
+#, python-format
+msgid "Bad \"%s\" query filter format. Use ISO 8601 DateTime notation."
+msgstr "\"%s\" 查詢過濾器格式錯誤。請使用 ISO 8601 日期時間表示法。"
 
 #, python-format
 msgid "Bad Command: %s"
@@ -356,6 +382,12 @@ msgstr "Swift URI 中認證 '%(creds)s' 的格式不正確"
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 中認證的格式不正確。"
+
+msgid "Base directory that the image cache uses."
+msgstr "映像檔快取所使用的基本目錄。"
+
+msgid "BinaryObject property cannot be declared mutable"
+msgstr "不能反覆宣告 BinaryObject 內容"
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -390,12 +422,15 @@ msgstr "無法宣告具有保留名稱 'metadata' 的構件內容"
 msgid "Cannot load artifact '%(name)s'"
 msgstr "無法載入構件 '%(name)s'"
 
-msgid "Cannot replace locations from a non-empty list to a non-empty list."
-msgstr "無法取代在兩個非空清單之間的位置。"
+msgid "Cannot remove last location in the image."
+msgstr "無法移除映像檔中的最後位置。"
 
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "無法儲存映像檔 %(image_id)s 的資料：%(error)s"
+
+msgid "Cannot set locations to empty list."
+msgstr "無法將位置設為空白清單。"
 
 msgid "Cannot specify 'max_size' explicitly"
 msgstr "無法明確指定 'max_size'"
@@ -412,6 +447,18 @@ msgstr "無法將此參數與運算子 %(op)s 搭配使用"
 
 msgid "Certificate file to use when starting API server securely."
 msgstr "安全啟動 API 伺服器時要使用的憑證檔。"
+
+#, python-format
+msgid "Certificate format not supported: %s"
+msgstr "憑證格式不受支援：%s"
+
+#, python-format
+msgid "Certificate is not valid after: %s UTC"
+msgstr "在世界標準時間 %s 之後，憑證無效"
+
+#, python-format
+msgid "Certificate is not valid before: %s UTC"
+msgstr "在世界標準時間 %s 之前，憑證無效"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -448,6 +495,9 @@ msgstr "映像檔 %(image_id)s 的映像檔下載已毀損"
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr "嘗試 30 秒鐘後仍無法連結至 %(host)s:%(port)s"
 
+msgid "Could not find OVF file in OVA archive file."
+msgstr "在 OVA 保存檔中找不到 OVF 檔。"
+
 #, python-format
 msgid "Could not find metadata object %s"
 msgstr "找不到 meta 資料物件 %s"
@@ -475,6 +525,9 @@ msgstr "找不到作業 %s"
 msgid "Could not update image: %s"
 msgstr "無法更新映像檔：%s"
 
+msgid "Currently, OVA packages containing multiple disk are not supported."
+msgstr "目前，不支援包含多個磁碟的 OVA 套件。"
+
 msgid "Custom validators list should contain tuples '(function, message)'"
 msgstr "自訂驗證器清單應包含值組 '(function, message)'"
 
@@ -488,8 +541,38 @@ msgstr "提供的資料無效。"
 msgid "Date and time of image member creation"
 msgstr "映像檔成員的建立日期和時間"
 
+msgid "Date and time of image registration"
+msgstr "映像檔登錄的日期和時間"
+
 msgid "Date and time of last modification of image member"
 msgstr "映像檔成員的前次修改日期和時間"
+
+msgid "Date and time of namespace creation"
+msgstr "名稱空間的建立日期和時間"
+
+msgid "Date and time of object creation"
+msgstr "物件的建立日期和時間"
+
+msgid "Date and time of resource type association"
+msgstr "資源類型關聯的日期和時間"
+
+msgid "Date and time of tag creation"
+msgstr "標記的建立日期和時間"
+
+msgid "Date and time of the last image modification"
+msgstr "映像檔的前次修改日期和時間"
+
+msgid "Date and time of the last namespace modification"
+msgstr "名稱空間的前次修改日期和時間"
+
+msgid "Date and time of the last object modification"
+msgstr "物件的前次修改日期和時間"
+
+msgid "Date and time of the last resource type association modification"
+msgstr "資源類型關聯的前次修改日期和時間"
+
+msgid "Date and time of the last tag modification"
+msgstr "標記的前次修改日期和時間"
 
 msgid "Datetime when this resource was created"
 msgstr "此資源的建立日期時間"
@@ -554,6 +637,16 @@ msgstr "字典大小大於上限"
 msgid "Dictionary size is less than minimum"
 msgstr "字典大小小於下限"
 
+msgid ""
+"Digest algorithm which will be used for digital signature. Use the command "
+"\"openssl list-message-digest-algorithms\" to get the available algorithms "
+"supported by the version of OpenSSL on the platform. Examples are \"sha1\", "
+"\"sha256\", \"sha512\", etc."
+msgstr ""
+"將用於數位簽章的摘要演算法。請使用指令 \"openssl list-message-digest-"
+"algorithms\" 來取得平台上 OpenSSL 版本所支援的可用算法。例如："
+"\"sha1\"、\"sha256\"、\"sha512\" 等。"
+
 msgid "Disk format is not specified."
 msgstr "未指定磁碟格式。"
 
@@ -568,9 +661,11 @@ msgstr "無法正確地配置驅動程式 %(driver_name)s。原因：%(reason)s"
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "必須指定檔案或 legacy_image_id"
 
-#, python-format
-msgid "Encountered service with no \"type\": %s"
-msgstr "發現不含 \"type\" 的服務：%s"
+msgid ""
+"Error decoding your request. Either the URL or the request body contained "
+"characters that could not be decoded by Glance"
+msgstr ""
+"將您的要求進行解碼時發生錯誤。URL 或要求內文包含無法由 Glance 進行解碼的字元"
 
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
@@ -581,6 +676,21 @@ msgstr "儲存庫配置發生錯誤。已停用新增構件至儲存庫。"
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr "儲存庫配置發生錯誤。已停用新增映像檔至儲存庫。"
+
+msgid "Error occurred while creating the verifier"
+msgstr "建立驗證器時發生錯誤"
+
+msgid "Error occurred while verifying the signature"
+msgstr "驗證簽章時發生錯誤"
+
+msgid "Expected a member in the form: {\"member\": \"image_id\"}"
+msgstr "預期成員的格式為：{\"member\": \"image_id\"}"
+
+msgid "Expected a status in the form: {\"status\": \"status\"}"
+msgstr "預期狀態的格式為：{\"status\": \"status\"}"
+
+msgid "External source should not be empty"
+msgstr "外部來源不應是空的"
 
 #, python-format
 msgid "External sources are not supported: '%s'"
@@ -661,6 +771,9 @@ msgstr "檔案太大"
 msgid "File too small"
 msgstr "檔案太小"
 
+msgid "Forbidden image access"
+msgstr "已禁止映像檔存取"
+
 #, python-format
 msgid "Forbidden to delete a %s image."
 msgstr "已禁止刪除 %s 映像檔。"
@@ -668,6 +781,10 @@ msgstr "已禁止刪除 %s 映像檔。"
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "已禁止刪除映像檔：%s"
+
+#, python-format
+msgid "Forbidden to modify '%(key)s' of %(status)s image."
+msgstr "已禁止修改 %(status)s 映像檔的 '%(key)s'。"
 
 #, python-format
 msgid "Forbidden to modify '%s' of image."
@@ -773,6 +890,12 @@ msgstr ""
 "上傳之後找不到映像檔 %s。可能已在上傳期間刪除該映像檔，正在清除已上傳的區塊。"
 
 #, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr "在上傳之後，找不到映像檔 %s。在上傳期間，可能已刪除該映像檔。"
+
+#, python-format
 msgid "Image %s is deactivated"
 msgstr "已取消啟動映像檔 %s"
 
@@ -867,8 +990,16 @@ msgid "Insufficient permissions on image storage media: %s"
 msgstr "對映像檔儲存媒體的許可權不足：%s"
 
 #, python-format
+msgid "Invalid Content-Type for work with %s"
+msgstr "用來與 %s 搭配使用的 Content-Type 無效"
+
+#, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "此資源的 JSON 指標無效：'/%s'"
+
+#, python-format
+msgid "Invalid certificate format: %s"
+msgstr "無效的憑證格式：%s"
 
 #, python-format
 msgid "Invalid checksum '%s': can't exceed 32 characters"
@@ -897,6 +1028,24 @@ msgstr "無效的字典內容類型規格"
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr "映像檔的磁碟格式 '%s' 無效。"
+
+#, python-format
+msgid "Invalid filter value %s. The quote is not closed."
+msgstr "無效的過濾器值 %s。遺漏右引號。"
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma after closing quotation mark."
+msgstr "無效的過濾器值 %s。右引號後面沒有逗點。"
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma before opening quotation mark."
+msgstr "無效的過濾器值 %s。左引號前面沒有逗點。"
+
+#, python-format
+msgid "Invalid headers \"Content-Type\": %s"
+msgstr "無效的標頭 \"Content-Type\"：%s"
 
 msgid "Invalid image id format"
 msgstr "無效的映像檔 ID 格式"
@@ -943,6 +1092,10 @@ msgid "Invalid marker. Image could not be found."
 msgstr "無效的標記。找不到映像檔。"
 
 #, python-format
+msgid "Invalid mask_gen_algorithm: %s"
+msgstr "無效的 mask_gen_algorithm：%s"
+
+#, python-format
 msgid "Invalid membership association: %s"
 msgstr "無效的成員資格關聯：%s"
 
@@ -968,14 +1121,33 @@ msgstr "用於移除位置的位置無效。"
 msgid "Invalid property definition"
 msgstr "無效的內容定義"
 
+#, python-format
+msgid "Invalid pss_salt_length: %s"
+msgstr "無效的 pss_salt_length：%s"
+
+#, python-format
+msgid "Invalid public key type for signature key type: %s"
+msgstr "簽章金鑰類型的公開金鑰類型無效：%s"
+
 msgid "Invalid reference list specification"
 msgstr "無效的參照清單規格"
 
 msgid "Invalid referenced type"
 msgstr "無效的參照類型"
 
+msgid "Invalid request PATCH for work with blob"
+msgstr "用來與 Blob 搭配使用的要求 PATCH 無效"
+
 msgid "Invalid service catalog json."
 msgstr "無效的服務型錄 JSON。"
+
+#, python-format
+msgid "Invalid signature hash method: %s"
+msgstr "無效的簽章雜湊方法：%s"
+
+#, python-format
+msgid "Invalid signature key type: %s"
+msgstr "無效的簽章金鑰類型：%s"
 
 #, python-format
 msgid "Invalid sort direction: %s"
@@ -1006,6 +1178,10 @@ msgstr "無效的狀態值：%s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "無效的狀態：%s"
+
+#, python-format
+msgid "Invalid time format for %s."
+msgstr "%s 的時間格式無效。"
 
 msgid "Invalid type definition"
 msgstr "無效的類型定義"
@@ -1073,6 +1249,15 @@ msgstr ""
 msgid "It's invalid to provide multiple image sources."
 msgstr "提供多個映像檔來源是無效的做法。"
 
+msgid "It's not allowed to add locations if locations are invisible."
+msgstr "如果位置是隱藏的，則不容許新增位置。"
+
+msgid "It's not allowed to remove locations if locations are invisible."
+msgstr "如果位置是隱藏的，則不容許移除位置。"
+
+msgid "It's not allowed to update locations if locations are invisible."
+msgstr "如果位置是隱藏的，則不容許更新位置。"
+
 msgid "Items have to be unique"
 msgstr "項目必須是唯一的"
 
@@ -1127,6 +1312,9 @@ msgstr "要求內文中 JSON 的格式不正確。"
 
 msgid "Max string length may not exceed 255 characters"
 msgstr "字串長度上限不能超過 255 個字元"
+
+msgid "Maximal age is count of days since epoch."
+msgstr "經歷時間上限是自新紀元以來的天數。"
 
 msgid ""
 "Maximum line size of message headers to be accepted. max_header_line may "
@@ -1244,6 +1432,9 @@ msgstr "找不到 ID 為 %s 的 meta 資料定義標籤"
 msgid "Min string length may not be negative"
 msgstr "字串長度下限不能為負數"
 
+msgid "Minimal rows limit is 1."
+msgstr "列數下限限制為 1。"
+
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "遺漏了必要認證：%(required)s"
@@ -1255,6 +1446,9 @@ msgid ""
 msgstr ""
 "區域 %(region)s 有多個「映像檔」服務相符項。這通常表示需要一個區域，但您尚未"
 "提供。"
+
+msgid "Must supply a positive, non-zero value for age."
+msgstr "必須為經歷時間提供非零正數值。"
 
 msgid "Name of the paste configuration file."
 msgstr "paste 配置檔的名稱。"
@@ -1351,6 +1545,20 @@ msgstr "不是陣列 idx '%s'"
 
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr "排序方向數目與排序鍵數目不符"
+
+msgid "OVA extract is limited to admin"
+msgstr "OVA 擷取已限制為管理者"
+
+msgid ""
+"OVF metadata of interest was not specified in ovf-metadata.json config file. "
+"Please set \"cim_pasd\" to a list of interested "
+"CIM_ProcessorAllocationSettingData properties."
+msgstr ""
+"在 ovf-metadata.json 配置檔中，未指定相關 OVF meta 資料。請將 \"cim_pasd\" 設"
+"為相關 CIM_ProcessorAllocationSettingData 內容的清單。"
+
+msgid "OVF properties config file \"ovf-metadata.json\" was not found."
+msgstr "找不到 OVF 內容配置檔 \"ovf-metadata.json\"。"
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "無法結合新舊排序語法"
@@ -1582,6 +1790,11 @@ msgstr "要求內文必須是作業物件的 JSON 陣列。"
 msgid "Request must be a list of commands"
 msgstr "要求必須是指令清單"
 
+msgid ""
+"Required image properties for signature verification do not exist. Cannot "
+"verify signature."
+msgstr "簽章驗證所需的映像檔內容不存在。無法驗證簽章。"
+
 #, python-format
 msgid "Required store %s is invalid"
 msgstr "需要的儲存庫 %s 無效"
@@ -1614,6 +1827,11 @@ msgstr "映像檔的可存取性範圍"
 msgid "Scope of namespace accessibility."
 msgstr "名稱空間的可存取性範圍。"
 
+msgid ""
+"Secret key to use to sign Glance API and Glance Registry services tracing "
+"messages."
+msgstr "用來簽署 Glance API 及「Glance 登錄」追蹤訊息的秘密金鑰。"
+
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "伺服器 %(serv)s 已停止"
@@ -1639,6 +1857,15 @@ msgstr ""
 #, python-format
 msgid "Show level %(shl)s is not supported in this operation"
 msgstr "顯示層次 %(shl)s 在此作業中不受支援"
+
+msgid "Signature verification failed"
+msgstr "簽章驗證失敗"
+
+msgid "Signature verification failed."
+msgstr "簽章驗證失敗。"
+
+msgid "Size of image file in bytes"
+msgstr "映像檔的大小（以位元組為單位）"
 
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
@@ -1672,6 +1899,9 @@ msgstr "狀態必須是 \"pending\"、\"accepted\" 或 \"rejected\"。"
 
 msgid "Status not specified"
 msgstr "未指定狀態"
+
+msgid "Status of the image"
+msgstr "映像檔的狀態"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -1770,6 +2000,13 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "執行刪除之前要延遲的時間量（以秒為單位）。"
 
 msgid ""
+"The amount of time to let an incomplete image remain in the cache, before "
+"the cache cleaner, if running, will remove the incomplete image."
+msgstr ""
+"在快取中保留不完整映像檔的時間量，超過該時間量後，快取刪改程式（如果在執行"
+"中）將移除不完整的映像檔。"
+
+msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "建立 TCP 接聽器 Socket 時將使用的待辦事項值。"
 
@@ -1795,6 +2032,16 @@ msgstr ""
 
 msgid "The driver to use for image cache management."
 msgstr "要用於映像檔快取管理的驅動程式。"
+
+#, python-format
+msgid "The format of the version %s is not valid. Use semver notation"
+msgstr "版本 %s 的格式無效。請使用 semver 表示法"
+
+msgid ""
+"The format to which images will be automatically converted. When using the "
+"RBD backend, this should be set to 'raw'"
+msgstr ""
+"映像檔將自動轉換成的格式。當使用 RBD 後端時，應該將此項設為「原始格式」"
 
 #, python-format
 msgid ""
@@ -2071,8 +2318,15 @@ msgstr ""
 "回應內文：\n"
 "%(body)s"
 
+msgid ""
+"The requested image has been deactivated. Image data download is forbidden."
+msgstr "已取消啟動所要求的映像檔。已禁止下載映像檔資料。"
+
 msgid "The result of current task, JSON blob"
 msgstr "現行作業的結果：JSON 二進位大型物件"
+
+msgid "The signature data was not properly encoded using base64"
+msgstr "簽章資料未使用 base64 進行正確編碼"
 
 #, python-format
 msgid ""
@@ -2159,6 +2413,13 @@ msgstr "此內容所表示的作業類型"
 
 msgid "The unique namespace text."
 msgstr "唯一的名稱空間文字。"
+
+msgid ""
+"The upper limit (the maximum size of accumulated cache in bytes) beyond "
+"which the cache pruner, if running, starts cleaning the image cache."
+msgstr ""
+"上限（累計快取的大小上限，以位元組為單位），超出該上限時，快取刪改程式（如果"
+"在執行中）將開始清除映像檔快取。"
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "對使用者更為友善的名稱空間名稱。如果有的話，則由使用者介面使用。"
@@ -2268,6 +2529,9 @@ msgstr ""
 "authurl.com/v1/container/obj，則需要將其變更成使用 swift+http:// 架構，例如："
 "swift+http://user:pass@authurl.com/v1/container/obj"
 
+msgid "URL to access the image file kept in external store"
+msgstr "用來存取外部儲存庫中所保留之映像檔的 URL"
+
 msgid "Unable to PUT to non-empty collection"
 msgstr "無法對非空集合執行 PUT 作業"
 
@@ -2281,8 +2545,18 @@ msgstr ""
 "正在撤回而使用暫存檔，您可以使用下列指令來停止 %(service)s 服務：\n"
 "  %(file)s %(server)s stop --pid-file %(fb)s"
 
+#, python-format
+msgid "Unable to filter by unknown operator '%s'."
+msgstr "無法依不明運算子 '%s' 進行過濾。"
+
 msgid "Unable to filter on a range with a non-numeric value."
 msgstr "無法對包含非數值的範圍進行過濾。"
+
+msgid "Unable to filter on a unknown operator."
+msgstr "無法依不明運算子進行過濾。"
+
+msgid "Unable to filter using the specified operator."
+msgstr "無法使用指定的運算子進行過濾。"
 
 msgid "Unable to filter using the specified range."
 msgstr "無法使用指定的範圍進行過濾。"
@@ -2322,6 +2596,10 @@ msgstr "找不到 %s 的 paste 配置檔。"
 msgid "Unable to modify collection in immutable or readonly property"
 msgstr "無法修改不可變內容或唯讀內容中的集合"
 
+#, python-format
+msgid "Unable to retrieve certificate with ID: %s"
+msgstr "無法擷取 ID 為 %s 的憑證"
+
 msgid "Unable to retrieve request id from context"
 msgstr "無法從環境定義中擷取要求 ID"
 
@@ -2341,12 +2619,19 @@ msgstr "如果未指定類型，則無法指定版本"
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr "無法上傳映像檔 %(image_id)s 的重複映像檔資料：%(error)s"
 
+msgid ""
+"Unable to verify signature since the algorithm is unsupported on this system"
+msgstr "無法驗證簽章，因為該算法在此系統上不受支援"
+
 #, python-format
 msgid "Unable to verify signature: %(reason)s"
 msgstr "無法驗證簽章：%(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "未獲授權的映像檔存取"
+
+msgid "Unexpected body type. Expected list/dict."
+msgstr "非預期的內文類型。預期為清單/字典。"
 
 #, python-format
 msgid "Unexpected response: %s"
@@ -2398,6 +2683,9 @@ msgstr "版本元件太大（上限為 %d）"
 msgid "Version is invalid: %(reason)s"
 msgstr "版本無效：%(reason)s"
 
+msgid "Virtual size of image in bytes"
+msgstr "映像檔的虛擬大小（以位元組為單位）"
+
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "可見性必須是 \"public\" 或 \"private\""
 
@@ -2438,6 +2726,18 @@ msgid ""
 "Whether to allow users to specify image properties beyond what the image "
 "schema provides"
 msgstr "是否要容許使用者指定超出映像檔綱目所提供內容的映像檔內容"
+
+msgid ""
+"Whether to include the backend image locations in image properties. For "
+"example, if using the file system store a URL of \"file:///path/to/image\" "
+"will be returned to the user in the 'direct_url' meta-data field. Revealing "
+"storage location can be a security risk, so use this setting with caution! "
+"Setting this to true overrides the show_image_direct_url option."
+msgstr ""
+"是否要將後端映像檔位置包含在映像檔內容中。例如，如果使用檔案系統儲存庫，則會"
+"在 'direct_url' meta 資料欄位中將 URL \"file:///path/to/image\" 傳回給使用"
+"者。顯示儲存位置可能會導致安全風險，因此請小心使用此設定！將此項設為 true 將"
+"置換 show_image_direct_url 選項。"
 
 msgid ""
 "Whether to include the backend image storage location in image properties. "
@@ -2543,6 +2843,9 @@ msgstr "不允許您建立擁有者為 '%s' 的 resource_type"
 msgid "You are not permitted to create this task with owner as: %s"
 msgstr "不允許您以擁有者身分來建立此作業：%s"
 
+msgid "You are not permitted to deactivate this image."
+msgstr "不允許您取消啟動此映像檔。"
+
 msgid "You are not permitted to delete this image."
 msgstr "不允許您刪除此映像檔。"
 
@@ -2577,6 +2880,9 @@ msgstr "不允許您修改此映像檔上的標籤。"
 
 msgid "You are not permitted to modify this image."
 msgstr "不允許您修改此映像檔。"
+
+msgid "You are not permitted to reactivate this image."
+msgstr "不允許您重新啟動此映像檔。"
 
 msgid "You are not permitted to set status on this task."
 msgstr "不允許您在此作業上設定狀態。"
@@ -2667,6 +2973,9 @@ msgstr "限制參數必須是正數"
 #, python-format
 msgid "location: %s data lost"
 msgstr "位置：%s 資料已遺失"
+
+msgid "md5 hash of image contents."
+msgstr "映像檔內容的 md5 雜湊值。"
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"

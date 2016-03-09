@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev70\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-14 06:55+0000\n"
+"POT-Creation-Date: 2016-03-09 06:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,46 +38,48 @@ msgid ""
 "exceed the quota. %(remaining)d bytes remaining."
 msgstr ""
 
-#: glance/api/v1/images.py:749
+#: glance/api/v1/images.py:756
 #, python-format
 msgid ""
 "Failed to activate image %s in registry. About to delete image bits from "
 "store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:968
+#: glance/api/v2/images.py:1002
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
 "properties"
 msgstr ""
 
-#: glance/api/v2/tasks.py:71
+#: glance/api/v2/tasks.py:81
 #, python-format
 msgid "Forbidden to create task. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:109
+#: glance/api/v2/tasks.py:121
 #, python-format
 msgid "Failed to find task %(task_id)s. Reason: %(reason)s"
 msgstr ""
 
-#: glance/api/v2/tasks.py:115
+#: glance/api/v2/tasks.py:127
 #, python-format
 msgid "Forbidden to get task %(task_id)s. Reason: %(reason)s"
 msgstr ""
 
-#: glance/artifacts/location.py:122
-#, python-format
-msgid "Failed to delete blob %s in store from URI"
+#: glance/api/v3/router.py:44
+msgid ""
+"/v3 controller is deprecated and will be removed from glance-api soon. "
+"Remove the reference to it from glance-api-paste.ini configuration file "
+"and use Glance Artifact Service API instead"
 msgstr ""
 
-#: glance/async/utils.py:62
+#: glance/async/utils.py:65
 #, python-format
 msgid "An optional task has failed, the failure was: %s"
 msgstr ""
 
-#: glance/async/flows/convert.py:63
+#: glance/async/flows/convert.py:64
 #, python-format
 msgid ""
 "The conversion format is None, please add a value for it in the config "
@@ -101,17 +103,17 @@ msgstr ""
 msgid "Failed to delete image %s in store from URI"
 msgstr ""
 
-#: glance/common/wsgi.py:328
+#: glance/common/wsgi.py:340
 #, python-format
 msgid "Unrecognised child %s"
 msgstr ""
 
-#: glance/common/artifacts/loader.py:120
+#: glance/common/glare/loader.py:120
 #, python-format
 msgid "Can't load artifact %s: load disabled in config"
 msgstr ""
 
-#: glance/common/artifacts/loader.py:146
+#: glance/common/glare/loader.py:146
 #, python-format
 msgid "Can't load artifact %s: not in available_plugins list"
 msgstr ""
@@ -121,30 +123,30 @@ msgstr ""
 msgid "Task %(task_id)s failed with exception %(error)s"
 msgstr ""
 
-#: glance/db/simple/api.py:392
+#: glance/db/simple/api.py:407
 #, python-format
 msgid "Could not find image %s"
 msgstr ""
 
-#: glance/db/simple/api.py:397
+#: glance/db/simple/api.py:412
 msgid "Unable to get deleted image"
 msgstr ""
 
-#: glance/db/simple/api.py:401
+#: glance/db/simple/api.py:416
 msgid "Unable to get unowned image"
 msgstr ""
 
-#: glance/db/simple/api.py:914
+#: glance/db/simple/api.py:930
 #, python-format
 msgid "Could not find task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:919
+#: glance/db/simple/api.py:935
 #, python-format
 msgid "Unable to get deleted task %s"
 msgstr ""
 
-#: glance/db/simple/api.py:1077
+#: glance/db/simple/api.py:1093
 #, python-format
 msgid "Could not find task info %s"
 msgstr ""
@@ -161,38 +163,38 @@ msgstr ""
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:1267
+#: glance/db/sqlalchemy/api.py:1286
 #, python-format
 msgid "Expected table %(tbl)s was not found in DB."
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:134
+#: glance/db/sqlalchemy/glare.py:134
 msgid "Artifact with the specified type, name and version already exists"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:240
+#: glance/db/sqlalchemy/glare.py:240
 #, python-format
 msgid "Artifact with id=%s not found"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:243
+#: glance/db/sqlalchemy/glare.py:243
 #, python-format
 msgid "Artifact with id=%s is not accessible"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:443
+#: glance/db/sqlalchemy/glare.py:445
 #, python-format
 msgid "Show level %s is not supported in this operation"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:684
+#: glance/db/sqlalchemy/glare.py:686
 #, python-format
 msgid ""
 "Artifact with the specified type, name and versions already has the "
 "direct dependency=%s"
 msgstr ""
 
-#: glance/db/sqlalchemy/artifacts.py:714
+#: glance/db/sqlalchemy/glare.py:716
 #, python-format
 msgid ""
 "Artifact with the specified type, name and version already has the direct"
@@ -219,14 +221,19 @@ msgstr ""
 msgid "The `eventlet` executor has been deprecated. Use `taskflow` instead."
 msgstr ""
 
-#: glance/image_cache/__init__.py:70
+#: glance/glare/location.py:122
+#, python-format
+msgid "Failed to delete blob %s in store from URI"
+msgstr ""
+
+#: glance/image_cache/__init__.py:71
 #, python-format
 msgid ""
 "Image cache driver '%(driver_name)s' failed to load. Got error: "
 "'%(import_err)s."
 msgstr ""
 
-#: glance/image_cache/__init__.py:91
+#: glance/image_cache/__init__.py:92
 #, python-format
 msgid ""
 "Image cache driver '%(driver_module)s' failed to configure. Got error: "
@@ -271,25 +278,25 @@ msgid "Invalid marker. Image %(id)s could not be found."
 msgstr ""
 
 #: glance/registry/api/v1/images.py:129 glance/registry/api/v1/members.py:74
-#: glance/registry/api/v1/members.py:108 glance/registry/api/v1/members.py:226
-#: glance/registry/api/v1/members.py:290
+#: glance/registry/api/v1/members.py:108 glance/registry/api/v1/members.py:228
+#: glance/registry/api/v1/members.py:292
 #, python-format
 msgid "Access denied to image %(id)s but returning 'not found'"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:115 glance/registry/api/v1/members.py:233
-#: glance/registry/api/v1/members.py:297
+#: glance/registry/api/v1/members.py:115 glance/registry/api/v1/members.py:235
+#: glance/registry/api/v1/members.py:299
 #, python-format
 msgid "User lacks permission to share image %(id)s"
 msgstr ""
 
 #: glance/registry/api/v1/members.py:126 glance/registry/api/v1/members.py:143
-#: glance/registry/api/v1/members.py:246
+#: glance/registry/api/v1/members.py:248
 #, python-format
 msgid "Invalid membership association specified for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:334
+#: glance/registry/api/v1/members.py:336
 #, python-format
 msgid "Member %(id)s not found"
 msgstr ""
