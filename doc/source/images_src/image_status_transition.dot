@@ -34,10 +34,10 @@ digraph {
   "queued" -> "deleted" [label="delete"];
 
   "saving" -> "active" [label="upload succeed"];
-  "saving" -> "killed" [label="upload fail"];
+  "saving" -> "killed" [label="[v1] upload fail"];
+  "saving" -> "queued" [label="[v2] upload fail"];
   "saving" -> "deleted" [label="delete"];
 
-  "active" -> "queued" [label="remove location*"];
   "active" -> "pending_delete" [label="delayed delete"];
   "active" -> "deleted" [label="delete"];
   "active" -> "deactivated" [label="deactivate"];

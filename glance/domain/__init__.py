@@ -103,7 +103,7 @@ class Image(object):
         # can be retried.
         'queued': ('saving', 'active', 'deleted'),
         'saving': ('active', 'killed', 'deleted', 'queued'),
-        'active': ('queued', 'pending_delete', 'deleted', 'deactivated'),
+        'active': ('pending_delete', 'deleted', 'deactivated'),
         'killed': ('deleted',),
         'pending_delete': ('deleted',),
         'deleted': (),
