@@ -86,6 +86,8 @@ class Controller(object):
     This is the base controller for RPC based APIs. Commands
     handled by this controller respect the following form:
 
+    .. code-block:: json
+
         [{
             'command': 'method_name',
             'kwargs': {...}
@@ -94,8 +96,9 @@ class Controller(object):
     The controller is capable of processing more than one command
     per request and will always return a list of results.
 
-    :params raise_exc: Boolean that specifies whether to raise
-    exceptions instead of "serializing" them.
+    :param bool raise_exc: Specifies whether to raise
+        exceptions instead of "serializing" them.
+
     """
 
     def __init__(self, raise_exc=False):
@@ -106,13 +109,14 @@ class Controller(object):
         """
         Exports methods through the RPC Api.
 
-        :params resource: Resource's instance to register.
-        :params filtered: List of methods that *can* be registered. Read
-        as "Method must be in this list".
-        :params excluded: List of methods to exclude.
-        :params refiner: Callable to use as filter for methods.
+        :param resource: Resource's instance to register.
+        :param filtered: List of methods that *can* be registered. Read
+            as "Method must be in this list".
+        :param excluded: List of methods to exclude.
+        :param refiner: Callable to use as filter for methods.
 
         :raises TypeError: If refiner is not callable.
+
         """
 
         funcs = filter(lambda x: not x.startswith("_"), dir(resource))
@@ -216,13 +220,16 @@ class RPCClient(client.BaseClient):
         """
         Execute multiple commands in a single request.
 
-        :params commands: List of commands to send. Commands
-        must respect the following form:
+        :param commands: List of commands to send. Commands
+            must respect the following form
+
+        .. code-block:: json
 
             {
                 'command': 'method_name',
                 'kwargs': method_kwargs
             }
+
         """
         body = self._serializer.to_json(commands)
         response = super(RPCClient, self).do_request('POST',
@@ -236,8 +243,8 @@ class RPCClient(client.BaseClient):
         the outgoing body and builds the command that will
         be sent.
 
-        :params method: The remote python method to call
-        :params kwargs: Dynamic parameters that will be
+        :param method: The remote python method to call
+        :param kwargs: Dynamic parameters that will be
             passed to the remote method.
         """
         content = self.bulk_request([{'command': method,

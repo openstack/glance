@@ -284,7 +284,7 @@ class ImageCache(object):
         :param image_file: Iterator retrieving image chunks
         :param image_checksum: Checksum of image
 
-        :retval True if image file was cached, False otherwise
+        :returns: True if image file was cached, False otherwise
         """
         if not self.driver.is_cacheable(image_id):
             return False
@@ -301,7 +301,7 @@ class ImageCache(object):
         :param image_id: Image ID
         :param image_file: Image file to cache
 
-        :retval True if image file was cached, False otherwise
+        :returns: True if image file was cached, False otherwise
         """
         CHUNKSIZE = 64 * units.Mi
 

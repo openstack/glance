@@ -332,16 +332,19 @@ class Controller(controller.BaseController):
             * size -- Size of image data in bytes
 
         :param req: The WSGI/Webob Request object
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
+
+        .. code-block:: json
 
             {'images': [
                 {'id': <ID>,
                  'name': <NAME>,
                  'disk_format': <DISK_FORMAT>,
                  'container_format': <DISK_FORMAT>,
-                 'checksum': <CHECKSUM>
-                 'size': <SIZE>}, ...
-            ]}
+                 'checksum': <CHECKSUM>,
+                 'size': <SIZE>}, {...}]
+            }
+
         """
         self._enforce(req, 'get_images')
         params = self._get_query_params(req)
@@ -357,24 +360,29 @@ class Controller(controller.BaseController):
         Returns detailed information for all available images
 
         :param req: The WSGI/Webob Request object
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
 
-            {'images': [
-                {'id': <ID>,
-                 'name': <NAME>,
-                 'size': <SIZE>,
-                 'disk_format': <DISK_FORMAT>,
-                 'container_format': <CONTAINER_FORMAT>,
-                 'checksum': <CHECKSUM>,
-                 'min_disk': <MIN_DISK>,
-                 'min_ram': <MIN_RAM>,
-                 'store': <STORE>,
-                 'status': <STATUS>,
-                 'created_at': <TIMESTAMP>,
-                 'updated_at': <TIMESTAMP>,
-                 'deleted_at': <TIMESTAMP>|<NONE>,
-                 'properties': {'distro': 'Ubuntu 10.04 LTS', ...}}, ...
-            ]}
+        .. code-block:: json
+
+            {'images':
+                [{
+                    'id': <ID>,
+                    'name': <NAME>,
+                    'size': <SIZE>,
+                    'disk_format': <DISK_FORMAT>,
+                    'container_format': <CONTAINER_FORMAT>,
+                    'checksum': <CHECKSUM>,
+                    'min_disk': <MIN_DISK>,
+                    'min_ram': <MIN_RAM>,
+                    'store': <STORE>,
+                    'status': <STATUS>,
+                    'created_at': <TIMESTAMP>,
+                    'updated_at': <TIMESTAMP>,
+                    'deleted_at': <TIMESTAMP>|<NONE>,
+                    'properties': {'distro': 'Ubuntu 10.04 LTS', {...}}
+                 }, {...}]
+            }
+
         """
         if req.method == 'HEAD':
             msg = (_("This operation is currently not permitted on "
@@ -405,7 +413,7 @@ class Controller(controller.BaseController):
         Extracts necessary query params from request.
 
         :param req: the WSGI Request object
-        :retval dict of parameters that can be used by registry client
+        :returns: dict of parameters that can be used by registry client
         """
         params = {'filters': self._get_filters(req)}
 
@@ -423,7 +431,7 @@ class Controller(controller.BaseController):
         Return a dictionary of query param filters from the request
 
         :param req: the Request object coming from the wsgi layer
-        :retval a dict of key/value filters
+        :returns: a dict of key/value filters
         """
         query_filters = {}
         for param in req.params:
@@ -443,7 +451,7 @@ class Controller(controller.BaseController):
 
         :param req: The WSGI/Webob Request object
         :param id: The opaque image identifier
-        :retval similar to 'show' method but without image_data
+        :returns: similar to 'show' method but without image_data
 
         :raises: HTTPNotFound if image metadata is not available to user
         """
@@ -634,7 +642,7 @@ class Controller(controller.BaseController):
         :param image_meta: Mapping of metadata about image
 
         :raises: HTTPConflict if image already exists
-        :retval The location where the image was stored
+        :returns: The location where the image was stored
         """
 
         scheme = req.headers.get('x-image-meta-store',
@@ -734,7 +742,7 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :param image_meta: Mapping of metadata about image
 
-        :retval Mapping of updated image data
+        :returns: Mapping of updated image data
         """
         location_data = self._upload(req, image_meta)
         image_id = image_meta['id']
@@ -938,7 +946,7 @@ class Controller(controller.BaseController):
         :param request: The WSGI/Webob Request object
         :param id: The opaque image identifier
 
-        :retval Returns the updated image information as a mapping
+        :returns: Returns the updated image information as a mapping
         """
         self._enforce(req, 'modify_image')
         is_public = image_meta.get('is_public')

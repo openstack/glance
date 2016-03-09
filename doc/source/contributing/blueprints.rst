@@ -55,14 +55,16 @@ The workflow for the life of a spec-lite in Launchpad is as follows:
 
 * File a bug with a small summary of what the request change is
   following the format below:
-.. NOTE: add format
-* The bug is triaged and tagged with the `spec-lite` tag.
-* The bug is evaluated and marked as `Triaged` to announce approval or
-  to `Won't fix` to announce rejection or `Invalid` to request a full
-  spec.
-* The bug is moved to `In Progress` once the code is up and ready to
-  review.
-* The bug is moved to `Fix Committed` once the patch lands.
+
+  .. NOTE: add format
+
+  * The bug is triaged and tagged with the `spec-lite` tag.
+  * The bug is evaluated and marked as `Triaged` to announce approval or
+    to `Won't fix` to announce rejection or `Invalid` to request a full
+    spec.
+  * The bug is moved to `In Progress` once the code is up and ready to
+    review.
+  * The bug is moved to `Fix Committed` once the patch lands.
 
 In summary:
 
@@ -80,9 +82,9 @@ In summary:
 
 The drivers team will be discussing the following bug reports during their IRC meeting:
 
-* `New RFE's <https://bugs.launchpad.net/glance/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
-* `New RFE's <https://bugs.launchpad.net/glance-store/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
-* `New RFE's <https://bugs.launchpad.net/python-glanceclient/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
+* `New Glance RFE's <https://bugs.launchpad.net/glance/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
+* `New Glance-Store RFE's <https://bugs.launchpad.net/glance-store/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
+* `New Glanceclient RFE's <https://bugs.launchpad.net/python-glanceclient/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
 
 
 Lite spec Submission Guidelines

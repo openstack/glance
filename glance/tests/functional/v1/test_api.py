@@ -608,20 +608,21 @@ class TestApi(functional.FunctionalTest):
 
     def test_download_non_exists_image_raises_http_forbidden(self):
         """
-        We test the following sequential series of actions:
+        We test the following sequential series of actions::
 
         0. POST /images with public image named Image1
-        and no custom properties
-        - Verify 201 returned
+           and no custom properties
+           - Verify 201 returned
         1. HEAD image
-        - Verify HTTP headers have correct information we just added
+           - Verify HTTP headers have correct information we just added
         2. GET image
-        - Verify all information on image we just added is correct
+           - Verify all information on image we just added is correct
         3. DELETE image1
-        - Delete the newly added image
+           - Delete the newly added image
         4. GET image
-        - Verify that 403 HTTPForbidden exception is raised prior to
-          404 HTTPNotFound
+           - Verify that 403 HTTPForbidden exception is raised prior to
+             404 HTTPNotFound
+
         """
         self.cleanup()
         self.start_servers(**self.__dict__.copy())

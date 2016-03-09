@@ -62,12 +62,15 @@ class Controller(controller.BaseController):
 
         :param req: the Request object coming from the wsgi layer
         :param image_id: The opaque image identifier
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
+
+        .. code-block:: json
 
             {'members': [
                 {'member_id': <MEMBER>,
                  'can_share': <SHARE_PERMISSION>, ...}, ...
             ]}
+
         """
         self._enforce(req, 'get_members')
         self._raise_404_if_image_deleted(req, image_id)
@@ -128,13 +131,15 @@ class Controller(controller.BaseController):
     def update(self, req, image_id, id, body=None):
         """
         Adds a membership to the image, or updates an existing one.
-        If a body is present, it is a dict with the following format::
+        If a body is present, it is a dict with the following format
 
-            {"member": {
-                "can_share": [True|False]
+        .. code-block:: json
+
+            {'member': {
+                'can_share': [True|False]
             }}
 
-        If "can_share" is provided, the member's ability to share is
+        If `can_share` is provided, the member's ability to share is
         set accordingly.  If it is not provided, existing memberships
         remain unchanged and new memberships default to False.
         """
@@ -169,12 +174,15 @@ class Controller(controller.BaseController):
     def update_all(self, req, image_id, body):
         """
         Replaces the members of the image with those specified in the
-        body.  The body is a dict with the following format::
+        body.  The body is a dict with the following format
 
-            {"memberships": [
-                {"member_id": <MEMBER_ID>,
-                 ["can_share": [True|False]]}, ...
+        .. code-block:: json
+
+            {'memberships': [
+                {'member_id': <MEMBER_ID>,
+                 ['can_share': [True|False]]}, ...
             ]}
+
         """
         self._check_can_access_image_members(req.context)
         self._enforce(req, 'modify_member')
@@ -206,12 +214,15 @@ class Controller(controller.BaseController):
 
         :param req: the Request object coming from the wsgi layer
         :param id: the opaque member identifier
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
+
+        .. code-block:: json
 
             {'shared_images': [
                 {'image_id': <IMAGE>,
                  'can_share': <SHARE_PERMISSION>, ...}, ...
             ]}
+
         """
         try:
             members = registry.get_member_images(req.context, id)

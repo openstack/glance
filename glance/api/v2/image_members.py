@@ -95,7 +95,9 @@ class ImageMembersController(object):
         :param req: the Request object coming from the wsgi layer
         :param image_id: the image identifier
         :param member_id: the member identifier
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
+
+        .. code-block:: json
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,
@@ -137,11 +139,13 @@ class ImageMembersController(object):
         :param req: the Request object coming from the wsgi layer
         :param image_id: the image identifier
         :param member_id: the member identifier
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
+
+        .. code-block:: json
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,
-             'status': <MEMBER_STATUS>
+             'status': <MEMBER_STATUS>,
              'created_at': ..,
              'updated_at': ..}
 
@@ -170,15 +174,18 @@ class ImageMembersController(object):
 
         :param req: the Request object coming from the wsgi layer
         :param image_id: The image identifier
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
+
+        .. code-block:: json
 
             {'members': [
                 {'member_id': <MEMBER>,
                  'image_id': <IMAGE>,
-                 'status': <MEMBER_STATUS>
+                 'status': <MEMBER_STATUS>,
                  'created_at': ..,
                  'updated_at': ..}, ..
             ]}
+
         """
         image = self._lookup_image(req, image_id)
         member_repo = self._get_member_repo(req, image)
@@ -198,13 +205,16 @@ class ImageMembersController(object):
 
         :param req: the Request object coming from the wsgi layer
         :param image_id: The image identifier
-        :retval The response body is a mapping of the following form::
+        :returns: The response body is a mapping of the following form
+
+        .. code-block:: json
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,
              'status': <MEMBER_STATUS>
              'created_at': ..,
              'updated_at': ..}
+
         """
         try:
             image = self._lookup_image(req, image_id)

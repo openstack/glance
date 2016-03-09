@@ -40,6 +40,7 @@ information. In order to configure Glance to use Keystone, the
 the authentication token validation and retrieves actual user authentication
 information. It can be found in the Keystone distribution.
 
+
 Configuring Glance API to use Keystone
 --------------------------------------
 
@@ -59,8 +60,11 @@ an example for ``authtoken``::
 
 The actual values for these variables will need to be set depending on
 your situation.  For more information, please refer to the Keystone
-`documentation`_ on the ``auth_token`` middleware, but in short:
-.. _documentation http://docs.openstack.org/developer/keystonemiddleware/middlewarearchitecture.html#configuration
+`documentation`_ on the ``auth_token`` middleware.
+
+.. _`documentation`: http://docs.openstack.org/developer/keystonemiddleware/middlewarearchitecture.html#configuration
+
+In short:
 
 * The ``auth_url`` variable points to the Keystone service.
   This information is used by the middleware to actually query Keystone about
@@ -82,6 +86,7 @@ with ``authtoken`` and ``context``::
 
   [pipeline:glance-api]
   pipeline = versionnegotiation authtoken context apiv1app
+
 
 Configuring Glance Registry to use Keystone
 -------------------------------------------

@@ -161,10 +161,12 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
 
 class StoreLocations(collections.MutableSequence):
     """
-    The proxy for store location property. It takes responsibility for:
+    The proxy for store location property. It takes responsibility for::
+
     1. Location uri correctness checking when adding a new location.
     2. Remove the image data from the store when a location is removed
        from an image.
+
     """
     def __init__(self, image_proxy, value):
         self.image_proxy = image_proxy

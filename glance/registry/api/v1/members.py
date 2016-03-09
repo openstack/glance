@@ -88,9 +88,9 @@ class Controller(object):
         Replaces the members of the image with those specified in the
         body.  The body is a dict with the following format::
 
-            {"memberships": [
-                {"member_id": <MEMBER_ID>,
-                 ["can_share": [True|False]]}, ...
+            {'memberships': [
+                {'member_id': <MEMBER_ID>,
+                 ['can_share': [True|False]]}, ...
             ]}
         """
         self._check_can_access_image_members(req.context)
@@ -205,11 +205,11 @@ class Controller(object):
         Adds a membership to the image, or updates an existing one.
         If a body is present, it is a dict with the following format::
 
-            {"member": {
-                "can_share": [True|False]
+            {'member': {
+                'can_share': [True|False]
             }}
 
-        If "can_share" is provided, the member's ability to share is
+        If `can_share` is provided, the member's ability to share is
         set accordingly.  If it is not provided, existing memberships
         remain unchanged and new memberships default to False.
         """
