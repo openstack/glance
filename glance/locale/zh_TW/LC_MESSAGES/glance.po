@@ -9,13 +9,13 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev28\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-08 22:12+0000\n"
+"POT-Creation-Date: 2016-03-09 17:00+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-07 08:06+0000\n"
+"PO-Revision-Date: 2016-03-10 03:06+0000\n"
 "Last-Translator: Jennifer <cristxu@tw.ibm.com>\n"
 "Language: zh-TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -825,6 +825,9 @@ msgstr "取得二進位大型物件 %(name)s 資料失敗：%(err)s。"
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr "取得映像檔 %(id)s 資料時失敗：%(err)s。"
+
+msgid "Glance client not installed"
+msgstr "未安裝 Glance 用戶端"
 
 #, python-format
 msgid "Host \"%s\" is not valid."
