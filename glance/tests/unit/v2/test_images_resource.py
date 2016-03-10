@@ -2007,6 +2007,15 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPConflict, self.controller.delete,
                           request, UUID1)
 
+    def test_delete_has_snapshot(self):
+        def fake_safe_delete_from_backend(self, *args, **kwargs):
+            raise store.exceptions.HasSnapshot()
+        self.stubs.Set(self.store_utils, 'safe_delete_from_backend',
+                       fake_safe_delete_from_backend)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.delete,
+                          request, UUID1)
+
     def test_delete_to_unallowed_status(self):
         # from deactivated to pending-delete
         self.config(delayed_delete=True)
