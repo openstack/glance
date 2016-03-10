@@ -71,9 +71,6 @@ Images in Glance can be in one the following statuses:
 
    * Add location from zero to more than one.
 
-   * Remove location from one or more to zero by PATCH method which is only
-     supported in v2.
-
 Task Statuses
 ==============
 
