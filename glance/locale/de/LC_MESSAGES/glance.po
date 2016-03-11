@@ -9,18 +9,19 @@
 # Robert Simai, 2014
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
+# Eugen Block <eblock@nde.ag>, 2016. #zanata
 # Monika Wolf <vcomas3@de.ibm.com>, 2016. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev36\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-08 22:12+0000\n"
+"POT-Creation-Date: 2016-03-10 23:26+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-08 10:15+0000\n"
-"Last-Translator: Monika Wolf <vcomas3@de.ibm.com>\n"
+"PO-Revision-Date: 2016-03-10 02:10+0000\n"
+"Last-Translator: Eugen Block <eblock@nde.ag>\n"
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -134,6 +135,9 @@ msgstr ""
 "Option --os_auth_url oder Umgebungsvariable OS_AUTH_URL erforderlich, wenn "
 "die Keystone-Authentifizierungsstrategie aktiviert ist\n"
 
+msgid "A body is not expected with this request."
+msgstr "Es wird kein Hauptteil bei dieser Anforderung erwartet. "
+
 msgid ""
 "A list of artifacts that are allowed in the format name or name-version. "
 "Empty list means that any artifact can be loaded."
@@ -234,9 +238,15 @@ msgstr "URL der Imagedatei"
 msgid "An image schema url"
 msgstr "URL des Imageschemas"
 
+msgid "An image self url"
+msgstr "'self'-URL für Abbild"
+
 #, python-format
 msgid "An image with identifier %s already exists"
 msgstr "Ein Image mit ID %s ist bereits vorhanden"
+
+msgid "An import task exception occurred"
+msgstr "Es ist eine Ausnahme bei einer Importtask eingetreten."
 
 msgid "An object with the same identifier already exists."
 msgstr "Ein Objekt mit der gleichen ID ist bereits vorhanden."
@@ -391,6 +401,12 @@ msgid "Available categories:"
 msgstr "Verfügbare Kategorien:"
 
 #, python-format
+msgid "Bad \"%s\" query filter format. Use ISO 8601 DateTime notation."
+msgstr ""
+"Falsches \"%s\"-Abfragefilterformat. Verwenden Sie die ISO 8601 DateTime-"
+"Notation."
+
+#, python-format
 msgid "Bad Command: %s"
 msgstr "Fehlerhaftes Kommando: %s"
 
@@ -412,6 +428,13 @@ msgstr "Fehlerhafter Berechtigungsnachweis '%(creds)s' in Swift-URI"
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Fehlerhafter Berechtigungsnachweis in Swift-URI."
+
+msgid "Base directory that the image cache uses."
+msgstr "Stammverzeichnis für den Abbildzwischenspeicher."
+
+msgid "BinaryObject property cannot be declared mutable"
+msgstr ""
+"Die BinaryObject-Eigenschaft kann nicht  als veränderbar deklariert werden. "
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -477,6 +500,18 @@ msgstr "Dieser Parameter kann nicht mit dem Operator %(op)s verwendet werden"
 
 msgid "Certificate file to use when starting API server securely."
 msgstr "Zertifikatsdatei zum sicheren Start des API-Servers."
+
+#, python-format
+msgid "Certificate format not supported: %s"
+msgstr "Das Zertifikatformat wird nicht unterstützt: %s"
+
+#, python-format
+msgid "Certificate is not valid after: %s UTC"
+msgstr "Das Zertifikat ist nicht mehr gültig ab: %s UTC"
+
+#, python-format
+msgid "Certificate is not valid before: %s UTC"
+msgstr "Das Zertifikat ist erst gültig ab: %s UTC"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -673,6 +708,18 @@ msgstr "Verzeichnisgröße überschreitet den Maximalwert"
 msgid "Dictionary size is less than minimum"
 msgstr "Verzeichnisgröße unterschreitet den Mindestwert"
 
+msgid ""
+"Digest algorithm which will be used for digital signature. Use the command "
+"\"openssl list-message-digest-algorithms\" to get the available algorithms "
+"supported by the version of OpenSSL on the platform. Examples are \"sha1\", "
+"\"sha256\", \"sha512\", etc."
+msgstr ""
+"Der Prüfsummenalgorithmus, der für die digitale Signatur verwendet wird. "
+"Verwenden Sie den Befehl \"openssl list-message-digest-algorithms\", um die "
+"von der auf der Plattform verwendeten OpenSSL-Version unterstützten, "
+"verfügbaren Algorithmen abzurufen. Beispiele: \"sha1\", \"sha256\", "
+"\"sha512\", usw."
+
 msgid "Disk format is not specified."
 msgstr "Plattenformat wurde nicht angegeben."
 
@@ -689,6 +736,14 @@ msgstr ""
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "Entweder eine Datei oder eine legacy_image_id muss angegeben werden"
 
+msgid ""
+"Error decoding your request. Either the URL or the request body contained "
+"characters that could not be decoded by Glance"
+msgstr ""
+"Fehler beim Entschlüsseln Ihrer Anforderung. Entweder die URL oder der "
+"angeforderte Hauptteil enthalten Zeichen, die von Glance nicht entschlüsselt "
+"werden konnten. "
+
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
 msgstr ""
@@ -703,6 +758,12 @@ msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Fehler in Speicherkonfiguration. Hinzufügen von Images zu Speicher ist "
 "inaktiviert."
+
+msgid "Error occurred while creating the verifier"
+msgstr "Beim Erstellen der Prüffunktion ist ein Fehler aufgetreten."
+
+msgid "Error occurred while verifying the signature"
+msgstr "Beim Verifizieren der Signatur ist ein Fehler aufgetreten."
 
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr ""
@@ -856,6 +917,9 @@ msgstr "Abrufen der Daten von BLOB %(name)s fehlgeschlagen: %(err)s."
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr "Abrufen der Daten des Image %(id)s fehlgeschlagen: %(err)s."
+
+msgid "Glance client not installed"
+msgstr "Glance-Client ist nicht installiert."
 
 #, python-format
 msgid "Host \"%s\" is not valid."
@@ -1042,6 +1106,10 @@ msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Ungültiger JSON Zeiger für diese Ressource: : '/%s'"
 
 #, python-format
+msgid "Invalid certificate format: %s"
+msgstr "Ungültiges Zertifikatformat: %s"
+
+#, python-format
 msgid "Invalid checksum '%s': can't exceed 32 characters"
 msgstr "Ungültige Kontrollsumme '%s': Darf 32 Zeichen nicht überschreiten"
 
@@ -1068,6 +1136,23 @@ msgstr "Ungültiger dict-Eigenschaftstyp angegeben"
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr "Ungültiges Plattenformat '%s' für Image."
+
+#, python-format
+msgid "Invalid filter value %s. The quote is not closed."
+msgstr "Ungültiger Filterwert %s. Das schließende Anführungszeichen fehlt."
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma after closing quotation mark."
+msgstr ""
+"Ungültiger Filterwert %s. Vor dem schließenden Anführungszeichen ist kein "
+"Komma."
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma before opening quotation mark."
+msgstr ""
+"Ungültiger Filterwert %s. Vor dem öffnenden Anführungszeichen ist kein Komma."
 
 #, python-format
 msgid "Invalid headers \"Content-Type\": %s"
@@ -1119,6 +1204,10 @@ msgid "Invalid marker. Image could not be found."
 msgstr "Ungültiger Marker. Image konnte nicht gefunden werden."
 
 #, python-format
+msgid "Invalid mask_gen_algorithm: %s"
+msgstr "Ungültiger mask_gen_algorithm: %s"
+
+#, python-format
 msgid "Invalid membership association: %s"
 msgstr "Ungültige Mitgliedschaftszuordnung: %s"
 
@@ -1147,6 +1236,14 @@ msgstr "Ungültige Position zum Entfernen einer Position."
 msgid "Invalid property definition"
 msgstr "Ungültige Eigenschaftsdefinition"
 
+#, python-format
+msgid "Invalid pss_salt_length: %s"
+msgstr "Ungültige pss_salt_length: %s"
+
+#, python-format
+msgid "Invalid public key type for signature key type: %s"
+msgstr "Ungültiger öffentlicher Schlüsseltyp für den Signaturschlüsseltyp: %s"
+
 msgid "Invalid reference list specification"
 msgstr "Ungültige Referenzlistenspezifikation"
 
@@ -1158,6 +1255,14 @@ msgstr "Ungültiger Anforderungspatch für die Verwendung mit blob"
 
 msgid "Invalid service catalog json."
 msgstr "Ungültige Servicekatalog-JSON."
+
+#, python-format
+msgid "Invalid signature hash method: %s"
+msgstr "Ungültige Signaturhashmethode: %s"
+
+#, python-format
+msgid "Invalid signature key type: %s"
+msgstr "Ungültiger Signaturschlüsseltyp: %s"
 
 #, python-format
 msgid "Invalid sort direction: %s"
@@ -1608,6 +1713,19 @@ msgstr ""
 "Die Anzahl der Sortierverzeichnisse entspricht nicht der Anzahl der "
 "Sortierschlüssel"
 
+msgid "OVA extract is limited to admin"
+msgstr "OVA-Extraktion kann nur vom Administrator ausgeführt werden."
+
+#, fuzzy
+msgid ""
+"OVF metadata of interest was not specified in ovf-metadata.json config file. "
+"Please set \"cim_pasd\" to a list of interested "
+"CIM_ProcessorAllocationSettingData properties."
+msgstr ""
+"Die für OVF relevanten Metadaten wurden nicht in der Konfigurationsdatei "
+"\"ovf-metadata.json\" angegeben. Setzen Sie \"cim_pasd\" auf eine Liste der "
+"relevanten CIM_ProcessorAllocationSettingData-Eigenschaften."
+
 msgid "OVF properties config file \"ovf-metadata.json\" was not found."
 msgstr ""
 "Die OVF-Eigenschaftenkonfigurationsdatei \"ovf-metadata.json\" wurde nicht "
@@ -1865,6 +1983,13 @@ msgstr ""
 msgid "Request must be a list of commands"
 msgstr "Die Anfrage muss eine Liste von Kommandos sein"
 
+msgid ""
+"Required image properties for signature verification do not exist. Cannot "
+"verify signature."
+msgstr ""
+"Es fehlen erforderliche Abbildeigenschaften für die Signaturverifizierung. "
+"Die Signatur konnte nicht verifiziert werden. "
+
 #, python-format
 msgid "Required store %s is invalid"
 msgstr "Der verlangte Speicher %s ist ungültig"
@@ -1903,6 +2028,13 @@ msgstr "Umfang der Imagezugänglichkeit"
 msgid "Scope of namespace accessibility."
 msgstr "Umfang der Zugänglichkeit des Namensbereichs. "
 
+msgid ""
+"Secret key to use to sign Glance API and Glance Registry services tracing "
+"messages."
+msgstr ""
+"Geheimer Schlüssel, der zum Unterzeichnen von Tracenachrichten der Glance "
+"API- und Glance Registry-Dienste."
+
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "Server %(serv)s wurde gestoppt"
@@ -1935,6 +2067,9 @@ msgstr ""
 
 msgid "Signature verification failed"
 msgstr "Signaturverifizierung fehlgeschlagen"
+
+msgid "Signature verification failed."
+msgstr "Signaturverifizierung fehlgeschlagen."
 
 msgid "Size of image file in bytes"
 msgstr "Größe der Imagedatei in Byte "
@@ -2086,6 +2221,14 @@ msgstr ""
 
 msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "Zeit in Sekunden bevor die Löschung durchgeführt wird."
+
+msgid ""
+"The amount of time to let an incomplete image remain in the cache, before "
+"the cache cleaner, if running, will remove the incomplete image."
+msgstr ""
+"Der Zeitraum, in dem ein unvollständiges Abbild im Zwischenspeicher bleiben "
+"kann, bevor die Zwischenspeicherbereinigungsfunktion, falls sie aktiv ist, "
+"das unvollständige Abbild entfernt."
 
 msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
@@ -2465,6 +2608,9 @@ msgstr ""
 msgid "The result of current task, JSON blob"
 msgstr "Das Ergebnis der aktuellen Task, JSON-Blob-Objekt"
 
+msgid "The signature data was not properly encoded using base64"
+msgstr "Die Signaturdaten wurden nicht ordnungsgemäß mit base64 codiert."
+
 #, python-format
 msgid ""
 "The size of the data %(image_size)s will exceed the limit. %(remaining)s "
@@ -2563,6 +2709,14 @@ msgstr "Der Typ der durch diesen Inhalt dargestellten Task"
 
 msgid "The unique namespace text."
 msgstr "Der eindeutige Text für den Namensbereich. "
+
+msgid ""
+"The upper limit (the maximum size of accumulated cache in bytes) beyond "
+"which the cache pruner, if running, starts cleaning the image cache."
+msgstr ""
+"Die Obergrenze (maximale Größe des kumulierten Zwischenspeichers in Byte), "
+"über der die Zwischenspeicherbereinigungsfunktion, falls sie aktiv ist, mit "
+"dem Bereinigen des Abbildcache beginnt. "
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
@@ -2706,8 +2860,18 @@ msgstr ""
 "%(service)s stoppen mithilfe von:\n"
 "  %(file)s %(server)s stop --pid-file %(fb)s"
 
+#, python-format
+msgid "Unable to filter by unknown operator '%s'."
+msgstr "Filtern mit dem unbekannten Operator '%s' nicht möglich."
+
 msgid "Unable to filter on a range with a non-numeric value."
 msgstr "Filtern in einem Bereich mit nicht numerischem Wert nicht möglich."
+
+msgid "Unable to filter on a unknown operator."
+msgstr "Filtern mit einem unbekannten Operator nicht möglich."
+
+msgid "Unable to filter using the specified operator."
+msgstr "Filtern mit dem angegebenen Operator nicht möglich."
 
 msgid "Unable to filter using the specified range."
 msgstr "Filtern mit dem angegebenen Bereich nicht möglich."
@@ -2754,6 +2918,10 @@ msgstr ""
 "Die Sammlung in der nicht veränderbaren oder schreibgeschützten Eigenschaft "
 "kann nicht geändert werden"
 
+#, python-format
+msgid "Unable to retrieve certificate with ID: %s"
+msgstr "Das Zertifikat mit der folgenden ID konnte nicht abgerufen werden: %s"
+
 msgid "Unable to retrieve request id from context"
 msgstr "Anforderungs-ID kann nicht von Kontext abgerufen werden"
 
@@ -2775,12 +2943,21 @@ msgstr ""
 "Hochladen von doppelten Imagedaten für Image %(image_id)s nicht möglich: "
 "%(error)s"
 
+msgid ""
+"Unable to verify signature since the algorithm is unsupported on this system"
+msgstr ""
+"Die Signatur kann nicht verifiziert werden, weil der Algorithmus auf diesem "
+"System nicht unterstützt wird."
+
 #, python-format
 msgid "Unable to verify signature: %(reason)s"
 msgstr "Signatur kann nicht geprüft werden: %(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "Unautorisierter Imagezugriff"
+
+msgid "Unexpected body type. Expected list/dict."
+msgstr "Unerwarteter Hauptteiltyp. Erwartet wurde list/dict."
 
 #, python-format
 msgid "Unexpected response: %s"
@@ -2886,6 +3063,21 @@ msgid ""
 msgstr ""
 "Ob es Benutzern erlaubt sein soll, Imageeigenschaften anzugeben, die über "
 "das hinausgehen, was vom Imageschema angegeben wird"
+
+msgid ""
+"Whether to include the backend image locations in image properties. For "
+"example, if using the file system store a URL of \"file:///path/to/image\" "
+"will be returned to the user in the 'direct_url' meta-data field. Revealing "
+"storage location can be a security risk, so use this setting with caution! "
+"Setting this to true overrides the show_image_direct_url option."
+msgstr ""
+"Angabe, ob die Speicherpositionen von Backendabbildern in "
+"Abbildeigenschaften eingeschlosen werden sollen. Beispiel: Bei Verwendung "
+"des Dateisystemspeichers wird die URL \"file:///path/to/image\" an den "
+"Benutzer im Metadatenfeld 'direct_url' zurückgegeben. Das Sichtbarmachen der "
+"Speicherposition kann ein Sicherheitsrisiko darstellen. Verwenden Sie diese "
+"Einstellung daher mit Bedacht. Bei Angabe von 'true' wird die Option "
+"'show_image_direct_url' überschrieben."
 
 msgid ""
 "Whether to include the backend image storage location in image properties. "
