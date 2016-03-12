@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-09 06:18+0000\n"
+"POT-Creation-Date: 2016-03-12 06:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -664,7 +664,7 @@ msgid "Forbidden to delete a %s image."
 msgstr ""
 
 #: glance/api/v1/images.py:1128 glance/api/v2/image_members.py:67
-#: glance/api/v2/image_tags.py:51 glance/api/v2/image_tags.py:80
+#: glance/api/v2/image_tags.py:52 glance/api/v2/image_tags.py:81
 #, python-format
 msgid "Image %s not found."
 msgstr ""
@@ -881,22 +881,22 @@ msgstr ""
 msgid "The status of this image member"
 msgstr ""
 
-#: glance/api/v2/image_tags.py:55
+#: glance/api/v2/image_tags.py:56
 #, python-format
 msgid "Not allowed to update tags for image %s."
 msgstr ""
 
-#: glance/api/v2/image_tags.py:59
+#: glance/api/v2/image_tags.py:60
 #, python-format
 msgid "Could not update image: %s"
 msgstr ""
 
-#: glance/api/v2/image_tags.py:64
+#: glance/api/v2/image_tags.py:65
 #, python-format
 msgid "Image tag limit exceeded for image %(id)s: %(e)s:"
 msgstr ""
 
-#: glance/api/v2/image_tags.py:84
+#: glance/api/v2/image_tags.py:85
 #, python-format
 msgid "Not allowed to delete tags for image %s."
 msgstr ""
@@ -1719,33 +1719,29 @@ msgid "Deploy the v2 OpenStack Images API."
 msgstr ""
 
 #: glance/common/config.py:151
-msgid "Deploy the v3 OpenStack Objects API."
-msgstr ""
-
-#: glance/common/config.py:154
 msgid "Deploy the v1 OpenStack Registry API."
 msgstr ""
 
-#: glance/common/config.py:156
+#: glance/common/config.py:153
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr ""
 
-#: glance/common/config.py:158
+#: glance/common/config.py:155
 msgid "The hostname/IP of the pydev process listening for debug connections"
 msgstr ""
 
-#: glance/common/config.py:161
+#: glance/common/config.py:158
 msgid "The port on which a pydev process is listening for connections."
 msgstr ""
 
-#: glance/common/config.py:164
+#: glance/common/config.py:161
 msgid ""
 "AES key for encrypting store 'location' metadata. This includes, if used,"
 " Swift or S3 credentials. Should be set to a random string of length 16, "
 "24 or 32 bytes"
 msgstr ""
 
-#: glance/common/config.py:169
+#: glance/common/config.py:166
 msgid ""
 "Digest algorithm which will be used for digital signature. Use the "
 "command \"openssl list-message-digest-algorithms\" to get the available "
@@ -1753,12 +1749,12 @@ msgid ""
 "are \"sha1\", \"sha256\", \"sha512\", etc."
 msgstr ""
 
-#: glance/common/config.py:231
+#: glance/common/config.py:228
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr ""
 
-#: glance/common/config.py:270
+#: glance/common/config.py:267
 #, python-format
 msgid ""
 "Unable to load %(app_name)s from configuration file %(conf_file)s.\n"

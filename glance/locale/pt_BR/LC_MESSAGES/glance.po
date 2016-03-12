@@ -12,9 +12,9 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-08 22:12+0000\n"
+"POT-Creation-Date: 2016-03-12 00:22+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -584,9 +584,6 @@ msgstr "Implemente a API de Imagens OpenStack v2."
 
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr "Implemente a API Registry OpenStack v2."
-
-msgid "Deploy the v3 OpenStack Objects API."
-msgstr "Implemente a API de objetos OpenStack v3."
 
 msgid "Descriptive name for the image"
 msgstr "Nome descritivo para a imagem"

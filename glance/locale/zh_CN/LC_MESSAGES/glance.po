@@ -14,13 +14,13 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev28\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-09 17:00+0000\n"
+"POT-Creation-Date: 2016-03-12 00:22+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-09 03:25+0000\n"
+"PO-Revision-Date: 2016-03-11 03:05+0000\n"
 "Last-Translator: Linda <duleish@cn.ibm.com>\n"
 "Language: zh-CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -214,13 +214,13 @@ msgid "An identifier for the task"
 msgstr "任务的标识"
 
 msgid "An image file url"
-msgstr "镜像文件的 URL"
+msgstr "映像文件的 URL"
 
 msgid "An image schema url"
-msgstr "镜像模式的 URL"
+msgstr "映像模式的 URL"
 
 msgid "An image self url"
-msgstr "镜像本身的 URL"
+msgstr "映像本身的 URL"
 
 #, python-format
 msgid "An image with identifier %s already exists"
@@ -354,7 +354,7 @@ msgstr "找不到 URL %(url)s 处的授权服务。"
 msgid ""
 "Authentication error - the token may have expired during file upload. "
 "Deleting image data for %s."
-msgstr "认证错误 - 文件上传期间此令牌可能已到期。正在删除 %s 的镜像数据。"
+msgstr "认证错误 - 文件上传期间此令牌可能已到期。正在删除 %s 的映像数据。"
 
 msgid "Authorization failed."
 msgstr "授权失败。"
@@ -390,7 +390,7 @@ msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 中凭证的格式不正确。"
 
 msgid "Base directory that the image cache uses."
-msgstr "镜像高速缓存使用的基本目录。"
+msgstr "映像高速缓存使用的基本目录。"
 
 msgid "BinaryObject property cannot be declared mutable"
 msgstr "不能将 BinaryObject 属性声明为可变"
@@ -429,7 +429,7 @@ msgid "Cannot load artifact '%(name)s'"
 msgstr "无法装入工件“%(name)s”"
 
 msgid "Cannot remove last location in the image."
-msgstr "不能移除镜像中的最后一个位置。"
+msgstr "不能移除映像中的最后一个位置。"
 
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
@@ -628,9 +628,6 @@ msgstr "请部署 OpenStack Images API V2。"
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr "请部署 OpenStack Registry API V2。"
 
-msgid "Deploy the v3 OpenStack Objects API."
-msgstr "部署 V3 OpenStack 对象 API。"
-
 msgid "Descriptive name for the image"
 msgstr "映像的描述性名称"
 
@@ -777,7 +774,7 @@ msgid "File too small"
 msgstr "文件太小"
 
 msgid "Forbidden image access"
-msgstr "禁止访问镜像"
+msgstr "禁止访问映像"
 
 #, python-format
 msgid "Forbidden to delete a %s image."
@@ -789,7 +786,7 @@ msgstr "已禁止删除映像：%s"
 
 #, python-format
 msgid "Forbidden to modify '%(key)s' of %(status)s image."
-msgstr "禁止修改 %(status)s 镜像的“%(key)s”"
+msgstr "禁止修改 %(status)s 映像的“%(key)s”"
 
 #, python-format
 msgid "Forbidden to modify '%s' of image."
@@ -900,7 +897,7 @@ msgstr ""
 msgid ""
 "Image %s could not be found after upload. The image may have been deleted "
 "during the upload."
-msgstr "上传后找不到镜像 %s。此镜像可能已在上传期间删除。"
+msgstr "上传后找不到映像 %s。此映像可能已在上传期间删除。"
 
 #, python-format
 msgid "Image %s is deactivated"
@@ -1798,7 +1795,7 @@ msgstr "请求必须为命令列表"
 msgid ""
 "Required image properties for signature verification do not exist. Cannot "
 "verify signature."
-msgstr "签名认证所需的镜像属性不存在。无法验证签名。"
+msgstr "签名认证所需的映像属性不存在。无法验证签名。"
 
 #, python-format
 msgid "Required store %s is invalid"
@@ -1869,7 +1866,7 @@ msgid "Signature verification failed."
 msgstr "签名验证失败。"
 
 msgid "Size of image file in bytes"
-msgstr "镜像文件的大小，以字节计"
+msgstr "映像文件的大小，以字节计"
 
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
@@ -1905,7 +1902,7 @@ msgid "Status not specified"
 msgstr "未指定状态"
 
 msgid "Status of the image"
-msgstr "镜像的状态"
+msgstr "映像的状态"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -2007,8 +2004,8 @@ msgid ""
 "The amount of time to let an incomplete image remain in the cache, before "
 "the cache cleaner, if running, will remove the incomplete image."
 msgstr ""
-"允许非完整镜像保留在高速缓存中的时长，经过此时长后，高速缓存清除程序（如果正"
-"在运行）将移除非完整镜像。"
+"允许非完整映像保留在高速缓存中的时长，经过此时长后，高速缓存清除程序（如果正"
+"在运行）将移除非完整映像。"
 
 msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
@@ -2044,7 +2041,7 @@ msgstr "版本 %s 的格式无效。使用 semver 注释"
 msgid ""
 "The format to which images will be automatically converted. When using the "
 "RBD backend, this should be set to 'raw'"
-msgstr "镜像将自动转换为的格式。如果使用 RBD 后端，那么此项应设置为“原始”"
+msgstr "映像将自动转换为的格式。如果使用 RBD 后端，那么此项应设置为“原始”"
 
 #, python-format
 msgid ""
@@ -2420,7 +2417,7 @@ msgid ""
 "which the cache pruner, if running, starts cleaning the image cache."
 msgstr ""
 "上限（累计高速缓存的最大大小，以字节计），当超过该值时，高速缓存修剪程序（如"
-"果正在运行）会开始清除镜像高速缓存。"
+"果正在运行）会开始清除映像高速缓存。"
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "名称空间的用户友好名称。由 UI 使用（如果可用）。"
@@ -2532,7 +2529,7 @@ msgstr ""
 "案，类似于以下：swift+http://user:pass@authurl.com/v1/container/obj"
 
 msgid "URL to access the image file kept in external store"
-msgstr "用于访问外部存储器中保留的镜像文件的 URL"
+msgstr "用于访问外部存储器中保留的映像文件的 URL"
 
 msgid "Unable to PUT to non-empty collection"
 msgstr "无法放入非空集合"
@@ -2686,7 +2683,7 @@ msgid "Version is invalid: %(reason)s"
 msgstr "版本无效：%(reason)s"
 
 msgid "Virtual size of image in bytes"
-msgstr "镜像的虚拟大小，以字节计"
+msgstr "映像的虚拟大小，以字节计"
 
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "可视性必须为“public”或“private”"
@@ -2737,7 +2734,7 @@ msgid ""
 "storage location can be a security risk, so use this setting with caution! "
 "Setting this to true overrides the show_image_direct_url option."
 msgstr ""
-"镜像属性中是否包含后端镜像位置。例如，如果使用文件系统存储器，那么将"
+"映像属性中是否包含后端映像位置。例如，如果使用文件系统存储器，那么将"
 "在“direct_url”字段中对用户返回以下 URL：file:///path/to/image。公开存储位置可"
 "能会产生安全风险，所以应谨慎使用此设置！将此项设置为 true 将覆盖 "
 "show_image_direct_url 选项。"
@@ -2847,7 +2844,7 @@ msgid "You are not permitted to create this task with owner as: %s"
 msgstr "不允许采用以下身份作为所有者来创建此任务：%s"
 
 msgid "You are not permitted to deactivate this image."
-msgstr "不允许取消激活此镜像。"
+msgstr "不允许取消激活此映像。"
 
 msgid "You are not permitted to delete this image."
 msgstr "不允许删除此映像。"
@@ -2885,7 +2882,7 @@ msgid "You are not permitted to modify this image."
 msgstr "不允许修改此映像。"
 
 msgid "You are not permitted to reactivate this image."
-msgstr "不允许重新激活此镜像。"
+msgstr "不允许重新激活此映像。"
 
 msgid "You are not permitted to set status on this task."
 msgstr "你不被允许设置这个任务的状态。"
@@ -2979,7 +2976,7 @@ msgid "location: %s data lost"
 msgstr "位置：%s 数据已丢失"
 
 msgid "md5 hash of image contents."
-msgstr "镜像内容的 md5 散列。"
+msgstr "映像内容的 md5 散列。"
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"

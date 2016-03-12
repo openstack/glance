@@ -10,9 +10,9 @@
 # Sungjin Kang <gang.sungjin@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
+"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-08 22:12+0000\n"
+"POT-Creation-Date: 2016-03-12 00:22+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -558,9 +558,6 @@ msgstr "v2 OpenStack 이미지 API를 배치하십시오."
 
 msgid "Deploy the v2 OpenStack Registry API."
 msgstr "v2 OpenStack 레지스트리 API를 배치하십시오."
-
-msgid "Deploy the v3 OpenStack Objects API."
-msgstr "v3 OpenStack 오브젝트 API를 배치하십시오."
 
 msgid "Descriptive name for the image"
 msgstr "이미지에 대한 설명식 이름"
