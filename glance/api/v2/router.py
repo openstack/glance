@@ -95,7 +95,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/namespace',
                        controller=schemas_resource,
                        action='metadef_namespace',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/namespace',
                        controller=reject_method_resource,
                        action='reject',
@@ -104,7 +105,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/namespaces',
                        controller=schemas_resource,
                        action='metadef_namespaces',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/namespaces',
                        controller=reject_method_resource,
                        action='reject',
@@ -113,7 +115,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/resource_type',
                        controller=schemas_resource,
                        action='metadef_resource_type',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/resource_type',
                        controller=reject_method_resource,
                        action='reject',
@@ -122,7 +125,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/resource_types',
                        controller=schemas_resource,
                        action='metadef_resource_types',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/resource_types',
                        controller=reject_method_resource,
                        action='reject',
@@ -131,7 +135,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/property',
                        controller=schemas_resource,
                        action='metadef_property',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/property',
                        controller=reject_method_resource,
                        action='reject',
@@ -140,7 +145,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/properties',
                        controller=schemas_resource,
                        action='metadef_properties',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/properties',
                        controller=reject_method_resource,
                        action='reject',
@@ -149,7 +155,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/object',
                        controller=schemas_resource,
                        action='metadef_object',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/object',
                        controller=reject_method_resource,
                        action='reject',
@@ -158,7 +165,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/objects',
                        controller=schemas_resource,
                        action='metadef_objects',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/objects',
                        controller=reject_method_resource,
                        action='reject',
@@ -167,7 +175,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/tag',
                        controller=schemas_resource,
                        action='metadef_tag',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/tag',
                        controller=reject_method_resource,
                        action='reject',
@@ -176,7 +185,8 @@ class API(wsgi.Router):
         mapper.connect('/schemas/metadefs/tags',
                        controller=schemas_resource,
                        action='metadef_tags',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/schemas/metadefs/tags',
                        controller=reject_method_resource,
                        action='reject',
@@ -189,7 +199,8 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/resource_types',
                        controller=metadef_resource_types_resource,
                        action='index',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/metadefs/resource_types',
                        controller=reject_method_resource,
                        action='reject',
@@ -198,7 +209,8 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/resource_types',
                        controller=metadef_resource_types_resource,
                        action='show',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/resource_types',
                        controller=metadef_resource_types_resource,
                        action='create',
@@ -212,7 +224,8 @@ class API(wsgi.Router):
                        '{resource_type}',
                        controller=metadef_resource_types_resource,
                        action='delete',
-                       conditions={'method': ['DELETE']})
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/resource_types/'
                        '{resource_type}',
                        controller=reject_method_resource,
@@ -237,7 +250,8 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}',
                        controller=metadef_namespace_resource,
                        action='show',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}',
                        controller=metadef_namespace_resource,
                        action='update',
@@ -245,7 +259,8 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}',
                        controller=metadef_namespace_resource,
                        action='delete',
-                       conditions={'method': ['DELETE']})
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}',
                        controller=reject_method_resource,
                        action='reject',
@@ -256,7 +271,8 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/properties',
                        controller=metadef_properties_resource,
                        action='index',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/properties',
                        controller=metadef_properties_resource,
                        action='create',
@@ -314,7 +330,8 @@ class API(wsgi.Router):
                        'object_name}',
                        controller=metadef_objects_resource,
                        action='show',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
                        'object_name}',
                        controller=metadef_objects_resource,
@@ -324,7 +341,8 @@ class API(wsgi.Router):
                        'object_name}',
                        controller=metadef_objects_resource,
                        action='delete',
-                       conditions={'method': ['DELETE']})
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/objects/{'
                        'object_name}',
                        controller=reject_method_resource,
@@ -353,11 +371,13 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=metadef_tags_resource,
                        action='show',
-                       conditions={'method': ['GET']})
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=metadef_tags_resource,
                        action='create',
-                       conditions={'method': ['POST']})
+                       conditions={'method': ['POST']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=metadef_tags_resource,
                        action='update',
@@ -365,7 +385,8 @@ class API(wsgi.Router):
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=metadef_tags_resource,
                        action='delete',
-                       conditions={'method': ['DELETE']})
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
         mapper.connect('/metadefs/namespaces/{namespace}/tags/{tag_name}',
                        controller=reject_method_resource,
                        action='reject',
