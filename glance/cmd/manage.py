@@ -157,8 +157,18 @@ class DbCommands(object):
           help='Limit number of records to delete')
     def purge(self, age_in_days=30, max_rows=100):
         """Purge deleted rows older than a given age from glance tables."""
-        age_in_days = int(age_in_days)
-        max_rows = int(max_rows)
+        try:
+            age_in_days = int(age_in_days)
+        except ValueError:
+            sys.exit(_("Invalid int value for age_in_days: "
+                       "%(age_in_days)s") % {'age_in_days': age_in_days})
+
+        try:
+            max_rows = int(max_rows)
+        except ValueError:
+            sys.exit(_("Invalid int value for max_rows: "
+                       "%(max_rows)s") % {'max_rows': max_rows})
+
         if age_in_days <= 0:
             sys.exit(_("Must supply a positive, non-zero value for age."))
         if age_in_days >= (int(time.time()) / 86400):
