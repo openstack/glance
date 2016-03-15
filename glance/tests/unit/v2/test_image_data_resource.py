@@ -212,10 +212,10 @@ class TestImagesController(base.StoreClearingUnitTest):
         mocked_delete.assert_called_once_with()
 
     def test_upload_non_existent_image_during_save_initiates_deletion(self):
-        def fake_save_not_found(self):
+        def fake_save_not_found(self, from_state=None):
             raise exception.ImageNotFound()
 
-        def fake_save_conflict(self):
+        def fake_save_conflict(self, from_state=None):
             raise exception.Conflict()
 
         for fun in [fake_save_not_found, fake_save_conflict]:
@@ -229,7 +229,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             self.assertTrue(image.delete.called)
 
     def test_upload_non_existent_image_raises_image_not_found_exception(self):
-        def fake_save(self):
+        def fake_save(self, from_state=None):
             raise exception.ImageNotFound()
 
         def fake_delete():
@@ -244,7 +244,7 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, str(uuid.uuid4()), 'ABC', 3)
 
     def test_upload_non_existent_image_raises_store_not_found_exception(self):
-        def fake_save(self):
+        def fake_save(self, from_state=None):
             raise glance_store.NotFound()
 
         def fake_delete():

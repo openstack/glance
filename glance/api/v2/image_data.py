@@ -110,7 +110,7 @@ class ImageDataController(object):
                                      "Use the existing user token."),
                                  encodeutils.exception_to_unicode(e))
 
-                image_repo.save(image)
+                image_repo.save(image, from_state='queued')
                 image.set_data(data, size)
 
                 try:
