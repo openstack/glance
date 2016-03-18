@@ -18,6 +18,7 @@ import webob
 
 from glance.api.middleware import version_negotiation
 from glance.api import versions
+from glance.common.wsgi import Request as WsgiRequest
 from glance.tests.unit import base
 
 
@@ -118,6 +119,103 @@ class VersionsTest(base.IsolatedUnitTest):
                 'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'https://example.com:9292/v1/'}],
+            },
+        ]
+        self.assertEqual(expected, results)
+
+    def test_get_version_list_secure_proxy_ssl_header(self):
+        self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO')
+        environ = webob.request.environ_from_url('http://localhost:9292')
+        req = WsgiRequest(environ)
+        res = versions.Controller().index(req)
+        self.assertEqual(300, res.status_int)
+        self.assertEqual('application/json', res.content_type)
+        results = jsonutils.loads(res.body)['versions']
+        expected = [
+            {
+                'id': 'v2.3',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.2',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.1',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v1.1',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v1/'}],
+            },
+            {
+                'id': 'v1.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v1/'}],
+            },
+        ]
+        self.assertEqual(expected, results)
+
+    def test_get_version_list_secure_proxy_ssl_header_https(self):
+        self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO')
+        environ = webob.request.environ_from_url('http://localhost:9292')
+        environ['HTTP_X_FORWARDED_PROTO'] = "https"
+        req = WsgiRequest(environ)
+        res = versions.Controller().index(req)
+        self.assertEqual(300, res.status_int)
+        self.assertEqual('application/json', res.content_type)
+        results = jsonutils.loads(res.body)['versions']
+        expected = [
+            {
+                'id': 'v2.3',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.2',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.1',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v1.1',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v1/'}],
+            },
+            {
+                'id': 'v1.0',
+                'status': 'SUPPORTED',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v1/'}],
             },
         ]
         self.assertEqual(expected, results)

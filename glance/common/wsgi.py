@@ -104,6 +104,14 @@ eventlet_opts = [
                       'wait forever.')),
 ]
 
+wsgi_opts = [
+    cfg.StrOpt('secure_proxy_ssl_header',
+               help=_('The HTTP header used to determine the scheme for the '
+                      'original request, even if it was removed by an SSL '
+                      'terminating proxy. Typical value is '
+                      '"HTTP_X_FORWARDED_PROTO".')),
+]
+
 profiler_opts = [
     cfg.BoolOpt("enabled", default=False,
                 help=_('If False fully disable profiling feature.')),
@@ -121,6 +129,7 @@ CONF = cfg.CONF
 CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
+CONF.register_opts(wsgi_opts)
 CONF.register_opts(profiler_opts, group="profiler")
 
 ASYNC_EVENTLET_THREAD_POOL_LIST = []
@@ -731,6 +740,13 @@ class Router(object):
 
 class Request(webob.Request):
     """Add some OpenStack API-specific logic to the base webob.Request."""
+
+    def __init__(self, environ, *args, **kwargs):
+        if CONF.secure_proxy_ssl_header:
+            scheme = environ.get(CONF.secure_proxy_ssl_header)
+            if scheme:
+                environ['wsgi.url_scheme'] = scheme
+        super(Request, self).__init__(environ, *args, **kwargs)
 
     def best_match_content_type(self):
         """Determine the requested response content-type."""
