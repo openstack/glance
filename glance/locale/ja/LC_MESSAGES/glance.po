@@ -10,16 +10,17 @@
 # Yuko Katabami <yukokatabami@gmail.com>, 2015. #zanata
 # Akihiro Motoki <amotoki@gmail.com>, 2016. #zanata
 # Yuta Hono <yuta.hono@ntt.com>, 2016. #zanata
+# 笹原 昌美 <ebb0de1@jp.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
+"Project-Id-Version: glance 12.0.0.0rc2.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-08 22:12+0000\n"
+"POT-Creation-Date: 2016-03-17 15:26+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-05 01:37+0000\n"
-"Last-Translator: Yuta Hono <yuta.hono@ntt.com>\n"
+"PO-Revision-Date: 2016-03-18 06:32+0000\n"
+"Last-Translator: 笹原 昌美 <ebb0de1@jp.ibm.com>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -49,6 +50,10 @@ msgstr "%(attribute)s はパターン %(pattern)s に一致していなければ
 #, python-format
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
 msgstr "最後の RPC 呼び出しで %(cls)s 例外が発生しました: %(val)s"
+
+#, python-format
+msgid "%(m_id)s not found in the member list of the image %(i_id)s."
+msgstr "イメージ %(i_id)s のメンバーリストで %(m_id)s が見つかりません。"
 
 #, python-format
 msgid "%(serv)s (pid %(pid)s) is running..."
@@ -209,6 +214,15 @@ msgstr "このタスクの所有者 ID"
 msgid "An identifier for the task"
 msgstr "タスクの ID"
 
+msgid "An image file url"
+msgstr "イメージファイルの URL"
+
+msgid "An image schema url"
+msgstr "イメージスキーマの URL"
+
+msgid "An image self url"
+msgstr "イメージ自体の URL"
+
 #, python-format
 msgid "An image with identifier %s already exists"
 msgstr "ID %s のイメージは既に存在します"
@@ -232,8 +246,16 @@ msgid "Array property can't have item_type=Array"
 msgstr "配列型のプロパティーには item_type=Array を設定できません"
 
 #, python-format
+msgid "Artifact %s could not be deleted because it is in use: %s"
+msgstr "成果物 %s は使用中のため削除できませんでした: %s"
+
+#, python-format
 msgid "Artifact cannot change state from %(source)s to %(target)s"
 msgstr "成果物は状態を %(source)s から %(target)s に変更できません"
+
+#, python-format
+msgid "Artifact exceeds the storage quota: %s"
+msgstr "成果物がストレージクォータを超えています: %s"
 
 #, python-format
 msgid "Artifact has no property %(prop)s"
@@ -242,6 +264,10 @@ msgstr "成果物にプロパティー %(prop)s がありません"
 #, python-format
 msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
 msgstr "成果物状態を %(curr)s から %(to)s に変更できません"
+
+#, python-format
+msgid "Artifact storage media is full: %s"
+msgstr "成果物ストレージのメディアがフルです: %s"
 
 #, python-format
 msgid ""
@@ -389,9 +415,15 @@ msgstr "予約名「metadata」で成果物プロパティーを宣言するこ�
 msgid "Cannot load artifact '%(name)s'"
 msgstr "成果物 %(name)s をロードできません"
 
+msgid "Cannot remove last location in the image."
+msgstr "イメージ内の最後のロケーションは削除できません。"
+
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "イメージ %(image_id)s のデータを保存できません: %(error)s"
+
+msgid "Cannot set locations to empty list."
+msgstr "空のリストにロケーションを設定することはできません。"
 
 msgid "Cannot specify 'max_size' explicitly"
 msgstr "「max_size」を明示的に指定することはできません"
@@ -489,8 +521,32 @@ msgstr "指定されたデータが無効でした。"
 msgid "Date and time of image member creation"
 msgstr "イメージメンバーの作成日時"
 
+msgid "Date and time of image registration"
+msgstr "イメージ登録日時"
+
 msgid "Date and time of last modification of image member"
 msgstr "イメージメンバーの最終変更日時"
+
+msgid "Date and time of namespace creation"
+msgstr "名前空間の作成日時"
+
+msgid "Date and time of object creation"
+msgstr "オブジェクトの作成日時"
+
+msgid "Date and time of resource type association"
+msgstr "リソースタイプ関連付けの日時"
+
+msgid "Date and time of the last image modification"
+msgstr "イメージの最終変更日時"
+
+msgid "Date and time of the last namespace modification"
+msgstr "名前空間の最終変更日時"
+
+msgid "Date and time of the last object modification"
+msgstr "オブジェクトの最終変更日時"
+
+msgid "Date and time of the last resource type association modification"
+msgstr "リソースタイプ関連付けの最終変更日時"
 
 msgid "Datetime when this resource was created"
 msgstr "このリソースが作成された日時"
@@ -510,6 +566,12 @@ msgstr ""
 
 msgid "Default value is invalid"
 msgstr "デフォルト値が無効です"
+
+#, python-format
+msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
+msgstr ""
+"成果物をアップロードしようとしましたが、クォータを超えてしまうため、拒否され"
+"ています: %s"
 
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
@@ -563,9 +625,26 @@ msgstr ""
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "file または legacy_image_id のいずれかを指定する必要があります"
 
+#, python-format
+msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
+msgstr "イメージ %(image_id)s のメンバーの取得中のエラー: %(inner_msg)s"
+
+msgid "Error in store configuration. Adding artifacts to store is disabled."
+msgstr ""
+"ストア設定にエラーがあります。ストアへの成果物の追加が無効になっています。"
+
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "ストア設定にエラーがあります。ストアへのイメージの追加が無効になっています。"
+
+msgid "Expected a member in the form: {\"member\": \"image_id\"}"
+msgstr "形式: {\"member\": \"image_id\"} でのメンバーの予期"
+
+msgid "Expected a status in the form: {\"status\": \"status\"}"
+msgstr "形式: {\"status\": \"status\"} での状態の予期"
+
+msgid "External source should not be empty"
+msgstr "外部ソースは空であってはなりません"
 
 #, python-format
 msgid "External sources are not supported: '%s'"
@@ -578,6 +657,10 @@ msgstr "イメージのアクティブ化に失敗しました。受け取った
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "イメージメタデータを追加できませんでした。受け取ったエラー: %s"
+
+#, python-format
+msgid "Failed to find artifact %(artifact_id)s to delete"
+msgstr "削除する成果物 %(artifact_id)s が見つかりませんでした"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
@@ -653,6 +736,10 @@ msgstr "%s イメージの削除は禁止されています。"
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "イメージの削除は禁止されています: %s"
+
+#, python-format
+msgid "Forbidden to modify '%(key)s' of %(status)s image."
+msgstr "%(status)s イメージの '%(key)s' を変更することは禁止されています。"
 
 #, python-format
 msgid "Forbidden to modify '%s' of image."
@@ -842,13 +929,27 @@ msgstr ""
 msgid "Incorrect request: %s"
 msgstr "正しくない要求: %s"
 
+msgid "Index is out of range"
+msgstr "インデックスは範囲外です"
+
+msgid "Index is required"
+msgstr "インデックスが必要です"
+
 #, python-format
 msgid "Input does not contain '%(key)s' field"
 msgstr "入力に '%(key)s' フィールドが含まれていません"
 
 #, python-format
+msgid "Insufficient permissions on artifact storage media: %s"
+msgstr "成果物ストレージのメディアに対する許可が不十分です: %s"
+
+#, python-format
 msgid "Insufficient permissions on image storage media: %s"
 msgstr "イメージストレージのメディアに対する許可が不十分です: %s"
+
+#, python-format
+msgid "Invalid Content-Type for work with %s"
+msgstr "%s の作業に対して無効な Content-Type"
 
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
@@ -882,11 +983,19 @@ msgstr "ディクショナリープロパティータイプ指定が無効です
 msgid "Invalid disk format '%s' for image."
 msgstr "ディスク形式 '%s' はイメージには無効です。"
 
+#, python-format
+msgid "Invalid headers \"Content-Type\": %s"
+msgstr "無効なヘッダー \"Content-Type\": %s"
+
 msgid "Invalid image id format"
 msgstr "イメージ ID の形式が無効です"
 
 msgid "Invalid item type specification"
 msgstr "項目タイプ指定が無効です"
+
+#, python-format
+msgid "Invalid json body: %s"
+msgstr "無効な JSON 本文: %s"
 
 msgid "Invalid jsonpatch request"
 msgstr "jsonpatch 要求が無効です"
@@ -938,6 +1047,12 @@ msgstr ""
 "ナーの形式を 'aki'、'ari'、または 'ami' のいずれかに設定するときは、コンテ"
 "ナーとディスクの形式が一致していなければなりません。"
 
+#, python-format
+msgid ""
+"Invalid operation: `%(op)s`. It must be one of the following: %(available)s."
+msgstr ""
+"無効な操作: `%(op)s`。以下のいずれかでなければなりません: %(available)s。"
+
 msgid "Invalid position for adding a location."
 msgstr "ロケーションの追加位置が無効です。"
 
@@ -953,6 +1068,9 @@ msgstr "参照リスト指定が無効です"
 msgid "Invalid referenced type"
 msgstr "参照されたタイプが無効です"
 
+msgid "Invalid request PATCH for work with blob"
+msgstr "blob の作業に対して無効な要求 PATCH"
+
 msgid "Invalid service catalog json."
 msgstr "無効なサービスカタログ JSON ファイル。"
 
@@ -962,11 +1080,24 @@ msgstr "無効なソート方向: %s"
 
 #, python-format
 msgid ""
+"Invalid sort key: %(sort_key)s. If type version is not set it must be one of "
+"the following: %(available)s."
+msgstr ""
+"無効なソートキー: %(sort_key)s。タイプのバージョンが設定されていない場合、以"
+"下のいずれでなければなりません: %(available)s。"
+
+#, python-format
+msgid ""
 "Invalid sort key: %(sort_key)s. It must be one of the following: "
 "%(available)s."
 msgstr ""
 "ソートキー %(sort_key)s は無効です。 %(available)s のいずれかでなければなりま"
 "せん。"
+
+#, python-format
+msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
+msgstr ""
+"無効なソートキー: %(sort_key)s。このプロパティーによるソートはできません"
 
 #, fuzzy, python-format
 msgid "Invalid status value: %s"
@@ -1049,6 +1180,15 @@ msgstr ""
 msgid "It's invalid to provide multiple image sources."
 msgstr "イメージソースの複数指定は無効です。"
 
+msgid "It's not allowed to add locations if locations are invisible."
+msgstr "ロケーションが表示されない場合、ロケーションを追加できません。"
+
+msgid "It's not allowed to remove locations if locations are invisible."
+msgstr "ロケーションが表示されない場合、ロケーションは削除できません。"
+
+msgid "It's not allowed to update locations if locations are invisible."
+msgstr "ロケーションが表示されない場合、ロケーションを更新できません。"
+
 msgid "Items have to be unique"
 msgstr "項目は固有でなければなりません"
 
@@ -1067,6 +1207,19 @@ msgstr "長さが最大値を超えています"
 
 msgid "Length is less than minimum"
 msgstr "長さが最小値を下回っています"
+
+msgid "Limit param must be an integer"
+msgstr "Limit パラメーターは整数でなければなりません"
+
+msgid "Limit param must be positive"
+msgstr "Limit パラメーターは正の値でなければなりません"
+
+#, python-format
+msgid "Limit param must not be higher than %d"
+msgstr "Limit パラメーターは %d 以上であってはなりません"
+
+msgid "Limits request ID length."
+msgstr "要求 ID の長さの制限"
 
 msgid "List definitions may hot have defaults"
 msgstr "リスト定義にデフォルトがない可能性があります"
@@ -1256,6 +1409,20 @@ msgstr "そのイメージを共有する許可がありません"
 msgid "No plugin for '%(name)s' has been loaded"
 msgstr "「%(name)s」のプラグインがロードされませんでした"
 
+#, python-format
+msgid "Not a blob property '%s'"
+msgstr "blob プロパティー '%s' ではありません"
+
+msgid "Not a downloadable entity"
+msgstr "ダウンロード可能なエンティティーではありません"
+
+msgid "Not a list property"
+msgstr "リストプロパティーではありません"
+
+#, python-format
+msgid "Not a list property '%s'"
+msgstr "リストプロパティー '%s' ではありません"
+
 msgid "Not a valid value type"
 msgstr "有効な値タイプではありません"
 
@@ -1303,6 +1470,9 @@ msgstr "ソート方向の数がソートキーの数に一致しません"
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "新旧のソート構文を結合することはできません"
 
+msgid "Only list indexes are allowed for blob lists"
+msgstr "blob リストで許可されるのはリストインデックスのみです"
+
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
 msgstr "操作 \"%s\" には \"value\" という名前のメンバーが必要です。"
@@ -1331,6 +1501,9 @@ msgstr "演算子 %(op)s はサポートされていません"
 #, fuzzy, python-format
 msgid "Original locations is not empty: %s"
 msgstr "元のロケーションは空ではありません: %s"
+
+msgid "Owner can't be updated by non admin."
+msgstr "管理者以外のユーザーはオーナーを更新できません。"
 
 msgid "Owner must be specified to create a tag."
 msgstr "タグを作成するには、所有者を指定する必要があります。"
@@ -1600,6 +1773,12 @@ msgstr ""
 msgid "Show level %(shl)s is not supported in this operation"
 msgstr "表示レベル %(shl)s はこの操作ではサポートされていません"
 
+msgid "Signature verification failed"
+msgstr "シグニチャーの検証が失敗しました"
+
+msgid "Size of image file in bytes"
+msgstr "イメージファイルのサイズ (バイト)"
+
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
 "example, Cinder allows user and image metadata on volumes. Only the image "
@@ -1636,6 +1815,9 @@ msgstr "状況は、\"保留中\"、\"受諾\"、または\"拒否\" でなけ�
 
 msgid "Status not specified"
 msgstr "状況が指定されていません"
+
+msgid "Status of the image"
+msgstr "イメージの状態"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -1765,6 +1947,10 @@ msgid "The driver to use for image cache management."
 msgstr "イメージキャッシュ管理に使用されるドライバー。"
 
 #, python-format
+msgid "The format of the version %s is not valid. Use semver notation"
+msgstr "バージョン %s の形式が無効です。semver 表記を使用してください"
+
+#, python-format
 msgid ""
 "The given uri is not valid. Please specify a valid uri from the following "
 "list of supported uri %(supported)s"
@@ -1784,6 +1970,10 @@ msgstr ""
 "イメージ %s は既にスレーブ上にありますが、検査では見つかりませんでした。これ"
 "は、スレーブサーバー上のすべてのイメージを表示する許可を持っていないことを示"
 "します。"
+
+#, python-format
+msgid "The incoming artifact blob is too large: %s"
+msgstr "入力成果物が大きすぎます: %s"
 
 #, python-format
 msgid "The incoming image is too large: %s"
@@ -2079,6 +2269,15 @@ msgstr ""
 "データのサイズ %(image_size)s が制限を超えます。%(remaining)s バイト残されて"
 "います。"
 
+msgid ""
+"The size of thread pool to be used for scrubbing images. The default is one, "
+"which signifies serial scrubbing. Any value above one indicates the max "
+"number of images that may be scrubbed in parallel."
+msgstr ""
+"イメージのスクラブに使用されるスレッドプールのサイズ。デフォルトはシリアルス"
+"クラブを示す 1 です。1 より大きい値はすべて、並行してスクラブが行われるイメー"
+"ジの最大数を示します。"
+
 #, python-format
 msgid "The specified member %s could not be found"
 msgstr "指定されたメンバー %s は見つかりませんでした"
@@ -2265,6 +2464,12 @@ msgstr ""
 "+http:// スキームを使用するよう変更する必要があります。swift+http://user:"
 "pass@authurl.com/v1/container/obj"
 
+msgid "URL to access the image file kept in external store"
+msgstr "外部ストアに保持されているイメージファイルにアクセスするための URL"
+
+msgid "Unable to PUT to non-empty collection"
+msgstr "空でないコレクションに PUT することができません"
+
 #, python-format
 msgid ""
 "Unable to create pid file %(pid)s.  Running as non-root?\n"
@@ -2285,6 +2490,14 @@ msgstr "指定された範囲ではフィルタリングできません。"
 #, python-format
 msgid "Unable to find '%s' in JSON Schema change"
 msgstr "JSON スキーマの変更で '%s' が見つかりません"
+
+#, python-format
+msgid ""
+"Unable to find `op` in JSON Schema change. It must be one of the following: "
+"%(available)s."
+msgstr ""
+"JSON スキーマの変更で `op` が見つかりません。以下のいずれかでなければなりませ"
+"ん: %(available)s。"
 
 msgid "Unable to get legacy image"
 msgstr "レガシーイメージを取得できません"
@@ -2383,6 +2596,9 @@ msgstr "バージョンコンポーネントが大きすぎます (最大 %d)"
 #, python-format
 msgid "Version is invalid: %(reason)s"
 msgstr "バージョンが無効です: %(reason)s"
+
+msgid "Virtual size of image in bytes"
+msgstr "イメージの仮想サイズ (バイト)"
 
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "可視性は「public」または「private」のいずれかでなければなりません"
@@ -2502,7 +2718,7 @@ msgstr "%s イメージのメンバーを調べる許可がありません。"
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr "「%s」が所有する名前空間でのタグの作成は許可されていません"
+msgstr "'%s' が所有する名前空間でのタグの作成は許可されていません"
 
 msgid "You are not permitted to create image members for the image."
 msgstr "そのイメージのイメージメンバーの作成は許可されていません。"
@@ -2530,6 +2746,9 @@ msgstr "'%s' によって所有される resource_type の作成は許可され�
 #, python-format
 msgid "You are not permitted to create this task with owner as: %s"
 msgstr "所有者 %s を使用してこのタスクを作成することは許可されません"
+
+msgid "You are not permitted to deactivate this image."
+msgstr "このイメージの非アクティブ化は許可されていません。"
 
 msgid "You are not permitted to delete this image."
 msgstr "このイメージの削除は許可されていません。"
@@ -2565,6 +2784,9 @@ msgstr "このイメージ上のタグの変更は許可されていません。
 
 msgid "You are not permitted to modify this image."
 msgstr "このイメージの変更は許可されていません。"
+
+msgid "You are not permitted to reactivate this image."
+msgstr "このイメージの再アクティブ化は許可されていません。"
 
 msgid "You are not permitted to set status on this task."
 msgstr "このタスクに関する状況を設定することは許可されません。"
@@ -2660,6 +2882,9 @@ msgstr "limit パラメーターは正でなければなりません"
 msgid "location: %s data lost"
 msgstr "ロケーション: %s データが失われました"
 
+msgid "md5 hash of image contents."
+msgstr "イメージコンテンツの MD5 ハッシュ。"
+
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() で予期しないキーワード %s が得られました"
@@ -2670,3 +2895,7 @@ msgstr "protected は True または False でなければなりません"
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
 msgstr "%(serv)s を起動できません。受け取ったエラー: %(e)s"
+
+#, python-format
+msgid "x-openstack-request-id is too long, max size %s"
+msgstr "x-openstack-request-id が長すぎます。最大サイズは %s です"

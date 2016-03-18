@@ -7,21 +7,17 @@
 # Ettore Atalan <atalanttore@googlemail.com>, 2014
 # Laera Loris <llaera@outlook.com>, 2013
 # Robert Simai, 2014
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
-# Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
-# Eugen Block <eblock@nde.ag>, 2016. #zanata
-# Monika Wolf <vcomas3@de.ibm.com>, 2016. #zanata
-# Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
+# Frank Kloeker <eumel@arcor.de>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
+"Project-Id-Version: glance 12.0.0.0rc2.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-12 00:22+0000\n"
+"POT-Creation-Date: 2016-03-17 15:26+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-11 01:06+0000\n"
-"Last-Translator: Monika Wolf <vcomas3@de.ibm.com>\n"
+"PO-Revision-Date: 2016-03-16 08:38+0000\n"
+"Last-Translator: Tom Cocozzello <tjcocozz@us.ibm.com>\n"
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -58,7 +54,7 @@ msgstr "Eine %(cls)s-Ausnahme ist im letzten RPC-Aufruf aufgetreten: %(val)s"
 
 #, python-format
 msgid "%(m_id)s not found in the member list of the image %(i_id)s."
-msgstr "%(m_id)s in der Mitgliedsliste des Image %(i_id)s nicht gefunden."
+msgstr "%(m_id)s in der Mitgliedsliste des Abbild %(i_id)s nicht gefunden."
 
 #, python-format
 msgid "%(serv)s (pid %(pid)s) is running..."
@@ -136,7 +132,7 @@ msgstr ""
 "die Keystone-Authentifizierungsstrategie aktiviert ist\n"
 
 msgid "A body is not expected with this request."
-msgstr "Es wird kein Hauptteil bei dieser Anforderung erwartet. "
+msgstr "Es wird kein Body bei dieser Anforderung erwartet. "
 
 msgid ""
 "A list of artifacts that are allowed in the format name or name-version. "
@@ -195,7 +191,7 @@ msgid ""
 "interface."
 msgstr ""
 "Adresse zum Binden des Servers. Nützlich bei der Auswahl einer bestimmten "
-"Netzschnittstelle."
+"Netzwerkschnittstelle."
 
 msgid "Address to find the registry server."
 msgstr "Adresse des Registrierungsserver."
@@ -214,36 +210,38 @@ msgstr ""
 
 msgid "Amount of disk space (in GB) required to boot image."
 msgstr ""
-"Menge an Plattenspeicher (in GB), die zum Booten von Image erforderlich ist."
+"Menge an Plattenspeicher (in GB), die zum Booten des Abbildes erforderlich "
+"ist."
 
 msgid "Amount of ram (in MB) required to boot image."
 msgstr ""
-"Menge an Arbeitsspeicher (in MB), die zum Booten von Image erforderlich ist."
+"Menge an Arbeitsspeicher (in MB), die zum Booten des Abbildes erforderlich "
+"ist."
 
 msgid "An identifier for the image"
-msgstr "Eine ID für das Image"
+msgstr "Eine ID für das Abbild"
 
 msgid "An identifier for the image member (tenantId)"
-msgstr "Eine ID für das Imageelement (tenantId)"
+msgstr "Eine ID für das Abbildelement (tenantId)"
 
 msgid "An identifier for the owner of this task"
-msgstr "Eine ID für den Eigentümer dieser Task"
+msgstr "Eine ID für den Eigentümer diesen Tasks"
 
 msgid "An identifier for the task"
 msgstr "Eine ID für die Task"
 
 msgid "An image file url"
-msgstr "URL der Imagedatei"
+msgstr "URL der Abbilddatei"
 
 msgid "An image schema url"
-msgstr "URL des Imageschemas"
+msgstr "URL des Abbildschemas"
 
 msgid "An image self url"
 msgstr "'self'-URL für Abbild"
 
 #, python-format
 msgid "An image with identifier %s already exists"
-msgstr "Ein Image mit ID %s ist bereits vorhanden"
+msgstr "Ein Abbild mit ID %s ist bereits vorhanden"
 
 msgid "An import task exception occurred"
 msgstr "Es ist eine Ausnahme bei einer Importtask eingetreten."
@@ -281,7 +279,7 @@ msgstr "Das Artefakt kann den Status nicht von %(source)s in %(target)s ändern"
 
 #, python-format
 msgid "Artifact exceeds the storage quota: %s"
-msgstr "Artefakt überschreitet die Speicherquote: %s"
+msgstr "Artefakt überschreitet die Speicherkontingent: %s"
 
 #, python-format
 msgid "Artifact has no property %(prop)s"
@@ -342,11 +340,11 @@ msgstr "Versuch, den Wert einer nicht veränderbaren Eigenschaft festzulegen"
 
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
-msgstr "Versuch, doppeltes Image hochzuladen: %s"
+msgstr "Versuch doppeltes Abbild hochzuladen: %s"
 
 msgid "Attempted to update Location field for an image not in queued status."
 msgstr ""
-"Versuch, Adressfeld für ein Image zu aktualisieren, das sich nicht im "
+"Versuch, Adressfeld für ein Abbild zu aktualisieren, das sich nicht im "
 "Warteschlangenmodus befindet."
 
 #, python-format
@@ -367,13 +365,13 @@ msgstr "Attribut '%s' ist reserviert."
 
 msgid "Attribute container_format can be only replaced for a queued image."
 msgstr ""
-"Attribut 'container_format' kann nur durch ein Image in der Warteschlange "
+"Attribut 'container_format' kann nur durch ein Abbild in der Warteschlange "
 "ersetzt werden. "
 
 msgid "Attribute disk_format can be only replaced for a queued image."
 msgstr ""
-"Attribut 'disk_format' kann nur durch ein Image in der Warteschlange ersetzt "
-"werden. "
+"Attribut 'disk_format' kann nur durch ein Abbild in der Warteschlange "
+"ersetzt werden. "
 
 msgid ""
 "Auth key for the user authenticating against the Swift authentication "
@@ -392,10 +390,10 @@ msgid ""
 "Deleting image data for %s."
 msgstr ""
 "Authentifizierungsfehler: Das Token ist möglicherweise beim Hochladen der "
-"Datei abgelaufen. Die Imagedaten für %s werden gelöscht."
+"Datei abgelaufen. Die Abbilddaten für %s werden gelöscht."
 
 msgid "Authorization failed."
-msgstr "Autorisierung fehlgeschlagen."
+msgstr "Authorisierung fehlgeschlagen."
 
 msgid "Available categories:"
 msgstr "Verfügbare Kategorien:"
@@ -430,7 +428,7 @@ msgid "Badly formed credentials in Swift URI."
 msgstr "Fehlerhafter Berechtigungsnachweis in Swift-URI."
 
 msgid "Base directory that the image cache uses."
-msgstr "Stammverzeichnis für den Abbildzwischenspeicher."
+msgstr "Stammverzeichnis für den Abbild-Zwischenspeicher."
 
 msgid "BinaryObject property cannot be declared mutable"
 msgstr ""
@@ -462,7 +460,7 @@ msgstr "Darf kein negativer Wert sein."
 #, python-format
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr ""
-"Image %(key)s '%(value)s' kann nicht in eine Ganzzahl konvertiert werden. "
+"Abbild %(key)s '%(value)s' kann nicht in eine Ganzzahl konvertiert werden. "
 
 msgid "Cannot declare artifact property with reserved name 'metadata'"
 msgstr ""
@@ -474,7 +472,7 @@ msgid "Cannot load artifact '%(name)s'"
 msgstr "Das Artefakt '%(name)s' kann nicht geladen werden"
 
 msgid "Cannot remove last location in the image."
-msgstr "Die letzte Position im Image kann nicht entfernt werden. "
+msgstr "Die letzte Position im Abbild kann nicht entfernt werden. "
 
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
@@ -492,7 +490,7 @@ msgstr "'min_size' kann nicht explizit angegeben werden"
 
 msgid "Cannot upload to an unqueued image"
 msgstr ""
-"Hochladen auf Image, das sich nicht in Warteschlange befindet, nicht möglich"
+"Hochladen auf Abbild, das sich nicht in Warteschlange befindet, nicht möglich"
 
 #, python-format
 msgid "Cannot use this parameter with the operator %(op)s"
@@ -544,11 +542,11 @@ msgid "Container format is not specified."
 msgstr "Containerformat wurde nicht angegeben."
 
 msgid "Content-Type must be application/octet-stream"
-msgstr "Inhaltstyp muss Anwendungs-/Oktett-Stream sein"
+msgstr "Inhaltstyp muss Anwendungs-/Oktet-Stream sein"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
-msgstr "Fehlerhafter Image-Download für Image %(image_id)s"
+msgstr "Fehlerhafter Abbild-Download für Abbild %(image_id)s"
 
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
@@ -564,7 +562,7 @@ msgstr "Metadatenobjekt %s konnte nicht gefunden werden"
 
 #, python-format
 msgid "Could not find metadata tag %s"
-msgstr "Metadatentag %s konnte nicht gefunden werden"
+msgstr "Metadatenschlagwort %s konnte nicht gefunden werden"
 
 #, python-format
 msgid "Could not find namespace %s"
@@ -583,7 +581,7 @@ msgstr "Task %s konnte nicht gefunden werden"
 
 #, python-format
 msgid "Could not update image: %s"
-msgstr "Image konnte nicht aktualisiert werden: %s"
+msgstr "Abbild konnte nicht aktualisiert werden: %s"
 
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "Zurzeit werden OVA-Pakete mit mehreren Platten nicht unterstützt. "
@@ -601,13 +599,13 @@ msgid "Data supplied was not valid."
 msgstr "Angegebene Daten waren nicht gültig."
 
 msgid "Date and time of image member creation"
-msgstr "Datum und Uhrzeit der Erstellung des Imageelements"
+msgstr "Datum und Uhrzeit der Erstellung des Abbildelements"
 
 msgid "Date and time of image registration"
-msgstr "Datum und Uhrzeit der Imageregistrierung "
+msgstr "Datum und Uhrzeit der Abbildregistrierung "
 
 msgid "Date and time of last modification of image member"
-msgstr "Datum und Uhrzeit der letzten Änderung des Imageelements"
+msgstr "Datum und Uhrzeit der letzten Änderung des Abbildelements"
 
 msgid "Date and time of namespace creation"
 msgstr "Datum und Uhrzeit der Erstellung des Namensbereichs"
@@ -619,10 +617,10 @@ msgid "Date and time of resource type association"
 msgstr "Datum und Uhrzeit der Ressourcentypzuordnung"
 
 msgid "Date and time of tag creation"
-msgstr "Datum und Uhrzeit der Erstellung des Tags"
+msgstr "Datum und Uhrzeit der Erstellung des Schlagwortes"
 
 msgid "Date and time of the last image modification"
-msgstr "Datum und Uhrzeit der letzten Imageänderung"
+msgstr "Datum und Uhrzeit der letzten Abbildänderung"
 
 msgid "Date and time of the last namespace modification"
 msgstr "Datum und Uhrzeit der letzten Änderung des Namensbereichs"
@@ -634,7 +632,7 @@ msgid "Date and time of the last resource type association modification"
 msgstr "Datum und Uhrzeit der letzten Änderung der Ressourcentypzuordnung"
 
 msgid "Date and time of the last tag modification"
-msgstr "Datum und Uhrzeit der letzten Tagänderung"
+msgstr "Datum und Uhrzeit der letzten Schlagwortänderung"
 
 msgid "Datetime when this resource was created"
 msgstr "Datum/Uhrzeit der Erstellung dieser Ressource"
@@ -659,19 +657,19 @@ msgstr "Standardwert ist ungültig"
 #, python-format
 msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
 msgstr ""
-"Versuch, das Artefakt hochzuladen, wird verweigert, weil es die Quote "
+"Versuch, das Artefakt hochzuladen, wird verweigert, weil es das Kontingent "
 "überschreitet: %s"
 
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr ""
-"Versuch, das Image hochzuladen, wird verweigert, weil es die Quote "
+"Versuch, das Abbild hochzuladen, wird verweigert, weil es das Kontingent "
 "überschreitet: %s"
 
 #, python-format
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr ""
-"Versuch, Image hochzuladen, das größer ist als %d Bytes, wird nicht "
+"Versuch, Abbild hochzuladen, das größer ist als %d Bytes, wird nicht "
 "zugelassen."
 
 #, python-format
@@ -682,19 +680,19 @@ msgid "Dependency relations cannot be mutable"
 msgstr "Abhängigkeitsbeziehungen können nicht veränderbar sein"
 
 msgid "Deploy the v1 OpenStack Images API."
-msgstr "OpenStack-Images-API von Version 1 implementieren. "
+msgstr "OpenStack Abbild-API  Version 1 implementieren. "
 
 msgid "Deploy the v1 OpenStack Registry API."
-msgstr "OpenStack-Registry-API von Version 1 implementieren."
+msgstr "OpenStack Registry-API Version 1 implementieren."
 
 msgid "Deploy the v2 OpenStack Images API."
-msgstr "OpenStack-Images-API von Version 2 implementieren. "
+msgstr "OpenStack Abbild-API Version 2 implementieren. "
 
 msgid "Deploy the v2 OpenStack Registry API."
-msgstr "OpenStack-Registry-API von Version 2 implementieren."
+msgstr "OpenStack-Registry-API Version 2 implementieren."
 
 msgid "Descriptive name for the image"
-msgstr "Beschreibender Name für das Image"
+msgstr "Beschreibender Name für das Abbild"
 
 msgid "Dictionary contains unexpected key(s)"
 msgstr "Verzeichnis enthält unerwartete Schlüssel"
@@ -738,13 +736,13 @@ msgid ""
 "characters that could not be decoded by Glance"
 msgstr ""
 "Fehler beim Entschlüsseln Ihrer Anforderung. Entweder die URL oder der "
-"angeforderte Hauptteil enthalten Zeichen, die von Glance nicht entschlüsselt "
+"angeforderte Body enthalten Zeichen, die von Glance nicht entschlüsselt "
 "werden konnten. "
 
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
 msgstr ""
-"Fehler beim Abrufen der Mitglieder von Image %(image_id)s: %(inner_msg)s"
+"Fehler beim Abrufen der Mitglieder von Abbild %(image_id)s: %(inner_msg)s"
 
 msgid "Error in store configuration. Adding artifacts to store is disabled."
 msgstr ""
@@ -753,7 +751,7 @@ msgstr ""
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
-"Fehler in Speicherkonfiguration. Hinzufügen von Images zu Speicher ist "
+"Fehler in Speicherkonfiguration. Hinzufügen von Abbildern zu Speicher ist "
 "inaktiviert."
 
 msgid "Error occurred while creating the verifier"
@@ -779,11 +777,11 @@ msgstr "Externe Quellen werden nicht unterstützt: '%s'"
 
 #, python-format
 msgid "Failed to activate image. Got error: %s"
-msgstr "Image wurde nicht aktiviert. Fehler: %s"
+msgstr "Abbild wurde nicht aktiviert. Fehler: %s"
 
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
-msgstr "Imagemetadaten wurden nicht hinzugefügt. Fehler: %s"
+msgstr "Abbildmetadaten wurden nicht hinzugefügt. Fehler: %s"
 
 #, python-format
 msgid "Failed to find artifact %(artifact_id)s to delete"
@@ -791,15 +789,15 @@ msgstr "Zu löschendes Artefakt %(artifact_id)s wurde nicht gefunden"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
-msgstr "Zu löschendes Image %(image_id)s wurde nicht gefunden"
+msgstr "Zu löschendes Abbild %(image_id)s wurde nicht gefunden"
 
 #, python-format
 msgid "Failed to find image to delete: %s"
-msgstr "Zu löschendes Image wurde nicht gefunden: %s"
+msgstr "Zu löschendes Abbild wurde nicht gefunden: %s"
 
 #, python-format
 msgid "Failed to find image to update: %s"
-msgstr "Zu aktualisierendes Image wurde nicht gefunden: %s"
+msgstr "Zu aktualisierendes Abbild wurde nicht gefunden: %s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
@@ -807,7 +805,8 @@ msgstr "Zu löschender Ressourcentyp %(resourcetype)s wurde nicht gefunden"
 
 #, python-format
 msgid "Failed to initialize the image cache database. Got error: %s"
-msgstr "Die Image-Cachedatenbank wurde nicht initialisiert. Fehler: %s"
+msgstr ""
+"Die Image-Zwischenspeicherdatenbank wurde nicht initialisiert. Fehler: %s"
 
 #, python-format
 msgid "Failed to read %s from config"
@@ -815,22 +814,22 @@ msgstr "Fehler beim Lesen von %s aus Konfiguration"
 
 #, python-format
 msgid "Failed to reserve image. Got error: %s"
-msgstr "Image wurde nicht reserviert. Fehler: %s"
+msgstr "Abbild wurde nicht reserviert. Fehler: %s"
 
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
-msgstr "Imagemetadaten wurden nicht aktualisiert. Fehler: %s"
+msgstr "Abbildmetadaten wurden nicht aktualisiert. Fehler: %s"
 
 #, python-format
 msgid "Failed to upload image %s"
-msgstr "Fehler beim Hochladen des Abbilds %s"
+msgstr "Fehler beim Hochladen des Abbildes %s"
 
 #, python-format
 msgid ""
 "Failed to upload image data for image %(image_id)s due to HTTP error: "
 "%(error)s"
 msgstr ""
-"Fehler beim Hochladen von Imagedaten für Image %(image_id)s wegen HTTP-"
+"Fehler beim Hochladen von Abbilddaten für Abbild %(image_id)s wegen HTTP-"
 "Fehler: %(error)s"
 
 #, python-format
@@ -859,7 +858,7 @@ msgid "File too small"
 msgstr "Datei zu klein"
 
 msgid "Forbidden image access"
-msgstr "Unzulässiger Zugriff auf Image"
+msgstr "Unzulässiger Zugriff auf Abbild"
 
 #, python-format
 msgid "Forbidden to delete a %s image."
@@ -867,25 +866,25 @@ msgstr "Es ist nicht erlaubt, ein %s Abbild zu löschen."
 
 #, python-format
 msgid "Forbidden to delete image: %s"
-msgstr "Löschen von Image nicht erlaubt: %s"
+msgstr "Löschen von Abbild nicht erlaubt: %s"
 
 #, python-format
 msgid "Forbidden to modify '%(key)s' of %(status)s image."
-msgstr "Es ist nicht erlaubt, '%(key)s' des %(status)s-Image zu ändern."
+msgstr "Es ist nicht erlaubt, '%(key)s' des %(status)s-Abbild zu ändern."
 
 #, python-format
 msgid "Forbidden to modify '%s' of image."
-msgstr "Ändern von '%s' eines Image nicht erlaubt."
+msgstr "Ändern von '%s' eines Abbild nicht erlaubt."
 
 msgid "Forbidden to reserve image."
-msgstr "Reservieren von Image nicht erlaubt."
+msgstr "Reservieren von Abbild nicht erlaubt."
 
 msgid "Forbidden to update deleted image."
-msgstr "Aktualisieren von gelöschtem Image nicht erlaubt."
+msgstr "Aktualisieren von gelöschtem Abbild nicht erlaubt."
 
 #, python-format
 msgid "Forbidden to update image: %s"
-msgstr "Aktualisieren von Image nicht erlaubt: %s"
+msgstr "Aktualisieren von Abbild nicht erlaubt: %s"
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -913,7 +912,7 @@ msgstr "Abrufen der Daten von BLOB %(name)s fehlgeschlagen: %(err)s."
 
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
-msgstr "Abrufen der Daten des Image %(id)s fehlgeschlagen: %(err)s."
+msgstr "Abrufen der Daten des Abbildes %(id)s fehlgeschlagen: %(err)s."
 
 msgid "Glance client not installed"
 msgstr "Glance-Client ist nicht installiert."
@@ -937,7 +936,7 @@ msgid "If False doesn't trace SQL requests."
 msgstr "Bei 'False' erfolgt keine Traceerstellung für SQL-Anforderungen."
 
 msgid "If False fully disable profiling feature."
-msgstr "Bei 'False' die Profilerstellungsfunktion vollständig inaktivieren."
+msgstr "Bei 'False' die Profilerstellungsfunktion vollständig deaktivieren."
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -953,7 +952,7 @@ msgstr ""
 "'False' setzen, wenn Sie einen wsgi-Server erstellen. "
 
 msgid "If true, image will not be deletable."
-msgstr "Bei 'true' kann das Image nicht gelöscht werden."
+msgstr "Bei 'true' kann das Abbild nicht gelöscht werden."
 
 msgid "If true, namespace will not be deletable."
 msgstr "Bei 'true' kann der Namensbereich nicht gelöscht werden."
@@ -961,30 +960,30 @@ msgstr "Bei 'true' kann der Namensbereich nicht gelöscht werden."
 #, python-format
 msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr ""
-"Image %(id)s konnte nicht gelöscht werden, da es verwendet wird: %(exc)s"
+"Abbild %(id)s konnte nicht gelöscht werden, da es verwendet wird: %(exc)s"
 
 #, python-format
 msgid "Image %(id)s not found"
-msgstr "Image %(id)s nicht gefunden"
+msgstr "Abbild %(id)s nicht gefunden"
 
 #, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have been "
 "deleted during the upload: %(error)s"
 msgstr ""
-"Image %(image_id)s wurde nach dem Upload nicht gefunden. Das Image wurde "
+"Abbild %(image_id)s wurde nach dem Upload nicht gefunden. Das Abbild wurde "
 "möglicherweise während des Uploads gelöscht: %(error)s"
 
 #, python-format
 msgid "Image %(image_id)s is protected and cannot be deleted."
-msgstr "Image %(image_id)s ist geschützt und kann nicht gelöscht werden."
+msgstr "Abbild %(image_id)s ist geschützt und kann nicht gelöscht werden."
 
 #, python-format
 msgid ""
 "Image %s could not be found after upload. The image may have been deleted "
 "during the upload, cleaning up the chunks uploaded."
 msgstr ""
-"Image %s konnte nach dem Upload nicht gefunden werden. Das Image wurde "
+"Abbild %s konnte nach dem Upload nicht gefunden werden. Das Abbild wurde "
 "möglicherweise beim Upload gelöscht. Die hochgeladenen Blöcke werden "
 "bereinigt."
 
@@ -993,16 +992,16 @@ msgid ""
 "Image %s could not be found after upload. The image may have been deleted "
 "during the upload."
 msgstr ""
-"Image %s konnte nach dem Hochladen nicht gefunden werden. Das Image ist "
+"Abbild %s konnte nach dem Hochladen nicht gefunden werden. Das Abbild ist "
 "möglicherweise beim Hochladen gelöscht worden."
 
 #, python-format
 msgid "Image %s is deactivated"
-msgstr "Image %s ist inaktiviert"
+msgstr "Abbild %s ist deaktiviert"
 
 #, python-format
 msgid "Image %s is not active"
-msgstr "Image %s ist nicht aktiv"
+msgstr "Abbild %s ist nicht aktiv"
 
 #, python-format
 msgid "Image %s not found."
@@ -1010,24 +1009,24 @@ msgstr "Abbild %s nicht gefunden."
 
 #, python-format
 msgid "Image exceeds the storage quota: %s"
-msgstr "Das Abbild übersteigt das vorhandene Speicher-Kontingent: %s"
+msgstr "Das Abbild übersteigt das vorhandene Speicherkontingent: %s"
 
 msgid "Image id is required."
-msgstr "Image-ID ist erforderlich."
+msgstr "Abbild-ID ist erforderlich."
 
 msgid "Image is protected"
-msgstr "Image ist geschützt"
+msgstr "Abbild ist geschützt"
 
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
-msgstr "Grenzwert für Imagemitglieder für Image %(id)s überschritten: %(e)s:"
+msgstr "Grenzwert für Abbildmitglieder für Abbild %(id)s überschritten: %(e)s:"
 
 #, python-format
 msgid "Image name too long: %d"
-msgstr "Imagename zu lang: %d"
+msgstr "Abbildname zu lang: %d"
 
 msgid "Image operation conflicts"
-msgstr "Imageoperationskonflikte"
+msgstr "Abbildoperationskonflikte"
 
 #, python-format
 msgid ""
@@ -1038,31 +1037,31 @@ msgstr ""
 
 #, python-format
 msgid "Image storage media is full: %s"
-msgstr "Datenträger zum Speichern von Images ist voll: %s"
+msgstr "Datenträger zum Speichern des Abbildes ist voll: %s"
 
 #, python-format
 msgid "Image tag limit exceeded for image %(id)s: %(e)s:"
-msgstr "Grenzwert für Imagetags für Image %(id)s überschritten: %(e)s:"
+msgstr "Grenzwert für Abbildschlagwort für Abbild %(id)s überschritten: %(e)s:"
 
 #, python-format
 msgid "Image upload problem: %s"
-msgstr "Problem beim Imageupload: %s"
+msgstr "Problem beim Abbildupload: %s"
 
 #, python-format
 msgid "Image with identifier %s already exists!"
-msgstr "Image mit ID %s ist bereits vorhanden!"
+msgstr "Abbild mit ID %s ist bereits vorhanden!"
 
 #, python-format
 msgid "Image with identifier %s has been deleted."
-msgstr "Image mit ID %s wurde gelöscht. "
+msgstr "Abbild mit ID %s wurde gelöscht. "
 
 #, python-format
 msgid "Image with identifier %s not found"
-msgstr "Image mit ID %s nicht gefunden"
+msgstr "Abbild mit ID %s nicht gefunden"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
-msgstr "Image mit der angegebenen ID %(image_id)s wurde nicht gefunden"
+msgstr "Abbild mit der angegebenen ID %(image_id)s wurde nicht gefunden"
 
 #, python-format
 msgid ""
@@ -1092,7 +1091,7 @@ msgstr "Unzureichende Berechtigungen für Artefaktspeichermedium: %s"
 
 #, python-format
 msgid "Insufficient permissions on image storage media: %s"
-msgstr "Nicht ausreichende Berechtigungen auf Imagespeichermedien: %s"
+msgstr "Nicht ausreichende Berechtigungen auf Abbildspeichermedien: %s"
 
 #, python-format
 msgid "Invalid Content-Type for work with %s"
@@ -1118,7 +1117,7 @@ msgstr "Ungültige Konfiguration in Eigenschaftsschutzdatei. "
 
 #, python-format
 msgid "Invalid container format '%s' for image."
-msgstr "Ungültiges Containerformat '%s' für Image."
+msgstr "Ungültiges Containerformat '%s' für Abbild."
 
 #, python-format
 msgid "Invalid content type %(content_type)s"
@@ -1132,7 +1131,7 @@ msgstr "Ungültiger dict-Eigenschaftstyp angegeben"
 
 #, python-format
 msgid "Invalid disk format '%s' for image."
-msgstr "Ungültiges Plattenformat '%s' für Image."
+msgstr "Ungültiges Plattenformat '%s' für Abbild."
 
 #, python-format
 msgid "Invalid filter value %s. The quote is not closed."
@@ -1156,14 +1155,14 @@ msgid "Invalid headers \"Content-Type\": %s"
 msgstr "Ungültige Header \"Content-Type\": %s"
 
 msgid "Invalid image id format"
-msgstr "Ungültiges Image-ID-Format"
+msgstr "Ungültiges Abbild-ID-Format"
 
 msgid "Invalid item type specification"
 msgstr "Ungültiger Elementtyp angegeben"
 
 #, python-format
 msgid "Invalid json body: %s"
-msgstr "Ungültiger JSON-Hauptteil: %s"
+msgstr "Ungültiger JSON-Body: %s"
 
 msgid "Invalid jsonpatch request"
 msgstr "Ungültige jsonpatch-Anforderung"
@@ -1198,7 +1197,7 @@ msgid "Invalid marker format"
 msgstr "Ungültiges Markerformat"
 
 msgid "Invalid marker. Image could not be found."
-msgstr "Ungültiger Marker. Image konnte nicht gefunden werden."
+msgstr "Ungültiger Marker. Abbild konnte nicht gefunden werden."
 
 #, python-format
 msgid "Invalid mask_gen_algorithm: %s"
@@ -1228,7 +1227,7 @@ msgid "Invalid position for adding a location."
 msgstr "Ungültige Position zum Hinzufügen einer Position."
 
 msgid "Invalid position for removing a location."
-msgstr "Ungültige Position zum Entfernen einer Position."
+msgstr "Ungültige Stelle zum Entfernen einer Position."
 
 msgid "Invalid property definition"
 msgstr "Ungültige Eigenschaftsdefinition"
@@ -1366,7 +1365,7 @@ msgid ""
 msgstr ""
 "Das Eventlet-Modul scheint vor der Einstellung %s='yes' importiert worden zu "
 "sein. Im Moment ist die Inaktivierung von eventlet.greendns erforderlich, "
-"wenn ipv6 verwendet wird, da eventlet.greendns derzeit bei ipv6-Adressen "
+"wenn IPv6 verwendet wird, da eventlet.greendns derzeit bei IPv6-Adressen "
 "unterbricht. Stellen Sie sicher, dass Eventlet erst importiert wird, wenn "
 "dies festgelegt wurde."
 
@@ -1399,7 +1398,7 @@ msgstr ""
 "aufeinanderfolgende '/' sind nicht zulässig."
 
 msgid "Legacy image was not found"
-msgstr "Traditionelles Image nicht gefunden"
+msgstr "Traditionelles Abbild nicht gefunden"
 
 msgid "Length  is greater than maximum"
 msgstr "Die Länge überschreitet den Maximalwert"
@@ -1424,7 +1423,7 @@ msgid "List definitions may hot have defaults"
 msgstr "Listendefinitionen verfügen möglicherweise über keine Standardwerte"
 
 msgid "List of strings related to the image"
-msgstr "Liste mit dem Image zugehörigen Zeichenketten"
+msgstr "Liste mit dem Abbild zugehörigen Zeichenketten"
 
 msgid "List size is greater than maximum"
 msgstr "Listengröße überschreitet den Maximalwert"
@@ -1464,29 +1463,29 @@ msgid ""
 "Maximum number of image members per image. Negative values evaluate to "
 "unlimited."
 msgstr ""
-"Maximale Anzahl der Imagemitglieder pro Image. Negative Werte bedeuten "
+"Maximale Anzahl der Abbildmitglieder pro Abbild. Negative Werte bedeuten "
 "unbegrenzt."
 
 msgid ""
 "Maximum number of locations allowed on an image. Negative values evaluate to "
 "unlimited."
 msgstr ""
-"Maximale Anzahl der für ein Image zulässigen Positionen. Unbegrenzt, wenn "
+"Maximale Anzahl der für ein Abbild zulässigen Positionen. Unbegrenzt, wenn "
 "Werte negativ sind. "
 
 msgid ""
 "Maximum number of properties allowed on an image. Negative values evaluate "
 "to unlimited."
 msgstr ""
-"Maximale Anzahl der für ein Image zulässigen Eigenschaften. Unbegrenzt, wenn "
-"Werte negativ sind. "
+"Maximale Anzahl der für ein Abbild zulässigen Eigenschaften. Unbegrenzt, "
+"wenn Werte negativ sind. "
 
 msgid ""
 "Maximum number of tags allowed on an image. Negative values evaluate to "
 "unlimited."
 msgstr ""
-"Maximale Anzahl der für ein Image zulässigen Tags. Negative Werte bedeuten "
-"unbegrenzt."
+"Maximale Anzahl der für ein Abbild zulässige Schlagwörter. Negative Werte "
+"bedeuten unbegrenzt."
 
 msgid "Maximum permissible number of items that could be returned by a request"
 msgstr ""
@@ -1502,14 +1501,14 @@ msgid ""
 "bytes (1 TB).WARNING: this value should only be increased after careful "
 "consideration and must be set to a value under 8 EB (9223372036854775808)."
 msgstr ""
-"Maximale Größe von Image, das ein Benutzer hochladen kann, in Bytes. Der "
+"Maximale Größe des Abbildes, das ein Benutzer hochladen kann, in Bytes. Der "
 "Standardwert ist 1099511627776 Byte (1 TB). WARNUNG: Dieser Wert sollte nur "
 "nach sorgfältiger Überlegung erhöht werden und muss unter 8 EB "
 "(9223372036854775808) liegen."
 
 #, python-format
 msgid "Member %(member_id)s is duplicated for image %(image_id)s"
-msgstr "Mitglied %(member_id)s ist für Image %(image_id)s doppelt vorhanden"
+msgstr "Mitglied %(member_id)s ist für Abbild %(image_id)s doppelt vorhanden"
 
 msgid "Member can't be empty"
 msgstr "Mitglied darf nicht leer sein"
@@ -1627,14 +1626,14 @@ msgstr "Es wurde kein Abbild mit der ID %s gefunden"
 
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
-msgstr "Keine Position mit ID %(loc)s von Image %(img)s gefunden"
+msgstr "Keine Position mit ID %(loc)s von Abbild %(img)s gefunden"
 
 msgid "No permission to share that image"
-msgstr "Keine Berechtigung, dieses Image freizugeben"
+msgstr "Keine Berechtigung dieses Abbild freizugeben"
 
 #, python-format
 msgid "No plugin for '%(name)s' has been loaded"
-msgstr "Kein Plug-in für '%(name)s' wurde geladen"
+msgstr "Kein Plugin für '%(name)s' wurde geladen"
 
 msgid "No property to access"
 msgstr "Kein Zugriff auf Eigenschaft"
@@ -1666,40 +1665,40 @@ msgstr "Nicht alle Abhängigkeiten befinden sich im Status '%s'"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
-msgstr "Es ist nicht zulässig, Mitglieder für Image %s zu erstellen."
+msgstr "Es ist nicht zulässig, Mitglieder für Abbild %s zu erstellen."
 
 #, python-format
 msgid "Not allowed to deactivate image in status '%s'"
-msgstr "Inaktivieren des Image im Status '%s' nicht zulässig"
+msgstr "Deaktivieren des Abbild im Status '%s' nicht zulässig"
 
 #, python-format
 msgid "Not allowed to delete members for image %s."
-msgstr "Es ist nicht zulässig, Mitglieder für Image %s zu löschen."
+msgstr "Es ist nicht zulässig, Mitglieder für Abbild %s zu löschen."
 
 #, python-format
 msgid "Not allowed to delete tags for image %s."
-msgstr "Es ist nicht zulässig, Tags für Image %s zu löschen."
+msgstr "Es ist nicht zulässig, Schlagwörter für Abbild %s zu löschen."
 
 #, python-format
 msgid "Not allowed to list members for image %s."
-msgstr "Es ist nicht zulässig, Mitglieder für Image %s aufzulisten."
+msgstr "Es ist nicht zulässig, Mitglieder für Abbild %s aufzulisten."
 
 #, python-format
 msgid "Not allowed to reactivate image in status '%s'"
-msgstr "Erneutes Aktivieren des Image im Status '%s' nicht zulässig"
+msgstr "Erneutes Aktivieren des Abbildes im Status '%s' nicht zulässig"
 
 #, python-format
 msgid "Not allowed to update members for image %s."
-msgstr "Es ist nicht zulässig, Mitglieder für Image %s zu aktualisieren."
+msgstr "Es ist nicht zulässig, Mitglieder für Abbild %s zu aktualisieren."
 
 #, python-format
 msgid "Not allowed to update tags for image %s."
-msgstr "Es ist nicht zulässig, Tags für Image %s zu aktualisieren."
+msgstr "Es ist nicht zulässig, Schlagwörter für Abbild %s zu aktualisieren."
 
 #, python-format
 msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr ""
-"Hochladen von Imagedaten für Image %(image_id)s nicht zulässig: %(error)s"
+"Hochladen von Abbilddaten für Abbild %(image_id)s nicht zulässig: %(error)s"
 
 #, python-format
 msgid "Not an array idx '%s'"
@@ -1768,10 +1767,10 @@ msgstr ""
 "aktualisiert werden."
 
 msgid "Owner must be specified to create a tag."
-msgstr "Der Eigentümer muss zum Erstellen eines Tags angegeben werden."
+msgstr "Der Eigentümer muss zum Erstellen eines Schlagwortes angegeben werden."
 
 msgid "Owner of the image"
-msgstr "Eigentümer des Image"
+msgstr "Eigentümer des Abbildes"
 
 msgid "Owner of the namespace."
 msgstr "Eigentümer des Namensbereichs. "
@@ -1785,7 +1784,7 @@ msgid ""
 "api-keystone] use the value \"keystone\""
 msgstr ""
 "Namensteil einer Pipeline in Ihrer Paste-Konfigurationsdatei mit entferntem "
-"Servicenamen. Beispiel: Wenn Ihr Paste-Abschnittsname [pipeline:glance-api-"
+"Dienstenamen. Beispiel: Wenn Ihr Paste-Abschnittsname [pipeline:glance-api-"
 "keystone] lautet, verwenden Sie den Wert \"keystone\""
 
 msgid "Path to the directory where json metadata files are stored"
@@ -1903,7 +1902,7 @@ msgid ""
 "Provided image size must match the stored image size. (provided size: "
 "%(ps)d, stored size: %(ss)d)"
 msgstr ""
-"Die angegebene Imagegröße muss der gespeicherten Imagegröße entsprechen. "
+"Die angegebene Abbildgröße muss der gespeicherten Abbildgröße entsprechen. "
 "(angegebene Größe: %(ps)d, gespeicherte Größe: %(ss)d)"
 
 #, python-format
@@ -1923,7 +1922,7 @@ msgstr ""
 "Stellt eine benutzerfreundliche Beschreibung des Namensbereichs bereit. "
 
 msgid "Public images do not have members."
-msgstr "Öffentliche Images haben keine Elemente."
+msgstr "Öffentliche Abbilder haben keine Mitglieder."
 
 msgid ""
 "Public url to use for versions endpoint. The default is None, which will use "
@@ -2019,7 +2018,7 @@ msgstr ""
 "ausgeführt. "
 
 msgid "Scope of image accessibility"
-msgstr "Umfang der Imagezugänglichkeit"
+msgstr "Umfang der Abbildzugänglichkeit"
 
 msgid "Scope of namespace accessibility."
 msgstr "Umfang der Zugänglichkeit des Namensbereichs. "
@@ -2047,14 +2046,15 @@ msgid ""
 "respectively. If no unit is specified then Bytes is assumed. Note that there "
 "should not be any space between value and unit and units are case sensitive."
 msgstr ""
-"Legt eine systemweite Quote für jeden Benutzer fest. Dieser Wert ist die "
-"Gesamtkapazität, die ein Benutzer in allen Speichersystemen zusammengenommen "
-"verwenden kann. Der Wert 0 bedeutet 'unbegrenzt'. Für den Wert kann eine "
-"optionale Einheit angegeben werden. Zulässige Einheiten sind B, KB, MB, GB "
-"und TB (diese stehen für Bytes, Kilobytes, Megabytes, Gigabytes bzw. "
-"Terabytes). Bei fehlender Einheitenangabe werden Bytes angenommen. Beachten "
-"Sie, dass zwischen dem Wert und der Einheit kein Leerzeichen stehen sollte "
-"und dass bei Einheiten die Groß-/Kleinschreibung beachtet werden muss."
+"Legt eine systemweite Limitierung für jeden Benutzer fest. Dieser Wert ist "
+"die Gesamtkapazität, die ein Benutzer in allen Speichersystemen "
+"zusammengenommen verwenden kann. Der Wert 0 bedeutet 'unbegrenzt'. Für den "
+"Wert kann eine optionale Einheit angegeben werden. Zulässige Einheiten sind "
+"B, KB, MB, GB und TB (diese stehen für Bytes, Kilobytes, Megabytes, "
+"Gigabytes bzw. Terabytes). Bei fehlender Einheitenangabe werden Bytes "
+"angenommen. Beachten Sie, dass zwischen dem Wert und der Einheit kein "
+"Leerzeichen stehen sollte und dass bei Einheiten die Groß-/Kleinschreibung "
+"beachtet werden muss."
 
 #, python-format
 msgid "Show level %(shl)s is not supported in this operation"
@@ -2068,7 +2068,7 @@ msgid "Signature verification failed."
 msgstr "Signaturverifizierung fehlgeschlagen."
 
 msgid "Size of image file in bytes"
-msgstr "Größe der Imagedatei in Byte "
+msgstr "Größe der Abbilddatei in Byte "
 
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
@@ -2077,7 +2077,7 @@ msgid ""
 "property allows a namespace target to remove the ambiguity."
 msgstr ""
 "Bei manchen Ressourcentypen sind mehrere Schlüssel/Wert-Paare pro Instanz "
-"zulässig. Cinder lässt z. B. Benutzer- und Imagemetadaten für Datenträger "
+"zulässig. Cinder lässt z. B. Benutzer- und Abbildmetadaten für Datenträger "
 "zu. Nur die Metadaten der Imageeigenschaften werden von Nova ausgewertet "
 "(Planung oder Treiber). Diese Eigenschaft lässt zu, dass ein "
 "Namensbereichsziel die Mehrdeutigkeit entfernt. "
@@ -2110,7 +2110,7 @@ msgid "Status not specified"
 msgstr "Status nicht angegeben"
 
 msgid "Status of the image"
-msgstr "Status des Image"
+msgstr "Status des Abbildes"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -2135,14 +2135,14 @@ msgid ""
 "(%(actual)s) did not match. Setting image status to 'killed'."
 msgstr ""
 "Angaben für %(attr)s (%(supplied)s) und %(attr)s, die aus dem hochgeladenen "
-"Image (%(actual)s) generiert wurden, stimmten nicht überein. Imagestatus "
+"Abbild (%(actual)s) generiert wurden, stimmten nicht überein. Abbildstatus "
 "wird auf 'killed' gesetzt."
 
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "Unterstützte Werte für das 'container_format' Abbild-Attribut"
 
 msgid "Supported values for the 'disk_format' image attribute"
-msgstr "Unterstützte Werte für das Imageattribut 'disk_format'"
+msgstr "Unterstützte Werte für das Abbildattribut 'disk_format'"
 
 #, python-format
 msgid "Suppressed respawn as %(serv)s was %(rsn)s."
@@ -2181,7 +2181,7 @@ msgid ""
 "The Image %(image_id)s object being created by this task %(task_id)s, is no "
 "longer in valid status for further processing."
 msgstr ""
-"Das Objekt von Image %(image_id)s, das von Task %(task_id)s erstellt wurde, "
+"Das Objekt von Abbild %(image_id)s, das von Task %(task_id)s erstellt wurde, "
 "befindet sich nicht mehr in einem gültigen Status zur weiteren Verarbeitung."
 
 msgid "The Store URI was malformed."
@@ -2249,13 +2249,13 @@ msgid ""
 "user_xattr option to the appropriate line for the device housing the cache "
 "directory."
 msgstr ""
-"Das Gerät, auf dem sich das Image-Cacheverzeichnis %(image_cache_dir)s "
-"befindet, unterstützt xattr nicht. Wahrscheinlich müssen Sie fstab "
-"bearbeiten und die Option user_xattr zur entsprechenden Zeile für das Gerät, "
-"auf dem sich das Cacheverzeichnis befindet, hinzufügen."
+"Das Gerät, auf dem sich das Abbild-Zwischenspeicherverzeichnis "
+"%(image_cache_dir)s befindet, unterstützt xattr nicht. Wahrscheinlich müssen "
+"Sie fstab bearbeiten und die Option user_xattr zur entsprechenden Zeile für "
+"das Gerät, auf dem sich das Zwischenspeicherverzeichnis befindet, hinzufügen."
 
 msgid "The driver to use for image cache management."
-msgstr "Der Treiber für die Image-Cache-Verwaltung."
+msgstr "Der Treiber für die Abbild-Zwischenspeicherverwaltung."
 
 #, python-format
 msgid "The format of the version %s is not valid. Use semver notation"
@@ -2267,7 +2267,7 @@ msgid ""
 "The format to which images will be automatically converted. When using the "
 "RBD backend, this should be set to 'raw'"
 msgstr ""
-"Das Format, in das Images automatisch konvertiert werden sollen. Bei der "
+"Das Format, in das Abbilder automatisch konvertiert werden sollen. Bei der "
 "Verwendung des RBD-Back-Ends sollte der Wert auf 'raw' gesetzt werden. "
 
 #, python-format
@@ -2289,9 +2289,9 @@ msgid ""
 "find it. This indicates that we do not have permissions to see all the "
 "images on the slave server."
 msgstr ""
-"Das Image %s ist bereits auf dem Slave vorhanden, aber bei der Überprüfung "
+"Das Abbild %s ist bereits auf dem Slave vorhanden, aber bei der Überprüfung "
 "wurde es nicht gefunden. Dies bedeutet, dass wir nicht über die "
-"Berechtigungen zum Anzeigen aller Images auf dem Slave-Server verfügen."
+"Berechtigungen zum Anzeigen aller Abbilder auf dem Slave-Server verfügen."
 
 #, python-format
 msgid "The incoming artifact blob is too large: %s"
@@ -2299,7 +2299,7 @@ msgstr "Das eingehende Artefakt-BLOB ist zu groß: %s"
 
 #, python-format
 msgid "The incoming image is too large: %s"
-msgstr "Das eingehende Image ist zu groß: %s"
+msgstr "Das eingehende Abbild ist zu groß: %s"
 
 #, python-format
 msgid "The key file you specified %s does not exist"
@@ -2310,7 +2310,7 @@ msgid ""
 "The limit has been exceeded on the number of allowed image locations. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"Der Grenzwert für die zulässige Anzahl an Imagepositionen wurde "
+"Der Grenzwert für die zulässige Anzahl an Abbildpositionen wurde "
 "überschritten. Versucht: %(attempted)s, Maximum: %(maximum)s"
 
 #, python-format
@@ -2318,15 +2318,15 @@ msgid ""
 "The limit has been exceeded on the number of allowed image members for this "
 "image. Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"Der Grenzwert für die zulässige Anzahl an Imagemitgliedern wurde für dieses "
-"Image überschritten. Versucht: %(attempted)s, Maximum: %(maximum)s"
+"Der Grenzwert für die zulässige Anzahl an Abbildmitgliedern wurde für dieses "
+"Abbild überschritten. Versucht: %(attempted)s, Maximum: %(maximum)s"
 
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"Der Grenzwert für die zulässige Anzahl an Imageeigenschaften wurde "
+"Der Grenzwert für die zulässige Anzahl an Abbildeigenschaften wurde "
 "überschritten. Versucht: %(attempted)s, Maximum: %(maximum)s"
 
 #, python-format
@@ -2334,7 +2334,7 @@ msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(num)s, Maximum: %(quota)s"
 msgstr ""
-"Der Grenzwert für die zulässige Anzahl an Imageeigenschaften wurde "
+"Der Grenzwert für die zulässige Anzahl an Abbildeigenschaften wurde "
 "überschritten. Versucht: %(num)s, Maximum: %(quota)s"
 
 #, python-format
@@ -2342,8 +2342,8 @@ msgid ""
 "The limit has been exceeded on the number of allowed image tags. Attempted: "
 "%(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"Der Grenzwert für die zulässige Anzahl an Imagetags wurde überschritten. "
-"Versucht: %(attempted)s, Maximum: %(maximum)s"
+"Der Grenzwert für die zulässige Anzahl an Abbildschlagwörter wurde "
+"überschritten. Versucht: %(attempted)s, Maximum: %(maximum)s"
 
 #, python-format
 msgid "The location %(location)s already exists"
@@ -2360,7 +2360,7 @@ msgid ""
 "enforced. If a value is specified and the file is not found, then the glance-"
 "api service will not start."
 msgstr ""
-"Die Position der Eigenschaftsschutzdatei. Diese Datei enthält die Regelnfür "
+"Die Position der Eigenschaftsschutzdatei. Diese Datei enthält die Regeln für "
 "den Eigenschaftenschutz und die zugeordneten Regeln/Richtlinien. Wenn dieser "
 "Konfigurationswert nicht angegeben wird, wird der Eigenschaftenschutz "
 "standardmäßig nicht umgesetzt. Wenn ein Wert angegeben ist und die Datei "
@@ -2514,11 +2514,11 @@ msgstr ""
 #, python-format
 msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
 msgstr ""
-"Der angegebene Hauptteil %(body)s ist unter dem angegebenen Schema ungültig: "
+"Der angegebene Body %(body)s ist unter dem angegebenen Schema ungültig: "
 "%(schema)s"
 
 msgid "The provided image is too large."
-msgstr "Das angegebene Image ist zu groß."
+msgstr "Das angegebene Abbild ist zu groß."
 
 #, python-format
 msgid "The provided path '%(path)s' is invalid: %(explanation)s"
@@ -2529,7 +2529,7 @@ msgid ""
 "for adding new images."
 msgstr ""
 "Der Verweis auf die Standardparameter für den Konto-/Sicherungsspeicher, die "
-"zum Hinzufügen neuer Images verwendet werden sollen."
+"zum Hinzufügen neuer Abbilder verwendet werden sollen."
 
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not in "
@@ -2577,7 +2577,7 @@ msgid ""
 msgstr ""
 "Die Anforderung hat eine Nachricht vom Typ '413 - Anforderungsentität zu "
 "groß' zurückgegeben. Dies weist im Allgemeinen darauf hin, dass die "
-"Geschwindigkeitsbegrenzung oder ein Quotenschwellenwert überschritten "
+"Geschwindigkeitsbegrenzung oder ein Kontingentschwellenwert überschritten "
 "wurde.\n"
 "\n"
 "Der Antworttext:\n"
@@ -2598,7 +2598,7 @@ msgstr ""
 msgid ""
 "The requested image has been deactivated. Image data download is forbidden."
 msgstr ""
-"Das angeforderte Image wurde inaktiviert. Der Download von Imagedaten ist "
+"Das angeforderte Abbild wurde deaktiviert. Der Download von Abbilddaten ist "
 "nicht zulässig. "
 
 msgid "The result of current task, JSON blob"
@@ -2620,10 +2620,10 @@ msgid ""
 "which signifies serial scrubbing. Any value above one indicates the max "
 "number of images that may be scrubbed in parallel."
 msgstr ""
-"Die Größe des zu verwendenden Thread-Pools für die Bereinigung von Images. "
-"Der Standardwert eins bezeichnet die serielle Bereinigung. Jeder Wert über "
-"eins gibt die maximale Anzahl der Images an, die parallel bereinigt werden "
-"können."
+"Die Größe des zu verwendenden Thread-Pools für die Bereinigung von "
+"Abbildern. Der Standardwert eins bezeichnet die serielle Bereinigung. Jeder "
+"Wert über eins gibt die maximale Anzahl der Abbilder an, die parallel "
+"bereinigt werden können."
 
 #, python-format
 msgid "The specified member %s could not be found"
@@ -2635,7 +2635,7 @@ msgstr "Das angegebene Metadatenobjekt %s konnte nicht gefunden werden"
 
 #, python-format
 msgid "The specified metadata tag %s could not be found"
-msgstr "Der angegebene Metadatentag %s konnte nicht gefunden werden"
+msgstr "Das angegebene Metadatenschlagwort %s konnte nicht gefunden werden"
 
 #, python-format
 msgid "The specified namespace %s could not be found"
@@ -2653,18 +2653,18 @@ msgid ""
 "The status of deleted image location can only be set to 'pending_delete' or "
 "'deleted'"
 msgstr ""
-"Der Status der Position des gelöschten Image kann nur auf 'pending_delete' "
-"oder auf 'deleted' gesetzt werden."
+"Der Status der Position des gelöschten Abbildes kann nur auf "
+"'pending_delete' oder auf 'deleted' gesetzt werden."
 
 msgid ""
 "The status of deleted image location can only be set to 'pending_delete' or "
 "'deleted'."
 msgstr ""
-"Der Status der Position des gelöschten Image kann nur auf 'pending_delete' "
+"Der Status der Position des gelöschten Abbild kann nur auf 'pending_delete' "
 "oder auf 'deleted' gesetzt werden."
 
 msgid "The status of this image member"
-msgstr "Der Status dieses Imageelements"
+msgstr "Der Status dieses Abbildelements"
 
 msgid ""
 "The store names to use to get store preference order. The name must be "
@@ -2691,7 +2691,8 @@ msgid ""
 "The target member %(member_id)s is already associated with image "
 "%(image_id)s."
 msgstr ""
-"Das Zielmitglied %(member_id)s ist dem Image %(image_id)s bereits zugeordnet."
+"Das Zielmitglied %(member_id)s ist dem Abbild %(image_id)s bereits "
+"zugeordnet."
 
 msgid ""
 "The tenant name of the administrative user. If \"use_user_token\" is not in "
@@ -2712,7 +2713,7 @@ msgid ""
 msgstr ""
 "Die Obergrenze (maximale Größe des kumulierten Zwischenspeichers in Byte), "
 "über der die Zwischenspeicherbereinigungsfunktion, falls sie aktiv ist, mit "
-"dem Bereinigen des Abbildcache beginnt. "
+"dem Bereinigen des Abbild-Zwischenspeicher beginnt. "
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
@@ -2776,12 +2777,12 @@ msgid ""
 "This operation is currently not permitted on Glance Tasks. They are auto "
 "deleted after reaching the time based on their expires_at property."
 msgstr ""
-"Diese Operation ist derzeit bei Glance-Tasks nicht zulässig. Sie werden bei "
-"Erreichen der in der Eigenschaft 'expires_at' festgelegten Zeit automatisch "
-"gelöscht."
+"Diese Operation ist derzeit bei Glance-Schlagwörtern nicht zulässig. Sie "
+"werden bei Erreichen der in der Eigenschaft 'expires_at' festgelegten Zeit "
+"automatisch gelöscht."
 
 msgid "This operation is currently not permitted on Glance images details."
-msgstr "Diese Operation ist derzeit bei Glance-Imagedetails nicht zulässig."
+msgstr "Diese Operation ist derzeit bei Glance-Abbilddetails nicht zulässig."
 
 msgid ""
 "This value sets what strategy will be used to determine the image location "
@@ -2839,7 +2840,7 @@ msgstr ""
 "Beispiel: swift+http://user:pass@authurl.com/v1/container/obj"
 
 msgid "URL to access the image file kept in external store"
-msgstr "URL für den Zugriff auf Imagedatei in externem Speicher"
+msgstr "URL für den Zugriff auf Abbilddatei in externem Speicher"
 
 msgid "Unable to PUT to non-empty collection"
 msgstr "PUT-Operation zum Einreihen in nicht leere Sammlung nicht möglich"
@@ -2852,7 +2853,7 @@ msgid ""
 msgstr ""
 "PID-Datei %(pid)s kann nicht erstellt werden.  Wird nicht als Root "
 "ausgeführt?\n"
-"Es wird auf eine temporäre Datei zurückgegriffen; Sie können den Service "
+"Es wird auf eine temporäre Datei zurückgegriffen; Sie können den Dienst "
 "%(service)s stoppen mithilfe von:\n"
 "  %(file)s %(server)s stop --pid-file %(fb)s"
 
@@ -2885,7 +2886,7 @@ msgstr ""
 "Optionen verwendet werden: %(available)s."
 
 msgid "Unable to get legacy image"
-msgstr "Traditionelles Image kann nicht abgerufen werden"
+msgstr "Traditionelles Abbild kann nicht abgerufen werden"
 
 msgid "Unable to increase file descriptor limit.  Running as non-root?"
 msgstr ""
@@ -2936,7 +2937,7 @@ msgstr "Version kann nicht angegeben werden, wenn Typ nicht angegeben wurde"
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
-"Hochladen von doppelten Imagedaten für Image %(image_id)s nicht möglich: "
+"Hochladen von doppelten Abbilddaten für Abbild %(image_id)s nicht möglich: "
 "%(error)s"
 
 msgid ""
@@ -2950,7 +2951,7 @@ msgid "Unable to verify signature: %(reason)s"
 msgstr "Signatur kann nicht geprüft werden: %(reason)s"
 
 msgid "Unauthorized image access"
-msgstr "Unautorisierter Imagezugriff"
+msgstr "Unauthorisierter Abbildzugriff"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "Unerwarteter Hauptteiltyp. Erwartet wurde list/dict."
@@ -3008,7 +3009,7 @@ msgid "Version is invalid: %(reason)s"
 msgstr "Version ist ungültig: %(reason)s"
 
 msgid "Virtual size of image in bytes"
-msgstr "Virtuelle Größe des Image in Byte"
+msgstr "Virtuelle Größe des Abbildes in Byte"
 
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "Sichtbarkeit muss entweder \"öffentlich\" oder \"privat\" sein"
@@ -3039,7 +3040,7 @@ msgid ""
 "Otherwise, the owner of the  image will be the authenticated user issuing "
 "the request."
 msgstr ""
-"Diese Option, wenn gesetzt, macht den Eigentümer des Abbilds zum Mieter. "
+"Diese Option, wenn gesetzt, macht den Eigentümer des Abbilds zum Mandanten. "
 "Andernfalls wird der angemeldete Benutzer, der die Anfrage stellt, zum "
 "Eigentümer."
 
@@ -3057,8 +3058,8 @@ msgid ""
 "Whether to allow users to specify image properties beyond what the image "
 "schema provides"
 msgstr ""
-"Ob es Benutzern erlaubt sein soll, Imageeigenschaften anzugeben, die über "
-"das hinausgehen, was vom Imageschema angegeben wird"
+"Ob es Benutzern erlaubt sein soll, Abbildeigenschaften anzugeben, die über "
+"das hinausgehen, was vom Abbildschema angegeben wird"
 
 msgid ""
 "Whether to include the backend image locations in image properties. For "
@@ -3080,7 +3081,7 @@ msgid ""
 "Revealing storage location can be a security risk, so use this setting with "
 "caution!"
 msgstr ""
-"Ob die Speicherposition des Back-End-Image in Imageeigenschaften "
+"Ob die Speicherposition des Backendabbildes in Abbildeigenschaften "
 "eingeschlossen werden soll. Das Angeben der Speicherposition kann ein "
 "Sicherheitsrisiko darstellen. Verwenden Sie diese Einstellung also mit "
 "Bedacht!"
@@ -3131,22 +3132,22 @@ msgid ""
 "case they were wrong."
 msgstr ""
 "Arbeitsverzeichnis für asynchrone Verarbeitungsvorgänge. Das hier "
-"festgelegte Verzeichniswird verwendet, um über Images betrieben zu werden, "
-"in der Regel, bevor sie in denZielspeicher importiert werden. Stellen Sie "
-"beim Angeben des Arbeitsverzeichnisses sicher, dass ausreichend "
-"Speicherplatzfür die effiziente Ausführung gleichzeitiger Tasks vorhanden "
+"festgelegte Verzeichnis wird verwendet, um über Abbilder betrieben zu "
+"werden, in der Regel, bevor sie in den Zielspeicher importiert werden. "
+"Stellen Sie beim Angeben des Arbeitsverzeichnisses sicher, dass ausreichend "
+"Speicherplatz für die effiziente Ausführung gleichzeitiger Tasks vorhanden "
 "ist, ohne dass der Speicherplatz zu gering wird. Eine ungefähre Schätzung "
 "können Sie vornehmen, indem Sie die Anzahl von `max_workers` - oder N aktive "
-"Worker - mit der durchschnittlichen Imagegröße(z. B. 500 MB) multiplizieren. "
-"Die Schätzung für die Imagegröße sollte auf der durchschnittlichenGröße in "
-"Ihrer Implementierung basierend vorgenommen werden. Beachten Sie, dass Sie "
-"diese Anzahl abhängig von den aktiven Tasksmöglicherweise mit einem "
-"bestimmten Faktor multiplizieren müssen, je nachdem, wofür diese Task "
-"zuständig ist. Die verfügbare Größe sollte z. B. verdoppelt werden, wenn die "
-"Imagekonvertierung aktiviert ist. Beachten Sie, dass es sich hierbei nur um "
-"Schätzungen handelt, die auf Grundlage des Worst-Case-Szenarios durchgeführt "
-"werden sollten und dass Sie darauf vorbereitet sein müssen, zu agieren, wenn "
-"die Schätzungen falsch waren. "
+"Worker - mit der durchschnittlichen Abbildgröße(z. B. 500 MB) "
+"multiplizieren. Die Schätzung für die Abbildgröße sollte auf der "
+"durchschnittlichen Größe in Ihrer Implementierung basierend vorgenommen "
+"werden. Beachten Sie, dass Sie diese Anzahl abhängig von den aktiven "
+"Tasksmöglicherweise mit einem bestimmten Faktor multiplizieren müssen, je "
+"nachdem, wofür diese Task zuständig ist. Die verfügbare Größe sollte z. B. "
+"verdoppelt werden, wenn die Abbildkonvertierung aktiviert ist. Beachten Sie, "
+"dass es sich hierbei nur um Schätzungen handelt, die auf Grundlage des Worst-"
+"Case-Szenarios durchgeführt werden sollten und dass Sie darauf vorbereitet "
+"sein müssen, zu agieren, wenn die Schätzungen falsch waren. "
 
 #, python-format
 msgid "Wrong command structure: %s"
@@ -3156,26 +3157,27 @@ msgid "You are not authenticated."
 msgstr "Sie sind nicht authentifiziert."
 
 msgid "You are not authorized to complete this action."
-msgstr "Sie sind nicht dazu autorisiert, diese Aktion abzuschließen"
+msgstr "Sie sind nicht dazu authorisiert, diese Aktion abzuschließen"
 
 #, python-format
 msgid "You are not authorized to lookup image %s."
-msgstr "Sie sind nicht berechtigt, Image %s zu suchen."
+msgstr "Sie sind nicht berechtigt, Abbild %s zu suchen."
 
 #, python-format
 msgid "You are not authorized to lookup the members of the image %s."
-msgstr "Sie sind nicht berechtigt, die Mitglieder des Image %s zu suchen."
+msgstr "Sie sind nicht berechtigt, die Mitglieder des Abbild %s zu suchen."
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr "Sie können keine Tags in Namensbereichen erstellen, die '%s' gehören."
+msgstr ""
+"Sie können keine Schlagwörter in Namensbereichen erstellen, die '%s' gehören."
 
 msgid "You are not permitted to create image members for the image."
-msgstr "Sie können keine Imageelemente für das Image erstellen."
+msgstr "Sie können keine Abbildelemente für das Abbild erstellen."
 
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
-msgstr "Sie können keine Images erstellen, die '%s' gehören."
+msgstr "Sie können keine Abbilder erstellen, die '%s' gehören."
 
 #, python-format
 msgid "You are not permitted to create namespace owned by '%s'"
@@ -3195,13 +3197,13 @@ msgstr "Sie können keinen resource_type erstellen, der '%s' gehört."
 
 #, python-format
 msgid "You are not permitted to create this task with owner as: %s"
-msgstr "Sie dürfen diese Task nicht mit dem Eigentümer %s erstellen"
+msgstr "Sie können diese Task nicht mit dem Eigentümer %s erstellen"
 
 msgid "You are not permitted to deactivate this image."
-msgstr "Sie können dieses Image nicht inaktivieren. "
+msgstr "Sie können dieses Abbild nicht deaktivieren. "
 
 msgid "You are not permitted to delete this image."
-msgstr "Sie können dieses Image nicht löschen."
+msgstr "Sie können dieses Abbild nicht löschen."
 
 msgid "You are not permitted to delete this meta_resource_type."
 msgstr "Sie können diesen meta_resource_type nicht löschen."
@@ -3216,30 +3218,31 @@ msgid "You are not permitted to delete this property."
 msgstr "Sie können diese Eigenschaft nicht löschen."
 
 msgid "You are not permitted to delete this tag."
-msgstr "Sie können diesen Tag nicht löschen."
+msgstr "Sie können dieses Schlagwort nicht löschen."
 
 #, python-format
 msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "Sie haben keine Berechtigung um '%(attr)s' für %(resource)s zu ändern."
+msgstr ""
+"Sie haben keine Berechtigung, um '%(attr)s' für %(resource)s zu ändern."
 
 #, python-format
 msgid "You are not permitted to modify '%s' on this image."
-msgstr "Sie können '%s' bei diesem Image nicht ändern."
+msgstr "Sie können '%s' bei diesem Abbild nicht ändern."
 
 msgid "You are not permitted to modify locations for this image."
-msgstr "Sie können Positionen für dieses Image nicht ändern."
+msgstr "Sie können Positionen für dieses Abbild nicht ändern."
 
 msgid "You are not permitted to modify tags on this image."
-msgstr "Sie können Tags bei diesem Image nicht ändern."
+msgstr "Sie können Schlagwörter bei diesem Abbild nicht ändern."
 
 msgid "You are not permitted to modify this image."
-msgstr "Sie können dieses Image nicht ändern."
+msgstr "Sie können dieses Abbild nicht ändern."
 
 msgid "You are not permitted to reactivate this image."
-msgstr "Sie können dieses Image nicht erneut aktivieren. "
+msgstr "Sie können dieses Abbild nicht erneut aktivieren. "
 
 msgid "You are not permitted to set status on this task."
-msgstr "Sie dürfen den Status für diese Task nicht festlegen. "
+msgstr "Sie können den Status für diese Task nicht festlegen. "
 
 msgid "You are not permitted to update this namespace."
 msgstr "Sie können diesen Namensbereich nicht aktualisieren. "
@@ -3251,26 +3254,26 @@ msgid "You are not permitted to update this property."
 msgstr "Sie können diese Eigenschaft nicht aktualisieren. "
 
 msgid "You are not permitted to update this tag."
-msgstr "Sie können diesen Tag nicht aktualisieren."
+msgstr "Sie können dieses Schlagwort nicht aktualisieren."
 
 msgid "You are not permitted to upload data for this image."
-msgstr "Sie können keine Daten für dieses Image hochladen."
+msgstr "Sie können keine Daten für dieses Abbild hochladen."
 
 #, python-format
 msgid "You cannot add image member for %s"
-msgstr "Hinzufügen von Imageelement für %s nicht möglich"
+msgstr "Hinzufügen von Abbildelement für %s nicht möglich"
 
 #, python-format
 msgid "You cannot delete image member for %s"
-msgstr "Löschen von Imageelement für %s nicht möglich"
+msgstr "Löschen von Abbildelement für %s nicht möglich"
 
 #, python-format
 msgid "You cannot get image member for %s"
-msgstr "Abrufen von Imageelement für %s nicht möglich"
+msgstr "Abrufen von Abbildelement für %s nicht möglich"
 
 #, python-format
 msgid "You cannot update image member %s"
-msgstr "Aktualisieren von Imageelement %s nicht möglich"
+msgstr "Aktualisieren von Abbildelement %s nicht möglich"
 
 msgid "You do not own this image"
 msgstr "Sie sind nicht Eigner dieses Images"
@@ -3339,7 +3342,7 @@ msgid "location: %s data lost"
 msgstr "Position: %s Daten verloren"
 
 msgid "md5 hash of image contents."
-msgstr "md5-Hashwert von Imageinhalten. "
+msgstr "md5-Hashwert von Abbildinhalten. "
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"

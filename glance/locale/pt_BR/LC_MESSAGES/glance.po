@@ -9,17 +9,18 @@
 # Volmar Oliveira Junior <volmar.oliveira.jr@gmail.com>, 2013
 # Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
+# Eric Baum <ecbaum@gmail.com>, 2016. #zanata
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
+"Project-Id-Version: glance 12.0.0.0rc2.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-12 00:22+0000\n"
+"POT-Creation-Date: 2016-03-17 15:26+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-02-03 06:59+0000\n"
-"Last-Translator: Lucas Palm <lapalm@us.ibm.com>\n"
+"PO-Revision-Date: 2016-03-14 09:43+0000\n"
+"Last-Translator: Eric Baum <ecbaum@gmail.com>\n"
 "Language: pt-BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -360,6 +361,14 @@ msgstr ""
 msgid "Auth service at URL %(url)s not found."
 msgstr "Serviço de autenticação na URL %(url)s não localizado."
 
+#, python-format
+msgid ""
+"Authentication error - the token may have expired during file upload. "
+"Deleting image data for %s."
+msgstr ""
+"Erro de autenticação - o token pode ter expirado durante o envio do arquivo. "
+"Removendo dados da imagem %s."
+
 msgid "Authorization failed."
 msgstr "Falha de autorização."
 
@@ -431,6 +440,10 @@ msgstr "Não é possível carregar o artefato '%(name)s'"
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "Não é possível salvar os dados da imagem %(image_id)s: %(error)s"
+
+#, fuzzy
+msgid "Cannot set locations to empty list."
+msgstr "Não foi possível definir locais para esvaziar a lista."
 
 msgid "Cannot specify 'max_size' explicitly"
 msgstr "Não é possível especificar 'max_size' explicitamente"
@@ -627,6 +640,15 @@ msgstr ""
 "Erro na configuração do armazenamento. A inclusão de imagens para "
 "armazenamento está desativada."
 
+msgid "Expected a member in the form: {\"member\": \"image_id\"}"
+msgstr "O membro era esperado no formato: {\"member\": \"image_id\"}"
+
+msgid "Expected a status in the form: {\"status\": \"status\"}"
+msgstr "O estado era esperado no formato: {\"status\": \"status\"}"
+
+msgid "External source should not be empty"
+msgstr "A fonte externa não deve estar vazia"
+
 #, python-format
 msgid "External sources are not supported: '%s'"
 msgstr "As fontes externas não são suportadas: '%s'"
@@ -714,6 +736,9 @@ msgstr "Arquivo muito grande"
 msgid "File too small"
 msgstr "Arquivo muito pequeno"
 
+msgid "Forbidden image access"
+msgstr "Proibido o acesso a imagem"
+
 #, python-format
 msgid "Forbidden to delete a %s image."
 msgstr "Proibido excluir uma imagem %s."
@@ -721,6 +746,10 @@ msgstr "Proibido excluir uma imagem %s."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Proibido excluir imagem: %s"
+
+#, python-format
+msgid "Forbidden to modify '%(key)s' of %(status)s image."
+msgstr "Proibido modificar '%(key)s' da imagem %(status)s"
 
 #, python-format
 msgid "Forbidden to modify '%s' of image."
@@ -832,6 +861,14 @@ msgid ""
 msgstr ""
 "A imagem %s não pôde ser localizada após o upload. A imagem pode ter sido "
 "excluída durante o upload, limpando os chunks transferidos por upload."
+
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+"A imagem %s não foi encontrada após o envio. A imagem pode ter sido removida "
+"durante o envio."
 
 #, python-format
 msgid "Image %s is deactivated"
@@ -964,6 +1001,10 @@ msgstr "Especificação de tipo de propriedade de dicionário inválida"
 msgid "Invalid disk format '%s' for image."
 msgstr "Formato de disco inválido '%s' para imagem."
 
+#, python-format
+msgid "Invalid headers \"Content-Type\": %s"
+msgstr "Cabeçalhos \"Content-Type\" inválidos: %s"
+
 msgid "Invalid image id format"
 msgstr "Formato de ID da imagem inválido"
 
@@ -1080,6 +1121,10 @@ msgstr "Valro de status inválido: %s"
 msgid "Invalid status: %s"
 msgstr "Status inválido: %s"
 
+#, python-format
+msgid "Invalid time format for %s."
+msgstr "Fromato de horário inválido para %s"
+
 msgid "Invalid type definition"
 msgstr "Definição de tipo inválida"
 
@@ -1150,6 +1195,12 @@ msgstr ""
 
 msgid "It's invalid to provide multiple image sources."
 msgstr "é inválido fornecer múltiplas fontes de imagens."
+
+msgid "It's not allowed to add locations if locations are invisible."
+msgstr "Não é permitido adicionar locais se os locais forem invisíveis."
+
+msgid "It's not allowed to update locations if locations are invisible."
+msgstr "Não é permitido atualizar locais se os locais forem invisíveis."
 
 msgid "Items have to be unique"
 msgstr "Os itens precisam ser exclusivos"
@@ -1778,6 +1829,9 @@ msgstr ""
 msgid "Show level %(shl)s is not supported in this operation"
 msgstr "Mostrar o nível %(shl)s não é suportado nesta operação"
 
+msgid "Signature verification failed"
+msgstr "A verificação de assinatura falhou"
+
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
 "example, Cinder allows user and image metadata on volumes. Only the image "
@@ -1954,6 +2008,10 @@ msgstr ""
 
 msgid "The driver to use for image cache management."
 msgstr "O driver a ser utilizado para o gerenciamento de cache de imagens."
+
+#, python-format
+msgid "The format of the version %s is not valid. Use semver notation"
+msgstr "O formato da versão %s não é válido. Use a notação semver"
 
 #, python-format
 msgid ""
@@ -2800,6 +2858,9 @@ msgid "You are not permitted to create this task with owner as: %s"
 msgstr ""
 "Você não tem permissão para criar essa tarefa com proprietário como: %s"
 
+msgid "You are not permitted to deactivate this image."
+msgstr "Você não tem permissão para desativar esta imagem."
+
 msgid "You are not permitted to delete this image."
 msgstr "Você não tem permissão para excluir esta imagem."
 
@@ -2834,6 +2895,9 @@ msgstr "Você não tem permissão para modificar tags nesta imagem."
 
 msgid "You are not permitted to modify this image."
 msgstr "Você não tem permissão para modificar esta imagem."
+
+msgid "You are not permitted to reactivate this image."
+msgstr "Você não tem permissão para reativar essa imagem."
 
 msgid "You are not permitted to set status on this task."
 msgstr "Você não tem permissão para definir o status dessa tarefa."
