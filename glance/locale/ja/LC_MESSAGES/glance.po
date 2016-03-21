@@ -8,7 +8,6 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
 # Yuko Katabami <yukokatabami@gmail.com>, 2015. #zanata
-# Akihiro Motoki <amotoki@gmail.com>, 2016. #zanata
 # Yuta Hono <yuta.hono@ntt.com>, 2016. #zanata
 # 笹原 昌美 <ebb0de1@jp.ibm.com>, 2016. #zanata
 msgid ""
@@ -19,7 +18,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-18 06:32+0000\n"
+"PO-Revision-Date: 2016-03-18 07:37+0000\n"
 "Last-Translator: 笹原 昌美 <ebb0de1@jp.ibm.com>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -536,6 +535,9 @@ msgstr "オブジェクトの作成日時"
 msgid "Date and time of resource type association"
 msgstr "リソースタイプ関連付けの日時"
 
+msgid "Date and time of tag creation"
+msgstr "タグの作成日時"
+
 msgid "Date and time of the last image modification"
 msgstr "イメージの最終変更日時"
 
@@ -547,6 +549,9 @@ msgstr "オブジェクトの最終変更日時"
 
 msgid "Date and time of the last resource type association modification"
 msgstr "リソースタイプ関連付けの最終変更日時"
+
+msgid "Date and time of the last tag modification"
+msgstr "タグの最終変更日時"
 
 msgid "Datetime when this resource was created"
 msgstr "このリソースが作成された日時"
@@ -570,8 +575,7 @@ msgstr "デフォルト値が無効です"
 #, python-format
 msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
 msgstr ""
-"成果物をアップロードしようとしましたが、クォータを超えてしまうため、拒否され"
-"ています: %s"
+"成果物のアップロードを試みましたが、クォータを超えるため拒否されます: %s "
 
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
@@ -638,17 +642,17 @@ msgstr ""
 "ストア設定にエラーがあります。ストアへのイメージの追加が無効になっています。"
 
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
-msgstr "形式: {\"member\": \"image_id\"} でのメンバーの予期"
+msgstr "次の形式でメンバーを予期: {\"member\": \"image_id\"}"
 
 msgid "Expected a status in the form: {\"status\": \"status\"}"
-msgstr "形式: {\"status\": \"status\"} での状態の予期"
+msgstr "次の形式で状態を予期: {\"status\": \"status\"}"
 
 msgid "External source should not be empty"
 msgstr "外部ソースは空であってはなりません"
 
 #, python-format
 msgid "External sources are not supported: '%s'"
-msgstr "外部ソースはサポートされていません: 「%s」"
+msgstr "外部ソースはサポートされていません:  '%s'"
 
 #, python-format
 msgid "Failed to activate image. Got error: %s"
@@ -867,7 +871,7 @@ msgstr "イメージ %s が見つかりません。"
 
 #, python-format
 msgid "Image exceeds the storage quota: %s"
-msgstr "イメージがストレージ割り当て量を超えています: %s"
+msgstr "イメージがストレージクォータを超えています: %s"
 
 msgid "Image id is required."
 msgstr "イメージ ID が必要です。"
@@ -875,9 +879,9 @@ msgstr "イメージ ID が必要です。"
 msgid "Image is protected"
 msgstr "イメージは保護されています"
 
-#, fuzzy, python-format
+#, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
-msgstr "イメージ %(id)s のイメージメンバー限度を超えました: %(e)s:"
+msgstr "イメージ %(id)s のメンバー数がイメージメンバー限度を超えました: %(e)s:"
 
 #, python-format
 msgid "Image name too long: %d"
@@ -897,9 +901,9 @@ msgstr ""
 msgid "Image storage media is full: %s"
 msgstr "イメージストレージのメディアがフルです: %s"
 
-#, fuzzy, python-format
+#, python-format
 msgid "Image tag limit exceeded for image %(id)s: %(e)s:"
-msgstr "イメージ %(id)s のイメージ・タグ限度を超えました: %(e)s:"
+msgstr "イメージ %(id)s のイメージタグ上限を超えました: %(e)s:"
 
 #, python-format
 msgid "Image upload problem: %s"
@@ -1184,7 +1188,7 @@ msgid "It's not allowed to add locations if locations are invisible."
 msgstr "ロケーションが表示されない場合、ロケーションを追加できません。"
 
 msgid "It's not allowed to remove locations if locations are invisible."
-msgstr "ロケーションが表示されない場合、ロケーションは削除できません。"
+msgstr "ロケーションが表示されない場合、ロケーションを削除できません。"
 
 msgid "It's not allowed to update locations if locations are invisible."
 msgstr "ロケーションが表示されない場合、ロケーションを更新できません。"
@@ -1707,7 +1711,7 @@ msgid "Removing stale pid file %s"
 msgstr "失効した pid ファイル %s を削除中"
 
 msgid "Request body must be a JSON array of operation objects."
-msgstr "要求本体は、操作オブジェクトの JSON 配列でなければなりません。"
+msgstr "要求本文は、操作オブジェクトの JSON 配列でなければなりません。"
 
 msgid "Request must be a list of commands"
 msgstr "要求はコマンドのリストである必要があります"
@@ -2708,13 +2712,13 @@ msgstr "認証されていません。"
 msgid "You are not authorized to complete this action."
 msgstr "このアクションの実行を許可されていません。"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You are not authorized to lookup image %s."
-msgstr "%s イメージを調べる許可がありません。"
+msgstr "%s イメージを調べる権限がありません。"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You are not authorized to lookup the members of the image %s."
-msgstr "%s イメージのメンバーを調べる許可がありません。"
+msgstr "%s イメージのメンバーを調べる権限がありません。"
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
