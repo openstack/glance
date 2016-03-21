@@ -1589,21 +1589,25 @@ set to ``True`` and the parameter ``data_api`` has been set to
 Configuring Notifications
 -------------------------
 
-Glance can optionally generate notifications to be logged or sent to
-a message queue. The configuration options are specified in the
-``glance-api.conf`` config file in the section ``[DEFAULT]``.
+Glance can optionally generate notifications to be logged or sent to a message
+queue. The configuration options are specified in the ``glance-api.conf``
+config file.
 
-* ``notification_driver``
+* ``[oslo_messaging_notifications]/driver``
 
 Optional. Default: ``noop``
 
 Sets the notification driver used by oslo.messaging. Options include
 ``messaging``, ``messagingv2``, ``log`` and ``routing``.
 
+**NOTE**
+In M release, the``[DEFAULT]/notification_driver`` option has been deprecated in favor
+of ``[oslo_messaging_notifications]/driver``.
+
 For more information see :doc:`Glance notifications <notifications>` and
 `oslo.messaging <http://docs.openstack.org/developer/oslo.messaging/>`_.
 
-* ``disabled_notifications``
+* ``[DEFAULT]/disabled_notifications``
 
 Optional. Default: ``[]``
 
