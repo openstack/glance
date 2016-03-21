@@ -228,7 +228,7 @@ class TestApi(base.ApiTest):
         0. GET /images
         - Verify no public images
         1. POST /images with public image named Image1 with no location
-           attribute and no image data.
+        attribute and no image data.
         - Verify 201 returned
         2. GET /images
         - Verify one public image

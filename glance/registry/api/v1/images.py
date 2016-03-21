@@ -138,20 +138,25 @@ class Controller(object):
         """Return a basic filtered list of public, non-deleted images
 
         :param req: the Request object coming from the wsgi layer
-        :retval a mapping of the following form::
+        :returns: a mapping of the following form
+
+        .. code-block:: python
 
             dict(images=[image_list])
 
-        Where image_list is a sequence of mappings::
+        Where image_list is a sequence of mappings
+
+        .. code-block:: json
 
             {
-            'id': <ID>,
-            'name': <NAME>,
-            'size': <SIZE>,
-            'disk_format': <DISK_FORMAT>,
-            'container_format': <CONTAINER_FORMAT>,
-            'checksum': <CHECKSUM>
+                'id': <ID>,
+                'name': <NAME>,
+                'size': <SIZE>,
+                'disk_format': <DISK_FORMAT>,
+                'container_format': <CONTAINER_FORMAT>,
+                'checksum': <CHECKSUM>
             }
+
         """
         params = self._get_query_params(req)
         images = self._get_images(req.context, **params)
@@ -170,12 +175,29 @@ class Controller(object):
         """Return a filtered list of public, non-deleted images in detail
 
         :param req: the Request object coming from the wsgi layer
-        :retval a mapping of the following form::
+        :returns: a mapping of the following form
 
-            dict(images=[image_list])
+        .. code-block:: json
 
-        Where image_list is a sequence of mappings containing
-        all image model fields.
+            {'images':
+                [{
+                    'id': <ID>,
+                    'name': <NAME>,
+                    'size': <SIZE>,
+                    'disk_format': <DISK_FORMAT>,
+                    'container_format': <CONTAINER_FORMAT>,
+                    'checksum': <CHECKSUM>,
+                    'min_disk': <MIN_DISK>,
+                    'min_ram': <MIN_RAM>,
+                    'store': <STORE>,
+                    'status': <STATUS>,
+                    'created_at': <TIMESTAMP>,
+                    'updated_at': <TIMESTAMP>,
+                    'deleted_at': <TIMESTAMP>|<NONE>,
+                    'properties': {'distro': 'Ubuntu 10.04 LTS', {...}}
+                }, {...}]
+            }
+
         """
         params = self._get_query_params(req)
 
@@ -188,7 +210,7 @@ class Controller(object):
         """Extract necessary query parameters from http request.
 
         :param req: the Request object coming from the wsgi layer
-        :retval dictionary of filters to apply to list of images
+        :returns: dictionary of filters to apply to list of images
         """
         params = {
             'filters': self._get_filters(req),
@@ -217,7 +239,7 @@ class Controller(object):
         """Return a dictionary of query param filters from the request
 
         :param req: the Request object coming from the wsgi layer
-        :retval a dict of key/value filters
+        :returns: a dict of key/value filters
         """
         filters = {}
         properties = {}
@@ -360,8 +382,9 @@ class Controller(object):
         :param req: wsgi Request object
         :param id:  The opaque internal identifier for the image
 
-        :retval Returns 200 if delete was successful, a fault if not. On
-        success, the body contains the deleted image information as a mapping.
+        :returns: 200 if delete was successful, a fault if not. On
+            success, the body contains the deleted image
+            information as a mapping.
         """
         try:
             deleted_image = self.db_api.image_destroy(req.context, id)
@@ -390,9 +413,9 @@ class Controller(object):
         :param req: wsgi Request object
         :param body: Dictionary of information about the image
 
-        :retval Returns the newly-created image information as a mapping,
-                which will include the newly-created image's internal id
-                in the 'id' field
+        :returns: The newly-created image information as a mapping,
+            which will include the newly-created image's internal id
+            in the 'id' field
         """
         image_data = body['image']
 
@@ -441,7 +464,7 @@ class Controller(object):
         :param body: Dictionary of information about the image
         :param id:  The opaque internal identifier for the image
 
-        :retval Returns the updated image information as a mapping,
+        :returns: Returns the updated image information as a mapping,
         """
         image_data = body['image']
         from_state = body.get('from_state', None)

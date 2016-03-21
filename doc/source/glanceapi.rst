@@ -362,9 +362,9 @@ The first call should be a ``POST`` to ``http://glance.example.com/v1/images``,
 which will result in a new image id being registered with a status of
 ``queued``::
 
-  {"image":
-   {"status": "queued",
-    "id": "71c675ab-d94f-49cd-a114-e12490b328d9",
+  {'image':
+   {'status': 'queued',
+    'id': '71c675ab-d94f-49cd-a114-e12490b328d9',
     ...}
    ...}
 

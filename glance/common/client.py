@@ -584,7 +584,7 @@ class BaseClient(object):
         :param actual_params: dict of keys to filter
         :param allowed_params: list of keys that 'actual_params' will be
                                reduced to
-        :retval subset of 'params' dict
+        :returns: subset of 'params' dict
         """
         try:
             # expect 'filters' param to be a dict here

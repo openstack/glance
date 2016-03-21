@@ -49,14 +49,14 @@ Following components are present in the Glance architecture:
 * **REST API** - Glance functionalities are exposed via REST.
 
 * **Database Abstraction Layer (DAL)** - an application programming interface
-(API) that unifies the communication between Glance and databases.
+    (API) that unifies the communication between Glance and databases.
 
 * **Glance Domain Controller** - middleware that implements the main
-Glance functionalities such as authorization, notifications, policies,
-database connections.
+    Glance functionalities such as authorization, notifications, policies,
+    database connections.
 
 * **Glance Store** - used to organize interactions between Glance and various
-data stores.
+    data stores.
 
 * **Registry Layer** - optional layer that is used to organise secure
-communication between the domain and the DAL by using a separate service.
+    communication between the domain and the DAL by using a separate service.

@@ -61,7 +61,7 @@ def from_migration_import(module_name, fromlist):
     :param module_name: name of migration module to import from
         (ex: 001_add_images_table)
     :param fromlist: list of items to import (ex: define_images_table)
-    :retval: module object
+    :returns: module object
 
     This bit of ugliness warrants an explanation:
 

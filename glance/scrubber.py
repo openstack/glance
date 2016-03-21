@@ -113,7 +113,7 @@ class ScrubDBQueue(object):
         :param image_id: The opaque image identifier
         :param location: The opaque image location
 
-        :retval A boolean value to indicate success or not
+        :returns: A boolean value to indicate success or not
         """
         loc_id = location.get('id')
         if loc_id:
@@ -151,7 +151,9 @@ class ScrubDBQueue(object):
     def get_all_locations(self):
         """Returns a list of image id and location tuple from scrub queue.
 
-        :retval a list of image id, location id and uri tuple from scrub queue
+        :returns: a list of image id, location id and uri tuple from
+            scrub queue
+
         """
         ret = []
 
@@ -187,7 +189,7 @@ class ScrubDBQueue(object):
 
         :param image_id: The opaque image identifier
 
-        :retval a boolean value to inform including or not
+        :returns: a boolean value to inform including or not
         """
         try:
             image = self.registry.get_image(image_id)

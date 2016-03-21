@@ -1722,10 +1722,10 @@ deployment. Without HMAC key the profiling will not be triggered even profiling
 feature is enabled.
 
 **IMPORTANT NOTE**: previously HMAC keys (as well as enabled parameter) were
-placed at /etc/glance/api-paste.ini and /etc/glance/registry-paste.ini files
+placed at `/etc/glance/api-paste.ini` and `/etc/glance/registry-paste.ini` files
 for Glance API and Glance Registry services respectively. Starting with
 opsrofiler 0.3.1 release there is no need to set these arguments in the
-*-paste.ini files. This functionality is still supported, although the
+`*-paste.ini` files. This functionality is still supported, although the
 config values are having larger priority.
 
 The config value ``trace_sqlalchemy`` is used to determine whether fully enable
