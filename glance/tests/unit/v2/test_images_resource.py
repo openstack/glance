@@ -1909,6 +1909,32 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('deleted', deleted_img['status'])
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 
+    def test_delete_with_tags(self):
+        request = unit_test_utils.get_fake_request()
+        changes = [
+            {'op': 'replace', 'path': ['tags'],
+             'value': ['many', 'cool', 'new', 'tags']},
+        ]
+        self.controller.update(request, UUID1, changes)
+        self.assertIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+        self.controller.delete(request, UUID1)
+        output_logs = self.notifier.get_logs()
+
+        # Get `delete` event from logs
+        output_delete_logs = [output_log for output_log in output_logs
+                              if output_log['event_type'] == 'image.delete']
+
+        self.assertEqual(1, len(output_delete_logs))
+        output_log = output_delete_logs[0]
+
+        self.assertEqual('INFO', output_log['notification_type'])
+
+        deleted_img = self.db.image_get(request.context, UUID1,
+                                        force_show_deleted=True)
+        self.assertTrue(deleted_img['deleted'])
+        self.assertEqual('deleted', deleted_img['status'])
+        self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+
     def test_delete_disabled_notification(self):
         self.config(disabled_notifications=["image.delete"])
         request = unit_test_utils.get_fake_request()

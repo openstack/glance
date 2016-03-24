@@ -784,7 +784,7 @@ def image_tag_get(context, image_id, value):
 @log_call
 def image_tag_set_all(context, image_id, values):
     global DATA
-    DATA['tags'][image_id] = values
+    DATA['tags'][image_id] = list(values)
 
 
 @log_call
