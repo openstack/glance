@@ -606,6 +606,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         namespace = self.namespace_controller.show(request, NAMESPACE4)
         self.assertEqual(NAMESPACE4, namespace.namespace)
 
+    def test_namespace_create_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request()
+
+        namespace = namespaces.Namespace()
+        namespace.namespace = u'\U0001f693'
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.namespace_controller.create, request,
+                          namespace)
+
     def test_namespace_create_duplicate(self):
         request = unit_test_utils.get_fake_request()
 
@@ -810,6 +820,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.show, request, NAMESPACE1)
 
+    def test_namespace_update_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request()
+
+        namespace = self.namespace_controller.show(request, NAMESPACE1)
+        namespace.namespace = u'\U0001f693'
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.namespace_controller.update, request,
+                          namespace, NAMESPACE1)
+
     def test_namespace_update_name_conflict(self):
         request = unit_test_utils.get_fake_request()
         namespace = self.namespace_controller.show(request, NAMESPACE1)
@@ -963,6 +983,18 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(PROPERTY2, property.name)
         self.assertEqual('string', property.type)
         self.assertEqual('title', property.title)
+
+    def test_property_create_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request()
+
+        property = properties.PropertyType()
+        property.name = u'\U0001f693'
+        property.type = 'string'
+        property.title = 'title'
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.property_controller.create,
+                          request, NAMESPACE1, property)
 
     def test_property_create_with_operators(self):
         request = unit_test_utils.get_fake_request()
@@ -1130,6 +1162,19 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           self.property_controller.update, request, NAMESPACE3,
                           PROPERTY1, property)
         self.assertNotificationsLog([])
+
+    def test_property_update_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+
+        property = self.property_controller.show(request, NAMESPACE3,
+                                                 PROPERTY1)
+        property.name = u'\U0001f693'
+        property.type = 'string'
+        property.title = 'title'
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.property_controller.update, request,
+                          NAMESPACE3, PROPERTY1, property)
 
     def test_property_update_non_existing(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
@@ -1313,6 +1358,18 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           NAMESPACE1)
         self.assertNotificationsLog([])
 
+    def test_object_create_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request()
+
+        object = objects.MetadefObject()
+        object.name = u'\U0001f693'
+        object.required = []
+        object.properties = {}
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.object_controller.create, request,
+                          object, NAMESPACE1)
+
     def test_object_create_non_existing_namespace(self):
         request = unit_test_utils.get_fake_request()
 
@@ -1415,6 +1472,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         ])
         object = self.object_controller.show(request, NAMESPACE1, OBJECT2)
         self.assertEqual(OBJECT2, object.name)
+
+    def test_object_update_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request()
+
+        object = self.object_controller.show(request, NAMESPACE1, OBJECT1)
+        object.name = u'\U0001f693'
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.object_controller.update, request,
+                          object, NAMESPACE1, OBJECT1)
 
     def test_object_update_conflict(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
@@ -1745,6 +1812,13 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         tag = self.tag_controller.show(request, NAMESPACE1, TAG2)
         self.assertEqual(TAG2, tag.name)
 
+    def test_tag_create_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request()
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.tag_controller.create,
+                          request, NAMESPACE1, u'\U0001f693')
+
     def test_tag_create_tags(self):
         request = unit_test_utils.get_fake_request()
 
@@ -1871,6 +1945,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
         tag = self.tag_controller.show(request, NAMESPACE1, TAG2)
         self.assertEqual(TAG2, tag.name)
+
+    def test_tag_update_with_4byte_character(self):
+        request = unit_test_utils.get_fake_request()
+
+        tag = self.tag_controller.show(request, NAMESPACE1, TAG1)
+        tag.name = u'\U0001f693'
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.tag_controller.update, request, tag,
+                          NAMESPACE1, TAG1)
 
     def test_tag_update_conflict(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)

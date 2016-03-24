@@ -1107,6 +1107,7 @@ def _metadef_delete_namespace_content(get_func, key, context, namespace_name):
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_namespace_create(context, values):
     """Create a namespace object"""
     global DATA
@@ -1140,6 +1141,7 @@ def metadef_namespace_create(context, values):
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_namespace_update(context, namespace_id, values):
     """Update a namespace object"""
     global DATA
@@ -1327,6 +1329,7 @@ def metadef_object_get_all(context, namespace_name):
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_object_create(context, namespace_name, values):
     """Create a metadef object"""
     global DATA
@@ -1367,6 +1370,7 @@ def metadef_object_create(context, namespace_name, values):
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_object_update(context, namespace_name, object_id, values):
     """Update a metadef object"""
     global DATA
@@ -1450,6 +1454,7 @@ def metadef_property_count(context, namespace_name):
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_property_create(context, namespace_name, values):
     """Create a metadef property"""
     global DATA
@@ -1493,6 +1498,7 @@ def metadef_property_create(context, namespace_name, values):
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_property_update(context, namespace_name, property_id, values):
     """Update a metadef property"""
     global DATA
@@ -1785,6 +1791,7 @@ def metadef_tag_get_all(context, namespace_name, filters=None, marker=None,
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_tag_create(context, namespace_name, values):
     """Create a metadef tag"""
     global DATA
@@ -1867,6 +1874,7 @@ def metadef_tag_create_tags(context, namespace_name, tag_list):
 
 
 @log_call
+@utils.no_4byte_params
 def metadef_tag_update(context, namespace_name, id, values):
     """Update a metadef tag"""
     global DATA
