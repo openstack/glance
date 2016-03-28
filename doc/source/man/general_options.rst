@@ -48,7 +48,7 @@
         logging configuration to any other existing logging
         options. Please see the Python logging module documentation
         for details on logging configuration files. The log-config
-        name for this option is depcrecated.
+        name for this option is deprecated.
 
   **--log-format FORMAT**
         A logging.Formatter log message format string which may use any
