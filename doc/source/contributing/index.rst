@@ -12,6 +12,7 @@ Policies
    :maxdepth: 3
 
    blueprints
+   documentation
 .. bugs
    contributor-onboarding
    core-reviewers
