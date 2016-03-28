@@ -20,13 +20,17 @@ import datetime
 import uuid
 
 import mock
+from oslo_db import exception as db_exception
+from oslo_db.sqlalchemy import utils as sqlalchemyutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 from six.moves import reduce
+from sqlalchemy.dialects import sqlite
 
 from glance.common import exception
 from glance.common import timeutils
 from glance import context
+from glance.db.sqlalchemy import api as db_api
 from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests import utils as test_utils
@@ -1978,6 +1982,75 @@ class DBPurgeTests(test_utils.BaseTestCase):
         self.assertEqual(len(images), 2)
         tasks = self.db_api.task_get_all(self.adm_context)
         self.assertEqual(len(tasks), 2)
+
+    def test_purge_fk_constraint_failure(self):
+        """Test foreign key constraint failure
+
+        Test whether foreign key constraint failure during purge
+        operation is raising DBReferenceError or not.
+        """
+        session = db_api.get_session()
+        engine = db_api.get_engine()
+        connection = engine.connect()
+
+        dialect = engine.url.get_dialect()
+        if dialect == sqlite.dialect:
+            # We're seeing issues with foreign key support in SQLite 3.6.20
+            # SQLAlchemy doesn't support it at all with SQLite < 3.6.19
+            # It works fine in SQLite 3.7.
+            # So return early to skip this test if running SQLite < 3.7
+            if test_utils.is_sqlite_version_prior_to(3, 7):
+                self.skipTest(
+                    'sqlite version too old for reliable SQLA foreign_keys')
+            # This is required for enforcing Foreign Key Constraint
+            # in SQLite 3.x
+            connection.execute("PRAGMA foreign_keys = ON")
+
+        images = sqlalchemyutils.get_table(
+            engine, "images")
+        image_tags = sqlalchemyutils.get_table(
+            engine, "image_tags")
+
+        # Add a 4th row in images table and set it deleted 15 days ago
+        uuidstr = uuid.uuid4().hex
+        created_time = timeutils.utcnow() - datetime.timedelta(days=20)
+        deleted_time = created_time + datetime.timedelta(days=5)
+        images_row_fixture = {
+            'id': uuidstr,
+            'status': 'status',
+            'created_at': created_time,
+            'deleted_at': deleted_time,
+            'deleted': 1,
+            'visibility': 'public',
+            'min_disk': 1,
+            'min_ram': 1,
+            'protected': 0
+        }
+        ins_stmt = images.insert().values(**images_row_fixture)
+        connection.execute(ins_stmt)
+
+        # Add a record in image_tags referencing the above images record
+        # but do not set it as deleted
+        image_tags_row_fixture = {
+            'image_id': uuidstr,
+            'value': 'tag_value',
+            'created_at': created_time,
+            'deleted': 0
+        }
+        ins_stmt = image_tags.insert().values(**image_tags_row_fixture)
+        connection.execute(ins_stmt)
+
+        # Purge all records deleted at least 10 days ago
+        self.assertRaises(db_exception.DBReferenceError,
+                          db_api.purge_deleted_rows,
+                          self.adm_context,
+                          age_in_days=10,
+                          max_rows=50)
+
+        # Verify that no records from images have been deleted
+        # due to DBReferenceError being raised
+        images_rows = session.query(images).count()
+        self.assertEqual(4, images_rows)
 
 
 class TestVisibility(test_utils.BaseTestCase):
