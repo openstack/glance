@@ -15,13 +15,13 @@
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0rc2.dev5\n"
+"Project-Id-Version: glance 12.0.0.0rc2.dev6\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-22 14:14+0000\n"
+"POT-Creation-Date: 2016-03-24 10:40+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-24 05:21+0000\n"
+"PO-Revision-Date: 2016-03-24 07:54+0000\n"
 "Last-Translator: Eugènia Torrella <tester03@es.ibm.com>\n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -134,6 +134,9 @@ msgid ""
 msgstr ""
 "Se necesita la opción --os_auth_url ovariable de ambiente OS_AUTH_URL cuando "
 "la estrategia de autenticación keystone está habilitada\n"
+
+msgid "A body is not expected with this request."
+msgstr "No se espera un cuerpo en esta solicitud."
 
 msgid ""
 "A list of artifacts that are allowed in the format name or name-version. "
@@ -392,6 +395,12 @@ msgid "Available categories:"
 msgstr "Categorías disponibles:"
 
 #, python-format
+msgid "Bad \"%s\" query filter format. Use ISO 8601 DateTime notation."
+msgstr ""
+"Formato de filtro de consulta \"%s\" incorrecto. Utilice la notación de "
+"DateTime de la ISO 8601."
+
+#, python-format
 msgid "Bad Command: %s"
 msgstr "Comando incorrecto: %s"
 
@@ -413,6 +422,12 @@ msgstr "Credenciales formadas incorrectamente '%(creds)s' en URI de Swift"
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Credenciales con formato incorrecto en URI de Swift."
+
+msgid "Base directory that the image cache uses."
+msgstr "El directorio base que utiliza la memoria caché de imágenes."
+
+msgid "BinaryObject property cannot be declared mutable"
+msgstr "La propiedad BinaryObject no se puede declarar mutable"
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -676,6 +691,17 @@ msgstr "El tamaño del diccionario es es mayor que el máximo"
 msgid "Dictionary size is less than minimum"
 msgstr "El tamaño del diccioanrio es menor que el mínimo"
 
+msgid ""
+"Digest algorithm which will be used for digital signature. Use the command "
+"\"openssl list-message-digest-algorithms\" to get the available algorithms "
+"supported by the version of OpenSSL on the platform. Examples are \"sha1\", "
+"\"sha256\", \"sha512\", etc."
+msgstr ""
+"Algoritmo Digest que se utilizará para la firma digital. Utilice el comando "
+"\"openssl list-message-digest-algorithmsl\" para ver los algoritmos "
+"disponibles soportados por la version de OpenSSL en la plataforma. Por "
+"ejemplo, \"sha1\", \"sha256\", \"sha512\", etc."
+
 msgid "Disk format is not specified."
 msgstr "No se especificó el formato del disco."
 
@@ -691,6 +717,13 @@ msgstr ""
 
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "Se debe especificar un fichero o legacy_image_id"
+
+msgid ""
+"Error decoding your request. Either the URL or the request body contained "
+"characters that could not be decoded by Glance"
+msgstr ""
+"Error al descodificar la solicitud. La URL o el cuerpo solicitado contenían "
+"caracteres que se han podido descodificar en Glance"
 
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
@@ -867,6 +900,9 @@ msgstr "Error al obtener datos de objeto %(name)s : %(err)s."
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr "Error al obtener información de imagen %(id)s : %(err)s."
+
+msgid "Glance client not installed"
+msgstr "El cliente de Glance no está instalado"
 
 #, python-format
 msgid "Host \"%s\" is not valid."
@@ -1083,6 +1119,21 @@ msgstr "Especificación de tipo de propiedad del diccionario no válida"
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr "Formato de disco '%s' no válido para imagen."
+
+#, python-format
+msgid "Invalid filter value %s. The quote is not closed."
+msgstr "Valor de filtro no válido %s. No se han cerrado comillas."
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma after closing quotation mark."
+msgstr ""
+"Valor de filtro no válido %s. No hay una coma antes de cerrar comillas."
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma before opening quotation mark."
+msgstr "Valor de filtro no válido %s. No hay una coma antes de abrir comillas."
 
 #, python-format
 msgid "Invalid headers \"Content-Type\": %s"
@@ -1371,6 +1422,9 @@ msgstr "JSON con formato incorrecto en el cuerpo de la solicitud."
 
 msgid "Max string length may not exceed 255 characters"
 msgstr "El tamaño máximo de serie no debe exceder 255 caracteres"
+
+msgid "Maximal age is count of days since epoch."
+msgstr "La edad máxima es el recuento de días desde epoch."
 
 msgid ""
 "Maximum line size of message headers to be accepted. max_header_line may "
@@ -1945,6 +1999,13 @@ msgstr "Ámbito de accesibilidad de la imagen"
 msgid "Scope of namespace accessibility."
 msgstr "Alcance de accesibilidad del espacio de nombre."
 
+msgid ""
+"Secret key to use to sign Glance API and Glance Registry services tracing "
+"messages."
+msgstr ""
+"Clave secreta a utilizar para firmar los mensajes de rastreo de los "
+"servicios de la API y el Registro de Glance."
+
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "El servidor %(serv)s  se ha detenido"
@@ -2130,6 +2191,14 @@ msgstr ""
 msgid "The amount of time in seconds to delay before performing a delete."
 msgstr ""
 "El lapso e tiempo en segundos en demora antes de realizar una eliminación."
+
+msgid ""
+"The amount of time to let an incomplete image remain in the cache, before "
+"the cache cleaner, if running, will remove the incomplete image."
+msgstr ""
+"El periodo de tiempo para dejar que una imagen incompleta permanezca en la "
+"memoria caché antes de que el podador de caché, si se está ejecutando, "
+"comience a limpiar el caché de imágenes."
 
 msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
@@ -2600,6 +2669,14 @@ msgstr "El tipo de tarea representada por este contenido"
 msgid "The unique namespace text."
 msgstr "EL único texto de espacio de nombre."
 
+msgid ""
+"The upper limit (the maximum size of accumulated cache in bytes) beyond "
+"which the cache pruner, if running, starts cleaning the image cache."
+msgstr ""
+"El límite superior (el tamaño máximo de caché acumulado en bytes) más allá "
+"del cual el podador de caché, si se está ejecutando, comienza a limpiar el "
+"caché de imágenes."
+
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
 "El nombre fácil de usar para el espacio de nombre. Utilizado por UI si está "
@@ -2741,8 +2818,15 @@ msgstr ""
 "%(service)s:\n"
 "  %(file)s %(server)s detener--fichero-pid %(fb)s"
 
+#, python-format
+msgid "Unable to filter by unknown operator '%s'."
+msgstr "No se puede filtrar con el operador desconocido '%s'."
+
 msgid "Unable to filter on a range with a non-numeric value."
 msgstr "No se ha podido filtrar en un rango con un valor no numérico."
+
+msgid "Unable to filter on a unknown operator."
+msgstr "No se puede filtrar con un operador desconocido."
 
 msgid "Unable to filter using the specified operator."
 msgstr "No se ha podido filtrar utilizando el operador especificado."
@@ -2828,6 +2912,9 @@ msgstr "No se puede verificar la firma: %(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "Acceso a imagen no autorizado"
+
+msgid "Unexpected body type. Expected list/dict."
+msgstr "Tipo de cuerpo inesperado. Se esperaba list/dict."
 
 #, python-format
 msgid "Unexpected response: %s"
@@ -2929,6 +3016,21 @@ msgid ""
 msgstr ""
 "Si se permite que los usuarios especifiquen las propiedades de la imagen más "
 "allá de lo que proporciona el esquema de la imagen"
+
+msgid ""
+"Whether to include the backend image locations in image properties. For "
+"example, if using the file system store a URL of \"file:///path/to/image\" "
+"will be returned to the user in the 'direct_url' meta-data field. Revealing "
+"storage location can be a security risk, so use this setting with caution! "
+"Setting this to true overrides the show_image_direct_url option."
+msgstr ""
+"Si se deben incluir las ubicaciones de imágenes back-end  en las propiedades "
+"de imagen. Por ejemplo, si se utiliza el almacén dels sistema de archivos, "
+"se devolverá una URL de tipo \"file:///path/to/image\" al usuario en el "
+"campo de metadatos 'direct_url'. Revelar la ubicación de almacenamiento "
+"puede suponer un riesgo de seguridad, por lo que debe utilizar este "
+"parámetro con cuidado! Si lo establece en true, se sobrescribe la opción "
+"show_image_direct_url."
 
 msgid ""
 "Whether to include the backend image storage location in image properties. "
