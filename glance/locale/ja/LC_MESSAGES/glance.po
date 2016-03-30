@@ -8,17 +8,18 @@
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
 # Yuko Katabami <yukokatabami@gmail.com>, 2015. #zanata
+# Tsutomu Kimura <ebb0de2@jp.ibm.com>, 2016. #zanata
 # Yuta Hono <yuta.hono@ntt.com>, 2016. #zanata
 # 笹原 昌美 <ebb0de1@jp.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0rc2.dev6\n"
+"Project-Id-Version: glance 12.0.0.0rc2.dev7\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-24 10:40+0000\n"
+"POT-Creation-Date: 2016-03-29 18:17+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-29 01:48+0000\n"
+"PO-Revision-Date: 2016-03-30 04:55+0000\n"
 "Last-Translator: 笹原 昌美 <ebb0de1@jp.ibm.com>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -183,7 +184,7 @@ msgid ""
 msgstr ""
 "ストア「ロケーション」メタデータを暗号化するための AES 鍵。この鍵を使用する場"
 "合は、Swift または S3 の資格情報が組み込まれます。長さが 16 バイト、24 バイ"
-"ト、または 32 バイトのランダムストリングに設定する必要があります。"
+"ト、または 32 バイトのランダム文字列に設定する必要があります。"
 
 msgid ""
 "Address to bind the server.  Useful when selecting a particular network "
@@ -563,7 +564,7 @@ msgstr "現在、複数のディスクを含む OVA パッケージはサポー�
 
 msgid "Custom validators list should contain tuples '(function, message)'"
 msgstr ""
-"カスタムバリデーターリストにはタプル「(function, message)」が含まれていなけれ"
+"カスタムバリデーターリストにはタプル '(function, message)' が含まれていなけれ"
 "ばなりません"
 
 #, python-format
@@ -980,7 +981,7 @@ msgstr "イメージは保護されています"
 
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
-msgstr "イメージ %(id)s のメンバー数がイメージメンバー限度を超えました: %(e)s:"
+msgstr "イメージ %(id)s のメンバー数がイメージメンバー上限を超えました: %(e)s:"
 
 #, python-format
 msgid "Image name too long: %d"
@@ -1370,7 +1371,7 @@ msgid "List definitions may hot have defaults"
 msgstr "リスト定義にデフォルトがない可能性があります"
 
 msgid "List of strings related to the image"
-msgstr "イメージに関連するストリングのリスト"
+msgstr "イメージに関連する文字列のリスト"
 
 msgid "List size is greater than maximum"
 msgstr "リストサイズが最大を上回っています"
@@ -2124,7 +2125,7 @@ msgstr ""
 "す。"
 
 msgid "The amount of time in seconds to delay before performing a delete."
-msgstr "削除を実際実行するまでの遅延時間 (秒)。"
+msgstr "削除を実行するまでの遅延時間 (秒)。"
 
 msgid ""
 "The amount of time to let an incomplete image remain in the cache, before "
@@ -2642,8 +2643,8 @@ msgid ""
 "This config value indicates whether \"roles\" or \"policies\" are used in "
 "the property protection file."
 msgstr ""
-"この設定値は、プロパティー保護ファイルで「roles」と「policies」のどちらが使用"
-"されるかを示します。"
+"この設定値は、プロパティー保護ファイルで \"roles\" と \"policies\" のどちらが"
+"使用されるかを示します。"
 
 msgid ""
 "This operation is currently not permitted on Glance Tasks. They are auto "
@@ -3007,11 +3008,11 @@ msgstr "このアクションの実行を許可されていません。"
 
 #, python-format
 msgid "You are not authorized to lookup image %s."
-msgstr "%s イメージを調べる権限がありません。"
+msgstr "イメージ %s を調べる権限がありません。"
 
 #, python-format
 msgid "You are not authorized to lookup the members of the image %s."
-msgstr "%s イメージのメンバーを調べる権限がありません。"
+msgstr "イメージ %s のメンバーを調べる権限がありません。"
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
@@ -3159,7 +3160,7 @@ msgstr ""
 
 #, python-format
 msgid "custom properties (%(props)s) conflict with base properties"
-msgstr "カスタムプロパティー (%(props)s) が基本プロパティーと矛盾しています"
+msgstr "カスタムプロパティー (%(props)s) が基本プロパティーと競合しています"
 
 msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
 msgstr ""
