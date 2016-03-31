@@ -24,8 +24,8 @@ Gateway and basic layers
 The domain model contains the following layers:
 
 #. :ref:`authorization`
-#. :ref:`notifier`
 #. :ref:`property`
+#. :ref:`notifier`
 #. :ref:`policy`
 #. :ref:`quota`
 #. :ref:`location`
@@ -37,7 +37,27 @@ their locations:
 .. figure:: /images/glance_layers.png
    :figwidth: 100%
    :align: center
-   :alt: Image domain layers
+   :alt: From top to bottom, the stack consists of the Router and REST API,
+         which are above the domain implementation.  The Auth, Property
+         Protection (optional), Notifier, Policy, Quota,
+         Location, and Database represent the domain implementation.
+         The Registry (optional) and Data Access sit below the domain
+         implementation.  Further, the Client block calls the Router;
+         the Location block calls the Glance Store, and the Data Access
+         layer calls the DBMS.
+         Additional information conveyed in the image is the location in 
+         the Glance code of the various components:
+         Router: api/v2/router.py
+         REST API: api/v2/*
+         Auth: api/authorization.py
+         Property Protection: api/property_protections.py
+         Notifier: notifier.py
+         Policy: api/policy.py
+         Quota: quota/__init__.py
+         Location: location.py
+         DB: db/__init__.py
+         Registry: registry/v2/*
+         Data Access: db/sqlalchemy/api.py
 
 .. _authorization:
 

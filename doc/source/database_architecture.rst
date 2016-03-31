@@ -184,7 +184,63 @@ of an *Image* object.
 .. figure:: /images/glance_db.png
    :figwidth: 100%
    :align: center
-   :alt: Glance images DB schema
+   :alt: The glance database schema is depicted by 5 tables.
+         The table named Images has the following columns:
+         id: varchar(36);
+         name: varchar(255), nullable;
+         size: bigint(20), nullable;
+         status: varchar(30);
+         is_public: tinyint(1);
+         created_at: datetime;
+         updated_at: datetime, nullable;
+         deleted_at: datetime, nullable;
+         deleted: tinyint(1);
+         disk_format: varchar(20), nullable;
+         container_format: varchar(20), nullable;
+         checksum: varchar(32), nullable;
+         owner: varchar(255), nullable
+         min_disk: int(11);
+         min_ram: int(11);
+         protected: tinyint(1); and
+         virtual_size: bigint(20), nullable;.
+         The table named image_locations has the following columns:
+         id: int(11), primary;
+         image_id: varchar(36), refers to column named id in table Images;
+         value: text;
+         created_at: datetime;
+         updated_at: datetime, nullable;
+         deleted_at: datetime, nullable;
+         deleted: tinyint(1);
+         meta_data: text, nullable; and
+         status: varchar(30);.
+         The table named image_members has the following columns:
+         id: int(11), primary;
+         image_id: varchar(36), refers to column named id in table Images;
+         member: varchar(255);
+         can_share: tinyint(1);
+         created_at: datetime;
+         updated_at: datetime, nullable;
+         deleted_at: datetime, nullable;
+         deleted: tinyint(1); and
+         status: varchar(20;.
+         The table named image_tags has the following columns:
+         id: int(11), primary;
+         image_id: varchar(36), refers to column named id in table Images;
+         value: varchar(255);
+         created_at: datetime;
+         updated_at: datetime, nullable;
+         deleted_at: datetime, nullable; and
+         deleted: tinyint(1);.
+         The table named image_properties has the following columns:
+         id: int(11), primary;
+         image_id: varchar(36), refers to column named id in table Images;
+         name: varchar(255);
+         value: text, nullable;
+         created_at: datetime;
+         updated_at: datetime, nullable;
+         deleted_at: datetime, nullable; and
+         deleted: tinyint(1);.
+
 
 .. centered:: Image 1. Glance images DB schema
 
