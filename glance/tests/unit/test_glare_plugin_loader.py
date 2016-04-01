@@ -141,7 +141,8 @@ class TestArtifactsLoader(utils.BaseTestCase):
 
         * no plugins can be loaded if load_enabled = False
         * if available_plugins list is given only plugins specified can be
-        be loaded
+          be loaded
+
         """
         self.config(load_enabled=False)
         self.assertRaises(exception.ArtifactLoadError,
