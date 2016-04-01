@@ -62,7 +62,7 @@ def set_defaults(control_exchange='glance'):
 
 
 def get_transport():
-    return oslo_messaging.get_transport(CONF, aliases=_ALIASES)
+    return oslo_messaging.get_notification_transport(CONF, aliases=_ALIASES)
 
 
 class Notifier(object):
