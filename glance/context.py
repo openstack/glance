@@ -26,11 +26,9 @@ class RequestContext(context.RequestContext):
 
     """
 
-    def __init__(self, roles=None,
-                 owner_is_tenant=True, service_catalog=None,
+    def __init__(self, owner_is_tenant=True, service_catalog=None,
                  policy_enforcer=None, **kwargs):
         super(RequestContext, self).__init__(**kwargs)
-        self.roles = roles or []
         self.owner_is_tenant = owner_is_tenant
         self.service_catalog = service_catalog
         self.policy_enforcer = policy_enforcer or policy.Enforcer()
