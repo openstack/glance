@@ -5,17 +5,18 @@
 # Translators:
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
+# Alessandra <alessandra@translated.net>, 2016. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
+"Project-Id-Version: glance 12.0.0.0rc2.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-12 00:22+0000\n"
+"POT-Creation-Date: 2016-03-17 15:26+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-02-02 09:45+0000\n"
-"Last-Translator: Tom Cocozzello <tjcocozz@us.ibm.com>\n"
+"PO-Revision-Date: 2016-03-21 06:27+0000\n"
+"Last-Translator: Alessandra <alessandra@translated.net>\n"
 "Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -127,6 +128,9 @@ msgstr ""
 "l'opzione --os_auth_url o la variabile d'ambiente OS_AUTH_URL sono "
 "obbligatori quando è abilitato il modo di autenticazione keystone\n"
 
+msgid "A body is not expected with this request."
+msgstr "Un corpo non è previsto con questa richiesta."
+
 msgid ""
 "A list of artifacts that are allowed in the format name or name-version. "
 "Empty list means that any artifact can be loaded."
@@ -220,9 +224,21 @@ msgstr "Un identificativo del proprietario di questa attività"
 msgid "An identifier for the task"
 msgstr "Un identificativo per l'attività"
 
+msgid "An image file url"
+msgstr "Un URL al file di immagini"
+
+msgid "An image schema url"
+msgstr "Un URL allo schema di immagini"
+
+msgid "An image self url"
+msgstr "Un URL personale all'immagine"
+
 #, python-format
 msgid "An image with identifier %s already exists"
 msgstr "Un'immagine con identificativo %s già esiste"
+
+msgid "An import task exception occurred"
+msgstr "Si è verificata un'eccezione attività di importazione"
 
 msgid "An object with the same identifier already exists."
 msgstr "Già esiste un oggetto con lo stesso identificativo."
@@ -362,11 +378,25 @@ msgstr ""
 msgid "Auth service at URL %(url)s not found."
 msgstr "Servizio di autenticazione all'URL %(url)s non trovato."
 
+#, python-format
+msgid ""
+"Authentication error - the token may have expired during file upload. "
+"Deleting image data for %s."
+msgstr ""
+"Errore di autenticazione - il token potrebbe essere scaduto durante il "
+"caricamento del file. Eliminazione dei dati dell'immagine per %s."
+
 msgid "Authorization failed."
 msgstr "Autorizzazione non riuscita."
 
 msgid "Available categories:"
 msgstr "Categorie disponibili:"
+
+#, python-format
+msgid "Bad \"%s\" query filter format. Use ISO 8601 DateTime notation."
+msgstr ""
+"Formato filtro di query \"%s\" errato. Utilizzare la notazione ISO 8601 "
+"DateTime."
 
 #, python-format
 msgid "Bad Command: %s"
@@ -390,6 +420,12 @@ msgstr "Credenziali con formato non corretto %(creds)s' nell'URI Swift"
 
 msgid "Badly formed credentials in Swift URI."
 msgstr "Credenziali formate in modo non corretto nell'URI Swift."
+
+msgid "Base directory that the image cache uses."
+msgstr "La directory di base che la cache dell'immagine utilizza."
+
+msgid "BinaryObject property cannot be declared mutable"
+msgstr "La proprietà BinaryObject non può essere dichiarata mutevole"
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
@@ -430,9 +466,15 @@ msgstr ""
 msgid "Cannot load artifact '%(name)s'"
 msgstr "Impossibile caricare la risorsa utente '%(name)s'"
 
+msgid "Cannot remove last location in the image."
+msgstr "Impossibile rimuovere l'ultima ubicazione nell'immagine."
+
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "Impossibile salvare i dati per l'immagine %(image_id)s: %(error)s"
+
+msgid "Cannot set locations to empty list."
+msgstr "Impossibile impostare le ubicazione nell'elenco vuoto."
 
 msgid "Cannot specify 'max_size' explicitly"
 msgstr "Impossibile specificare 'max_size' esplicitamente"
@@ -450,6 +492,18 @@ msgstr "Impossibile utilizzare questo parametro con l'operatore %(op)s"
 msgid "Certificate file to use when starting API server securely."
 msgstr ""
 "File certificato da utilizzare quando si avvia il server API in modo sicuro."
+
+#, python-format
+msgid "Certificate format not supported: %s"
+msgstr "Formato certificato non supportato: %s"
+
+#, python-format
+msgid "Certificate is not valid after: %s UTC"
+msgstr "Il certificato non è valido dopo: %s UTC"
+
+#, python-format
+msgid "Certificate is not valid before: %s UTC"
+msgstr "Il certificato non è valido prima di: %s UTC"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -492,6 +546,9 @@ msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
 "Impossibile collegarsi a %(host)s:%(port)s dopo aver tentato per 30 secondi"
 
+msgid "Could not find OVF file in OVA archive file."
+msgstr "Impossibile trovare il file OVD nel file di archivio OVA."
+
 #, python-format
 msgid "Could not find metadata object %s"
 msgstr "Impossibile trovare l'oggetto di metadati %s"
@@ -519,6 +576,10 @@ msgstr "Impossibile trovare l'attività %s"
 msgid "Could not update image: %s"
 msgstr "Impossibile aggiornare l'immagine: %s"
 
+msgid "Currently, OVA packages containing multiple disk are not supported."
+msgstr ""
+"Attualmente, i pacchetti OVA che contengono più dischi non sono supportati."
+
 msgid "Custom validators list should contain tuples '(function, message)'"
 msgstr ""
 "L'elenco di programmi di convalida personalizzati contiene tuple '(funzione, "
@@ -534,8 +595,38 @@ msgstr "I dati forniti non erano validi."
 msgid "Date and time of image member creation"
 msgstr "Data e ora di creazione del membro dell'immagine"
 
+msgid "Date and time of image registration"
+msgstr "Data e ora della registrazione dell'immagine"
+
 msgid "Date and time of last modification of image member"
 msgstr "Data e ora dell'ultima modifica del membro dell'immagine"
+
+msgid "Date and time of namespace creation"
+msgstr "Data ed ora della creazione dello spazio dei nomi"
+
+msgid "Date and time of object creation"
+msgstr "Data ed ora della creazione dell'oggetto"
+
+msgid "Date and time of resource type association"
+msgstr "Data ed ora dell'associazione del tipo di risorsa"
+
+msgid "Date and time of tag creation"
+msgstr "Data ed ora della creazione del tag"
+
+msgid "Date and time of the last image modification"
+msgstr "Data e ora dell'ultima modifica dell'immagine"
+
+msgid "Date and time of the last namespace modification"
+msgstr "Data ed ora dell'ultima modifica allo spazio dei nomi"
+
+msgid "Date and time of the last object modification"
+msgstr "Data ed ora dell'ultima modifica all'oggetto"
+
+msgid "Date and time of the last resource type association modification"
+msgstr "Data ed ora dell'ultima modifica all'associazione del tipo di risorsa"
+
+msgid "Date and time of the last tag modification"
+msgstr "Data ed ora dell'ultima modifica al tag"
 
 msgid "Datetime when this resource was created"
 msgstr "Data e ora in cui questa risorsa è stata creata"
@@ -601,6 +692,17 @@ msgstr "La dimensione del dizionario è superiore a quella massima"
 msgid "Dictionary size is less than minimum"
 msgstr "La dimensione del dizionario è inferiore a quella minima"
 
+msgid ""
+"Digest algorithm which will be used for digital signature. Use the command "
+"\"openssl list-message-digest-algorithms\" to get the available algorithms "
+"supported by the version of OpenSSL on the platform. Examples are \"sha1\", "
+"\"sha256\", \"sha512\", etc."
+msgstr ""
+"L'algoritmo digest che verrà utilizzato per la firma digitale. Utilizzare il "
+"comando \"openssl list-message-digest-algorithms\" per richiamare gli "
+"algoritmi disponibili supportati dalla versione di OpenSSL sulla "
+"piattaforma. Esempi sono \"sha1\", \"sha256\", \"sha512\" e così via."
+
 msgid "Disk format is not specified."
 msgstr "Formato disco non specificato. "
 
@@ -617,6 +719,13 @@ msgstr ""
 msgid "Either a file or a legacy_image_id has to be specified"
 msgstr "È necessario specificare un file o un legacy_image_id."
 
+msgid ""
+"Error decoding your request. Either the URL or the request body contained "
+"characters that could not be decoded by Glance"
+msgstr ""
+"Errore di decodifica della richiesta. L'URL o il corpo della richiesta "
+"contengono caratteri che non possono essere decodificati da Glance"
+
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
 msgstr ""
@@ -631,6 +740,21 @@ msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Errore nella configurazione dell'archivio. L'aggiunta di immagini a questo "
 "archivio non è consentita."
+
+msgid "Error occurred while creating the verifier"
+msgstr "Si è verificato un errore durante la creazione del verificatore"
+
+msgid "Error occurred while verifying the signature"
+msgstr "Si è verificato un errore durante la verifica della firma"
+
+msgid "Expected a member in the form: {\"member\": \"image_id\"}"
+msgstr "Previsto un membro nel formato: {\"member\": \"image_id\"}"
+
+msgid "Expected a status in the form: {\"status\": \"status\"}"
+msgstr "Previsto uno stato nel formato: {\"status\": \"status\"}"
+
+msgid "External source should not be empty"
+msgstr "L'origine esterna non deve essere vuota"
 
 #, python-format
 msgid "External sources are not supported: '%s'"
@@ -720,6 +844,9 @@ msgstr "File troppo grande"
 msgid "File too small"
 msgstr "File troppo piccolo"
 
+msgid "Forbidden image access"
+msgstr "Accesso all'immagine vietato"
+
 #, python-format
 msgid "Forbidden to delete a %s image."
 msgstr "Divieto di eliminare un'immagine %s."
@@ -727,6 +854,10 @@ msgstr "Divieto di eliminare un'immagine %s."
 #, python-format
 msgid "Forbidden to delete image: %s"
 msgstr "Divieto di eliminare l'immagine: %s"
+
+#, python-format
+msgid "Forbidden to modify '%(key)s' of %(status)s image."
+msgstr "Divieto di modificare '%(key)s' dell'immagine %(status)s."
 
 #, python-format
 msgid "Forbidden to modify '%s' of image."
@@ -769,6 +900,9 @@ msgstr "Richiamo dati blob %(name)s non riuscito: %(err)s."
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
 msgstr "Acquisizione dati immagine %(id)s non riuscita: %(err)s."
+
+msgid "Glance client not installed"
+msgstr "Client Glance non installato"
 
 #, python-format
 msgid "Host \"%s\" is not valid."
@@ -841,6 +975,14 @@ msgstr ""
 "Impossibile trovare l'immagine %s dopo il caricamento. L'immagine potrebbe "
 "essere stata eliminata durante il caricamento. Eliminazione delle porzioni "
 "caricate."
+
+#, python-format
+msgid ""
+"Image %s could not be found after upload. The image may have been deleted "
+"during the upload."
+msgstr ""
+"Impossibile trovare l'immagine %s dopo il caricamento. L'immagine potrebbe "
+"essere stata eliminata durante il caricamento."
 
 #, python-format
 msgid "Image %s is deactivated"
@@ -943,8 +1085,16 @@ msgstr ""
 "Autorizzazioni insufficienti sul supporto di memorizzazione immagini: %s"
 
 #, python-format
+msgid "Invalid Content-Type for work with %s"
+msgstr "Tipo di contenuto non valido per il lavoro con %s"
+
+#, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Puntatore JSON non valido per questa risorsa: '/%s'"
+
+#, python-format
+msgid "Invalid certificate format: %s"
+msgstr "Formato certificato non valido: %s"
 
 #, python-format
 msgid "Invalid checksum '%s': can't exceed 32 characters"
@@ -973,6 +1123,28 @@ msgstr "Specifica del tipo di proprietà del dizionario non valida"
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr "Formato del disco '%s' non valido per l'immagine."
+
+#, python-format
+msgid "Invalid filter value %s. The quote is not closed."
+msgstr "Valore filtro non valido %s. Le virgolette non sono chiuse."
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma after closing quotation mark."
+msgstr ""
+"Valore filtro non valido %s. Non è presente una virgola prima delle "
+"virgolette di chiusura."
+
+#, python-format
+msgid ""
+"Invalid filter value %s. There is no comma before opening quotation mark."
+msgstr ""
+"Valore filtro non valido %s. Non è presente una virgola prima delle "
+"virgolette di apertura."
+
+#, python-format
+msgid "Invalid headers \"Content-Type\": %s"
+msgstr "Intestazioni \"Content-Type\" non valide: %s"
 
 msgid "Invalid image id format"
 msgstr "Formato ID immagine non valido"
@@ -1020,6 +1192,10 @@ msgid "Invalid marker. Image could not be found."
 msgstr "Indicatore non valido. Impossibile trovare l'immagine."
 
 #, python-format
+msgid "Invalid mask_gen_algorithm: %s"
+msgstr "mask_gen_algorithm non valido: %s"
+
+#, python-format
 msgid "Invalid membership association: %s"
 msgstr "Associazione di appartenenza non valida: %s"
 
@@ -1047,14 +1223,33 @@ msgstr "Posizione non valida per la rimozione di una ubicazione."
 msgid "Invalid property definition"
 msgstr "Definizione della proprietà non valida"
 
+#, python-format
+msgid "Invalid pss_salt_length: %s"
+msgstr "pss_salt_length non valido: %s"
+
+#, python-format
+msgid "Invalid public key type for signature key type: %s"
+msgstr "Tipo di chiave pubblica non valida per il tipo di chiave di firma: %s"
+
 msgid "Invalid reference list specification"
 msgstr "Specifica elenco di riferimento non valida"
 
 msgid "Invalid referenced type"
 msgstr "Tipo indicato non valido"
 
+msgid "Invalid request PATCH for work with blob"
+msgstr "PATCH richiesta non valido per il lavoro con blob"
+
 msgid "Invalid service catalog json."
 msgstr "json del catalogo del servizio non è valido."
+
+#, python-format
+msgid "Invalid signature hash method: %s"
+msgstr "Metodo hash della firma non valido: %s"
+
+#, python-format
+msgid "Invalid signature key type: %s"
+msgstr "Tipo di chiave di firma non valida: %s"
 
 #, python-format
 msgid "Invalid sort direction: %s"
@@ -1089,6 +1284,10 @@ msgstr "Valore di stato non valido: %s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "Stato non valido: %s"
+
+#, python-format
+msgid "Invalid time format for %s."
+msgstr "Formato ora non valido per %s."
 
 msgid "Invalid type definition"
 msgstr "Definizione del tipo non valida"
@@ -1164,6 +1363,17 @@ msgstr ""
 msgid "It's invalid to provide multiple image sources."
 msgstr "Non è valido per fornire più origini delle immagini."
 
+msgid "It's not allowed to add locations if locations are invisible."
+msgstr ""
+"Non è consentito aggiungere ubicazione se le ubicazioni sono invisibili."
+
+msgid "It's not allowed to remove locations if locations are invisible."
+msgstr ""
+"Non è consentito rimuovere ubicazioni se le ubicazioni sono invisibili."
+
+msgid "It's not allowed to update locations if locations are invisible."
+msgstr "Non è consentito caricare ubicazioni se le ubicazioni sono invisibili."
+
 msgid "Items have to be unique"
 msgstr "Gli elementi devono essere univoci"
 
@@ -1222,6 +1432,9 @@ msgstr "JSON non corretto nel corpo della richiesta."
 
 msgid "Max string length may not exceed 255 characters"
 msgstr "La lunghezza massima della stringa non può superare i 255 caratteri"
+
+msgid "Maximal age is count of days since epoch."
+msgstr "L'età massima è il numero di giorni dal periodo."
 
 msgid ""
 "Maximum line size of message headers to be accepted. max_header_line may "
@@ -1369,6 +1582,9 @@ msgstr "Il tag di definizione dei metadati per l'id=%s non è stato trovato"
 msgid "Min string length may not be negative"
 msgstr "La lunghezza minima della stringa non può essere negativa"
 
+msgid "Minimal rows limit is 1."
+msgstr "Il limite di righe minimo è 1."
+
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "Credenziale richiesta mancante: %(required)s"
@@ -1381,6 +1597,9 @@ msgstr ""
 "Il servizio 'immagine' multipla corrisponde nella regione %(region)s. Questo "
 "in genere significa che una regione è obbligatoria e non ne è stata fornita "
 "una."
+
+msgid "Must supply a positive, non-zero value for age."
+msgstr "È necessario fornire un valore positivo, diverso da zero per l'età."
 
 msgid "Name of the paste configuration file."
 msgstr "Nome del file di configurazione paste."
@@ -1482,6 +1701,22 @@ msgid "Number of sort dirs does not match the number of sort keys"
 msgstr ""
 "Il numero di directory di ordinamento non corrisponde al numero di chiavi di "
 "ordinamento"
+
+msgid "OVA extract is limited to admin"
+msgstr "L'estrazione OVA è limitata all'amministratore"
+
+msgid ""
+"OVF metadata of interest was not specified in ovf-metadata.json config file. "
+"Please set \"cim_pasd\" to a list of interested "
+"CIM_ProcessorAllocationSettingData properties."
+msgstr ""
+"I metadati OVF di interesse non sono stati specificati nel file di "
+"configurazione ovf-metadata.json. Impostare \"cim_pasd\" su un elenco di "
+"CIM_ProcessorAllocationSettingData properties di interesse."
+
+msgid "OVF properties config file \"ovf-metadata.json\" was not found."
+msgstr ""
+"File di configurazione delle proprietà OVF \"ovf-metadata.json\" non trovato."
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "Impossibile combinare la nuova e la precedente sintassi di ordinamento"
@@ -1735,6 +1970,13 @@ msgstr ""
 msgid "Request must be a list of commands"
 msgstr "La richiesta deve essere un elenco di comandi"
 
+msgid ""
+"Required image properties for signature verification do not exist. Cannot "
+"verify signature."
+msgstr ""
+"Le proprietà dell'immagine richieste per la verifica della firma non "
+"esistono. Impossibile verificare la firma."
+
 #, python-format
 msgid "Required store %s is invalid"
 msgstr "Archivio richiesto %s non valido"
@@ -1771,6 +2013,13 @@ msgstr "Ambito di accessibilità dell'immagine"
 msgid "Scope of namespace accessibility."
 msgstr "Ambito di accessibilità dello spazio dei nomi."
 
+msgid ""
+"Secret key to use to sign Glance API and Glance Registry services tracing "
+"messages."
+msgstr ""
+"Chiave segreta da utilizzare per firmare i messaggi di traccia dei servizi "
+"Glance API e Glance Registry."
+
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "Il server %(serv)s è stato arrestato"
@@ -1799,6 +2048,15 @@ msgstr ""
 #, python-format
 msgid "Show level %(shl)s is not supported in this operation"
 msgstr "Mostra livello %(shl)s non è supportata in questa operazione"
+
+msgid "Signature verification failed"
+msgstr "Verifica firma non riuscita"
+
+msgid "Signature verification failed."
+msgstr "Verifica firma non riuscita."
+
+msgid "Size of image file in bytes"
+msgstr "Dimensione del file di immagine in byte"
 
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
@@ -1838,6 +2096,9 @@ msgstr "Lo stato deve essere \"pending\", \"accepted\" o \"rejected\"."
 
 msgid "Status not specified"
 msgstr "Stato non specificato"
+
+msgid "Status of the image"
+msgstr "Stato dell'immagine"
 
 #, python-format
 msgid "Status transition from %(cur_status)s to %(new_status)s is not allowed"
@@ -1947,6 +2208,14 @@ msgstr ""
 "un'eliminazione."
 
 msgid ""
+"The amount of time to let an incomplete image remain in the cache, before "
+"the cache cleaner, if running, will remove the incomplete image."
+msgstr ""
+"La quantità di tempo in cui un'immagine incompleta può rimanere nella cache "
+"prima che il ripulitore cache, se in esecuzione, rimuoverà l'immagine "
+"incompleta."
+
+msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr ""
 "Il valore backlog che verrà utilizzato durante la creazione del socket "
@@ -1977,6 +2246,18 @@ msgstr ""
 
 msgid "The driver to use for image cache management."
 msgstr "Il driver da utilizzare per la gestione della cache dell'immagine."
+
+#, python-format
+msgid "The format of the version %s is not valid. Use semver notation"
+msgstr ""
+"Il formato della versione %s non è valido. Utilizzare la notazione semver"
+
+msgid ""
+"The format to which images will be automatically converted. When using the "
+"RBD backend, this should be set to 'raw'"
+msgstr ""
+"Il formato in cui le immagini verranno convertite automaticamente.  Quando "
+"si utilizza il backend RBD, deve essere impostato su 'raw'"
 
 #, python-format
 msgid ""
@@ -2306,6 +2587,9 @@ msgstr ""
 msgid "The result of current task, JSON blob"
 msgstr "Il risultato dell'attività corrente, blob JSON"
 
+msgid "The signature data was not properly encoded using base64"
+msgstr "I dati di firma non sono stati codificati correttamente tramite base64"
+
 #, python-format
 msgid ""
 "The size of the data %(image_size)s will exceed the limit. %(remaining)s "
@@ -2404,6 +2688,14 @@ msgstr "Il tipo di attività rappresentata da questo contenuto"
 
 msgid "The unique namespace text."
 msgstr "Il testo dello spazio dei nomi univoco."
+
+msgid ""
+"The upper limit (the maximum size of accumulated cache in bytes) beyond "
+"which the cache pruner, if running, starts cleaning the image cache."
+msgstr ""
+"Il limite superiore (dimensione massima della cache accumulata in byte) "
+"oltre il quale il programma di eliminazione cache, se in esecuzione, inizia "
+"a ripulire la cache delle immagini."
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
@@ -2529,6 +2821,9 @@ msgstr ""
 "obj, è necessario modificarlo per utilizzare lo schema swift+http://, come: "
 "swift+http://user:pass@authurl.com/v1/container/obj"
 
+msgid "URL to access the image file kept in external store"
+msgstr "URL per accedere al file di immagini tenuto nell'archivio esterno"
+
 msgid "Unable to PUT to non-empty collection"
 msgstr "Impossibile eseguire PUT in una raccolta non vuota "
 
@@ -2543,9 +2838,19 @@ msgstr ""
 "utilizzando:\n"
 "  %(file)s %(server)s stop --pid-file %(fb)s"
 
+#, python-format
+msgid "Unable to filter by unknown operator '%s'."
+msgstr "Impossibile filtrare mediante un operatore sconosciuto '%s'."
+
 msgid "Unable to filter on a range with a non-numeric value."
 msgstr ""
 "Impossibile filtrare in base a un intervallo con un valore non numerico."
+
+msgid "Unable to filter on a unknown operator."
+msgstr "Impossibile filtrare su un operatore sconosciuto."
+
+msgid "Unable to filter using the specified operator."
+msgstr "Impossibile filtrare utilizzando l'operatore specificato."
 
 msgid "Unable to filter using the specified range."
 msgstr "Impossibile filtrare utilizzando l'intervallo specificato."
@@ -2591,6 +2896,10 @@ msgstr ""
 "Impossibile modificare la raccolta in una proprietà immutabile o in sola "
 "lettura"
 
+#, python-format
+msgid "Unable to retrieve certificate with ID: %s"
+msgstr "Impossibile richiamare il certificato con ID: %s "
+
 msgid "Unable to retrieve request id from context"
 msgstr "Impossibile recuperare l'ID richiesta dal contesto"
 
@@ -2613,12 +2922,21 @@ msgstr ""
 "Impossibile caricare i dati dell'immagine duplicata per l'immagine "
 "%(image_id)s: %(error)s"
 
+msgid ""
+"Unable to verify signature since the algorithm is unsupported on this system"
+msgstr ""
+"Impossibile verificare la firma perché l'algoritmo non è supportato su "
+"questo sistema"
+
 #, python-format
 msgid "Unable to verify signature: %(reason)s"
 msgstr "Impossibile verificare la firma: %(reason)s "
 
 msgid "Unauthorized image access"
 msgstr "Accesso all'immagine non autorizzato"
+
+msgid "Unexpected body type. Expected list/dict."
+msgstr "Tipo di corpo imprevisto. Elenco/dizionario previsto."
 
 #, python-format
 msgid "Unexpected response: %s"
@@ -2670,6 +2988,9 @@ msgstr "Componente della versione troppo grande (%d massimo)"
 msgid "Version is invalid: %(reason)s"
 msgstr "La versione non è valida: %(reason)s"
 
+msgid "Virtual size of image in bytes"
+msgstr "Dimensione virtuale dell'immagine in byte"
+
 msgid "Visibility must be either \"public\" or \"private\""
 msgstr "La visibilità deve essere \"public\" o \"private\""
 
@@ -2717,6 +3038,21 @@ msgid ""
 msgstr ""
 "Indica se consentire agli utenti di specificare le proprietà dell'immagine "
 "al di là di quanto fornisce lo schema dell'immagine"
+
+msgid ""
+"Whether to include the backend image locations in image properties. For "
+"example, if using the file system store a URL of \"file:///path/to/image\" "
+"will be returned to the user in the 'direct_url' meta-data field. Revealing "
+"storage location can be a security risk, so use this setting with caution! "
+"Setting this to true overrides the show_image_direct_url option."
+msgstr ""
+"Indica se includere i percorsi delle immagini di backend nelle proprietà "
+"dell'immagine. Ad esempio, se viene utilizzato l'archivio del file system, "
+"l'URL \"file:///percorso/immagine\" viene restituito all'utente nel campo di "
+"metadati 'direct_url'. L'indicazione del percorso di archiviazione può "
+"rappresentare un rischio per la sicurezza, pertanto utilizzare questa "
+"impostazione con attenzione. L'impostazione su true sostituisce l'opzione "
+"show_image_direct_url."
 
 msgid ""
 "Whether to include the backend image storage location in image properties. "
@@ -2848,6 +3184,9 @@ msgstr ""
 msgid "You are not permitted to create this task with owner as: %s"
 msgstr "Non si è autorizzati a creare questa attività con proprietario: %s"
 
+msgid "You are not permitted to deactivate this image."
+msgstr "Non si è autorizzati a disattivare questa immagine."
+
 msgid "You are not permitted to delete this image."
 msgstr "Non si è autorizzati a eliminare questa immagine."
 
@@ -2887,6 +3226,9 @@ msgstr "Non si è autorizzati a modificare i tag in questa immagine."
 
 msgid "You are not permitted to modify this image."
 msgstr "Non si è autorizzati a modificare questa immagine."
+
+msgid "You are not permitted to reactivate this image."
+msgstr "Non si è autorizzati a riattivare questa immagine."
 
 msgid "You are not permitted to set status on this task."
 msgstr "Non si è autorizzati ad impostare lo stato in questa attività."
@@ -2988,6 +3330,9 @@ msgstr "parametro limite deve essere positivo"
 #, python-format
 msgid "location: %s data lost"
 msgstr "ubicazione: %s dati persi"
+
+msgid "md5 hash of image contents."
+msgstr "hash md5 del contenuto dell'immagine. "
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"
