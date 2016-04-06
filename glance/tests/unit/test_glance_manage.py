@@ -42,3 +42,17 @@ class DBCommandsTestCase(test_utils.BaseTestCase):
     def test_purge_command_negative_rows(self):
         exit = self.assertRaises(SystemExit, self.commands.purge, 1, -1)
         self.assertEqual("Minimal rows limit is 1.", exit.code)
+
+    def test_purge_invalid_age_in_days(self):
+        age_in_days = 'abcd'
+        ex = self.assertRaises(SystemExit, self.commands.purge, age_in_days)
+        expected = ("Invalid int value for age_in_days: "
+                    "%(age_in_days)s") % {'age_in_days': age_in_days}
+        self.assertEqual(expected, ex.code)
+
+    def test_purge_invalid_max_rows(self):
+        max_rows = 'abcd'
+        ex = self.assertRaises(SystemExit, self.commands.purge, 1, max_rows)
+        expected = ("Invalid int value for max_rows: "
+                    "%(max_rows)s") % {'max_rows': max_rows}
+        self.assertEqual(expected, ex.code)

@@ -54,7 +54,7 @@ from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
 from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
 from glance import glare as ga
-from glance.i18n import _, _LW, _LE, _LI
+from glance.i18n import _, _LW, _LI
 
 BASE = models.BASE
 sa_logger = None
@@ -1273,21 +1273,6 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     Deletes rows of table images, table tasks and all dependent tables
     according to given age for relevant models.
     """
-    try:
-        age_in_days = int(age_in_days)
-    except ValueError:
-        LOG.exception(_LE('Invalid value for age, %(age)d'),
-                      {'age': age_in_days})
-        raise exception.InvalidParameterValue(value=age_in_days,
-                                              param='age_in_days')
-    try:
-        max_rows = int(max_rows)
-    except ValueError:
-        LOG.exception(_LE('Invalid value for max_rows, %(max_rows)d'),
-                      {'max_rows': max_rows})
-        raise exception.InvalidParameterValue(value=max_rows,
-                                              param='max_rows')
-
     session = session or get_session()
     metadata = MetaData(get_engine())
     deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
