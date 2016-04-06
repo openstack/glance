@@ -1112,7 +1112,7 @@ work with some backends especially if they don't support host-attach.
 
 **Note**: To create a Cinder volume from an image in this store quickly, additional
 settings are required. Please see the
-`Volume-backed image <http://docs.openstack.org/admin-guide-cloud/blockstorage_volume_backed_image.html>`_
+`Volume-backed image <http://docs.openstack.org/admin-guide/blockstorage_volume_backed_image.html>`_
 documentation for more information.
 
 * ``cinder_catalog_info=<service_type>:<service_name>:<endpoint_type>``
