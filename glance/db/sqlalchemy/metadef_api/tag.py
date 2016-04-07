@@ -100,7 +100,9 @@ def create(context, namespace_name, values, session):
         metadef_tag.save(session=session)
     except db_exc.DBDuplicateEntry:
         LOG.debug("A metadata tag name=%(name)s"
-                  " in namespace=%(namespace_name)s already exists.",
+                  " already exists in namespace=%(namespace_name)s."
+                  " (Please note that metadata tag names are"
+                  " case insensitive).",
                   {'name': metadef_tag.name,
                    'namespace_name': namespace_name})
         raise exc.MetadefDuplicateTag(
