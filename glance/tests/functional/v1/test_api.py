@@ -610,18 +610,18 @@ class TestApi(functional.FunctionalTest):
         """
         We test the following sequential series of actions::
 
-        0. POST /images with public image named Image1
-           and no custom properties
-           - Verify 201 returned
-        1. HEAD image
-           - Verify HTTP headers have correct information we just added
-        2. GET image
-           - Verify all information on image we just added is correct
-        3. DELETE image1
-           - Delete the newly added image
-        4. GET image
-           - Verify that 403 HTTPForbidden exception is raised prior to
-             404 HTTPNotFound
+            0. POST /images with public image named Image1
+               and no custom properties
+               - Verify 201 returned
+            1. HEAD image
+               - Verify HTTP headers have correct information we just added
+            2. GET image
+               - Verify all information on image we just added is correct
+            3. DELETE image1
+               - Delete the newly added image
+            4. GET image
+               - Verify that 403 HTTPForbidden exception is raised prior to
+                 404 HTTPNotFound
 
         """
         self.cleanup()
