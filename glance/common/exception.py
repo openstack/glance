@@ -412,7 +412,7 @@ class MetadefIntegrityError(Forbidden):
 
 class MetadefNamespaceNotFound(NotFound):
     message = _("Metadata definition namespace=%(namespace_name)s"
-                "was not found.")
+                " was not found.")
 
 
 class MetadefObjectNotFound(NotFound):
