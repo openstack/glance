@@ -527,8 +527,8 @@ class ArtifactLoadError(GlanceException):
 
 
 class ArtifactNonMatchingTypeName(ArtifactLoadError):
-    message = _(
-        "Plugin name '%(plugin)s' should match artifact typename '%(name)s'")
+    message = _("Plugin name '%(plugin)s' should match "
+                "artifact typename '%(name)s'")
 
 
 class ArtifactPluginNotFound(NotFound):
