@@ -14,7 +14,7 @@ SQLAlchemy<=0.9.99,>=0.9.7
 anyjson>=0.3.3
 eventlet!=0.17.0,>=0.16.1
 PasteDeploy>=1.5.0
-Routes!=2.0,>=1.12.3
+Routes!=2.0,<2.3.0,>=1.12.3
 WebOb>=1.2.3
 sqlalchemy-migrate!=0.9.8,<0.10.0,>=0.9.5
 httplib2>=0.7.5
