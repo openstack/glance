@@ -29,7 +29,7 @@ And command is one of:
 And CONFPATH is the optional configuration file to use.
 
 OPTIONS
-========
+=======
 
   **General Options**
 

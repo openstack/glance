@@ -15,7 +15,7 @@
       under the License.
 
 Tasks
-==============
+=====
 
 Conceptual Overview
 -------------------
@@ -134,5 +134,3 @@ interest:
 * ``message``: this string field is expected to be null unless the task has
   entered ``failure`` status.  At that point, it contains an informative
   human-readable message concerning the reason(s) for the task failure.
-
-

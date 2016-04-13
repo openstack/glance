@@ -1,6 +1,6 @@
-=============================
- Glance Configuration Options
-=============================
+============================
+Glance Configuration Options
+============================
 
 This section provides a list of all possible options for each
 configuration file.  Refer to :doc:`Basic Configuration <../configuring>`
