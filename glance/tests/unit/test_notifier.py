@@ -116,7 +116,7 @@ class TaskRepoStub(object):
 class TestNotifier(utils.BaseTestCase):
 
     @mock.patch.object(oslo_messaging, 'Notifier')
-    @mock.patch.object(oslo_messaging, 'get_transport')
+    @mock.patch.object(oslo_messaging, 'get_notification_transport')
     def _test_load_strategy(self,
                             mock_get_transport, mock_notifier,
                             url, driver):
