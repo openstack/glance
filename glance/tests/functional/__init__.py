@@ -23,6 +23,7 @@ and spinning down the servers.
 
 import atexit
 import datetime
+import errno
 import logging
 import os
 import platform
@@ -857,7 +858,14 @@ class FunctionalTest(test_utils.BaseTestCase):
                 trace = f.pid_file.replace('.pid', '.trace')
                 if self.tracecmd:
                     cmd = '%s -p %d -o %s' % (self.tracecmd, pid, trace)
-                    execute(cmd, raise_error=False, expect_exit=False)
+                    try:
+                        execute(cmd, raise_error=False, expect_exit=False)
+                    except OSError as e:
+                        if e.errno == errno.ENOENT:
+                            raise RuntimeError('No executable found for "%s" '
+                                               'command.' % self.tracecmd)
+                        else:
+                            raise
                     time.sleep(0.5)
                     if os.path.exists(trace):
                         msg += ('\n%s:\n%s\n' % (self.tracecmd,
