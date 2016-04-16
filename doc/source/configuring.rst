@@ -200,7 +200,7 @@ logged. Affects only if context middleware is configured in pipeline.
 Optional. Default: ``64`` (Limited by max_header_line default: 16384)
 
 Configuring SSL Support
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``cert_file=PATH``
 
@@ -225,7 +225,7 @@ certificates provided during an SSL handshake. This is ignored if
 Optional. Default: not enabled.
 
 Configuring Registry Access
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are a number of configuration options in Glance that control how
 the API server accesses the registry server.

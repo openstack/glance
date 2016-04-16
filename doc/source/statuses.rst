@@ -72,7 +72,7 @@ Images in Glance can be in one the following statuses:
    * Add location from zero to more than one.
 
 Task Statuses
-==============
+=============
 
 Tasks in Glance can be in one the following statuses:
 

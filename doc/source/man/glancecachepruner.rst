@@ -26,7 +26,7 @@ set in the image_cache_max_size configuration option. This is meant
 to be run as a periodic task, perhaps every half-hour.
 
 OPTIONS
-========
+=======
 
   **General options**
 

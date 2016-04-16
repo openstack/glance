@@ -55,7 +55,7 @@ OPTIONS
         then exits. This is the default.
 
 FILES
-======
+=====
 
   **/etc/glance/glance-scrubber.conf**
       Default configuration file for the Glance Scrubber
