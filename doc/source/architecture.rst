@@ -38,7 +38,28 @@ but are not extensively tested upstream.
 .. figure:: /images/architecture.png
    :figwidth: 100%
    :align: center
-   :alt: OpenStack Glance Architecture
+   :alt: OpenStack Glance Architecture Diagram.
+         Consists of 5 main blocks: "Client" "Glance" "Keystone"
+         "Glance Store" and "Supported Storages".
+         Glance block exposes a REST API.  The REST API makes use of the
+         AuthZ Middleware and a Glance Domain Controller, which contains
+         Auth, Notifier, Policy, Quota, Location and DB.  The Glance Domain
+         Controller makes use of the Glance Store (which is external to the
+         Glance block), and (still within the Glance block) it makes use of
+         the Database Abstraction Layer, and (optionally) the Registry Layer.
+         The Registry Layer makes use of the Database Abstraction Layer. The
+         Database abstraction layer exclusively makes use of the Glance
+         Database.
+         The Client block makes use of the Rest API (which exists in the
+         Glance block) and the Keystone block.
+         The Glance Store block contains AuthN which makes use of the
+         Keystone block, and it also contains Glance Store Drivers, which
+         exclusively makes use of each of the storage systems in the
+         Supported Storages block.  Within the Supported Storages block,
+         there exist the following storage systems, none of which make use
+         of anything else: Filesystem, Swift, S3, Ceph, "ellipses", Sheepdog.
+         A complete list is given by the currently  available drivers in 
+         glance_store/_drivers.
 
 .. centered:: Image 1. OpenStack Glance Architecture
 

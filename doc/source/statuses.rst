@@ -65,7 +65,41 @@ Images in Glance can be in one the following statuses:
 .. figure:: /images/image_status_transition.png
    :figwidth: 100%
    :align: center
-   :alt: Image status transition
+   :alt: The states consist of:
+         "queued", "saving", "active", "pending_delete", "deactivated",
+         "killed", and "deleted".
+         The transitions consist of:
+         An initial transition to the "queued" state called "create image".
+         A transition from the "queued" state to the "active" state
+         called "add location".
+         A transition from the "queued" state to the "saving" state
+         called "upload".
+         A transition from the "queued" state to the "deleted" state
+         called "delete".
+         A transition from the "saving" state to the "active" state
+         called "upload succeeded".
+         A transition from the "saving" state to the "deleted" state
+         called "delete".
+         A transition from the "saving" state to the "killed" state
+         called "[v1] upload fail".
+         A transition from the "saving" state to the "queued" state
+         called "[v2] upload fail".
+         A transition from the "active" state to the "deleted" state
+         called "delete".
+         A transition from the "active" state to the "pending_delete" state
+         called "delayed delete".
+         A transition from the "active" state to the "deactivated" state
+         called "deactivate".
+         A transition from the "killed" state to the "deleted" state
+         called "deleted".
+         A transition from the "pending_delete" state to the "deleted" state
+         called "after scrub time".
+         A transition from the "deactivated" state to the "deleted" state
+         called "delete".
+         A transition from the "deactivated" state to the "active" state
+         called "reactivate".
+         There are no transitions out of the "deleted" state.
+
 
    This is a representation of how the image move from one status to the next.
 
