@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-09 06:18+0000\n"
+"Project-Id-Version: glance 12.0.1.dev43\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-04-19 06:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.2.0\n"
 
-#: glance/scrubber.py:312
+#: glance/scrubber.py:314
 #, python-format
 msgid ""
 "One or more image locations couldn't be scrubbed from backend. Leaving "
@@ -38,14 +38,14 @@ msgid ""
 "exceed the quota. %(remaining)d bytes remaining."
 msgstr ""
 
-#: glance/api/v1/images.py:756
+#: glance/api/v1/images.py:764
 #, python-format
 msgid ""
 "Failed to activate image %s in registry. About to delete image bits from "
 "store and update status to 'killed'."
 msgstr ""
 
-#: glance/api/v2/images.py:1002
+#: glance/api/v2/images.py:1004
 #, python-format
 msgid ""
 "Could not find schema properties file %s. Continuing without custom "
@@ -103,7 +103,7 @@ msgstr ""
 msgid "Failed to delete image %s in store from URI"
 msgstr ""
 
-#: glance/common/wsgi.py:340
+#: glance/common/wsgi.py:349
 #, python-format
 msgid "Unrecognised child %s"
 msgstr ""
@@ -151,19 +151,19 @@ msgstr ""
 msgid "Could not find task info %s"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:76
+#: glance/db/sqlalchemy/api.py:78
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:116
+#: glance/db/sqlalchemy/api.py:118
 msgid "Attempted to modify image user did not own."
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:350
+#: glance/db/sqlalchemy/api.py:352
 msgid "Id not in sort_keys; is sort_keys unique?"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:1286
+#: glance/db/sqlalchemy/api.py:1291
 #, python-format
 msgid "Expected table %(tbl)s was not found in DB."
 msgstr ""

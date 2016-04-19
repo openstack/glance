@@ -3,15 +3,12 @@
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
-# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
-# Jennifer <cristxu@tw.ibm.com>, 2016. #zanata
-# Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev41\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-12 00:22+0000\n"
+"Project-Id-Version: glance 12.0.1.dev43\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-04-19 04:47+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -151,13 +148,6 @@ msgid ""
 "A metadata definition resource-type with name=%(resource_type_name)s already "
 "exists."
 msgstr "名稱為 %(resource_type_name)s 的 meta 資料定義資源類型已存在。"
-
-#, python-format
-msgid ""
-"A metadata tag with name=%(name)s already exists in namespace="
-"%(namespace_name)s."
-msgstr ""
-"名稱為 %(name)s 的 meta 資料標籤已存在於名稱空間 %(namespace_name)s 中。"
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr "用來存取外部儲存庫中所保留映像檔的 URL 集"
@@ -1382,10 +1372,6 @@ msgstr "Meta 資料定義名稱空間 %(namespace)s 受保護，無法將其刪�
 #, python-format
 msgid "Metadata definition namespace not found for id=%s"
 msgstr "找不到 ID 為 %s 的 meta 資料定義名稱空間"
-
-#, python-format
-msgid "Metadata definition namespace=%(namespace_name)swas not found."
-msgstr "找不到 meta 資料定義名稱空間 %(namespace_name)s。"
 
 #, python-format
 msgid ""

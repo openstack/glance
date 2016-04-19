@@ -7,12 +7,12 @@
 # Ettore Atalan <atalanttore@googlemail.com>, 2014
 # Laera Loris <llaera@outlook.com>, 2013
 # Robert Simai, 2014
-# Frank Kloeker <eumel@arcor.de>, 2016. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev52\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-15 20:51+0000\n"
+"Project-Id-Version: glance 12.0.1.dev43\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-04-19 04:47+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -164,14 +164,6 @@ msgid ""
 msgstr ""
 "Ein Ressourcentyp %(resource_type_name)s der Metadatendefinition ist bereits "
 "vorhanden. "
-
-#, python-format
-msgid ""
-"A metadata tag with name=%(name)s already exists in namespace="
-"%(namespace_name)s."
-msgstr ""
-"Ein Metadatentag namens %(name)s ist bereits in Namensbereich "
-"%(namespace_name)s nicht gefunden."
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr "URLs für den Zugriff auf die Abbilddatei im externen Speicher"
@@ -1530,12 +1522,6 @@ msgstr ""
 #, python-format
 msgid "Metadata definition namespace not found for id=%s"
 msgstr "Metadatendefinitionsnamensbereich für id=%s nicht gefunden"
-
-#, python-format
-msgid "Metadata definition namespace=%(namespace_name)swas not found."
-msgstr ""
-"Der Metadatendefinitionsnamensbereich %(namespace_name)s wurde nicht "
-"gefunden. "
 
 #, python-format
 msgid ""

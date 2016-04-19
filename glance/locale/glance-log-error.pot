@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b4.dev23\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-09 06:18+0000\n"
+"Project-Id-Version: glance 12.0.1.dev43\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-04-19 06:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.2.0\n"
 
-#: glance/location.py:485
+#: glance/location.py:487
 #, python-format
 msgid ""
 "Glance tried all active locations to get data for image %s but all have "
@@ -29,12 +29,12 @@ msgstr ""
 msgid "An error occurred during image.send notification: %(err)s"
 msgstr ""
 
-#: glance/scrubber.py:275
+#: glance/scrubber.py:277
 #, python-format
 msgid "Can not get scrub jobs from queue: %s"
 msgstr ""
 
-#: glance/scrubber.py:335
+#: glance/scrubber.py:337
 #, python-format
 msgid "Unable to scrub image %(id)s from a location. Reason: %(exc)s "
 msgstr ""
@@ -87,7 +87,7 @@ msgstr ""
 msgid "Checksum header is missing."
 msgstr ""
 
-#: glance/api/v1/images.py:653
+#: glance/api/v1/images.py:661
 #, python-format
 msgid "Copy from external source '%(scheme)s' failed for image: %(image)s"
 msgstr ""
@@ -160,6 +160,11 @@ msgstr ""
 msgid "Task ID %s"
 msgstr ""
 
+#: glance/async/flows/base_import.py:463
+#, python-format
+msgid "Bad task configuration: %s"
+msgstr ""
+
 #: glance/async/flows/introspect.py:60
 #, python-format
 msgid "Failed to execute introspection %(task_id)s: %(exc)s"
@@ -196,7 +201,7 @@ msgstr ""
 msgid "Encountered a malformed property protection rule %(rule)s: %(error)s."
 msgstr ""
 
-#: glance/common/rpc.py:186
+#: glance/common/rpc.py:190
 #, python-format
 msgid ""
 "RPC Call Error: %(val)s\n"
@@ -240,12 +245,12 @@ msgid ""
 "pydev_worker_debug_port."
 msgstr ""
 
-#: glance/common/wsgi.py:346
+#: glance/common/wsgi.py:355
 #, python-format
 msgid "Not respawning child %d, cannot recover from termination"
 msgstr ""
 
-#: glance/common/wsgi.py:913
+#: glance/common/wsgi.py:929
 #, python-format
 msgid "Caught error: %s"
 msgstr ""
@@ -281,16 +286,6 @@ msgstr ""
 #: glance/common/scripts/utils.py:44
 #, python-format
 msgid "Task not found for task_id %s"
-msgstr ""
-
-#: glance/db/sqlalchemy/api.py:1259
-#, python-format
-msgid "Invalid value for age, %(age)d"
-msgstr ""
-
-#: glance/db/sqlalchemy/api.py:1266
-#, python-format
-msgid "Invalid value for max_rows, %(max_rows)d"
 msgstr ""
 
 #: glance/db/sqlalchemy/glare.py:348
@@ -376,22 +371,22 @@ msgstr ""
 msgid "Unable to get images"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:351
+#: glance/registry/api/v1/images.py:373
 #, python-format
 msgid "Unable to show image %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:383
+#: glance/registry/api/v1/images.py:406
 #, python-format
 msgid "Unable to delete image %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:433
+#: glance/registry/api/v1/images.py:456
 #, python-format
 msgid "Unable to create image %s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:505
+#: glance/registry/api/v1/images.py:528
 #, python-format
 msgid "Unable to update image %s"
 msgstr ""

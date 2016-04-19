@@ -7,17 +7,12 @@
 # Christophe kryskool <christophe.chauvet@gmail.com>, 2013
 # EVEILLARD <stephane.eveillard@gmail.com>, 2013-2014
 # Maxime COQUEREL <max.coquerel@gmail.com>, 2014
-# EVEILLARD <stephane.eveillard@gmail.com>, 2015. #zanata
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
-# Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
-# Martine Marin <mmarin@fr.ibm.com>, 2016. #zanata
-# Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
-# leroy <dleroy@fr.ibm.com>, 2016. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0rc2.dev1\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-17 15:26+0000\n"
+"Project-Id-Version: glance 12.0.1.dev43\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-04-19 04:47+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -170,14 +165,6 @@ msgid ""
 msgstr ""
 "Un type de ressource de la définition de métadonnées avec le nom "
 "%(resource_type_name)s existe déjà."
-
-#, python-format
-msgid ""
-"A metadata tag with name=%(name)s already exists in namespace="
-"%(namespace_name)s."
-msgstr ""
-"Une balise de métadonnées nommée %(name)s existe déjà dans l'espace de nom "
-"%(namespace_name)s."
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr ""
@@ -1534,12 +1521,6 @@ msgstr ""
 msgid "Metadata definition namespace not found for id=%s"
 msgstr ""
 "L'espace de nom de définition de métadonnées est introuvable pour l'ID %s"
-
-#, python-format
-msgid "Metadata definition namespace=%(namespace_name)swas not found."
-msgstr ""
-"L'espace de nom %(namespace_name)s de la définition de métadonnées est "
-"introuvable."
 
 #, python-format
 msgid ""
