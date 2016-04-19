@@ -7,21 +7,19 @@
 # Christophe kryskool <christophe.chauvet@gmail.com>, 2013
 # EVEILLARD <stephane.eveillard@gmail.com>, 2013-2014
 # Maxime COQUEREL <max.coquerel@gmail.com>, 2014
-# EVEILLARD <stephane.eveillard@gmail.com>, 2015. #zanata
 # OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
 # Martine Marin <mmarin@fr.ibm.com>, 2016. #zanata
 # Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
-# leroy <dleroy@fr.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0rc2.dev6\n"
+"Project-Id-Version: glance 12.0.0.0rc3.dev1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-03-24 10:40+0000\n"
+"POT-Creation-Date: 2016-04-07 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-28 06:26+0000\n"
+"PO-Revision-Date: 2016-04-18 08:44+0000\n"
 "Last-Translator: Martine Marin <mmarin@fr.ibm.com>\n"
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -84,15 +82,15 @@ msgid ""
 "%(task_id)s of %(task_type)s not configured properly. Could not load the "
 "filesystem store"
 msgstr ""
-"%(task_id)s de %(task_type)s ne sont pas configurés correctement. Impossible "
-"de charger le magasin de système de fichiers"
+"Configuration incorrecte pour %(task_id)s de %(task_type)s. Impossible de "
+"charger le magasin de système de fichiers"
 
 #, python-format
 msgid ""
 "%(task_id)s of %(task_type)s not configured properly. Missing work dir: "
 "%(work_dir)s"
 msgstr ""
-"%(task_id)s de %(task_type)s ne sont pas configurés correctement. Rép de "
+"Configuration incorrecte pour %(task_id)s de %(task_type)s. Répertoire de "
 "travail manquant : %(work_dir)s"
 
 #, python-format
@@ -120,7 +118,7 @@ msgstr "%s ne peut pas contenir de caractère Unicode de 4 octets."
 
 #, python-format
 msgid "%s is already stopped"
-msgstr "%s est déjà stoppé"
+msgstr "%s est déjà arrêté"
 
 #, python-format
 msgid "%s is stopped"
@@ -128,7 +126,8 @@ msgstr "%s est arrêté"
 
 #, python-format
 msgid "'%(param)s' value out of range, must not exceed %(max)d"
-msgstr "La valeur %(param)s est hors bornes, elle ne doit pas dépasser %(max)d"
+msgstr ""
+"La valeur %(param)s est hors limites, elle ne doit pas dépasser %(max)d"
 
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
@@ -190,7 +189,7 @@ msgid ""
 msgstr ""
 "Clé AES pour chiffrer les métadonnées d'emplacement de magasin. Celle-ci "
 "comprend, le cas échéant, des données d'identification Swift ou S3. Elle "
-"doit être définie à une chaîne aléatoire de 16, 24 ou 32 octets"
+"doit être définie avec une chaîne aléatoire de 16, 24 ou 32 octets"
 
 msgid ""
 "Address to bind the server.  Useful when selecting a particular network "
@@ -207,7 +206,7 @@ msgid ""
 "This only applies when using ContextMiddleware."
 msgstr ""
 "Autorisez les utilisateurs non authentifiés à accéder à l'API avec des "
-"privilèges en lecture seule. Ceci s'applique seulement à l'utilisation de "
+"privilèges en lecture seule. Ceci s'applique uniquement à l'utilisation de "
 "ContextMiddleware."
 
 #, python-format
@@ -215,11 +214,10 @@ msgid "Allowed values %s are invalid under given validators"
 msgstr "Les valeurs autorisées %s ne sont pas valides sous certains valideurs"
 
 msgid "Amount of disk space (in GB) required to boot image."
-msgstr ""
-"Quantité d'espace disque (en Go) requise pour l'image d'initialisation."
+msgstr "Quantité d'espace disque (en Go) requise pour l'image d'amorçage."
 
 msgid "Amount of ram (in MB) required to boot image."
-msgstr "Quantité de mémoire RAM (en Mo) requise pour l'image d'initialisation."
+msgstr "Quantité de mémoire RAM (en Mo) requise pour l'image d'amorçage."
 
 msgid "An identifier for the image"
 msgstr "Identificateur de l'image"
@@ -228,10 +226,10 @@ msgid "An identifier for the image member (tenantId)"
 msgstr "Identificateur pour le membre de l'image (tenantId)"
 
 msgid "An identifier for the owner of this task"
-msgstr "Un identificateur pour le propriétaire de cette tâche"
+msgstr "Identificateur pour le propriétaire de cette tâche"
 
 msgid "An identifier for the task"
-msgstr "Un identificateur pour la tâche"
+msgstr "Identificateur pour la tâche"
 
 msgid "An image file url"
 msgstr "URL d'un fichier image"
@@ -362,7 +360,7 @@ msgstr "L'attribut '%s' est en lecture seule."
 
 #, python-format
 msgid "Attribute '%s' is reserved."
-msgstr "Attribut '%s' est réservé."
+msgstr "L'attribut '%s' est réservé."
 
 msgid "Attribute container_format can be only replaced for a queued image."
 msgstr ""
@@ -383,7 +381,7 @@ msgstr ""
 
 #, python-format
 msgid "Auth service at URL %(url)s not found."
-msgstr "Service d'auth à l'URL %(url)s non trouvé."
+msgstr "Service d'authentification sur l'URL %(url)s non trouvé."
 
 #, python-format
 msgid ""
@@ -477,8 +475,7 @@ msgstr "Impossible de supprimer le dernier emplacement dans l'image."
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr ""
-"Les données pour l'image %(image_id)s ne peuvent pas être sauvegardées : "
-"erreur  %(error)s"
+"Impossible de sauvegarder les données pour l'image %(image_id)s : %(error)s"
 
 msgid "Cannot set locations to empty list."
 msgstr "Impossible de définir des emplacements avec une liste vide."
@@ -520,7 +517,7 @@ msgstr ""
 "annulée."
 
 msgid "Client disconnected before sending all data to backend"
-msgstr "Client déconnecté avant l'envoi de toutes les données au backend"
+msgstr "Client déconnecté avant l'envoi de toutes les données au back-end"
 
 msgid "Command not found"
 msgstr "La commande n'a pas été trouvée"
@@ -531,7 +528,8 @@ msgstr "L'option de configuration n'était pas valide"
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr ""
-"Erreur de connexion/demande erronée pour le service d'auth à l'URL %(url)s."
+"Erreur de connexion/demande incorrecte pour le service d'authentification "
+"sur l'URL %(url)s."
 
 #, python-format
 msgid "Constructed URL: %s"
@@ -545,7 +543,7 @@ msgstr "Le type de contenu doit être application/octet-stream"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
-msgstr "téléchargement d'image endommagée pour l'image %(image_id)s"
+msgstr "Téléchargement d'image endommagée pour l'image %(image_id)s"
 
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
@@ -594,7 +592,7 @@ msgstr ""
 
 #, python-format
 msgid "Data for image_id not found: %s"
-msgstr "Données d'image_id introuvables : %s"
+msgstr "Données correspondant à image_id introuvables : %s"
 
 msgid "Data supplied was not valid."
 msgstr "Les données fournies n'étaient pas valides."
@@ -637,20 +635,21 @@ msgid "Date and time of the last tag modification"
 msgstr "Date et heure de dernière modification de la balise "
 
 msgid "Datetime when this resource was created"
-msgstr "Date-heure à laquelle cette ressource a été créée"
+msgstr "Date et heure de création de cette ressource "
 
 msgid "Datetime when this resource was updated"
-msgstr "Date-heure à laquelle cette ressource a été mise à jour"
+msgstr "Date et heure de mise à jour de cette ressource"
 
 msgid "Datetime when this resource would be subject to removal"
-msgstr "Date-heure à laquelle cette ressource serait soumise à une suppression"
+msgstr ""
+"Date et heure de prochaine soumission de cette ressource  pour suppression"
 
 msgid ""
 "Default value for the number of items returned by a request if not specified "
 "explicitly in the request"
 msgstr ""
-"Valeur par défaut pour le nombre d'éléments renvoyés par une demande, si "
-"celle-ci n'est pas explicitement définie dans la demande"
+"Valeur par défaut correspondant au nombre d'éléments renvoyés par une "
+"demande, si celle-ci n'est pas explicitement définie dans la demande"
 
 msgid "Default value is invalid"
 msgstr "La valeur par défaut n'est pas valide"
@@ -664,7 +663,7 @@ msgstr ""
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr ""
-"Refus de la tentative de téléchargement d'une image qui dépasse le quota : %s"
+"Refus de tentative de téléchargement d'une image qui dépasse le quota : %s"
 
 #, python-format
 msgid "Denying attempt to upload image larger than %d bytes."
@@ -680,16 +679,16 @@ msgid "Dependency relations cannot be mutable"
 msgstr "Les relations des dépendances ne peuvent pas être modifiables"
 
 msgid "Deploy the v1 OpenStack Images API."
-msgstr "Déploiement de l'API v1 OpenStack Images."
+msgstr "Déploiement de l'API OpenStack Images v1."
 
 msgid "Deploy the v1 OpenStack Registry API."
-msgstr "Déployez l'API du registre OpenStack V1."
+msgstr "Déploiement de l'API OpenStack Registry v1."
 
 msgid "Deploy the v2 OpenStack Images API."
-msgstr "Déploiement de l'API v2 OpenStack Images."
+msgstr "Déploiement de l'API OpenStack Images v2."
 
 msgid "Deploy the v2 OpenStack Registry API."
-msgstr "Déployez l'API du registre OpenStack V2."
+msgstr "Déploiement de l'API OpenStack Registry v2."
 
 msgid "Descriptive name for the image"
 msgstr "Nom descriptif de l'image"
@@ -786,19 +785,20 @@ msgstr "Impossible de trouver l'artefact %(artifact_id)s à supprimer"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
-msgstr "Échec pour trouver image %(image_id)s à supprimer."
+msgstr "Impossible de trouver l'image %(image_id)s à supprimer"
 
 #, python-format
 msgid "Failed to find image to delete: %s"
-msgstr "Échec pour trouver l'image à supprimer: %s"
+msgstr "Impossible de trouver l'image à supprimer : %s"
 
 #, python-format
 msgid "Failed to find image to update: %s"
-msgstr "Echec pour trouver l'image à mettre à jour: %s"
+msgstr "Impossible de trouver l'image à mettre à jour : %s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
-msgstr "Echec pour trouver le type de ressource %(resourcetype)s a supprimer"
+msgstr ""
+"Impossible de trouver le type de ressource %(resourcetype)s à supprimer"
 
 #, python-format
 msgid "Failed to initialize the image cache database. Got error: %s"
@@ -821,7 +821,7 @@ msgstr ""
 
 #, python-format
 msgid "Failed to upload image %s"
-msgstr "Impossible de charger l'image %s"
+msgstr "Impossible de télécharger l'image %s"
 
 #, python-format
 msgid ""
@@ -863,11 +863,11 @@ msgstr "Accès interdit à l'image"
 
 #, python-format
 msgid "Forbidden to delete a %s image."
-msgstr "Interdiction de supprimer une image  %s"
+msgstr "Interdiction de supprimer une image  %s."
 
 #, python-format
 msgid "Forbidden to delete image: %s"
-msgstr "Interdiction de supprimer l'image: %s"
+msgstr "Interdiction de supprimer l'image : %s"
 
 #, python-format
 msgid "Forbidden to modify '%(key)s' of %(status)s image."
@@ -885,7 +885,7 @@ msgstr "Interdiction de mettre à jour l'image supprimée."
 
 #, python-format
 msgid "Forbidden to update image: %s"
-msgstr "Interdiction de mise à jour de l'image: %s"
+msgstr "Interdiction de mettre à jour l'image : %s "
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -953,10 +953,10 @@ msgstr ""
 "définir cette option sur False lorsque vous créez un serveur wsgi."
 
 msgid "If true, image will not be deletable."
-msgstr "Si true, l'image ne pourra pas être supprimée."
+msgstr "Si la valeur est true, l'image ne pourra pas être supprimée."
 
 msgid "If true, namespace will not be deletable."
-msgstr "Si true, l'espace de nom ne pourra pas être supprimé."
+msgstr "Si la valeur est true, l'espace de nom ne pourra pas être supprimé."
 
 #, python-format
 msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
@@ -992,8 +992,8 @@ msgid ""
 "Image %s could not be found after upload. The image may have been deleted "
 "during the upload."
 msgstr ""
-"L'image %s est introuvable après le chargement. L'image a peut-être été "
-"supprimée lors du chargement."
+"L'image %s est introuvable après le téléchargement. L'image a peut-être été "
+"supprimée lors du téléchargement."
 
 #, python-format
 msgid "Image %s is deactivated"
@@ -1009,7 +1009,7 @@ msgstr "Image %s introuvable."
 
 #, python-format
 msgid "Image exceeds the storage quota: %s"
-msgstr "l'image %s dépasse le quota de stockage"
+msgstr "L'image dépasse le quota de stockage : %s"
 
 msgid "Image id is required."
 msgstr "Id image est requis."
@@ -1045,7 +1045,7 @@ msgstr "Le nombre maximal de balises est dépassé pour l'image %(id)s : %(e)s :
 
 #, python-format
 msgid "Image upload problem: %s"
-msgstr "Problème d'envoi de l'image: %s"
+msgstr "Problème de téléchargement de l'image: %s"
 
 #, python-format
 msgid "Image with identifier %s already exists!"
@@ -1057,7 +1057,7 @@ msgstr "L'image avec l'identificateur %s a été supprimée."
 
 #, python-format
 msgid "Image with identifier %s not found"
-msgstr "L'image portant l'ID %s est introuvable"
+msgstr "L'image avec l'ID %s est introuvable"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -1068,15 +1068,15 @@ msgid ""
 "Incorrect auth strategy, expected \"%(expected)s\" but received "
 "\"%(received)s\""
 msgstr ""
-"Stratégie d'autorisation incorrecte, valeur attendue \"%(expected)s\" mais "
-"valeur obtenue \"%(received)s\""
+"Stratégie d'authentification incorrecte, valeur attendue \"%(expected)s\" "
+"mais valeur obtenue \"%(received)s\""
 
 #, python-format
 msgid "Incorrect request: %s"
-msgstr "Requête incorrecte: %s"
+msgstr "Demande incorrecte : %s"
 
 msgid "Index is out of range"
-msgstr "Index hors bornes"
+msgstr "Index hors limites"
 
 msgid "Index is required"
 msgstr "L'index est requis "
@@ -1100,7 +1100,7 @@ msgstr "Type de contenu non valide pour fonctionner avec %s"
 
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
-msgstr "Pointeur JSON invalide pour cette ressource  : '%s'"
+msgstr "Pointeur JSON non valide pour cette ressource  : '%s'"
 
 #, python-format
 msgid "Invalid certificate format: %s"
@@ -1117,8 +1117,7 @@ msgstr ""
 "Configuration non valide dans le fichier de configuration glance-swift."
 
 msgid "Invalid configuration in property protection file."
-msgstr ""
-"Configuration non valide dans le fichier de verrouillage de propriétés."
+msgstr "Configuration non valide dans le fichier de protection des propriétés."
 
 #, python-format
 msgid "Invalid container format '%s' for image."
@@ -1168,7 +1167,7 @@ msgstr "Spécification de type d'élément non valide"
 
 #, python-format
 msgid "Invalid json body: %s"
-msgstr "Corps json non valide : %s"
+msgstr "Corps JSON non valide : %s"
 
 msgid "Invalid jsonpatch request"
 msgstr "Requête jsonpatch non valide"
@@ -1226,7 +1225,7 @@ msgstr ""
 msgid ""
 "Invalid operation: `%(op)s`. It must be one of the following: %(available)s."
 msgstr ""
-"Opération non valide : `%(op)s`. Doit être l'une des suivantes : "
+"Opération non valide : '%(op)s'. Doit être l'une des opérations suivantes : "
 "%(available)s."
 
 msgid "Invalid position for adding a location."
@@ -1256,7 +1255,7 @@ msgid "Invalid request PATCH for work with blob"
 msgstr "Requête PATCH non valide pour fonctionner avec blob"
 
 msgid "Invalid service catalog json."
-msgstr "json de catalogue de service non valide."
+msgstr "JSON de catalogue de service non valide."
 
 #, python-format
 msgid "Invalid signature hash method: %s"
@@ -1289,7 +1288,7 @@ msgstr ""
 #, python-format
 msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
 msgstr ""
-"Clé de tri non valide : %(sort_key)s. Impossible d'effectuer un tri d'après "
+"Clé de tri non valide : %(sort_key)s. Impossible d'effectuer un tri avec "
 "cette propriété. "
 
 #, python-format
@@ -1309,7 +1308,7 @@ msgstr "Définition de type non valide"
 
 #, python-format
 msgid "Invalid type value: %s"
-msgstr "Type de valeur non valide: %s"
+msgstr "Type de valeur non valide : %s"
 
 #, python-format
 msgid ""
@@ -1372,7 +1371,7 @@ msgstr ""
 "importer eventlet avant cette définition."
 
 msgid "It's invalid to provide multiple image sources."
-msgstr "Il est invalide de fournir plusieurs sources d'image"
+msgstr "Fournir plusieurs sources d'image est une opération non valide."
 
 msgid "It's not allowed to add locations if locations are invisible."
 msgstr ""
@@ -1493,7 +1492,7 @@ msgstr ""
 
 msgid "Maximum permissible number of items that could be returned by a request"
 msgstr ""
-"Nombre d'éléments maximum autorisés qui peuvent être renvoyés par une demande"
+"Nombre maximum d'éléments autorisés pouvant être renvoyés par une demande"
 
 #, python-format
 msgid "Maximum redirects (%(redirects)s) was exceeded."
@@ -1514,7 +1513,7 @@ msgid "Member %(member_id)s is duplicated for image %(image_id)s"
 msgstr "Le membre %(member_id)s est en double pour l'image %(image_id)s"
 
 msgid "Member can't be empty"
-msgstr "Membre ne peut pas être vide"
+msgstr "Le membre ne peut pas être vide"
 
 msgid "Member to be added not specified"
 msgstr "Membre à ajouter non spécifié"
@@ -1559,7 +1558,7 @@ msgid ""
 "deleted."
 msgstr ""
 "La propriété %(property_name)s de la définition de métadonnées est protégée "
-"et ne peut pas être supprimé."
+"et ne peut pas être supprimée."
 
 #, python-format
 msgid "Metadata definition property not found for id=%s"
@@ -1571,7 +1570,7 @@ msgid ""
 "type and cannot be deleted."
 msgstr ""
 "Le type de ressource %(resource_type_name)s de la définition de métadonnées "
-"est un type prédéfiniet ne peut pas être supprimé."
+"est un type prédéfini et ne peut pas être supprimé."
 
 #, python-format
 msgid ""
@@ -1612,7 +1611,9 @@ msgstr ""
 "indiquée."
 
 msgid "Must supply a positive, non-zero value for age."
-msgstr "Veuillez fournir une valeur positive différente de zéro pour age."
+msgstr ""
+"Veuillez fournir une valeur positive différente de zéro pour le paramètre "
+"d'ancienneté (age)."
 
 msgid "Name of the paste configuration file."
 msgstr "Nom du fichier de configuration de collage."
@@ -1669,40 +1670,40 @@ msgstr "Les dépendances n'ont pas toutes l'état '%s'"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
-msgstr "Non autorisé à créer des membres pour l'image %s."
+msgstr "Il n'est pas autorisé de créer des membres pour l'image %s."
 
 #, python-format
 msgid "Not allowed to deactivate image in status '%s'"
-msgstr "Non autorisé à désactiver l'image dans l'état '%s'"
+msgstr "Il n'est pas autorisé de désactiver une image à l'état '%s'"
 
 #, python-format
 msgid "Not allowed to delete members for image %s."
-msgstr "Non autorisé à supprimer des membres de l'image %s."
+msgstr "Il n'est pas autorisé de supprimer des membres de l'image %s."
 
 #, python-format
 msgid "Not allowed to delete tags for image %s."
-msgstr "Non autorisé à supprimer des balises de l'image %s."
+msgstr "Il n'est pas autorisé de supprimer des balises pour l'image %s."
 
 #, python-format
 msgid "Not allowed to list members for image %s."
-msgstr "Non autorisé à répertorier les membres de l'image %s."
+msgstr "Il n'est pas autorisé de répertorier les membres de l'image %s."
 
 #, python-format
 msgid "Not allowed to reactivate image in status '%s'"
-msgstr "Non autorisé à réactiver l'image dans l'état '%s'"
+msgstr "Il n'est pas autorisé de réactiver l'image à l'état '%s'"
 
 #, python-format
 msgid "Not allowed to update members for image %s."
-msgstr "Non autorisé à mettre à jour les membres de l'image %s."
+msgstr "Il n'est pas autorisé de mettre à jour les membres de l'image %s."
 
 #, python-format
 msgid "Not allowed to update tags for image %s."
-msgstr "Non autorisé à mettre à jour des balises de l'image %s."
+msgstr "Il n'est pas autorisé de mettre à jour des balises pour l'image %s."
 
 #, python-format
 msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr ""
-"Non autorisé à télécharger des données image pour l'image %(image_id)s : "
+"Téléchargement des données image pour l'image %(image_id)s  non autorisé : "
 "%(error)s"
 
 #, python-format
@@ -1710,7 +1711,8 @@ msgid "Not an array idx '%s'"
 msgstr "N'est pas un index de matrice '%s'"
 
 msgid "Number of sort dirs does not match the number of sort keys"
-msgstr "Le nombre de rép de tri ne correspond pas au nombre de clés de tri"
+msgstr ""
+"Le nombre de répertoires de tri ne correspond pas au nombre de clés de tri"
 
 msgid "OVA extract is limited to admin"
 msgstr "L'extraction de fichiers OVA est limitée à admin"
@@ -1743,8 +1745,8 @@ msgid ""
 "Operation objects must contain exactly one member named \"add\", \"remove\", "
 "or \"replace\"."
 msgstr ""
-"Les objets d'opération doivent contenir exactement un seul membre nommé \"add"
-"\", \"remove\" ou \"replace\"."
+"Les objets d'opération doivent contenir exactement un membre nommé \"add\", "
+"\"remove\" ou \"replace\"."
 
 msgid ""
 "Operation objects must contain only one member named \"add\", \"remove\", or "
@@ -1762,7 +1764,7 @@ msgstr "L'opérateur %(op)s n'est pas pris en charge"
 
 #, python-format
 msgid "Original locations is not empty: %s"
-msgstr "L'emplacement original %s n'est pas vide"
+msgstr "L'emplacement d'origine n'est pas vide : %s "
 
 msgid "Owner can't be updated by non admin."
 msgstr "Le propriétaire ne peut être mis à jour que par un administrateur."
@@ -1803,7 +1805,7 @@ msgstr ""
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
 msgstr ""
-"Le pointeur `%s` contient \"~\" qui ne fait pas partie d'une séquence "
+"Le pointeur '%s' contient \"~\" qui ne fait pas partie d'une séquence "
 "d'échappement reconnue."
 
 #, python-format
@@ -1812,7 +1814,7 @@ msgstr "Le pointeur `%s` contient des éléments \"/\" adjacent."
 
 #, python-format
 msgid "Pointer `%s` does not contains valid token."
-msgstr "le Pointeur '%s' ne contient pas de jeton valide."
+msgstr "Le pointeur '%s' ne contient pas de jeton valide."
 
 #, python-format
 msgid "Pointer `%s` does not start with \"/\"."
@@ -1820,7 +1822,7 @@ msgstr "Le pointeur `%s` ne commence pas par \"/\"."
 
 #, python-format
 msgid "Pointer `%s` end with \"/\"."
-msgstr "le pointeur '%s' se termine avec un \"/\"."
+msgstr "Le pointeur '%s' se termine par\"/\"."
 
 msgid ""
 "Pointer contains '~' which is not part of a recognized escape sequence [~0, "
@@ -1848,7 +1850,7 @@ msgstr ""
 
 #, python-format
 msgid "Process %d not running"
-msgstr "Le processus %d n'est pas en fonctionnement"
+msgstr "Le processus %d n'est pas en cours d'exécution"
 
 #, python-format
 msgid "Properties %s must be set prior to saving data."
@@ -1873,7 +1875,7 @@ msgstr "La propriété %s n'existe pas."
 
 #, python-format
 msgid "Property %s may not be removed."
-msgstr "La propriété %s n'est peut-être pas supprimée."
+msgstr "La propriété %s ne peut pas être supprimée."
 
 #, python-format
 msgid "Property %s must be set prior to saving data."
@@ -1911,7 +1913,7 @@ msgid ""
 "%(ps)d, stored size: %(ss)d)"
 msgstr ""
 "La taille de l'image fournie doit correspondre à la taille de l'image "
-"stockée. (taille fournie : %(ps)d, taille stockée : %(ss)d)"
+"stockée (taille fournie : %(ps)d, taille stockée : %(ss)d)."
 
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
@@ -1939,18 +1941,18 @@ msgid ""
 msgstr ""
 "URL publique à utiliser pour le noeud final des versions. La valeur par "
 "défaut est None : l'attribut host_url de la demande est employé pour remplir "
-"la base de l'URL. Si Glance s'exécute derrière un proxy, vous devrez changer "
-"cette valeur pour représenter l'URL du proxy."
+"la base de l'URL. Si Glance s'exécute derrière un proxy, envisagez de "
+"changer cette valeur pour représenter l'URL du proxy."
 
 msgid "Python module path of data access API"
-msgstr "API d'accès aux données du chemin du module Python"
+msgstr "API d'accès aux données de chemin du module Python"
 
 msgid "Received invalid HTTP redirect."
 msgstr "Redirection HTTP non valide reçue."
 
 #, python-format
 msgid "Redirecting to %(uri)s for authorization."
-msgstr "Redirection vers %(uri)s pour autorisation."
+msgstr "Redirection vers %(uri)s pour obtenir l'autorisation."
 
 #, python-format
 msgid "Registry service can't use %s"
@@ -1979,7 +1981,8 @@ msgid "Removing stale pid file %s"
 msgstr "Suppression du fichier PID %s périmé"
 
 msgid "Request body must be a JSON array of operation objects."
-msgstr "Le corps de la demande doit être une matrice JSON d'objets Opération."
+msgstr ""
+"Le corps de la demande doit être une matrice JSON d'objets d'opération."
 
 msgid "Request must be a list of commands"
 msgstr "La demande doit être une liste de commandes"
@@ -2019,14 +2022,14 @@ msgstr ""
 "Exécuter en tant que processus interruptible. Lorsqu'aucune valeur n'est "
 "indiquée (par défaut), exécute l'opération d'épuration une fois, puis quitte "
 "le programme. Lorsqu'une valeur est indiquée, ne quitte pas le programme et "
-"exécute l'épuration à l'intervalle wakeup_time indiquée dans la "
+"exécute l'épuration à l'intervalle wakeup_time, comme indiqué dans la "
 "configuration."
 
 msgid "Scope of image accessibility"
 msgstr "Périmètre d'accessibilité de l'image"
 
 msgid "Scope of namespace accessibility."
-msgstr "Périmètre de l'accessibilité de l'espace de nom."
+msgstr "Périmètre d'accessibilité de l'espace de nom."
 
 msgid ""
 "Secret key to use to sign Glance API and Glance Registry services tracing "
@@ -2041,7 +2044,7 @@ msgstr "Le serveur %(serv)s est arrêté"
 
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
-msgstr "Echec de la création de travailleur de serveur : %(reason)s."
+msgstr "Echec de création de l'agent de serveur : %(reason)s."
 
 msgid ""
 "Set a system wide quota for every user. This value is the total capacity "
@@ -2140,9 +2143,9 @@ msgid ""
 "Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
 "(%(actual)s) did not match. Setting image status to 'killed'."
 msgstr ""
-"%(attr)s (%(supplied)s) fournis et %(attr)s générés depuis l'image "
+"Les %(attr)s (%(supplied)s) fournis et les %(attr)s générés depuis l'image "
 "téléchargée (%(actual)s) ne correspondent pas. Définition du statut de "
-"l'image sur 'arrêté'."
+"l'image sur 'killed'."
 
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "Valeurs prises en charge pour l'attribut d'image 'container_format'"
@@ -2152,7 +2155,7 @@ msgstr "Valeurs prises en charge pour l'attribut d'image 'disk_format'"
 
 #, python-format
 msgid "Suppressed respawn as %(serv)s was %(rsn)s."
-msgstr "La relance supprimée en tant que %(serv)s était %(rsn)s."
+msgstr "La relance supprimée car %(serv)s était %(rsn)s."
 
 msgid "System SIGHUP signal received."
 msgstr "Signal SIGHUP du système reçu."
@@ -2246,7 +2249,7 @@ msgid "The config file that has the swift account(s)configs."
 msgstr "Fichier de configuration possédant les configurations de compte SWIFT."
 
 msgid "The current status of this task"
-msgstr "Le statut actuel de cette tâche"
+msgstr "Statut actuel de cette tâche"
 
 #, python-format
 msgid ""
@@ -2286,7 +2289,7 @@ msgstr ""
 
 msgid "The hostname/IP of the pydev process listening for debug connections"
 msgstr ""
-"Nom d'hôte/IP du processus pydev en mode écoute pour les connexions de "
+"Nom d'hôte/Adresse IP du processus pydev qui écoute les connexions de "
 "débogage"
 
 #, python-format
@@ -2296,8 +2299,8 @@ msgid ""
 "images on the slave server."
 msgstr ""
 "L'image %s est déjà présente sur l'esclave mais notre recherche n'a pas "
-"permis de la trouver. Cela indique que nous sommes pas autorisés à afficher "
-"toutes les images sur le serveur esclave."
+"permis de la trouver. Cela indique que nous ne sommes pas autorisés à "
+"afficher toutes les images sur le serveur esclave."
 
 #, python-format
 msgid "The incoming artifact blob is too large: %s"
@@ -2316,7 +2319,7 @@ msgid ""
 "The limit has been exceeded on the number of allowed image locations. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"La limite a été dépassée sur le nombre d'emplacements d'image autorisés. "
+"Le nombre limite d'emplacements d'image autorisés a été dépassé. "
 "Tentatives : %(attempted)s, Maximum : %(maximum)s"
 
 #, python-format
@@ -2324,15 +2327,15 @@ msgid ""
 "The limit has been exceeded on the number of allowed image members for this "
 "image. Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"La limite a été dépassée sur le nombre de membres d'image autorisés pour "
-"cette image. Tentatives : %(attempted)s, Maximum : %(maximum)s"
+"Le nombre limite de membres d'image autorisés pour cette image a été "
+"dépassé. Tentatives : %(attempted)s, Maximum : %(maximum)s"
 
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"La limite a été dépassée sur le nombre de propriétés d'image autorisées. "
+"Le nombre limite de propriétés d'image autorisées a été dépassé. "
 "Tentatives : %(attempted)s, Maximum : %(maximum)s"
 
 #, python-format
@@ -2340,7 +2343,7 @@ msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(num)s, Maximum: %(quota)s"
 msgstr ""
-"La limite a été dépassée sur le nombre de propriétés d'image autorisées. "
+"Le nombre limite de propriétés d'image autorisées a été dépassé. "
 "Tentatives : %(num)s, Maximum : %(quota)s"
 
 #, python-format
@@ -2348,8 +2351,8 @@ msgid ""
 "The limit has been exceeded on the number of allowed image tags. Attempted: "
 "%(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"La limite a été dépassée sur le nombre de balises d'image autorisées. "
-"Tentatives : %(attempted)s, Maximum : %(maximum)s"
+"Le nombre limite de balises d'image autorisées a été dépassé. Tentatives : "
+"%(attempted)s, Maximum : %(maximum)s"
 
 #, python-format
 msgid "The location %(location)s already exists"
@@ -2444,20 +2447,19 @@ msgid ""
 "The number of child process workers that will be created to service "
 "requests. The default will be equal to the number of CPUs available."
 msgstr ""
-"Nombre d'agents de processus enfant qui seront créés pour répondre aux "
-"demandes de service. La valeur par défaut doit être égale au nombre d'UC "
-"disponibles."
+"Nombre d'agents de processus enfant qui seront créés pour traiter les "
+"demandes. La valeur par défaut doit être égale au nombre d'UC disponibles."
 
 msgid ""
 "The number of parallel activities executed at the same time by the engine. "
 "The value can be greater than one when the engine mode is 'parallel'."
 msgstr ""
 "Nombre d'activités parallèles exécutées au même moment par le moteur. La "
-"valeur peut être supérieure à un lorsque le mode de fonctionnement du moteur "
-"est 'parallèle'."
+"valeur peut être supérieure à un lorsque le moteur s'exécute en mode "
+"'parallèle'."
 
 msgid "The parameters required by task, JSON blob"
-msgstr "Les paramètres requis par la tâche, blob JSON"
+msgstr "Paramètres requis par la tâche, blob JSON"
 
 msgid ""
 "The path to the cert file to use in SSL connections to the registry server, "
@@ -2505,7 +2507,7 @@ msgstr ""
 "d'attente."
 
 msgid "The port on which a pydev process is listening for connections."
-msgstr "Port sur lequel un processus pydev est en mode écoute des connexions."
+msgstr "Port d'écoute des connexions utilisé par le processus pydev."
 
 msgid "The port on which the server will listen."
 msgstr "Le port sur lequel le serveur écoutera."
@@ -2553,8 +2555,8 @@ msgid ""
 "service overload or other transient outage."
 msgstr ""
 "La demande a renvoyé le message 503 Service Unavailable. Cela se produit "
-"généralement lors d'une surcharge de service ou de tout autre coupure "
-"transitoire."
+"généralement lors d'une surcharge de service ou de tout autre panne "
+"temporaire."
 
 #, python-format
 msgid ""
@@ -2604,7 +2606,7 @@ msgstr ""
 "interdit."
 
 msgid "The result of current task, JSON blob"
-msgstr "Le résultat de la tâche en cours, blob JSON"
+msgstr "Résultat de la tâche en cours, blob JSON"
 
 msgid "The signature data was not properly encoded using base64"
 msgstr "Les données de signature n'ont pas été codées correctement en base64"
@@ -2622,10 +2624,10 @@ msgid ""
 "which signifies serial scrubbing. Any value above one indicates the max "
 "number of images that may be scrubbed in parallel."
 msgstr ""
-"Taille de pool d'unités d'exécution à utiliser pour l'épuration nettoyage "
-"des images. Valeur par défaut : 1, ce qui correspond à une épuration série. "
-"Toute valeur supérieure à 1 indique le nombre maximal d'images pouvant être "
-"épurées en parallèle."
+"Taille de pool d'unités d'exécution à utiliser pour l'épuration (nettoyage) "
+"des images. Valeur par défaut : 1, ce qui correspond à une épuration en "
+"série. Toute valeur supérieure à 1 indique le nombre maximal d'images "
+"pouvant être épurées en parallèle."
 
 #, python-format
 msgid "The specified member %s could not be found"
@@ -2702,7 +2704,7 @@ msgstr ""
 "spécifié."
 
 msgid "The type of task represented by this content"
-msgstr "Le type de tâche représenté par ce contenu"
+msgstr "Type de tâche représenté par ce contenu"
 
 msgid "The unique namespace text."
 msgstr "Texte unique de l'espace de nom."
@@ -2821,7 +2823,7 @@ msgid "Total size is %(size)d bytes across %(img_count)d images"
 msgstr "La taille totale est de %(size)d octets sur %(img_count)d images"
 
 msgid "Turn on/off delayed delete."
-msgstr "L'activation/la désactivation a retardé la suppression."
+msgstr "L'activation/désactivation a retardé la suppression."
 
 msgid "Type version has to be a valid semver string"
 msgstr "La version du type doit être une chaîne semver valide"
@@ -2842,7 +2844,7 @@ msgstr ""
 "URL permettant d'accéder au fichier image conservé dans le magasin externe"
 
 msgid "Unable to PUT to non-empty collection"
-msgstr "PUT impossible vers une collection qui n'est pas vide"
+msgstr "Opération PUT impossible vers une collection qui n'est pas vide"
 
 #, python-format
 msgid ""
@@ -2861,16 +2863,16 @@ msgid "Unable to filter by unknown operator '%s'."
 msgstr "Filtrage impossible avec l'opérateur inconnu '%s'."
 
 msgid "Unable to filter on a range with a non-numeric value."
-msgstr "Impossible de filtrer sur une plage avec une valeur non numérique."
+msgstr "Filtrage impossible sur une plage avec une valeur non numérique."
 
 msgid "Unable to filter on a unknown operator."
-msgstr "Filtrage impossible avec un opérateur inconnu."
+msgstr "Filtrage impossible sur un opérateur inconnu."
 
 msgid "Unable to filter using the specified operator."
 msgstr "Filtrage impossible à l'aide de l'opérateur spécifié."
 
 msgid "Unable to filter using the specified range."
-msgstr "Impossible de filtrer à l'aide de la plage spécifiée."
+msgstr "Filtrage impossible à l'aide de la plage spécifiée."
 
 #, python-format
 msgid "Unable to find '%s' in JSON Schema change"
@@ -2881,7 +2883,7 @@ msgid ""
 "Unable to find `op` in JSON Schema change. It must be one of the following: "
 "%(available)s."
 msgstr ""
-"Impossible de localiser `op` dans la modification du schéma JSON. Doit être "
+"Impossible de localiser 'op' dans la modification du schéma JSON. Doit être "
 "l'une des valeurs suivantes : %(available)s."
 
 msgid "Unable to get legacy image"
@@ -2889,8 +2891,8 @@ msgstr "Impossible d'obtenir une image existante"
 
 msgid "Unable to increase file descriptor limit.  Running as non-root?"
 msgstr ""
-"Impossible d'augmenter la limite de descripteur de fichier. Exécution en "
-"tant que non root ?"
+"Impossible d'augmenter le nombre limite de descripteurs de fichier. "
+"Exécution en tant que non root ?"
 
 #, python-format
 msgid ""
@@ -2962,11 +2964,11 @@ msgstr "Réponse inattendue : %s"
 
 #, python-format
 msgid "Unknown auth strategy '%s'"
-msgstr "Stratégie d'autorisation inconnue '%s'"
+msgstr "Stratégie d'authentification inconnue '%s'"
 
 #, python-format
 msgid "Unknown command: %s"
-msgstr "commande %s inconnue"
+msgstr "Commande inconnue : %s"
 
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "Sens de tri inconnu, doit être 'desc' ou 'asc'"
@@ -2987,7 +2989,8 @@ msgstr "sort_key non pris en charge. Valeurs acceptables : %s"
 
 #, python-format
 msgid "Value %(value)d out of range, must not exceed %(max)d"
-msgstr "La valeur %(value)d est hors bornes, elle ne doit pas dépasser %(max)d"
+msgstr ""
+"La valeur %(value)d est hors limites, elle ne doit pas dépasser %(max)d"
 
 msgid "Value is greater than maximum"
 msgstr "La valeur est supérieure à la valeur maximale"
@@ -3038,9 +3041,9 @@ msgid ""
 "Otherwise, the owner of the  image will be the authenticated user issuing "
 "the request."
 msgstr ""
-"Définie sur vrai, cette option définit le propriétaire d'une image comme "
-"locataire (tenant). Sinon, le propriétaire de l'image est l'utilisateur "
-"authentifié qui émet la demande."
+"Lorsqu'elle a la valeur true,  cette option définit le propriétaire d'une "
+"image comme locataire (tenant). Sinon, le propriétaire de l'image est "
+"l'utilisateur authentifié qui émet la demande."
 
 msgid ""
 "When using SSL in connections to the registry server, do not require "
@@ -3066,7 +3069,7 @@ msgid ""
 "storage location can be a security risk, so use this setting with caution! "
 "Setting this to true overrides the show_image_direct_url option."
 msgstr ""
-"Indique s'il faut inclure les emplacements d'image de backend dans les "
+"Indique s'il faut inclure les emplacements d'image de back-end dans les "
 "propriétés d'image. Par exemple, si vous utilisez le magasin de systèmes de "
 "fichiers, une URL de type \"file:///chemin/vers/image\" sera renvoyée à "
 "l'utilisateur dans le champ de métadonnées  'direct_url'. La révélation d'un "
@@ -3079,9 +3082,10 @@ msgid ""
 "Revealing storage location can be a security risk, so use this setting with "
 "caution!"
 msgstr ""
-"Indique si l'emplacement de stockage de l'image d'arrière-plan doit être "
-"inclus dans les propriétés de l'image. Ceci peut poser des problèmes de "
-"sécurité, donc soyez prudent dans l'utilisation de ce paramètre !"
+"Indique s'il faut inclure l'emplacement de stockage de l'image de back-end "
+"dans les propriétés de l'image. La révélation de l'emplacement de stockage "
+"peut présenter un risque de sécurité, donc utilisez ce paramètre avec "
+"précaution."
 
 msgid ""
 "Whether to pass through headers containing user and tenant information when "
@@ -3092,10 +3096,10 @@ msgid ""
 "ensured by means other than auth_token middleware."
 msgstr ""
 "Indique si les en-têtes contenant les informations d'utilisateur et de "
-"locataire doivent être passées lors des demandes effectuées sur le registre. "
-"Cela permet au registre d'utiliser le middleware contextuel sans le "
-"middleware auth_token de keystonemiddleware, en supprimant les appels au "
-"service d'authentification keystone. Lors de l'utilisation de cette option, "
+"locataire doivent être transmises lors des demandes effectuées sur le "
+"registre. Cela permet au registre d'utiliser le middleware contextuel sans "
+"le middleware auth_token de keystonemiddleware, en supprimant les appels au "
+"service d'authentification Keystone. Lors de l'utilisation de cette option, "
 "il est recommandé de sécuriser les communications entre l'API Glance et le "
 "registre Glance par des moyens autres que le middleware auth_token."
 
@@ -3140,7 +3144,7 @@ msgstr ""
 "tâche. Par exemple, vous voudrez peut-être doubler la taille disponible si "
 "la conversion d'image est activée. Cela étant dit, rappelez-vous qu'il "
 "s'agit uniquement d'estimations et que vous devriez vous baser sur le "
-"scénario le moins favorable et être prêts à le modifier si jamais ces "
+"scénario le moins favorable et être prêt à le modifier si jamais ces "
 "estimations s'avéraient fausses."
 
 #, python-format
@@ -3219,7 +3223,9 @@ msgstr "Vous n'êtes pas autorisé à supprimer cette balise."
 
 #, python-format
 msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "Vous n'êtes pas autorisé à modifier '%(attr)s' sur cette %(resource)s."
+msgstr ""
+"Vous n'êtes pas autorisé à modifier '%(attr)s' sur cette ressource :  "
+"%(resource)s."
 
 #, python-format
 msgid "You are not permitted to modify '%s' on this image."
@@ -3280,8 +3286,8 @@ msgid ""
 "GLANCE_CLIENT_KEY_FILE environ variable"
 msgstr ""
 "Vous avez choisi d'utiliser SSL pour la connexion et avez fourni un "
-"certificat, cependant, vous n'avez pas fourni de paramètre key_file ou "
-"n'avez pas défini la variable d'environnement GLANCE_CLIENT_KEY_FILE"
+"certificat, cependant, vous avez oublié d'indiquer un paramètre key_file ou "
+"de définir la variable d'environnement GLANCE_CLIENT_KEY_FILE"
 
 msgid ""
 "You have selected to use SSL in connecting, and you have supplied a key, "
@@ -3289,8 +3295,8 @@ msgid ""
 "GLANCE_CLIENT_CERT_FILE environ variable"
 msgstr ""
 "Vous avez choisi d'utiliser SSL pour la connexion et avez fourni une clé, "
-"cependant, vous n'avez pas fourni de paramètre cert_file ou n'avez pas "
-"défini la variable d'environnement GLANCE_CLIENT_CERT_FILE"
+"cependant, vous avez oublié d'indiquer un paramètre cert_file ou de définir "
+"la variable d'environnement GLANCE_CLIENT_CERT_FILE"
 
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
@@ -3325,10 +3331,10 @@ msgid "is_public must be None, True, or False"
 msgstr "is_public doit être None, True ou False"
 
 msgid "limit param must be an integer"
-msgstr "le paramètre limit doit être un entier"
+msgstr "Le paramètre limit doit être un entier"
 
 msgid "limit param must be positive"
-msgstr "le paramètre limit doit être positif"
+msgstr "Le paramètre limit doit être positif"
 
 #, python-format
 msgid "location: %s data lost"
@@ -3346,7 +3352,7 @@ msgstr "protected doit être True ou False"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
-msgstr "impossible de lancer %(serv)s. Erreur : %(e)s"
+msgstr "impossible de lancer %(serv)s. Erreur obtenue : %(e)s"
 
 #, python-format
 msgid "x-openstack-request-id is too long, max size %s"

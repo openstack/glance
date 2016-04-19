@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.0.0b2.dev74\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-01-18 06:24+0000\n"
+"Project-Id-Version: glance 12.0.1.dev1\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-04-19 06:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.2.0\n"
 
-#: glance/location.py:406
+#: glance/location.py:434 glance/location.py:457
 #, python-format
 msgid "Successfully verified signature for image %s"
 msgstr ""
@@ -58,7 +58,7 @@ msgstr ""
 msgid "Image %s is scrubbed from a location."
 msgstr ""
 
-#: glance/api/middleware/cache.py:58
+#: glance/api/middleware/cache.py:59
 msgid "Initialized image cache middleware"
 msgstr ""
 
@@ -70,12 +70,12 @@ msgstr ""
 msgid "Initialized gzip middleware"
 msgstr ""
 
-#: glance/api/v1/images.py:734
+#: glance/api/v1/images.py:741
 #, python-format
 msgid "Uploaded data of image %s from request payload successfully."
 msgstr ""
 
-#: glance/api/v1/images.py:799
+#: glance/api/v1/images.py:806
 msgid "Triggering asynchronous copy from external source"
 msgstr ""
 
@@ -104,7 +104,7 @@ msgstr ""
 msgid "Unable to delete trust %(trust)s: %(msg)s"
 msgstr ""
 
-#: glance/async/flows/base_import.py:374
+#: glance/async/flows/base_import.py:375
 #, python-format
 msgid "%(task_id)s of %(task_type)s completed"
 msgstr ""
@@ -129,44 +129,44 @@ msgstr ""
 msgid "Image %s is being synced"
 msgstr ""
 
-#: glance/common/wsgi.py:310
+#: glance/common/wsgi.py:322
 #, python-format
 msgid "Starting %d workers"
 msgstr ""
 
-#: glance/common/wsgi.py:323
+#: glance/common/wsgi.py:335
 #, python-format
 msgid "Removed dead child %s"
 msgstr ""
 
-#: glance/common/wsgi.py:326
+#: glance/common/wsgi.py:338
 #, python-format
 msgid "Removed stale child %s"
 msgstr ""
 
-#: glance/common/wsgi.py:338
+#: glance/common/wsgi.py:350
 msgid "All workers have terminated. Exiting"
 msgstr ""
 
-#: glance/common/wsgi.py:355
+#: glance/common/wsgi.py:367
 msgid "Caught keyboard interrupt. Exiting."
 msgstr ""
 
-#: glance/common/wsgi.py:435
+#: glance/common/wsgi.py:448
 #, python-format
 msgid "Child %d exiting normally"
 msgstr ""
 
-#: glance/common/wsgi.py:440
+#: glance/common/wsgi.py:453
 #, python-format
 msgid "Started child %s"
 msgstr ""
 
-#: glance/common/wsgi.py:470
+#: glance/common/wsgi.py:483
 msgid "Starting single process server"
 msgstr ""
 
-#: glance/common/artifacts/loader.py:126 glance/common/artifacts/loader.py:150
+#: glance/common/glare/loader.py:126 glance/common/glare/loader.py:150
 #, python-format
 msgid "Artifact %s has been successfully loaded"
 msgstr ""
@@ -191,31 +191,31 @@ msgstr ""
 msgid "Task %(task_id)s: Could not import image file %(image_data)s"
 msgstr ""
 
-#: glance/db/simple/api.py:60
+#: glance/db/simple/api.py:59
 #, python-format
 msgid "Calling %(funcname)s: args=%(args)s, kwargs=%(kwargs)s"
 msgstr ""
 
-#: glance/db/simple/api.py:66
+#: glance/db/simple/api.py:65
 #, python-format
 msgid "Returning %(funcname)s: %(output)s"
 msgstr ""
 
-#: glance/db/simple/api.py:1987
+#: glance/db/simple/api.py:2003
 #, python-format
 msgid "Could not find artifact %s"
 msgstr ""
 
-#: glance/db/simple/api.py:1991
+#: glance/db/simple/api.py:2007
 msgid "Unable to get deleted image"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:1275
+#: glance/db/sqlalchemy/api.py:1314
 #, python-format
 msgid "Purging deleted rows older than %(age_in_days)d day(s) from table %(tbl)s"
 msgstr ""
 
-#: glance/db/sqlalchemy/api.py:1290
+#: glance/db/sqlalchemy/api.py:1331
 #, python-format
 msgid "Deleted %(rows)d row(s) from table %(tbl)s"
 msgstr ""
@@ -270,12 +270,12 @@ msgstr ""
 msgid "Task [%(task_id)s] status changing from %(cur_status)s to %(new_status)s"
 msgstr ""
 
-#: glance/image_cache/__init__.py:68
+#: glance/image_cache/__init__.py:69
 #, python-format
 msgid "Image cache loaded driver '%s'."
 msgstr ""
 
-#: glance/image_cache/__init__.py:77 glance/image_cache/__init__.py:96
+#: glance/image_cache/__init__.py:78 glance/image_cache/__init__.py:97
 msgid "Defaulting to SQLite driver."
 msgstr ""
 
@@ -323,13 +323,13 @@ msgid "Cleaning up %s after exceeding the quota."
 msgstr ""
 
 #: glance/registry/api/v1/images.py:342 glance/registry/api/v1/images.py:380
-#: glance/registry/api/v1/images.py:481
+#: glance/registry/api/v1/images.py:484
 #, python-format
 msgid "Image %(id)s not found"
 msgstr ""
 
 #: glance/registry/api/v1/images.py:347 glance/registry/api/v1/images.py:376
-#: glance/registry/api/v1/images.py:491
+#: glance/registry/api/v1/images.py:494
 #, python-format
 msgid "Access denied to image %(id)s but returning 'not found'"
 msgstr ""
@@ -354,27 +354,27 @@ msgstr ""
 msgid "Successfully created image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:473
+#: glance/registry/api/v1/images.py:476
 #, python-format
 msgid "Updating metadata for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/images.py:486
+#: glance/registry/api/v1/images.py:489
 #, python-format
 msgid "Update denied for public image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:196
+#: glance/registry/api/v1/members.py:198
 #, python-format
 msgid "Successfully updated memberships for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:269
+#: glance/registry/api/v1/members.py:271
 #, python-format
 msgid "Successfully updated a membership for image %(id)s"
 msgstr ""
 
-#: glance/registry/api/v1/members.py:316
+#: glance/registry/api/v1/members.py:318
 #, python-format
 msgid "Successfully deleted a membership from image %(id)s"
 msgstr ""
