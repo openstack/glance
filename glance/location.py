@@ -17,7 +17,6 @@ import collections
 import copy
 
 from cryptography import exceptions as crypto_exception
-import debtcollector
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -427,8 +426,6 @@ class ImageProxy(glance.domain.proxy.Image):
             context=self.context,
             verifier=verifier)
 
-        self._verify_signature_if_needed(checksum)
-
         # NOTE(bpoulos): if verification fails, exception will be raised
         if verifier:
             try:
@@ -445,19 +442,6 @@ class ImageProxy(glance.domain.proxy.Image):
         self.image.size = size
         self.image.checksum = checksum
         self.image.status = 'active'
-
-    @debtcollector.removals.remove(
-        message="This will be removed in the N cycle.")
-    def _verify_signature_if_needed(self, checksum):
-        # Verify the signature (if correct properties are present)
-        if (signature_utils.should_verify_signature(
-                self.image.extra_properties)):
-            # NOTE(bpoulos): if verification fails, exception will be raised
-            result = signature_utils.verify_signature(
-                self.context, checksum, self.image.extra_properties)
-            if result:
-                LOG.info(_LI("Successfully verified signature for image %s"),
-                         self.image.image_id)
 
     def get_data(self, offset=0, chunk_size=None):
         if not self.image.locations:
