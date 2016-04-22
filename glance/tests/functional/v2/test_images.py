@@ -954,7 +954,7 @@ class TestImages(functional.FunctionalTest):
         }
 
         for key, value in six.iteritems(expected_image):
-            self.assertEqual(value, value, key)
+            self.assertEqual(value, image[key], key)
 
         # Upload data to image
         path = self._url('/v2/images/%s/file' % image_id)
