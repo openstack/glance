@@ -9,14 +9,14 @@
 # Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev2\n"
+"Project-Id-Version: glance 12.0.1.dev5\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-20 15:51+0000\n"
+"POT-Creation-Date: 2016-04-21 13:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-10 03:06+0000\n"
-"Last-Translator: Jennifer <cristxu@tw.ibm.com>\n"
+"PO-Revision-Date: 2016-04-22 06:50+0000\n"
+"Last-Translator: Lucas Palm <lapalm@us.ibm.com>\n"
 "Language: zh-TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -489,7 +489,7 @@ msgstr "內容類型必須是 application/octet-stream"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
-msgstr "映像檔 %(image_id)s 的映像檔下載已毀損"
+msgstr "映像檔 %(image_id)s 的映像檔下載項已毀損"
 
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
@@ -975,7 +975,7 @@ msgid "Index is out of range"
 msgstr "索引超出範圍"
 
 msgid "Index is required"
-msgstr "索引是必要的"
+msgstr "索引是必要項"
 
 #, python-format
 msgid "Input does not contain '%(key)s' field"
@@ -1104,7 +1104,7 @@ msgid ""
 "format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
 "match."
 msgstr ""
-"磁碟格式及儲存器格式的混合無效。將磁碟格式或儲存器格式設為 'aki'、'ari' 或 "
+"磁碟格式及儲存器格式的組合無效。將磁碟格式或儲存器格式設為 'aki'、'ari' 或 "
 "'ami' 其中之一時，儲存器格式及磁碟格式必須相符。"
 
 #, python-format
@@ -1484,7 +1484,7 @@ msgstr "字典中沒有此類鍵 '%s'"
 
 #, python-format
 msgid "Not a blob property '%s'"
-msgstr "不是二進位大型物件內容 '%s'"
+msgstr "不是 Blob 內容 '%s'"
 
 msgid "Not a downloadable entity"
 msgstr "不是可下載的實體"
@@ -1564,7 +1564,7 @@ msgid "Old and new sorting syntax cannot be combined"
 msgstr "無法結合新舊排序語法"
 
 msgid "Only list indexes are allowed for blob lists"
-msgstr "二進位大型物件清單只接受清單索引"
+msgstr "Blob 清單只接受清單索引"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1747,7 +1747,7 @@ msgid ""
 "proxy's URL."
 msgstr ""
 "要用於版本端點的公用 URL。預設值為 None，這將會使用要求的 host_url 屬性來移入"
-"基本 URL。如果 Glance 在 Proxy 後方作業，您將會想要變更此項以代表Proxy 的 "
+"基本 URL。如果 Glance 透過 Proxy 進行作業，您將會想要變更此項以代表 Proxy 的 "
 "URL。"
 
 msgid "Python module path of data access API"
@@ -2064,7 +2064,7 @@ msgstr ""
 
 #, python-format
 msgid "The incoming artifact blob is too large: %s"
-msgstr "送入的構件二進位大型物件太大：%s"
+msgstr "送入的構件 Blob 太大：%s"
 
 #, python-format
 msgid "The incoming image is too large: %s"
@@ -2100,7 +2100,7 @@ msgstr ""
 msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(num)s, Maximum: %(quota)s"
-msgstr "容許的映像檔內容數目已超出此限制。已嘗試：%(num)s，上限：%(quota)s"
+msgstr "已超出容許的映像檔內容數目限制。已嘗試：%(num)s，上限：%(quota)s"
 
 #, python-format
 msgid ""
@@ -2339,8 +2339,8 @@ msgid ""
 "which signifies serial scrubbing. Any value above one indicates the max "
 "number of images that may be scrubbed in parallel."
 msgstr ""
-"要用於清除映像檔的執行緒儲存區大小。預設值為 1，這表示序列清除。任何大於 1 的"
-"值都指示可平行清除的映像檔數目上限。"
+"要用於清除映像檔的執行緒儲存區大小。預設值為 1，這表示循序清除。若為任何大於 "
+"1 的值，則指示可平行清除的映像檔數目上限。"
 
 #, python-format
 msgid "The specified member %s could not be found"
