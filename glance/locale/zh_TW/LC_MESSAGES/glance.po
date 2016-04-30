@@ -3,20 +3,17 @@
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
-# Lucas Palm <lapalm@us.ibm.com>, 2015. #zanata
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
 # Jennifer <cristxu@tw.ibm.com>, 2016. #zanata
-# Lucas Palm <lapalm@us.ibm.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev5\n"
+"Project-Id-Version: glance 12.0.1.dev6\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-21 13:11+0000\n"
+"POT-Creation-Date: 2016-04-22 23:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-22 06:50+0000\n"
-"Last-Translator: Lucas Palm <lapalm@us.ibm.com>\n"
+"PO-Revision-Date: 2016-04-29 09:23+0000\n"
+"Last-Translator: Jennifer <cristxu@tw.ibm.com>\n"
 "Language: zh-TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -73,14 +70,14 @@ msgid ""
 "%(task_id)s of %(task_type)s not configured properly. Could not load the "
 "filesystem store"
 msgstr ""
-"未適當地配置 %(task_id)s（類型為 %(task_type)s）。無法載入檔案系統儲存庫"
+"未正確地配置 %(task_id)s（類型為 %(task_type)s）。無法載入檔案系統儲存庫"
 
 #, python-format
 msgid ""
 "%(task_id)s of %(task_type)s not configured properly. Missing work dir: "
 "%(work_dir)s"
 msgstr ""
-"未適當地配置 %(task_id)s（類型為 %(task_type)s）。遺漏工作目錄：%(work_dir)s"
+"未正確地配置 %(task_id)s（類型為 %(task_type)s）。遺漏工作目錄：%(work_dir)s"
 
 #, python-format
 msgid "%(verb)sing %(serv)s"
@@ -190,10 +187,10 @@ msgid "Allowed values %s are invalid under given validators"
 msgstr "容許的值 %s 在給定的驗證器下無效"
 
 msgid "Amount of disk space (in GB) required to boot image."
-msgstr "啟動映像檔所需的磁碟空間數量（以 GB 為單位）。"
+msgstr "啟動映像檔所需的磁碟空間量（以 GB 為單位）。"
 
 msgid "Amount of ram (in MB) required to boot image."
-msgstr "啟動映像檔所需的 RAM 數量（以 MB 為單位）。"
+msgstr "啟動映像檔所需的 RAM 量（以 MB 為單位）。"
 
 msgid "An identifier for the image"
 msgstr "映像檔的 ID"
@@ -391,10 +388,10 @@ msgstr "不能反覆宣告 BinaryObject 內容"
 
 #, python-format
 msgid "Blob %(name)s may not have multiple values"
-msgstr "二進位大型物件 %(name)s 不能具有多個值"
+msgstr "Blob %(name)s 不能具有多個值"
 
 msgid "Blob size is not set"
-msgstr "未設定二進位大型物件大小"
+msgstr "未設定 Blob 大小"
 
 msgid "Body expected in request."
 msgstr "要求中需要內文。"
@@ -817,7 +814,7 @@ msgstr "磁碟的格式"
 
 #, python-format
 msgid "Get blob %(name)s data failed: %(err)s."
-msgstr "取得二進位大型物件 %(name)s 資料失敗：%(err)s。"
+msgstr "取得 Blob %(name)s 資料失敗：%(err)s。"
 
 #, python-format
 msgid "Get image %(id)s data failed: %(err)s."
@@ -837,7 +834,7 @@ msgstr "主機和埠 \"%s\" 無效。"
 msgid ""
 "Human-readable informative message only included when appropriate (usually "
 "on failure)"
-msgstr "適當的時候（通常是失敗時）僅併入人類可讀的參考訊息"
+msgstr "僅在適當的時候（通常是失敗時）併入人類可讀的參考訊息"
 
 msgid "If False doesn't trace SQL requests."
 msgstr "如果為 False，則將不追蹤 SQL 要求。"
@@ -979,7 +976,7 @@ msgstr "索引是必要項"
 
 #, python-format
 msgid "Input does not contain '%(key)s' field"
-msgstr "輸入不包含 '%(key)s' 欄位"
+msgstr "輸入未包含 '%(key)s' 欄位"
 
 #, python-format
 msgid "Insufficient permissions on artifact storage media: %s"
@@ -1201,24 +1198,24 @@ msgid ""
 "Invalid update. It would result in a duplicate metadata definition object "
 "with the same name=%(name)s  in namespace=%(namespace_name)s."
 msgstr ""
-"無效的更新。此更新將導致下列名稱空間中存在具有相同名稱%(name)s 的重複 meta 資"
-"料定義物件：%(namespace_name)s。"
+"無效的更新。此更新將導致下列名稱空間中存在具有相同名稱 %(name)s 的重複 meta "
+"資料定義物件：%(namespace_name)s。"
 
 #, python-format
 msgid ""
 "Invalid update. It would result in a duplicate metadata definition object "
 "with the same name=%(name)s in namespace=%(namespace_name)s."
 msgstr ""
-"無效的更新。此更新將導致下列名稱空間中存在具有相同名稱%(name)s 的重複 meta 資"
-"料定義物件：%(namespace_name)s。"
+"無效的更新。此更新將導致名稱空間 %(namespace_name)s 中存在具有相同名稱 "
+"%(name)s 的重複 meta 資料定義物件。"
 
 #, python-format
 msgid ""
 "Invalid update. It would result in a duplicate metadata definition property "
 "with the same name=%(name)s in namespace=%(namespace_name)s."
 msgstr ""
-"更新無效。它會導致在下列名稱空間中產生具有相同名稱 %(name)s 的重複 meta 資料"
-"定義內容：%(namespace_name)s。"
+"更新無效。它會導致在名稱空間 %(namespace_name)s 中產生具有相同名稱 %(name)s "
+"的重複 meta 資料定義內容。"
 
 #, python-format
 msgid "Invalid value '%(value)s' for parameter '%(param)s': %(extra_msg)s"
@@ -1613,7 +1610,7 @@ msgid ""
 "api-keystone] use the value \"keystone\""
 msgstr ""
 "paste 配置檔中 pipeline 的部分名稱（移除了服務名稱）。比方說，如果 paste 區段"
-"名稱為[pipeline:glance-api-keystone]，請使用值 \"keystone\""
+"名稱為 [pipeline:glance-api-keystone]，請使用值 \"keystone\""
 
 msgid "Path to the directory where json metadata files are stored"
 msgstr "在其中儲存 JSON meta 資料檔的目錄路徑"
@@ -1830,7 +1827,7 @@ msgstr "名稱空間的可存取性範圍。"
 msgid ""
 "Secret key to use to sign Glance API and Glance Registry services tracing "
 "messages."
-msgstr "用來簽署 Glance API 及「Glance 登錄」追蹤訊息的秘密金鑰。"
+msgstr "用來簽署 Glance API 及「Glance 登錄」服務追蹤訊息的秘密金鑰。"
 
 #, python-format
 msgid "Server %(serv)s is stopped"
@@ -1849,7 +1846,7 @@ msgid ""
 "should not be any space between value and unit and units are case sensitive."
 msgstr ""
 "給每個使用者設定系統通用的配額。此值是使用者可以在所有儲存體系統上使用的總容"
-"量。值 0 表示無限制。可以為該值指定選用單位。接受的單位有B、KB、MB、GB 和 "
+"量。值 0 表示無限制。可以為該值指定選用單位。接受的單位有 B、KB、MB、GB 和 "
 "TB，分別代表位元組、千位元組、百萬位元組、十億位元組和兆位元組。如果未指定單"
 "位，則將採用位元組。請注意，在值與單位之間不應有任何空格，並且單位區分大小"
 "寫。"
@@ -1951,7 +1948,7 @@ msgid "Task failed due to Internal Error"
 msgstr "由於內部錯誤，作業失敗"
 
 msgid "Task was not configured properly"
-msgstr "作業未適當地配置"
+msgstr "未正確配置作業"
 
 #, python-format
 msgid "Task with the given id %(task_id)s was not found"
@@ -2003,7 +2000,7 @@ msgid ""
 "The amount of time to let an incomplete image remain in the cache, before "
 "the cache cleaner, if running, will remove the incomplete image."
 msgstr ""
-"在快取中保留不完整映像檔的時間量，超過該時間量後，快取刪改程式（如果在執行"
+"在快取中保留不完整映像檔的時間量，超過該時間量後，快取清除程式（如果在執行"
 "中）將移除不完整的映像檔。"
 
 msgid ""
@@ -2079,14 +2076,14 @@ msgid ""
 "The limit has been exceeded on the number of allowed image locations. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"容許的映像檔位置數目已超出此限制。已嘗試：%(attempted)s，上限：%(maximum)s"
+"已超出容許的映像檔位置數目限制。已嘗試：%(attempted)s，上限：%(maximum)s"
 
 #, python-format
 msgid ""
 "The limit has been exceeded on the number of allowed image members for this "
 "image. Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"此映像檔容許的映像檔成員數目已超出此限制。已嘗試：%(attempted)s，上限："
+"已超出對此映像檔容許的映像檔成員數目限制。已嘗試：%(attempted)s，上限："
 "%(maximum)s"
 
 #, python-format
@@ -2094,7 +2091,7 @@ msgid ""
 "The limit has been exceeded on the number of allowed image properties. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"容許的映像檔內容數目已超出此限制。已嘗試：%(attempted)s，上限：%(maximum)s"
+"已超出容許的映像檔內容數目限制。已嘗試：%(attempted)s，上限：%(maximum)s"
 
 #, python-format
 msgid ""
@@ -2107,7 +2104,7 @@ msgid ""
 "The limit has been exceeded on the number of allowed image tags. Attempted: "
 "%(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"容許的映像檔標籤數目已超出此限制。已嘗試：%(attempted)s，上限：%(maximum)s"
+"已超出容許的映像檔標籤數目限制。已嘗試：%(attempted)s，上限：%(maximum)s"
 
 #, python-format
 msgid "The location %(location)s already exists"
@@ -2145,16 +2142,16 @@ msgid ""
 "The metadata definition object with name=%(object_name)s was not found in "
 "namespace=%(namespace_name)s."
 msgstr ""
-"在下列名稱空間中，找不到名稱為 %(object_name)s 的 meta 資料定義物件："
-"%(namespace_name)s。"
+"在名稱空間 %(namespace_name)s 中，找不到名稱為 %(object_name)s 的 meta 資料定"
+"義物件。"
 
 #, python-format
 msgid ""
 "The metadata definition property with name=%(property_name)s was not found "
 "in namespace=%(namespace_name)s."
 msgstr ""
-"在下列名稱空間中，找不到名稱為 %(property_name)s 的 meta 資料定義內容："
-"%(namespace_name)s。"
+"在名稱空間 %(namespace_name)s 中，找不到名稱為 %(property_name)s 的 meta 資料"
+"定義內容：。"
 
 #, python-format
 msgid ""
@@ -2183,8 +2180,8 @@ msgid ""
 "The metadata definition tag with name=%(name)s was not found in namespace="
 "%(namespace_name)s."
 msgstr ""
-"在下列名稱空間中，找不到名稱為 %(name)s 的 meta 資料定義標籤："
-"%(namespace_name)s。"
+"在名稱空間 %(namespace_name)s 中，找不到名稱為 %(name)s 的 meta 資料定義標"
+"籤。"
 
 msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
 msgstr "將用於執行引擎的模式。可以為「串行」或「平行」。"
@@ -2201,7 +2198,7 @@ msgid ""
 msgstr "引擎同時執行的平行活動數目。當引擎模式為「平行」時，該值可以大於 1。"
 
 msgid "The parameters required by task, JSON blob"
-msgstr "作業所需的參數：JSON 二進位大型物件"
+msgstr "作業所需的參數：JSON Blob"
 
 msgid ""
 "The path to the cert file to use in SSL connections to the registry server, "
@@ -2288,7 +2285,7 @@ msgid ""
 "The body of response returned:\n"
 "%(body)s"
 msgstr ""
-"要求傳回了「302 多重選擇」。這通常表示要求 URI 中尚不包含版本指示符。\n"
+"要求傳回了「302 多重選擇」。這通常表示要求 URI 中未包含版本指示符。\n"
 "\n"
 "傳回了回應內文：\n"
 "%(body)s"
@@ -2301,7 +2298,7 @@ msgid ""
 "The response body:\n"
 "%(body)s"
 msgstr ""
-"要求傳回了「413 要求實體太大」。這通常表示已違反評比限制或配額臨界值。\n"
+"要求傳回了「413 要求實體太大」。這通常表示已超過比率限制或配額臨界值。\n"
 "\n"
 "回應內文：\n"
 "%(body)s"
@@ -2323,7 +2320,7 @@ msgid ""
 msgstr "已取消啟動所要求的映像檔。已禁止下載映像檔資料。"
 
 msgid "The result of current task, JSON blob"
-msgstr "現行作業的結果：JSON 二進位大型物件"
+msgstr "現行作業的結果：JSON Blob"
 
 msgid "The signature data was not properly encoded using base64"
 msgstr "簽章資料未使用 base64 進行正確編碼"
@@ -2433,8 +2430,8 @@ msgid ""
 "The value for the socket option TCP_KEEPIDLE.  This is the time in seconds "
 "that the connection must be idle before TCP starts sending keepalive probes."
 msgstr ""
-"Socket 選項 TCP_KEEPIDLE 的值。這是 TCP開始傳送保持作用中探針之前連線必須閒置"
-"的秒數。"
+"Socket 選項 TCP_KEEPIDLE 的值。這是 TCP開始傳送 keepalive 探針之前連線必須閒"
+"置的秒數。"
 
 #, python-format
 msgid ""
@@ -2456,7 +2453,7 @@ msgid ""
 "There is a problem with your key pair.  Please verify that cert "
 "%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
 msgstr ""
-"金鑰組有問題。請確認憑證 %(cert_file)s 及金鑰 %(key_file)s 是配對的。OpenSSL "
+"金鑰組有問題。請確認憑證 %(cert_file)s 及金鑰 %(key_file)s 是否配對。OpenSSL "
 "錯誤 %(ce)s"
 
 msgid "There was an error configuring the client."
@@ -2474,8 +2471,8 @@ msgid ""
 "This operation is currently not permitted on Glance Tasks. They are auto "
 "deleted after reaching the time based on their expires_at property."
 msgstr ""
-"目前不允許對 Glance 作業執行這項作業。根據它們的 expires_at內容，將在達到時間"
-"之後自動刪除它們。"
+"目前不允許對 Glance 作業執行這項作業。根據它們的 expires_at 內容，將在達到時"
+"間之後自動刪除它們。"
 
 msgid "This operation is currently not permitted on Glance images details."
 msgstr "目前不允許對 Glance 映像檔詳細資料執行這項作業。"
@@ -2550,7 +2547,7 @@ msgid "Unable to filter by unknown operator '%s'."
 msgstr "無法依不明運算子 '%s' 進行過濾。"
 
 msgid "Unable to filter on a range with a non-numeric value."
-msgstr "無法對包含非數值的範圍進行過濾。"
+msgstr "無法對包含非數字值的範圍進行過濾。"
 
 msgid "Unable to filter on a unknown operator."
 msgstr "無法依不明運算子進行過濾。"
@@ -2569,7 +2566,8 @@ msgstr "在「JSON 綱目」變更中找不到 '%s'"
 msgid ""
 "Unable to find `op` in JSON Schema change. It must be one of the following: "
 "%(available)s."
-msgstr "在 JSON 綱目變更中找不到 `op`。它必須是下列其中一項：%(available)s。"
+msgstr ""
+"在「JSON 綱目」變更中找不到 `op`。它必須是下列其中一項：%(available)s。"
 
 msgid "Unable to get legacy image"
 msgstr "無法取得舊式映像檔"
@@ -2986,7 +2984,7 @@ msgstr "protected 必須是 True 或 False"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
-msgstr "無法啟動 %(serv)s。取得錯誤：%(e)s"
+msgstr "無法啟動 %(serv)s。遇到錯誤：%(e)s"
 
 #, python-format
 msgid "x-openstack-request-id is too long, max size %s"
