@@ -33,17 +33,74 @@ import glance.registry.client.v1.api as registry
 LOG = logging.getLogger(__name__)
 
 scrubber_opts = [
-    cfg.IntOpt('scrub_time', default=0,
-               help=_('The amount of time in seconds to delay before '
-                      'performing a delete.')),
-    cfg.IntOpt('scrub_pool_size', default=1,
-               help=_('The size of thread pool to be used for '
-                      'scrubbing images. The default is one, which '
-                      'signifies serial scrubbing. Any value above '
-                      'one indicates the max number of images that '
-                      'may be scrubbed in parallel.')),
+    cfg.IntOpt('scrub_time', default=0, min=0,
+               help=_("""
+The amount of time, in seconds, to delay image scrubbing.
+
+When delayed delete is turned on, an image is put into ``pending_delete``
+state upon deletion until the scrubber deletes its image data. Typically, soon
+after the image is put into ``pending_delete`` state, it is available for
+scrubbing. However, scrubbing can be delayed until a later point using this
+configuration option. This option denotes the time period an image spends in
+``pending_delete`` state before it is available for scrubbing.
+
+It is important to realize that this has storage implications. The larger the
+``scrub_time``, the longer the time to reclaim backend storage from deleted
+images.
+
+Possible values:
+    * Any non-negative integer
+
+Related options:
+    * ``delayed_delete``
+
+""")),
+    cfg.IntOpt('scrub_pool_size', default=1, min=1,
+               help=_("""
+The size of thread pool to be used for scrubbing images.
+
+When there are a large number of images to scrub, it is beneficial to scrub
+images in parallel so that the scrub queue stays in control and the backend
+storage is reclaimed in a timely fashion. This configuration option denotes
+the maximum number of images to be scrubbed in parallel. The default value is
+one, which signifies serial scrubbing. Any value above one indicates parallel
+scrubbing.
+
+Possible values:
+    * Any non-zero positive integer
+
+Related options:
+    * ``delayed_delete``
+
+""")),
     cfg.BoolOpt('delayed_delete', default=False,
-                help=_('Turn on/off delayed delete.')),
+                help=_("""
+Turn on/off delayed delete.
+
+Typically when an image is deleted, the ``glance-api`` service puts the image
+into ``deleted`` state and deletes its data at the same time. Delayed delete
+is a feature in Glance that delays the actual deletion of image data until a
+later point in time (as determined by the configuration option ``scrub_time``).
+When delayed delete is turned on, the ``glance-api`` service puts the image
+into ``pending_delete`` state upon deletion and leaves the image data in the
+storage backend for the image scrubber to delete at a later time. The image
+scrubber will move the image into ``deleted`` state upon successful deletion
+of image data.
+
+NOTE: When delayed delete is turned on, image scrubber MUST be running as a
+periodic task to prevent the backend storage from filling up with undesired
+usage.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * ``scrub_time``
+    * ``wakeup_time``
+    * ``scrub_pool_size``
+
+""")),
 
     # Note: Though the conf option admin_role is used by other Glance
     # service and their usage differs requiring us to have a differing
@@ -87,9 +144,27 @@ Related options:
 ]
 
 scrubber_cmd_opts = [
-    cfg.IntOpt('wakeup_time', default=300,
-               help=_('Loop time between checking for new '
-                      'items to schedule for delete.'))
+    cfg.IntOpt('wakeup_time', default=300, min=0,
+               help=_("""
+Time interval, in seconds, between scrubber runs in daemon mode.
+
+Scrubber can be run either as a cron job or daemon. When run as a daemon, this
+configuration time specifies the time period between two runs. When the
+scrubber wakes up, it fetches and scrubs all ``pending_delete`` images that
+are available for scrubbing after taking ``scrub_time`` into consideration.
+
+If the wakeup time is set to a large number, there may be a large number of
+images to be scrubbed for each run. Also, this impacts how quickly the backend
+storage is reclaimed.
+
+Possible values:
+    * Any non-negative integer
+
+Related options:
+    * ``daemon``
+    * ``delayed_delete``
+
+"""))
 ]
 
 scrubber_cmd_cli_opts = [
