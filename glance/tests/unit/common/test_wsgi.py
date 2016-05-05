@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2010-2011 OpenStack Foundation
 # Copyright 2014 IBM Corp.
 # All Rights Reserved.
@@ -94,6 +95,23 @@ class RequestTest(test_utils.BaseTestCase):
         request.headers["Content-Type"] = "application/json; charset=UTF-8"
         result = request.get_content_type(('application/json',))
         self.assertEqual("application/json", result)
+
+    def test_params(self):
+        if six.PY2:
+            expected = webob.multidict.NestedMultiDict({
+                'limit': '20', 'name':
+                    '\xd0\x9f\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82',
+                'sort_key': 'name', 'sort_dir': 'asc'})
+        else:
+            expected = webob.multidict.NestedMultiDict({
+                'limit': '20', 'name': 'Привет', 'sort_key': 'name',
+                'sort_dir': 'asc'})
+
+        request = wsgi.Request.blank("/?limit=20&name=%D0%9F%D1%80%D0%B8"
+                                     "%D0%B2%D0%B5%D1%82&sort_key=name"
+                                     "&sort_dir=asc")
+        actual = request.params
+        self.assertEqual(expected, actual)
 
     def test_content_type_from_accept_xml(self):
         request = wsgi.Request.blank('/tests/123')
