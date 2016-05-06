@@ -38,8 +38,26 @@ LOG = logging.getLogger(__name__)
 
 sqlite_opts = [
     cfg.StrOpt('image_cache_sqlite_db', default='cache.db',
-               help=_('The path to the sqlite file database that will be '
-                      'used for image cache management.')),
+               help=_("""
+The relative path to sqlite file database that will be used for image cache
+management.
+
+This is a relative path to the sqlite file database that tracks the age and
+usage statistics of image cache. The path is relative to image cache base
+directory, specified by the configuration option ``image_cache_dir``.
+
+This is a lightweight database with just one table.
+
+Services which consume this:
+    * glance-api
+
+Possible values:
+    * A valid relative path to sqlite file database
+
+Related options:
+    * ``image_cache_dir``
+
+""")),
 ]
 
 CONF = cfg.CONF

@@ -34,17 +34,133 @@ LOG = logging.getLogger(__name__)
 
 image_cache_opts = [
     cfg.StrOpt('image_cache_driver', default='sqlite',
-               help=_('The driver to use for image cache management.')),
+               choices=('sqlite', 'xattr'), ignore_case=True,
+               help=_("""
+The driver to use for image cache management.
+
+This configuration option provides the flexibility to choose between the
+different image-cache drivers available. An image-cache driver is responsible
+for providing the essential functions of image-cache like write images to/read
+images from cache, track age and usage of cached images, provide a list of
+cached images, fetch size of the cache, queue images for caching and clean up
+the cache, etc.
+
+The essential functions of a driver are defined in the base class
+``glance.image_cache.drivers.base.Driver``. All image-cache drivers (existing
+and prospective) must implement this interface. Currently available drivers
+are ``sqlite`` and ``xattr``. These drivers primarily differ in the way they
+store the information about cached images:
+    * The ``sqlite`` driver uses a sqlite database (which sits on every glance
+    node locally) to track the usage of cached images.
+    * The ``xattr`` driver uses the extended attributes of files to store this
+    information. It also requires a filesystem that sets ``atime`` on the files
+    when accessed.
+
+Services which consume this:
+    * glance-api
+
+Possible values:
+    * sqlite
+    * xattr
+
+Related options:
+    * None
+
+""")),
+
     cfg.IntOpt('image_cache_max_size', default=10 * units.Gi,  # 10 GB
-               help=_('The upper limit (the maximum size of accumulated '
-                      'cache in bytes) beyond which the cache pruner, if '
-                      'running, starts cleaning the image cache.')),
+               min=0,
+               help=_("""
+The upper limit on cache size, in bytes, after which the cache-pruner cleans
+up the image cache.
+
+NOTE: This is just a threshold for cache-pruner to act upon. It is NOT a
+hard limit beyond which the image cache would never grow. In fact, depending
+on how often the cache-pruner runs and how quickly the cache fills, the image
+cache can far exceed the size specified here very easily. Hence, care must be
+taken to appropriately schedule the cache-pruner and in setting this limit.
+
+Glance caches an image when it is downloaded. Consequently, the size of the
+image cache grows over time as the number of downloads increases. To keep the
+cache size from becoming unmanageable, it is recommended to run the
+cache-pruner as a periodic task. When the cache pruner is kicked off, it
+compares the current size of image cache and triggers a cleanup if the image
+cache grew beyond the size specified here. After the cleanup, the size of
+cache is less than or equal to size specified here.
+
+Services which consume this:
+    * None (consumed by cache-pruner, an independent periodic task)
+
+Possible values:
+    * Any non-negative integer
+
+Related options:
+    * None
+
+""")),
+
     cfg.IntOpt('image_cache_stall_time', default=86400,  # 24 hours
-               help=_('The amount of time to let an incomplete image remain '
-                      'in the cache, before the cache cleaner, if running, '
-                      'will remove the incomplete image.')),
+               min=0,
+               help=_("""
+The amount of time, in seconds, an incomplete image remains in the cache.
+
+Incomplete images are images for which download is in progress. Please see the
+description of configuration option ``image_cache_dir`` for more detail.
+Sometimes, due to various reasons, it is possible the download may hang and
+the incompletely downloaded image remains in the ``incomplete`` directory.
+This configuration option sets a time limit on how long the incomplete images
+should remain in the ``incomplete`` directory before they are cleaned up.
+Once an incomplete image spends more time than is specified here, it'll be
+removed by cache-cleaner on its next run.
+
+It is recommended to run cache-cleaner as a periodic task on the Glance API
+nodes to keep the incomplete images from occupying disk space.
+
+Services which consume this:
+    * None (consumed by cache-cleaner, an independent periodic task)
+
+Possible values:
+    * Any non-negative integer
+
+Related options:
+    * None
+
+""")),
+
     cfg.StrOpt('image_cache_dir',
-               help=_('Base directory that the image cache uses.')),
+               help=_("""
+Base directory for image cache.
+
+This is the location where image data is cached and served out of. All cached
+images are stored directly under this directory. This directory also contains
+three subdirectories, namely, ``incomplete``, ``invalid`` and ``queue``.
+
+The ``incomplete`` subdirectory is the staging area for downloading images. An
+image is first downloaded to this directory. When the image download is
+successful it is moved to the base directory. However, if the download fails,
+the partially downloaded image file is moved to the ``invalid`` subdirectory.
+
+The ``queue``subdirectory is used for queuing images for download. This is
+used primarily by the cache-prefetcher, which can be scheduled as a periodic
+task like cache-pruner and cache-cleaner, to cache images ahead of their usage.
+Upon receiving the request to cache an image, Glance touches a file in the
+``queue`` directory with the image id as the file name. The cache-prefetcher,
+when running, polls for the files in ``queue`` directory and starts
+downloading them in the order they were created. When the download is
+successful, the zero-sized file is deleted from the ``queue`` directory.
+If the download fails, the zero-sized file remains and it'll be retried the
+next time cache-prefetcher runs.
+
+Services which consume this:
+    * glance-api
+
+Possible values:
+    * A valid path
+
+Related options:
+    * ``image_cache_sqlite_db``
+
+""")),
 ]
 
 CONF = cfg.CONF
