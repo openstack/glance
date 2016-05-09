@@ -52,7 +52,23 @@ extensions = ['sphinx.ext.coverage',
               'oslo_config.sphinxext',
               'sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
+              'oslo_config.sphinxconfiggen',
               ]
+
+config_generator_config_file = [
+    ('../../etc/oslo-config-generator/glance-api.conf',
+     '_static/glance-api'),
+    ('../../etc/oslo-config-generator/glance-cache.conf',
+     '_static/glance-cache'),
+    ('../../etc/oslo-config-generator/glance-glare.conf',
+     '_static/glance-glare'),
+    ('../../etc/oslo-config-generator/glance-manage.conf',
+     '_static/glance-manage'),
+    ('../../etc/oslo-config-generator/glance-registry.conf',
+     '_static/glance-registry'),
+    ('../../etc/oslo-config-generator/glance-scrubber.conf',
+     '_static/glance-scrubber'),
+]
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = []

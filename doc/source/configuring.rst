@@ -42,10 +42,9 @@ installed Glance via your operating system's package management system, it
 is likely that you will have sample configuration files installed in
 ``/etc/glance``.
 
-In addition to this documentation page, you can check the
-``etc/glance-api.conf`` and ``etc/glance-registry.conf`` sample configuration
-files distributed with Glance for example configuration files for each server
-application with detailed comments on what each options does.
+In addition, sample configuration files for each server application with
+detailed comments are available in the :doc:`Glance Sample Configuration
+<sample-configuration>` section.
 
 The PasteDeploy configuration (controlling the deployment of the WSGI
 application for each component) may be found by default in

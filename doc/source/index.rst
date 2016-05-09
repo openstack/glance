@@ -69,6 +69,7 @@ Installing/Configuring Glance
 
    installing
    configuring
+   sample-configuration
    authentication
    policies
    image-location-strategy-modules
