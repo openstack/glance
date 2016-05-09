@@ -61,6 +61,10 @@ class MetadefObjectsController(object):
             LOG.debug("User not permitted to create metadata object within "
                       "'%s' namespace", namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.Invalid as e:
+            msg = (_("Couldn't create metadata object: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
@@ -132,6 +136,10 @@ class MetadefObjectsController(object):
             metadef_object.properties = wsme_utils._get_value(
                 metadata_object.properties)
             updated_metadata_obj = meta_repo.save(metadef_object)
+        except exception.Invalid as e:
+            msg = (_("Couldn't update metadata object: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata object '%s' "
                       "within '%s' namespace ", object_name, namespace)

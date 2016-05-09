@@ -56,6 +56,10 @@ class TagsController(object):
                 namespace=namespace,
                 **tag_name_as_dict)
             tag_repo.add(new_meta_tag)
+        except exception.Invalid as e:
+            msg = (_("Couldn't create metadata tag: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to create metadata tag within "
                       "'%s' namespace", namespace)
@@ -152,6 +156,10 @@ class TagsController(object):
             metadef_tag.name = wsme_utils._get_value(
                 metadata_tag.name)
             updated_metadata_tag = meta_repo.save(metadef_tag)
+        except exception.Invalid as e:
+            msg = (_("Couldn't update metadata tag: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata tag '%s' "
                       "within '%s' namespace", tag_name, namespace)

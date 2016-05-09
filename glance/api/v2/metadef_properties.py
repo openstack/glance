@@ -123,6 +123,10 @@ class NamespacePropertiesController(object):
             LOG.debug("User not permitted to create metadata property within "
                       "'%s' namespace", namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.Invalid as e:
+            msg = (_("Couldn't create metadata property: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
@@ -140,6 +144,10 @@ class NamespacePropertiesController(object):
             db_property_type.name = property_type.name
             db_property_type.schema = (self._to_dict(property_type))['schema']
             updated_property_type = prop_repo.save(db_property_type)
+        except exception.Invalid as e:
+            msg = (_("Couldn't update metadata property: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata property '%s' "
                       "within '%s' namespace", property_name, namespace)

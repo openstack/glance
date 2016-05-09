@@ -162,7 +162,10 @@ class NamespaceController(object):
                             **self._to_property_dict(name, value)
                         ))
                     prop_repo.add(new_property_type)
-
+        except exception.Invalid as e:
+            msg = (_("Couldn't create metadata namespace: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             self._cleanup_namespace(ns_repo, namespace, namespace_created)
             LOG.debug("User not permitted to create metadata namespace")
@@ -285,6 +288,10 @@ class NamespaceController(object):
             ns_obj.owner = (
                 wsme_utils._get_value(user_ns.owner) or req.context.owner)
             updated_namespace = namespace_repo.save(ns_obj)
+        except exception.Invalid as e:
+            msg = (_("Couldn't update metadata namespace: %s")
+                   % encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata namespace "
                       "'%s'", namespace)
