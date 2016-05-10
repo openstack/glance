@@ -25,12 +25,12 @@ developed alongside Glance, but is not considered part of the Glance project."
 That's only partially true (or completely false, depending upon how strict you
 are about these things).  Conceptually, the OpenStack Images API is an
 independent definition of a REST API.  In practice, however, the only way
-further to develop the Images API is to work with the Glance community to
-define the new functionality and provide its reference implementation.
-Further, Glance falls under the "designated sections" provision of the
-OpenStack DefCore Guidelines, which basically means that in order to qualify
-as "OpenStack", a cloud exposing an OpenStack Images API must include the
-Glance Images API implementation code.  Thus, although conceptually
+to participate in the evolution of the Images API is to work with the Glance
+community to define the new functionality and provide its reference
+implementation. Further, Glance falls under the "designated sections" provision
+of the OpenStack DefCore Guidelines, which basically means that in order to
+qualify as "OpenStack", a cloud exposing an OpenStack Images API must include
+the Glance Images API implementation code.  Thus, although conceptually
 independent, the OpenStack Images APIs are intimately associated with Glance.
 
 **References**
@@ -55,9 +55,9 @@ Images v1 API
 *************
 
 The v1 API was originally designed as a service API for use by Nova and other
-OpenStack services.  Its current status is SUPPORTED.  The Images v1 API is
-closed to further development, and the Glance code implementing the v1 API
-accepts only serious bugfixes.
+OpenStack services. In the Kilo release, the v1.1 API was downgraded from
+CURRENT to SUPPORTED. The Images v1 API is closed to further development, and
+the Glance code implementing the v1 API accepts only serious bugfixes.
 
 It's possible to deploy OpenStack without exposing the Images v1 API to end
 users.  The Compute v2 API contains image-related API calls allowing users to
