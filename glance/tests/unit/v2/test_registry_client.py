@@ -677,7 +677,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         self.assertEqual(0, num_members)
 
     def test_image_member_find_include_deleted(self):
-        """Tests getting member images include the delted member"""
+        """Tests getting image members including the deleted member"""
         values = dict(image_id=UUID2, member='pattieblack')
         # create a member
         member = self.client.image_member_create(values=values)

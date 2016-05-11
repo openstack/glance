@@ -4755,7 +4755,7 @@ class TestAPIPropertyQuotas(base.IsolatedUnitTest):
 
     def test_update_image_with_too_many_properties_without_purge_props(self):
         """
-        Ensure that updating image properties counts existing image propertys
+        Ensure that updating image properties counts existing image properties
         when enforcing property quota.
         """
         self.config(image_property_quota=1)

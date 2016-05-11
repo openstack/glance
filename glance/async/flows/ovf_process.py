@@ -161,7 +161,7 @@ class OVAImageExtractor(object):
         """Parses the OVF file
 
         Parses the OVF file for specified metadata properties. Interested
-        properties must be specfied in ovf-metadata.json conf file.
+        properties must be specified in ovf-metadata.json conf file.
 
         The OVF file's qualified namespaces are removed from the included
         properties.

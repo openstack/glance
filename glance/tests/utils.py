@@ -196,7 +196,7 @@ def fork_exec(cmd,
     :param cmd: Command to execute as an array of arguments.
     :param exec_env: A dictionary representing the environment with
                      which to run the command.
-    :param logile: A path to a file which will hold the stdout/err of
+    :param logfile: A path to a file which will hold the stdout/err of
                    the child process.
     :param pass_fds: Sequence of file descriptors passed to the child.
     """

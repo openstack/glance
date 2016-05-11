@@ -67,8 +67,8 @@ class TestOvfProcessTask(test_utils.BaseTestCase):
         super(TestOvfProcessTask, self).tearDown()
 
     def _copy_ova_to_tmpdir(self, ova_name):
-        # Copies an ova pacakge to the tempdir for tempdir from where
-        # the system-under-test will read it from
+        # Copies an ova package to the tempdir from which
+        # it will be read by the system-under-test
         shutil.copy(os.path.join(self.test_ova_dir, ova_name), self.tempdir)
         return os.path.join(self.tempdir, ova_name)
 
