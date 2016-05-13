@@ -500,13 +500,13 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             partial_image = {path_root: change['value']}
         elif ((path_root in get_base_properties().keys()) and
               (get_base_properties()[path_root].get('type', '') == 'array')):
-            # NOTE(zhiyan): cient can use PATCH API to adding element to
-            # the image's existing set property directly.
-            # Such as: 1. using '/locations/N' path to adding a location
-            #             to the image's 'locations' list at N position.
+            # NOTE(zhiyan): client can use the PATCH API to add an element
+            # directly to an existing property
+            # Such as: 1. using '/locations/N' path to add a location
+            #             to the image's 'locations' list at position N.
             #             (implemented)
-            #          2. using '/tags/-' path to appending a tag to the
-            #             image's 'tags' list at last. (Not implemented)
+            #          2. using '/tags/-' path to append a tag to the
+            #             image's 'tags' list at the end. (Not implemented)
             partial_image = {path_root: [change['value']]}
 
         if partial_image:

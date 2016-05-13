@@ -238,7 +238,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         # load names from name collumn
         image_names = [row['name'] for row in select]
 
-        # check names from data in image names from name collumn
+        # check names from data in image names from name column
         for element in data:
             self.assertIn(element['key'], image_names)
 

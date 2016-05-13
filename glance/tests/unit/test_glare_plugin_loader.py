@@ -52,7 +52,7 @@ class TestArtifactsLoader(utils.BaseTestCase):
 
     def test_load(self):
         """
-        Plugins can be loaded as entrypoint=sigle plugin and
+        Plugins can be loaded as entrypoint=single plugin and
         entrypoint=[a, list, of, plugins]
         """
         # single version

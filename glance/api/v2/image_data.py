@@ -94,7 +94,7 @@ class ImageDataController(object):
                 if CONF.data_api == 'glance.db.registry.api':
                     # create a trust if backend is registry
                     try:
-                        # request user pluging for current token
+                        # request user plugin for current token
                         user_plugin = req.environ.get('keystone.token_auth')
                         roles = []
                         # use roles from request environment because they

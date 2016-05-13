@@ -297,7 +297,7 @@ def get_verifier(context, image_properties):
 def get_signature(signature_data):
     """Decode the signature data and returns the signature.
 
-    :param siganture_data: the base64-encoded signature data
+    :param signature_data: the base64-encoded signature data
     :returns: the decoded signature
     :raises glance.common.exception.SignatureVerificationError: if the
             signature data is malformatted
