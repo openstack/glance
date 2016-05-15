@@ -31,7 +31,7 @@ WSME>=0.7
 Paste
 
 jsonschema!=2.5.0,<3.0.0,>=2.0.0
-python-keystoneclient!=1.8.0,>=1.6.0
+python-keystoneclient!=1.8.0,<3.0.0,>=1.6.0
 pyOpenSSL>=0.14
 # Required by openstack.common libraries
 six>=1.9.0
