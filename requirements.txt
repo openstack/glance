@@ -31,7 +31,7 @@ PrettyTable<0.8,>=0.7 # BSD
 Paste # MIT
 
 jsonschema!=2.5.0,<3.0.0,>=2.0.0 # MIT
-python-keystoneclient!=1.8.0,!=2.1.0,>=1.6.0 # Apache-2.0
+python-keystoneclient!=1.8.0,!=2.1.0,<3.0.0,>=1.6.0 # Apache-2.0
 pyOpenSSL>=0.14 # Apache-2.0
 # Required by openstack.common libraries
 six>=1.9.0 # MIT
