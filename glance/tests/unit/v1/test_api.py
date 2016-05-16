@@ -1178,7 +1178,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         """Tests creates an image from copy-from and nonempty body"""
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-glance-api-copy-from': 'http://a/b/c.ovf',
+                           'x-glance-api-copy-from': 'http://0.0.0.0:1/c.ovf',
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F'}
 
@@ -1195,7 +1195,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         """Tests creates an image from location and nonempty body"""
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-image-meta-location': 'http://a/b/c.tar.gz',
+                           'x-image-meta-location': 'http://0.0.0.0:1/c.tgz',
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F'}
 
@@ -1237,7 +1237,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         """Tests creates an image from location and conflict image size"""
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-image-meta-location': 'http://a/b/c.tar.gz',
+                           'x-image-meta-location': 'http://0.0.0.0:1/c.tgz',
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F',
                            'x-image-meta-size': '1'}
@@ -1303,10 +1303,10 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         """Tests creates an image from copy-from and location"""
         fixture_headers = {'x-image-meta-store': 'file',
                            'x-image-meta-disk-format': 'vhd',
-                           'x-glance-api-copy-from': 'http://a/b/c.ovf',
+                           'x-glance-api-copy-from': 'http://0.0.0.0:1/c.ovf',
                            'x-image-meta-container-format': 'ovf',
                            'x-image-meta-name': 'fake image #F',
-                           'x-image-meta-location': 'http://a/b/c.tar.gz'}
+                           'x-image-meta-location': 'http://0.0.0.0:1/c.tgz'}
 
         req = webob.Request.blank("/images")
         req.method = 'POST'
@@ -2852,7 +2852,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_download_service_unavailable(self):
         """Test image download returns HTTPServiceUnavailable."""
         image_fixture = self.FIXTURES[1]
-        image_fixture.update({'location': 'http://netloc/path/to/file.tar.gz'})
+        image_fixture.update({'location': 'http://0.0.0.0:1/file.tar.gz'})
         request = webob.Request.blank("/images/%s" % UUID2)
         request.context = self.context
 
