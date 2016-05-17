@@ -217,7 +217,6 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         with open(cache_config_filepath, 'w') as cache_file:
             cache_file.write("""[DEFAULT]
 debug = True
-verbose = True
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 registry_host = 127.0.0.1

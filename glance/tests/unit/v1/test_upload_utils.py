@@ -32,7 +32,7 @@ import glance.tests.unit.utils as unit_test_utils
 class TestUploadUtils(base.StoreClearingUnitTest):
     def setUp(self):
         super(TestUploadUtils, self).setUp()
-        self.config(verbose=True, debug=True)
+        self.config(debug=True)
 
     def tearDown(self):
         super(TestUploadUtils, self).tearDown()

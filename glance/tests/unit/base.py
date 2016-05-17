@@ -68,8 +68,7 @@ class IsolatedUnitTest(StoreClearingUnitTest):
                              sqlite_db='glance.sqlite')
         lockutils.set_defaults(os.path.join(self.test_dir))
 
-        self.config(verbose=False,
-                    debug=False)
+        self.config(debug=False)
 
         self.config(default_store='filesystem',
                     filesystem_store_datadir=self.test_dir,

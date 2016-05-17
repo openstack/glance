@@ -63,7 +63,6 @@ class Server(object):
                          passed from the FunctionalTestCase.
         :param port: The port to start a server up on.
         """
-        self.verbose = True
         self.debug = True
         self.no_venv = False
         self.test_dir = test_dir
@@ -320,7 +319,6 @@ class ApiServer(Server):
         self.send_identity_headers = False
 
         self.conf_base = """[DEFAULT]
-verbose = %(verbose)s
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG
 bind_host = 127.0.0.1
@@ -476,7 +474,6 @@ class RegistryServer(Server):
         self.disable_path = None
 
         self.conf_base = """[DEFAULT]
-verbose = %(verbose)s
 debug = %(debug)s
 bind_host = 127.0.0.1
 bind_port = %(bind_port)s
@@ -554,7 +551,6 @@ class ScrubberDaemon(Server):
         self.admin_role = 'admin'
 
         self.conf_base = """[DEFAULT]
-verbose = %(verbose)s
 debug = %(debug)s
 log_file = %(log_file)s
 daemon = %(daemon)s
