@@ -91,17 +91,50 @@ common_opts = [
                 help=_('Whether to allow users to specify image properties '
                        'beyond what the image schema provides')),
     cfg.IntOpt('image_member_quota', default=128,
-               help=_('Maximum number of image members per image. '
-                      'Negative values evaluate to unlimited.')),
+               help=_("""
+Maximum number of image members per image.
+
+This limits the maximum of users an image can be shared with. Any negative
+value is interpreted as unlimited.
+
+Related options:
+    * None
+
+""")),
     cfg.IntOpt('image_property_quota', default=128,
-               help=_('Maximum number of properties allowed on an image. '
-                      'Negative values evaluate to unlimited.')),
+               help=_("""
+Maximum number of properties allowed on an image.
+
+This enforces an upper limit on the number of additional properties an image
+can have. Any negative value is interpreted as unlimited.
+
+NOTE: This won't have any impact if additional properties are disabled. Please
+refer to ``allow_additional_image_properties``.
+
+Related options:
+    * ``allow_additional_image_properties``
+
+""")),
     cfg.IntOpt('image_tag_quota', default=128,
-               help=_('Maximum number of tags allowed on an image. '
-                      'Negative values evaluate to unlimited.')),
+               help=_("""
+Maximum number of tags allowed on an image.
+
+Any negative value is interpreted as unlimited.
+
+Related options:
+    * None
+
+""")),
     cfg.IntOpt('image_location_quota', default=10,
-               help=_('Maximum number of locations allowed on an image. '
-                      'Negative values evaluate to unlimited.')),
+               help=_("""
+Maximum number of locations allowed on an image.
+
+Any negative value is interpreted as unlimited.
+
+Related options:
+    * None
+
+""")),
     cfg.StrOpt('data_api', default='glance.db.sqlalchemy.api',
                help=_('Python module path of data access API')),
     cfg.IntOpt('limit_param_default', default=25,
@@ -134,15 +167,28 @@ common_opts = [
                       "careful consideration and must be set to a value under "
                       "8 EB (9223372036854775808).")),
     cfg.StrOpt('user_storage_quota', default='0',
-               help=_("Set a system wide quota for every user. This value is "
-                      "the total capacity that a user can use across "
-                      "all storage systems. A value of 0 means unlimited."
-                      "Optional unit can be specified for the value. Accepted "
-                      "units are B, KB, MB, GB and TB representing "
-                      "Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes "
-                      "respectively. If no unit is specified then Bytes is "
-                      "assumed. Note that there should not be any space "
-                      "between value and unit and units are case sensitive.")),
+               help=_("""
+Maximum amount of image storage per tenant.
+
+This enforces an upper limit on the cumulative storage consumed by all images
+of a tenant across all stores. This is a per-tenant limit.
+
+The default unit for this configuration option is Bytes. However, storage
+units can be specified using case-sensitive literals ``B``, ``KB``, ``MB``,
+``GB`` and ``TB`` representing Bytes, KiloBytes, MegaBytes, GigaBytes and
+TeraBytes respectively. Note that there should not be any space between the
+value and unit. Value ``0`` signifies no quota enforcement. Negative values
+are invalid and result in errors.
+
+Possible values:
+    * A string that is a valid concatenation of a non-negative integer
+      representing the storage value and an optional string literal
+      representing storage units as mentioned above.
+
+Related options:
+    * None
+
+""")),
     cfg.BoolOpt('enable_v1_api', default=True,
                 help=_("Deploy the v1 OpenStack Images API.")),
     cfg.BoolOpt('enable_v2_api', default=True,
