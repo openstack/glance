@@ -450,6 +450,16 @@ class SplitFilterOpTestCase(test_utils.BaseTestCase):
         returned = utils.split_filter_op(expr)
         self.assertEqual(('eq', expr), returned)
 
+    def test_default_operator_with_datetime(self):
+        expr = '2015-08-27T09:49:58Z'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('eq', expr), returned)
+
+    def test_operator_with_datetime(self):
+        expr = 'lt:2015-08-27T09:49:58Z'
+        returned = utils.split_filter_op(expr)
+        self.assertEqual(('lt', '2015-08-27T09:49:58Z'), returned)
+
 
 class EvaluateFilterOpTestCase(test_utils.BaseTestCase):
 
