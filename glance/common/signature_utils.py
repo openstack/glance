@@ -86,21 +86,6 @@ MASK_GEN_ALGORITHMS = {
     'img_signature_certificate_uuid'
 )
 
-# TODO(bpoulos): remove when 'sign-the-hash' approach is no longer supported
-(OLD_SIGNATURE, OLD_HASH_METHOD, OLD_KEY_TYPE, OLD_CERT_UUID) = (
-    'signature',
-    'signature_hash_method',
-    'signature_key_type',
-    'signature_certificate_uuid'
-)
-
-# Optional image property names for RSA-PSS
-# TODO(bpoulos): remove when 'sign-the-hash' approach is no longer supported
-(MASK_GEN_ALG, PSS_SALT_LENGTH) = (
-    'mask_gen_algorithm',
-    'pss_salt_length'
-)
-
 
 class SignatureKeyType(object):
 
@@ -140,41 +125,21 @@ class SignatureKeyType(object):
 
 
 # each key type will require its own verifier
-def create_verifier_for_pss(signature, hash_method, public_key,
-                            image_properties):
+def create_verifier_for_pss(signature, hash_method, public_key):
     """Create the verifier to use when the key type is RSA-PSS.
 
     :param signature: the decoded signature to use
     :param hash_method: the hash method to use, as a cryptography object
     :param public_key: the public key to use, as a cryptography object
-    :param image_properties: the key-value properties about the image
     :returns: the verifier to use to verify the signature for RSA-PSS
     :raises glance.common.exception.SignatureVerificationError: if the
             RSA-PSS specific properties are invalid
     """
-    # retrieve other needed properties, or use defaults if not there
-    if MASK_GEN_ALG in image_properties:
-        mask_gen_algorithm = image_properties[MASK_GEN_ALG]
-        if mask_gen_algorithm not in MASK_GEN_ALGORITHMS:
-            raise exception.SignatureVerificationError(
-                _('Invalid mask_gen_algorithm: %s') % mask_gen_algorithm
-            )
-        mgf = MASK_GEN_ALGORITHMS[mask_gen_algorithm](hash_method)
-    else:
-        # default to MGF1
-        mgf = padding.MGF1(hash_method)
+    # default to MGF1
+    mgf = padding.MGF1(hash_method)
 
-    if PSS_SALT_LENGTH in image_properties:
-        pss_salt_length = image_properties[PSS_SALT_LENGTH]
-        try:
-            salt_length = int(pss_salt_length)
-        except ValueError:
-            raise exception.SignatureVerificationError(
-                _('Invalid pss_salt_length: %s') % pss_salt_length
-            )
-    else:
-        # default to max salt length
-        salt_length = padding.PSS.MAX_LENGTH
+    # default to max salt length
+    salt_length = padding.PSS.MAX_LENGTH
 
     # return the verifier
     return public_key.verifier(
@@ -184,14 +149,12 @@ def create_verifier_for_pss(signature, hash_method, public_key,
     )
 
 
-def create_verifier_for_ecc(signature, hash_method, public_key,
-                            image_properties):
+def create_verifier_for_ecc(signature, hash_method, public_key):
     """Create the verifier to use when the key type is ECC_*.
 
     :param signature: the decoded signature to use
     :param hash_method: the hash method to use, as a cryptography object
     :param public_key: the public key to use, as a cryptography object
-    :param image_properties: the key-value properties about the image
     :return: the verifier to use to verify the signature for ECC_*
     """
     # return the verifier
@@ -201,14 +164,12 @@ def create_verifier_for_ecc(signature, hash_method, public_key,
     )
 
 
-def create_verifier_for_dsa(signature, hash_method, public_key,
-                            image_properties):
+def create_verifier_for_dsa(signature, hash_method, public_key):
     """Create verifier to use when the key type is DSA
 
     :param signature: the decoded signature to use
     :param hash_method: the hash method to use, as a cryptography object
     :param public_key: the public key to use, as a cryptography object
-    :param image_properties: the key-value properties about the image
     :returns: the verifier to use to verify the signature for DSA
     """
     # return the verifier
@@ -273,8 +234,7 @@ def get_verifier(context, image_properties):
     try:
         verifier = signature_key_type.create_verifier(signature,
                                                       hash_method,
-                                                      public_key,
-                                                      image_properties)
+                                                      public_key)
     except crypto_exception.UnsupportedAlgorithm as e:
         msg = (_LE("Unable to create verifier since algorithm is "
                    "unsupported: %(e)s")
