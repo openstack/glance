@@ -23,7 +23,7 @@ from glance.i18n import _
 
 
 store_type_opts = [
-    cfg.ListOpt("store_type_preference",
+    cfg.ListOpt('store_type_preference',
                 default=[],
                 help=_("The store names to use to get store preference order. "
                        "The name must be registered by one of the stores "
