@@ -1008,8 +1008,9 @@ class Controller(controller.BaseController):
         orig_or_updated_loc = location or orig_image_meta.get('location')
         if orig_or_updated_loc:
             try:
-                self.update_store_acls(req, id, orig_or_updated_loc,
-                                       public=is_public)
+                if is_public is not None or location is not None:
+                    self.update_store_acls(req, id, orig_or_updated_loc,
+                                           public=is_public)
             except store.BadStoreUri:
                 msg = _("Invalid location: %s") % location
                 LOG.warn(msg)
