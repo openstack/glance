@@ -1031,6 +1031,28 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                         status=400)
         self.assertIn("Artifact has no property nosuchprop", res)
 
+    def test_create_public_artifact(self):
+        """Create an artifact with visibility set to public"""
+        artifact_data = {'name': 'artifact-1',
+                         'version': '12',
+                         'visibility': 'public'}
+        artifact = self._check_artifact_post('/withprops/v1.0/drafts',
+                                             artifact_data)
+        # verify that all fields have the values expected
+        expected_artifact = {
+            'state': 'creating',
+            'name': 'artifact-1',
+            'version': '12.0.0',
+            'tags': [],
+            'visibility': 'public',
+            'type_name': 'WithProps',
+            'type_version': '1.0',
+            'prop1': None,
+            'prop2': None
+        }
+        for key, value in expected_artifact.items():
+            self.assertEqual(artifact[key], value, key)
+
     def test_upload_file(self):
         # Upload some data to an artifact
         art = self._create_artifact('withblob')

@@ -21,7 +21,7 @@ from glance.i18n import _
 class Artifact(object):
 
     def __init__(self, id, name, version, type_name, type_version,
-                 visibility, state, owner, created_at=None,
+                 state, owner, visibility='private', created_at=None,
                  updated_at=None, **kwargs):
         self.id = id
         self.name = name
@@ -54,17 +54,13 @@ class ArtifactFactory(object):
         tags = kwargs.pop('tags', [])
         # pop reserved fields from kwargs dict
         for param in ['owner', 'created_at', 'updated_at',
-                      'deleted_at', 'visibility', 'state']:
+                      'deleted_at', 'state']:
             kwargs.pop(param, '')
         curr_timestamp = timeutils.utcnow()
         base = self.klass(id=id,
                           name=name,
                           version=version,
-                          visibility='private',
                           state='creating',
-                          # XXX FIXME remove after using authentication
-                          # paste-flavor
-                          # (no or '' as owner will always be there)
                           owner=self.context.owner or '',
                           created_at=curr_timestamp,
                           updated_at=curr_timestamp,
