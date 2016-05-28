@@ -97,7 +97,7 @@ class TaskExecutor(glance.async.TaskExecutor):
                                         invoke_kwds=kwds).driver
         except urllib.error.URLError as exc:
             raise exception.ImportTaskError(message=exc.reason)
-        except exception.BadStoreUri as exc:
+        except (exception.BadStoreUri, exception.Invalid) as exc:
             raise exception.ImportTaskError(message=exc.msg)
         except RuntimeError:
             raise NotImplementedError()
