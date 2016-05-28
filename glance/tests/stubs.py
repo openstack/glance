@@ -33,7 +33,6 @@ from glance.registry.api import v1 as rserver
 from glance.tests import utils
 
 
-VERBOSE = False
 DEBUG = False
 
 

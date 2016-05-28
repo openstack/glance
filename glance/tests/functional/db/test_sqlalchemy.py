@@ -32,7 +32,7 @@ CONF = cfg.CONF
 
 def get_db(config):
     options.set_defaults(CONF, connection='sqlite://')
-    config(verbose=False, debug=False)
+    config(debug=False)
     db_api = glance.db.sqlalchemy.api
     return db_api
 

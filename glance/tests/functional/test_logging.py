@@ -27,17 +27,15 @@ class TestLogging(functional.FunctionalTest):
 
     """Functional tests for Glance's logging output"""
 
-    def test_verbose_debug(self):
+    def test_debug(self):
         """
-        Test logging output proper when verbose and debug
-        is on.
+        Test logging output proper when debug is on.
         """
         self.cleanup()
         self.start_servers()
 
-        # The default functional test case has both verbose
-        # and debug on. Let's verify that debug statements
-        # appear in both the API and registry logs.
+        # The default functional test case has both debug on. Let's verify
+        # that debug statements appear in both the API and registry logs.
 
         self.assertTrue(os.path.exists(self.api_server.log_file))
 
@@ -53,13 +51,12 @@ class TestLogging(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def test_no_verbose_no_debug(self):
+    def test_no_debug(self):
         """
-        Test logging output proper when verbose and debug
-        is off.
+        Test logging output proper when debug is off.
         """
         self.cleanup()
-        self.start_servers(debug=False, verbose=False)
+        self.start_servers(debug=False)
 
         self.assertTrue(os.path.exists(self.api_server.log_file))
 
