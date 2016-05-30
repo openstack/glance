@@ -112,8 +112,8 @@ _artifacts_opts = [
         glance.common.wsgi.bind_opts,
         glance.common.wsgi.eventlet_opts,
         glance.common.wsgi.socket_opts,
-        profiler.list_opts()[0],
         glance.notifier.notifier_opts))),
+    profiler.list_opts()[0],
     ('paste_deploy', glance.common.config.paste_deploy_opts)
 ]
 
