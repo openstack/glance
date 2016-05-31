@@ -49,12 +49,6 @@ TEST_ECC_PRIVATE_KEY = ec.generate_private_key(ec.SECP521R1(),
     signature_utils.CERT_UUID
 )
 
-# Optional image property names for RSA-PSS
-(MASK_GEN_ALG, PSS_SALT_LENGTH) = (
-    signature_utils.MASK_GEN_ALG,
-    signature_utils.PSS_SALT_LENGTH
-)
-
 
 class FakeKeyManager(object):
 
