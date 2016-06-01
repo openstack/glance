@@ -1571,6 +1571,91 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output.locations))
         self.assertEqual(new_location, output.locations[1])
 
+    def test_update_add_locations_status_saving(self):
+        self.config(show_multiple_locations=True)
+        self.images = [
+            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='saving'),
+        ]
+        self.db.image_create(None, self.images[0])
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, '1', changes)
+
+    def test_update_add_locations_status_deactivated(self):
+        self.config(show_multiple_locations=True)
+        self.images = [
+            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='deactivated'),
+        ]
+        request = unit_test_utils.get_fake_request()
+        self.db.image_create(request.context, self.images[0])
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, '1', changes)
+
+    def test_update_add_locations_status_deleted(self):
+        self.config(show_multiple_locations=True)
+        self.images = [
+            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='deleted'),
+        ]
+        self.db.image_create(None, self.images[0])
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, '1', changes)
+
+    def test_update_add_locations_status_pending_delete(self):
+        self.config(show_multiple_locations=True)
+        self.images = [
+            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='pending_delete'),
+        ]
+        self.db.image_create(None, self.images[0])
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, '1', changes)
+
+    def test_update_add_locations_status_killed(self):
+        self.config(show_multiple_locations=True)
+        self.images = [
+            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='killed'),
+        ]
+        self.db.image_create(None, self.images[0])
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.update, request, '1', changes)
+
     def test_update_add_locations_insertion(self):
         self.config(show_multiple_locations=True)
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
