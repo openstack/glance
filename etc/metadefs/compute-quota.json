@@ -99,7 +99,7 @@
                     "type": "integer"
                 },
                 "quota:vif_outbound_peak": {
-                    "title": "Quota: VIF Outbound Burst",
+                    "title": "Quota: VIF Outbound Peak",
                     "description": "Network Virtual Interface (VIF) outbound peak in kilobytes per second. Specifies maximum rate at which an interface can send data.",
                     "type": "integer"
                 }
