@@ -180,7 +180,8 @@ def _get_base_definitions():
 def _get_base_properties():
     return {
         "name": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
         },
         "description": {
             "type": "string"

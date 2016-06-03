@@ -584,7 +584,8 @@ def get_schema_definitions():
                 "required": ["title", "type"],
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 255
                     },
                     "title": {
                         "type": "string"

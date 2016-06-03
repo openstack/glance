@@ -15,6 +15,7 @@
 
 import datetime
 
+from oslo_serialization import jsonutils
 import webob
 
 from glance.api.v2 import metadef_namespaces as namespaces
@@ -159,6 +160,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.tag_controller = tags.TagsController(
             self.db, self.policy, self.notifier)
         self.deserializer = objects.RequestDeserializer()
+        self.property_deserializer = properties.RequestDeserializer()
 
     def _create_namespaces(self):
         req = unit_test_utils.get_fake_request()
@@ -984,6 +986,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual('string', property.type)
         self.assertEqual('title', property.title)
 
+    def test_property_create_overlimit_name(self):
+        request = unit_test_utils.get_fake_request('/metadefs/namespaces/'
+                                                   'Namespace3/'
+                                                   'properties')
+        request.body = jsonutils.dump_as_bytes({'name': 'a' * 256})
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.property_deserializer.create,
+                          request)
+
     def test_property_create_with_4byte_character(self):
         request = unit_test_utils.get_fake_request()
 
@@ -1331,6 +1343,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(OBJECT2, object.name)
         self.assertEqual([], object.required)
         self.assertEqual({}, object.properties)
+
+    def test_object_create_overlimit_name(self):
+        request = unit_test_utils.get_fake_request('/metadefs/namespaces/'
+                                                   'Namespace3/'
+                                                   'objects')
+        request.body = jsonutils.dump_as_bytes({'name': 'a' * 256})
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.create,
+                          request)
 
     def test_object_create_duplicate(self):
         request = unit_test_utils.get_fake_request()
@@ -1811,6 +1833,13 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
         tag = self.tag_controller.show(request, NAMESPACE1, TAG2)
         self.assertEqual(TAG2, tag.name)
+
+    def test_tag_create_overlimit_name(self):
+        request = unit_test_utils.get_fake_request()
+
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.tag_controller.create,
+                          request, NAMESPACE1, 'a' * 256)
 
     def test_tag_create_with_4byte_character(self):
         request = unit_test_utils.get_fake_request()
