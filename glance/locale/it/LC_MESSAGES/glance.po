@@ -3,20 +3,18 @@
 # This file is distributed under the same license as the glance project.
 #
 # Translators:
-# OpenStack Infra <zanata@openstack.org>, 2015. #zanata
-# Tom Cocozzello <tjcocozz@us.ibm.com>, 2015. #zanata
-# Alessandra <alessandra@translated.net>, 2016. #zanata
-# Tom Cocozzello <tjcocozz@us.ibm.com>, 2016. #zanata
+# KATO Tomoyuki <kato.tomoyuki@jp.fujitsu.com>, 2016. #zanata
+# Remo Mattei <remo@rm.ht>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev2\n"
+"Project-Id-Version: glance 12.0.1.dev14\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-20 15:51+0000\n"
+"POT-Creation-Date: 2016-05-24 01:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-21 06:27+0000\n"
-"Last-Translator: Alessandra <alessandra@translated.net>\n"
+"PO-Revision-Date: 2016-06-03 01:48+0000\n"
+"Last-Translator: Tom Cocozzello <tjcocozz@us.ibm.com>\n"
 "Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -1275,7 +1273,7 @@ msgstr ""
 msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
 msgstr ""
 "Chiave di ordinamento non valida: %(sort_key)s. Non è possibile ordinare in "
-"base a questa proprietà "
+"base a questa proprietà"
 
 #, python-format
 msgid "Invalid status value: %s"
@@ -1404,7 +1402,7 @@ msgid "Limit param must not be higher than %d"
 msgstr "Il parametro limite non deve essere maggiore di %d"
 
 msgid "Limits request ID length."
-msgstr "Limita la lunghezza dell'ID richiesta. "
+msgstr "Limita la lunghezza dell'ID richiesta."
 
 msgid "List definitions may hot have defaults"
 msgstr "Le definizioni dell'elenco non possono contenere valori predefiniti"
@@ -1653,7 +1651,7 @@ msgstr "Non un tipo di valore valido"
 
 #, python-format
 msgid "Not all dependencies are in '%s' state"
-msgstr "Non tutte le dipendenze sono nello stato '%s' "
+msgstr "Non tutte le dipendenze sono nello stato '%s'"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1695,7 +1693,7 @@ msgstr ""
 
 #, python-format
 msgid "Not an array idx '%s'"
-msgstr "Non è un indice array '%s' "
+msgstr "Non è un indice array '%s'"
 
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr ""
@@ -1722,7 +1720,7 @@ msgid "Old and new sorting syntax cannot be combined"
 msgstr "Impossibile combinare la nuova e la precedente sintassi di ordinamento"
 
 msgid "Only list indexes are allowed for blob lists"
-msgstr "Solo gli indici elenco sono consentiti per gli elenchi blob "
+msgstr "Solo gli indici elenco sono consentiti per gli elenchi blob"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1754,7 +1752,7 @@ msgid "Original locations is not empty: %s"
 msgstr "Le ubicazioni originali non sono vuote: %s"
 
 msgid "Owner can't be updated by non admin."
-msgstr "Il proprietario non può essere aggiornato da un non admin. "
+msgstr "Il proprietario non può essere aggiornato da un non admin."
 
 msgid "Owner must be specified to create a tag."
 msgstr "Il proprietario deve specificare per creare un tag."
@@ -2147,7 +2145,7 @@ msgid "Task does not exist"
 msgstr "L'attività non esiste"
 
 msgid "Task failed due to Internal Error"
-msgstr "Attività non riuscita a causa di un errore interno "
+msgstr "Attività non riuscita a causa di un errore interno"
 
 msgid "Task was not configured properly"
 msgstr "L'attività non è stata configurata correttamente"
@@ -2606,7 +2604,7 @@ msgstr ""
 "La dimensione del pool di thread da utilizzare per la ripulitura delle "
 "immagini. Il valore predefinito è uno, che indica la ripulitura di serie. "
 "Qualsiasi valore superiore a uno indica il numero massimo di immagini che "
-"possono essere ripulite in parallelo. "
+"possono essere ripulite in parallelo."
 
 #, python-format
 msgid "The specified member %s could not be found"
@@ -2825,7 +2823,7 @@ msgid "URL to access the image file kept in external store"
 msgstr "URL per accedere al file di immagini tenuto nell'archivio esterno"
 
 msgid "Unable to PUT to non-empty collection"
-msgstr "Impossibile eseguire PUT in una raccolta non vuota "
+msgstr "Impossibile eseguire PUT in una raccolta non vuota"
 
 #, python-format
 msgid ""
@@ -2930,7 +2928,7 @@ msgstr ""
 
 #, python-format
 msgid "Unable to verify signature: %(reason)s"
-msgstr "Impossibile verificare la firma: %(reason)s "
+msgstr "Impossibile verificare la firma: %(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "Accesso all'immagine non autorizzato"
@@ -3090,7 +3088,7 @@ msgstr ""
 "al registro. Per impedire problemi con la scadenza del token durante il "
 "caricamento di file grandi, si consiglia di impostare questo parametro su "
 "False. Se \"use_user_token\" non è in vigore, è possibile specificare le "
-"credenziali admin. "
+"credenziali admin."
 
 msgid ""
 "Work dir for asynchronous task operations. The directory set here will be "
@@ -3141,7 +3139,7 @@ msgstr "Non si è autorizzati a ricercare l'immagine %s."
 
 #, python-format
 msgid "You are not authorized to lookup the members of the image %s."
-msgstr "Non si è autorizzati a ricercare i membri dell'immagine %s. "
+msgstr "Non si è autorizzati a ricercare i membri dell'immagine %s."
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
@@ -3347,4 +3345,4 @@ msgstr "impossibile avviare %(serv)s. Si è verificato l'errore: %(e)s"
 
 #, python-format
 msgid "x-openstack-request-id is too long, max size %s"
-msgstr "x-openstack-request-id è troppo lungo, dimensione max %s "
+msgstr "x-openstack-request-id è troppo lungo, dimensione max %s"
