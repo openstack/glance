@@ -23,12 +23,36 @@ from glance.i18n import _
 
 
 versions_opts = [
+
+    # Note: Since both glance-api and glare-api have the same name for the
+    # option public_endpoint, oslo.config generator throws a DuplicateError
+    # exception during the conf file generation incase of differing help
+    # texts. Hence we have to have identical help texts for glance-api and
+    # glare-api's public_endpoint if not for changing the conf opt name.
+
     cfg.StrOpt('public_endpoint',
-               help=_('Public url to use for versions endpoint. The default '
-                      'is None, which will use the request\'s host_url '
-                      'attribute to populate the URL base. If Glance is '
-                      'operating behind a proxy, you will want to change '
-                      'this to represent the proxy\'s URL.')),
+               help=_("""
+Public url endpoint to use for Glance/Glare versions response.
+
+This is the public url endpoint that will appear in the Glance/Glare
+"versions" response. If no value is specified, the endpoint that is
+displayed in the version's response is that of the host running the
+API service. Change the endpoint to represent the proxy URL if the
+API service is running behind a proxy. If the service is running
+behind a load balancer, add the load balancer's URL for this value.
+
+Services which consume this:
+    * glance-api/glare-api
+
+Possible values:
+    * None
+    * Proxy URL
+    * Load balancer URL
+
+Related options:
+    * None
+
+""")),
 ]
 
 CONF = cfg.CONF
