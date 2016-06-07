@@ -4,16 +4,17 @@
 #
 # Translators:
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# KATO Tomoyuki <kato.tomoyuki@jp.fujitsu.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev43\n"
+"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-19 04:47+0000\n"
+"POT-Creation-Date: 2016-06-06 22:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-21 06:27+0000\n"
-"Last-Translator: Alessandra <alessandra@translated.net>\n"
+"PO-Revision-Date: 2016-06-03 01:43+0000\n"
+"Last-Translator: KATO Tomoyuki <kato.tomoyuki@jp.fujitsu.com>\n"
 "Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -410,9 +411,6 @@ msgstr "Credenziali con formato non corretto %(creds)s' nell'URI Swift"
 msgid "Badly formed credentials in Swift URI."
 msgstr "Credenziali formate in modo non corretto nell'URI Swift."
 
-msgid "Base directory that the image cache uses."
-msgstr "La directory di base che la cache dell'immagine utilizza."
-
 msgid "BinaryObject property cannot be declared mutable"
 msgstr "La proprietà BinaryObject non può essere dichiarata mutevole"
 
@@ -733,9 +731,6 @@ msgstr ""
 msgid "Error occurred while creating the verifier"
 msgstr "Si è verificato un errore durante la creazione del verificatore"
 
-msgid "Error occurred while verifying the signature"
-msgstr "Si è verificato un errore durante la verifica della firma"
-
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "Previsto un membro nel formato: {\"member\": \"image_id\"}"
 
@@ -907,14 +902,6 @@ msgid ""
 msgstr ""
 "I messaggi informativi leggibili dall'utente sono inclusi solo se necessario "
 "(di solito in caso di errore)"
-
-msgid "If False doesn't trace SQL requests."
-msgstr "Se impostato su False non tiene traccia delle richieste SQL."
-
-msgid "If False fully disable profiling feature."
-msgstr ""
-"Se impostato su False disabilita completamente la funzione di creazione di "
-"profili."
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -1181,10 +1168,6 @@ msgid "Invalid marker. Image could not be found."
 msgstr "Indicatore non valido. Impossibile trovare l'immagine."
 
 #, python-format
-msgid "Invalid mask_gen_algorithm: %s"
-msgstr "mask_gen_algorithm non valido: %s"
-
-#, python-format
 msgid "Invalid membership association: %s"
 msgstr "Associazione di appartenenza non valida: %s"
 
@@ -1211,10 +1194,6 @@ msgstr "Posizione non valida per la rimozione di una ubicazione."
 
 msgid "Invalid property definition"
 msgstr "Definizione della proprietà non valida"
-
-#, python-format
-msgid "Invalid pss_salt_length: %s"
-msgstr "pss_salt_length non valido: %s"
 
 #, python-format
 msgid "Invalid public key type for signature key type: %s"
@@ -1264,7 +1243,7 @@ msgstr ""
 msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
 msgstr ""
 "Chiave di ordinamento non valida: %(sort_key)s. Non è possibile ordinare in "
-"base a questa proprietà "
+"base a questa proprietà"
 
 #, python-format
 msgid "Invalid status value: %s"
@@ -1393,7 +1372,7 @@ msgid "Limit param must not be higher than %d"
 msgstr "Il parametro limite non deve essere maggiore di %d"
 
 msgid "Limits request ID length."
-msgstr "Limita la lunghezza dell'ID richiesta. "
+msgstr "Limita la lunghezza dell'ID richiesta."
 
 msgid "List definitions may hot have defaults"
 msgstr "Le definizioni dell'elenco non possono contenere valori predefiniti"
@@ -1636,7 +1615,7 @@ msgstr "Non un tipo di valore valido"
 
 #, python-format
 msgid "Not all dependencies are in '%s' state"
-msgstr "Non tutte le dipendenze sono nello stato '%s' "
+msgstr "Non tutte le dipendenze sono nello stato '%s'"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1678,7 +1657,7 @@ msgstr ""
 
 #, python-format
 msgid "Not an array idx '%s'"
-msgstr "Non è un indice array '%s' "
+msgstr "Non è un indice array '%s'"
 
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr ""
@@ -1705,7 +1684,7 @@ msgid "Old and new sorting syntax cannot be combined"
 msgstr "Impossibile combinare la nuova e la precedente sintassi di ordinamento"
 
 msgid "Only list indexes are allowed for blob lists"
-msgstr "Solo gli indici elenco sono consentiti per gli elenchi blob "
+msgstr "Solo gli indici elenco sono consentiti per gli elenchi blob"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1737,7 +1716,7 @@ msgid "Original locations is not empty: %s"
 msgstr "Le ubicazioni originali non sono vuote: %s"
 
 msgid "Owner can't be updated by non admin."
-msgstr "Il proprietario non può essere aggiornato da un non admin. "
+msgstr "Il proprietario non può essere aggiornato da un non admin."
 
 msgid "Owner must be specified to create a tag."
 msgstr "Il proprietario deve specificare per creare un tag."
@@ -1996,13 +1975,6 @@ msgstr "Ambito di accessibilità dell'immagine"
 msgid "Scope of namespace accessibility."
 msgstr "Ambito di accessibilità dello spazio dei nomi."
 
-msgid ""
-"Secret key to use to sign Glance API and Glance Registry services tracing "
-"messages."
-msgstr ""
-"Chiave segreta da utilizzare per firmare i messaggi di traccia dei servizi "
-"Glance API e Glance Registry."
-
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "Il server %(serv)s è stato arrestato"
@@ -2034,9 +2006,6 @@ msgstr "Mostra livello %(shl)s non è supportata in questa operazione"
 
 msgid "Signature verification failed"
 msgstr "Verifica firma non riuscita"
-
-msgid "Signature verification failed."
-msgstr "Verifica firma non riuscita."
 
 msgid "Size of image file in bytes"
 msgstr "Dimensione del file di immagine in byte"
@@ -2130,7 +2099,7 @@ msgid "Task does not exist"
 msgstr "L'attività non esiste"
 
 msgid "Task failed due to Internal Error"
-msgstr "Attività non riuscita a causa di un errore interno "
+msgstr "Attività non riuscita a causa di un errore interno"
 
 msgid "Task was not configured properly"
 msgstr "L'attività non è stata configurata correttamente"
@@ -2191,14 +2160,6 @@ msgstr ""
 "un'eliminazione."
 
 msgid ""
-"The amount of time to let an incomplete image remain in the cache, before "
-"the cache cleaner, if running, will remove the incomplete image."
-msgstr ""
-"La quantità di tempo in cui un'immagine incompleta può rimanere nella cache "
-"prima che il ripulitore cache, se in esecuzione, rimuoverà l'immagine "
-"incompleta."
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr ""
 "Il valore backlog che verrà utilizzato durante la creazione del socket "
@@ -2226,9 +2187,6 @@ msgstr ""
 "non supporta xattr. Probabilmente è necessario modificare fstab e aggiungere "
 "l'opzione user_xattr nella riga appropriata per l'unità che ospita la "
 "directory cache."
-
-msgid "The driver to use for image cache management."
-msgstr "Il driver da utilizzare per la gestione della cache dell'immagine."
 
 #, python-format
 msgid "The format of the version %s is not valid. Use semver notation"
@@ -2454,13 +2412,6 @@ msgstr ""
 "di ambiente GLANCE_CLIENT_KEY_FILE su un percorso del file di chiavi"
 
 msgid ""
-"The path to the sqlite file database that will be used for image cache "
-"management."
-msgstr ""
-"Il percorso al database del file sqlite che verrà utilizzato per la gestione "
-"della cache dell'immagine."
-
-msgid ""
 "The period of time, in seconds, that the API server will wait for a registry "
 "request to complete. A value of 0 implies no timeout."
 msgstr ""
@@ -2589,7 +2540,7 @@ msgstr ""
 "La dimensione del pool di thread da utilizzare per la ripulitura delle "
 "immagini. Il valore predefinito è uno, che indica la ripulitura di serie. "
 "Qualsiasi valore superiore a uno indica il numero massimo di immagini che "
-"possono essere ripulite in parallelo. "
+"possono essere ripulite in parallelo."
 
 #, python-format
 msgid "The specified member %s could not be found"
@@ -2671,14 +2622,6 @@ msgstr "Il tipo di attività rappresentata da questo contenuto"
 
 msgid "The unique namespace text."
 msgstr "Il testo dello spazio dei nomi univoco."
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which the cache pruner, if running, starts cleaning the image cache."
-msgstr ""
-"Il limite superiore (dimensione massima della cache accumulata in byte) "
-"oltre il quale il programma di eliminazione cache, se in esecuzione, inizia "
-"a ripulire la cache delle immagini."
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
@@ -2808,7 +2751,7 @@ msgid "URL to access the image file kept in external store"
 msgstr "URL per accedere al file di immagini tenuto nell'archivio esterno"
 
 msgid "Unable to PUT to non-empty collection"
-msgstr "Impossibile eseguire PUT in una raccolta non vuota "
+msgstr "Impossibile eseguire PUT in una raccolta non vuota"
 
 #, python-format
 msgid ""
@@ -2913,7 +2856,7 @@ msgstr ""
 
 #, python-format
 msgid "Unable to verify signature: %(reason)s"
-msgstr "Impossibile verificare la firma: %(reason)s "
+msgstr "Impossibile verificare la firma: %(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "Accesso all'immagine non autorizzato"
@@ -3073,7 +3016,7 @@ msgstr ""
 "al registro. Per impedire problemi con la scadenza del token durante il "
 "caricamento di file grandi, si consiglia di impostare questo parametro su "
 "False. Se \"use_user_token\" non è in vigore, è possibile specificare le "
-"credenziali admin. "
+"credenziali admin."
 
 msgid ""
 "Work dir for asynchronous task operations. The directory set here will be "
@@ -3124,7 +3067,7 @@ msgstr "Non si è autorizzati a ricercare l'immagine %s."
 
 #, python-format
 msgid "You are not authorized to lookup the members of the image %s."
-msgstr "Non si è autorizzati a ricercare i membri dell'immagine %s. "
+msgstr "Non si è autorizzati a ricercare i membri dell'immagine %s."
 
 #, python-format
 msgid "You are not permitted to create a tag in the namespace owned by '%s'"
@@ -3330,4 +3273,4 @@ msgstr "impossibile avviare %(serv)s. Si è verificato l'errore: %(e)s"
 
 #, python-format
 msgid "x-openstack-request-id is too long, max size %s"
-msgstr "x-openstack-request-id è troppo lungo, dimensione max %s "
+msgstr "x-openstack-request-id è troppo lungo, dimensione max %s"

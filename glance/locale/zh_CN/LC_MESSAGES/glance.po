@@ -11,9 +11,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev43\n"
+"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-19 04:47+0000\n"
+"POT-Creation-Date: 2016-06-06 22:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -380,9 +380,6 @@ msgstr "Swift URI 中凭证“%(creds)s”的格式不正确"
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 中凭证的格式不正确。"
 
-msgid "Base directory that the image cache uses."
-msgstr "映像高速缓存使用的基本目录。"
-
 msgid "BinaryObject property cannot be declared mutable"
 msgstr "不能将 BinaryObject 属性声明为可变"
 
@@ -673,9 +670,6 @@ msgstr "存储配置中出错。已禁止将映像添加至存储器。"
 msgid "Error occurred while creating the verifier"
 msgstr "创建验证程序时发生了错误"
 
-msgid "Error occurred while verifying the signature"
-msgstr "验证签名时发生了错误。"
-
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "成员应为以下格式：{\"member\": \"image_id\"}"
 
@@ -834,12 +828,6 @@ msgid ""
 "Human-readable informative message only included when appropriate (usually "
 "on failure)"
 msgstr "人工可读的信息性消息，仅在适当时（通常在发生故障时）才包括"
-
-msgid "If False doesn't trace SQL requests."
-msgstr "如果为 false，那么不要跟踪 SQL 请求。"
-
-msgid "If False fully disable profiling feature."
-msgstr "如果为 false，那么完全禁用概要分析功能。"
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -1086,10 +1074,6 @@ msgid "Invalid marker. Image could not be found."
 msgstr "标记符无效。找不到映像。"
 
 #, python-format
-msgid "Invalid mask_gen_algorithm: %s"
-msgstr "无效 mask_gen_algorithm：%s"
-
-#, python-format
 msgid "Invalid membership association: %s"
 msgstr "成员资格关联无效：%s"
 
@@ -1114,10 +1098,6 @@ msgstr "用于移除位置 (location) 的位置 (position) 无效。"
 
 msgid "Invalid property definition"
 msgstr "属性定义无效"
-
-#, python-format
-msgid "Invalid pss_salt_length: %s"
-msgstr "无效 pss_salt_length：%s"
 
 #, python-format
 msgid "Invalid public key type for signature key type: %s"
@@ -1816,11 +1796,6 @@ msgstr "映像辅助功能选项的作用域"
 msgid "Scope of namespace accessibility."
 msgstr "名称空间辅助功能选项的作用域。"
 
-msgid ""
-"Secret key to use to sign Glance API and Glance Registry services tracing "
-"messages."
-msgstr "用于签署 Glance API 和 Glance 注册表服务跟踪消息的私钥。"
-
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "服务器 %(serv)s 已停止"
@@ -1848,9 +1823,6 @@ msgstr "显示级别 %(shl)s 在此操作中不受支持"
 
 msgid "Signature verification failed"
 msgstr "签名认证失败"
-
-msgid "Signature verification failed."
-msgstr "签名验证失败。"
 
 msgid "Size of image file in bytes"
 msgstr "映像文件的大小，以字节计"
@@ -1988,13 +1960,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "用于在执行删除之前延迟的时间量（以秒计）。"
 
 msgid ""
-"The amount of time to let an incomplete image remain in the cache, before "
-"the cache cleaner, if running, will remove the incomplete image."
-msgstr ""
-"允许非完整映像保留在高速缓存中的时长，经过此时长后，高速缓存清除程序（如果正"
-"在运行）将移除非完整映像。"
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "创建 TCP 侦听器套接字时将使用的储备值。"
 
@@ -2017,9 +1982,6 @@ msgid ""
 msgstr ""
 "存放映像高速缓存目录 %(image_cache_dir)s 的设备不支持 xattr。您可能需要编辑 "
 "fstab 并将 user_xattr 选项添加至存放该高速缓存目录的设备的相应行。"
-
-msgid "The driver to use for image cache management."
-msgstr "要用于映像高速缓存管理的驱动程序。"
 
 #, python-format
 msgid "The format of the version %s is not valid. Use semver notation"
@@ -2213,11 +2175,6 @@ msgstr ""
 "变量 GLANCE_CLIENT_KEY_FILE 设置为该密钥文件的文件路径"
 
 msgid ""
-"The path to the sqlite file database that will be used for image cache "
-"management."
-msgstr "将用于映像高速缓存管理的 sqlite 文件数据库的路径。"
-
-msgid ""
 "The period of time, in seconds, that the API server will wait for a registry "
 "request to complete. A value of 0 implies no timeout."
 msgstr ""
@@ -2398,13 +2355,6 @@ msgstr "此内容表示的任务的类型"
 
 msgid "The unique namespace text."
 msgstr "唯一名称空间文本。"
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which the cache pruner, if running, starts cleaning the image cache."
-msgstr ""
-"上限（累计高速缓存的最大大小，以字节计），当超过该值时，高速缓存修剪程序（如"
-"果正在运行）会开始清除映像高速缓存。"
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "名称空间的用户友好名称。由 UI 使用（如果可用）。"

@@ -10,9 +10,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev43\n"
+"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-19 04:47+0000\n"
+"POT-Creation-Date: 2016-06-06 22:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -415,9 +415,6 @@ msgstr "Données d'identification incorrectes '%(creds)s' dans l'URI Swift"
 msgid "Badly formed credentials in Swift URI."
 msgstr "Données d'identification incorrectes dans l'URI Swift."
 
-msgid "Base directory that the image cache uses."
-msgstr "Répertoire de base utilisé par le cache d'image."
-
 msgid "BinaryObject property cannot be declared mutable"
 msgstr "La propriété BinaryObject ne peut pas être déclarée comme mutable"
 
@@ -743,9 +740,6 @@ msgstr ""
 msgid "Error occurred while creating the verifier"
 msgstr "Une erreur s'est produite lors de la création du vérificateur"
 
-msgid "Error occurred while verifying the signature"
-msgstr "Une erreur s'est produite lors de la vérification de la signature"
-
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "Membre attendu sous la forme : {\"member\": \"image_id\"}"
 
@@ -919,12 +913,6 @@ msgid ""
 msgstr ""
 "Message d'information lisible par l'homme inclus uniquement si approprié "
 "(habituellement en cas d'incident)"
-
-msgid "If False doesn't trace SQL requests."
-msgstr "Si False, ne pas tracer les demandes."
-
-msgid "If False fully disable profiling feature."
-msgstr "Si False, désactiver la fonction de profilage."
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -1193,10 +1181,6 @@ msgid "Invalid marker. Image could not be found."
 msgstr "Marqueur non valide. Image introuvable."
 
 #, python-format
-msgid "Invalid mask_gen_algorithm: %s"
-msgstr "Algorithme mask_gen_algorithm non valide : %s"
-
-#, python-format
 msgid "Invalid membership association: %s"
 msgstr "Association d'appartenance non valide : %s"
 
@@ -1224,10 +1208,6 @@ msgstr "Position non valide pour la suppression d'un emplacement."
 
 msgid "Invalid property definition"
 msgstr "Définition de propriété non valide"
-
-#, python-format
-msgid "Invalid pss_salt_length: %s"
-msgstr "Propriété pss_salt_length non valide : %s"
 
 #, python-format
 msgid "Invalid public key type for signature key type: %s"
@@ -2009,13 +1989,6 @@ msgstr "Périmètre d'accessibilité de l'image"
 msgid "Scope of namespace accessibility."
 msgstr "Périmètre de l'accessibilité de l'espace de nom."
 
-msgid ""
-"Secret key to use to sign Glance API and Glance Registry services tracing "
-"messages."
-msgstr ""
-"Clé secrète à utiliser pour signer les messages de suivi des services Glance "
-"API et Glance Registry."
-
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "Le serveur %(serv)s est arrêté"
@@ -2049,9 +2022,6 @@ msgstr ""
 
 msgid "Signature verification failed"
 msgstr "La vérification de la signature a échoué"
-
-msgid "Signature verification failed."
-msgstr "La vérification de la signature a échoué."
 
 msgid "Size of image file in bytes"
 msgstr "Taille du fichier image en octets"
@@ -2207,13 +2177,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "Temps de retard en secondes avant toute suppression."
 
 msgid ""
-"The amount of time to let an incomplete image remain in the cache, before "
-"the cache cleaner, if running, will remove the incomplete image."
-msgstr ""
-"Durée de conservation d'une image incomplète dans le cache avant que le "
-"programme de nettoyage du cache, s'il est exécuté, ne supprime cette image."
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr ""
 "Valeur de commandes en attente qui sera utilisée lors de la création du "
@@ -2240,9 +2203,6 @@ msgstr ""
 "prend pas en charge xattr. Vous devez probablement éditer votre fstab et "
 "ajouter l'option user_xattr sur la ligne appropriée de l'unité hébergeant le "
 "répertoire de cache."
-
-msgid "The driver to use for image cache management."
-msgstr "Pilote à utiliser pour la gestion de cache d'image."
 
 #, python-format
 msgid "The format of the version %s is not valid. Use semver notation"
@@ -2471,13 +2431,6 @@ msgstr ""
 "clés"
 
 msgid ""
-"The path to the sqlite file database that will be used for image cache "
-"management."
-msgstr ""
-"Chemin vers la base de données de fichiers sqlite qui sera utilisée pour la "
-"gestion du cache d'image ."
-
-msgid ""
 "The period of time, in seconds, that the API server will wait for a registry "
 "request to complete. A value of 0 implies no timeout."
 msgstr ""
@@ -2687,14 +2640,6 @@ msgstr "Le type de tâche représenté par ce contenu"
 
 msgid "The unique namespace text."
 msgstr "Texte unique de l'espace de nom."
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which the cache pruner, if running, starts cleaning the image cache."
-msgstr ""
-"Limite supérieure (taille maximale du cache cumulé en octets) au dessus de "
-"laquelle le programme de nettoyage du cache, s'il est exécuté, commence à "
-"nettoyer le cache d'image."
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""

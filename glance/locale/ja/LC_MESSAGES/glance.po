@@ -7,9 +7,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev43\n"
+"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-19 04:47+0000\n"
+"POT-Creation-Date: 2016-06-06 22:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -401,9 +401,6 @@ msgstr "Swift URI 内の資格情報 '%(creds)s' の形式が正しくありま�
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 内の資格情報の形式が正しくありません。"
 
-msgid "Base directory that the image cache uses."
-msgstr "イメージキャッシュで使用される基本ディレクトリー。"
-
 msgid "BinaryObject property cannot be declared mutable"
 msgstr "BinaryObject プロパティーは変更可能として宣言できません"
 
@@ -709,9 +706,6 @@ msgstr ""
 msgid "Error occurred while creating the verifier"
 msgstr "ベリファイヤーの作成中にエラーが発生しました"
 
-msgid "Error occurred while verifying the signature"
-msgstr "シグニチャーの検証中にエラーが発生しました"
-
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "次の形式でメンバーを予期: {\"member\": \"image_id\"}"
 
@@ -881,12 +875,6 @@ msgid ""
 msgstr ""
 "適切な場合 (通常は障害発生時) にのみ、人間が読み取れる情報メッセージが含まれ"
 "ます"
-
-msgid "If False doesn't trace SQL requests."
-msgstr "False が SQL 要求をトレースしない場合。"
-
-msgid "If False fully disable profiling feature."
-msgstr "False がプロファイル作成機能を完全に無効にする場合。"
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -1147,10 +1135,6 @@ msgid "Invalid marker. Image could not be found."
 msgstr "無効なマーカーです。イメージが見つかりませんでした。"
 
 #, python-format
-msgid "Invalid mask_gen_algorithm: %s"
-msgstr "無効な mask_gen_algorithm: %s"
-
-#, python-format
 msgid "Invalid membership association: %s"
 msgstr "無効なメンバーシップの関連付け: %s"
 
@@ -1177,10 +1161,6 @@ msgstr "ロケーション削除位置が無効です。"
 
 msgid "Invalid property definition"
 msgstr "プロパティー定義が無効です"
-
-#, python-format
-msgid "Invalid pss_salt_length: %s"
-msgstr "無効な pss_salt_length: %s"
 
 #, python-format
 msgid "Invalid public key type for signature key type: %s"
@@ -1924,13 +1904,6 @@ msgstr "イメージのアクセス可能性の範囲"
 msgid "Scope of namespace accessibility."
 msgstr "名前空間アクセシビリティーの範囲。"
 
-msgid ""
-"Secret key to use to sign Glance API and Glance Registry services tracing "
-"messages."
-msgstr ""
-"メッセージをトレースする Glance API サービスおよび Glance レジストリーサービ"
-"スの署名に使用する秘密鍵。"
-
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "サーバー %(serv)s は停止しています"
@@ -1961,9 +1934,6 @@ msgstr "表示レベル %(shl)s はこの操作ではサポートされていま
 
 msgid "Signature verification failed"
 msgstr "シグニチャーの検証が失敗しました"
-
-msgid "Signature verification failed."
-msgstr "シグニチャーの検証が失敗しました。"
 
 msgid "Size of image file in bytes"
 msgstr "イメージファイルのサイズ (バイト)"
@@ -2110,13 +2080,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "削除を実行するまでの遅延時間 (秒)。"
 
 msgid ""
-"The amount of time to let an incomplete image remain in the cache, before "
-"the cache cleaner, if running, will remove the incomplete image."
-msgstr ""
-"キャッシュクリーナー (実行されている場合) が不完全なイメージを削除する前に、"
-"そのイメージがキャッシュ内に残ることができる時間。"
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "TCP リスナーソケットの作成時に使用されるバックログ値。"
 
@@ -2141,9 +2104,6 @@ msgstr ""
 "では xattr はサポートされません。fstab を編集して、キャッシュディレクトリーが"
 "格納されているデバイスの該当する行に user_xattr オプションを追加しなければな"
 "らない可能性があります。"
-
-msgid "The driver to use for image cache management."
-msgstr "イメージキャッシュ管理に使用されるドライバー。"
 
 #, python-format
 msgid "The format of the version %s is not valid. Use semver notation"
@@ -2359,11 +2319,6 @@ msgstr ""
 "定することもできます。"
 
 msgid ""
-"The path to the sqlite file database that will be used for image cache "
-"management."
-msgstr "イメージキャッシュ管理に使用される sqlite ファイルデータベースのパス。"
-
-msgid ""
 "The period of time, in seconds, that the API server will wait for a registry "
 "request to complete. A value of 0 implies no timeout."
 msgstr ""
@@ -2568,13 +2523,6 @@ msgstr "このコンテンツによって表されるタスクのタイプ"
 
 msgid "The unique namespace text."
 msgstr "固有の名前空間テキスト。"
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which the cache pruner, if running, starts cleaning the image cache."
-msgstr ""
-"この値を超えるとキャッシュプルーナー (実行されている場合) がイメージキャッ"
-"シュのクリーニングを開始する上限値 (累積キャッシュの最大サイズ (バイト))。"
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "名前空間の分かりやすい名前。存在する場合は、UI によって使用されます。"

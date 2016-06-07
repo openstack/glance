@@ -7,9 +7,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev43\n"
+"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-19 04:47+0000\n"
+"POT-Creation-Date: 2016-06-06 22:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -710,12 +710,6 @@ msgid ""
 msgstr ""
 "Okunabilir bilgilendirme iletisi sadece uygun olduğunda (genellikle "
 "başarısızlıkta) dahildir"
-
-msgid "If False doesn't trace SQL requests."
-msgstr "Eğer Yanlışsa SQL istekleri izlenmez."
-
-msgid "If False fully disable profiling feature."
-msgstr "Eğer Yanlışsa, profil özelliği tamamen devre dışı. "
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -1835,9 +1829,6 @@ msgstr ""
 "desteklemiyor. Önbellek dizini içeren aygıt için fstab düzenlemeniz ve uygun "
 "satıra user_xattr seçeneği eklemeniz gerekebilir."
 
-msgid "The driver to use for image cache management."
-msgstr "İmaj önbellek yönetimi için kullanılacak sürücü."
-
 #, python-format
 msgid ""
 "The given uri is not valid. Please specify a valid uri from the following "
@@ -2033,11 +2024,6 @@ msgstr ""
 "Varsa, kayıt defteri sunucusuna SSL bağlantısında kullanılacak anahtar dosya "
 "yolu. Alternatif olarak, anahtar dosyasının dosya yolu için "
 "GLANCE_CLIENT_KEY_FILE ortam değişkeni ayarlayabilirsiniz"
-
-msgid ""
-"The path to the sqlite file database that will be used for image cache "
-"management."
-msgstr "İmaj önbellek yönetimi için kullanılacak sqlite dosya veritabanı yolu."
 
 msgid ""
 "The period of time, in seconds, that the API server will wait for a registry "

@@ -7,9 +7,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev43\n"
+"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-19 04:47+0000\n"
+"POT-Creation-Date: 2016-06-06 22:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -395,9 +395,6 @@ msgstr "Swift URI에 양식이 잘못된 신임 정보 '%(creds)s'"
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI에 양식이 잘못된 신임 정보가 있습니다."
 
-msgid "Base directory that the image cache uses."
-msgstr "이미지 캐시가 사용하는 기본 디렉토리입니다."
-
 msgid "BinaryObject property cannot be declared mutable"
 msgstr "BinaryObject 특성은 변경 가능으로 선언할 수 없음"
 
@@ -694,9 +691,6 @@ msgstr "저장소 구성에 오류가 있습니다. 이미지를 저장소에 �
 msgid "Error occurred while creating the verifier"
 msgstr "확인자를 작성하는 중에 오류 발생"
 
-msgid "Error occurred while verifying the signature"
-msgstr "서명을 확인하는 중에 오류 발생"
-
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "{\"member\": \"image_id\"} 형식의 멤버가 있어야 함"
 
@@ -862,12 +856,6 @@ msgid ""
 msgstr ""
 "사용자가 읽을 수 있는 정보 메시지는 적절한 경우에만 포함됨 (일반적으로 실패 "
 "시)"
-
-msgid "If False doesn't trace SQL requests."
-msgstr "false인 경우 SQL 요청을 추적하지 않습니다."
-
-msgid "If False fully disable profiling feature."
-msgstr "false인 경우 프로파일링 기능을 전부 사용 안함으로 설정합니다."
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -1123,10 +1111,6 @@ msgid "Invalid marker. Image could not be found."
 msgstr "올바르지 않은 마커입니다. 이미지를 찾을 수 없습니다."
 
 #, python-format
-msgid "Invalid mask_gen_algorithm: %s"
-msgstr "올바르지 않은 mask_gen_algorithm: %s"
-
-#, python-format
 msgid "Invalid membership association: %s"
 msgstr "올바르지 않은 멤버십 연관: %s"
 
@@ -1152,10 +1136,6 @@ msgstr "위치를 제거하기에 올바르지 않은 포지션입니다."
 
 msgid "Invalid property definition"
 msgstr "올바르지 않은 특성 정의"
-
-#, python-format
-msgid "Invalid pss_salt_length: %s"
-msgstr "올바르지 않은 pss_salt_length: %s"
 
 #, python-format
 msgid "Invalid public key type for signature key type: %s"
@@ -1885,13 +1865,6 @@ msgstr "이미지 접근성의 범위"
 msgid "Scope of namespace accessibility."
 msgstr "네임스페이스 접근성의 범위입니다."
 
-msgid ""
-"Secret key to use to sign Glance API and Glance Registry services tracing "
-"messages."
-msgstr ""
-"Glance API 및 Glance 레지스트리 서비스 추적 메시지를 승인하기 위해 사용하는 "
-"비밀키"
-
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "서버 %(serv)s이(가) 중지됨"
@@ -1921,9 +1894,6 @@ msgstr "이 조작에서는 표시 레벨 %(shl)s이(가) 지원되지 않음"
 
 msgid "Signature verification failed"
 msgstr "서명 검증 실패"
-
-msgid "Signature verification failed."
-msgstr "서명 검증에 실패했습니다."
 
 msgid "Size of image file in bytes"
 msgstr "이미지 파일의 크기(바이트)"
@@ -2068,13 +2038,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "삭제를 수행하기 전에 지연되는 시간(초)입니다."
 
 msgid ""
-"The amount of time to let an incomplete image remain in the cache, before "
-"the cache cleaner, if running, will remove the incomplete image."
-msgstr ""
-"캐시 클리너가 실행 중인 경우 불완전한 이미지를 제거하기 전에 불완전한 이미지"
-"가 캐시에 남아 있을 수 있는 시간입니다."
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "TCP 리스너 소켓을 작성할 때 사용하는 백로그 값입니다."
 
@@ -2098,9 +2061,6 @@ msgstr ""
 "디바이스 하우징 이미지 캐시 디렉터리 %(image_cache_dir)s의 Device 는 xattr을 "
 "지원하지 않습니다. fstab을 수정하거나 user_xattr 옵션을 디바이스 하우징 캐시 "
 "디렉터리의 적합한 행에 추가하기 바랍니다."
-
-msgid "The driver to use for image cache management."
-msgstr "이미지 캐시를 관리하는 데 사용되는 드라이버입니다."
 
 #, python-format
 msgid "The format of the version %s is not valid. Use semver notation"
@@ -2312,11 +2272,6 @@ msgstr ""
 "GLANCE_CLIENT_KEY_FILE 환경 변수를 키 파일의 파일 경로로 설정할 수 있습니다."
 
 msgid ""
-"The path to the sqlite file database that will be used for image cache "
-"management."
-msgstr "이미지 캐시 관리에 사용되는 sqlite 파일 데이터베이스에 대한경로."
-
-msgid ""
 "The period of time, in seconds, that the API server will wait for a registry "
 "request to complete. A value of 0 implies no timeout."
 msgstr ""
@@ -2513,13 +2468,6 @@ msgstr "이 컨텐츠에서 나타내는 태스크의 유형"
 
 msgid "The unique namespace text."
 msgstr "고유 네임스페이스 텍스트입니다."
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which the cache pruner, if running, starts cleaning the image cache."
-msgstr ""
-"실행 중인 경우 캐시 프루너(pruner)가 이미지 캐시 지우기를 시작하는 상한(누적"
-"된 최대 캐시 크기(바이트))입니다."
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""

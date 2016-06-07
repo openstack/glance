@@ -6,9 +6,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev43\n"
+"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-19 04:47+0000\n"
+"POT-Creation-Date: 2016-06-06 22:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -373,9 +373,6 @@ msgstr "Swift URI 中認證 '%(creds)s' 的格式不正確"
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 中認證的格式不正確。"
 
-msgid "Base directory that the image cache uses."
-msgstr "映像檔快取所使用的基本目錄。"
-
 msgid "BinaryObject property cannot be declared mutable"
 msgstr "不能反覆宣告 BinaryObject 內容"
 
@@ -667,9 +664,6 @@ msgstr "儲存庫配置發生錯誤。已停用新增映像檔至儲存庫。"
 msgid "Error occurred while creating the verifier"
 msgstr "建立驗證器時發生錯誤"
 
-msgid "Error occurred while verifying the signature"
-msgstr "驗證簽章時發生錯誤"
-
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "預期成員的格式為：{\"member\": \"image_id\"}"
 
@@ -828,12 +822,6 @@ msgid ""
 "Human-readable informative message only included when appropriate (usually "
 "on failure)"
 msgstr "適當的時候（通常是失敗時）僅併入人類可讀的參考訊息"
-
-msgid "If False doesn't trace SQL requests."
-msgstr "如果為 False，則將不追蹤 SQL 要求。"
-
-msgid "If False fully disable profiling feature."
-msgstr "如果為 False，則將完全停用側寫功能。"
 
 msgid ""
 "If False, server will return the header \"Connection: close\", If True, "
@@ -1082,10 +1070,6 @@ msgid "Invalid marker. Image could not be found."
 msgstr "無效的標記。找不到映像檔。"
 
 #, python-format
-msgid "Invalid mask_gen_algorithm: %s"
-msgstr "無效的 mask_gen_algorithm：%s"
-
-#, python-format
 msgid "Invalid membership association: %s"
 msgstr "無效的成員資格關聯：%s"
 
@@ -1110,10 +1094,6 @@ msgstr "用於移除位置的位置無效。"
 
 msgid "Invalid property definition"
 msgstr "無效的內容定義"
-
-#, python-format
-msgid "Invalid pss_salt_length: %s"
-msgstr "無效的 pss_salt_length：%s"
 
 #, python-format
 msgid "Invalid public key type for signature key type: %s"
@@ -1813,11 +1793,6 @@ msgstr "映像檔的可存取性範圍"
 msgid "Scope of namespace accessibility."
 msgstr "名稱空間的可存取性範圍。"
 
-msgid ""
-"Secret key to use to sign Glance API and Glance Registry services tracing "
-"messages."
-msgstr "用來簽署 Glance API 及「Glance 登錄」追蹤訊息的秘密金鑰。"
-
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "伺服器 %(serv)s 已停止"
@@ -1846,9 +1821,6 @@ msgstr "顯示層次 %(shl)s 在此作業中不受支援"
 
 msgid "Signature verification failed"
 msgstr "簽章驗證失敗"
-
-msgid "Signature verification failed."
-msgstr "簽章驗證失敗。"
 
 msgid "Size of image file in bytes"
 msgstr "映像檔的大小（以位元組為單位）"
@@ -1986,13 +1958,6 @@ msgid "The amount of time in seconds to delay before performing a delete."
 msgstr "執行刪除之前要延遲的時間量（以秒為單位）。"
 
 msgid ""
-"The amount of time to let an incomplete image remain in the cache, before "
-"the cache cleaner, if running, will remove the incomplete image."
-msgstr ""
-"在快取中保留不完整映像檔的時間量，超過該時間量後，快取刪改程式（如果在執行"
-"中）將移除不完整的映像檔。"
-
-msgid ""
 "The backlog value that will be used when creating the TCP listener socket."
 msgstr "建立 TCP 接聽器 Socket 時將使用的待辦事項值。"
 
@@ -2015,9 +1980,6 @@ msgid ""
 msgstr ""
 "存放映像檔快取目錄 %(image_cache_dir)s 的裝置不支援 xattr。您可能需要編輯 "
 "fstab 並將 user_xattr 選項新增至存放快取目錄之裝置的適當行。"
-
-msgid "The driver to use for image cache management."
-msgstr "要用於映像檔快取管理的驅動程式。"
 
 #, python-format
 msgid "The format of the version %s is not valid. Use semver notation"
@@ -2214,11 +2176,6 @@ msgstr ""
 "GLANCE_CLIENT_KEY_FILE 環境變數設定為金鑰檔的檔案路徑"
 
 msgid ""
-"The path to the sqlite file database that will be used for image cache "
-"management."
-msgstr "將用於映像檔快取管理的 SQLite 檔案資料庫路徑。"
-
-msgid ""
 "The period of time, in seconds, that the API server will wait for a registry "
 "request to complete. A value of 0 implies no timeout."
 msgstr "API 伺服器將等待登錄要求完成的時段（以秒為單位）。值 0 表示無逾時。"
@@ -2399,13 +2356,6 @@ msgstr "此內容所表示的作業類型"
 
 msgid "The unique namespace text."
 msgstr "唯一的名稱空間文字。"
-
-msgid ""
-"The upper limit (the maximum size of accumulated cache in bytes) beyond "
-"which the cache pruner, if running, starts cleaning the image cache."
-msgstr ""
-"上限（累計快取的大小上限，以位元組為單位），超出該上限時，快取刪改程式（如果"
-"在執行中）將開始清除映像檔快取。"
 
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "對使用者更為友善的名稱空間名稱。如果有的話，則由使用者介面使用。"
