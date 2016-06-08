@@ -107,6 +107,9 @@ eventlet_opts = [
 
 wsgi_opts = [
     cfg.StrOpt('secure_proxy_ssl_header',
+               deprecated_for_removal=True,
+               deprecated_reason=_('Use the http_proxy_to_wsgi middleware '
+                                   'instead.'),
                help=_('The HTTP header used to determine the scheme for the '
                       'original request, even if it was removed by an SSL '
                       'terminating proxy. Typical value is '
