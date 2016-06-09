@@ -22,7 +22,7 @@ from oslo_utils import encodeutils
 from glance.common.glare import definitions
 from glance.common import utils
 from glance.glare.domain import proxy
-from glance.i18n import _, _LE, _LW
+from glance.i18n import _LE, _LW
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
@@ -156,8 +156,8 @@ class ArtifactBlobProxy(proxy.ArtifactBlob):
                         context=self.context)
                     return data
             except Exception as e:
-                LOG.warn(_('Get blob %(name)s data failed: '
-                           '%(err)s.')
+                LOG.warn(_LW('Get blob %(name)s data failed: '
+                             '%(err)s.')
                          % {'name': self.blob.item_key,
                             'err': encodeutils.exception_to_unicode(e)})
                 err = e

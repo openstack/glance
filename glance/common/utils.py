@@ -44,7 +44,7 @@ import six
 from webob import exc
 
 from glance.common import exception
-from glance.i18n import _, _LE
+from glance.i18n import _, _LE, _LW
 
 CONF = cfg.CONF
 
@@ -421,13 +421,14 @@ def validate_key_cert(key_file, cert_file):
         data = encodeutils.to_utf8(data)
         digest = CONF.digest_algorithm
         if digest == 'sha1':
-            LOG.warn('The FIPS (FEDERAL INFORMATION PROCESSING STANDARDS)'
-                     ' state that the SHA-1 is not suitable for'
-                     ' general-purpose digital signature applications (as'
-                     ' specified in FIPS 186-3) that require 112 bits of'
-                     ' security. The default value is sha1 in Kilo for a'
-                     ' smooth upgrade process, and it will be updated'
-                     ' with sha256 in next release(L).')
+            LOG.warn(
+                _LW('The FIPS (FEDERAL INFORMATION PROCESSING STANDARDS)'
+                    ' state that the SHA-1 is not suitable for'
+                    ' general-purpose digital signature applications (as'
+                    ' specified in FIPS 186-3) that require 112 bits of'
+                    ' security. The default value is sha1 in Kilo for a'
+                    ' smooth upgrade process, and it will be updated'
+                    ' with sha256 in next release(L).'))
         out = crypto.sign(key, data, digest)
         crypto.verify(cert, out, data, digest)
     except crypto.Error as ce:

@@ -21,7 +21,7 @@ import webob.exc
 from glance.api import policy
 from glance.common import wsgi
 import glance.context
-from glance.i18n import _
+from glance.i18n import _, _LW
 
 
 context_opts = [
@@ -52,7 +52,7 @@ class BaseContextMiddleware(wsgi.Middleware):
         try:
             request_id = resp.request.context.request_id
         except AttributeError:
-            LOG.warn(_('Unable to retrieve request id from context'))
+            LOG.warn(_LW('Unable to retrieve request id from context'))
         else:
             # For python 3 compatibility need to use bytes type
             prefix = b'req-' if isinstance(request_id, bytes) else 'req-'
