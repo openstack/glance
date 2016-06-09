@@ -21,7 +21,7 @@ from six.moves import configparser
 
 import glance.api.policy
 from glance.common import exception
-from glance.i18n import _, _LE
+from glance.i18n import _, _LE, _LW
 
 CONFIG = configparser.SafeConfigParser()
 LOG = logging.getLogger(__name__)
@@ -125,9 +125,9 @@ class PropertyRules(object):
                 else:
                     property_dict[operation] = []
                     LOG.warn(
-                        _('Property protection on operation %(operation)s'
-                          ' for rule %(rule)s is not found. No role will be'
-                          ' allowed to perform this operation.') %
+                        _LW('Property protection on operation %(operation)s'
+                            ' for rule %(rule)s is not found. No role will be'
+                            ' allowed to perform this operation.') %
                         {'operation': operation,
                          'rule': property_exp})
 
