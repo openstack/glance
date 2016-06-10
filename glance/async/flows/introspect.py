@@ -14,9 +14,9 @@
 #    under the License.
 
 import json
-import logging
 
 from oslo_concurrency import processutils as putils
+from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
 from taskflow.patterns import linear_flow as lf
@@ -57,10 +57,10 @@ class _Introspect(utils.OptionalTask):
             if exc.errno != 2:
                 with excutils.save_and_reraise_exception():
                     exc_message = encodeutils.exception_to_unicode(exc)
-                    msg = (_LE('Failed to execute introspection '
-                               '%(task_id)s: %(exc)s') %
-                           {'task_id': self.task_id, 'exc': exc_message})
-                    LOG.error(msg)
+                    msg = _LE('Failed to execute introspection '
+                              '%(task_id)s: %(exc)s')
+                    LOG.error(msg, {'task_id': self.task_id,
+                                    'exc': exc_message})
             return
 
         if stderr:

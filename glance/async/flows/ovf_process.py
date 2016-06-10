@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import os
 import re
 import shutil
@@ -25,6 +24,7 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
 from six.moves import urllib
 from taskflow.patterns import linear_flow as lf

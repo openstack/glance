@@ -14,13 +14,13 @@
 #    under the License.
 
 import json
-import logging
 import os
 
 import glance_store as store_api
 from glance_store import backend
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
 import six
@@ -158,10 +158,9 @@ class _ImportToFS(task.Task):
         except OSError as exc:
             with excutils.save_and_reraise_exception():
                 exc_message = encodeutils.exception_to_unicode(exc)
-                msg = (_LE('Failed to execute security checks on the image '
-                           '%(task_id)s: %(exc)s') %
-                       {'task_id': self.task_id, 'exc': exc_message})
-                LOG.error(msg)
+                msg = _LE('Failed to execute security checks on the image '
+                          '%(task_id)s: %(exc)s')
+                LOG.error(msg, {'task_id': self.task_id, 'exc': exc_message})
 
         metadata = json.loads(stdout)
 
@@ -177,7 +176,7 @@ class _ImportToFS(task.Task):
     def revert(self, image_id, result, **kwargs):
         if isinstance(result, failure.Failure):
             LOG.exception(_LE('Task: %(task_id)s failed to import image '
-                              '%(image_id)s to the filesystem.') %
+                              '%(image_id)s to the filesystem.'),
                           {'task_id': self.task_id, 'image_id': image_id})
             return
 
@@ -363,12 +362,15 @@ class _CompleteTask(task.Task):
 
             # TODO(nikhil): need to bring back save_and_reraise_exception when
             # necessary
-            err_msg = ("Error: " + six.text_type(type(e)) + ': ' +
-                       encodeutils.exception_to_unicode(e))
-            log_msg = err_msg + _LE("Task ID %s") % task.task_id
-            LOG.exception(log_msg)
+            log_msg = _LE("Task ID %(task_id)s failed. Error: %(exc_type)s: "
+                          "%(e)s")
+            LOG.exception(log_msg, {'exc_type': six.text_type(type(e)),
+                                    'e': encodeutils.exception_to_unicode(e),
+                                    'task_id': task.task_id})
 
-            task.fail(err_msg)
+            err_msg = _("Error: %(exc_type)s: %(e)s")
+            task.fail(err_msg % {'exc_type': six.text_type(type(e)),
+                                 'e': encodeutils.exception_to_unicode(e)})
         finally:
             self.task_repo.save(task)
 
