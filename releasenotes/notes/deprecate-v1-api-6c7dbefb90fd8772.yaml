@@ -1,0 +1,19 @@
+---
+prelude: >
+  - The Images (Glance) version 1 API has been DEPRECATED.
+    Please see deprecations section for more information.
+
+deprecations:
+  - With the deprecation of the Images (Glance) version 1
+    API in the Newton release, it is subject to removal on
+    or after the Pike release. The configuration options
+    specific to the Images (Glance) v1 API have also been
+    deprecated and are subject to removal. An indirectly related
+    configuration option enable_v2_api has been deprecated too
+    as it becomes redundant once the Images (Glance) v1 API is
+    removed. Appropriate warning messages have been setup for
+    the deprecated configuration options and when the Images
+    (Glance) v1 API is enabled (being used). Operators are
+    advised to deploy the Images (Glance) v2 API. The standard
+    OpenStack deprecation policy will be followed for the
+    removals.

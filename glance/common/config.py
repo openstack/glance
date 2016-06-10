@@ -86,6 +86,17 @@ task_opts = [
                       'based on the worst case scenario and be prepared to '
                       'act in case they were wrong.')),
 ]
+
+_DEPRECATE_GLANCE_V1_MSG = _('The Images (Glance) version 1 API has been '
+                             'DEPRECATED in the Newton release and will be '
+                             'removed on or after Pike release, following '
+                             'the standard OpenStack deprecation policy. '
+                             'Hence, the configuration options specific to '
+                             'the Images (Glance) v1 API are hereby '
+                             'deprecated and subject to removal. Operators '
+                             'are advised to deploy the Images (Glance) v2 '
+                             'API.')
+
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 help=_('Whether to allow users to specify image properties '
@@ -189,8 +200,18 @@ Related options:
     * None
 
 """)),
+    # NOTE(nikhil): Even though deprecated, the configuration option
+    # ``enable_v1_api`` is set to True by default on purpose. Having it enabled
+    # helps the projects that haven't been able to fully move to v2 yet by
+    # keeping the devstack setup to use glance v1 as well. We need to switch it
+    # to False by default soon after Newton is cut so that we can identify the
+    # projects that haven't moved to v2 yet and start having some interesting
+    # conversations with them. Switching to False in Newton may result into
+    # destabilizing the gate and affect the release.
     cfg.BoolOpt('enable_v1_api',
                 default=True,
+                deprecated_reason=_DEPRECATE_GLANCE_V1_MSG,
+                deprecated_since='Newton',
                 help=_("""
 Deploy the v1 OpenStack Images API.
 
@@ -225,6 +246,16 @@ Related options:
 """)),
     cfg.BoolOpt('enable_v2_api',
                 default=True,
+                deprecated_reason=_('The Images (Glance) version 1 API has '
+                                    'been DEPRECATED in the Newton release. '
+                                    'It will be removed on or after Pike '
+                                    'release, following the standard '
+                                    'OpenStack deprecation policy. Once we '
+                                    'remove the Images (Glance) v1 API, only '
+                                    'the Images (Glance) v2 API can be '
+                                    'deployed and will be enabled by default '
+                                    'making this option redundant.'),
+                deprecated_since='Newton',
                 help=_("""
 Deploy the v2 OpenStack Images API.
 
@@ -255,6 +286,8 @@ Related options:
 """)),
     cfg.BoolOpt('enable_v1_registry',
                 default=True,
+                deprecated_reason=_DEPRECATE_GLANCE_V1_MSG,
+                deprecated_since='Newton',
                 help=_("""
 Deploy the v1 API Registry service.
 

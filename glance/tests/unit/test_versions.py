@@ -61,13 +61,13 @@ class VersionsTest(base.IsolatedUnitTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'http://127.0.0.1:9292/v1/'}],
             },
             {
                 'id': 'v1.0',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'http://127.0.0.1:9292/v1/'}],
             },
@@ -110,13 +110,13 @@ class VersionsTest(base.IsolatedUnitTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'https://example.com:9292/v1/'}],
             },
             {
                 'id': 'v1.0',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'https://example.com:9292/v1/'}],
             },
@@ -158,13 +158,13 @@ class VersionsTest(base.IsolatedUnitTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'http://localhost:9292/v1/'}],
             },
             {
                 'id': 'v1.0',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'http://localhost:9292/v1/'}],
             },
@@ -207,13 +207,13 @@ class VersionsTest(base.IsolatedUnitTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'https://localhost:9292/v1/'}],
             },
             {
                 'id': 'v1.0',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self',
                            'href': 'https://localhost:9292/v1/'}],
             },
