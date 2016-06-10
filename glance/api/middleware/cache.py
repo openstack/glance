@@ -238,8 +238,9 @@ class CacheFilter(wsgi.Middleware):
         # content-length got by the method "download" because of this issue:
         # https://github.com/Pylons/webob/issues/86
         response.headers['Content-Type'] = 'application/octet-stream'
-        response.headers['Content-MD5'] = (image.checksum.encode('utf-8')
-                                           if six.PY2 else image.checksum)
+        if image.checksum:
+            response.headers['Content-MD5'] = (image.checksum.encode('utf-8')
+                                               if six.PY2 else image.checksum)
         response.headers['Content-Length'] = str(image.size)
         return response
 
