@@ -44,6 +44,7 @@ import six
 from webob import exc
 
 from glance.common import exception
+from glance.common import timeutils
 from glance.i18n import _, _LE, _LW
 
 CONF = cfg.CONF
@@ -603,8 +604,17 @@ def split_filter_op(expression):
     """
     left, sep, right = expression.partition(':')
     if sep:
-        op = left
-        threshold = right
+        # If the expression is a date of the format ISO 8601 like
+        # CCYY-MM-DDThh:mm:ss+hh:mm and has no operator, it should
+        # not be partitioned, and a default operator of eq should be
+        # assumed.
+        try:
+            timeutils.parse_isotime(expression)
+            op = 'eq'
+            threshold = expression
+        except ValueError:
+            op = left
+            threshold = right
     else:
         op = 'eq'  # default operator
         threshold = left
