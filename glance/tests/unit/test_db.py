@@ -14,12 +14,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import uuid
 
 import mock
 from oslo_config import cfg
 from oslo_db import exception as db_exc
 from oslo_utils import encodeutils
+from oslo_utils import timeutils
 
 from glance.common import crypt
 from glance.common import exception
@@ -116,6 +118,7 @@ def _db_task_fixture(task_id, type, status, **kwargs):
         'owner': None,
         'message': None,
         'deleted': False,
+        'expires_at': timeutils.utcnow() + datetime.timedelta(days=365)
     }
     obj.update(kwargs)
     return obj

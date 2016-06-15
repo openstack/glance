@@ -959,6 +959,20 @@ def task_delete(context, task_id):
         raise exception.TaskNotFound(task_id=task_id)
 
 
+def _task_soft_delete(context):
+    """Scrub task entities which are expired """
+    global DATA
+    now = timeutils.utcnow()
+    tasks = DATA['tasks'].values()
+
+    for task in tasks:
+        if(task['owner'] == context.owner and task['deleted'] == False
+           and task['expires_at'] <= now):
+
+            task['deleted'] = True
+            task['deleted_at'] = timeutils.utcnow()
+
+
 @log_call
 def task_get_all(context, filters=None, marker=None, limit=None,
                  sort_key='created_at', sort_dir='desc'):
@@ -972,6 +986,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
     :param sort_dir: direction in which results should be sorted (asc, desc)
     :returns: tasks set
     """
+    _task_soft_delete(context)
     filters = filters or {}
     tasks = DATA['tasks'].values()
     tasks = _filter_tasks(tasks, filters, context)

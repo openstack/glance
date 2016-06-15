@@ -1527,9 +1527,10 @@ class TaskTests(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TaskTests, self).setUp()
-        self.owner_id = str(uuid.uuid4())
-        self.adm_context = context.RequestContext(is_admin=True,
-                                                  auth_token='user:user:admin')
+        self.admin_id = 'admin'
+        self.owner_id = 'user'
+        self.adm_context = context.RequestContext(
+            is_admin=True, auth_token='user:admin:admin', tenant=self.admin_id)
         self.context = context.RequestContext(
             is_admin=False, auth_token='user:user:user', user=self.owner_id)
         self.db_api = db_tests.get_db(self.config)
@@ -1623,13 +1624,15 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertEqual(0, len(tasks))
 
     def test_task_get_all_owned(self):
+        then = timeutils.utcnow() + datetime.timedelta(days=365)
         TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False,
                                        tenant=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
 
         task_values = {'type': 'import', 'status': 'pending',
-                       'input': '{"loc": "fake"}', 'owner': TENANT1}
+                       'input': '{"loc": "fake"}', 'owner': TENANT1,
+                       'expires_at': then}
         self.db_api.task_create(ctxt1, task_values)
 
         TENANT2 = str(uuid.uuid4())
@@ -1638,7 +1641,8 @@ class TaskTests(test_utils.BaseTestCase):
                                        auth_token='user:%s:user' % TENANT2)
 
         task_values = {'type': 'export', 'status': 'pending',
-                       'input': '{"loc": "fake"}', 'owner': TENANT2}
+                       'input': '{"loc": "fake"}', 'owner': TENANT2,
+                       'expires_at': then}
         self.db_api.task_create(ctxt2, task_values)
 
         tasks = self.db_api.task_get_all(ctxt1)
@@ -1680,6 +1684,7 @@ class TaskTests(test_utils.BaseTestCase):
 
     def test_task_get_all(self):
         now = timeutils.utcnow()
+        then = now + datetime.timedelta(days=365)
         image_id = str(uuid.uuid4())
         fixture1 = {
             'owner': self.context.owner,
@@ -1688,7 +1693,7 @@ class TaskTests(test_utils.BaseTestCase):
             'input': '{"loc": "fake_1"}',
             'result': "{'image_id': %s}" % image_id,
             'message': 'blah_1',
-            'expires_at': now,
+            'expires_at': then,
             'created_at': now,
             'updated_at': now
         }
@@ -1700,7 +1705,7 @@ class TaskTests(test_utils.BaseTestCase):
             'input': '{"loc": "fake_2"}',
             'result': "{'image_id': %s}" % image_id,
             'message': 'blah_2',
-            'expires_at': now,
+            'expires_at': then,
             'created_at': now,
             'updated_at': now
         }
@@ -1733,6 +1738,39 @@ class TaskTests(test_utils.BaseTestCase):
             task_details_keys = ['input', 'message', 'result']
             for key in task_details_keys:
                 self.assertNotIn(key, task)
+
+    def test_task_soft_delete(self):
+        now = timeutils.utcnow()
+        then = now + datetime.timedelta(days=365)
+
+        fixture1 = build_task_fixture(id='1', expires_at=now,
+                                      owner=self.adm_context.owner)
+        fixture2 = build_task_fixture(id='2', expires_at=now,
+                                      owner=self.adm_context.owner)
+        fixture3 = build_task_fixture(id='3', expires_at=then,
+                                      owner=self.adm_context.owner)
+        fixture4 = build_task_fixture(id='4', expires_at=then,
+                                      owner=self.adm_context.owner)
+
+        task1 = self.db_api.task_create(self.adm_context, fixture1)
+        task2 = self.db_api.task_create(self.adm_context, fixture2)
+        task3 = self.db_api.task_create(self.adm_context, fixture3)
+        task4 = self.db_api.task_create(self.adm_context, fixture4)
+
+        self.assertIsNotNone(task1)
+        self.assertIsNotNone(task2)
+        self.assertIsNotNone(task3)
+        self.assertIsNotNone(task4)
+
+        tasks = self.db_api.task_get_all(
+            self.adm_context, sort_key='id', sort_dir='asc')
+
+        self.assertEqual(4, len(tasks))
+
+        self.assertTrue(tasks[0]['deleted'])
+        self.assertTrue(tasks[1]['deleted'])
+        self.assertFalse(tasks[2]['deleted'])
+        self.assertFalse(tasks[3]['deleted'])
 
     def test_task_create(self):
         task_id = str(uuid.uuid4())
