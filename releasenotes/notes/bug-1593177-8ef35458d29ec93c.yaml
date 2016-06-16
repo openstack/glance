@@ -1,0 +1,6 @@
+---
+upgrade:
+  - The ``default`` policy in ``policy.json`` now uses the
+    admin role rather than any role. This is to make the
+    policy file restrictive rather than permissive and
+    tighten security.

@@ -162,6 +162,25 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         context = glance.context.RequestContext(roles=[])
         self.assertEqual(False, enforcer.check(context, 'get_image', {}))
 
+    def test_policy_file_get_image_default_everybody(self):
+        rules = {"default": ''}
+        self.set_policy_rules(rules)
+
+        enforcer = glance.api.policy.Enforcer()
+
+        context = glance.context.RequestContext(roles=[])
+        self.assertEqual(True, enforcer.check(context, 'get_image', {}))
+
+    def test_policy_file_get_image_default_nobody(self):
+        rules = {"default": '!'}
+        self.set_policy_rules(rules)
+
+        enforcer = glance.api.policy.Enforcer()
+
+        context = glance.context.RequestContext(roles=[])
+        self.assertRaises(exception.Forbidden,
+                          enforcer.enforce, context, 'get_image', {})
+
 
 class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
     def test_policy_file_specified_but_not_found(self):
