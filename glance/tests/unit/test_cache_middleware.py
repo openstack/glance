@@ -379,6 +379,30 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         self.assertEqual('c1234', response.headers['Content-MD5'])
         self.assertEqual('123456789', response.headers['Content-Length'])
 
+    def test_v2_process_request_without_checksum(self):
+        def dummy_img_iterator():
+            for i in range(3):
+                yield i
+
+        image_id = 'test1'
+        request = webob.Request.blank('/v2/images/test1/file')
+        request.context = context.RequestContext()
+        image = ImageStub(image_id)
+        image.checksum = None
+        request.environ['api.cache.image'] = image
+
+        image_meta = {
+            'id': image_id,
+            'name': 'fake_image',
+            'status': 'active',
+            'size': '123456789',
+        }
+
+        cache_filter = ProcessRequestTestCacheFilter()
+        response = cache_filter._process_v2_request(
+            request, image_id, dummy_img_iterator, image_meta)
+        self.assertNotIn('Content-MD5', response.headers.keys())
+
     def test_process_request_without_download_image_policy(self):
         """
         Test for cache middleware skip processing when request
