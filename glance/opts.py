@@ -28,6 +28,7 @@ from osprofiler import opts as profiler
 
 import glance.api.middleware.context
 import glance.api.versions
+import glance.async.flows.convert
 import glance.async.taskflow_executor
 import glance.common.config
 import glance.common.location_strategy
@@ -66,8 +67,9 @@ _api_opts = [
         glance.scrubber.scrubber_opts))),
     ('image_format', glance.common.config.image_format_opts),
     ('task', glance.common.config.task_opts),
-    ('taskflow_executor',
-     glance.async.taskflow_executor.taskflow_executor_opts),
+    ('taskflow_executor', list(itertools.chain(
+        glance.async.taskflow_executor.taskflow_executor_opts,
+        glance.async.flows.convert.convert_task_opts))),
     ('store_type_location_strategy',
      glance.common.location_strategy.store_type.store_type_opts),
     profiler.list_opts()[0],
