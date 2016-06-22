@@ -1,0 +1,7 @@
+{
+    "namespace": "FredCo::SomeCategory::Example",
+    "display_name": "An Example Namespace",
+    "description": "A metadata definitions namespace for example use.",
+    "visibility": "public",
+    "protected": true
+}

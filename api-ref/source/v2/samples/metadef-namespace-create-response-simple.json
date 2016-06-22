@@ -1,0 +1,12 @@
+{
+    "created_at": "2016-05-19T16:05:48Z",
+    "description": "A metadata definitions namespace for example use.",
+    "display_name": "An Example Namespace",
+    "namespace": "FredCo::SomeCategory::Example",
+    "owner": "c60b1d57c5034e0d86902aedf8c49be0",
+    "protected": true,
+    "schema": "/v2/schemas/metadefs/namespace",
+    "self": "/v2/metadefs/namespaces/FredCo::SomeCategory::Example",
+    "updated_at": "2016-05-19T16:05:48Z",
+    "visibility": "public"
+}

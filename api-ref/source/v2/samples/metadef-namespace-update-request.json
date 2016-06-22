@@ -1,0 +1,7 @@
+{
+    "description": "Choose capabilities that should be provided by the Compute Host. This provides the ability to fine tune the hardware specification required when a new vm is requested.",
+    "display_name": "Hypervisor Selection",
+    "namespace": "OS::Compute::Hypervisor",
+    "protected": false,
+    "visibility": "public"
+}

@@ -1,0 +1,56 @@
+{
+    "links": [
+        {
+            "href": "{first}",
+            "rel": "first"
+        },
+        {
+            "href": "{next}",
+            "rel": "next"
+        },
+        {
+            "href": "{schema}",
+            "rel": "describedby"
+        }
+    ],
+    "name": "tags",
+    "properties": {
+        "first": {
+            "type": "string"
+        },
+        "next": {
+            "type": "string"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "tags": {
+            "items": {
+                "additionalProperties": false,
+                "name": "tag",
+                "properties": {
+                    "created_at": {
+                        "description": "Date and time of tag creation",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "name": {
+                        "maxLength": 255,
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "description": "Date and time of the last tag modification",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "type": "array"
+        }
+    }
+}

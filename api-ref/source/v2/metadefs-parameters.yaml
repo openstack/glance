@@ -1,0 +1,527 @@
+# variables in header
+Content-Type-json:
+  description: |
+    The media type descriptor for the request body.  Use
+    ``application/json``.
+  in: header
+  required: true
+  type: string
+Location:
+  description: |
+    The newly-created URI for the namespace.
+  in: header
+  required: true
+  type: string
+
+# variables in path
+name:
+  description: |
+    Name of the resource type.
+  in: path
+  required: true
+  type: string
+namespace_name:
+  description: |
+    The name of the namespace whose details you want to see.  (The name is the
+    value of a namespace's ``namespace`` field.)
+  in: path
+  required: true
+  type: string
+object_name:
+  description: |
+    The name of the object.
+  in: path
+  required: true
+  type: string
+property_name:
+  description: |
+    The name of the property.
+  in: path
+  required: true
+  type: string
+resource_type_name:
+  description: |
+    The name of the resource type.
+  in: path
+  required: true
+  type: string
+tag_name:
+  description: |
+    The name of the tag.
+  in: path
+  required: true
+  type: string
+
+# variables in query
+limit:
+  description: |
+    Requests a page size of items. Returns a number of items up to a limit
+    value. Use the ``limit`` parameter to make an initial limited request and
+    use the ID of the last-seen item from the response as the ``marker``
+    parameter value in a subsequent limited request.
+  in: query
+  required: false
+  type: integer
+limit-tags:
+  description: |
+    Requests a page size of tags. Returns a number of tags up to a limit
+    value. Use the ``limit`` parameter to make an initial limited request and
+    use the name of the last-seen tag from the response as the ``marker``
+    parameter value in a subsequent limited request.
+  in: query
+  required: false
+  type: integer
+marker:
+  description: |
+    Allows specification of a *namespace identifier*.  When present, only
+    namespaces occurring after that namespace will be listed, that is,
+    those namespaces having a ``sort_key`` later than that of the marker
+    in the ``sort_dir`` direction.
+  in: query
+  required: false
+  type: string
+marker-tags:
+  description: |
+    Allows specification of a tag name.  When present, only tags occurring
+    *after* the named tag will be listed, that is, those namespaces having a
+    ``sort_key`` later than that of the marker in the ``sort_dir`` direction.
+  in: query
+  required: false
+  type: string
+resource_type-in-query:
+  description: |
+    Filters the response by property names that start with a prefix from an
+    associated resource type.  The API removes the prefix of the resource type
+    from the property name in the response.
+  in: query
+  required: false
+  type: string
+resource_type-in-query-namespace-detail:
+  description: |
+    Apply the prefix for the specified resource type to the names of the
+    properties listed in the response.  If the resource type specified does not
+    have an association with this namespace, or if the resource type is
+    associated but does not have a prefix defined in this namespace, this
+    parameter is ignored.
+  in: query
+  required: false
+  type: string
+resource_types-in-query:
+  description: |
+    Filters the response to include only those namespaces that contain the
+    specified resource type or types as resource type associations.  Use the
+    comma (``,``) character to separate multiple values. For example,
+    ``OS::Glance::Image,OS::Nova::Flavor`` shows only namespaces associated
+    with these resource types.
+  in: query
+  required: false
+  type: integer
+sort_dir:
+  description: |
+    Sorts the response.  Use ``asc`` for ascending or ``desc`` for descending
+    order.  The default is ``desc``.
+  in: query
+  required: false
+  type: string
+sort_key:
+  description: |
+    Sorts the response by an attribute.  Accepted values are ``namespace``,
+    ``created_at``, and ``updated_at``. Default is ``created_at``.
+  in: query
+  required: false
+  type: string
+sort_key-tags:
+  description: |
+    Sorts the response by an attribute.  Accepted values are ``name``,
+    ``created_at``, and ``updated_at``. Default is ``created_at``.
+  in: query
+  required: false
+  type: string
+visibility-in-query:
+  description: |
+    Filters the response by a namespace visibility value.  A valid value is
+    ``public`` or ``private``. If you omit this parameter, the response shows
+    both ``public`` and ``private`` namespaces.
+  in: query
+  required: false
+  type: string
+
+# variables in body
+additionalItems:
+  description: |
+    Describes extra items, if you use tuple typing.  If the value of ``items``
+    is an array (tuple typing) and the instance is longer than the list of
+    schemas in ``items``, the additional items are described by the schema in
+    this property.  If this value is ``false``, the instance cannot be longer
+    than the list of schemas in ``items``.  If this value is ``true``, that is
+    equivalent to the empty schema (anything goes).
+  in: body
+  required: false
+  type: string
+created_at:
+  description: |
+    The date and time when the resource was created.
+
+    The date and time stamp format is `ISO 8601
+    <https://en.wikipedia.org/wiki/ISO_8601>`_.
+  in: body
+  required: true
+  type: string
+default:
+  description: |
+    Default property description.
+  in: body
+  required: false
+  type: string
+description:
+  description: |
+    The description of the namespace.
+  in: body
+  required: false
+  type: string
+display_name:
+  description: |
+    User-friendly name to use in a UI to display the namespace name.
+  in: body
+  required: false
+  type: string
+enum:
+  description: |
+    Enumerated list of property values.
+  in: body
+  required: true
+  type: array
+enum-in-request:
+  description: |
+    Enumerated list of property values.
+  in: body
+  required: false
+  type: array
+first:
+  description: |
+    The URI for the first page of response.
+  in: body
+  required: true
+  type: string
+hypervisor_type:
+  description: |
+    Hypervisor type of property values.
+  in: body
+  required: true
+  type: object
+items:
+  description: |
+    Schema for the items in an array.
+  in: body
+  required: false
+  type: string
+maximum:
+  description: |
+    Maximum allowed numerical value.
+  in: body
+  required: false
+  type: string
+maxItems:
+  description: |
+    Maximum length of an array.
+  in: body
+  required: false
+  type: string
+maxLength:
+  description: |
+    Maximum allowed string length.
+  in: body
+  required: false
+  type: string
+minimum:
+  description: |
+    Minimum allowed numerical value.
+  in: body
+  required: false
+  type: string
+minItems:
+  description: |
+    Minimum length of an array.
+  in: body
+  required: false
+  type: string
+minLength:
+  description: |
+    Minimum allowed string length.
+  in: body
+  required: false
+  type: string
+name-property:
+  description: |
+    The name of the property.
+  in: body
+  required: true
+  type: string
+name-resource-type:
+  description: |
+    Name of the resource type.
+  in: body
+  required: true
+  type: string
+name-tag:
+  description: |
+    The name of the tag.
+  in: body
+  required: true
+  type: string
+namespace:
+  description: |
+    An identifier (a name) for the namespace.  The value must be unique across
+    all users.
+  in: body
+  required: true
+  type: string
+namespaces:
+  description: |
+    A list of ``namespace`` objects.
+  in: body
+  required: true
+  type: array
+next:
+  description: |
+    The URI for the next page of response.  Will not be present on the last
+    page of the response.
+  in: body
+  required: true
+  type: string
+object-description:
+  description: |
+    Detailed description of the object.
+  in: body
+  required: true
+  type: string
+object-description-in-request:
+  description: |
+    Detailed description of the object.
+  in: body
+  required: false
+  type: string
+object-name:
+  description: |
+    The name of the object, suitable for use as an identifier.
+  in: body
+  required: true
+  type: string
+object-properties:
+  description: |
+    A set of key:value pairs, where each value is a *property* entity.
+  in: body
+  required: true
+  type: object
+object-properties-in-request:
+  description: |
+    A set of key:value pairs, where each value is a *property* entity.
+  in: body
+  required: false
+  type: object
+object-required:
+  description: |
+    A list of the names of properties that are required on this object.
+  in: body
+  required: true
+  type: array
+object-required-in-request:
+  description: |
+    A list of the names of properties that are required on this object.
+  in: body
+  required: false
+  type: array
+object-schema:
+  description: |
+    The URI of the JSON schema describing an *object*.
+  in: body
+  required: true
+  type: string
+objects:
+  description: |
+    One or more object definitions of the namespace.
+  in: body
+  required: true
+  type: string
+objects-namespace:
+  description: |
+    Namespace object definitions, if any.
+  in: body
+  required: false
+  type: object
+operators:
+  description: |
+    Operators property description.
+  in: body
+  required: false
+  type: string
+owner:
+  description: |
+    An identifier for the owner of this resource, usually the tenant ID.
+  in: body
+  required: true
+  type: string
+pattern:
+  description: |
+    A regular expression ( `ECMA 262
+    <http://www.ecma-international.org/publications/standards/Ecma-262.htm>`_ )
+    that a string value must match.
+  in: body
+  required: false
+  type: string
+prefix:
+  description: |
+    Prefix for any properties in the namespace that you want to apply to the
+    resource type. If you specify a prefix, you must append a prefix separator,
+    such as the colon (``:``) character.
+  in: body
+  required: false
+  type: string
+properties-dict:
+  description: |
+    A dictionary of key:value pairs, where each value is a *property* object as
+    defined by the :ref:`Metadefs Property Schema <md-schema-property>`.
+  in: body
+  required: true
+  type: object
+properties-nonempty:
+  description: |
+    One or more property definitions for the
+    namespace.
+  in: body
+  required: true
+  type: object
+properties-nullable:
+  description: |
+    Namespace property definitions, if any.
+  in: body
+  required: false
+  type: object
+properties_target:
+  description: |
+    Some resource types allow more than one key and value pair for each
+    instance. For example, the Image service allows both user and image
+    metadata on volumes. The ``properties_target`` parameter enables a
+    namespace target to remove the ambiguity.
+  in: body
+  required: false
+  type: string
+property-description:
+  description: |
+    Detailed description of the property.
+  in: body
+  required: true
+  type: string
+property-description-in-request:
+  description: |
+    Detailed description of the property.
+  in: body
+  required: false
+  type: string
+protected:
+  description: |
+    Namespace protection for deletion, either ``true`` or ``false``.
+  in: body
+  required: true
+  type: boolean
+protected-in-request:
+  description: |
+    Namespace protection for deletion. A valid value is ``true`` or
+    ``false``. Default is ``false``.
+  in: body
+  required: false
+  type: boolean
+readonly:
+  description: |
+    Indicates whether this is a read-only property.
+  in: body
+  required: false
+  type: boolean
+resource_type_associations:
+  description: |
+    A list, each element of which is described by the :ref:`Metadefs Resource
+    Type Association Schema <md-schema-rt-assoc>`.
+  in: body
+  required: true
+  type: array
+resource_types-list:
+  description: |
+    A list of abbreviated *resource type* JSON objects, where each object
+    contains the ``name`` of the resource type and its ``created_at``
+    and ``updated_at`` timestamps in `ISO 8601 Format
+    <https://en.wikipedia.org/wiki/ISO_8601>`_.
+  in: body
+  required: true
+  type: array
+schema-namespace:
+  description: |
+    The URI of the JSON schema describing a *namespace*.
+  in: body
+  required: true
+  type: string
+schema-namespaces:
+  description: |
+    The URI of the JSON schema describing a *namespaces* entity, that is, an
+    entity consisting of a list of abbreviated namespace objects.
+  in: body
+  required: true
+  type: string
+self:
+  description: |
+    The URI for this resource.
+  in: body
+  required: true
+  type: string
+tag-name:
+  description: |
+    The name of the tag.
+  in: body
+  required: true
+  type: string
+tags:
+  description: |
+    A list of *tag* objects, where each object is defined by the
+    :ref:`Metadefs Tag Schema <md-schema-tag>`.
+  in: body
+  required: true
+  type: array
+title:
+  description: |
+    The title of the property.
+  in: body
+  required: true
+  type: string
+type:
+  description: |
+    The property type.
+  in: body
+  required: true
+  type: string
+uniqueItems:
+  description: |
+    Indicates whether all values in the array must be distinct.
+  in: body
+  required: false
+  type: string
+updated_at:
+  description: |
+    The date and time when the resource was last updated.
+
+    The date and time stamp format is `ISO 8601
+    <https://en.wikipedia.org/wiki/ISO_8601>`_.
+  in: body
+  required: true
+  type: string
+visibility:
+  description: |
+    The namespace visibility, either ``public`` or ``private``.
+  in: body
+  required: true
+  type: enum
+visibility-in-request:
+  description: |
+    The namespace visibility. A valid value is ``public`` or ``private``.
+    Default is ``private``.
+  in: body
+  required: false
+  type: enum
