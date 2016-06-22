@@ -1,0 +1,23 @@
+{
+    "id": "da3b75d9-3f4a-40e7-8a2c-bfab23927dea",
+    "name": "Fedora 17",
+    "status": "active",
+    "visibility": "public",
+    "size": 2254249,
+    "checksum": "2cec138d7dae2aa59038ef8c9aec2390",
+    "tags": [
+        "fedora",
+        "beefy"
+    ],
+    "created_at": "2012-08-10T19:23:50Z",
+    "updated_at": "2012-08-12T11:11:33Z",
+    "self": "/v2/images/da3b75d9-3f4a-40e7-8a2c-bfab23927dea",
+    "file": "/v2/images/da3b75d9-3f4a-40e7-8a2c-bfab23927dea/file",
+    "schema": "/v2/schemas/image",
+    "owner": null,
+    "min_ram": null,
+    "min_disk": null,
+    "disk_format": null,
+    "virtual_size": null,
+    "container_format": null
+}
