@@ -1,0 +1,11 @@
+{
+    "type": "import",
+    "input": {
+        "import_from": "http://app.catalog.openstack.org/groovy-image",
+        "import_from_format": "qcow2",
+        "image_properties": {
+            "disk_format": "vhd",
+            "container_format": "ovf"
+        }
+    }
+}

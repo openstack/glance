@@ -1,0 +1,26 @@
+{
+    "first": "/v2/tasks",
+    "schema": "/v2/schemas/tasks",
+    "tasks": [
+        {
+            "created_at": "2016-06-24T14:44:19Z",
+            "id": "08b7e1c8-3821-4f54-b3b8-d6655d178cdf",
+            "owner": "fa6c8c1600f4444281658a23ee6da8e8",
+            "schema": "/v2/schemas/task",
+            "self": "/v2/tasks/08b7e1c8-3821-4f54-b3b8-d6655d178cdf",
+            "status": "processing",
+            "type": "import",
+            "updated_at": "2016-06-24T14:44:19Z"
+        },
+        {
+            "created_at": "2016-06-24T14:40:19Z",
+            "id": "231c311d-3557-4e23-afc4-6d98af1419e7",
+            "owner": "fa6c8c1600f4444281658a23ee6da8e8",
+            "schema": "/v2/schemas/task",
+            "self": "/v2/tasks/231c311d-3557-4e23-afc4-6d98af1419e7",
+            "status": "processing",
+            "type": "import",
+            "updated_at": "2016-06-24T14:40:20Z"
+        }
+    ]
+}
