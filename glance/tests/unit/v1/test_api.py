@@ -2262,6 +2262,22 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         res = req.get_response(self.api)
         self.assertEqual(200, res.status_int)
 
+    @mock.patch.object(registry, 'update_image_metadata')
+    def test_update_without_public_attribute(self, mock_update_image_metadata):
+        req = webob.Request.blank("/images/%s" % UUID1)
+        req.context = self.context
+        image_meta = {'properties': {}}
+        image_controller = glance.api.v1.images.Controller()
+
+        with mock.patch.object(
+            image_controller, 'update_store_acls'
+        ) as mock_update_store_acls:
+            mock_update_store_acls.return_value = None
+            mock_update_image_metadata.return_value = {}
+            image_controller.update(
+                req, UUID1, image_meta, None)
+            self.assertEqual(0, mock_update_store_acls.call_count)
+
     def test_add_image_wrong_content_type(self):
         fixture_headers = {
             'x-image-meta-name': 'fake image #3',
