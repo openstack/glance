@@ -1,0 +1,195 @@
+# variables in header
+Content-Type-json:
+  description: |
+    The media type descriptor for the request body.  Use ``application/json``.
+  in: header
+  required: true
+  type: string
+
+# variables in path
+task_id:
+  description: |
+    The identifier for the task, a UUID.
+  in: path
+  required: true
+  type: string
+
+# variables in query
+limit:
+  description: |
+    Requests a page size of items. Returns a number of items up to a limit
+    value. Use the ``limit`` parameter to make an initial limited request and
+    use the ID of the last-seen item from the response as the ``marker``
+    parameter value in a subsequent limited request.
+  in: query
+  required: false
+  type: integer
+marker:
+  description: |
+    The ID of the last-seen item. Use the ``limit`` parameter to make an
+    initial limited request and use the ID of the last-seen item from the
+    response as the ``marker`` parameter value in a subsequent limited request.
+  in: query
+  required: false
+  type: string
+sort_dir:
+  description: |
+    Sorts the response by a set of one or more sort direction and attribute
+    (``sort_key``) combinations. A valid value for the sort direction is
+    ``asc`` (ascending) or ``desc`` (descending). If you omit the sort
+    direction in a set, the default is ``desc``.
+  in: query
+  required: false
+  type: string
+sort_key:
+  description: |
+    Sorts the response by one of the following attributes: ``created_at``,
+    ``expires_at``, ``status``, ``type``, ``updated_at``.  Default is
+    ``created_at``.
+  in: query
+  required: false
+  type: string
+status-in-query:
+  description: |
+    Filters the response by a task status. A valid value is ``pending``,
+    ``processing``, ``success``, or ``failure``.
+  in: query
+  required: false
+  type: string
+type-in-query:
+  description: |
+    Filters the response by a task type. A valid value is ``import``.
+  in: query
+  required: false
+  type: string
+
+# variables in body
+created_at:
+  description: |
+    The date and time when the task was created.
+
+    The date and time stamp format is `ISO 8601
+    <https://en.wikipedia.org/wiki/ISO_8601>`_.
+  in: body
+  required: true
+  type: string
+expires_at:
+  description: |
+    The date and time when the task is subject to removal.  While the *task
+    object*, that is, the record describing the task is subject to deletion,
+    the result of the task (for example, an imported image) still exists.
+
+    The date and time stamp format is `ISO 8601
+    <https://en.wikipedia.org/wiki/ISO_8601>`_.
+
+    This value is only set when the task reaches status ``success`` or
+    ``failure``.  Otherwise its value is ``null``.  It may not appear in
+    the response when its value is ``null``.
+  in: body
+  required: true
+  type: string
+first:
+  description: |
+    The URI for the first page of response.
+  in: body
+  required: true
+  type: string
+id:
+  description: |
+    The UUID of the task.
+  in: body
+  required: true
+  type: string
+input:
+  description: |
+    A JSON object specifying the input parameters to the task.  Consult your
+    cloud provider's documentation for details.
+  in: body
+  required: true
+  type: object
+message:
+  description: |
+    Human-readable text, possibly an empty string, usually displayed in an
+    error situation to provide more information about what has occurred.
+  in: body
+  required: true
+  type: string
+next:
+  description: |
+    The URI for the next page of response.  Will not be present on the last
+    page of the response.
+  in: body
+  required: true
+  type: string
+owner:
+  description: |
+    An identifier for the owner of the task, usually the tenant ID.
+  in: body
+  required: true
+  type: string
+result:
+  description: |
+    A JSON object specifying information about the ultimate outcome of the
+    task.  Consult your cloud provider's documentation for details.
+  in: body
+  required: true
+  type: object
+schema-task:
+  description: |
+    The URI for the schema describing an image task.
+  in: body
+  required: true
+  type: string
+schema-tasks:
+  description: |
+    The URI for the schema describing an image task list.
+  in: body
+  required: true
+  type: string
+self:
+  description: |
+    A URI for this task.
+  in: body
+  required: true
+  type: string
+status:
+  description: |
+    The current status of this task. The value can be ``pending``,
+    ``processing``, ``success`` or ``failure``.
+  in: body
+  required: true
+  type: string
+tasks:
+  description: |
+    A list of sparse *task* objects.  Each object contains the following
+    fields:
+
+    - ``created_at``
+    - ``id``
+    - ``owner``
+    - ``schema``
+    - ``self``
+    - ``status``
+    - ``type``
+    - ``updated_at``
+  in: body
+  required: true
+  type: array
+type:
+  description: |
+    The type of task represented by this content.
+  in: body
+  required: true
+  type: string
+updated_at:
+  description: |
+    The date and time when the task was updated.
+
+    The date and time stamp format is `ISO 8601
+    <https://en.wikipedia.org/wiki/ISO_8601>`_.
+
+    If the ``updated_at`` date and time stamp is not set, its value is
+    ``null``.
+  in: body
+  required: true
+  type: string

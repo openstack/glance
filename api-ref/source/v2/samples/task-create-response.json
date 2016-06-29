@@ -1,0 +1,20 @@
+{
+    "created_at": "2016-06-24T14:57:19Z",
+    "id": "bb480de2-7077-4ea9-bbe9-be1891290d3e",
+    "input": {
+        "image_properties": {
+            "container_format": "ovf",
+            "disk_format": "vhd"
+        },
+        "import_from": "http://app.catalog.openstack.org/groovy-image",
+        "import_from_format": "qcow2"
+    },
+    "message": "",
+    "owner": "fa6c8c1600f4444281658a23ee6da8e8",
+    "result": null,
+    "schema": "/v2/schemas/task",
+    "self": "/v2/tasks/bb480de2-7077-4ea9-bbe9-be1891290d3e",
+    "status": "pending",
+    "type": "import",
+    "updated_at": "2016-06-24T14:57:19Z"
+}

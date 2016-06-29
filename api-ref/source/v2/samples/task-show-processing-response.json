@@ -1,0 +1,20 @@
+{
+    "created_at": "2016-06-24T14:40:19Z",
+    "id": "231c311d-3557-4e23-afc4-6d98af1419e7",
+    "input": {
+        "image_properties": {
+            "container_format": "ovf",
+            "disk_format": "vhd"
+        },
+        "import_from": "http://example.com",
+        "import_from_format": "qcow2"
+    },
+    "message": "",
+    "owner": "fa6c8c1600f4444281658a23ee6da8e8",
+    "result": null,
+    "schema": "/v2/schemas/task",
+    "self": "/v2/tasks/231c311d-3557-4e23-afc4-6d98af1419e7",
+    "status": "processing",
+    "type": "import",
+    "updated_at": "2016-06-24T14:40:20Z"
+}

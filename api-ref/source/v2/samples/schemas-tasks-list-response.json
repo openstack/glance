@@ -1,0 +1,71 @@
+{
+    "links": [
+        {
+            "href": "{schema}",
+            "rel": "describedby"
+        }
+    ],
+    "name": "tasks",
+    "properties": {
+        "schema": {
+            "type": "string"
+        },
+        "tasks": {
+            "items": {
+                "name": "task",
+                "properties": {
+                    "created_at": {
+                        "description": "Datetime when this resource was created",
+                        "type": "string"
+                    },
+                    "expires_at": {
+                        "description": "Datetime when this resource would be subject to removal",
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "id": {
+                        "description": "An identifier for the task",
+                        "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                        "type": "string"
+                    },
+                    "owner": {
+                        "description": "An identifier for the owner of this task",
+                        "type": "string"
+                    },
+                    "schema": {
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "self": {
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "status": {
+                        "description": "The current status of this task",
+                        "enum": [
+                            "pending",
+                            "processing",
+                            "success",
+                            "failure"
+                        ],
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "The type of task represented by this content",
+                        "enum": [
+                            "import"
+                        ],
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "description": "Datetime when this resource was updated",
+                        "type": "string"
+                    }
+                }
+            },
+            "type": "array"
+        }
+    }
+}

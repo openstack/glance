@@ -1,0 +1,23 @@
+{
+    "created_at": "2016-06-29T16:13:07Z",
+    "expires_at": "2016-07-01T16:13:07Z",
+    "id": "805f47d2-8814-4cd7-bef3-37037389a998",
+    "input": {
+        "image_properties": {
+            "container_format": "ovf",
+            "disk_format": "vhd"
+        },
+        "import_from": "https://apps.openstack.org/excellent-image",
+        "import_from_format": "qcow2"
+    },
+    "message": "",
+    "owner": "02a7fb2dd4ef434c8a628c511dcbbeb6",
+    "result": {
+        "image_id": "2b61ed2b-f800-4da0-99ff-396b742b8646"
+    },
+    "schema": "/v2/schemas/task",
+    "self": "/v2/tasks/805f47d2-8814-4cd7-bef3-37037389a998",
+    "status": "success",
+    "type": "import",
+    "updated_at": "2016-06-29T16:13:07Z"
+}

@@ -14,13 +14,13 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-==================
-Image Service APIs
-==================
+:tocdepth: 3
 
-.. toctree::
-   :maxdepth: 2
+==============================
+Image Service API v2 (CURRENT)
+==============================
 
-   versions/index
-   v1/index
-   v2/index
+.. rest_expand_all::
+
+.. include:: tasks.inc
+.. include:: tasks-schemas.inc
