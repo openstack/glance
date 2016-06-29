@@ -44,9 +44,36 @@ scrubber_opts = [
                       'may be scrubbed in parallel.')),
     cfg.BoolOpt('delayed_delete', default=False,
                 help=_('Turn on/off delayed delete.')),
+
+    # Note: Though the conf option admin_role is used by other Glance
+    # service and their usage differs requiring us to have a differing
+    # help text here, oslo.config generator treats them as the same
+    # config option and would throw a DuplicateError exception in case
+    # of differing help texts. Hence we have the same help text for
+    # admin_role here and in context.py.
+
     cfg.StrOpt('admin_role', default='admin',
-               help=_('Role used to identify an authenticated user as '
-                      'administrator.')),
+               help=_("""
+Role used to identify an authenticated user as administrator.
+
+Provide a string value representing a Keystone role to identify an
+administrative user. Users with this role will be granted
+administrative privileges. The default value for this option is
+'admin'.
+
+Services which consume this:
+    * glance-api
+    * glare-api
+    * glance-registry
+    * glance-scrubber
+
+Possible values:
+    * A string value which is a valid Keystone role
+
+Related options:
+    * None
+
+""")),
     cfg.BoolOpt('send_identity_headers', default=False,
                 help=_("Whether to pass through headers containing user "
                        "and tenant information when making requests to "

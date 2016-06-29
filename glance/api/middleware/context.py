@@ -26,19 +26,98 @@ from glance.i18n import _, _LW
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True,
-                help=_('When true, this option sets the owner of an image '
-                       'to be the tenant. Otherwise, the owner of the '
-                       ' image will be the authenticated user issuing the '
-                       'request.')),
+                help=_("""
+Set the image owner to tenant or the authenticated user.
+
+Assign a boolean value to determine the owner of an image. When set to
+True, the owner of the image is the tenant. When set to False, the
+owner of the image will be the authenticated user issuing the request.
+Setting it to False makes the image private to the associated user and
+sharing with other users within the same tenant (or "project")
+requires explicit image sharing via image membership.
+
+Services which consume this:
+    * glance-api
+    * glare-api
+    * glance-registry
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * None
+
+""")),
+
     cfg.StrOpt('admin_role', default='admin',
-               help=_('Role used to identify an authenticated user as '
-                      'administrator.')),
+               help=_("""
+Role used to identify an authenticated user as administrator.
+
+Provide a string value representing a Keystone role to identify an
+administrative user. Users with this role will be granted
+administrative privileges. The default value for this option is
+'admin'.
+
+Services which consume this:
+    * glance-api
+    * glare-api
+    * glance-registry
+    * glance-scrubber
+
+Possible values:
+    * A string value which is a valid Keystone role
+
+Related options:
+    * None
+
+""")),
+
     cfg.BoolOpt('allow_anonymous_access', default=False,
-                help=_('Allow unauthenticated users to access the API with '
-                       'read-only privileges. This only applies when using '
-                       'ContextMiddleware.')),
-    cfg.IntOpt('max_request_id_length', default=64,
-               help=_('Limits request ID length.')),
+                help=_("""
+Allow limited access to unauthenticated users.
+
+Assign a boolean to determine API access for unathenticated
+users. When set to False, the API cannot be accessed by
+unauthenticated users. When set to True, unauthenticated users can
+access the API with read-only privileges. This however only applies
+when using ContextMiddleware.
+
+Services which consumes this:
+    * glance-api
+    * glare-api
+    * glance-registry
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * None
+
+""")),
+
+    cfg.IntOpt('max_request_id_length', default=64, min=0,
+               help=_("""
+Limit the request ID length.
+
+Provide  an integer value to limit the length of the request ID to
+the specified length. The default value is 64. Users can change this
+to any ineteger value between 0 and 16384 however keeping in mind that
+a larger value may flood the logs.
+
+Services which consumes this:
+    * glance-api
+    * glare-api
+    * glance-registry
+
+Possible values:
+    * Integer value between 0 and 16384
+
+Related options:
+    * None
+
+""")),
 ]
 
 CONF = cfg.CONF
