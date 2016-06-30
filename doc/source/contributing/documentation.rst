@@ -35,10 +35,23 @@ which you may want to contribute:
 
 * OpenStack API Reference
 
-  There are some Glance-related API quick-reference guides published by the
-  OpenStack Documentation Team. Please see the README in their code repository
-  for more information: https://github.com/openstack/api-site
+  There's a "quick reference" guide to the APIs implemented by Glance:
+  http://developer.openstack.org/api-ref/image/
 
+  The guide is generated from source files in the source code tree under
+  ``api-ref/source``.  Corrections in spelling or typographical errors may be
+  addressed directly by a patch.  If you note a divergence between the API
+  reference and the actual behavior of Glance, please file a bug before
+  submitting a patch.
+
+  Additionally, now that the quick reference guides are being maintained by
+  each project (rather than a central team), you may note divergences in format
+  between the Glance guides and those of other teams.  For example, some
+  projects may have adopted an informative new way to display error codes.  If
+  you notice structural improvements that our API reference is missing, please
+  file a bug.  And, of course, we would also welcome your patch implementing
+  the improvement!
+  
 Release Notes
 -------------
 

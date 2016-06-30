@@ -13,6 +13,7 @@ Policies
 
    blueprints
    documentation
+   minor-code-changes
 .. bugs
    contributor-onboarding
    core-reviewers

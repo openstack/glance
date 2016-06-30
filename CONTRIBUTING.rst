@@ -1,7 +1,7 @@
 If you would like to contribute to the development of OpenStack,
 you must follow the steps in documented at:
 
-   http://docs.openstack.org/infra/manual/developers.html#development-workflow
+   http://docs.openstack.org/infra/manual/developers.html#getting-started
 
 Once those steps have been completed, changes to OpenStack
 should be submitted for review via the Gerrit tool, following
@@ -14,3 +14,8 @@ Pull requests submitted through GitHub will be ignored.
 Bugs should be filed on Launchpad, not GitHub:
 
    https://bugs.launchpad.net/glance
+
+Additionally, specific guidelines for contributing to Glance may be found in
+Glance's Documentation:
+
+   http://docs.openstack.org/developer/glance/contributing
