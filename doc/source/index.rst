@@ -97,6 +97,7 @@ Using Glance
    glanceapi
    glanceclient
    glancemetadefcatalogapi
+   signature
 
 Glance Manual Pages
 ===================
