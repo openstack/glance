@@ -13,11 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import os
 
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
+from oslo_log import log as logging
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
@@ -61,11 +61,10 @@ class _Convert(task.Task):
         conversion_format = CONF.taskflow_executor.conversion_format
         if conversion_format is None:
             if not _Convert.conversion_missing_warned:
-                msg = (_LW('The conversion format is None, please add a value '
-                           'for it in the config file for this task to '
-                           'work: %s') %
-                       self.task_id)
-                LOG.warn(msg)
+                msg = _LW('The conversion format is None, please add a value '
+                          'for it in the config file for this task to '
+                          'work: %s')
+                LOG.warn(msg, self.task_id)
                 _Convert.conversion_missing_warned = True
             return
 
