@@ -313,6 +313,14 @@ def get_image_service():
     return ImageService
 
 
+def _human_readable_size(num, suffix='B'):
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f %s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f %s%s" % (num, 'Yi', suffix)
+
+
 def replication_size(options, args):
     """%(prog)s size <server:port>
 
@@ -339,8 +347,10 @@ def replication_size(options, args):
             total_size += int(image['size'])
             count += 1
 
-    print(_('Total size is %(size)d bytes across %(img_count)d images') %
+    print(_('Total size is %(size)d bytes (%(human_size)s) across '
+            '%(img_count)d images') %
           {'size': total_size,
+           'human_size': _human_readable_size(total_size),
            'img_count': count})
 
 
