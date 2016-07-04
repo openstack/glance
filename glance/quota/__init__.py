@@ -150,6 +150,9 @@ class QuotaImageTagsProxy(object):
     def __eq__(self, other):
         return self.tags == other
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __iter__(self, *args, **kwargs):
         return self.tags.__iter__(*args, **kwargs)
 
@@ -213,6 +216,9 @@ class QuotaImageLocationsProxy(object):
 
     def __eq__(self, other):
         return self.locations == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __getitem__(self, *args, **kwargs):
         return self.locations.__getitem__(*args, **kwargs)

@@ -295,6 +295,9 @@ class ExtraProperties(collections.MutableMapping, dict):
         else:
             return False
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __len__(self):
         return dict(self).__len__()
 

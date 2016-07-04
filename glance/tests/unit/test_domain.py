@@ -298,7 +298,7 @@ class TestExtraProperties(test_utils.BaseTestCase):
         a_dict = {'foo': 'bar', 'snitch': 'golden'}
         extra_properties = domain.ExtraProperties(a_dict)
         ref_extra_properties = {'boo': 'far', 'gnitch': 'solden'}
-        self.assertFalse(extra_properties.__eq__(ref_extra_properties))
+        self.assertNotEqual(ref_extra_properties, extra_properties)
 
     def test_eq_with_unequal_ExtraProperties_object(self):
         a_dict = {'foo': 'bar', 'snitch': 'golden'}
@@ -306,13 +306,13 @@ class TestExtraProperties(test_utils.BaseTestCase):
         ref_extra_properties = domain.ExtraProperties()
         ref_extra_properties['gnitch'] = 'solden'
         ref_extra_properties['boo'] = 'far'
-        self.assertFalse(extra_properties.__eq__(ref_extra_properties))
+        self.assertNotEqual(ref_extra_properties, extra_properties)
 
     def test_eq_with_incompatible_object(self):
         a_dict = {'foo': 'bar', 'snitch': 'golden'}
         extra_properties = domain.ExtraProperties(a_dict)
         random_list = ['foo', 'bar']
-        self.assertFalse(extra_properties.__eq__(random_list))
+        self.assertNotEqual(random_list, extra_properties)
 
 
 class TestTaskFactory(test_utils.BaseTestCase):
