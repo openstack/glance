@@ -73,9 +73,9 @@ cli_opts = [
     cfg.StrOpt('command',
                positional=True,
                help="Command to be given to replicator"),
-    cfg.ListOpt('args',
-                positional=True,
-                help="Arguments for the command"),
+    cfg.MultiStrOpt('args',
+                    positional=True,
+                    help="Arguments for the command"),
 ]
 
 CONF = cfg.CONF
