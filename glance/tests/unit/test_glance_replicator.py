@@ -254,22 +254,22 @@ class FakeHttpResponse(object):
 
 
 FAKEIMAGES = [{'status': 'active', 'size': 100, 'dontrepl': 'banana',
-               'id': '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'},
+               'id': '5dcddce0-cba5-4f18-9cf4-9853c7b207a6', 'name': 'x1'},
               {'status': 'deleted', 'size': 200, 'dontrepl': 'banana',
-               'id': 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b'},
+               'id': 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b', 'name': 'x2'},
               {'status': 'active', 'size': 300, 'dontrepl': 'banana',
-               'id': '37ff82db-afca-48c7-ae0b-ddc7cf83e3db'}]
+               'id': '37ff82db-afca-48c7-ae0b-ddc7cf83e3db', 'name': 'x3'}]
 FAKEIMAGES_LIVEMASTER = [{'status': 'active', 'size': 100,
-                          'dontrepl': 'banana',
+                          'dontrepl': 'banana', 'name': 'x1',
                           'id': '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'},
                          {'status': 'deleted', 'size': 200,
-                          'dontrepl': 'banana',
+                          'dontrepl': 'banana', 'name': 'x2',
                           'id': 'f4da1d2a-40e8-4710-b3aa-0222a4cc887b'},
                          {'status': 'deleted', 'size': 300,
-                          'dontrepl': 'banana',
+                          'dontrepl': 'banana', 'name': 'x3',
                           'id': '37ff82db-afca-48c7-ae0b-ddc7cf83e3db'},
                          {'status': 'active', 'size': 100,
-                          'dontrepl': 'banana',
+                          'dontrepl': 'banana', 'name': 'x4',
                           'id': '15648dd7-8dd0-401c-bd51-550e1ba9a088'}]
 
 
