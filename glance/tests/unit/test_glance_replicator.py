@@ -310,8 +310,9 @@ def check_no_args(command, args):
     try:
         glance_replicator.get_image_service = get_image_service
         command(options, args)
-    except TypeError:
-        no_args_error = True
+    except TypeError as e:
+        if str(e) == "Too few arguments.":
+            no_args_error = True
     finally:
         glance_replicator.get_image_service = orig_img_service
 
@@ -368,6 +369,11 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
 
     def test_replication_size_with_no_args(self):
         args = []
+        command = glance_replicator.replication_size
+        self.assertTrue(check_no_args(command, args))
+
+    def test_replication_size_with_args_is_None(self):
+        args = None
         command = glance_replicator.replication_size
         self.assertTrue(check_no_args(command, args))
 
