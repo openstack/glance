@@ -1,6 +1,6 @@
 {
     "context_is_admin":  "role:admin",
-    "default": "",
+    "default": "role:admin",
 
     "add_image": "",
     "delete_image": "",
