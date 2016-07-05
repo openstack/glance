@@ -38,19 +38,25 @@ CONF = cfg.CONF
 
 
 class TagsController(object):
-    def __init__(self, db_api=None, policy_enforcer=None, notifier=None):
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None,
+                 schema=None):
         self.db_api = db_api or glance.db.get_api()
         self.policy = policy_enforcer or policy.Enforcer()
         self.notifier = notifier or glance.notifier.Notifier()
         self.gateway = glance.gateway.Gateway(db_api=self.db_api,
                                               notifier=self.notifier,
                                               policy_enforcer=self.policy)
+        self.schema = schema or get_schema()
         self.tag_schema_link = '/v2/schemas/metadefs/tag'
 
     def create(self, req, namespace, tag_name):
         tag_factory = self.gateway.get_metadef_tag_factory(req.context)
         tag_repo = self.gateway.get_metadef_tag_repo(req.context)
         tag_name_as_dict = {'name': tag_name}
+        try:
+            self.schema.validate(tag_name_as_dict)
+        except exception.InvalidObject as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         try:
             new_meta_tag = tag_factory.new_tag(
                 namespace=namespace,
@@ -198,7 +204,8 @@ def _get_base_definitions():
 def _get_base_properties():
     return {
         "name": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
         },
         "created_at": {
             "type": "string",
