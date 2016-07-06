@@ -115,14 +115,14 @@ class ImageDataController(object):
 
                 try:
                     image_repo.save(image, from_state='saving')
-                except exception.NotAuthenticated as e:
+                except exception.NotAuthenticated:
                     if refresher is not None:
                         # request a new token to update an image in database
                         cxt.auth_token = refresher.refresh_token()
                         image_repo = self.gateway.get_repo(req.context)
                         image_repo.save(image, from_state='saving')
                     else:
-                        raise e
+                        raise
 
                 try:
                     # release resources required for re-auth

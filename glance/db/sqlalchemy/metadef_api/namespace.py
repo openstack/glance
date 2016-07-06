@@ -268,7 +268,7 @@ def delete(context, name, session):
             raise exc.MetadefIntegrityError(
                 record_type='namespace', record_name=name)
         else:
-            raise e
+            raise
 
     return namespace_rec.to_dict()
 
@@ -296,6 +296,6 @@ def delete_cascade(context, name, session):
                 raise exc.MetadefIntegrityError(
                     record_type='namespace', record_name=name)
             else:
-                raise e
+                raise
 
     return namespace_rec.to_dict()

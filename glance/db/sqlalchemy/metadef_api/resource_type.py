@@ -102,6 +102,6 @@ def delete(context, name, session):
             raise exc.MetadefIntegrityError(
                 record_type='resource-type', record_name=name)
         else:
-            raise e
+            raise
 
     return db_rec.to_dict()
