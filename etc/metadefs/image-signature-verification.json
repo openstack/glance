@@ -1,0 +1,50 @@
+{
+    "namespace": "OS::Glance::Signatures",
+    "display_name": "Image Signature Verification",
+    "description": "Image signature verification allows the user to verify that an image has not been modified prior to booting the image.",
+    "visibility": "public",
+    "protected": false,
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image"
+        }
+    ],
+    "properties": {
+        "img_signature": {
+            "title": "Image Signature",
+            "description": "The signature of the image data encoded in base64 format.",
+            "type": "string"
+        },
+        "img_signature_certificate_uuid": {
+            "title": "Image Signature Certificate UUID",
+            "description": "The UUID used to retrieve the certificate from the key manager.",
+            "type": "string"
+        },
+        "img_signature_hash_method": {
+            "title": "Image Signature Hash Method",
+            "description": "The hash method used in creating the signature.",
+            "type": "string",
+            "enum": [
+                "SHA-224",
+                "SHA-256",
+                "SHA-384",
+                "SHA-512"
+            ]
+        },
+        "img_signature_key_type": {
+            "title": "Image Signature Key Type",
+            "description": "The key type used in creating the signature.",
+            "type": "string",
+            "enum": [
+                "RSA-PSS",
+                "DSA",
+                "ECC_SECT571K1",
+                "ECC_SECT409K1",
+                "ECC_SECT571R1",
+                "ECC_SECT409R1",
+                "ECC_SECP521R1",
+                "ECC_SECP384R1"
+            ]
+        }
+    }
+}
