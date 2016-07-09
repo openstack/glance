@@ -55,7 +55,6 @@ from glance.i18n import _
 
 
 CONF = cfg.CONF
-LOG = logging.getLogger(__name__)
 
 
 # Decorators for actions
