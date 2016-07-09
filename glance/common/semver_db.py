@@ -90,10 +90,10 @@ def _version_to_long(version):
     * next 2 bits are used to store the flag: if the version has pre-release
       label then these bits are 00, otherwise they are 11. Intermediate values
       of the flag (01 and 10) are reserved for future usage.
-    * last 14 bits of the value are reserved fo future usage
+    * last 14 bits of the value are reserved for future usage
 
-    The numeric components of version are checked so their value do not exceed
-    16 bits.
+    The numeric components of version are checked so their value does not
+    exceed 16 bits.
 
     :param version: a semantic_version.Version object
     """
