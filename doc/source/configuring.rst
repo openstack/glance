@@ -36,9 +36,11 @@ directories for a configuration file, in order:
 
 The Glance API server configuration file should be named ``glance-api.conf``.
 Similarly, the Glance Registry server configuration file should be named
-``glance-registry.conf``. If you installed Glance via your operating system's
-package management system, it is likely that you will have sample
-configuration files installed in ``/etc/glance``.
+``glance-registry.conf``. There are many other configuration files also
+since Glance maintains a configuration file for each of its services. If you
+installed Glance via your operating system's package management system, it
+is likely that you will have sample configuration files installed in
+``/etc/glance``.
 
 In addition to this documentation page, you can check the
 ``etc/glance-api.conf`` and ``etc/glance-registry.conf`` sample configuration
@@ -106,8 +108,8 @@ Specified on the command line only.
 
 Takes a path to a configuration directory from which all \*.conf fragments
 are loaded. This provides an alternative to multiple --config-file options
-when it is inconvenient to explicitly enumerate all the config files, for
-example when an unknown number of config fragments are being generated
+when it is inconvenient to explicitly enumerate all the configuration files,
+for example when an unknown number of config fragments are being generated
 by a deployment framework.
 
 If --config-dir is set, then --config-file is ignored.
@@ -131,7 +133,7 @@ Note that ``glance-manage`` currently loads configuration from three files:
 
 * ``glance-registry.conf``
 * ``glance-api.conf``
-* and the newly created ``glance-manage.conf``
+* ``glance-manage.conf``
 
 By default ``glance-manage.conf`` only specifies a custom logging file but
 other configuration options for ``glance-manage`` should be migrated in there.
@@ -409,7 +411,7 @@ Configuring Glance Storage Backends
 
 There are a number of configuration options in Glance that control how Glance
 stores disk images. These configuration options are specified in the
-``glance-api.conf`` config file in the section ``[glance_store]``.
+``glance-api.conf`` configuration file in the section ``[glance_store]``.
 
 * ``default_store=STORE``
 
@@ -418,18 +420,17 @@ Optional. Default: ``file``
 Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``, ``sheepdog``,
-``cinder`` or ``vsphere``). In order to select a default store it must also
-be listed in the ``stores`` list described below.
+Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``,
+``sheepdog``, ``cinder`` or ``vsphere``). In order to select a default store
+it must also be listed in the ``stores`` list described below.
 
 * ``stores=STORES``
 
-Optional. Default: ``glance.store.filesystem.Store, glance.store.http.Store``
+Optional. Default: ``file, http``
 
-A comma separated list of enabled glance stores. Options are specified
-in the format of glance.store.OPTION.Store.  Some available options for this
-option are (``filesystem``, ``http``, ``rbd``, ``s3``, ``swift``, ``sheepdog``,
-``cinder``, ``vmware_datastore``)
+A comma separated list of enabled glance stores. Some available options for
+this option are (``filesystem``, ``http``, ``rbd``, ``s3``, ``swift``,
+``sheepdog``, ``cinder``, ``vmware_datastore``)
 
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -745,9 +746,9 @@ reference is stored in the database and the corresponding configuration
 (credentials/ parameters) details are stored in the configuration file.
 Optional.  Default: not enabled.
 
-The location for this file is specified using the ``swift_store_config_file`` config file
-in the section ``[DEFAULT]``. **If an incorrect value is specified, Glance API Swift store
-service will not be configured.**
+The location for this file is specified using the ``swift_store_config_file``
+configuration file in the section ``[DEFAULT]``. **If an incorrect value is
+specified, Glance API Swift store service will not be configured.**
 * ``swift_store_config_file=PATH``
 
 `This option is specific to the Swift storage backend.`
@@ -1034,7 +1035,8 @@ Setting ``rados_connect_timeout<=0`` means no timeout.
 
 * ``rbd_store_ceph_conf=PATH``
 
-Optional. Default: ``/etc/ceph/ceph.conf``, ``~/.ceph/config``, and ``./ceph.conf``
+Optional. Default: ``/etc/ceph/ceph.conf``, ``~/.ceph/config``, and
+``./ceph.conf``
 
 Can only be specified in configuration files.
 
@@ -1394,7 +1396,7 @@ Configuring Glance Image Size Limit
 -----------------------------------
 
 The following configuration option is specified in the
-``glance-api.conf`` config file in the section ``[DEFAULT]``.
+``glance-api.conf`` configuration file in the section ``[DEFAULT]``.
 
 * ``image_size_cap=SIZE``
 
@@ -1409,7 +1411,7 @@ Configuring Glance User Storage Quota
 -------------------------------------
 
 The following configuration option is specified in the
-``glance-api.conf`` config file in the section ``[DEFAULT]``.
+``glance-api.conf`` configuration file in the section ``[DEFAULT]``.
 
 * ``user_storage_quota``
 
@@ -1464,7 +1466,7 @@ Enabling the Image Cache Management Middleware
 
 There is an optional ``cachemanage`` middleware that allows you to
 directly interact with cache images. Use this flavor in place of the
-``cache`` flavor in your api config file. There are three types you
+``cache`` flavor in your API configuration file. There are three types you
 can chose: ``cachemanagement``, ``keystone+cachemanagement`` and
 ``trusted-auth+cachemanagement``.::
 
@@ -1541,7 +1543,7 @@ Configuring the Glance Registry
 
 There are a number of configuration options in Glance that control how
 this registry server operates. These configuration options are specified in the
-``glance-registry.conf`` config file in the section ``[DEFAULT]``.
+``glance-registry.conf`` configuration file in the section ``[DEFAULT]``.
 
 **IMPORTANT NOTE**: The glance-registry service is only used in conjunction
 with the glance-api service when clients are using the v1 REST API. See
@@ -1591,7 +1593,7 @@ Configuring Notifications
 
 Glance can optionally generate notifications to be logged or sent to a message
 queue. The configuration options are specified in the ``glance-api.conf``
-config file.
+configuration file.
 
 * ``[oslo_messaging_notifications]/driver``
 
@@ -1624,9 +1626,9 @@ Configuring Glance Property Protections
 
 Access to image meta properties may be configured using a
 :doc:`Property Protections Configuration file <property-protections>`.  The
-location for this file can be specified in the ``glance-api.conf`` config file
-in the section ``[DEFAULT]``. **If an incorrect value is specified, glance api
-service will not start.**
+location for this file can be specified in the ``glance-api.conf``
+configuration file in the section ``[DEFAULT]``. **If an incorrect value is
+specified, glance API service will not start.**
 
 * ``property_protection_file=PATH``
 
