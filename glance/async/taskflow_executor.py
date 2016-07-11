@@ -37,13 +37,46 @@ taskflow_executor_opts = [
     cfg.StrOpt('engine_mode',
                default='parallel',
                choices=('serial', 'parallel'),
-               help=_("The mode in which the engine will run. "
-                      "Can be 'serial' or 'parallel'.")),
+               help=_("""
+Set the taskflow engine mode.
+
+Provide a string type value to set the mode in which the taskflow
+engine would schedule tasks to the workers on the hosts. Based on
+this mode, the engine executes tasks either in single or multiple
+threads. The possible values for this configuration option are:
+``serial`` and ``parallel``. When set to ``serial``, the engine runs
+all the tasks in a single thread which results in serial execution
+of tasks. Setting this to ``parallel`` makes the engine run tasks in
+multiple threads. This results in parallel execution of tasks.
+
+Possible values:
+    * serial
+    * parallel
+
+Related options:
+    * max_workers
+
+""")),
+
     cfg.IntOpt('max_workers',
                default=10,
-               help=_("The number of parallel activities executed at the "
-                      "same time by the engine. The value can be greater "
-                      "than one when the engine mode is 'parallel'."),
+               min=1,
+               help=_("""
+Set the number of engine executable tasks.
+
+Provide an integer value to limit the number of workers that can be
+instantiated on the hosts. In other words, this number defines the
+number of parallel tasks that can be executed at the same time by
+the taskflow engine. This value can be greater than one when the
+engine mode is set to parallel.
+
+Possible values:
+    * Integer value greater than or equal to 1
+
+Related options:
+    * engine_mode
+
+"""),
                deprecated_opts=[_deprecated_opt])
 ]
 
