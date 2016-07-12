@@ -1,0 +1,40 @@
+{
+    "created_at": "2016-06-28T14:57:10Z",
+    "description": "The libvirt compute driver options.",
+    "display_name": "libvirt Driver Options",
+    "namespace": "OS::Compute::Libvirt",
+    "owner": "admin",
+    "properties": {
+        "boot_menu": {
+            "description": "If true, enables the BIOS bootmenu.",
+            "enum": [
+                "true",
+                "false"
+            ],
+            "title": "Boot Menu",
+            "type": "string"
+        },
+        "serial_port_count": {
+            "description": "Specifies the count of serial ports.",
+            "minimum": 0,
+            "title": "Serial Port Count",
+            "type": "integer"
+        }
+    },
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "created_at": "2016-06-28T14:57:10Z",
+            "name": "OS::Glance::Image",
+            "prefix": "hw_"
+        },
+        {
+            "created_at": "2016-06-28T14:57:10Z",
+            "name": "OS::Nova::Flavor",
+            "prefix": "hw:"
+        }
+    ],
+    "schema": "/v2/schemas/metadefs/namespace",
+    "self": "/v2/metadefs/namespaces/OS::Compute::Libvirt",
+    "visibility": "public"
+}

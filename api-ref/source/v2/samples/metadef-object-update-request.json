@@ -1,0 +1,12 @@
+{
+    "description": "You can configure the CPU limits with control parameters.",
+    "name": "CPU Limits",
+    "properties": {
+        "quota:cpu_shares": {
+            "description": "Specifies the proportional weighted share for the domain. If this element is omitted, the service defaults to the OS provided defaults. There is no unit for the value; it is a relative measure based on the setting of other VMs. For example, a VM configured with value 2048 gets twice as much CPU time as a VM configured with value 1024.",
+            "title": "Quota: CPU Shares",
+            "type": "integer"
+        }
+    },
+    "required": []
+}

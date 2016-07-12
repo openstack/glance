@@ -1,0 +1,29 @@
+{
+    "resource_types": [
+        {
+            "created_at": "2014-08-28T18:13:04Z",
+            "name": "OS::Glance::Image",
+            "updated_at": "2014-08-28T18:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T18:13:04Z",
+            "name": "OS::Cinder::Volume",
+            "updated_at": "2014-08-28T18:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T18:13:04Z",
+            "name": "OS::Nova::Flavor",
+            "updated_at": "2014-08-28T18:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T18:13:04Z",
+            "name": "OS::Nova::Aggregate",
+            "updated_at": "2014-08-28T18:13:04Z"
+        },
+        {
+            "created_at": "2014-08-28T18:13:04Z",
+            "name": "OS::Nova::Instance",
+            "updated_at": "2014-08-28T18:13:04Z"
+        }
+    ]
+}

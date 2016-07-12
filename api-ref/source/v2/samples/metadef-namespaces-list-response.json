@@ -1,0 +1,96 @@
+{
+    "first": "/v2/metadefs/namespaces?sort_key=created_at&sort_dir=asc",
+    "namespaces": [
+        {
+            "created_at": "2014-08-28T17:13:06Z",
+            "description": "The libvirt compute driver options. These are properties specific to compute drivers.  For a list of all hypervisors, see here: https://wiki.openstack.org/wiki/HypervisorSupportMatrix.",
+            "display_name": "libvirt Driver Options",
+            "namespace": "OS::Compute::Libvirt",
+            "owner": "admin",
+            "protected": true,
+            "resource_type_associations": [
+                {
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "name": "OS::Glance::Image",
+                    "updated_at": "2014-08-28T17:13:06Z"
+                }
+            ],
+            "schema": "/v2/schemas/metadefs/namespace",
+            "self": "/v2/metadefs/namespaces/OS::Compute::Libvirt",
+            "updated_at": "2014-08-28T17:13:06Z",
+            "visibility": "public"
+        },
+        {
+            "created_at": "2014-08-28T17:13:06Z",
+            "description": "Compute drivers may enable quotas on CPUs available to a VM, disk tuning, bandwidth I/O, and instance VIF traffic control.  See: http://docs.openstack.org/admin-guide-cloud/compute-flavors.html",
+            "display_name": "Flavor Quota",
+            "namespace": "OS::Compute::Quota",
+            "owner": "admin",
+            "protected": true,
+            "resource_type_associations": [
+                {
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "name": "OS::Nova::Flavor",
+                    "updated_at": "2014-08-28T17:13:06Z"
+                }
+            ],
+            "schema": "/v2/schemas/metadefs/namespace",
+            "self": "/v2/metadefs/namespaces/OS::Compute::Quota",
+            "updated_at": "2014-08-28T17:13:06Z",
+            "visibility": "public"
+        },
+        {
+            "created_at": "2014-08-28T17:13:06Z",
+            "description": "Trusted compute pools with Intel\u00ae Trusted Execution Technology (Intel\u00ae TXT) support IT compliance by protecting virtualized data centers - private, public, and hybrid clouds against attacks toward hypervisor and BIOS, firmware, and other pre-launch software components.",
+            "display_name": "Trusted Compute Pools (Intel\u00ae TXT)",
+            "namespace": "OS::Compute::Trust",
+            "owner": "admin",
+            "protected": true,
+            "resource_type_associations": [
+                {
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "name": "OS::Nova::Flavor",
+                    "updated_at": "2014-08-28T17:13:06Z"
+                }
+            ],
+            "schema": "/v2/schemas/metadefs/namespace",
+            "self": "/v2/metadefs/namespaces/OS::Compute::Trust",
+            "updated_at": "2014-08-28T17:13:06Z",
+            "visibility": "public"
+        },
+        {
+            "created_at": "2014-08-28T17:13:06Z",
+            "description": "This provides the preferred socket/core/thread counts for the virtual CPU instance exposed to guests. This enables the ability to avoid hitting limitations on vCPU topologies that OS vendors place on their products. See also: http://git.openstack.org/cgit/openstack/nova-specs/tree/specs/juno/virt-driver-vcpu-topology.rst",
+            "display_name": "Virtual CPU Topology",
+            "namespace": "OS::Compute::VirtCPUTopology",
+            "owner": "admin",
+            "protected": true,
+            "resource_type_associations": [
+                {
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "name": "OS::Glance::Image",
+                    "prefix": "hw_",
+                    "updated_at": "2014-08-28T17:13:06Z"
+                },
+                {
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "name": "OS::Cinder::Volume",
+                    "prefix": "hw_",
+                    "properties_target": "image",
+                    "updated_at": "2014-08-28T17:13:06Z"
+                },
+                {
+                    "created_at": "2014-08-28T17:13:06Z",
+                    "name": "OS::Nova::Flavor",
+                    "prefix": "hw:",
+                    "updated_at": "2014-08-28T17:13:06Z"
+                }
+            ],
+            "schema": "/v2/schemas/metadefs/namespace",
+            "self": "/v2/metadefs/namespaces/OS::Compute::VirtCPUTopology",
+            "updated_at": "2014-08-28T17:13:06Z",
+            "visibility": "public"
+        }
+    ],
+    "schema": "/v2/schemas/metadefs/namespaces"
+}

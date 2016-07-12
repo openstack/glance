@@ -1,0 +1,12 @@
+{
+    "created_at": "2014-09-19T13:31:37Z",
+    "description": "Choose capabilities that should be provided by the Compute Host. This provides the ability to fine tune the harware specification required when a new vm is requested.",
+    "display_name": "Hypervisor Selection",
+    "namespace": "OS::Compute::Hypervisor",
+    "owner": "7ec22942411e427692e8a3436be1031a",
+    "protected": false,
+    "schema": "/v2/schemas/metadefs/namespace",
+    "self": "/v2/metadefs/namespaces/OS::Compute::Hypervisor",
+    "updated_at": "2014-09-19T13:31:37Z",
+    "visibility": "public"
+}

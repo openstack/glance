@@ -1,0 +1,15 @@
+{
+    "description": "The hypervisor type. It may be used by the host properties filter for scheduling. The ImagePropertiesFilter filters compute nodes that satisfy any architecture, hypervisor type, or virtual machine mode properties specified on the instance's image properties. Image properties are contained in the image dictionary in the request_spec.",
+    "enum": [
+        "xen",
+        "qemu",
+        "kvm",
+        "lxc",
+        "uml",
+        "vmware",
+        "hyperv"
+    ],
+    "name": "hypervisor_type",
+    "title": "Hypervisor Type",
+    "type": "string"
+}
