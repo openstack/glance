@@ -628,8 +628,10 @@ def replication_compare(options, args):
                               {'image_id': image['id']})
 
         elif image['status'] == 'active':
-            LOG.warn(_LW('Image %s entirely missing from the destination')
-                     % image['id'])
+            LOG.warn(_LW('Image %(image_id)s ("%(image_name)s") '
+                     'entirely missing from the destination')
+                     % {'image_id': image['id'],
+                        'image_name': image['name']})
             differences[image['id']] = 'missing'
 
     return differences
