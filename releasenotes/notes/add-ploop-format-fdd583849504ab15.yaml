@@ -1,0 +1,11 @@
+---
+prelude: >
+  - Add ``ploop`` to the list of supported disk formats.
+features:
+  - The identifier ``ploop`` has been added to the list of
+    supported disk formats in Glance. The respective
+    configuration option has been updated and the default
+    list shows ``ploop`` as a supported format.
+upgrade:
+  - The ``disk_format`` config option enables ``ploop`` as
+    supported by default.

@@ -514,7 +514,7 @@ The list of metadata headers that Glance accepts are listed below.
 
   This header is required, unless reserving an image. Valid values are one of
   ``aki``, ``ari``, ``ami``, ``raw``, ``iso``, ``vhd``, ``vhdx``, ``vdi``,
-  ``qcow2``, or ``vmdk``.
+  ``qcow2``, ``vmdk`` or ``ploop``.
 
   For more information, see :doc:`About Disk and Container Formats <formats>`.
 

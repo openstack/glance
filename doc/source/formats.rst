@@ -59,6 +59,10 @@ You can set your image's disk format to one of the following:
 
   An archive format for the data contents of an optical disc (e.g. CDROM).
 
+* **ploop**
+
+  A disk format supported and used by Virtuozzo to run OS Containers
+
 * **qcow2**
 
   A disk format supported by the QEMU emulator that can expand dynamically and

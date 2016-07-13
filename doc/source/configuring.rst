@@ -1700,4 +1700,4 @@ done by setting the ``disk_formats`` parameter which is found in the
 
 * ``disk_formats=<Comma separated list of disk formats>``
 
-Optional. Default: ``ami,ari,aki,vhd,vmdk,raw,qcow2,vdi,iso``
+Optional. Default: ``ami,ari,aki,vhd,vmdk,raw,qcow2,vdi,iso,ploop``
