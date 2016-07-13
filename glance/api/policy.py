@@ -60,12 +60,8 @@ class Enforcer(policy.Enforcer):
            :raises: `glance.common.exception.Forbidden`
            :returns: A non-False value if access is allowed.
         """
-        credentials = {
-            'roles': context.roles,
-            'user': context.user,
-            'tenant': context.tenant,
-        }
-        return super(Enforcer, self).enforce(action, target, credentials,
+        return super(Enforcer, self).enforce(action, target,
+                                             context.to_policy_values(),
                                              do_raise=True,
                                              exc=exception.Forbidden,
                                              action=action)
@@ -78,12 +74,9 @@ class Enforcer(policy.Enforcer):
            :param target: Dictionary representing the object of the action.
            :returns: A non-False value if access is allowed.
         """
-        credentials = {
-            'roles': context.roles,
-            'user': context.user,
-            'tenant': context.tenant,
-        }
-        return super(Enforcer, self).enforce(action, target, credentials)
+        return super(Enforcer, self).enforce(action,
+                                             target,
+                                             context.to_policy_values())
 
     def check_is_admin(self, context):
         """Check if the given context is associated with an admin role,

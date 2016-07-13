@@ -102,14 +102,6 @@ class ContextMiddleware(BaseContextMiddleware):
         return glance.context.RequestContext(**kwargs)
 
     def _get_authenticated_context(self, req):
-        # NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
-        # it into a list to be useful
-        roles_header = req.headers.get('X-Roles', '')
-        roles = [r.strip().lower() for r in roles_header.split(',')]
-
-        # NOTE(bcwaldon): This header is deprecated in favor of X-Auth-Token
-        deprecated_token = req.headers.get('X-Storage-Token')
-
         service_catalog = None
         if req.headers.get('X-Service-Catalog') is not None:
             try:
@@ -127,18 +119,25 @@ class ContextMiddleware(BaseContextMiddleware):
             return webob.exc.HTTPRequestHeaderFieldsTooLarge(comment=msg)
 
         kwargs = {
-            'user': req.headers.get('X-User-Id'),
-            'tenant': req.headers.get('X-Tenant-Id'),
-            'roles': roles,
-            'is_admin': CONF.admin_role.strip().lower() in roles,
-            'auth_token': req.headers.get('X-Auth-Token', deprecated_token),
             'owner_is_tenant': CONF.owner_is_tenant,
             'service_catalog': service_catalog,
             'policy_enforcer': self.policy_enforcer,
             'request_id': request_id,
         }
 
-        return glance.context.RequestContext(**kwargs)
+        ctxt = glance.context.RequestContext.from_environ(req.environ,
+                                                          **kwargs)
+
+        # FIXME(jamielennox): glance has traditionally lowercased its roles.
+        # This was related to bug #1010519 where at least the admin role was
+        # case insensitive. This seems to no longer be the case and should be
+        # fixed.
+        ctxt.roles = [r.lower() for r in ctxt.roles]
+
+        if CONF.admin_role.strip().lower() in ctxt.roles:
+            ctxt.is_admin = True
+
+        return ctxt
 
 
 class UnauthenticatedContextMiddleware(BaseContextMiddleware):
