@@ -572,6 +572,10 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
         proxy = glance.quota.QuotaImageTagsProxy(set([]))
         self.assertEqual(set([]), proxy)
 
+    def test_not_equals(self):
+        proxy = glance.quota.QuotaImageTagsProxy(set([]))
+        self.assertNotEqual('foo', proxy)
+
     def test_contains(self):
         proxy = glance.quota.QuotaImageTagsProxy(set(['foo']))
         self.assertIn('foo', proxy)

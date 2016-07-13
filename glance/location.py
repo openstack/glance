@@ -303,6 +303,9 @@ class StoreLocations(collections.MutableSequence):
     def __eq__(self, other):
         return self.value == self.__cast(other)
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __iter__(self):
         return iter(self.value)
 
