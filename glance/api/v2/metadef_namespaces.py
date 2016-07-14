@@ -205,9 +205,11 @@ class NamespaceController(object):
                 namespace_repo.remove(namespace_obj)
                 LOG.debug("Cleaned up namespace %(namespace)s ",
                           {'namespace': namespace.namespace})
-            except exception:
-                msg = (_LE("Failed to delete namespace %(namespace)s ") %
-                       {'namespace': namespace.namespace})
+            except Exception as e:
+                msg = (_LE("Failed to delete namespace %(namespace)s."
+                           "Exception: %(exception)s"),
+                       {'namespace': namespace.namespace,
+                        'exception': encodeutils.exception_to_unicode(e)})
                 LOG.error(msg)
 
     def show(self, req, namespace, filters=None):

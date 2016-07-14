@@ -14,6 +14,7 @@
 #    under the License.
 
 import datetime
+import mock
 
 from oslo_serialization import jsonutils
 import webob
@@ -23,6 +24,7 @@ from glance.api.v2 import metadef_objects as objects
 from glance.api.v2 import metadef_properties as properties
 from glance.api.v2 import metadef_resource_types as resource_types
 from glance.api.v2 import metadef_tags as tags
+import glance.gateway
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 
@@ -394,6 +396,52 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         for object in output['objects']:
             [self.assertTrue(property_name.startswith(rt.prefix)) for
              property_name in object.properties.keys()]
+
+    @mock.patch('glance.api.v2.metadef_namespaces.LOG')
+    def test_cleanup_namespace_success(self, mock_log):
+        fake_gateway = glance.gateway.Gateway(db_api=self.db,
+                                              notifier=self.notifier,
+                                              policy_enforcer=self.policy)
+        req = unit_test_utils.get_fake_request()
+        ns_factory = fake_gateway.get_metadef_namespace_factory(
+            req.context)
+        ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
+        namespace = namespaces.Namespace()
+        namespace.namespace = 'FakeNamespace'
+        new_namespace = ns_factory.new_namespace(**namespace.to_dict())
+        ns_repo.add(new_namespace)
+
+        self.namespace_controller._cleanup_namespace(ns_repo, namespace, True)
+
+        mock_log.debug.assert_called_with(
+            "Cleaned up namespace %(namespace)s ",
+            {'namespace': namespace.namespace})
+
+    @mock.patch('glance.api.v2.metadef_namespaces.LOG')
+    @mock.patch('glance.api.authorization.MetadefNamespaceRepoProxy.remove')
+    def test_cleanup_namespace_exception(self, mock_remove, mock_log):
+        mock_remove.side_effect = Exception(u'Mock remove was called')
+
+        fake_gateway = glance.gateway.Gateway(db_api=self.db,
+                                              notifier=self.notifier,
+                                              policy_enforcer=self.policy)
+        req = unit_test_utils.get_fake_request()
+        ns_factory = fake_gateway.get_metadef_namespace_factory(
+            req.context)
+        ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
+        namespace = namespaces.Namespace()
+        namespace.namespace = 'FakeNamespace'
+        new_namespace = ns_factory.new_namespace(**namespace.to_dict())
+        ns_repo.add(new_namespace)
+
+        self.namespace_controller._cleanup_namespace(ns_repo, namespace, True)
+
+        called_msg = 'Failed to delete namespace %(namespace)s.' \
+                     'Exception: %(exception)s'
+        called_args = {'exception': u'Mock remove was called',
+                       'namespace': u'FakeNamespace'}
+        mock_log.error.assert_called_with((called_msg, called_args))
+        mock_remove.assert_called_once_with(mock.ANY)
 
     def test_namespace_show_non_existing(self):
         request = unit_test_utils.get_fake_request()
