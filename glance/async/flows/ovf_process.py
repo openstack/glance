@@ -249,8 +249,8 @@ class OVAImageExtractor(object):
                                  'CIM_ProcessorAllocationSettingData '
                                  'properties.'))
         else:
-            LOG.warn(_('OVF properties config file "ovf-metadata.json" was '
-                       'not found.'))
+            LOG.warn(_LW('OVF properties config file "ovf-metadata.json" was '
+                         'not found.'))
 
 
 def get_flow(**kwargs):
