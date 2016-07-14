@@ -46,7 +46,7 @@ class Prefetcher(base.CacheApp):
             image_repo = self.gateway.get_repo(ctx)
             image = image_repo.get(image_id)
         except exception.NotFound:
-            LOG.warn(_LW("Image '%s' not found") % image_id)
+            LOG.warning(_LW("Image '%s' not found"), image_id)
             return False
 
         if image.status != 'active':

@@ -117,8 +117,8 @@ def get_remaining_quota(context, db_api, image_id=None):
 
     if not match:
         LOG.error(_LE("Invalid value for option user_storage_quota: "
-                      "%(users_quota)s")
-                  % {'users_quota': users_quota})
+                      "%(users_quota)s"),
+                  {'users_quota': users_quota})
         raise exception.InvalidOptionValue(option='user_storage_quota',
                                            value=users_quota)
 
@@ -166,8 +166,8 @@ def check_quota(context, image_size, db_api, image_id=None):
         if remaining <= 0:
             LOG.warn(_LW("User %(user)s attempted to upload an image of"
                          " unknown size that will exceed the quota."
-                         " %(remaining)d bytes remaining.")
-                     % {'user': user, 'remaining': remaining})
+                         " %(remaining)d bytes remaining."),
+                     {'user': user, 'remaining': remaining})
             raise exception.StorageQuotaFull(image_size=image_size,
                                              remaining=remaining)
         return
@@ -175,8 +175,8 @@ def check_quota(context, image_size, db_api, image_id=None):
     if image_size > remaining:
         LOG.warn(_LW("User %(user)s attempted to upload an image of size"
                      " %(size)d that will exceed the quota. %(remaining)d"
-                     " bytes remaining.")
-                 % {'user': user, 'size': image_size, 'remaining': remaining})
+                     " bytes remaining."),
+                 {'user': user, 'size': image_size, 'remaining': remaining})
         raise exception.StorageQuotaFull(image_size=image_size,
                                          remaining=remaining)
 

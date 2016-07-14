@@ -73,7 +73,7 @@ def safe_kill(req, image_id, from_state):
     try:
         _kill(req, image_id, from_state)
     except Exception:
-        LOG.exception(_LE("Unable to kill image %(id)s: ") % {'id': image_id})
+        LOG.exception(_LE("Unable to kill image %(id)s: "), {'id': image_id})
 
 
 def upload_data_to_store(req, image_meta, image_data, store, notifier):
@@ -172,7 +172,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             # Delete image data due to possible token expiration.
             LOG.debug("Authentication error - the token may have "
                       "expired during file upload. Deleting image data for "
-                      " %s " % image_id)
+                      " %s", image_id)
             initiate_deletion(req, location_data, image_id)
             raise webob.exc.HTTPUnauthorized(explanation=e.msg, request=req)
         except exception.ImageNotFound:

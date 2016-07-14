@@ -386,7 +386,7 @@ class Scrubber(object):
         else:
             LOG.warn(_LW("One or more image locations couldn't be scrubbed "
                          "from backend. Leaving image '%s' in 'pending_delete'"
-                         " status") % image_id)
+                         " status"), image_id)
 
     def _delete_image_location_from_backend(self, image_id, loc_id, uri,
                                             backend=None):

@@ -540,14 +540,13 @@ class ImageProxy(glance.domain.proxy.Image):
                 return data
             except Exception as e:
                 LOG.warn(_LW('Get image %(id)s data failed: '
-                             '%(err)s.')
-                         % {'id': self.image.image_id,
-                            'err': encodeutils.exception_to_unicode(e)})
+                             '%(err)s.'),
+                         {'id': self.image.image_id,
+                          'err': encodeutils.exception_to_unicode(e)})
                 err = e
         # tried all locations
-        LOG.error(_LE(
-            'Glance tried all active locations/stores to get data '
-            'for image %s but all have failed.') % self.image.image_id)
+        LOG.error(_LE('Glance tried all active locations to get data for '
+                      'image %s but all have failed.'), self.image.image_id)
         raise err
 
 

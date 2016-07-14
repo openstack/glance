@@ -272,7 +272,7 @@ class CacheFilter(wsgi.Middleware):
         try:
             process_response_method = getattr(self, method_str)
         except AttributeError:
-            LOG.error(_LE('could not find %s') % method_str)
+            LOG.error(_LE('could not find %s'), method_str)
             # Nothing to do here, move along
             return resp
         else:

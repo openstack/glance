@@ -122,12 +122,12 @@ class Controller(object):
                                              v1_mode=True, **params)
         except exception.ImageNotFound:
             LOG.warn(_LW("Invalid marker. Image %(id)s could not be "
-                         "found.") % {'id': params.get('marker')})
+                         "found."), {'id': params.get('marker')})
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden:
             LOG.warn(_LW("Access denied to image %(id)s but returning "
-                         "'not found'") % {'id': params.get('marker')})
+                         "'not found'"), {'id': params.get('marker')})
             msg = _("Invalid marker. Image could not be found.")
             raise exc.HTTPBadRequest(explanation=msg)
         except Exception:
@@ -370,7 +370,7 @@ class Controller(object):
                          " 'not found'"), {'id': id})
             raise exc.HTTPNotFound()
         except Exception:
-            LOG.exception(_LE("Unable to show image %s") % id)
+            LOG.exception(_LE("Unable to show image %s"), id)
             raise
 
         return dict(image=make_image_dict(image))
@@ -403,7 +403,7 @@ class Controller(object):
             LOG.info(_LI("Image %(id)s not found"), {'id': id})
             return exc.HTTPNotFound()
         except Exception:
-            LOG.exception(_LE("Unable to delete image %s") % id)
+            LOG.exception(_LE("Unable to delete image %s"), id)
             raise
 
     @utils.mutating
@@ -527,7 +527,7 @@ class Controller(object):
                                    request=req,
                                    content_type='text/plain')
         except Exception:
-            LOG.exception(_LE("Unable to update image %s") % id)
+            LOG.exception(_LE("Unable to update image %s"), id)
             raise
 
 

@@ -82,8 +82,8 @@ def _load_strategies():
                 modules[strategy_name] = mgr.driver
         except Exception as e:
             LOG.error(_LE("Failed to load location strategy module "
-                          "%(module)s: %(e)s") % {'module': module_name,
-                                                  'e': e})
+                          "%(module)s: %(e)s"), {'module': module_name,
+                                                 'e': e})
     return modules
 
 
