@@ -19,7 +19,6 @@ from debtcollector import removals
 import glance_store as store
 import mock
 from oslo_config import cfg
-from oslo_log import log as logging
 from six.moves import urllib
 
 from glance.common import exception
@@ -30,7 +29,6 @@ import glance.db.simple.api as simple_db
 
 
 CONF = cfg.CONF
-LOG = logging.getLogger(__name__)
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'

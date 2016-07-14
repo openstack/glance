@@ -30,7 +30,6 @@ Keystone (an identity management system).
 """
 import httplib2
 from keystoneclient import service_catalog as ks_service_catalog
-from oslo_log import log as logging
 from oslo_serialization import jsonutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -38,9 +37,6 @@ import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.i18n import _
-
-
-LOG = logging.getLogger(__name__)
 
 
 class BaseStrategy(object):
