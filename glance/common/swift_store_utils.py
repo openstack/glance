@@ -22,20 +22,63 @@ from glance.i18n import _, _LE
 swift_opts = [
     cfg.StrOpt('default_swift_reference',
                default="ref1",
-               help=_('The reference to the default swift account/backing '
-                      'store parameters to use for adding new images.')),
+               help=_("""
+Reference to default Swift account/backing store parameters.
+
+Provide a string value representing a reference to the default set
+of parameters required for using swift account/backing store for
+image storage. The default reference value for this configuration
+option is 'ref1'. This configuration option dereferences the
+parameters and facilitates image storage in Swift storage backend
+every time a new image is added.
+
+Possible values:
+    * A valid string value
+
+Related options:
+    * None
+
+""")),
     cfg.StrOpt('swift_store_auth_address',
+               deprecated_reason=("""
+The option auth_address in the Swift back-end configuration file is
+used instead.
+"""),
                help=_('The address where the Swift authentication service '
-                      'is listening.(deprecated)')),
+                      'is listening.')),
     cfg.StrOpt('swift_store_user', secret=True,
+               deprecated_reason=("""
+The option 'user' in the Swift back-end configuration file is set instead.
+"""),
                help=_('The user to authenticate against the Swift '
-                      'authentication service (deprecated)')),
+                      'authentication service.')),
     cfg.StrOpt('swift_store_key', secret=True,
+               deprecated_reason=("""
+The option 'key' in the Swift back-end configuration file is used
+to set the authentication key instead.
+"""),
                help=_('Auth key for the user authenticating against the '
-                      'Swift authentication service. (deprecated)')),
+                      'Swift authentication service.')),
     cfg.StrOpt('swift_store_config_file', secret=True,
-               help=_('The config file that has the swift account(s)'
-                      'configs.')),
+               help=_("""
+File containing the swift account(s) configurations.
+
+Include a string value representing the path to a configuration
+file that has references for each of the configured Swift
+account(s)/backing stores. By default, no file path is specified
+and customized Swift referencing is diabled. Configuring this option
+is highly recommended while using Swift storage backend for image
+storage as it helps avoid storage of credentials in the
+database.
+
+Possible values:
+    * None
+    * String value representing a vaid configuration file path
+
+Related options:
+    * None
+
+""")),
 ]
 
 CONFIG = configparser.SafeConfigParser()
