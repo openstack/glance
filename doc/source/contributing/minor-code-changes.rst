@@ -31,3 +31,13 @@ like weakening changes.
 We're not saying that such changes can never be made, we're just saying that
 each change must be accompanied by an explanation of why the weaker test is
 adequate for what's being tested.
+
+LOG.warn to LOG.warning
+-----------------------
+
+Consistently there are proposed changes that will change all {LOG,logging}.
+warn to {LOG,logging}.warning across the codebase due to the deprecation in
+Python 3. While the deprecation is real, Glance uses oslo_log that provides
+alias warn and solves the issue in single place for all projects using it.
+These changes are not accepted due to the huge amount of refactoring they
+cause for no reason.
