@@ -56,53 +56,254 @@ from glance.i18n import _, _LE, _LI, _LW
 
 
 bind_opts = [
-    cfg.StrOpt('bind_host', default='0.0.0.0',
-               help=_('Address to bind the server.  Useful when '
-                      'selecting a particular network interface.')),
+    # NOTE(dharinic): Since ``bind_host`` accepts symbolic names
+    # mapped to IP address apart from IP addresses, we use
+    # ``StrOpt`` as against ``IPOpt`` for backward compatibility
+    # reasons. We do not use ``HostnameOpt`` as it would prevent the
+    # opt from accepting IPv6 addresses.
+    # TODO(dharinic): Change the Opt type upon resolution of
+    # bug-1619044
+    cfg.StrOpt('bind_host',
+               default='0.0.0.0',
+               help=_("""
+IP address to bind the glance servers to.
+
+Provide an IP address to bind the glance server to. The default
+value is ``0.0.0.0``.
+
+Edit this option to enable the server to listen on one particular
+IP address on the network card. This facilitates selection of a
+particular network interface for the server.
+
+Possible values:
+    * A valid IPv4 address
+    * A valid IPv6 address
+
+Related options:
+    * None
+
+""")),
+
     cfg.PortOpt('bind_port',
-                help=_('The port on which the server will listen.')),
+                help=_("""
+Port number on which the server will listen.
+
+Provide a valid port number to bind the server's socket to. This
+port is then set to identify processes and forward network messages
+that arrive at the server. The default bind_port value for the API
+server is 9292 and for the registry server is 9191.
+
+Possible values:
+    * A valid port number (0 to 65535)
+
+Related options:
+    * None
+
+""")),
 ]
 
 socket_opts = [
-    cfg.IntOpt('backlog', default=4096,
-               help=_('The backlog value that will be used when creating the '
-                      'TCP listener socket.')),
-    cfg.IntOpt('tcp_keepidle', default=600,
-               help=_('The value for the socket option TCP_KEEPIDLE.  This is '
-                      'the time in seconds that the connection must be idle '
-                      'before TCP starts sending keepalive probes.')),
-    cfg.StrOpt('ca_file', help=_('CA certificate file to use to verify '
-                                 'connecting clients.')),
-    cfg.StrOpt('cert_file', help=_('Certificate file to use when starting API '
-                                   'server securely.')),
-    cfg.StrOpt('key_file', help=_('Private key file to use when starting API '
-                                  'server securely.')),
+    cfg.IntOpt('backlog',
+               default=4096,
+               min=1,
+               help=_("""
+Set the number of incoming connection requests.
+
+Provide a positive integer value to limit the number of requests in
+the backlog queue. The default queue size is 4096.
+
+An incoming connection to a TCP listener socket is queued before a
+connection can be established with the server. Setting the backlog
+for a TCP socket ensures a limited queue size for incoming traffic.
+
+Possible values:
+    * Positive integer
+
+Related options:
+    * None
+
+""")),
+
+    cfg.IntOpt('tcp_keepidle',
+               default=600,
+               min=1,
+               help=_("""
+Set the wait time before a connection recheck.
+
+Provide a positive integer value representing time in seconds which
+is set as the idle wait time before a TCP keep alive packet can be
+sent to the host. The default value is 600 seconds.
+
+Setting ``tcp_keepidle`` helps verify at regular intervals that a
+connection is intact and prevents frequent TCP connection
+reestablishment.
+
+Possible values:
+    * Positive integer value representing time in seconds
+
+Related options:
+    * None
+
+""")),
+
+    cfg.StrOpt('ca_file',
+               sample_default='/etc/ssl/cafile',
+               help=_("""
+Absolute path to the CA file.
+
+Provide a string value representing a valid absolute path to
+the Certificate Authority file to use for client authentication.
+
+A CA file typically contains necessary trusted certificates to
+use for the client authentication. This is essential to ensure
+that a secure connection is established to the server via the
+internet.
+
+Possible values:
+    * Valid absolute path to the CA file
+
+Related options:
+    * None
+
+""")),
+
+    cfg.StrOpt('cert_file',
+               sample_default='/etc/ssl/certs',
+               help=_("""
+Absolute path to the certificate file.
+
+Provide a string value representing a valid absolute path to the
+certificate file which is required to start the API service
+securely.
+
+A certificate file typically is a public key container and includes
+the server's public key, server name, server information and the
+signature which was a result of the verification process using the
+CA certificate. This is required for a secure connection
+establishment.
+
+Possible values:
+    * Valid absolute path to the certificate file
+
+Related options:
+    * None
+
+""")),
+
+    cfg.StrOpt('key_file',
+               sample_default='/etc/ssl/key/key-file.pem',
+               help=_("""
+Absolute path to a private key file.
+
+Provide a string value representing a valid absolute path to a
+private key file which is required to establish the client-server
+connection.
+
+Possible values:
+    * Absolute path to the private key file
+
+Related options:
+    * None
+
+""")),
 ]
 
 eventlet_opts = [
     cfg.IntOpt('workers',
-               help=_('The number of child process workers that will be '
-                      'created to service requests. The default will be '
-                      'equal to the number of CPUs available.')),
-    cfg.IntOpt('max_header_line', default=16384,
-               help=_('Maximum line size of message headers to be accepted. '
-                      'max_header_line may need to be increased when using '
-                      'large tokens (typically those generated by the '
-                      'Keystone v3 API with big service catalogs')),
-    cfg.BoolOpt('http_keepalive', default=True,
-                help=_('If False, server will return the header '
-                       '"Connection: close", '
-                       'If True, server will return "Connection: Keep-Alive" '
-                       'in its responses. In order to close the client socket '
-                       'connection explicitly after the response is sent and '
-                       'read successfully by the client, you simply have to '
-                       'set this option to False when you create a wsgi '
-                       'server.')),
-    cfg.IntOpt('client_socket_timeout', default=900,
-               help=_('Timeout for client connections\' socket operations. '
-                      'If an incoming connection is idle for this number of '
-                      'seconds it will be closed. A value of \'0\' means '
-                      'wait forever.')),
+               min=0,
+               help=_("""
+Number of Glance worker processes to start.
+
+Provide a non-negative integer value to set the number of child
+process workers to service requests. By default, the number of CPUs
+available is set as the value for ``workers``.
+
+Each worker process is made to listen on the port set in the
+configuration file and contains a greenthread pool of size 1000.
+
+NOTE: Setting the number of workers to zero, triggers the creation
+of a single API process with a greenthread pool of size 1000.
+
+Possible values:
+    * 0
+    * Positive integer value (typically equal to the number of CPUs)
+
+Related options:
+    * None
+
+""")),
+
+    cfg.IntOpt('max_header_line',
+               default=16384,
+               min=0,
+               help=_("""
+Maximum line size of message headers.
+
+Provide an integer value representing a length to limit the size of
+message headers. The default value is 16384.
+
+NOTE: ``max_header_line`` may need to be increased when using large
+tokens (typically those generated by the Keystone v3 API with big
+service catalogs). However, it is to be kept in mind that larger
+values for ``max_header_line`` would flood the logs.
+
+Setting ``max_header_line`` to 0 sets no limit for the line size of
+message headers.
+
+Possible values:
+    * 0
+    * Positive integer
+
+Related options:
+    * None
+
+""")),
+
+    cfg.BoolOpt('http_keepalive',
+                default=True,
+                help=_("""
+Set keep alive option for HTTP over TCP.
+
+Provide a boolean value to determine sending of keep alive packets.
+If set to ``False``, the server returns the header
+"Connection: close". If set to ``True``, the server returns a
+"Connection: Keep-Alive" in its responses. This enables retention of
+the same TCP connection for HTTP conversations instead of opening a
+new one with each new request.
+
+This option must be set to ``False`` if the client socket connection
+needs to be closed explicitly after the response is received and
+read successfully by the client.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * None
+
+""")),
+
+    cfg.IntOpt('client_socket_timeout',
+               default=900,
+               min=0,
+               help=_("""
+Timeout for client connections' socket operations.
+
+Provide a valid integer value representing time in seconds to set
+the period of wait before an incoming connection can be closed. The
+default value is 900 seconds.
+
+The value zero implies wait forever.
+
+Possible values:
+    * Zero
+    * Positive integer
+
+Related options:
+    * None
+
+""")),
 ]
 
 wsgi_opts = [
