@@ -19,35 +19,144 @@ from glance.i18n import _
 
 
 registry_client_opts = [
-    cfg.StrOpt('registry_client_protocol', default='http',
-               help=_('The protocol to use for communication with the '
-                      'registry server.  Either http or https.')),
+    cfg.StrOpt('registry_client_protocol',
+               default='http',
+               choices=('http', 'https'),
+               help=_("""
+Protocol to use for communication with the registry server.
+
+Provide a string value representing the protocol to use for
+communication with the registry server. By default, this option is
+set to ``http` and the connection is not secure.
+
+This option can be set to ``https`` to establish a secure connection
+to the registry server. In this case, provide a key to use for the
+SSL connection using the ``registry_client_key_file`` option. Also
+include the CA file and cert file using the options
+``registry_client_ca_file`` and ``registry_client_cert_file``
+respectively.
+
+Possible values:
+    * http
+    * https
+
+Related options:
+    * registry_client_key_file
+    * registry_client_cert_file
+    * registry_client_ca_file
+
+""")),
     cfg.StrOpt('registry_client_key_file',
-               help=_('The path to the key file to use in SSL connections '
-                      'to the registry server, if any. Alternately, you may '
-                      'set the GLANCE_CLIENT_KEY_FILE environment variable to '
-                      'a filepath of the key file')),
+               sample_default='/etc/ssl/key/key-file.pem',
+               help=_("""
+Absolute path to the private key file.
+
+Provide a string value representing a valid absolute path to the
+private key file to use for establishing a secure connection to
+the registry server.
+
+NOTE: This option must be set if ``registry_client_protocol`` is
+set to ``https``. Alternatively, the GLANCE_CLIENT_KEY_FILE
+environment variable may be set to a filepath of the key file.
+
+Possible values:
+    * String value representing a valid absolute path to the key
+      file.
+
+Related options:
+    * registry_client_protocol
+
+""")),
     cfg.StrOpt('registry_client_cert_file',
-               help=_('The path to the cert file to use in SSL connections '
-                      'to the registry server, if any. Alternately, you may '
-                      'set the GLANCE_CLIENT_CERT_FILE environment variable '
-                      'to a filepath of the CA cert file')),
+               sample_default='/etc/ssl/certs/file.crt',
+               help=_("""
+Absolute path to the certificate file.
+
+Provide a string value representing a valid absolute path to the
+certificate file to use for establishing a secure connection to
+the registry server.
+
+NOTE: This option must be set if ``registry_client_protocol`` is
+set to ``https``. Alternatively, the GLANCE_CLIENT_CERT_FILE
+environment variable may be set to a filepath of the certificate
+file.
+
+Possible values:
+    * String value representing a valid absolute path to the
+      certificate file.
+
+Related options:
+    * registry_client_protocol
+
+""")),
     cfg.StrOpt('registry_client_ca_file',
-               help=_('The path to the certifying authority cert file to use '
-                      'in SSL connections to the registry server, if any. '
-                      'Alternately, you may set the GLANCE_CLIENT_CA_FILE '
-                      'environment variable to a filepath of the CA cert '
-                      'file.')),
-    cfg.BoolOpt('registry_client_insecure', default=False,
-                help=_('When using SSL in connections to the registry server, '
-                       'do not require validation via a certifying '
-                       'authority. This is the registry\'s equivalent of '
-                       'specifying --insecure on the command line using '
-                       'glanceclient for the API.')),
-    cfg.IntOpt('registry_client_timeout', default=600,
-               help=_('The period of time, in seconds, that the API server '
-                      'will wait for a registry request to complete. A '
-                      'value of 0 implies no timeout.')),
+               sample_default='/etc/ssl/cafile/file.ca',
+               help=_("""
+Absolute path to the Certificate Authority file.
+
+Provide a string value representing a valid absolute path to the
+certificate authority file to use for establishing a secure
+connection to the registry server.
+
+NOTE: This option must be set if ``registry_client_protocol`` is
+set to ``https``. Alternatively, the GLANCE_CLIENT_CA_FILE
+environment variable may be set to a filepath of the CA file.
+This option is ignored if the ``registry_client_insecure`` option
+is set to ``True``.
+
+Possible values:
+    * String value representing a valid absolute path to the CA
+      file.
+
+Related options:
+    * registry_client_protocol
+    * registry_client_insecure
+
+""")),
+    cfg.BoolOpt('registry_client_insecure',
+                default=False,
+                help=_("""
+Set verification of the registry server certificate.
+
+Provide a boolean value to determine whether or not to validate
+SSL connections to the registry server. By default, this option
+is set to ``False`` and the SSL connections are validated.
+
+If set to ``True``, the connection to the registry server is not
+validated via a certifying authority and the
+``registry_client_ca_file`` option is ignored. This is the
+registry's equivalent of specifying --insecure on the command line
+using glanceclient for the API.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * registry_client_protocol
+    * registry_client_ca_file
+
+""")),
+    cfg.IntOpt('registry_client_timeout',
+               default=600,
+               min=0,
+               help=_("""
+Timeout value for registry requests.
+
+Provide an integer value representing the period of time in seconds
+that the API server will wait for a registry request to complete.
+The default value is 600 seconds.
+
+A value of 0 implies that a request will never timeout.
+
+Possible values:
+    * Zero
+    * Positive integer
+
+Related options:
+    * None
+
+""")),
 ]
 
 _DEPRECATE_USE_USER_TOKEN_MSG = ('This option was considered harmful and '
