@@ -28,18 +28,57 @@ LOG = logging.getLogger(__name__)
 
 property_opts = [
     cfg.StrOpt('property_protection_file',
-               help=_('The location of the property protection file.'
-                      'This file contains the rules for property protections '
-                      'and the roles/policies associated with it. If this '
-                      'config value is not specified, by default, property '
-                      'protections won\'t be enforced. If a value is '
-                      'specified and the file is not found, then the '
-                      'glance-api service will not start.')),
+               help=_("""
+The location of the property protection file.
+
+Provide a valid path to the property protection file which contains
+the rules for property protections and the roles/policies associated
+with them.
+
+A property protection file, when set, restricts the Glance image
+properties to be created, read, updated and/or deleted by a specific
+set of users that are identified by either roles or policies.
+If this configuration option is not set, by default, property
+protections won't be enforced. If a value is specified and the file
+is not found, the glance-api service will fail to start.
+More information on property protections can be found at:
+http://docs.openstack.org/developer/glance/property-protections.html
+
+Possible values:
+    * Empty string
+    * Valid path to the property protection configuration file
+
+Related options:
+    * property_protection_rule_format
+
+""")),
     cfg.StrOpt('property_protection_rule_format',
                default='roles',
                choices=('roles', 'policies'),
-               help=_('This config value indicates whether "roles" or '
-                      '"policies" are used in the property protection file.')),
+               help=_("""
+Rule format for property protection.
+
+Provide the desired way to set property protection on Glance
+image properties. The two permissible values are ``roles``
+and ``policies``. The default value is ``roles``.
+
+If the value is ``roles``, the property protection file must
+contain a comma separated list of user roles indicating
+permissions for each of the CRUD operations on each property
+being protected. If set to ``policies``, a policy defined in
+policy.json is used to express property protections for each
+of the CRUD operations. Examples of how property protections
+are enforced based on ``roles`` or ``policies`` can be found at:
+http://docs.openstack.org/developer/glance/property-protections.html#examples
+
+Possible values:
+    * roles
+    * policies
+
+Related options:
+    * property_protection_file
+
+""")),
 ]
 
 CONF = cfg.CONF
