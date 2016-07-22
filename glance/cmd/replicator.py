@@ -330,7 +330,7 @@ def replication_size(options, args):
     """
 
     # Make sure server info is provided
-    if len(args) < 1:
+    if args is None or len(args) < 1:
         raise TypeError(_("Too few arguments."))
 
     server, port = utils.parse_valid_host_port(args.pop())
