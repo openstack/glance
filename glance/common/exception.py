@@ -113,7 +113,7 @@ class UploadException(GlanceException):
 
 
 class Forbidden(GlanceException):
-    message = _("You are not authorized to complete this action.")
+    message = _("You are not authorized to complete %(action)s action.")
 
 
 class ForbiddenPublicImage(Forbidden):
