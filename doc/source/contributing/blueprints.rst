@@ -51,40 +51,23 @@ be proposed, evaluated, and worked on. The team evaluates these
 requests as it evaluates specs. Once a bug has been approved as a
 Request for Enhancement (RFE), it'll be targeted for a release.
 
-The workflow for the life of a spec-lite in Launchpad is as follows:
+In Newton the team refined lite specs process away from wishlist bugs
+and lite specs are hosted in the glance-specs repository in git.
 
-* File a bug with a small summary of what the request change is
-  following the format below:
+Dedicated lite-specs.rst is provided for each deliverable under the
+release.
 
-  .. NOTE: add format
+For example Newton glance_store spec lite file can be found from:
+glance-specs/specs/newton/approved/glance_store/lite-specs.rst
 
-  * The bug is triaged and tagged with the `spec-lite` tag.
-  * The bug is evaluated and marked as `Triaged` to announce approval or
-    to `Won't fix` to announce rejection or `Invalid` to request a full
-    spec.
-  * The bug is moved to `In Progress` once the code is up and ready to
-    review.
-  * The bug is moved to `Fix Committed` once the patch lands.
+This file includes template section and new lite-specs should be
+included to the same file under the template. So do not copy the lite-
+specs.rst to a new file like you would do with full spec, but just
+propose change to that file itself filling the parts of the template
+you need.
 
-In summary:
-
-+--------------+-----------------------------------------------------------------------------+
-|State         | Meaning                                                                     |
-+==============+=============================================================================+
-|New           | This is where spec-lite starts, as filed by the community.                  |
-+--------------+-----------------------------------------------------------------------------+
-|Triaged       | Drivers - Move to this state to mean, "you can start working on it"         |
-+--------------+-----------------------------------------------------------------------------+
-|Won't Fix     | Drivers - Move to this state to reject a lite-spec.                         |
-+--------------+-----------------------------------------------------------------------------+
-|Invalid       | Drivers - Move to this state to request a full spec for this request        |
-+--------------+-----------------------------------------------------------------------------+
-
-The drivers team will be discussing the following bug reports during their IRC meeting:
-
-* `New Glance RFE's <https://bugs.launchpad.net/glance/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
-* `New Glance-Store RFE's <https://bugs.launchpad.net/glance-store/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
-* `New Glanceclient RFE's <https://bugs.launchpad.net/python-glanceclient/+bugs?field.status%3Alist=NEW&field.tag=spec-lite&field.importance%3Alist=WISHLIST>`_
+Existing WISHLIST 'spec-lite' tagged bug will be honored as lite spec,
+new ones will not be considered unless filed in glance-spec repo.
 
 
 Lite spec Submission Guidelines
@@ -103,28 +86,3 @@ posting comments/questions on gerrit may also be a way to engage. Some
 amount of interaction with Glance developers will give you an idea of
 the plausibility and form of your lite spec before you submit it. That
 said, this is not mandatory.
-
-When you submit a bug report on
-https://bugs.launchpad.net/glance/+filebug, there are two fields that
-must be filled: 'summary' and 'further information'.  The 'summary'
-must be brief enough to fit in one line: if you can't describe it in a
-few words it may mean that you are either trying to capture more than
-one lite spec at once, or that you are having a hard time defining
-what you are trying to solve at all.
-
-The 'further information' section must be a description of what you
-would like to see implemented in Glance. The description should
-provide enough details for a knowledgeable developer to understand
-what is the existing problem and what's the proposed solution.
-
-Once you are happy with what you wrote, set the importance to
-`Wishlist`, and submit. Do not worry, we are here to help you get it
-right! Happy hacking.
-
-Lite spec from existing bugs
-----------------------------
-
-If there's an already existing bug that describes a small feature
-suitable for a spec-lite, all you need to do is change the importance
-field to `Wishlist`. Please don't create a new bug! The comments and
-history of the existing bug are important for the spec-lite review.
