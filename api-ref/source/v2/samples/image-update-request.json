@@ -1,0 +1,15 @@
+[
+    {
+        "op": "replace",
+        "path": "/name",
+        "value": "Fedora 17"
+    },
+    {
+        "op": "replace",
+        "path": "/tags",
+        "value": [
+            "fedora",
+            "beefy"
+        ]
+    }
+]

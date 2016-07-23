@@ -1,0 +1,22 @@
+{
+    "status": "queued",
+    "name": "Ubuntu",
+    "tags": [],
+    "container_format": "bare",
+    "created_at": "2015-11-29T22:21:42Z",
+    "size": null,
+    "disk_format": "raw",
+    "updated_at": "2015-11-29T22:21:42Z",
+    "visibility": "private",
+    "locations": [],
+    "self": "/v2/images/b2173dd3-7ad6-4362-baa6-a68bce3565cb",
+    "min_disk": 0,
+    "protected": false,
+    "id": "b2173dd3-7ad6-4362-baa6-a68bce3565cb",
+    "file": "/v2/images/b2173dd3-7ad6-4362-baa6-a68bce3565cb/file",
+    "checksum": null,
+    "owner": "bab7d5c60cd041a0a36f7c4b6e1dd978",
+    "virtual_size": null,
+    "min_ram": 0,
+    "schema": "/v2/schemas/image"
+}

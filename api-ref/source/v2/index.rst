@@ -22,5 +22,10 @@ Image Service API v2 (CURRENT)
 
 .. rest_expand_all::
 
+.. include:: images-images-v2.inc
+.. include:: images-sharing-v2.inc
+.. include:: images-tags.inc
+.. include:: images-schemas.inc
+.. include:: images-data.inc
 .. include:: tasks.inc
 .. include:: tasks-schemas.inc
