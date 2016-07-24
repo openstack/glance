@@ -48,7 +48,7 @@ Image basic methods
 #. ``image_update(context, image_id, values, purge_props=False,
    from_state=None)`` — updates the existing image with the identifier
    *image_id* with the values listed in the *values* dictionary. Returns a
-   dictionary representation of a newly created *Image* object.
+   dictionary representation of the updated *Image* object.
 
  Optional parameters are:
      - ``purge_props`` — a flag indicating that all the existing
