@@ -45,8 +45,9 @@
                         "type": "string"
                     },
                     "checksum": {
-                        "description": "md5 hash of image contents. (READ-ONLY)",
+                        "description": "md5 hash of image contents.",
                         "maxLength": 32,
+                        "readOnly": true,
                         "type": [
                             "null",
                             "string"
@@ -61,7 +62,8 @@
                             "aki",
                             "bare",
                             "ovf",
-                            "ova"
+                            "ova",
+                            "docker"
                         ],
                         "type": [
                             "null",
@@ -69,11 +71,13 @@
                         ]
                     },
                     "created_at": {
-                        "description": "Date and time of image registration (READ-ONLY)",
+                        "description": "Date and time of image registration",
+                        "readOnly": true,
                         "type": "string"
                     },
                     "direct_url": {
-                        "description": "URL to access the image file kept in external store (READ-ONLY)",
+                        "description": "URL to access the image file kept in external store",
+                        "readOnly": true,
                         "type": "string"
                     },
                     "disk_format": {
@@ -96,7 +100,8 @@
                         ]
                     },
                     "file": {
-                        "description": "(READ-ONLY)",
+                        "description": "An image file url",
+                        "readOnly": true,
                         "type": "string"
                     },
                     "id": {
@@ -105,7 +110,7 @@
                         "type": "string"
                     },
                     "instance_uuid": {
-                        "description": "ID of instance used to create this image.",
+                        "description": "Metadata which can be used to record which instance this image is associated with. (Informational only, does not create an instance snapshot.)",
                         "is_base": false,
                         "type": "string"
                     },
@@ -113,7 +118,10 @@
                         "description": "ID of image stored in Glance that should be used as the kernel when booting an AMI-style image.",
                         "is_base": false,
                         "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
-                        "type": "string"
+                        "type": [
+                            "null",
+                            "string"
+                        ]
                     },
                     "locations": {
                         "description": "A set of URLs to access the image file kept in external store",
@@ -177,33 +185,41 @@
                         "description": "ID of image stored in Glance that should be used as the ramdisk when booting an AMI-style image.",
                         "is_base": false,
                         "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
-                        "type": "string"
+                        "type": [
+                            "null",
+                            "string"
+                        ]
                     },
                     "schema": {
-                        "description": "(READ-ONLY)",
+                        "description": "An image schema url",
+                        "readOnly": true,
                         "type": "string"
                     },
                     "self": {
-                        "description": "(READ-ONLY)",
+                        "description": "An image self url",
+                        "readOnly": true,
                         "type": "string"
                     },
                     "size": {
-                        "description": "Size of image file in bytes (READ-ONLY)",
+                        "description": "Size of image file in bytes",
+                        "readOnly": true,
                         "type": [
                             "null",
                             "integer"
                         ]
                     },
                     "status": {
-                        "description": "Status of the image (READ-ONLY)",
+                        "description": "Status of the image",
                         "enum": [
                             "queued",
                             "saving",
                             "active",
                             "killed",
                             "deleted",
-                            "pending_delete"
+                            "pending_delete",
+                            "deactivated"
                         ],
+                        "readOnly": true,
                         "type": "string"
                     },
                     "tags": {
@@ -215,11 +231,13 @@
                         "type": "array"
                     },
                     "updated_at": {
-                        "description": "Date and time of the last image modification (READ-ONLY)",
+                        "description": "Date and time of the last image modification",
+                        "readOnly": true,
                         "type": "string"
                     },
                     "virtual_size": {
-                        "description": "Virtual size of image in bytes (READ-ONLY)",
+                        "description": "Virtual size of image in bytes",
+                        "readOnly": true,
                         "type": [
                             "null",
                             "integer"
