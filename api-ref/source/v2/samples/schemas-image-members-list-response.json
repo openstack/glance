@@ -25,6 +25,7 @@
                         "type": "string"
                     },
                     "schema": {
+                        "readOnly": true,
                         "type": "string"
                     },
                     "status": {
