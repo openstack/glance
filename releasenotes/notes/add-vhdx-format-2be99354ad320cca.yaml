@@ -1,0 +1,11 @@
+---
+prelude: >
+  - Add VHDX to list of supported disk format.
+features:
+  - The identifier ``vhdx`` has been added to the list of
+    supported disk formats in Glance. The respective
+    configuration option has been updated and the default
+    list shows ``vhdx`` as a supported format.
+upgrade:
+  - The ``disk_format`` config option enables ``vhdx`` as
+    supported by default.

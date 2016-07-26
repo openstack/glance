@@ -41,6 +41,11 @@ You can set your image's disk format to one of the following:
   This is the VHD disk format, a common disk format used by virtual machine
   monitors from VMWare, Xen, Microsoft, VirtualBox, and others
 
+* **vhdx**
+
+  This is the VHDX disk format, an enhanced version of the vhd format which
+  supports larger disk sizes among other features.
+
 * **vmdk**
 
   Another common disk format supported by many common virtual machine monitors

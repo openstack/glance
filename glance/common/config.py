@@ -48,8 +48,8 @@ image_format_opts = [
                 deprecated_opts=[cfg.DeprecatedOpt('container_formats',
                                                    group='DEFAULT')]),
     cfg.ListOpt('disk_formats',
-                default=['ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw', 'qcow2',
-                         'vdi', 'iso'],
+                default=['ami', 'ari', 'aki', 'vhd', 'vhdx', 'vmdk', 'raw',
+                         'qcow2', 'vdi', 'iso'],
                 help=_("Supported values for the 'disk_format' "
                        "image attribute"),
                 deprecated_opts=[cfg.DeprecatedOpt('disk_formats',
