@@ -70,6 +70,12 @@ instructions about how to fill in (or remove) the various sections of
 the document. Modify the yaml file as appropriate and include it as
 part of your commit.
 
+Commit your note to git (required for reno to pick it up):
+
+.. code-block:: bash
+
+    $ git add releasenotes/notes/<note>; git commit
+
 Once the release notes have been committed you can build them by using:
 
 .. code-block:: bash
