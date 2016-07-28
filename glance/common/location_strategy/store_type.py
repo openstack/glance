@@ -57,7 +57,6 @@ def init():
     mapping = {'filesystem': ['file', 'filesystem'],
                'http': ['http', 'https'],
                'rbd': ['rbd'],
-               's3': ['s3', 's3+http', 's3+https'],
                'swift': ['swift', 'swift+https', 'swift+http'],
                'sheepdog': ['sheepdog'],
                'cinder': ['cinder'],

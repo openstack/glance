@@ -158,11 +158,10 @@ class TestStoreTypeStrategyModule(base.IsolatedUnitTest):
 
     def test_get_ordered_locations(self):
         self.config(store_type_preference=['  rbd', 'sheepdog ', ' filesystem',
-                                           'swift  ', '  http  ', 's3'],
+                                           'swift  ', '  http  '],
                     group='store_type_location_strategy')
         locs = [{'url': 'file://image0', 'metadata': {'idx': 3}},
                 {'url': 'rbd://image1', 'metadata': {'idx': 0}},
-                {'url': 's3://image2', 'metadata': {'idx': 7}},
                 {'url': 'file://image3', 'metadata': {'idx': 4}},
                 {'url': 'swift://image4', 'metadata': {'idx': 6}},
                 {'url': 'cinder://image5', 'metadata': {'idx': 8}},
@@ -176,15 +175,14 @@ class TestStoreTypeStrategyModule(base.IsolatedUnitTest):
 
     def test_get_ordered_locations_with_invalid_store_name(self):
         self.config(store_type_preference=['  rbd', 'sheepdog ', 'invalid',
-                                           'swift  ', '  http  ', 's3'],
+                                           'swift  ', '  http  '],
                     group='store_type_location_strategy')
-        locs = [{'url': 'file://image0', 'metadata': {'idx': 5}},
+        locs = [{'url': 'file://image0', 'metadata': {'idx': 4}},
                 {'url': 'rbd://image1', 'metadata': {'idx': 0}},
-                {'url': 's3://image2', 'metadata': {'idx': 4}},
-                {'url': 'file://image3', 'metadata': {'idx': 6}},
+                {'url': 'file://image3', 'metadata': {'idx': 5}},
                 {'url': 'swift://image4', 'metadata': {'idx': 3}},
-                {'url': 'cinder://image5', 'metadata': {'idx': 7}},
-                {'url': 'file://image6', 'metadata': {'idx': 8}},
+                {'url': 'cinder://image5', 'metadata': {'idx': 6}},
+                {'url': 'file://image6', 'metadata': {'idx': 7}},
                 {'url': 'rbd://image7', 'metadata': {'idx': 1}},
                 {'url': 'sheepdog://image8', 'metadata': {'idx': 2}}]
         ordered_locs = store_type.get_ordered_locations(copy.deepcopy(locs))

@@ -371,7 +371,6 @@ class TestTasksController(test_utils.BaseTestCase):
         wrong_import_from = [
             "swift://cloud.foo/myaccount/mycontainer/path",
             "file:///path",
-            "s3://accesskey:secretkey@s3.amazonaws.com/bucket/key-id",
             "cinder://volume-id"
         ]
         executor_factory = self.gateway.get_task_executor_factory(

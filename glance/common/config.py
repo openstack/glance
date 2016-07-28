@@ -159,7 +159,7 @@ common_opts = [
                        'connections.')),
     cfg.StrOpt('metadata_encryption_key', secret=True,
                help=_('AES key for encrypting store \'location\' metadata. '
-                      'This includes, if used, Swift or S3 credentials. '
+                      'This includes, if used, Swift credentials. '
                       'Should be set to a random string of length 16, 24 or '
                       '32 bytes')),
     cfg.StrOpt('digest_algorithm', default='sha256',

@@ -1,0 +1,11 @@
+---
+prelude: >
+    s3 store driver has been removed.
+upgrade:
+  - The latest release of glance_store library does not
+    have the support for s3 driver. All code references of
+    s3 have been removed from the library. As this release
+    of Glance uses the updated glance_store library, you
+    will find s3 driver support removed from Glance too.
+    One such important example is the location strategy
+    which no longer has s3 support.
