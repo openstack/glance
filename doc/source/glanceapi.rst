@@ -518,7 +518,7 @@ The list of metadata headers that Glance accepts are listed below.
 * ``x-image-meta-container_format``
 
   This header is required, unless reserving an image. Valid values are one of
-  ``aki``, ``ari``, ``ami``, ``bare``, ``ovf``, or ``docker``.
+  ``aki``, ``ari``, ``ami``, ``bare``, ``ova``, ``ovf``, or ``docker``.
 
   For more information, see :doc:`About Disk and Container Formats <formats>`.
 
