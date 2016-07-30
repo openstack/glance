@@ -175,7 +175,10 @@ class DbCommands(object):
         if max_rows < 1:
             sys.exit(_("Minimal rows limit is 1."))
         ctx = context.get_admin_context(show_deleted=True)
-        db_api.purge_deleted_rows(ctx, age_in_days, max_rows)
+        try:
+            db_api.purge_deleted_rows(ctx, age_in_days, max_rows)
+        except exception.Invalid as exc:
+            sys.exit(exc.msg)
 
 
 class DbLegacyCommands(object):

@@ -56,3 +56,19 @@ class DBCommandsTestCase(test_utils.BaseTestCase):
         expected = ("Invalid int value for max_rows: "
                     "%(max_rows)s") % {'max_rows': max_rows}
         self.assertEqual(expected, ex.code)
+
+    @mock.patch.object(db_api, 'purge_deleted_rows')
+    @mock.patch.object(context, 'get_admin_context')
+    def test_purge_max_rows(self, mock_context, mock_db_purge):
+        mock_context.return_value = self.context
+        value = (2 ** 31) - 1
+        self.commands.purge(age_in_days=1, max_rows=value)
+        mock_db_purge.assert_called_once_with(self.context, 1, value)
+
+    def test_purge_command_exceeded_maximum_rows(self):
+        # value(2 ** 31) is greater than max_rows(2147483647) by 1.
+        value = 2 ** 31
+        ex = self.assertRaises(SystemExit, self.commands.purge, age_in_days=1,
+                               max_rows=value)
+        expected = "'max_rows' value out of range, must not exceed 2147483647."
+        self.assertEqual(expected, ex.code)

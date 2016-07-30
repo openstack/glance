@@ -550,31 +550,6 @@ def no_4byte_params(f):
     return wrapper
 
 
-def validate_mysql_int(*args, **kwargs):
-    """
-    Make sure that all arguments are less than 2 ** 31 - 1.
-
-    This limitation is introduced because mysql stores INT in 4 bytes.
-    If the validation fails for some argument, exception.Invalid is raised with
-    appropriate information.
-    """
-    max_int = (2 ** 31) - 1
-    for param in args:
-        if param > max_int:
-            msg = _("Value %(value)d out of range, "
-                    "must not exceed %(max)d") % {"value": param,
-                                                  "max": max_int}
-            raise exception.Invalid(msg)
-
-    for param_str in kwargs:
-        param = kwargs.get(param_str)
-        if param and param > max_int:
-            msg = _("'%(param)s' value out of range, "
-                    "must not exceed %(max)d") % {"param": param_str,
-                                                  "max": max_int}
-            raise exception.Invalid(msg)
-
-
 def stash_conf_values():
     """
     Make a copy of some of the current global CONF's settings.
