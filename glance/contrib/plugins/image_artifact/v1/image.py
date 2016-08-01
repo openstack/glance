@@ -21,8 +21,9 @@ class ImageAsAnArtifact(definitions.ArtifactType):
 
     file = definitions.BinaryObject(required=True)
     disk_format = definitions.String(allowed_values=['ami', 'ari', 'aki',
-                                                     'vhd', 'vmdk', 'raw',
-                                                     'qcow2', 'vdi', 'iso'],
+                                                     'vhd', 'vhdx', 'vmdk',
+                                                     'raw', 'qcow2', 'vdi',
+                                                     'iso'],
                                      required=True,
                                      mutable=False)
     container_format = definitions.String(allowed_values=['ami', 'ari',
