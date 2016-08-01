@@ -555,13 +555,21 @@ def replication_livecopy(options, args):
                         del headers[key]
 
                 if _dict_diff(image, headers):
-                    LOG.info(_LI('Image %s metadata has changed'), image['id'])
+                    LOG.info(_LI('Image %(image_id)s (%(image_name)s) '
+                                 'metadata has changed'),
+                             {'image_id': image['id'],
+                              'image_name': image.get('name', '--unnamed--')})
                     headers, body = slave_client.add_image_meta(image)
                     _check_upload_response_headers(headers, body)
                     updated.append(image['id'])
 
         elif image['status'] == 'active':
-            LOG.info(_LI('Image %s is being synced'), image['id'])
+            LOG.info(_LI('Image %(image_id)s (%(image_name)s) '
+                         '(%(image_size)d bytes) '
+                         'is being synced'),
+                     {'image_id': image['id'],
+                      'image_name': image.get('name', '--unnamed--'),
+                      'image_size': image['size']})
             if not options.metaonly:
                 image_response = master_client.get_image(image['id'])
                 try:
@@ -631,7 +639,7 @@ def replication_compare(options, args):
             LOG.warn(_LW('Image %(image_id)s ("%(image_name)s") '
                      'entirely missing from the destination')
                      % {'image_id': image['id'],
-                        'image_name': image['name']})
+                        'image_name': image.get('name', '--unnamed')})
             differences[image['id']] = 'missing'
 
     return differences
