@@ -374,11 +374,21 @@ def replication_dump(options, args):
     client = imageservice(http_client.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
-        LOG.debug('Considering: %s', image['id'])
+        LOG.debug('Considering: %(image_id)s (%(image_name)s) '
+                  '(%(image_size)d bytes)',
+                  {'image_id': image['id'],
+                   'image_name': image.get('name', '--unnamed--'),
+                   'image_size': image['size']})
 
         data_path = os.path.join(path, image['id'])
+        data_filename = data_path + '.img'
         if not os.path.exists(data_path):
-            LOG.info(_LI('Storing: %s'), image['id'])
+            LOG.info(_LI('Storing: %(image_id)s (%(image_name)s)'
+                         ' (%(image_size)d bytes) in %(data_filename)s'),
+                     {'image_id': image['id'],
+                      'image_name': image.get('name', '--unnamed--'),
+                      'image_size': image['size'],
+                      'data_filename': data_filename})
 
             # Dump glance information
             if six.PY3:
@@ -395,7 +405,7 @@ def replication_dump(options, args):
                 # only dump active images.
                 LOG.debug('Image %s is active', image['id'])
                 image_response = client.get_image(image['id'])
-                with open(data_path + '.img', 'wb') as f:
+                with open(data_filename, 'wb') as f:
                     while True:
                         chunk = image_response.read(options.chunksize)
                         if not chunk:
