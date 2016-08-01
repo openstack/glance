@@ -516,7 +516,7 @@ Commands:
             print("Completed in %-0.4f sec." % (end_time - start_time))
         sys.exit(result)
     except (RuntimeError, NotImplementedError) as e:
-        print("ERROR: ", e)
+        sys.exit("ERROR: %s" % e)
 
 if __name__ == '__main__':
     main()
