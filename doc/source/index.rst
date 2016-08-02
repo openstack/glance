@@ -77,6 +77,7 @@ Installing/Configuring Glance
    flows
    property-protections
    opts/index
+   requirements
 
 Operating Glance
 ================
