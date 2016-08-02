@@ -58,7 +58,7 @@ but are not extensively tested upstream.
          Supported Storages block.  Within the Supported Storages block,
          there exist the following storage systems, none of which make use
          of anything else: Filesystem, Swift, S3, Ceph, "ellipses", Sheepdog.
-         A complete list is given by the currently  available drivers in 
+         A complete list is given by the currently  available drivers in
          glance_store/_drivers.
 
 .. centered:: Image 1. OpenStack Glance Architecture
