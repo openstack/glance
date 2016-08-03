@@ -422,7 +422,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                           True)
 
         invalid_account_missing_uri = 'swift+http://container/obj-id'
-        # Badly formed S3 URI: swift+http://container/obj-id
+        # Badly formed Swift URI: swift+http://container/obj-id
         self.assertRaises(exception.BadStoreUri,
                           legacy_parse_uri_fn,
                           invalid_account_missing_uri,
@@ -430,7 +430,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         invalid_container_missing_uri = ('swift+http://'
                                          'acct:usr:pass@example.com/obj-id')
-        # Badly formed S3 URI: swift+http://acct:usr:pass@example.com/obj-id
+        # Badly formed Swift URI: swift+http://acct:usr:pass@example.com/obj-id
         self.assertRaises(exception.BadStoreUri,
                           legacy_parse_uri_fn,
                           invalid_container_missing_uri,
@@ -438,7 +438,8 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
 
         invalid_object_missing_uri = ('swift+http://'
                                       'acct:usr:pass@example.com/container')
-        # Badly formed S3 URI: swift+http://acct:usr:pass@example.com/container
+        # Badly formed Swift URI:
+        # swift+http://acct:usr:pass@example.com/container
         self.assertRaises(exception.BadStoreUri,
                           legacy_parse_uri_fn,
                           invalid_object_missing_uri,
