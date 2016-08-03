@@ -170,6 +170,11 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
+    def test_request_url_v2_3(self):
+        request = webob.Request.blank('/v2.3/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
     def test_request_url_v3(self):
         request = webob.Request.blank('/v3/artifacts')
         resp = self.middleware.process_request(request)
@@ -180,8 +185,8 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v2_3_unsupported(self):
-        request = webob.Request.blank('/v2.3/images')
+    def test_request_url_v2_4_unsupported(self):
+        request = webob.Request.blank('/v2.4/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
@@ -189,3 +194,43 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         request = webob.Request.blank('/v4/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
+
+
+class VersionsAndNegotiationTest(VersionNegotiationTest, VersionsTest):
+
+    """
+    Test that versions mentioned in the versions response are correctly
+    negotiated.
+    """
+
+    def _get_list_of_version_ids(self, status):
+        request = webob.Request.blank('/')
+        request.accept = 'application/json'
+        response = versions.Controller().index(request)
+        v_list = jsonutils.loads(response.body)['versions']
+        return [v['id'] for v in v_list if v['status'] == status]
+
+    def _assert_version_is_negotiated(self, version_id):
+        request = webob.Request.blank("/%s/images" % version_id)
+        self.middleware.process_request(request)
+        major = version_id.split('.', 1)[0]
+        expected = "/%s/images" % major
+        self.assertEqual(expected, request.path_info)
+
+    def test_current_is_negotiated(self):
+        # NOTE(rosmaita): Bug 1609571: the versions response was correct, but
+        # the negotiation had not been updated for the CURRENT version.
+        to_check = self._get_list_of_version_ids('CURRENT')
+        self.assertTrue(to_check)
+        for version_id in to_check:
+            self._assert_version_is_negotiated(version_id)
+
+    def test_supported_is_negotiated(self):
+        to_check = self._get_list_of_version_ids('SUPPORTED')
+        for version_id in to_check:
+            self._assert_version_is_negotiated(version_id)
+
+    def test_deprecated_is_negotiated(self):
+        to_check = self._get_list_of_version_ids('DEPRECATED')
+        for version_id in to_check:
+            self._assert_version_is_negotiated(version_id)
