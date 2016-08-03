@@ -14,6 +14,7 @@
 #    under the License.
 import uuid
 
+from cursive import exception as cursive_exception
 import glance_store
 import mock
 import six
@@ -286,7 +287,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_upload_signature_verification_fails(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage()
-        image.set_data = Raise(exception.SignatureVerificationError)
+        image.set_data = Raise(cursive_exception.SignatureVerificationError)
         self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)

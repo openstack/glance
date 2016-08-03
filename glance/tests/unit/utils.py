@@ -85,10 +85,10 @@ def fake_get_size_from_backend(uri, context=None):
     return 1
 
 
-def fake_get_verifier(context, image_properties):
+def fake_get_verifier(context, cert_uuid, hash_method,
+                      img_signature, key_type):
     verifier = mock.Mock()
-    if (image_properties is not None and 'img_signature' in image_properties
-            and image_properties['img_signature'] == 'VALID'):
+    if (img_signature is not None and img_signature == 'VALID'):
         verifier.verify.return_value = None
     else:
         ex = crypto_exception.InvalidSignature()
