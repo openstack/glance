@@ -1,74 +1,64 @@
 {
     "versions": [
         {
-            "status": "CURRENT",
-            "id": "v2.4",
-            "links": [
-                {
-                    "href": "http://glance.openstack.org:9292/v2/",
-                    "rel": "self"
-                }
-            ]
-        },
-        {
-            "status": "SUPPORTED",
             "id": "v2.3",
             "links": [
                 {
-                    "href": "http://glance.openstack.org:9292/v2/",
+                    "href": "http://glance.openstack.example.org/v2/",
                     "rel": "self"
                 }
-            ]
+            ],
+            "status": "CURRENT"
         },
         {
-            "status": "SUPPORTED",
             "id": "v2.2",
             "links": [
                 {
-                    "href": "http://glance.openstack.org:9292/v2/",
+                    "href": "http://glance.openstack.example.org/v2/",
                     "rel": "self"
                 }
-            ]
+            ],
+            "status": "SUPPORTED"
         },
         {
-            "status": "SUPPORTED",
             "id": "v2.1",
             "links": [
                 {
-                    "href": "http://glance.openstack.org:9292/v2/",
+                    "href": "http://glance.openstack.example.org/v2/",
                     "rel": "self"
                 }
-            ]
+            ],
+            "status": "SUPPORTED"
         },
         {
-            "status": "SUPPORTED",
             "id": "v2.0",
             "links": [
                 {
-                    "href": "http://glance.openstack.org:9292/v2/",
+                    "href": "http://glance.openstack.example.org/v2/",
                     "rel": "self"
                 }
-            ]
+            ],
+            "status": "SUPPORTED"
         },
         {
-            "status": "SUPPORTED",
             "id": "v1.1",
             "links": [
                 {
-                    "href": "http://glance.openstack.org:9292/v1/",
+                    "href": "http://glance.openstack.example.org/v1/",
                     "rel": "self"
                 }
-            ]
+            ],
+            "status": "SUPPORTED"
         },
         {
-            "status": "SUPPORTED",
             "id": "v1.0",
             "links": [
                 {
-                    "href": "http://glance.openstack.org:9292/v1/",
+                    "href": "http://glance.openstack.example.org/v1/",
                     "rel": "self"
                 }
-            ]
+            ],
+            "status": "SUPPORTED"
         }
     ]
 }
