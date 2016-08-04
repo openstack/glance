@@ -353,7 +353,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
     def test_create_option(self):
         oparser = optparse.OptionParser()
         cache_manage.create_options(oparser)
-        self.assertTrue(len(oparser.option_list) > 0)
+        self.assertGreater(len(oparser.option_list), 0)
 
     @mock.patch.object(glance.cmd.cache_manage, 'lookup_command')
     def test_parse_options_no_parameters(self, mock_lookup):

@@ -591,4 +591,4 @@ class TestArtifactTypeFactory(test_utils.BaseTestCase):
         artifact = self.factory.new_artifact("foo", "1.0.0-alpha")
         self.assertEqual('creating', artifact.state)
         self.assertEqual('me', artifact.owner)
-        self.assertTrue(artifact.id is not None)
+        self.assertIsNotNone(artifact.id)

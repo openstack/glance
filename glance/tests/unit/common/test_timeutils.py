@@ -134,17 +134,17 @@ class TestIso8601Time(test_utils.BaseTestCase):
         zulu = timeutils.parse_isotime('2012-02-14T20:53:07')
         east = timeutils.parse_isotime('2012-02-14T20:53:07-01:00')
         west = timeutils.parse_isotime('2012-02-14T20:53:07+01:00')
-        self.assertTrue(east > west)
-        self.assertTrue(east > zulu)
-        self.assertTrue(zulu > west)
+        self.assertGreater(east, west)
+        self.assertGreater(east, zulu)
+        self.assertGreater(zulu, west)
 
     def test_compare_micros(self):
         zulu = timeutils.parse_isotime('2012-02-14T20:53:07.6544')
         east = timeutils.parse_isotime('2012-02-14T19:53:07.654321-01:00')
         west = timeutils.parse_isotime('2012-02-14T21:53:07.655+01:00')
-        self.assertTrue(east < west)
-        self.assertTrue(east < zulu)
-        self.assertTrue(zulu < west)
+        self.assertLess(east, west)
+        self.assertLess(east, zulu)
+        self.assertLess(zulu, west)
 
     def test_zulu_roundtrip(self):
         time_str = '2012-02-14T20:53:07Z'
@@ -193,17 +193,17 @@ class TestIso8601Time(test_utils.BaseTestCase):
         time_str = '2011-02-14T20:53:07+21:00'
         aware = timeutils.parse_isotime(time_str)
         naive = timeutils.normalize_time(aware)
-        self.assertTrue(naive < dt)
+        self.assertLess(naive, dt)
 
     def test_normalize_zulu_aware_to_naive(self):
         dt = datetime.datetime(2011, 2, 14, 20, 53, 7)
         time_str = '2011-02-14T19:53:07Z'
         aware = timeutils.parse_isotime(time_str)
         naive = timeutils.normalize_time(aware)
-        self.assertTrue(naive < dt)
+        self.assertLess(naive, dt)
 
     def test_normalize_naive(self):
         dt = datetime.datetime(2011, 2, 14, 20, 53, 7)
         dtn = datetime.datetime(2011, 2, 14, 19, 53, 7)
         naive = timeutils.normalize_time(dtn)
-        self.assertTrue(naive < dt)
+        self.assertLess(naive, dt)
