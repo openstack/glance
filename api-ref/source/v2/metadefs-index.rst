@@ -31,7 +31,9 @@ General information
 The Metadata Definitions Service ("metadefs", for short) provides a common API
 for vendors, operators, administrators, services, and users to meaningfully
 define available key:value pairs that can be used on different types of cloud
-resources (for example, images, artifacts, volumes, flavors, aggregates, etc).
+resources (for example, images, artifacts, volumes, flavors, aggregates,
+and other resources).
+
 To get you started, Glance contains a default catalog of metadefs that may be
 installed at your site; see the `README
 <https://github.com/openstack/glance/tree/master/etc/metadefs/README>`_ in the
