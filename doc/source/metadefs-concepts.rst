@@ -23,9 +23,9 @@ OpenStack.
 It provides a common API for vendors, admins, services, and users to
 meaningfully **define** available key / value pair metadata that
 can be used on different types of resources (images, artifacts, volumes,
-flavors, aggregates, etc). A definition includes a property's key,
-its description, its constraints, and the resource types to which it can be
-associated.
+flavors, aggregates, and other resources). A definition includes a property's
+key, its description, its constraints, and the resource types to which it
+can be associated.
 
 This catalog does not store the values for specific instance properties.
 
