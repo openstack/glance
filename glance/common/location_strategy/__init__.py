@@ -22,12 +22,33 @@ import stevedore
 from glance.i18n import _, _LE
 
 location_strategy_opts = [
-    cfg.StrOpt('location_strategy', default='location_order',
+    cfg.StrOpt('location_strategy',
+               default='location_order',
                choices=('location_order', 'store_type'),
-               help=_("This value sets what strategy will be used to "
-                      "determine the image location order. Currently "
-                      "two strategies are packaged with Glance "
-                      "'location_order' and 'store_type'."))
+               help=_("""
+Strategy to determine the preference order of image locations.
+
+This configuration option indicates the strategy to determine
+the order in which an image's locations must be accessed to
+serve the image's data. Glance then retrieves the image data
+from the first responsive active location it finds in this list.
+
+This option takes one of two possible values ``location_order``
+and ``store_type``. The default value is ``location_order``,
+which suggests that image data be served by using locations in
+the order they are stored in Glance. The ``store_type`` value
+sets the image location preference based on the order in which
+the storage backends are listed as a comma separated list for
+the configuration option ``store_type_preference``.
+
+Possible values:
+    * location_order
+    * store_type
+
+Related options:
+    * store_type_preference
+
+""")),
 ]
 
 CONF = cfg.CONF
