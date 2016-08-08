@@ -102,6 +102,7 @@ _cache_opts = [
         glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,
         glance.registry.registry_addr_opts,
+        glance.registry.client.registry_client_opts,
         glance.registry.client.registry_client_ctx_opts))),
 ]
 _manage_opts = [
