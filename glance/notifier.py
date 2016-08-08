@@ -50,19 +50,13 @@ CONF.register_opts(notifier_opts)
 
 LOG = logging.getLogger(__name__)
 
-_ALIASES = {
-    'glance.openstack.common.rpc.impl_kombu': 'rabbit',
-    'glance.openstack.common.rpc.impl_qpid': 'qpid',
-    'glance.openstack.common.rpc.impl_zmq': 'zmq',
-}
-
 
 def set_defaults(control_exchange='glance'):
     oslo_messaging.set_transport_defaults(control_exchange)
 
 
 def get_transport():
-    return oslo_messaging.get_notification_transport(CONF, aliases=_ALIASES)
+    return oslo_messaging.get_notification_transport(CONF)
 
 
 class Notifier(object):
