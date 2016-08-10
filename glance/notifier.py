@@ -32,17 +32,53 @@ from glance.i18n import _, _LE
 
 
 notifier_opts = [
-    cfg.StrOpt('default_publisher_id', default="image.localhost",
-               help='Default publisher_id for outgoing notifications.'),
-    cfg.ListOpt('disabled_notifications', default=[],
-                help='List of disabled notifications. A notification can be '
-                     'given either as a notification type to disable a single '
-                     'event, or as a notification group prefix to disable all '
-                     'events within a group. Example: if this config option '
-                     'is set to ["image.create", "metadef_namespace"], then '
-                     '"image.create" notification will not be sent after '
-                     'image is created and none of the notifications for '
-                     'metadefinition namespaces will be sent.'),
+    cfg.StrOpt('default_publisher_id',
+               default="image.localhost",
+               help=_("""
+Default publisher_id for outgoing Glance notifications.
+
+This is the value that the notification driver will use to identify
+messages for events originating from the Glance service. Typically,
+this is the hostname of the instance that generated the message.
+
+Possible values:
+    * Any reasonable instance identifier, for example: image.host1
+
+Related options:
+    * None
+
+""")),
+    cfg.ListOpt('disabled_notifications',
+                default=[],
+                help=_("""
+List of notifications to be disabled.
+
+Specify a list of notifications that should not be emitted.
+A notification can be given either as a notification type to
+disable a single event notification, or as a notification group
+prefix to disable all event notifications within a group.
+
+Possible values:
+    A comma-separated list of individual notification types or
+    notification groups to be disabled. Currently supported groups:
+        * image
+        * image.member
+        * task
+        * metadef_namespace
+        * metadef_object
+        * metadef_property
+        * metadef_resource_type
+        * metadef_tag
+    For a complete listing and description of each event refer to:
+    http://docs.openstack.org/developer/glance/notifications.html
+
+    The values must be specified as: <group_name>.<event_name>
+    For example: image.create,task.success,metadef_tag
+
+Related options:
+    * None
+
+""")),
 ]
 
 CONF = cfg.CONF
