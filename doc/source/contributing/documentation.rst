@@ -1,6 +1,30 @@
 Documentation
 =============
 
+Tips for Doc Writers (and Developers, too!)
+-------------------------------------------
+
+Here are some useful tips about questions that come up a lot but aren't always
+easy to find answers to.
+
+* Make example URLs consistent
+
+  For consistency, example URLs for openstack components are in the form:
+
+  .. code::
+
+    project.openstack.example.org
+
+  So, for example, an example image-list call to Glance would use a URL
+  written like this:
+
+  .. code::
+
+    http://glance.openstack.example.org/v2/images
+
+Where to Contribute
+-------------------
+
 There are a few different kinds of documentation associated with Glance to
 which you may want to contribute:
 

@@ -7,7 +7,7 @@
             "container_format": "ovf",
             "disk_format": "vhd"
         },
-        "import_from": "http://app.catalog.openstack.org/groovy-image",
+        "import_from": "http://app-catalog.openstack.example.org/groovy-image",
         "import_from_format": "qcow2"
     },
     "message": "Task failed due to Internal Error",
