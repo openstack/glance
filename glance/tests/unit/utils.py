@@ -15,7 +15,6 @@
 
 
 from cryptography import exceptions as crypto_exception
-from debtcollector import removals
 import glance_store as store
 import mock
 from oslo_config import cfg
@@ -84,16 +83,6 @@ def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
 
 def fake_get_size_from_backend(uri, context=None):
     return 1
-
-
-@removals.remove(message="This will be removed in the N cycle.")
-def fake_old_verify_signature(context, checksum_hash, image_properties):
-    if (image_properties is not None and 'signature' in image_properties and
-            image_properties['signature'] == 'VALID'):
-        return True
-    else:
-        raise exception.SignatureVerificationError(
-            'Signature verification failed.')
 
 
 def fake_get_verifier(context, image_properties):
