@@ -127,7 +127,7 @@ Using v1.X
 ----------
 
 For the purpose of examples, assume there is a Glance API server running
-at the URL ``http://glance.example.com`` on the default port 80.
+at the URL ``http://glance.openstack.example.org`` on the default port 80.
 
 List Available Images
 *********************
@@ -136,12 +136,12 @@ We want to see a list of available images that the authenticated user has
 access to. This includes images owned by the user, images shared with the user
 and public images.
 
-We issue a ``GET`` request to ``http://glance.example.com/v1/images`` to
+We issue a ``GET`` request to ``http://glance.openstack.example.org/v1/images`` to
 retrieve this list of available images. The data is returned as a JSON-encoded
 mapping in the following format::
 
   {'images': [
-    {'uri': 'http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9',
+    {'uri': 'http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9',
      'name': 'Ubuntu 10.04 Plain',
      'disk_format': 'vhd',
      'container_format': 'ovf',
@@ -156,12 +156,12 @@ We want to see a more detailed list of available images that the authenticated
 user has access to. This includes images owned by the user, images shared with
 the user and public images.
 
-We issue a ``GET`` request to ``http://glance.example.com/v1/images/detail`` to
+We issue a ``GET`` request to ``http://glance.openstack.example.org/v1/images/detail`` to
 retrieve this list of available images. The data is returned as a
 JSON-encoded mapping in the following format::
 
   {'images': [
-    {'uri': 'http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9',
+    {'uri': 'http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9',
      'name': 'Ubuntu 10.04 Plain 5GB',
      'disk_format': 'vhd',
      'container_format': 'ovf',
@@ -305,13 +305,13 @@ first image returned, we can issue a ``HEAD`` request to the Glance
 server for the image's URI.
 
 We issue a ``HEAD`` request to
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
+``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
 retrieve complete metadata for that image. The metadata is returned as a
 set of HTTP headers that begin with the prefix ``x-image-meta-``. The
 following shows an example of the HTTP headers returned from the above
 ``HEAD`` request::
 
-  x-image-meta-uri              http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9
+  x-image-meta-uri              http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-disk_format      vhd
   x-image-meta-container_format ovf
@@ -366,7 +366,7 @@ first image returned, we can issue a ``HEAD`` request to the Glance
 server for the image's URI.
 
 We issue a ``GET`` request to
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
+``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9`` to
 retrieve metadata for that image as well as the image itself encoded
 into the response body.
 
@@ -374,7 +374,7 @@ The metadata is returned as a set of HTTP headers that begin with the
 prefix ``x-image-meta-``. The following shows an example of the HTTP headers
 returned from the above ``GET`` request::
 
-  x-image-meta-uri              http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9
+  x-image-meta-uri              http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9
   x-image-meta-name             Ubuntu 10.04 Plain 5GB
   x-image-meta-disk_format      vhd
   x-image-meta-container_format ovf
@@ -432,10 +432,10 @@ wish to do two things:
 
 We can do the above two activities in a single call to the Glance API.
 Assuming, like in the examples above, that a Glance API server is running
-at ``glance.example.com``, we issue a ``POST`` request to add an image to
+at ``http://glance.openstack.example.org``, we issue a ``POST`` request to add an image to
 Glance::
 
-  POST http://glance.example.com/v1/images
+  POST http://glance.openstack.example.org/v1/images
 
 The metadata about the image is sent to Glance in HTTP headers. The body
 of the HTTP request to the Glance API will be the MIME-encoded disk
@@ -449,7 +449,7 @@ We can also perform the activities described in `Add a New Image`_ using two
 separate calls to the Image API; the first to register the image metadata, and
 the second to add the image disk data. This is known as "reserving" an image.
 
-The first call should be a ``POST`` to ``http://glance.example.com/v1/images``,
+The first call should be a ``POST`` to ``http://glance.openstack.example.org/v1/images``,
 which will result in a new image id being registered with a status of
 ``queued``::
 
@@ -460,7 +460,7 @@ which will result in a new image id being registered with a status of
    ...}
 
 The image data can then be added using a ``PUT`` to
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9``.
+``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9``.
 The image status will then be set to ``active`` by Glance.
 
 
@@ -630,7 +630,7 @@ append ``/members`` to it, and issue a ``GET`` request on the resulting URL.
 Continuing from the example above, in order to get the memberships for the
 first image returned, we can issue a ``GET`` request to the Glance
 server for
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``.
+``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``.
 And we will get back JSON data such as the following::
 
   {'members': [
@@ -647,7 +647,7 @@ List Shared Images
 ******************
 
 We want to see a list of images which are shared with a given tenant. We issue
-a ``GET`` request to ``http://glance.example.com/v1/shared-images/tenant1``. We
+a ``GET`` request to ``http://glance.openstack.example.org/v1/shared-images/tenant1``. We
 will get back JSON data such as the following::
 
   {'shared_images': [
@@ -665,7 +665,7 @@ Add a Member to an Image
 
 We want to authorize a tenant to access a private image. We issue a ``PUT``
 request to
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/tenant1``.
+``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/tenant1``.
 With no body, this will add the membership to the image, leaving existing
 memberships unmodified and defaulting new memberships to have `can_share`
 set to `false`. We may also optionally attach a body of the following form::
@@ -683,7 +683,7 @@ Remove a Member from an Image
 *****************************
 
 We want to revoke a tenant's right to access a private image. We issue a
-``DELETE`` request to ``http://glance.example.com/v1/images/1/members/tenant1``.
+``DELETE`` request to ``http://glance.openstack.example.org/v1/images/1/members/tenant1``.
 This query will return a 204 ("No Content") status code.
 
 
@@ -692,7 +692,7 @@ Replace a Membership List for an Image
 
 The full membership list for a given image may be replaced. We issue a ``PUT``
 request to
-``http://glance.example.com/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
+``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members``
 with a body of the following form::
 
   {'memberships': [
@@ -863,7 +863,7 @@ message. For more information about Accept-Language, please refer to http://www.
 A typical curl API request will be like below::
 
    curl -i -X GET -H 'Accept-Language: zh' -H 'Content-Type: application/json'
-   http://127.0.0.1:9292/v2/images/aaa
+   http://glance.openstack.example.org/v2/images/aaa
 
 Then the response will be like the following::
 
