@@ -166,8 +166,51 @@ Related options:
     * None
 
 """)),
-    cfg.StrOpt('data_api', default='glance.db.sqlalchemy.api',
-               help=_('Python module path of data access API')),
+    # TODO(abashmak): Add choices parameter to this option:
+    # choices('glance.db.sqlalchemy.api',
+    #         'glance.db.registry.api',
+    #         'glance.db.simple.api')
+    # This will require a fix to the functional tests which
+    # set this option to a test version of the registry api module:
+    # (glance.tests.functional.v2.registry_data_api), in order to
+    # bypass keystone authentication for the Registry service.
+    # All such tests are contained in:
+    # glance/tests/functional/v2/test_images.py
+    cfg.StrOpt('data_api',
+               default='glance.db.sqlalchemy.api',
+               help=_("""
+Python module path of data access API.
+
+Specifies the path to the API to use for accessing the data model.
+This option determines how the image catalog data will be accessed.
+
+Possible values:
+    * glance.db.sqlalchemy.api
+    * glance.db.registry.api
+    * glance.db.simple.api
+
+If this option is set to ``glance.db.sqlalchemy.api`` then the image
+catalog data is stored in and read from the database via the
+SQLAlchemy Core and ORM APIs.
+
+Setting this option to ``glance.db.registry.api`` will force all
+database access requests to be routed through the Registry service.
+This avoids data access from the Glance API nodes for an added layer
+of security, scalability and manageability.
+
+NOTE: In v2 OpenStack Images API, the registry service is optional.
+In order to use the Registry API in v2, the option
+``enable_v2_registry`` must be set to ``True``.
+
+Finally, when this configuration option is set to
+``glance.db.simple.api``, image catalog data is stored in and read
+from an in-memory data structure. This is primarily used for testing.
+
+Related options:
+    * enable_v2_api
+    * enable_v2_registry
+
+""")),
     cfg.IntOpt('limit_param_default', default=25, min=1,
                help=_("""
 The default number of results to return for a request.
