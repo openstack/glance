@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::CPUPinning",
     "display_name": "CPU Pinning",
-    "description": "This provides the preferred CPU Pinning policy when pinning vCPU of the guest to pCPU of the host. Default 'shared' option doesn't change current default guest CPU placement policy. 'Dedicated' will make guest CPU(s) to be strictly pinned to set of host CPU(s). See also https://wiki.openstack.org/wiki/VirtDriverGuestCPUMemoryPlacement",
+    "description": "This provides the preferred CPU pinning and CPU thread pinning policy to be used when pinning vCPU of the guest to pCPU of the host. See http://docs.openstack.org/admin-guide/compute-numa-cpu-pinning.html",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [
@@ -22,11 +22,21 @@
     "properties": {
         "cpu_policy": {
             "title": "CPU Pinning policy",
-            "description": "Type of CPU Pinning policy.",
+            "description": "Type of CPU pinning policy.",
             "type": "string",
             "enum": [
               "shared",
               "dedicated"
+            ]
+        },
+        "cpu_thread_policy": {
+            "title": "CPU Thread Pinning Policy.",
+            "description": "Type of CPU thread pinning policy.",
+            "type": "string",
+            "enum": [
+                "isolate",
+                "prefer",
+                "require"
             ]
         }
     }
