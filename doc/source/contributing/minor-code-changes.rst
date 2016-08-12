@@ -32,6 +32,29 @@ We're not saying that such changes can never be made, we're just saying that
 each change must be accompanied by an explanation of why the weaker test is
 adequate for what's being tested.
 
+Just to make this a bit clearer it can be shown using the following
+example, comment out the lines in the runTest method alternatively::
+
+  import unittest
+
+  class MyTestCase(unittest.TestCase):
+      def setUp(self):
+          pass
+
+  class Tests(MyTestCase):
+      def runTest(self):
+          self.assertTrue('True')
+          self.assertTrue(True)
+          self.assertEqual(True, 'True')
+
+To run this use::
+
+  python -m testtools.run test.py
+
+Also mentioned within the unittests documentation_.
+
+.. _documentation: https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertTrue
+
 LOG.warn to LOG.warning
 -----------------------
 
