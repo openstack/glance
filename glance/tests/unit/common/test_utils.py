@@ -362,7 +362,7 @@ class TestUtils(test_utils.BaseTestCase):
                                         ']' if escaped else '')
 
             self.assertTrue(pair_str.startswith(expected_host))
-            self.assertTrue(port > 0)
+            self.assertGreater(port, 0)
 
             expected_pair = '%s:%d' % (expected_host, port)
             self.assertEqual(expected_pair, pair_str)

@@ -1842,7 +1842,7 @@ class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
             "FROM information_schema.TABLES "
             "WHERE TABLE_SCHEMA='%s'"
             % self.migrate_engine.url.database)
-        self.assertTrue(total.scalar() > 0, "No tables found. Wrong schema?")
+        self.assertGreater(total.scalar(), 0, "No tables found. Wrong schema?")
 
         noninnodb = self.migrate_engine.execute(
             "SELECT count(*) "

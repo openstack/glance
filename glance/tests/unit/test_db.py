@@ -361,7 +361,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image.tags = ['king', 'kong']
         self.image_repo.save(image)
         current_update_time = image.updated_at
-        self.assertTrue(current_update_time > original_update_time)
+        self.assertGreater(current_update_time, original_update_time)
         image = self.image_repo.get(UUID1)
         self.assertEqual('foo', image.name)
         self.assertEqual(set(['king', 'kong']), image.tags)
@@ -379,7 +379,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image = self.image_repo.get(UUID1)
         previous_update_time = image.updated_at
         self.image_repo.remove(image)
-        self.assertTrue(image.updated_at > previous_update_time)
+        self.assertGreater(image.updated_at, previous_update_time)
         self.assertRaises(exception.ImageNotFound, self.image_repo.get, UUID1)
 
     def test_remove_image_not_found(self):
@@ -714,7 +714,7 @@ class TestTaskRepo(test_utils.BaseTestCase):
         original_update_time = task.updated_at
         self.task_repo.save(task)
         current_update_time = task.updated_at
-        self.assertTrue(current_update_time > original_update_time)
+        self.assertGreater(current_update_time, original_update_time)
         task = self.task_repo.get(UUID1)
         self.assertEqual(current_update_time, task.updated_at)
 
