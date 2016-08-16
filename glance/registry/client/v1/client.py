@@ -25,6 +25,7 @@ import six
 
 from glance.common.client import BaseClient
 from glance.common import crypt
+from glance.common import exception
 from glance.i18n import _LE
 from glance.registry.api.v1 import images
 
@@ -130,6 +131,13 @@ class RegistryClient(BaseClient):
                       {'method': method, 'action': action,
                        'status': status, 'request_id': request_id})
 
+        # a 404 condition is not fatal, we shouldn't log at a fatal
+        # level for it.
+        except exception.NotFound:
+            raise
+
+        # The following exception logging should only really be used
+        # in extreme and unexpected cases.
         except Exception as exc:
             with excutils.save_and_reraise_exception():
                 exc_name = exc.__class__.__name__
