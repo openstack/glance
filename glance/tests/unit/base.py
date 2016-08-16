@@ -64,8 +64,7 @@ class IsolatedUnitTest(StoreClearingUnitTest):
 
     def setUp(self):
         super(IsolatedUnitTest, self).setUp()
-        options.set_defaults(CONF, connection='sqlite://',
-                             sqlite_db='glance.sqlite')
+        options.set_defaults(CONF, connection='sqlite://')
         lockutils.set_defaults(os.path.join(self.test_dir))
 
         self.config(debug=False)
