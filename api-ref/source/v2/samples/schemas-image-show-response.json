@@ -67,6 +67,7 @@
                 "ari",
                 "aki",
                 "vhd",
+                "vhdx",
                 "vmdk",
                 "raw",
                 "qcow2",

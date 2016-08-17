@@ -290,16 +290,13 @@ direct_url:
   type: string
 disk_format:
   description: |
-    The format of the disk. A valid value is ``ami``, ``ari``, ``aki``,
-    ``vhd``, ``vmdk``, ``raw``, ``qcow2``, ``vdi``, or ``iso``.  The value
-    might be ``null`` (JSON null data type).
+    |disk_format_description|
   in: body
   required: true
   type: enum
 disk_format-in-request:
   description: |
-    The format of the disk. A valid value is ``ami``, ``ari``, ``aki``,
-    ``vhd``, ``vmdk``, ``raw``, ``qcow2``, ``vdi``, or ``iso``.
+    |disk_format_description|
   in: body
   required: false
   type: enum
