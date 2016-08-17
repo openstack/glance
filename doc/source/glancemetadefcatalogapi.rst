@@ -57,7 +57,7 @@ Using v2.X
 ----------
 
 For the purpose of examples, assume there is a Glance API server running
-at the URL ``http://glance.example.com`` on the default port 80.
+at the URL ``http://glance.openstack.example.org`` on the default port 80.
 
 List Available Namespaces
 *************************
@@ -66,7 +66,7 @@ We want to see a list of available namespaces that the authenticated user
 has access to. This includes namespaces owned by the user,
 namespaces shared with the user and public namespaces.
 
-We issue a ``GET`` request to ``http://glance.example.com/v2/metadefs/namespaces``
+We issue a ``GET`` request to ``http://glance.openstack.example.org/v2/metadefs/namespaces``
 to retrieve this list of available namespaces.
 The data is returned as a JSON-encoded mapping in the following format::
 
@@ -162,7 +162,7 @@ We want to see a more detailed information about a namespace that the
 authenticated user has access to. The detail includes the properties, objects,
 and resource type associations.
 
-We issue a ``GET`` request to ``http://glance.example.com/v2/metadefs/namespaces/{namespace}``
+We issue a ``GET`` request to ``http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}``
 to retrieve the namespace details.
 The data is returned as a JSON-encoded mapping in the following format::
 
@@ -253,7 +253,7 @@ Retrieve available Resource Types
 
 We want to see the list of all resource types that are available in Glance
 
-We issue a ``GET`` request to ``http://glance.example.com/v2/metadefs/resource_types``
+We issue a ``GET`` request to ``http://glance.openstack.example.org/v2/metadefs/resource_types``
 to retrieve all resource types.
 
 The data is returned as a JSON-encoded mapping in the following format::
@@ -295,7 +295,7 @@ Retrieve Resource Types associated with a Namespace
 We want to see the list of resource types that are associated for a specific
 namespace
 
-We issue a ``GET`` request to ``http://glance.example.com/v2/metadefs/namespaces/{namespace}/resource_types``
+We issue a ``GET`` request to ``http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/resource_types``
 to retrieve resource types.
 
 The data is returned as a JSON-encoded mapping in the following format::
@@ -332,7 +332,7 @@ etc.
 
 We issue a ``POST`` request to add an namespace to Glance::
 
-  POST http://glance.example.com/v2/metadefs/namespaces/
+  POST http://glance.openstack.example.org/v2/metadefs/namespaces/
 
 The input data is an JSON-encoded mapping in the following format::
 
@@ -356,7 +356,7 @@ We want to update an existing namespace
 
 We issue a ``PUT`` request to update an namespace to Glance::
 
-  PUT http://glance.example.com/v2/metadefs/namespaces/{namespace}
+  PUT http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}
 
 The input data is similar to Add Namespace
 
@@ -369,7 +369,7 @@ properties etc.
 
 We issue a ``DELETE`` request to delete an namespace to Glance::
 
-  DELETE http://glance.example.com/v2/metadefs/namespaces/{namespace}
+  DELETE http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}
 
 
 Associate Resource Type with Namespace
@@ -379,7 +379,7 @@ We want to associate a resource type with an existing namespace
 
 We issue a ``POST`` request to associate resource type to Glance::
 
-  POST http://glance.example.com/v2/metadefs/namespaces/{namespace}/resource_types
+  POST http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/resource_types
 
 The input data is an JSON-encoded mapping in the following format::
 
@@ -400,7 +400,7 @@ We want to de-associate namespace from a resource type
 We issue a ``DELETE`` request to de-associate namespace resource type to
 Glance::
 
-  DELETE http://glance.example.com/v2//metadefs/namespaces/{namespace}/resource_types/{resource_type}
+  DELETE http://glance.openstack.example.org/v2//metadefs/namespaces/{namespace}/resource_types/{resource_type}
 
 
 List Objects in Namespace
@@ -408,7 +408,7 @@ List Objects in Namespace
 
 We want to see the list of meta definition objects in a specific namespace
 
-We issue a ``GET`` request to ``http://glance.example.com/v2/metadefs/namespaces/{namespace}/objects``
+We issue a ``GET`` request to ``http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/objects``
 to retrieve objects.
 
 The data is returned as a JSON-encoded mapping in the following format::
@@ -461,7 +461,7 @@ We want to create a new object which can group the properties
 
 We issue a ``POST`` request to add object to a namespace in Glance::
 
-  POST http://glance.example.com/v2/metadefs/namespaces/{namespace}/objects
+  POST http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/objects
 
 
 The input data is an JSON-encoded mapping in the following format::
@@ -497,7 +497,7 @@ We want to update an existing object
 
 We issue a ``PUT`` request to update an object to Glance::
 
-  PUT http://glance.example.com/v2/metadefs/namespaces/{namespace}/objects/{object_name}
+  PUT http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/objects/{object_name}
 
 The input data is similar to Add Object
 
@@ -509,7 +509,7 @@ We want to delete an existing object.
 
 We issue a ``DELETE`` request to delete object in a namespace to Glance::
 
-  DELETE http://glance.example.com/v2/metadefs/namespaces/{namespace}/objects/{object_name}
+  DELETE http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/objects/{object_name}
 
 
 Add property definition in a specific namespace
@@ -520,7 +520,7 @@ We want to create a new property definition in a namespace
 We issue a ``POST`` request to add property definition to a namespace in
 Glance::
 
-  POST http://glance.example.com/v2/metadefs/namespaces/{namespace}/properties
+  POST http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/properties
 
 
 The input data is an JSON-encoded mapping in the following format::
@@ -549,7 +549,7 @@ We want to update an existing object
 We issue a ``PUT`` request to update an property definition in a namespace to
 Glance::
 
-  PUT http://glance.example.com/v2/metadefs/namespaces/{namespace}/properties/{property_name}
+  PUT http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/properties/{property_name}
 
 The input data is similar to Add property definition
 
@@ -562,7 +562,7 @@ We want to delete an existing object.
 We issue a ``DELETE`` request to delete property definition in a namespace to
 Glance::
 
-  DELETE http://glance.example.com/v2/metadefs/namespaces/{namespace}/properties/{property_name}
+  DELETE http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/properties/{property_name}
 
 
 API Message Localization
@@ -580,7 +580,7 @@ message. For more info about Accept-Language, please refer http://www.w3.org/Pro
 A typical curl API request will be like below::
 
    curl -i -X GET -H 'Accept-Language: zh' -H 'Content-Type: application/json'
-   http://127.0.0.1:9292/v2/metadefs/namespaces/{namespace}
+   http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}
 
 Then the response will be like the following::
 
