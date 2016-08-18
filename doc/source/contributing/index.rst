@@ -14,6 +14,7 @@ Policies
    blueprints
    documentation
    minor-code-changes
+   refreshing-configs
 .. bugs
    contributor-onboarding
    core-reviewers
