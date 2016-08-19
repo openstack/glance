@@ -42,9 +42,6 @@ API service. Change the endpoint to represent the proxy URL if the
 API service is running behind a proxy. If the service is running
 behind a load balancer, add the load balancer's URL for this value.
 
-Services which consume this:
-    * glance-api/glare-api
-
 Possible values:
     * None
     * Proxy URL
