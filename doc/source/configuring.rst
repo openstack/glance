@@ -119,9 +119,8 @@ An example usage would be:
 
   $ ls /etc/glance/glance-api.d
    00-core.conf
-   01-s3.conf
-   02-swift.conf
-   03-ssl.conf
+   01-swift.conf
+   02-ssl.conf
    ... etc.
 
 The numeric prefixes in the example above are only necessary if a specific
@@ -419,7 +418,7 @@ Optional. Default: ``file``
 Can only be specified in configuration files.
 
 Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, ``s3``, ``rbd``,
+Available options for this option are (``file``, ``swift``, ``rbd``,
 ``sheepdog``, ``cinder`` or ``vsphere``). In order to select a default store
 it must also be listed in the ``stores`` list described below.
 
@@ -428,7 +427,7 @@ it must also be listed in the ``stores`` list described below.
 Optional. Default: ``file, http``
 
 A comma separated list of enabled glance stores. Some available options for
-this option are (``filesystem``, ``http``, ``rbd``, ``s3``, ``swift``,
+this option are (``filesystem``, ``http``, ``rbd``, ``swift``,
 ``sheepdog``, ``cinder``, ``vmware_datastore``)
 
 Configuring the Filesystem Storage Backend
@@ -869,128 +868,6 @@ In the reference, a user can specify the following parameters:
   Optional. Default: ``None``
 
   `This option can be specified if ``auth_version`` is ``3``. `
-
-Configuring the S3 Storage Backend
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``s3_store_host=URL``
-
-Required when using the S3 storage backend.
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-Default: s3.amazonaws.com
-
-Sets the main service URL supplied to S3 when making calls to its storage
-system. For more information about the S3 authentication system, please
-see the `S3 documentation <http://aws.amazon.com/documentation/s3/>`_
-
-* ``s3_store_access_key=ACCESS_KEY``
-
-Required when using the S3 storage backend.
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-Sets the access key to authenticate against the ``s3_store_host`` with.
-
-You should set this to your 20-character Amazon AWS access key.
-
-* ``s3_store_secret_key=SECRET_KEY``
-
-Required when using the S3 storage backend.
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-Sets the secret key to authenticate against the
-``s3_store_host`` with for the access key ``s3_store_access_key``.
-
-You should set this to your 40-character Amazon AWS secret key.
-
-* ``s3_store_bucket=BUCKET``
-
-Required when using the S3 storage backend.
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-Sets the name of the bucket to use for Glance images in S3.
-
-Note that the namespace for S3 buckets is **global**,
-therefore you must use a name for the bucket that is unique. It
-is recommended that you use a combination of your AWS access key,
-**lowercased** with "glance".
-
-For instance if your Amazon AWS access key is:
-
-``ABCDEFGHIJKLMNOPQRST``
-
-then make your bucket value be:
-
-``abcdefghijklmnopqrstglance``
-
-* ``s3_store_create_bucket_on_put``
-
-Optional. Default: ``False``
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-If true, Glance will attempt to create the bucket ``s3_store_bucket``
-if it does not exist.
-
-* ``s3_store_object_buffer_dir=PATH``
-
-Optional. Default: ``the platform's default temporary directory``
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-When sending images to S3, what directory should be
-used to buffer the chunks? By default the platform's
-temporary directory will be used.
-
-* ``s3_store_large_object_size=SIZE_IN_MB``
-
-Optional. Default: ``100``
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-Size, in ``MB``, should S3 start chunking image files
-and do a multipart upload in S3.
-
-* ``s3_store_large_object_chunk_size=SIZE_IN_MB``
-
-Optional. Default: ``10``
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-Multipart upload part size, in ``MB``, should S3 use
-when uploading parts. The size must be greater than or
-equal to 5MB. The default is 10MB.
-
-* ``s3_store_thread_pools=NUM``
-
-Optional. Default: ``10``
-
-Can only be specified in configuration files.
-
-`This option is specific to the S3 storage backend.`
-
-The number of thread pools to perform a multipart upload
-in S3. The default is 10.
 
 Configuring the RBD Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

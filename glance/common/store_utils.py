@@ -118,7 +118,7 @@ def validate_external_location(uri):
     """
     Validate if URI of external location are supported.
 
-    Only over non-local store types are OK, i.e. S3, Swift,
+    Only over non-local store types are OK, i.e. Swift,
     HTTP. Note the absence of 'file://' for security reasons,
     see LP bug #942118, 1400966, 'swift+config://' is also
     absent for security reasons, see LP bug #1334196.

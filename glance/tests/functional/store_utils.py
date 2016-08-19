@@ -15,7 +15,7 @@
 #    under the License.
 
 """
-Utility methods to set testcases up for Swift and/or S3 tests.
+Utility methods to set testcases up for Swift tests.
 """
 
 from __future__ import print_function

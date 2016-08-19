@@ -57,7 +57,7 @@ but are not extensively tested upstream.
          exclusively makes use of each of the storage systems in the
          Supported Storages block.  Within the Supported Storages block,
          there exist the following storage systems, none of which make use
-         of anything else: Filesystem, Swift, S3, Ceph, "ellipses", Sheepdog.
+         of anything else: Filesystem, Swift, Ceph, "ellipses", Sheepdog.
          A complete list is given by the currently  available drivers in
          glance_store/_drivers.
 
