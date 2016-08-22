@@ -143,7 +143,7 @@ Create the image::
 
   $ glance image-create --name mySignedImage --container-format bare --disk-format qcow2 --property img_signature="$image_signature" --property img_signature_certificate_uuid="$cert_uuid" --property img_signature_hash_method='SHA-256' --property img_signature_key_type='RSA-PSS' < myimage
 
-.. note:: Creating the image can fail if validation does not succeeed.
+.. note:: Creating the image can fail if validation does not succeed.
           This will cause the image to be deleted.
 
 Other Links

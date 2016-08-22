@@ -26,7 +26,7 @@ Notification Drivers
 * log
 
   This driver uses the standard Python logging infrastructure with
-  the notifications ending up in file specificed by the log_file
+  the notifications ending up in file specified by the log_file
   configuration directive.
 
 * messaging
