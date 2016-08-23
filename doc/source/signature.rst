@@ -135,9 +135,12 @@ Get an image and create the signature::
 
   $ openssl dgst -sha256 -sign private_key.pem -sigopt rsa_padding_mode:pss -out myimage.signature myimage
 
-  $ base64 myimage.signature > myimage.signature.b64
+  $ base64 -w 0 myimage.signature > myimage.signature.b64
 
   $ image_signature=$(cat myimage.signature.b64)
+
+.. note:: Using Glance v1 requires '-w 0' due to not supporting multiline image properties.
+          Glance v2 does support multiline image properties and does not require '-w 0' but may still be used.
 
 Create the image::
 
