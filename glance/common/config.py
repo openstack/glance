@@ -32,13 +32,58 @@ from glance.version import version_info as version
 
 paste_deploy_opts = [
     cfg.StrOpt('flavor',
-               help=_('Partial name of a pipeline in your paste configuration '
-                      'file with the service name removed. For example, if '
-                      'your paste section name is '
-                      '[pipeline:glance-api-keystone] use the value '
-                      '"keystone"')),
+               sample_default='keystone',
+               help=_("""
+Deployment flavor to use in the server application pipeline.
+
+Provide a string value representing the appropriate deployment
+flavor used in the server application pipleline. This is typically
+the partial name of a pipeline in the paste configuration file with
+the service name removed.
+
+For example, if your paste section name in the paste configuration
+file is [pipeline:glance-api-keystone], set ``flavor`` to
+``keystone``.
+
+Possible values:
+    * String value representing a partial pipeline name.
+
+Related Options:
+    * config_file
+
+""")),
     cfg.StrOpt('config_file',
-               help=_('Name of the paste configuration file.')),
+               sample_default='glance-api-paste.ini',
+               help=_("""
+Name of the paste configuration file.
+
+Provide a string value representing the name of the paste
+configuration file to use for configuring piplelines for
+server application deployments.
+
+NOTES:
+    * Provide the name or the path relative to the glance directory
+      for the paste configuration file and not the absolute path.
+    * The sample paste configuration file shipped with Glance need
+      not be edited in most cases as it comes with ready-made
+      pipelines for all common deployment flavors.
+
+If no value is specified for this option, the ``paste.ini`` file
+with the prefix of the corresponding Glance service's configuration
+file name will be searched for in the known configuration
+directories. (For example, if this option is missing from or has no
+value set in ``glance-api.conf``, the service will look for a file
+named ``glance-api-paste.ini``.) If the paste configuration file is
+not found, the service will not start.
+
+Possible values:
+    * A string value representing the name of the paste configuration
+      file.
+
+Related Options:
+    * flavor
+
+""")),
 ]
 image_format_opts = [
     cfg.ListOpt('container_formats',
@@ -64,27 +109,55 @@ task_opts = [
                                                   group='DEFAULT')]),
     cfg.StrOpt('task_executor',
                default='taskflow',
-               help=_("Specifies which task executor to be used to run the "
-                      "task scripts.")),
+               help=_("""
+Task executor to be used to run task scripts.
+
+Provide a string value representing the executor to use for task
+executions. By default, ``TaskFlow`` executor is used.
+
+``TaskFlow`` helps make task executions easy, consistent, scalable
+and reliable. It also enables creation of lightweight task objects
+and/or functions that are combined together into flows in a
+declarative manner.
+
+Possible values:
+    * taskflow
+
+Related Options:
+    * None
+
+""")),
     cfg.StrOpt('work_dir',
-               help=_('Work dir for asynchronous task operations. '
-                      'The directory set here will be used to operate over '
-                      'images - normally before they are imported in the '
-                      'destination store. When providing work dir, make sure '
-                      'enough space is provided for concurrent tasks to run '
-                      'efficiently without running out of space. A rough '
-                      'estimation can be done by multiplying the number of '
-                      '`max_workers` - or the N of workers running - by an '
-                      'average image size (e.g 500MB). The image size '
-                      'estimation should be done based on the average size in '
-                      'your deployment. Note that depending on the tasks '
-                      'running you may need to multiply this number by some '
-                      'factor depending on what the task does. For example, '
-                      'you may want to double the available size if image '
-                      'conversion is enabled. All this being said, remember '
-                      'these are just estimations and you should do them '
-                      'based on the worst case scenario and be prepared to '
-                      'act in case they were wrong.')),
+               sample_default='/work_dir',
+               help=_("""
+Absolute path to the work directory to use for asynchronous
+task operations.
+
+The directory set here will be used to operate over images -
+normally before they are imported in the destination store.
+
+NOTE: When providing a value for ``work_dir``, please make sure
+that enough space is provided for concurrent tasks to run
+efficiently without running out of space.
+
+A rough estimation can be done by multiplying the number of
+``max_workers`` with an average image size (e.g 500MB). The image
+size estimation should be done based on the average size in your
+deployment. Note that depending on the tasks running you may need
+to multiply this number by some factor depending on what the task
+does. For example, you may want to double the available size if
+image conversion is enabled. All this being said, remember these
+are just estimations and you should do them based on the worst
+case scenario and be prepared to act in case they were wrong.
+
+Possible values:
+    * String value representing the absolute path to the working
+      directory
+
+Related Options:
+    * None
+
+""")),
 ]
 
 _DEPRECATE_GLANCE_V1_MSG = _('The Images (Glance) version 1 API has been '
