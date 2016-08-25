@@ -12,14 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_log import versionutils
 
 from glance.common import wsgi
 from glance.i18n import _LW
 
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
