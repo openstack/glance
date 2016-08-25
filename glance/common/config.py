@@ -541,22 +541,83 @@ Related options:
 
 """)),
     cfg.StrOpt('pydev_worker_debug_host',
-               help=_('The hostname/IP of the pydev process listening for '
-                      'debug connections')),
-    cfg.PortOpt('pydev_worker_debug_port', default=5678,
-                help=_('The port on which a pydev process is listening for '
-                       'connections.')),
-    cfg.StrOpt('metadata_encryption_key', secret=True,
-               help=_('AES key for encrypting store \'location\' metadata. '
-                      'This includes, if used, Swift credentials. '
-                      'Should be set to a random string of length 16, 24 or '
-                      '32 bytes')),
-    cfg.StrOpt('digest_algorithm', default='sha256',
-               help=_('Digest algorithm which will be used for digital '
-                      'signature. Use the command "openssl list-message-'
-                      'digest-algorithms" to get the available algorithms '
-                      'supported by the version of OpenSSL on the platform.'
-                      ' Examples are "sha1", "sha256", "sha512", etc.')),
+               sample_default='localhost',
+               help=_("""
+Host address of the pydev server.
+
+Provide a string value representing the hostname or IP of the
+pydev server to use for debugging. The pydev server listens for
+debug connections on this address, facilitating remote debugging
+in Glance.
+
+Possible values:
+    * Valid hostname
+    * Valid IP address
+
+Related options:
+    * None
+
+""")),
+    cfg.PortOpt('pydev_worker_debug_port',
+                default=5678,
+                help=_("""
+Port number that the pydev server will listen on.
+
+Provide a port number to bind the pydev server to. The pydev
+process accepts debug connections on this port and facilitates
+remote debugging in Glance.
+
+Possible values:
+    * A valid port number
+
+Related options:
+    * None
+
+""")),
+    cfg.StrOpt('metadata_encryption_key',
+               secret=True,
+               help=_("""
+AES key for encrypting store location metadata.
+
+Provide a string value representing the AES cipher to use for
+encrypting Glance store metadata.
+
+NOTE: The AES key to use must be set to a random string of length
+16, 24 or 32 bytes.
+
+Possible values:
+    * String value representing a valid AES key
+
+Related options:
+    * None
+
+""")),
+    cfg.StrOpt('digest_algorithm',
+               default='sha256',
+               help=_("""
+Digest algorithm to use for digital signature.
+
+Provide a string value representing the digest algorithm to
+use for generating digital signatures. By default, ``sha256``
+is used.
+
+To get a list of the available algorithms supported by the version
+of OpenSSL on your platform, run the command:
+``openssl list-message-digest-algorithms``.
+Examples are 'sha1', 'sha256', and 'sha512'.
+
+NOTE: ``digest_algorithm`` is not related to Glance's image signing
+and verification. It is only used to sign the universally unique
+identifier (UUID) as a part of the certificate file and key file
+validation.
+
+Possible values:
+    * An OpenSSL message digest algorithm identifier
+
+Relation options:
+    * None
+
+""")),
 ]
 
 CONF = cfg.CONF
