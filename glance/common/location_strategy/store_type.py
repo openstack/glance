@@ -21,16 +21,51 @@ import six.moves.urllib.parse as urlparse
 
 from glance.i18n import _
 
+# TODO(dharinic): The help text for ``store_type_preference`` must be
+# edited to replace ``filesystem``and ``vmware_datastore`` with ``file``
+# and ``vmware`` respectively upon resolution of Bug #1615852.
+# Also, remove the Note from ``Possible Values`` sections upon
+# resolution of Bug #1615852.
 
+# NOTE(dharinic): We cannot restrict the choices for ``store_type_preference``
+# for backward compatability reasons. See Bug #1615852.
 store_type_opts = [
     cfg.ListOpt('store_type_preference',
                 default=[],
-                help=_("The store names to use to get store preference order. "
-                       "The name must be registered by one of the stores "
-                       "defined by the 'stores' config option. "
-                       "This option will be applied when you using "
-                       "'store_type' option as image location strategy "
-                       "defined by the 'location_strategy' config option."))
+                help=_("""
+Preference order of storage backends.
+
+Provide a comma separated list of store names in the order in
+which images should be retrieved from storage backends.
+These store names must be registered with the ``stores``
+configuration option.
+
+NOTE: The ``store_type_preference`` configuration option is applied
+only if ``store_type`` is chosen as a value for the
+``location_strategy`` configuration option. An empty list will not
+change the location order.
+
+Possible values:
+    * Empty list
+    * Comma separated list of registered store names. Legal values are:
+      (NOTE: Use only the following choices, which, unfortunately,
+      are not entirely consistent with the store names used in other
+      similar configuration options. Please take extra care while
+      setting this option, and read the help text carefully when
+      setting other similar options.)
+        * filesystem
+        * http
+        * rbd
+        * swift
+        * sheepdog
+        * cinder
+        * vmware_datastore
+
+Related options:
+    * location_strategy
+    * stores
+
+"""))
 ]
 
 CONF = cfg.CONF
