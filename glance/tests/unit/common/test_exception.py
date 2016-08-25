@@ -15,6 +15,7 @@
 
 from oslo_utils import encodeutils
 import six
+from six.moves import http_client as http
 
 from glance.common import exception
 from glance.tests import utils as test_utils
@@ -38,12 +39,13 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
         class FakeGlanceException(exception.GlanceException):
             message = "default message: %(code)s"
 
-        exc = FakeGlanceException(code=500)
+        exc = FakeGlanceException(code=http.INTERNAL_SERVER_ERROR)
         self.assertEqual("default message: 500",
                          encodeutils.exception_to_unicode(exc))
 
     def test_specified_error_msg_with_kwargs(self):
-        msg = exception.GlanceException('test: %(code)s', code=500)
+        msg = exception.GlanceException('test: %(code)s',
+                                        code=http.INTERNAL_SERVER_ERROR)
         self.assertIn('test: 500', encodeutils.exception_to_unicode(msg))
 
     def test_non_unicode_error_msg(self):

@@ -31,6 +31,7 @@ from oslo_serialization import jsonutils
 from oslotest import moxstubout
 import six
 from six.moves import BaseHTTPServer
+from six.moves import http_client as http
 import testtools
 import webob
 
@@ -437,7 +438,7 @@ def start_http_server(image_id, image_data):
     def _get_http_handler_class(fixture):
         class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             def do_GET(self):
-                self.send_response(200)
+                self.send_response(http.OK)
                 self.send_header('Content-Length', str(len(fixture)))
                 self.end_headers()
                 self.wfile.write(fixture)
@@ -447,9 +448,9 @@ def start_http_server(image_id, image_data):
                 # reserve non_existing_image_path for the cases where we expect
                 # 404 from the server
                 if 'non_existing_image_path' in self.path:
-                    self.send_response(404)
+                    self.send_response(http.NOT_FOUND)
                 else:
-                    self.send_response(200)
+                    self.send_response(http.OK)
                 self.send_header('Content-Length', str(len(fixture)))
                 self.end_headers()
                 return
@@ -574,7 +575,8 @@ class FakeAuthMiddleware(wsgi.Middleware):
 
 
 class FakeHTTPResponse(object):
-    def __init__(self, status=200, headers=None, data=None, *args, **kwargs):
+    def __init__(self, status=http.OK, headers=None, data=None,
+                 *args, **kwargs):
         data = data or b'I am a teapot, short and stout\n'
         self.data = six.BytesIO(data)
         self.read = self.data.read

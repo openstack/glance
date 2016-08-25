@@ -20,6 +20,7 @@ import uuid
 from oslo_serialization import jsonutils
 import requests
 import six
+from six.moves import http_client as http
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 from six.moves import urllib
@@ -85,7 +86,7 @@ class TestImages(functional.FunctionalTest):
         headers['x-image-meta-property-my_empty_prop'] = ''
 
         response = requests.post(path, headers=headers)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         data = jsonutils.loads(response.text)
         image_id = data['image']['id']
 
@@ -94,7 +95,7 @@ class TestImages(functional.FunctionalTest):
         # string.
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual('', image['my_empty_prop'])
         self.stop_servers()
@@ -114,23 +115,23 @@ class TestImages(functional.FunctionalTest):
         # image create should return 401
         response = requests.post(self._url('/v2/images'), headers=headers,
                                  data=jsonutils.dumps(image))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(http.UNAUTHORIZED, response.status_code)
         # image list should return 401
         response = requests.get(self._url('/v2/images'))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(http.UNAUTHORIZED, response.status_code)
         # image show should return 401
         response = requests.get(self._url('/v2/images/someimageid'))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(http.UNAUTHORIZED, response.status_code)
         # image update should return 401
         ops = [{'op': 'replace', 'path': '/protected', 'value': False}]
         media_type = 'application/openstack-images-v2.1-json-patch'
         response = requests.patch(self._url('/v2/images/someimageid'),
                                   headers={'content-type': media_type},
                                   data=jsonutils.dumps(ops))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(http.UNAUTHORIZED, response.status_code)
         # image delete should return 401
         response = requests.delete(self._url('/v2/images/someimageid'))
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(http.UNAUTHORIZED, response.status_code)
         self.stop_servers()
 
     def test_image_lifecycle(self):
@@ -139,7 +140,7 @@ class TestImages(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -150,7 +151,7 @@ class TestImages(functional.FunctionalTest):
                                 'foo': 'bar', 'disk_format': 'aki',
                                 'container_format': 'aki', 'abc': 'xyz'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image_location_header = response.headers['Location']
 
         # Returned image entity should have a generated id and status
@@ -203,7 +204,7 @@ class TestImages(functional.FunctionalTest):
         # Image list should now have one entry
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
@@ -215,7 +216,7 @@ class TestImages(functional.FunctionalTest):
                                 'bar': 'foo', 'disk_format': 'aki',
                                 'container_format': 'aki', 'xyz': 'abc'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity should have a generated id and status
         image = jsonutils.loads(response.text)
@@ -267,7 +268,7 @@ class TestImages(functional.FunctionalTest):
         # Image list should now have two entries
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(2, len(images))
         self.assertEqual(image2_id, images[0]['id'])
@@ -277,7 +278,7 @@ class TestImages(functional.FunctionalTest):
         # property 'bar'
         path = self._url('/v2/images?bar=foo')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(image2_id, images[0]['id'])
@@ -286,7 +287,7 @@ class TestImages(functional.FunctionalTest):
         # property 'foo'
         path = self._url('/v2/images?foo=bar')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
@@ -294,17 +295,17 @@ class TestImages(functional.FunctionalTest):
         # The "changes-since" filter shouldn't work on glance v2
         path = self._url('/v2/images?changes-since=20001007T10:10:10')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         path = self._url('/v2/images?changes-since=aaa')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Image list should list only image-1 based on the filter
         # 'foo=bar&abc=xyz'
         path = self._url('/v2/images?foo=bar&abc=xyz')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
@@ -313,7 +314,7 @@ class TestImages(functional.FunctionalTest):
         # 'bar=foo&xyz=abc'
         path = self._url('/v2/images?bar=foo&xyz=abc')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(image2_id, images[0]['id'])
@@ -322,13 +323,13 @@ class TestImages(functional.FunctionalTest):
         # is not satisfied by either images
         path = self._url('/v2/images?foo=baz&abc=xyz')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # Get the image using the returned Location header
         response = requests.get(image_location_header, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual(image_id, image['id'])
         self.assertIsNone(image['checksum'])
@@ -357,7 +358,7 @@ class TestImages(functional.FunctionalTest):
 
         data = jsonutils.dumps(changes)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(400, response.status_code, response.text)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
 
         # The image should be mutable, including adding and removing properties
         path = self._url('/v2/images/%s' % image_id)
@@ -373,7 +374,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/type'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned image entity should reflect the changes
         image = jsonutils.loads(response.text)
@@ -396,7 +397,8 @@ class TestImages(functional.FunctionalTest):
 
         data = jsonutils.dumps(changes)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(413, response.status_code, response.text)
+        self.assertEqual(http.REQUEST_ENTITY_TOO_LARGE, response.status_code,
+                         response.text)
 
         # Adding 3 image locations should fail since configured limit is 2
         path = self._url('/v2/images/%s' % image_id)
@@ -412,7 +414,8 @@ class TestImages(functional.FunctionalTest):
 
         data = jsonutils.dumps(changes)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(413, response.status_code, response.text)
+        self.assertEqual(http.REQUEST_ENTITY_TOO_LARGE, response.status_code,
+                         response.text)
 
         # Ensure the v2.0 json-patch content type is accepted
         path = self._url('/v2/images/%s' % image_id)
@@ -420,7 +423,7 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'content-type': media_type})
         data = jsonutils.dumps([{'add': '/ding', 'value': 'dong'}])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned image entity should reflect the changes
         image = jsonutils.loads(response.text)
@@ -429,7 +432,7 @@ class TestImages(functional.FunctionalTest):
         # Updates should persist across requests
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual(image_id, image['id'])
         self.assertEqual('image-2', image['name'])
@@ -442,13 +445,13 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         def _verify_image_checksum_and_status(checksum, status):
             # Checksum should be populated and status should be active
             path = self._url('/v2/images/%s' % image_id)
             response = requests.get(path, headers=self._headers())
-            self.assertEqual(200, response.status_code)
+            self.assertEqual(http.OK, response.status_code)
             image = jsonutils.loads(response.text)
             self.assertEqual(checksum, image['checksum'])
             self.assertEqual(status, image['status'])
@@ -457,7 +460,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
         _verify_image_checksum_and_status(expected_checksum, 'active')
@@ -473,12 +476,12 @@ class TestImages(functional.FunctionalTest):
                 {'op': 'replace', 'path': immutable_path, 'value': 'ari'},
             ])
             response = requests.patch(path, headers=headers, data=data)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Try to download the data that was just uploaded
         path = self._url('/v2/images/%s/file' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         self.assertEqual(expected_checksum, response.headers['Content-MD5'])
         self.assertEqual('ZZZZZ', response.text)
 
@@ -487,19 +490,19 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='XXX')
-        self.assertEqual(409, response.status_code)
+        self.assertEqual(http.CONFLICT, response.status_code)
         _verify_image_checksum_and_status(expected_checksum, 'active')
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         self.assertEqual(5, jsonutils.loads(response.text)['size'])
 
         # Should be able to deactivate image
         path = self._url('/v2/images/%s/actions/deactivate' % image_id)
         response = requests.post(path, data={}, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Change the image to public so TENANT2 can see it
         path = self._url('/v2/images/%s' % image_id)
@@ -507,34 +510,34 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'content-type': media_type})
         data = jsonutils.dumps([{"replace": "/visibility", "value": "public"}])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Tenant2 should get Forbidden when deactivating the public image
         path = self._url('/v2/images/%s/actions/deactivate' % image_id)
         response = requests.post(path, data={}, headers=self._headers(
             {'X-Tenant-Id': TENANT2}))
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Tenant2 should get Forbidden when reactivating the public image
         path = self._url('/v2/images/%s/actions/reactivate' % image_id)
         response = requests.post(path, data={}, headers=self._headers(
             {'X-Tenant-Id': TENANT2}))
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Deactivating a deactivated image succeeds (no-op)
         path = self._url('/v2/images/%s/actions/deactivate' % image_id)
         response = requests.post(path, data={}, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Can't download a deactivated image
         path = self._url('/v2/images/%s/file' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Deactivated image should still be in a listing
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(2, len(images))
         self.assertEqual(image2_id, images[0]['id'])
@@ -543,17 +546,17 @@ class TestImages(functional.FunctionalTest):
         # Should be able to reactivate a deactivated image
         path = self._url('/v2/images/%s/actions/reactivate' % image_id)
         response = requests.post(path, data={}, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Reactivating an active image succeeds (no-op)
         path = self._url('/v2/images/%s/actions/reactivate' % image_id)
         response = requests.post(path, data={}, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Deletion should not work on protected images
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Unprotect image for deletion
         path = self._url('/v2/images/%s' % image_id)
@@ -562,28 +565,28 @@ class TestImages(functional.FunctionalTest):
         doc = [{'op': 'replace', 'path': '/protected', 'value': False}]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Deletion should work. Deleting image-1
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # And neither should its data
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers()
         response = requests.get(path, headers=headers)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Image list should now contain just image-2
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(image2_id, images[0]['id'])
@@ -591,12 +594,12 @@ class TestImages(functional.FunctionalTest):
         # Deleting image-2 should work
         path = self._url('/v2/images/%s' % image2_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Image list should now be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -605,21 +608,21 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'content-type': 'application/json'})
         data = 'true'
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Create image that tries to send a string should return 400
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
         data = '"hello"'
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Create image that tries to send 123 should return 400
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
         data = '123'
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         self.stop_servers()
 
@@ -646,7 +649,7 @@ class TestImages(functional.FunctionalTest):
                     'value': 'value1'}]
             data = jsonutils.dumps(doc)
             response = requests.patch(path, headers=headers, data=data)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(http.FORBIDDEN, response.status_code)
 
         for prop in props:
             doc = [{'op': 'remove',
@@ -654,7 +657,7 @@ class TestImages(functional.FunctionalTest):
                     'value': 'value1'}]
             data = jsonutils.dumps(doc)
             response = requests.patch(path, headers=headers, data=data)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(http.FORBIDDEN, response.status_code)
 
         for prop in props:
             doc = [{'op': 'add',
@@ -662,7 +665,7 @@ class TestImages(functional.FunctionalTest):
                     'value': 'value1'}]
             data = jsonutils.dumps(doc)
             response = requests.patch(path, headers=headers, data=data)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(http.FORBIDDEN, response.status_code)
 
         self.stop_servers()
 
@@ -671,7 +674,7 @@ class TestImages(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Test all the schemas
         schema_urls = [
@@ -684,14 +687,14 @@ class TestImages(functional.FunctionalTest):
             path = self._url(value)
             data = jsonutils.dumps(["body"])
             response = requests.get(path, headers=self._headers(), data=data)
-            self.assertEqual(400, response.status_code)
+            self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Create image for use with tests
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
         data = jsonutils.dumps({'name': 'image'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
@@ -711,31 +714,31 @@ class TestImages(functional.FunctionalTest):
             data = jsonutils.dumps(["body"])
             response = getattr(requests, method)(
                 path, headers=self._headers(), data=data)
-            self.assertEqual(400, response.status_code)
+            self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # DELETE /images/imgid without legal json
         path = self._url('/v2/images/%s' % image_id)
         data = '{"hello"]'
         response = requests.delete(path, headers=self._headers(), data=data)
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # POST /images/imgid/members
         path = self._url('/v2/images/%s/members' % image_id)
         data = jsonutils.dumps({'member': TENANT3})
         response = requests.post(path, headers=self._headers(), data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # GET /images/imgid/members/memid
         path = self._url('/v2/images/%s/members/%s' % (image_id, TENANT3))
         data = jsonutils.dumps(["body"])
         response = requests.get(path, headers=self._headers(), data=data)
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # DELETE /images/imgid/members/memid
         path = self._url('/v2/images/%s/members/%s' % (image_id, TENANT3))
         data = jsonutils.dumps(["body"])
         response = requests.delete(path, headers=self._headers(), data=data)
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         self.stop_servers()
 
@@ -748,7 +751,7 @@ class TestImages(functional.FunctionalTest):
                                 'bar': 'foo', 'disk_format': 'aki',
                                 'container_format': 'aki', 'xyz': 'abc'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
@@ -757,7 +760,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data=image_data)
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         result_body = ''
         for x in range(15):
@@ -794,7 +797,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity
         image = jsonutils.loads(response.text)
@@ -818,23 +821,23 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Get an image should fail
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         self.stop_servers()
 
@@ -863,7 +866,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity
         image = jsonutils.loads(response.text)
@@ -888,24 +891,24 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Get an image should fail
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream',
                                  'X-Roles': '_member_'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         self.stop_servers()
 
@@ -935,7 +938,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity
         image = jsonutils.loads(response.text)
@@ -960,24 +963,24 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Get an image should be allowed
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream',
                                  'X-Roles': 'member'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         self.stop_servers()
 
@@ -993,7 +996,7 @@ class TestImages(functional.FunctionalTest):
                                 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get image id
         image = jsonutils.loads(response.text)
@@ -1012,13 +1015,13 @@ class TestImages(functional.FunctionalTest):
                 'value': values}]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Download an image should work
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Stop http server used to update image location
         os.kill(http_server_pid, signal.SIGKILL)
@@ -1027,17 +1030,17 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(503, response.status_code)
+        self.assertEqual(http.SERVICE_UNAVAILABLE, response.status_code)
 
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         self.stop_servers()
 
@@ -1065,7 +1068,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image's ID
         image = jsonutils.loads(response.text)
@@ -1079,7 +1082,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'replace', 'path': '/name', 'value': 'new-name'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         self.stop_servers()
 
@@ -1107,7 +1110,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image's ID
         image = jsonutils.loads(response.text)
@@ -1121,7 +1124,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'replace', 'path': '/name', 'value': 'new-name'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         self.stop_servers()
 
@@ -1150,7 +1153,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image's ID
         image = jsonutils.loads(response.text)
@@ -1161,7 +1164,7 @@ class TestImages(functional.FunctionalTest):
         body = jsonutils.dumps({'member': TENANT3})
         del headers['X-Roles']
         response = requests.post(path, headers=headers, data=body)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         self.stop_servers()
 
@@ -1190,11 +1193,11 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         headers['X-Tenant-Id'] = TENANT2
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         self.stop_servers()
 
@@ -1223,7 +1226,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Remove the admin role
         del headers['X-Roles']
@@ -1234,16 +1237,16 @@ class TestImages(functional.FunctionalTest):
         # Can retrieve the image as TENANT1
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Can retrieve the image's members as TENANT1
         path = self._url('/v2/images/%s/members' % image_id)
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         headers['X-Tenant-Id'] = TENANT2
         response = requests.get(path, headers=headers)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         self.stop_servers()
 
@@ -1273,7 +1276,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image's ID
         image = jsonutils.loads(response.text)
@@ -1287,7 +1290,7 @@ class TestImages(functional.FunctionalTest):
         doc = [{'op': 'replace', 'path': '/visibility', 'value': 'public'}]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
     def test_owning_tenant_can_delete_image(self):
         rules = {
@@ -1315,7 +1318,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image's ID
         image = jsonutils.loads(response.text)
@@ -1323,7 +1326,7 @@ class TestImages(functional.FunctionalTest):
 
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=headers)
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
     def test_list_show_ok_when_get_location_allowed_for_admins(self):
         self.api_server.show_image_direct_url = True
@@ -1353,7 +1356,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image's ID
         image = jsonutils.loads(response.text)
@@ -1362,12 +1365,12 @@ class TestImages(functional.FunctionalTest):
         # Can retrieve the image as TENANT1
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Can list images as TENANT1
         path = self._url('/v2/images')
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         self.stop_servers()
 
@@ -1381,7 +1384,7 @@ class TestImages(functional.FunctionalTest):
                                 'type': 'kernel', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         image = jsonutils.loads(response.text)
         image_id = image['id']
@@ -1401,7 +1404,7 @@ class TestImages(functional.FunctionalTest):
 
         response = requests.put(path, headers=headers, data=StreamSim(
                                 self.api_server.image_size_cap + 1))
-        self.assertEqual(413, response.status_code)
+        self.assertEqual(http.REQUEST_ENTITY_TOO_LARGE, response.status_code)
 
         # hashlib.md5('Z'*129).hexdigest()
         #     == '76522d28cb4418f12704dfa7acd6e7ee'
@@ -1421,32 +1424,32 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'raw',
                                 'container_format': 'bare'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image_id = jsonutils.loads(response.text)['id']
 
         # Upload some image data
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # TENANT1 should see the image in their list
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(image_id, images[0]['id'])
 
         # TENANT1 should be able to access the image directly
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # TENANT2 should not see the image in their list
         path = self._url('/v2/images')
         headers = self._headers({'X-Tenant-Id': TENANT2})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -1454,7 +1457,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'X-Tenant-Id': TENANT2})
         response = requests.get(path, headers=headers)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # TENANT2 should not be able to modify the image, either
         path = self._url('/v2/images/%s' % image_id)
@@ -1465,13 +1468,13 @@ class TestImages(functional.FunctionalTest):
         doc = [{'op': 'replace', 'path': '/name', 'value': 'image-2'}]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # TENANT2 should not be able to delete the image, either
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'X-Tenant-Id': TENANT2})
         response = requests.delete(path, headers=headers)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Publicize the image as an admin of TENANT1
         path = self._url('/v2/images/%s' % image_id)
@@ -1482,13 +1485,13 @@ class TestImages(functional.FunctionalTest):
         doc = [{'op': 'replace', 'path': '/visibility', 'value': 'public'}]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # TENANT3 should now see the image in their list
         path = self._url('/v2/images')
         headers = self._headers({'X-Tenant-Id': TENANT3})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(image_id, images[0]['id'])
 
@@ -1496,7 +1499,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'X-Tenant-Id': TENANT3})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # TENANT3 still should not be able to modify the image
         path = self._url('/v2/images/%s' % image_id)
@@ -1507,18 +1510,18 @@ class TestImages(functional.FunctionalTest):
         doc = [{'op': 'replace', 'path': '/name', 'value': 'image-2'}]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # TENANT3 should not be able to delete the image, either
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'X-Tenant-Id': TENANT3})
         response = requests.delete(path, headers=headers)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image data should still be present after the failed delete
         path = self._url('/v2/images/%s/file' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         self.assertEqual(response.text, 'ZZZZZ')
 
         self.stop_servers()
@@ -1531,7 +1534,7 @@ class TestImages(functional.FunctionalTest):
         # Image list should be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -1545,7 +1548,7 @@ class TestImages(functional.FunctionalTest):
                                 'container_format': 'aki',
                                 'x_owner_foo': 'o_s_bar'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Create an image for role member without 'foo'
         path = self._url('/v2/images')
@@ -1555,7 +1558,7 @@ class TestImages(functional.FunctionalTest):
                                 'container_format': 'aki',
                                 'x_owner_foo': 'o_s_bar'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity should have 'x_owner_foo'
         image = jsonutils.loads(response.text)
@@ -1590,7 +1593,7 @@ class TestImages(functional.FunctionalTest):
                                 'spl_delete_prop': 'delete_bar',
                                 'spl_delete_empty_prop': ''})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
@@ -1604,7 +1607,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'replace', 'path': '/spl_update_prop', 'value': 'u'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code, response.text)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         # Attempt to replace, add and remove properties which are forbidden
         path = self._url('/v2/images/%s' % image_id)
@@ -1617,7 +1620,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/spl_delete_prop'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code, response.text)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         # Attempt to replace properties
         path = self._url('/v2/images/%s' % image_id)
@@ -1630,7 +1633,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'replace', 'path': '/spl_update_prop', 'value': 'u'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned image entity should reflect the changes
         image = jsonutils.loads(response.text)
@@ -1650,7 +1653,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/spl_delete_empty_prop'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned image entity should reflect the changes
         image = jsonutils.loads(response.text)
@@ -1663,12 +1666,12 @@ class TestImages(functional.FunctionalTest):
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         self.stop_servers()
 
@@ -1681,7 +1684,7 @@ class TestImages(functional.FunctionalTest):
         # Image list should be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -1695,7 +1698,7 @@ class TestImages(functional.FunctionalTest):
                                 'container_format': 'aki',
                                 'x_owner_foo': 'o_s_bar'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Create an image for role member without 'foo'
         path = self._url('/v2/images')
@@ -1704,7 +1707,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity
         image = jsonutils.loads(response.text)
@@ -1734,7 +1737,7 @@ class TestImages(functional.FunctionalTest):
                                 'spl_creator_policy': 'creator_bar',
                                 'spl_default_policy': 'default_bar'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         self.assertEqual('creator_bar', image['spl_creator_policy'])
@@ -1751,7 +1754,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'replace', 'path': '/spl_creator_policy', 'value': 'r'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned image entity should reflect the changes
         image = jsonutils.loads(response.text)
@@ -1769,14 +1772,14 @@ class TestImages(functional.FunctionalTest):
             {'op': 'replace', 'path': '/spl_creator_policy', 'value': 'z'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code, response.text)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         # Attempt to read properties
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'content-type': media_type,
                                  'X-Roles': 'random_role'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         image = jsonutils.loads(response.text)
         # 'random_role' is allowed read 'spl_default_policy'.
@@ -1795,7 +1798,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/spl_creator_policy'},
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned image entity should reflect the changes
         image = jsonutils.loads(response.text)
@@ -1809,7 +1812,7 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'content-type': media_type,
                                  'X-Roles': 'random_role'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Returned image entity should reflect the changes
         image = jsonutils.loads(response.text)
@@ -1818,12 +1821,12 @@ class TestImages(functional.FunctionalTest):
         # Image Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # This image should be no longer be directly accessible
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         self.stop_servers()
 
@@ -1844,7 +1847,7 @@ class TestImages(functional.FunctionalTest):
             'x_all_permitted_admin': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         expected_image = {
@@ -1872,7 +1875,7 @@ class TestImages(functional.FunctionalTest):
             'x_all_permitted_joe_soap': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         expected_image = {
@@ -1897,14 +1900,14 @@ class TestImages(functional.FunctionalTest):
                                  'X-Roles': 'admin'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual('1', image['x_all_permitted_joe_soap'])
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual('1', image['x_all_permitted_joe_soap'])
 
@@ -1919,7 +1922,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_all_permitted_joe_soap', 'value': '2'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertEqual('2', image['x_all_permitted_joe_soap'])
         path = self._url('/v2/images/%s' % image_id)
@@ -1931,7 +1934,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_all_permitted_joe_soap', 'value': '3'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertEqual('3', image['x_all_permitted_joe_soap'])
 
@@ -1948,7 +1951,7 @@ class TestImages(functional.FunctionalTest):
             'x_all_permitted_b': '2'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         path = self._url('/v2/images/%s' % image_id)
@@ -1959,7 +1962,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_all_permitted_a'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_all_permitted_a', image.keys())
         path = self._url('/v2/images/%s' % image_id)
@@ -1970,7 +1973,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_all_permitted_b'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_all_permitted_b', image.keys())
 
@@ -1986,7 +1989,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_permitted_admin': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
@@ -1997,7 +2000,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_permitted_joe_soap': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Verify neither admin nor unknown role can read properties marked with
         # '!'
@@ -2011,7 +2014,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_read': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         self.assertNotIn('x_none_read', image.keys())
@@ -2019,14 +2022,14 @@ class TestImages(functional.FunctionalTest):
                                  'X-Roles': 'admin'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_none_read', image.keys())
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_none_read', image.keys())
 
@@ -2042,7 +2045,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_update': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         self.assertEqual('1', image['x_none_update'])
@@ -2055,7 +2058,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_none_update', 'value': '2'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code, response.text)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
@@ -2065,7 +2068,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_none_update', 'value': '3'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code, response.text)
+        self.assertEqual(http.CONFLICT, response.status_code, response.text)
 
         # Verify neither admin nor unknown role can delete properties marked
         # with '!'
@@ -2079,7 +2082,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_delete': '1',
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         path = self._url('/v2/images/%s' % image_id)
@@ -2090,7 +2093,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_none_delete'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code, response.text)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
@@ -2099,7 +2102,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_none_delete'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code, response.text)
+        self.assertEqual(http.CONFLICT, response.status_code, response.text)
 
         self.stop_servers()
 
@@ -2121,7 +2124,7 @@ class TestImages(functional.FunctionalTest):
             'x_all_permitted_admin': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         expected_image = {
@@ -2149,7 +2152,7 @@ class TestImages(functional.FunctionalTest):
             'x_all_permitted_joe_soap': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         expected_image = {
@@ -2174,14 +2177,14 @@ class TestImages(functional.FunctionalTest):
                                  'X-Roles': 'admin'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual('1', image['x_all_permitted_joe_soap'])
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual('1', image['x_all_permitted_joe_soap'])
 
@@ -2196,7 +2199,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_all_permitted_joe_soap', 'value': '2'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertEqual('2', image['x_all_permitted_joe_soap'])
         path = self._url('/v2/images/%s' % image_id)
@@ -2208,7 +2211,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_all_permitted_joe_soap', 'value': '3'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertEqual('3', image['x_all_permitted_joe_soap'])
 
@@ -2225,7 +2228,7 @@ class TestImages(functional.FunctionalTest):
             'x_all_permitted_b': '2'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         path = self._url('/v2/images/%s' % image_id)
@@ -2236,7 +2239,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_all_permitted_a'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_all_permitted_a', image.keys())
         path = self._url('/v2/images/%s' % image_id)
@@ -2247,7 +2250,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_all_permitted_b'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_all_permitted_b', image.keys())
 
@@ -2263,7 +2266,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_permitted_admin': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
@@ -2274,7 +2277,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_permitted_joe_soap': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Verify neither admin nor unknown role can read properties marked with
         # '!'
@@ -2288,7 +2291,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_read': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         self.assertNotIn('x_none_read', image.keys())
@@ -2296,14 +2299,14 @@ class TestImages(functional.FunctionalTest):
                                  'X-Roles': 'admin'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_none_read', image.keys())
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_none_read', image.keys())
 
@@ -2319,7 +2322,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_update': '1'
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         self.assertEqual('1', image['x_none_update'])
@@ -2332,7 +2335,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_none_update', 'value': '2'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code, response.text)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
@@ -2342,7 +2345,7 @@ class TestImages(functional.FunctionalTest):
              'path': '/x_none_update', 'value': '3'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code, response.text)
+        self.assertEqual(http.CONFLICT, response.status_code, response.text)
 
         # Verify neither admin nor unknown role can delete properties marked
         # with '!'
@@ -2356,7 +2359,7 @@ class TestImages(functional.FunctionalTest):
             'x_none_delete': '1',
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
         path = self._url('/v2/images/%s' % image_id)
@@ -2367,7 +2370,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_none_delete'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(403, response.status_code, response.text)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
@@ -2376,7 +2379,7 @@ class TestImages(functional.FunctionalTest):
             {'op': 'remove', 'path': '/x_none_delete'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code, response.text)
+        self.assertEqual(http.CONFLICT, response.status_code, response.text)
 
         self.stop_servers()
 
@@ -2387,13 +2390,13 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'Content-Type': 'application/json'})
         data = jsonutils.dumps({'name': 'image-1', 'tags': ['sniff', 'sniff']})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image_id = jsonutils.loads(response.text)['id']
 
         # Image should show a list with a single tag
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(['sniff'], tags)
 
@@ -2401,24 +2404,24 @@ class TestImages(functional.FunctionalTest):
         for tag in tags:
             path = self._url('/v2/images/%s/tags/%s' % (image_id, tag))
             response = requests.delete(path, headers=self._headers())
-            self.assertEqual(204, response.status_code)
+            self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Update image with too many tags via PUT
         # Configured limit is 10 tags
         for i in range(10):
             path = self._url('/v2/images/%s/tags/foo%i' % (image_id, i))
             response = requests.put(path, headers=self._headers())
-            self.assertEqual(204, response.status_code)
+            self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # 11th tag should fail
         path = self._url('/v2/images/%s/tags/fail_me' % image_id)
         response = requests.put(path, headers=self._headers())
-        self.assertEqual(413, response.status_code)
+        self.assertEqual(http.REQUEST_ENTITY_TOO_LARGE, response.status_code)
 
         # Make sure the 11th tag was not added
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(10, len(tags))
 
@@ -2435,7 +2438,7 @@ class TestImages(functional.FunctionalTest):
         ]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Update image with too many tags via PATCH
         # Configured limit is 10 tags
@@ -2452,12 +2455,12 @@ class TestImages(functional.FunctionalTest):
         ]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(413, response.status_code)
+        self.assertEqual(http.REQUEST_ENTITY_TOO_LARGE, response.status_code)
 
         # Tags should not have changed since request was over limit
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(['foo'], tags)
 
@@ -2474,31 +2477,31 @@ class TestImages(functional.FunctionalTest):
         ]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(['sniff', 'snozz'], sorted(tags))
 
         # Image should show the appropriate tags
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(['sniff', 'snozz'], sorted(tags))
 
         # Attempt to tag the image with a duplicate should be ignored
         path = self._url('/v2/images/%s/tags/snozz' % image_id)
         response = requests.put(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Create another more complex tag
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
         response = requests.put(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Double-check that the tags container on the image is populated
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(['gabe@example.com', 'sniff', 'snozz'],
                          sorted(tags))
@@ -2506,7 +2509,7 @@ class TestImages(functional.FunctionalTest):
         # Query images by single tag
         path = self._url('/v2/images?tag=sniff')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual('image-1', images[0]['name'])
@@ -2514,7 +2517,7 @@ class TestImages(functional.FunctionalTest):
         # Query images by multiple tags
         path = self._url('/v2/images?tag=sniff&tag=snozz')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual('image-1', images[0]['name'])
@@ -2522,7 +2525,7 @@ class TestImages(functional.FunctionalTest):
         # Query images by tag and other attributes
         path = self._url('/v2/images?tag=sniff&status=queued')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual('image-1', images[0]['name'])
@@ -2530,31 +2533,31 @@ class TestImages(functional.FunctionalTest):
         # Query images by tag and a nonexistent tag
         path = self._url('/v2/images?tag=sniff&tag=fake')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # The tag should be deletable
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # List of tags should reflect the deletion
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(['sniff', 'snozz'], sorted(tags))
 
         # Deleting the same tag should return a 404
         path = self._url('/v2/images/%s/tags/gabe%%40example.com' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # The tags won't be able to query the images after deleting
         path = self._url('/v2/images?tag=gabe%%40example.com')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -2562,12 +2565,12 @@ class TestImages(functional.FunctionalTest):
         big_tag = 'a' * 300
         path = self._url('/v2/images/%s/tags/%s' % (image_id, big_tag))
         response = requests.put(path, headers=self._headers())
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Tags should not have changed since request was over limit
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(['sniff', 'snozz'], sorted(tags))
 
@@ -2578,7 +2581,7 @@ class TestImages(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         first = jsonutils.loads(response.text)['first']
         self.assertEqual(0, len(images))
@@ -2603,13 +2606,13 @@ class TestImages(functional.FunctionalTest):
         for fixture in fixtures:
             data = jsonutils.dumps(fixture)
             response = requests.post(path, headers=headers, data=data)
-            self.assertEqual(201, response.status_code)
+            self.assertEqual(http.CREATED, response.status_code)
             images.append(jsonutils.loads(response.text))
 
         # Image list should contain 7 images
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(7, len(body['images']))
         self.assertEqual('/v2/images', body['first'])
@@ -2619,7 +2622,7 @@ class TestImages(functional.FunctionalTest):
         url_template = '/v2/images?created_at=lt:%s'
         path = self._url(url_template % images[0]['created_at'])
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(0, len(body['images']))
         self.assertEqual(url_template % images[0]['created_at'],
@@ -2629,7 +2632,7 @@ class TestImages(functional.FunctionalTest):
         url_template = '/v2/images?updated_at=lt:%s'
         path = self._url(url_template % images[2]['updated_at'])
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertGreaterEqual(3, len(body['images']))
         self.assertEqual(url_template % images[2]['updated_at'],
@@ -2640,26 +2643,26 @@ class TestImages(functional.FunctionalTest):
         for filter in ['updated_at', 'created_at']:
             path = self._url(url_template % filter)
             response = requests.get(path, headers=self._headers())
-            self.assertEqual(400, response.status_code)
+            self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Image list filters by updated_at and created_at with invalid operator
         url_template = '/v2/images?%s=invalid_operator:2015-11-19T12:24:02Z'
         for filter in ['updated_at', 'created_at']:
             path = self._url(url_template % filter)
             response = requests.get(path, headers=self._headers())
-            self.assertEqual(400, response.status_code)
+            self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Image list filters by non-'URL encoding' value
         path = self._url('/v2/images?name=%FF')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Image list filters by name with in operator
         url_template = '/v2/images?name=in:%s'
         filter_value = 'image-1,image-2'
         path = self._url(url_template % filter_value)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertGreaterEqual(3, len(body['images']))
 
@@ -2668,7 +2671,7 @@ class TestImages(functional.FunctionalTest):
         filter_value = 'bare,ami'
         path = self._url(url_template % filter_value)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertGreaterEqual(2, len(body['images']))
 
@@ -2677,7 +2680,7 @@ class TestImages(functional.FunctionalTest):
         filter_value = 'bare,ami,iso'
         path = self._url(url_template % filter_value)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertGreaterEqual(2, len(body['images']))
 
@@ -2686,7 +2689,7 @@ class TestImages(functional.FunctionalTest):
                         '&marker=%s&type=kernel&ping=pong')
         path = self._url(template_url % images[2]['id'])
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(2, len(body['images']))
         response_ids = [image['id'] for image in body['images']]
@@ -2695,7 +2698,7 @@ class TestImages(functional.FunctionalTest):
         # Continue pagination using next link from previous request
         path = self._url(body['next'])
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(2, len(body['images']))
         response_ids = [image['id'] for image in body['images']]
@@ -2704,19 +2707,19 @@ class TestImages(functional.FunctionalTest):
         # Continue pagination - expect no results
         path = self._url(body['next'])
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(0, len(body['images']))
 
         # Delete first image
         path = self._url('/v2/images/%s' % images[0]['id'])
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Ensure bad request for using a deleted image as marker
         path = self._url('/v2/images?marker=%s' % images[0]['id'])
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         self.stop_servers()
 
@@ -2744,7 +2747,7 @@ class TestImages(functional.FunctionalTest):
                     'visibility': visibility,
                 })
                 response = requests.post(path, headers=headers, data=data)
-                self.assertEqual(201, response.status_code)
+                self.assertEqual(http.CREATED, response.status_code)
 
         def list_images(tenant, role='', visibility=None):
             auth_token = 'user:%s:%s' % (tenant, role)
@@ -2753,7 +2756,7 @@ class TestImages(functional.FunctionalTest):
             if visibility is not None:
                 path += '?visibility=%s' % visibility
             response = requests.get(path, headers=headers)
-            self.assertEqual(200, response.status_code)
+            self.assertEqual(http.OK, response.status_code)
             return jsonutils.loads(response.text)['images']
 
         # 1. Known user sees public and their own images
@@ -2835,7 +2838,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity should have a generated id and status
         image = jsonutils.loads(response.text)
@@ -2853,12 +2856,12 @@ class TestImages(functional.FunctionalTest):
                                  'value': [{'url': url, 'metadata': {}}]
                                  }])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # The image size should be updated
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertEqual(10, image['size'])
 
@@ -2871,7 +2874,7 @@ class TestImages(functional.FunctionalTest):
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned image entity should have a generated id and status
         image = jsonutils.loads(response.text)
@@ -2889,14 +2892,14 @@ class TestImages(functional.FunctionalTest):
                                             'metadata': {}}]
                                  }])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(400, response.status_code, response.text)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
 
         data = jsonutils.dumps([{'op': 'replace', 'path': '/locations',
                                  'value': [{'url': 'swift+config:///foo_image',
                                             'metadata': {}}]
                                  }])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(400, response.status_code, response.text)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
 
 
 class TestImagesWithRegistry(TestImages):
@@ -2933,7 +2936,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(300, response.status_code)
+        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         self.stop_servers()
 
     def test_v2_enabled(self):
@@ -2941,7 +2944,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         self.stop_servers()
 
     def test_image_direct_url_visible(self):
@@ -2952,7 +2955,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         # Image list should be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -2964,7 +2967,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
                                 'container_format': 'aki',
                                 'visibility': 'public'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image id
         image = jsonutils.loads(response.text)
@@ -2974,7 +2977,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('direct_url', image)
 
@@ -2982,13 +2985,13 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Image direct_url should be visible
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('direct_url', image)
 
@@ -2997,7 +3000,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         headers = self._headers({'Content-Type': 'application/json',
                                  'X-Tenant-Id': TENANT2})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('direct_url', image)
 
@@ -3005,7 +3008,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images')
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)['images'][0]
         self.assertIn('direct_url', image)
 
@@ -3022,7 +3025,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
                                 'foo': 'bar', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image id
         image = jsonutils.loads(response.text)
@@ -3032,7 +3035,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         self.assertEqual([], image["locations"])
@@ -3041,13 +3044,13 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Image locations should be visible
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         loc = image['locations']
@@ -3066,7 +3069,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         # Image list should be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -3077,7 +3080,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
                                 'foo': 'bar', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image id
         image = jsonutils.loads(response.text)
@@ -3087,13 +3090,13 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Image direct_url should not be visible
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('direct_url', image)
 
@@ -3101,7 +3104,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         path = self._url('/v2/images')
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)['images'][0]
         self.assertNotIn('direct_url', image)
 
@@ -3166,7 +3169,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
                                 'foo': 'bar', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the image id
         image = jsonutils.loads(response.text)
@@ -3176,7 +3179,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         self.assertEqual([], image["locations"])
@@ -3194,13 +3197,13 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
                 'value': values}]
         data = jsonutils.dumps(doc)
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
 
         # Image locations should be visible
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'Content-Type': 'application/json'})
         response = requests.get(path, headers=headers)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         self.assertEqual(values, image['locations'])
@@ -3252,7 +3255,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=get_header('tenant1'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -3271,20 +3274,20 @@ class TestImageMembers(functional.FunctionalTest):
                     'visibility': visibility,
                 })
                 response = requests.post(path, headers=headers, data=data)
-                self.assertEqual(201, response.status_code)
+                self.assertEqual(http.CREATED, response.status_code)
                 image_fixture.append(jsonutils.loads(response.text))
 
         # Image list should contain 4 images for tenant1
         path = self._url('/v2/images')
         response = requests.get(path, headers=get_header('tenant1'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(4, len(images))
 
         # Image list should contain 3 images for TENANT3
         path = self._url('/v2/images')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(3, len(images))
 
@@ -3293,7 +3296,7 @@ class TestImageMembers(functional.FunctionalTest):
         body = jsonutils.dumps({'member': TENANT3})
         response = requests.post(path, headers=get_header('tenant1'),
                                  data=body)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image_member = jsonutils.loads(response.text)
         self.assertEqual(image_fixture[1]['id'], image_member['image_id'])
         self.assertEqual(TENANT3, image_member['member_id'])
@@ -3304,7 +3307,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should contain 3 images for TENANT3
         path = self._url('/v2/images')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(3, len(images))
 
@@ -3312,21 +3315,21 @@ class TestImageMembers(functional.FunctionalTest):
         # because default is accepted
         path = self._url('/v2/images?visibility=shared')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # Image list should contain 4 images for TENANT3 with status pending
         path = self._url('/v2/images?member_status=pending')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(4, len(images))
 
         # Image list should contain 4 images for TENANT3 with status all
         path = self._url('/v2/images?member_status=all')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(4, len(images))
 
@@ -3334,7 +3337,7 @@ class TestImageMembers(functional.FunctionalTest):
         # and visibility shared
         path = self._url('/v2/images?member_status=pending&visibility=shared')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
         self.assertEqual(images[0]['name'], 'tenant1-private')
@@ -3343,7 +3346,7 @@ class TestImageMembers(functional.FunctionalTest):
         # and visibility shared
         path = self._url('/v2/images?member_status=rejected&visibility=shared')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -3351,7 +3354,7 @@ class TestImageMembers(functional.FunctionalTest):
         # and visibility shared
         path = self._url('/v2/images?member_status=accepted&visibility=shared')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -3359,14 +3362,14 @@ class TestImageMembers(functional.FunctionalTest):
         # and visibility private
         path = self._url('/v2/images?visibility=private')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # Image tenant2-private's image members list should contain no members
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
         response = requests.get(path, headers=get_header('tenant2'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(0, len(body['members']))
 
@@ -3375,13 +3378,13 @@ class TestImageMembers(functional.FunctionalTest):
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'accepted'})
         response = requests.put(path, headers=get_header('tenant1'), data=body)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Tenant 1, who is the owner can get status of its own image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         response = requests.get(path, headers=get_header('tenant1'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual('pending', body['status'])
         self.assertEqual(image_fixture[1]['id'], body['image_id'])
@@ -3391,7 +3394,7 @@ class TestImageMembers(functional.FunctionalTest):
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual('pending', body['status'])
         self.assertEqual(image_fixture[1]['id'], body['image_id'])
@@ -3401,14 +3404,14 @@ class TestImageMembers(functional.FunctionalTest):
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         response = requests.get(path, headers=get_header('tenant2'))
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Tenant 3 can change status of image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'accepted'})
         response = requests.put(path, headers=get_header(TENANT3), data=body)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image_member = jsonutils.loads(response.text)
         self.assertEqual(image_fixture[1]['id'], image_member['image_id'])
         self.assertEqual(TENANT3, image_member['member_id'])
@@ -3418,7 +3421,7 @@ class TestImageMembers(functional.FunctionalTest):
         # accepted
         path = self._url('/v2/images')
         response = requests.get(path, headers=get_header(TENANT3))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(4, len(images))
 
@@ -3427,21 +3430,21 @@ class TestImageMembers(functional.FunctionalTest):
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'invalid-status'})
         response = requests.put(path, headers=get_header(TENANT3), data=body)
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Owner cannot change status of image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'accepted'})
         response = requests.put(path, headers=get_header('tenant1'), data=body)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Add Image member for tenant2-private image
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
         body = jsonutils.dumps({'member': TENANT4})
         response = requests.post(path, headers=get_header('tenant2'),
                                  data=body)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         image_member = jsonutils.loads(response.text)
         self.assertEqual(image_fixture[3]['id'], image_member['image_id'])
         self.assertEqual(TENANT4, image_member['member_id'])
@@ -3453,49 +3456,49 @@ class TestImageMembers(functional.FunctionalTest):
         body = jsonutils.dumps({'member': TENANT2})
         response = requests.post(path, headers=get_header('tenant1'),
                                  data=body)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image tenant1-private's members list should contain 1 member
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
         response = requests.get(path, headers=get_header('tenant1'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(1, len(body['members']))
 
         # Admin can see any members
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
         response = requests.get(path, headers=get_header('tenant1', 'admin'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(1, len(body['members']))
 
         # Image members not found for private image not owned by TENANT 1
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
         response = requests.get(path, headers=get_header('tenant1'))
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Image members forbidden for public image
         path = self._url('/v2/images/%s/members' % image_fixture[0]['id'])
         response = requests.get(path, headers=get_header('tenant1'))
         self.assertIn("Public images do not have members", response.text)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image Member Cannot delete Image membership
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         response = requests.delete(path, headers=get_header(TENANT3))
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Delete Image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
         response = requests.delete(path, headers=get_header('tenant1'))
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Now the image has no members
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
         response = requests.get(path, headers=get_header('tenant1'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(0, len(body['members']))
 
@@ -3505,24 +3508,24 @@ class TestImageMembers(functional.FunctionalTest):
             body = jsonutils.dumps({'member': str(uuid.uuid4())})
             response = requests.post(path, headers=get_header('tenant1'),
                                      data=body)
-            self.assertEqual(200, response.status_code)
+            self.assertEqual(http.OK, response.status_code)
 
         body = jsonutils.dumps({'member': str(uuid.uuid4())})
         response = requests.post(path, headers=get_header('tenant1'),
                                  data=body)
-        self.assertEqual(413, response.status_code)
+        self.assertEqual(http.REQUEST_ENTITY_TOO_LARGE, response.status_code)
 
         # Get Image member should return not found for public image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
                                                        TENANT3))
         response = requests.get(path, headers=get_header('tenant1'))
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Delete Image member should return forbidden for public image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
                                                        TENANT3))
         response = requests.delete(path, headers=get_header('tenant1'))
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         self.stop_servers()
 
@@ -3563,7 +3566,7 @@ class TestQuotas(functional.FunctionalTest):
         # Image list should be empty
         path = self._url('/v2/images')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
@@ -3576,7 +3579,7 @@ class TestQuotas(functional.FunctionalTest):
                                 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
@@ -3589,27 +3592,27 @@ class TestQuotas(functional.FunctionalTest):
         # Deletion should work
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
     def test_image_upload_under_quota(self):
         data = 'x' * (self.user_storage_quota - 1)
-        self._upload_image_test(data, 204)
+        self._upload_image_test(data, http.NO_CONTENT)
 
     def test_image_upload_exceed_quota(self):
         data = 'x' * (self.user_storage_quota + 1)
-        self._upload_image_test(data, 413)
+        self._upload_image_test(data, http.REQUEST_ENTITY_TOO_LARGE)
 
     def test_chunked_image_upload_under_quota(self):
         def data_gen():
             yield 'x' * (self.user_storage_quota - 1)
 
-        self._upload_image_test(data_gen(), 204)
+        self._upload_image_test(data_gen(), http.NO_CONTENT)
 
     def test_chunked_image_upload_exceed_quota(self):
         def data_gen():
             yield 'x' * (self.user_storage_quota + 1)
 
-        self._upload_image_test(data_gen(), 413)
+        self._upload_image_test(data_gen(), http.REQUEST_ENTITY_TOO_LARGE)
 
 
 class TestQuotasWithRegistry(TestQuotas):

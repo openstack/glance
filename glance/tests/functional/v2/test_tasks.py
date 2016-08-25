@@ -18,6 +18,7 @@ import uuid
 
 from oslo_serialization import jsonutils
 import requests
+from six.moves import http_client as http
 
 from glance.tests import functional
 
@@ -55,14 +56,14 @@ class TestTasks(functional.FunctionalTest):
         # Task list should be empty
         path = self._url('/v2/tasks')
         response = requests.get(path, headers=self._headers(roles))
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
     def test_task_lifecycle(self):
         self.start_servers(**self.__dict__.copy())
         # Task list should be empty
         path = self._url('/v2/tasks')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tasks = jsonutils.loads(response.text)['tasks']
         self.assertEqual(0, len(tasks))
 
@@ -82,7 +83,7 @@ class TestTasks(functional.FunctionalTest):
             }
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Returned task entity should have a generated id and status
         task = jsonutils.loads(response.text)
@@ -121,7 +122,7 @@ class TestTasks(functional.FunctionalTest):
         # Tasks list should now have one entry
         path = self._url('/v2/tasks')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tasks = jsonutils.loads(response.text)['tasks']
         self.assertEqual(1, len(tasks))
         self.assertEqual(task_id, tasks[0]['id'])
@@ -129,7 +130,7 @@ class TestTasks(functional.FunctionalTest):
         # Attempt to delete a task
         path = self._url('/v2/tasks/%s' % tasks[0]['id'])
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(405, response.status_code)
+        self.assertEqual(http.METHOD_NOT_ALLOWED, response.status_code)
         self.assertIsNotNone(response.headers.get('Allow'))
         self.assertEqual('GET', response.headers.get('Allow'))
 

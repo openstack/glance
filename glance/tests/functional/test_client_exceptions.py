@@ -18,6 +18,7 @@
 
 import eventlet.patcher
 import httplib2
+from six.moves import http_client
 import webob.dec
 import webob.exc
 
@@ -46,14 +47,14 @@ class ExceptionTestApp(object):
 
         elif path == "/rate-limit-retry":
             request.response.retry_after = 10
-            request.response.status = 413
+            request.response.status = http_client.REQUEST_ENTITY_TOO_LARGE
 
         elif path == "/service-unavailable":
             request.response = webob.exc.HTTPServiceUnavailable()
 
         elif path == "/service-unavailable-retry":
             request.response.retry_after = 10
-            request.response.status = 503
+            request.response.status = http_client.SERVICE_UNAVAILABLE
 
         elif path == "/expectation-failed":
             request.response = webob.exc.HTTPExpectationFailed()
@@ -134,4 +135,4 @@ class TestClientExceptions(functional.FunctionalTest):
                 ('127.0.0.1', self.port))
         response, content = http.request(path, 'GET')
         self.assertNotIn(b'ServerError', content)
-        self.assertEqual(500, response.status)
+        self.assertEqual(http_client.INTERNAL_SERVER_ERROR, response.status)

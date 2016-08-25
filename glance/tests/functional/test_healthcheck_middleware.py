@@ -18,6 +18,7 @@
 import tempfile
 
 import httplib2
+from six.moves import http_client
 
 from glance.tests import functional
 from glance.tests import utils
@@ -37,7 +38,7 @@ class HealthcheckMiddlewareTest(functional.FunctionalTest):
 
         response, content = self.request()
         self.assertEqual('OK', content)
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         self.stop_servers()
 
@@ -49,6 +50,6 @@ class HealthcheckMiddlewareTest(functional.FunctionalTest):
 
             response, content = self.request()
             self.assertEqual('DISABLED BY FILE', content)
-            self.assertEqual(503, response.status)
+            self.assertEqual(http_client.SERVICE_UNAVAILABLE, response.status)
 
             self.stop_servers()

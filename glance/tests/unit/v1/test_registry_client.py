@@ -19,6 +19,7 @@ import os
 import uuid
 
 from mock import patch
+from six.moves import http_client as http
 from six.moves import reload_module
 import testtools
 
@@ -913,7 +914,7 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
 
 
 class FakeResponse(object):
-    status = 202
+    status = http.ACCEPTED
 
     def getheader(*args, **kwargs):
         return None

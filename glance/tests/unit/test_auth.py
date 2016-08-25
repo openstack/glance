@@ -16,6 +16,7 @@
 
 from oslo_serialization import jsonutils
 from oslotest import moxstubout
+from six.moves import http_client as http
 import webob
 
 from glance.api import authorization
@@ -196,7 +197,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         """
         def fake_do_request(*args, **kwargs):
             resp = webob.Response()
-            resp.status = 400
+            resp.status = http.BAD_REQUEST
             return FakeResponse(resp), ""
 
         self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
@@ -218,7 +219,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
         """
         def fake_do_request(*args, **kwargs):
             resp = webob.Response()
-            resp.status = 400
+            resp.status = http.BAD_REQUEST
             return FakeResponse(resp), ""
 
         self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
@@ -246,9 +247,9 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
             if (headers.get('X-Auth-User') != 'user1' or
                     headers.get('X-Auth-Key') != 'pass'):
-                resp.status = 401
+                resp.status = http.UNAUTHORIZED
             else:
-                resp.status = 200
+                resp.status = http.OK
                 resp.headers.update({"x-image-management-url": "example.com"})
 
             return FakeResponse(resp), ""
@@ -334,9 +335,9 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
             if (username != 'user1' or password != 'pass' or
                     tenant != 'tenant-ok'):
-                resp.status = 401
+                resp.status = http.UNAUTHORIZED
             else:
-                resp.status = 200
+                resp.status = http.OK
                 body = mock_token.token
 
             return FakeResponse(resp), jsonutils.dumps(body)

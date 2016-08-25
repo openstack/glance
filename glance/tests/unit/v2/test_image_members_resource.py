@@ -18,6 +18,7 @@ import datetime
 import glance_store
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from six.moves import http_client as http
 import webob
 
 import glance.api.v2.image_members
@@ -346,7 +347,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
         image_id = UUID2
         res = self.controller.delete(request, image_id, member_id)
         self.assertEqual(b'', res.body)
-        self.assertEqual(204, res.status_code)
+        self.assertEqual(http.NO_CONTENT, res.status_code)
         found_member = self.db.image_member_find(
             request.context, image_id=image_id, member=member_id)
         self.assertEqual([], found_member)

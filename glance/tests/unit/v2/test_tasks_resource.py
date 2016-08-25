@@ -20,6 +20,7 @@ import uuid
 import mock
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from six.moves import http_client as http
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import webob
@@ -811,7 +812,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.serializer.create(response, self.fixtures[3])
 
         serialized_task = jsonutils.loads(response.body)
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(http.CREATED, response.status_int)
         self.assertEqual(self.fixtures[3].task_id,
                          serialized_task['id'])
         self.assertEqual(self.fixtures[3].task_input,
@@ -825,7 +826,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.serializer.create(response, self.fixtures[0])
 
         serialized_task = jsonutils.loads(response.body)
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(http.CREATED, response.status_int)
         self.assertEqual(self.fixtures[0].task_id,
                          serialized_task['id'])
         self.assertEqual(self.fixtures[0].task_input,
@@ -838,7 +839,7 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.serializer.create(response, self.fixtures[1])
 
         serialized_task = jsonutils.loads(response.body)
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(http.CREATED, response.status_int)
         self.assertEqual(self.fixtures[1].task_id,
                          serialized_task['id'])
         self.assertEqual(self.fixtures[1].task_input,

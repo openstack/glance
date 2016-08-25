@@ -21,6 +21,7 @@ import mock
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 import six
+from six.moves import http_client as http
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import testtools
@@ -3260,12 +3261,12 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         request = webob.Request.blank(url)
         response = webob.Response(request=request)
         result = {'images': self.fixtures}
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(http.OK, response.status_int)
 
         # The image index should work though the user is forbidden
         result['images'][0].locations = ImageLocations()
         self.serializer.index(response, result)
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(http.OK, response.status_int)
 
     def test_show_full_fixture(self):
         expected = {
@@ -3346,7 +3347,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(http.CREATED, response.status_int)
         actual = jsonutils.loads(response.body)
         actual['tags'] = sorted(actual['tags'])
         self.assertEqual(expected, actual)
@@ -3505,7 +3506,7 @@ class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
         }
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(http.CREATED, response.status_int)
         actual = jsonutils.loads(response.body)
         actual['tags'] = sorted(actual['tags'])
         self.assertEqual(expected, actual)

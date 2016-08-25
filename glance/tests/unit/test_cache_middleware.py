@@ -15,6 +15,7 @@
 
 from oslo_policy import policy
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import http_client as http
 from six.moves import range
 import testtools
 import webob
@@ -614,7 +615,7 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         resp = webob.Response(headers=headers)
         cache_filter = ProcessRequestTestCacheFilter()
         actual = cache_filter.get_status_code(resp)
-        self.assertEqual(200, actual)
+        self.assertEqual(http.OK, actual)
 
     def test_process_response(self):
         def fake_fetch_request_info(*args, **kwargs):

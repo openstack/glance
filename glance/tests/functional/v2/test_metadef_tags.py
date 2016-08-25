@@ -17,6 +17,7 @@ import uuid
 
 from oslo_serialization import jsonutils
 import requests
+from six.moves import http_client as http
 
 from glance.tests import functional
 
@@ -49,7 +50,7 @@ class TestMetadefTags(functional.FunctionalTest):
         # Namespace should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a namespace
         path = self._url('/v2/metadefs/namespaces')
@@ -64,24 +65,24 @@ class TestMetadefTags(functional.FunctionalTest):
             "owner": "The Test Owner"}
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Metadata tag should not exist
         metadata_tag_name = "tag1"
         path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
                          (namespace_name, metadata_tag_name))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create the metadata tag
         headers = self._headers({'content-type': 'application/json'})
         response = requests.post(path, headers=headers)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Get the metadata tag created above
         response = requests.get(path,
                                 headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         metadata_tag = jsonutils.loads(response.text)
         self.assertEqual(metadata_tag_name, metadata_tag['name'])
 
@@ -108,7 +109,7 @@ class TestMetadefTags(functional.FunctionalTest):
         # Try to create a duplicate metadata tag
         headers = self._headers({'content-type': 'application/json'})
         response = requests.post(path, headers=headers)
-        self.assertEqual(409, response.status_code)
+        self.assertEqual(http.CONFLICT, response.status_code)
 
         # The metadata_tag should be mutable
         path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
@@ -122,7 +123,7 @@ class TestMetadefTags(functional.FunctionalTest):
             }
         )
         response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned metadata_tag should reflect the changes
         metadata_tag = jsonutils.loads(response.text)
@@ -132,20 +133,20 @@ class TestMetadefTags(functional.FunctionalTest):
         path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
                          (namespace_name, metadata_tag_name))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         self.assertEqual('tag1-UPDATED', metadata_tag['name'])
 
         # Deletion of metadata_tag_name
         path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
                          (namespace_name, metadata_tag_name))
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # metadata_tag_name should not exist
         path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
                          (namespace_name, metadata_tag_name))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create multiple tags.
         path = self._url('/v2/metadefs/namespaces/%s/tags' %
@@ -155,11 +156,11 @@ class TestMetadefTags(functional.FunctionalTest):
             {"tags": [{"name": "tag1"}, {"name": "tag2"}, {"name": "tag3"}]}
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # List out the three new tags.
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(3, len(tags))
 
@@ -168,10 +169,10 @@ class TestMetadefTags(functional.FunctionalTest):
             {"tags": [{"name": "tag4"}, {"name": "tag5"}, {"name": "tag4"}]}
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code)
+        self.assertEqual(http.CONFLICT, response.status_code)
 
         # Verify the previous 3 still exist
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(3, len(tags))

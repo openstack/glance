@@ -29,6 +29,7 @@ import time
 import httplib2
 from oslo_serialization import jsonutils
 from oslo_utils import units
+from six.moves import http_client
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
@@ -61,7 +62,7 @@ class BaseCacheMiddlewareTest(object):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          data['image']['checksum'])
@@ -81,7 +82,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Verify image now in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
@@ -111,7 +112,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
 
@@ -136,7 +137,7 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'POST',
                                          headers=headers,
                                          body=jsonutils.dumps(image_entity))
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         image_id = data['id']
 
@@ -147,7 +148,7 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'PUT',
                                          headers=headers,
                                          body=image_data)
-        self.assertEqual(204, response.status)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
 
         # Verify image not in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
@@ -157,7 +158,7 @@ class BaseCacheMiddlewareTest(object):
         # Grab the image
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Verify image now in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
@@ -169,7 +170,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(204, response.status)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
 
@@ -195,7 +196,7 @@ class BaseCacheMiddlewareTest(object):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers)
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(FIVE_KB, data['image']['size'])
 
@@ -206,13 +207,13 @@ class BaseCacheMiddlewareTest(object):
         # Grab the image
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Grab the image again to ensure it can be served out from
         # cache with the correct size
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
         self.assertEqual(FIVE_KB, int(response['content-length']))
 
         self.stop_servers()
@@ -233,7 +234,7 @@ class BaseCacheMiddlewareTest(object):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          data['image']['checksum'])
@@ -257,7 +258,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(403, response.status)
+        self.assertEqual(http_client.FORBIDDEN, response.status)
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
@@ -265,7 +266,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
 
@@ -293,7 +294,7 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'POST',
                                          headers=headers,
                                          body=jsonutils.dumps(image_entity))
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         image_id = data['id']
 
@@ -304,7 +305,7 @@ class BaseCacheMiddlewareTest(object):
         response, content = http.request(path, 'PUT',
                                          headers=headers,
                                          body=image_data)
-        self.assertEqual(204, response.status)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
 
         # Verify image not in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
@@ -318,7 +319,7 @@ class BaseCacheMiddlewareTest(object):
         # Grab the image
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(403, response.status)
+        self.assertEqual(http_client.FORBIDDEN, response.status)
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
@@ -326,7 +327,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(204, response.status)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
 
@@ -350,7 +351,7 @@ class BaseCacheMiddlewareTest(object):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          data['image']['checksum'])
@@ -365,7 +366,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Verify image in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
@@ -377,14 +378,14 @@ class BaseCacheMiddlewareTest(object):
         path = path % ("127.0.0.1", self.api_port, image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'POST')
-        self.assertEqual(204, response.status)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
 
         # Download the image with v1. Ensure it is forbidden
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(403, response.status)
+        self.assertEqual(http_client.FORBIDDEN, response.status)
 
         # Download the image with v2. This succeeds because
         # we are in admin context.
@@ -392,28 +393,28 @@ class BaseCacheMiddlewareTest(object):
                                                    image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Reactivate the image using v2
         path = "http://%s:%d/v2/images/%s/actions/reactivate"
         path = path % ("127.0.0.1", self.api_port, image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'POST')
-        self.assertEqual(204, response.status)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
 
         # Download the image with v1. Ensure it is allowed
         path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Download the image with v2. Ensure it is allowed
         path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
@@ -421,7 +422,7 @@ class BaseCacheMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
 
@@ -436,7 +437,7 @@ class BaseCacheManageMiddlewareTest(object):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
         data = jsonutils.loads(content)
         self.assertIn('images', data)
         self.assertEqual(0, len(data['images']))
@@ -453,7 +454,7 @@ class BaseCacheManageMiddlewareTest(object):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          data['image']['checksum'])
@@ -469,7 +470,7 @@ class BaseCacheManageMiddlewareTest(object):
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)
@@ -493,13 +494,13 @@ class BaseCacheManageMiddlewareTest(object):
                                               image_id1)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Verify image now in cache
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)
@@ -516,27 +517,27 @@ class BaseCacheManageMiddlewareTest(object):
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(403, response.status)
+        self.assertEqual(http_client.FORBIDDEN, response.status)
 
         # Verify an unprivileged user cannot delete images from the cache
         path = "http://%s:%d/v1/cached_images/%s" % ("127.0.0.1",
                                                      self.api_port, image_id1)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(403, response.status)
+        self.assertEqual(http_client.FORBIDDEN, response.status)
 
         # Verify an unprivileged user cannot delete all cached images
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(403, response.status)
+        self.assertEqual(http_client.FORBIDDEN, response.status)
 
         # Verify an unprivileged user cannot queue an image
         path = "http://%s:%d/v1/queued_images/%s" % ("127.0.0.1",
                                                      self.api_port, image_id2)
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
-        self.assertEqual(403, response.status)
+        self.assertEqual(http_client.FORBIDDEN, response.status)
 
         self.stop_servers()
 
@@ -561,13 +562,13 @@ class BaseCacheManageMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Verify image now in cache
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)
@@ -593,13 +594,13 @@ class BaseCacheManageMiddlewareTest(object):
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         # Verify image hits increased in output of manage GET
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)
@@ -637,14 +638,14 @@ class BaseCacheManageMiddlewareTest(object):
                                                   ids[x])
             http = httplib2.Http()
             response, content = http.request(path, 'GET')
-            self.assertEqual(200, response.status,
+            self.assertEqual(http_client.OK, response.status,
                              "Failed to find image %s" % ids[x])
 
         # Verify images now in cache
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)
@@ -661,12 +662,12 @@ class BaseCacheManageMiddlewareTest(object):
                                                      self.api_port, ids[2])
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)
@@ -679,12 +680,12 @@ class BaseCacheManageMiddlewareTest(object):
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)
@@ -714,13 +715,13 @@ class BaseCacheManageMiddlewareTest(object):
                                                          self.api_port, ids[x])
             http = httplib2.Http()
             response, content = http.request(path, 'PUT')
-            self.assertEqual(200, response.status)
+            self.assertEqual(http_client.OK, response.status)
 
         # Delete all queued images
         path = "http://%s:%d/v1/queued_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         num_deleted = data['num_deleted']
@@ -730,7 +731,7 @@ class BaseCacheManageMiddlewareTest(object):
         path = "http://%s:%d/v1/queued_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         num_deleted = data['num_deleted']
@@ -785,7 +786,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
                                                      self.api_port, ids[0])
         http = httplib2.Http()
         response, content = http.request(path, 'PUT')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         self.verify_no_cached_images()
 
@@ -801,7 +802,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         data = jsonutils.loads(content)
         self.assertIn('cached_images', data)

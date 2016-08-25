@@ -17,6 +17,7 @@ import uuid
 
 from oslo_serialization import jsonutils
 import requests
+from six.moves import http_client as http
 
 from glance.tests import functional
 
@@ -49,7 +50,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
         # Namespace should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a namespace
         path = self._url('/v2/metadefs/namespaces')
@@ -72,13 +73,13 @@ class TestNamespaceProperties(functional.FunctionalTest):
             ]
         })
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Property1 should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace/properties'
                          '/property1')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a property
         path = self._url('/v2/metadefs/namespaces/MyNamespace/properties')
@@ -97,17 +98,17 @@ class TestNamespaceProperties(functional.FunctionalTest):
             }
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Attempt to insert a duplicate
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code)
+        self.assertEqual(http.CONFLICT, response.status_code)
 
         # Get the property created above
         path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
                          (namespace_name, property_name))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         property_object = jsonutils.loads(response.text)
         self.assertEqual("integer", property_object['type'])
         self.assertEqual("property1", property_object['title'])
@@ -122,7 +123,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
             namespace_name, property_name, '='.join(['?resource_type',
                                                     resource_type_name])))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Get the property with prefix and specific resource type association
         property_name_with_prefix = ''.join([resource_type_prefix,
@@ -131,7 +132,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
             namespace_name, property_name_with_prefix, '='.join([
                 '?resource_type', resource_type_name])))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         property_object = jsonutils.loads(response.text)
         self.assertEqual("integer", property_object['type'])
         self.assertEqual("property1", property_object['title'])
@@ -188,7 +189,7 @@ class TestNamespaceProperties(functional.FunctionalTest):
             }
         )
         response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned property should reflect the changes
         property_object = jsonutils.loads(response.text)
@@ -215,10 +216,10 @@ class TestNamespaceProperties(functional.FunctionalTest):
         path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
                          (namespace_name, property_name))
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # property1 should not exist
         path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
                          (namespace_name, property_name))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)

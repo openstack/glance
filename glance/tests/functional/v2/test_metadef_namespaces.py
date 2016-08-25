@@ -17,6 +17,7 @@ import uuid
 
 from oslo_serialization import jsonutils
 import requests
+from six.moves import http_client as http
 
 from glance.tests import functional
 
@@ -50,7 +51,7 @@ class TestNamespaces(functional.FunctionalTest):
         # Namespace should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a namespace
         path = self._url('/v2/metadefs/namespaces')
@@ -63,7 +64,7 @@ class TestNamespaces(functional.FunctionalTest):
         }
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
         namespace_loc_header = response.headers['Location']
 
         # Returned namespace should match the created namespace with default
@@ -98,11 +99,11 @@ class TestNamespaces(functional.FunctionalTest):
 
         # Attempt to insert a duplicate
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code)
+        self.assertEqual(http.CONFLICT, response.status_code)
 
         # Get the namespace using the returned Location header
         response = requests.get(namespace_loc_header, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         namespace = jsonutils.loads(response.text)
         self.assertEqual(namespace_name, namespace['namespace'])
         self.assertNotIn('object', namespace)
@@ -126,7 +127,7 @@ class TestNamespaces(functional.FunctionalTest):
             }
         )
         response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned namespace should reflect the changes
         namespace = jsonutils.loads(response.text)
@@ -140,7 +141,7 @@ class TestNamespaces(functional.FunctionalTest):
         # Updates should persist across requests
         path = self._url('/v2/metadefs/namespaces/%s' % namespace_name)
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         namespace = jsonutils.loads(response.text)
         self.assertEqual('MyNamespace-UPDATED', namespace['namespace'])
         self.assertEqual('display_name-UPDATED', namespace['display_name'])
@@ -152,7 +153,7 @@ class TestNamespaces(functional.FunctionalTest):
         # Deletion should not work on protected namespaces
         path = self._url('/v2/metadefs/namespaces/%s' % namespace_name)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Unprotect namespace for deletion
         path = self._url('/v2/metadefs/namespaces/%s' % namespace_name)
@@ -168,23 +169,23 @@ class TestNamespaces(functional.FunctionalTest):
         }
         data = jsonutils.dumps(doc)
         response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Deletion should work. Deleting namespace MyNamespace
         path = self._url('/v2/metadefs/namespaces/%s' % namespace_name)
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Namespace should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
     def test_metadef_dont_accept_illegal_bodies(self):
         # Namespace should not exist
         path = self._url('/v2/metadefs/namespaces/bodytest')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a namespace
         path = self._url('/v2/metadefs/namespaces')
@@ -197,7 +198,7 @@ class TestNamespaces(functional.FunctionalTest):
         }
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Test all the urls that supply data
         data_urls = [
@@ -217,7 +218,7 @@ class TestNamespaces(functional.FunctionalTest):
             path = self._url(value)
             data = jsonutils.dumps(["body"])
             response = requests.get(path, headers=self._headers(), data=data)
-            self.assertEqual(400, response.status_code)
+            self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Put the namespace into the url
         test_urls = [
@@ -238,4 +239,4 @@ class TestNamespaces(functional.FunctionalTest):
             data = jsonutils.dumps(["body"])
             response = getattr(requests, method)(
                 path, headers=self._headers(), data=data)
-            self.assertEqual(400, response.status_code)
+            self.assertEqual(http.BAD_REQUEST, response.status_code)

@@ -23,6 +23,7 @@ import sys
 import httplib2
 from oslo_serialization import jsonutils
 from oslo_utils import units
+from six.moves import http_client
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
@@ -61,7 +62,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          data['image']['checksum'])
@@ -144,7 +145,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
                                               ids[1])
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
 
         self.assertTrue(self.is_image_cached(ids[1]),
                         "%s is not cached." % ids[1])

@@ -14,6 +14,7 @@
 #    under the License.
 
 from oslo_serialization import jsonutils
+from six.moves import http_client as http
 import webob
 
 from glance.api.middleware import version_negotiation
@@ -31,7 +32,7 @@ class VersionsTest(base.IsolatedUnitTest):
         req.accept = 'application/json'
         self.config(bind_host='127.0.0.1', bind_port=9292)
         res = versions.Controller().index(req)
-        self.assertEqual(300, res.status_int)
+        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [
@@ -86,7 +87,7 @@ class VersionsTest(base.IsolatedUnitTest):
         self.config(bind_host='127.0.0.1', bind_port=9292,
                     public_endpoint='https://example.com:9292')
         res = versions.Controller().index(req)
-        self.assertEqual(300, res.status_int)
+        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [
@@ -140,7 +141,7 @@ class VersionsTest(base.IsolatedUnitTest):
         environ = webob.request.environ_from_url('http://localhost:9292')
         req = WsgiRequest(environ)
         res = versions.Controller().index(req)
-        self.assertEqual(300, res.status_int)
+        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [
@@ -195,7 +196,7 @@ class VersionsTest(base.IsolatedUnitTest):
         environ['HTTP_X_FORWARDED_PROTO'] = "https"
         req = WsgiRequest(environ)
         res = versions.Controller().index(req)
-        self.assertEqual(300, res.status_int)
+        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [

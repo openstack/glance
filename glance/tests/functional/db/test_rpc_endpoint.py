@@ -15,6 +15,7 @@
 
 from oslo_serialization import jsonutils
 import requests
+from six.moves import http_client as http
 
 from glance.tests import functional
 
@@ -42,7 +43,7 @@ class TestRegistryURLVisibility(functional.FunctionalTest):
         path = self._url('/rpc')
         response = requests.post(path, headers=self._headers(),
                                  data=self.req_body)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
         self.stop_servers()
 
     def test_v2_enabled(self):
@@ -51,5 +52,5 @@ class TestRegistryURLVisibility(functional.FunctionalTest):
         path = self._url('/rpc')
         response = requests.post(path, headers=self._headers(),
                                  data=self.req_body)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         self.stop_servers()
