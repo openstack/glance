@@ -18,7 +18,6 @@
 import datetime
 import uuid
 
-from oslo_config import cfg
 from oslo_serialization import jsonutils
 import routes
 import six
@@ -33,8 +32,6 @@ from glance.db.sqlalchemy import models as db_models
 from glance.registry.api import v2 as rserver
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
-
-CONF = cfg.CONF
 
 _gen_uuid = lambda: str(uuid.uuid4())
 

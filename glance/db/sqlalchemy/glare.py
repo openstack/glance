@@ -17,7 +17,6 @@ import operator
 import uuid
 
 from enum import Enum
-from oslo_config import cfg
 from oslo_db import exception as db_exc
 import sqlalchemy
 from sqlalchemy import and_
@@ -35,8 +34,6 @@ from glance.i18n import _LE, _LW
 from oslo_log import log as os_logging
 
 LOG = os_logging.getLogger(__name__)
-
-CONF = cfg.CONF
 
 
 class Visibility(Enum):

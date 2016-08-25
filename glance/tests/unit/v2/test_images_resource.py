@@ -18,7 +18,6 @@ import uuid
 
 import glance_store as store
 import mock
-from oslo_config import cfg
 from oslo_serialization import jsonutils
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -38,8 +37,6 @@ import glance.tests.utils as test_utils
 DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)
 ISOTIME = '2012-05-16T15:27:36Z'
 
-
-CONF = cfg.CONF
 
 BASE_URI = unit_test_utils.BASE_URI
 
