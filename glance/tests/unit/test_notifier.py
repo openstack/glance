@@ -121,8 +121,7 @@ class TestNotifier(utils.BaseTestCase):
                             mock_get_transport, mock_notifier,
                             url, driver):
         nfier = notifier.Notifier()
-        mock_get_transport.assert_called_with(cfg.CONF,
-                                              aliases=notifier._ALIASES)
+        mock_get_transport.assert_called_with(cfg.CONF)
         self.assertIsNotNone(nfier._transport)
         mock_notifier.assert_called_with(nfier._transport,
                                          publisher_id='image.localhost')
