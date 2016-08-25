@@ -131,16 +131,39 @@ Related options:
     * None
 
 """)),
-    cfg.BoolOpt('send_identity_headers', default=False,
-                help=_("Whether to pass through headers containing user "
-                       "and tenant information when making requests to "
-                       "the registry. This allows the registry to use the "
-                       "context middleware without keystonemiddleware's "
-                       "auth_token middleware, removing calls to the keystone "
-                       "auth service. It is recommended that when using this "
-                       "option, secure communication between glance api and "
-                       "glance registry is ensured by means other than "
-                       "auth_token middleware.")),
+    cfg.BoolOpt('send_identity_headers',
+                default=False,
+                help=_("""
+Send headers received from identity when making requests to
+registry.
+
+Typically, Glance registry can be deployed in multiple flavors,
+which may or may not include authentication. For example,
+``trusted-auth`` is a flavor that does not require the registry
+service to authenticate the requests it receives. However, the
+registry service may still need a user context to be populated to
+serve the requests. This can be achieved by the caller
+(the Glance API usually) passing through the headers it received
+from authenticating with identity for the same request. The typical
+headers sent are ``X-User-Id``, ``X-Tenant-Id``, ``X-Roles``,
+``X-Identity-Status`` and ``X-Service-Catalog``.
+
+Provide a boolean value to determine whether to send the identity
+headers to provide tenant and user information along with the
+requests to registry service. By default, this option is set to
+``False``, which means that user and tenant information is not
+available readily. It must be obtained by authenticating. Hence, if
+this is set to ``False``, ``flavor`` must be set to value that
+either includes authentication or authenticated user context.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * flavor
+
+""")),
 ]
 
 scrubber_cmd_opts = [
