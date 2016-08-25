@@ -24,9 +24,27 @@ from glance.i18n import _
 
 registry_addr_opts = [
     cfg.StrOpt('registry_host', default='0.0.0.0',
-               help=_('Address to find the registry server.')),
+               help=_("""
+Address the registry server is hosted on.
+
+Possible values:
+    * A valid IP or hostname
+
+Related options:
+    * None
+
+""")),
     cfg.PortOpt('registry_port', default=9191,
-                help=_('Port the registry server is listening on.')),
+                help=_("""
+Port the registry server is listening on.
+
+Possible values:
+    * A valid port number
+
+Related options:
+    * None
+
+""")),
 ]
 
 CONF = cfg.CONF
