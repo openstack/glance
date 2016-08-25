@@ -1,0 +1,4 @@
+---
+upgrade:
+  - Added additional metadata for CPU thread pinning policies to
+    'compute-cpu-pinning.json'. Use the ``glance_manage`` tool to upgrade.
