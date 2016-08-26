@@ -26,11 +26,44 @@ from glance.i18n import _, _LW
 LOG = logging.getLogger(__name__)
 
 convert_task_opts = [
+    # NOTE: This configuration option requires the operator to explicitly set
+    # an image conversion format. There being no sane default due to the
+    # dependency on the environment in which OpenStack is running, we do not
+    # mark this configuration option as "required". Rather a warning message
+    # is given to the operator, prompting for an image conversion format to
+    # be set.
     cfg.StrOpt('conversion_format',
+               sample_default='raw',
                choices=('qcow2', 'raw', 'vmdk'),
-               help=_("The format to which images will be automatically "
-                      "converted. When using the RBD backend, this should be "
-                      "set to 'raw'")),
+               help=_("""
+Set the desired image conversion format.
+
+Provide a valid image format to which you want images to be
+converted before they are stored for consumption by Glance.
+Appropriate image format conversions are desirable for specific
+storage backends in order to facilitate efficient handling of
+bandwidth and usage of the storage infrastructure.
+
+By default, ``conversion_format`` is not set and must be set
+explicitly in the configuration file.
+
+The allowed values for this option are ``raw``, ``qcow2`` and
+``vmdk``. The  ``raw`` format is the unstructured disk format and
+should be chosen when RBD or Ceph storage backends are used for
+image storage. ``qcow2`` is supported by the QEMU emulator that
+expands dynamically and supports Copy on Write. The ``vmdk`` is
+another common disk format supported by many common virtual machine
+monitors like VMWare Workstation.
+
+Possible values:
+    * qcow2
+    * raw
+    * vmdk
+
+Related options:
+    * disk_formats
+
+""")),
 ]
 
 CONF = cfg.CONF
