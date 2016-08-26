@@ -38,9 +38,28 @@ from glance.i18n import _, _LE, _LI, _LW
 LOG = logging.getLogger(__name__)
 
 metadata_opts = [
-    cfg.StrOpt('metadata_source_path', default='/etc/glance/metadefs/',
-               help=_('Path to the directory where json metadata '
-                      'files are stored'))
+    cfg.StrOpt('metadata_source_path',
+               default='/etc/glance/metadefs/',
+               help=_("""
+Absolute path to the directory where JSON metadefs files are stored.
+
+Glance Metadata Definitions ("metadefs") are served from the database,
+but are stored in files in the JSON format.  The files in this
+directory are used to initialize the metadefs in the database.
+Additionally, when metadefs are exported from the database, the files
+are written to this directory.
+
+NOTE: If you plan to export metadefs, make sure that this directory
+has write permissions set for the user being used to run the
+glance-api service.
+
+Possible values:
+    * String value representing a valid absolute pathname
+
+Related options:
+    * None
+
+""")),
 ]
 
 CONF = cfg.CONF
