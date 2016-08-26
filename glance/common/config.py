@@ -189,14 +189,119 @@ Related options:
     * None
 
 """)),
-    cfg.BoolOpt('enable_v1_api', default=True,
-                help=_("Deploy the v1 OpenStack Images API.")),
-    cfg.BoolOpt('enable_v2_api', default=True,
-                help=_("Deploy the v2 OpenStack Images API.")),
-    cfg.BoolOpt('enable_v1_registry', default=True,
-                help=_("Deploy the v1 OpenStack Registry API.")),
-    cfg.BoolOpt('enable_v2_registry', default=True,
-                help=_("Deploy the v2 OpenStack Registry API.")),
+    cfg.BoolOpt('enable_v1_api',
+                default=True,
+                help=_("""
+Deploy the v1 OpenStack Images API.
+
+When this option is set to ``True``, Glance service will respond to
+requests on registered endpoints conforming to the v1 OpenStack
+Images API.
+
+NOTES:
+    * If this option is enabled, then ``enable_v1_registry`` must
+      also be set to ``True`` to enable mandatory usage of Registry
+      service with v1 API.
+
+    * If this option is disabled, then the ``enable_v1_registry``
+      option, which is enabled by default, is also recommended
+      to be disabled.
+
+    * This option is separate from ``enable_v2_api``, both v1 and v2
+      OpenStack Images API can be deployed independent of each
+      other.
+
+    * If deploying only the v2 Images API, this option, which is
+      enabled by default, should be disabled.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * enable_v1_registry
+    * enable_v2_api
+
+""")),
+    cfg.BoolOpt('enable_v2_api',
+                default=True,
+                help=_("""
+Deploy the v2 OpenStack Images API.
+
+When this option is set to ``True``, Glance service will respond
+to requests on registered endpoints conforming to the v2 OpenStack
+Images API.
+
+NOTES:
+    * If this option is disabled, then the ``enable_v2_registry``
+      option, which is enabled by default, is also recommended
+      to be disabled.
+
+    * This option is separate from ``enable_v1_api``, both v1 and v2
+      OpenStack Images API can be deployed independent of each
+      other.
+
+    * If deploying only the v1 Images API, this option, which is
+      enabled by default, should be disabled.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * enable_v2_registry
+    * enable_v1_api
+
+""")),
+    cfg.BoolOpt('enable_v1_registry',
+                default=True,
+                help=_("""
+Deploy the v1 API Registry service.
+
+When this option is set to ``True``, the Registry service
+will be enabled in Glance for v1 API requests.
+
+NOTES:
+    * Use of Registry is mandatory in v1 API, so this option must
+      be set to ``True`` if the ``enable_v1_api`` option is enabled.
+
+    * If deploying only the v2 OpenStack Images API, this option,
+      which is enabled by default, should be disabled.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * enable_v1_api
+
+""")),
+    cfg.BoolOpt('enable_v2_registry',
+                default=True,
+                help=_("""
+Deploy the v2 API Registry service.
+
+When this option is set to ``True``, the Registry service
+will be enabled in Glance for v2 API requests.
+
+NOTES:
+    * Use of Registry is optional in v2 API, so this option
+      must only be enabled if both ``enable_v2_api`` is set to
+      ``True`` and the ``data_api`` option is set to
+      ``glance.db.registry.api``.
+
+    * If deploying only the v1 OpenStack Images API, this option,
+      which is enabled by default, should be disabled.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * enable_v2_api
+    * data_api
+
+""")),
     cfg.StrOpt('pydev_worker_debug_host',
                help=_('The hostname/IP of the pydev process listening for '
                       'debug connections')),
