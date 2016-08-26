@@ -99,8 +99,28 @@ _DEPRECATE_GLANCE_V1_MSG = _('The Images (Glance) version 1 API has been '
 
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
-                help=_('Whether to allow users to specify image properties '
-                       'beyond what the image schema provides')),
+                help=_("""
+Allow users to add additional/custom properties to images.
+
+Glance defines a standard set of properties (in its schema) that
+appear on every image. These properties are also known as
+``base properties``. In addition to these properties, Glance
+allows users to add custom properties to images. These are known
+as ``additional properties``.
+
+By default, this configuration option is set to ``True`` and users
+are allowed to add additional properties. The number of additional
+properties that can be added to an image can be controlled via
+``image_property_quota`` configuration option.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * image_property_quota
+
+""")),
     cfg.IntOpt('image_member_quota', default=128,
                help=_("""
 Maximum number of image members per image.
@@ -148,44 +168,147 @@ Related options:
 """)),
     cfg.StrOpt('data_api', default='glance.db.sqlalchemy.api',
                help=_('Python module path of data access API')),
-    cfg.IntOpt('limit_param_default', default=25,
-               help=_('Default value for the number of items returned by a '
-                      'request if not specified explicitly in the request')),
-    cfg.IntOpt('api_limit_max', default=1000,
-               help=_('Maximum permissible number of items that could be '
-                      'returned by a request')),
+    cfg.IntOpt('limit_param_default', default=25, min=1,
+               help=_("""
+The default number of results to return for a request.
+
+Responses to certain API requests, like list images, may return
+multiple items. The number of results returned can be explicitly
+controlled by specifying the ``limit`` parameter in the API request.
+However, if a ``limit`` parameter is not specified, this
+configuration value will be used as the default number of results to
+be returned for any API request.
+
+NOTES:
+    * The value of this configuration option may not be greater than
+      the value specified by ``api_limit_max``.
+    * Setting this to a very large value may slow down database
+      queries and increase response times. Setting this to a
+      very low value may result in poor user experience.
+
+Possible values:
+    * Any positive integer
+
+Related options:
+    * api_limit_max
+
+""")),
+    cfg.IntOpt('api_limit_max', default=1000, min=1,
+               help=_("""
+Maximum number of results that could be returned by a request.
+
+As described in the help text of ``limit_param_default``, some
+requests may return multiple results. The number of results to be
+returned are governed either by the ``limit`` parameter in the
+request or the ``limit_param_default`` configuration option.
+The value in either case, can't be greater than the absolute maximum
+defined by this configuration option. Anything greater than this
+value is trimmed down to the maximum value defined here.
+
+NOTE: Setting this to a very large value may slow down database
+      queries and increase response times. Setting this to a
+      very low value may result in poor user experience.
+
+Possible values:
+    * Any positive integer
+
+Related options:
+    * limit_param_default
+
+""")),
     cfg.BoolOpt('show_image_direct_url', default=False,
-                help=_('Whether to include the backend image storage location '
-                       'in image properties. Revealing storage location can '
-                       'be a security risk, so use this setting with '
-                       'caution!')),
+                help=_("""
+Show direct image location when returning an image.
+
+This configuration option indicates whether to show the direct image
+location when returning image details to the user. The direct image
+location is where the image data is stored in backend storage. This
+image location is shown under the image property ``direct_url``.
+
+When multiple image locations exist for an image, the best location
+is displayed based on the location strategy indicated by the
+configuration option ``location_strategy``.
+
+NOTES:
+    * Revealing image locations can present a GRAVE SECURITY RISK as
+      image locations can sometimes include credentials. Hence, this
+      is set to ``False`` by default. Set this to ``True`` with
+      EXTREME CAUTION and ONLY IF you know what you are doing!
+    * If an operator wishes to avoid showing any image location(s)
+      to the user, then both this option and
+      ``show_multiple_locations`` MUST be set to ``False``.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * show_multiple_locations
+    * location_strategy
+
+""")),
     # NOTE(flaper87): The policy.json file should be updated and the locaiton
     # related rules set to admin only once this option is finally removed.
-    cfg.BoolOpt('show_multiple_locations',
-                default=False, deprecated_for_removal=True,
+    cfg.BoolOpt('show_multiple_locations', default=False,
+                deprecated_for_removal=True,
                 deprecated_reason=_('This option will be removed in the Ocata '
                                     'release because the same functionality '
                                     'can be achieved with greater granularity '
                                     'by using policies. Please see the Newton '
                                     'release notes for more information.'),
                 deprecated_since='Newton',
-                help=_('Whether to include the backend image locations '
-                       'in image properties. '
-                       'For example, if using the file system store a URL of '
-                       '"file:///path/to/image" will be returned to the user '
-                       'in the \'direct_url\' meta-data field. '
-                       'Revealing storage location can '
-                       'be a security risk, so use this setting with '
-                       'caution! '
-                       'Setting this to true overrides the '
-                       'show_image_direct_url option.')),
-    cfg.IntOpt('image_size_cap', default=1099511627776,
+                help=_("""
+Show all image locations when returning an image.
+
+This configuration option indicates whether to show all the image
+locations when returning image details to the user. When multiple
+image locations exist for an image, the locations are ordered based
+on the location strategy indicated by the configuration opt
+``location_strategy``. The image locations are shown under the
+image property ``locations``.
+
+NOTES:
+    * Revealing image locations can present a GRAVE SECURITY RISK as
+      image locations can sometimes include credentials. Hence, this
+      is set to ``False`` by default. Set this to ``True`` with
+      EXTREME CAUTION and ONLY IF you know what you are doing!
+    * If an operator wishes to avoid showing any image location(s)
+      to the user, then both this option and
+      ``show_image_direct_url`` MUST be set to ``False``.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * show_image_direct_url
+    * location_strategy
+
+""")),
+    cfg.IntOpt('image_size_cap', default=1099511627776, min=1,
                max=9223372036854775808,
-               help=_("Maximum size of image a user can upload in bytes. "
-                      "Defaults to 1099511627776 bytes (1 TB)."
-                      "WARNING: this value should only be increased after "
-                      "careful consideration and must be set to a value under "
-                      "8 EB (9223372036854775808).")),
+               help=_("""
+Maximum size of image a user can upload in bytes.
+
+An image upload greater than the size mentioned here would result
+in an image creation failure. This configuration option defaults to
+1099511627776 bytes (1 TiB).
+
+NOTES:
+    * This value should only be increased after careful
+      consideration and must be set less than or equal to
+      8 EiB (9223372036854775808).
+    * This value must be set with careful consideration of the
+      backend storage capacity. Setting this to a very low value
+      may result in a large number of image failures. And, setting
+      this to a very large value may result in faster consumption
+      of storage. Hence, this must be set according to the nature of
+      images created and storage capacity available.
+
+Possible values:
+    * Any positive number less than or equal to 9223372036854775808
+
+""")),
     cfg.StrOpt('user_storage_quota', default='0',
                help=_("""
 Maximum amount of image storage per tenant.
