@@ -9,16 +9,18 @@
 # Tom Fifield <tom@openstack.org>, 2013
 # 颜海峰 <yanheven@gmail.com>, 2014
 # Linda <duleish@cn.ibm.com>, 2016. #zanata
+# likun <845437607@qq.com>, 2016. #zanata
+# maoshuai <fwsakura@163.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 12.0.1.dev6\n"
+"Project-Id-Version: glance 12.0.1.dev17\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-04-22 23:06+0000\n"
+"POT-Creation-Date: 2016-08-12 17:49+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-27 09:49+0000\n"
-"Last-Translator: Linda <duleish@cn.ibm.com>\n"
+"PO-Revision-Date: 2016-08-26 12:35+0000\n"
+"Last-Translator: likun <845437607@qq.com>\n"
 "Language: zh-CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -1811,7 +1813,7 @@ msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "来自 Keystone 的响应没有包含 Glance 端点。"
 
 msgid "Role used to identify an authenticated user as administrator."
-msgstr "用来标识已认证用户为管理员的角色。"
+msgstr "角色用来识别一个身份验证的用户管理员。"
 
 msgid ""
 "Run as a long-running process. When not specified (the default) run the "
