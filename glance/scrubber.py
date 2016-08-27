@@ -171,11 +171,27 @@ scrubber_cmd_cli_opts = [
     cfg.BoolOpt('daemon',
                 short='D',
                 default=False,
-                help=_('Run as a long-running process. When not '
-                       'specified (the default) run the scrub operation '
-                       'once and then exits. When specified do not exit '
-                       'and run scrub on wakeup_time interval as '
-                       'specified in the config.'))
+                help=_("""
+Run scrubber as a daemon.
+
+This boolean configuration option indicates whether scrubber should
+run as a long-running process that wakes up at regular intervals to
+scrub images. The wake up interval can be specified using the
+configuration option ``wakeup_time``.
+
+If this configuration option is set to ``False``, which is the
+default value, scrubber runs once to scrub images and exits. In this
+case, if the operator wishes to implement continuous scrubbing of
+images, scrubber needs to be scheduled as a cron job.
+
+Possible values:
+    * True
+    * False
+
+Related options:
+    * ``wakeup_time``
+
+"""))
 ]
 
 CONF = cfg.CONF
