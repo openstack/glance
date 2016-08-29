@@ -56,9 +56,6 @@ store the information about cached images:
     information. It also requires a filesystem that sets ``atime`` on the files
     when accessed.
 
-Services which consume this:
-    * glance-api
-
 Possible values:
     * sqlite
     * xattr
@@ -88,9 +85,6 @@ compares the current size of image cache and triggers a cleanup if the image
 cache grew beyond the size specified here. After the cleanup, the size of
 cache is less than or equal to size specified here.
 
-Services which consume this:
-    * None (consumed by cache-pruner, an independent periodic task)
-
 Possible values:
     * Any non-negative integer
 
@@ -115,9 +109,6 @@ removed by cache-cleaner on its next run.
 
 It is recommended to run cache-cleaner as a periodic task on the Glance API
 nodes to keep the incomplete images from occupying disk space.
-
-Services which consume this:
-    * None (consumed by cache-cleaner, an independent periodic task)
 
 Possible values:
     * Any non-negative integer
@@ -150,9 +141,6 @@ downloading them in the order they were created. When the download is
 successful, the zero-sized file is deleted from the ``queue`` directory.
 If the download fails, the zero-sized file remains and it'll be retried the
 next time cache-prefetcher runs.
-
-Services which consume this:
-    * glance-api
 
 Possible values:
     * A valid path

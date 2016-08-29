@@ -36,11 +36,6 @@ Setting it to False makes the image private to the associated user and
 sharing with other users within the same tenant (or "project")
 requires explicit image sharing via image membership.
 
-Services which consume this:
-    * glance-api
-    * glare-api
-    * glance-registry
-
 Possible values:
     * True
     * False
@@ -58,12 +53,6 @@ Provide a string value representing a Keystone role to identify an
 administrative user. Users with this role will be granted
 administrative privileges. The default value for this option is
 'admin'.
-
-Services which consume this:
-    * glance-api
-    * glare-api
-    * glance-registry
-    * glance-scrubber
 
 Possible values:
     * A string value which is a valid Keystone role
@@ -83,11 +72,6 @@ unauthenticated users. When set to True, unauthenticated users can
 access the API with read-only privileges. This however only applies
 when using ContextMiddleware.
 
-Services which consumes this:
-    * glance-api
-    * glare-api
-    * glance-registry
-
 Possible values:
     * True
     * False
@@ -105,11 +89,6 @@ Provide  an integer value to limit the length of the request ID to
 the specified length. The default value is 64. Users can change this
 to any ineteger value between 0 and 16384 however keeping in mind that
 a larger value may flood the logs.
-
-Services which consumes this:
-    * glance-api
-    * glare-api
-    * glance-registry
 
 Possible values:
     * Integer value between 0 and 16384

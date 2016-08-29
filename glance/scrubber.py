@@ -118,12 +118,6 @@ administrative user. Users with this role will be granted
 administrative privileges. The default value for this option is
 'admin'.
 
-Services which consume this:
-    * glance-api
-    * glare-api
-    * glance-registry
-    * glance-scrubber
-
 Possible values:
     * A string value which is a valid Keystone role
 

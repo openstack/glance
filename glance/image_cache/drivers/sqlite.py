@@ -48,9 +48,6 @@ directory, specified by the configuration option ``image_cache_dir``.
 
 This is a lightweight database with just one table.
 
-Services which consume this:
-    * glance-api
-
 Possible values:
     * A valid relative path to sqlite file database
 
