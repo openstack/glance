@@ -264,9 +264,9 @@ class Server(object):
         log = logging.getLogger(name)
         if not self.log_file or not os.path.exists(self.log_file):
             return
-        fptr = open(self.log_file, 'r')
-        for line in fptr:
-            log.info(line.strip())
+        with open(self.log_file, 'r') as fptr:
+            for line in fptr:
+                log.info(line.strip())
 
 
 class ApiServer(Server):
