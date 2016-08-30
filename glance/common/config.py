@@ -159,7 +159,16 @@ Related options:
                        'in image properties. Revealing storage location can '
                        'be a security risk, so use this setting with '
                        'caution!')),
-    cfg.BoolOpt('show_multiple_locations', default=False,
+    # NOTE(flaper87): The policy.json file should be updated and the locaiton
+    # related rules set to admin only once this option is finally removed.
+    cfg.BoolOpt('show_multiple_locations',
+                default=False, deprecated_for_removal=True,
+                deprecated_reason=_('This option will be removed in the Ocata '
+                                    'release because the same functionality '
+                                    'can be achieved with greater granularity '
+                                    'by using policies. Please see the Newton '
+                                    'release notes for more information.'),
+                deprecated_since='Newton',
                 help=_('Whether to include the backend image locations '
                        'in image properties. '
                        'For example, if using the file system store a URL of '
