@@ -53,12 +53,12 @@ class TestApiVersions(functional.FunctionalTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
             {
                 'id': 'v1.0',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
@@ -117,12 +117,12 @@ class TestApiVersions(functional.FunctionalTest):
         versions = {'versions': [
             {
                 'id': 'v1.1',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
             {
                 'id': 'v1.0',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
@@ -165,12 +165,12 @@ class TestApiPaths(functional.FunctionalTest):
             },
             {
                 'id': 'v1.1',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
             {
                 'id': 'v1.0',
-                'status': 'SUPPORTED',
+                'status': 'DEPRECATED',
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
