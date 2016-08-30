@@ -199,7 +199,7 @@ def _normalize_locations(context, image, force_show_deleted=False):
     if force_show_deleted:
         locations = image['locations']
     else:
-        locations = filter(lambda x: not x.deleted, image['locations'])
+        locations = [x for x in image['locations'] if not x.deleted]
     image['locations'] = [{'id': loc['id'],
                            'url': loc['value'],
                            'metadata': loc['meta_data'],
@@ -209,7 +209,7 @@ def _normalize_locations(context, image, force_show_deleted=False):
 
 
 def _normalize_tags(image):
-    undeleted_tags = filter(lambda x: not x.deleted, image['tags'])
+    undeleted_tags = [x for x in image['tags'] if not x.deleted]
     image['tags'] = [tag['value'] for tag in undeleted_tags]
     return image
 
