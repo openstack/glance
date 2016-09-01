@@ -73,9 +73,3 @@ def upgrade(migrate_engine):
             stmt.execute()
 
         session.close()
-
-
-def downgrade(migrate_engine):
-    # NOTE(flaper87): There's no downgrade
-    # path for this.
-    return

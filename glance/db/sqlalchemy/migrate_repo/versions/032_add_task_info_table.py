@@ -17,8 +17,7 @@ from sqlalchemy.schema import (Column, ForeignKey, MetaData, Table)
 
 from glance.db.sqlalchemy.migrate_repo.schema import (String,
                                                       Text,
-                                                      create_tables,
-                                                      drop_tables)  # noqa
+                                                      create_tables)  # noqa
 
 TASKS_MIGRATE_COLUMNS = ['input', 'message', 'result']
 
@@ -65,29 +64,3 @@ def upgrade(migrate_engine):
 
     for col_name in TASKS_MIGRATE_COLUMNS:
         tasks_table.columns[col_name].drop()
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-
-    tasks_table = Table('tasks', meta, autoload=True)
-    task_info_table = Table('task_info', meta, autoload=True)
-
-    for col_name in TASKS_MIGRATE_COLUMNS:
-        column = Column(col_name, Text())
-        column.create(tasks_table)
-
-    task_info_records = task_info_table.select().execute().fetchall()
-
-    for task_info in task_info_records:
-        values = {
-            'input': task_info.input,
-            'result': task_info.result,
-            'message': task_info.message
-        }
-
-        tasks_table.update(values=values).where(
-            tasks_table.c.id == task_info.task_id).execute()
-
-    drop_tables([task_info_table])

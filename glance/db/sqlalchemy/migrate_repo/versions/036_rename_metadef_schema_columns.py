@@ -23,12 +23,3 @@ def upgrade(migrate_engine):
 
     metadef_properties = Table('metadef_properties', meta, autoload=True)
     metadef_properties.c.schema.alter(name='json_schema')
-
-
-def downgrade(migrate_engine):
-    meta = MetaData(bind=migrate_engine)
-    metadef_objects = Table('metadef_objects', meta, autoload=True)
-    metadef_objects.c.json_schema.alter(name='schema')
-
-    metadef_properties = Table('metadef_properties', meta, autoload=True)
-    metadef_properties.c.json_schema.alter(name='schema')

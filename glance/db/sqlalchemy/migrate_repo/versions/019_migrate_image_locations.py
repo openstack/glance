@@ -42,17 +42,3 @@ def upgrade(migrate_engine):
                 'deleted_at': image.deleted_at,
             }
             image_locations_table.insert(values=values).execute()
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.schema.MetaData(migrate_engine)
-
-    images_table = get_images_table(meta)
-    image_locations_table = get_image_locations_table(meta)
-
-    image_records = image_locations_table.select().execute().fetchall()
-
-    for image_location in image_records:
-        images_table.update(
-            values={'location': image_location.value}).where(
-                images_table.c.id == image_location.image_id).execute()

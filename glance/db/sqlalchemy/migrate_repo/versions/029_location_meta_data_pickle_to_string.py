@@ -13,11 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import pickle
 
 import sqlalchemy
-from sqlalchemy import MetaData, Table, Column  # noqa
+from sqlalchemy import Table, Column  # noqa
 from glance.db.sqlalchemy import models
 
 
@@ -44,29 +43,3 @@ def upgrade(migrate_engine):
     conn.close()
     image_locations.columns['meta_data'].drop()
     image_locations.columns['storage_meta_data'].alter(name='meta_data')
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.schema.MetaData(migrate_engine)
-    image_locations = Table('image_locations', meta, autoload=True)
-    old_meta_data = Column('old_meta_data', sqlalchemy.PickleType(),
-                           default={})
-    old_meta_data.create(image_locations)
-
-    noj = json.dumps({})
-    s = sqlalchemy.sql.select([image_locations]).where(
-        image_locations.c.meta_data != noj)
-    conn = migrate_engine.connect()
-    res = conn.execute(s)
-
-    for row in res:
-        x = row['meta_data']
-        meta_data = json.loads(x)
-        if meta_data != {}:
-            stmt = image_locations.update().where(
-                image_locations.c.id == row['id']).values(
-                    old_meta_data=meta_data)
-            conn.execute(stmt)
-    conn.close()
-    image_locations.columns['meta_data'].drop()
-    image_locations.columns['old_meta_data'].alter(name='meta_data')

@@ -26,8 +26,6 @@ migration performs the following steps for every entry in the images table:
 
 Fixes bug #1081043
 """
-import types  # noqa
-
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
@@ -46,10 +44,6 @@ CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 def upgrade(migrate_engine):
     migrate_location_credentials(migrate_engine, to_quoted=True)
-
-
-def downgrade(migrate_engine):
-    migrate_location_credentials(migrate_engine, to_quoted=False)
 
 
 def migrate_location_credentials(migrate_engine, to_quoted):

@@ -11,8 +11,8 @@
 #    under the License.
 
 import sqlalchemy
-from sqlalchemy import Table, Index, UniqueConstraint, Sequence
-from sqlalchemy.schema import (AddConstraint, DropConstraint, CreateIndex,
+from sqlalchemy import Table, Index, UniqueConstraint
+from sqlalchemy.schema import (AddConstraint, DropConstraint,
                                ForeignKeyConstraint)
 from sqlalchemy import sql
 from sqlalchemy import update
@@ -82,42 +82,3 @@ def upgrade(migrate_engine):
         if len(image_locations.foreign_keys) == 0:
             migrate_engine.execute(AddConstraint(ForeignKeyConstraint(
                 [image_locations.c.image_id], [images.c.id])))
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.MetaData()
-    meta.bind = migrate_engine
-
-    if migrate_engine.name not in ['mysql', 'postgresql']:
-        return
-
-    image_properties = Table('image_properties', meta, autoload=True)
-    image_members = Table('image_members', meta, autoload=True)
-    images = Table('images', meta, autoload=True)
-
-    if migrate_engine.name == 'postgresql':
-        constraint = UniqueConstraint(image_properties.c.image_id,
-                                      image_properties.c.name,
-                                      name='ix_image_properties_image_id_name')
-        migrate_engine.execute(DropConstraint(constraint))
-
-        constraint = UniqueConstraint(image_properties.c.image_id,
-                                      image_properties.c.name)
-        migrate_engine.execute(AddConstraint(constraint))
-
-        index = Index('ix_image_properties_image_id_name',
-                      image_properties.c.image_id,
-                      image_properties.c.name)
-        migrate_engine.execute(CreateIndex(index))
-
-        images.c.id.alter(server_default=Sequence('images_id_seq')
-                          .next_value())
-
-    if migrate_engine.name == 'mysql':
-        constraint = UniqueConstraint(image_properties.c.image_id,
-                                      image_properties.c.name,
-                                      name='image_id')
-        migrate_engine.execute(AddConstraint(constraint))
-
-    image_members.c.status.alter(nullable=True, server_default=None)
-    images.c.protected.alter(nullable=True, server_default=None)

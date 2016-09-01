@@ -94,13 +94,6 @@ class TestLegacyManage(TestManageBase):
                                db_api.get_engine(),
                                db_migration.MIGRATE_REPO_PATH, '20')
 
-    @mock.patch.object(migration, 'db_sync')
-    def test_legacy_db_downgrade_version(self, db_sync):
-        self._main_test_helper(['glance.cmd.manage', 'db_downgrade', '20'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
-
     def test_db_metadefs_unload(self):
         db_metadata.db_unload_metadefs = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db_unload_metadefs'],
@@ -203,13 +196,6 @@ class TestManage(TestManageBase):
     @mock.patch.object(migration, 'db_sync')
     def test_db_upgrade_version(self, db_sync):
         self._main_test_helper(['glance.cmd.manage', 'db', 'upgrade', '20'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
-
-    @mock.patch.object(migration, 'db_sync')
-    def test_db_downgrade_version(self, db_sync):
-        self._main_test_helper(['glance.cmd.manage', 'db', 'downgrade', '20'],
                                migration.db_sync,
                                db_api.get_engine(),
                                db_migration.MIGRATE_REPO_PATH, '20')

@@ -26,10 +26,3 @@ def upgrade(migrate_engine):
 
     images = Table('images', meta, autoload=True)
     images.create_column(protected)
-
-
-def downgrade(migrate_engine):
-    meta.bind = migrate_engine
-
-    images = Table('images', meta, autoload=True)
-    images.drop_column(protected)

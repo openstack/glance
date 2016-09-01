@@ -29,7 +29,3 @@ def upgrade(migrate_engine):
             if table_name in tables:
                 migrate_engine.execute("ALTER TABLE %s Engine=InnoDB" %
                                        table_name)
-
-
-def downgrade(migrate_engine):
-    pass

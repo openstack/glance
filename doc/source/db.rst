@@ -53,8 +53,9 @@ This will take an existing database and upgrade it to the specified VERSION.
 Downgrading an Existing Database
 --------------------------------
 
-    glance-manage db downgrade <VERSION>
+Upgrades involve complex operations and can fail. Before attempting any
+upgrade, you should make a full database backup of your production data. As of
+Kilo, database downgrades are not supported, and the only method available to
+get back to a prior database version is to restore from backup[1].
 
-This will downgrade an existing database from the current version to the
-specified VERSION.
-
+[1]: http://docs.openstack.org/ops-guide/ops-upgrades.html#perform-a-backup

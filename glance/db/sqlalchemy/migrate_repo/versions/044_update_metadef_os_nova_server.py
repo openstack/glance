@@ -24,8 +24,3 @@ def upgrade(migrate_engine):
 
     resource_types_table.update(values={'name': 'OS::Nova::Server'}).where(
         resource_types_table.c.name == 'OS::Nova::Instance').execute()
-
-
-def downgrade(migrate_engine):
-    # NOTE(TravT): This is a bug fix (1537903). It shouldn't be downgraded.
-    return

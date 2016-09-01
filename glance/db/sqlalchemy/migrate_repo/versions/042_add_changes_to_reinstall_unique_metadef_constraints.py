@@ -231,27 +231,6 @@ def _update_sqlite_namespace_id_name_constraint(metadef, metadef_namespaces,
         name=new_fk_name).create()
 
 
-def _downgrade_sqlite_namespace_id_name_constraint(metadef,
-                                                   metadef_namespaces,
-                                                   constraint_name,
-                                                   fk_name):
-    migrate.UniqueConstraint(
-        metadef.c.namespace_id,
-        metadef.c.name,
-        name=constraint_name).drop()
-    migrate.UniqueConstraint(
-        metadef.c.namespace_id,
-        metadef.c.name).create()
-
-    migrate.ForeignKeyConstraint(
-        [metadef.c.namespace_id],
-        [metadef_namespaces.c.id],
-        name=fk_name).drop()
-    migrate.ForeignKeyConstraint(
-        [metadef.c.namespace_id],
-        [metadef_namespaces.c.id]).create()
-
-
 def _drop_unique_constraint_if_exists(inspector, table_name, metadef):
     name = _get_unique_constraint_name(inspector,
                                        table_name,
@@ -278,24 +257,6 @@ def _drop_index_with_fk_constraint(metadef, metadef_namespaces,
     fkc = migrate.ForeignKeyConstraint([metadef.c.namespace_id],
                                        [metadef_namespaces.c.id],
                                        name=fk_new_name)
-    fkc.create()
-
-
-def _downgrade_constraint_with_fk(metadef, metadef_namespaces,
-                                  constraint_name,
-                                  fk_curr_name, fk_next_name):
-
-    fkc = migrate.ForeignKeyConstraint([metadef.c.namespace_id],
-                                       [metadef_namespaces.c.id],
-                                       name=fk_curr_name)
-    fkc.drop()
-
-    migrate.UniqueConstraint(metadef.c.namespace_id, metadef.c.name,
-                             name=constraint_name).drop()
-
-    fkc = migrate.ForeignKeyConstraint([metadef.c.namespace_id],
-                                       [metadef_namespaces.c.id],
-                                       name=fk_next_name)
     fkc.create()
 
 
@@ -479,126 +440,3 @@ def upgrade(migrate_engine):
         migrate.UniqueConstraint(
             metadef_resource_types.c.name,
             name='uq_metadef_resource_types_name').create()
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.MetaData()
-    meta.bind = migrate_engine
-
-    # ORM tables
-    metadef_namespaces = Table('metadef_namespaces', meta, autoload=True)
-    metadef_objects = Table('metadef_objects', meta, autoload=True)
-    metadef_properties = Table('metadef_properties', meta, autoload=True)
-    metadef_tags = Table('metadef_tags', meta, autoload=True)
-    metadef_resource_types = Table('metadef_resource_types', meta,
-                                   autoload=True)
-    metadef_ns_res_types = Table('metadef_namespace_resource_types',
-                                 meta, autoload=True)
-
-    # Drop the unique constraints
-    if migrate_engine.name == 'sqlite':
-        # Objects
-        _downgrade_sqlite_namespace_id_name_constraint(
-            metadef_objects, metadef_namespaces,
-            'uq_metadef_objects_namespace_id_name',
-            'metadef_objects_fk_1')
-
-        # Properties
-        _downgrade_sqlite_namespace_id_name_constraint(
-            metadef_properties, metadef_namespaces,
-            'uq_metadef_properties_namespace_id_name',
-            'metadef_properties_fk_1')
-
-        # Tags
-        _downgrade_sqlite_namespace_id_name_constraint(
-            metadef_tags, metadef_namespaces,
-            'uq_metadef_tags_namespace_id_name',
-            'metadef_tags_fk_1')
-
-        # Namespaces
-        migrate.UniqueConstraint(
-            metadef_namespaces.c.namespace,
-            name='uq_metadef_namespaces_namespace').drop()
-        migrate.UniqueConstraint(
-            metadef_namespaces.c.namespace).create()
-
-        # ResourceTypes
-        migrate.UniqueConstraint(
-            metadef_resource_types.c.name,
-            name='uq_metadef_resource_types_name').drop()
-        migrate.UniqueConstraint(
-            metadef_resource_types.c.name).create()
-    else:
-        # For mysql, must drop foreign key constraints before dropping the
-        # unique constraint. So drop the fkc, then drop the constraints,
-        # then recreate the fkc.
-
-        # Objects
-        _downgrade_constraint_with_fk(
-            metadef_objects, metadef_namespaces,
-            'uq_metadef_objects_namespace_id_name',
-            'metadef_objects_fk_1', None)
-
-        # Properties
-        _downgrade_constraint_with_fk(
-            metadef_properties, metadef_namespaces,
-            'uq_metadef_properties_namespace_id_name',
-            'metadef_properties_fk_1', None)
-
-        # Tags
-        _downgrade_constraint_with_fk(
-            metadef_tags, metadef_namespaces,
-            'uq_metadef_tags_namespace_id_name',
-            'metadef_tags_fk_1', 'metadef_tags_namespace_id_fkey')
-
-        # Namespaces
-        migrate.UniqueConstraint(
-            metadef_namespaces.c.namespace,
-            name='uq_metadef_namespaces_namespace').drop()
-
-        # Resource_types
-        migrate.UniqueConstraint(
-            metadef_resource_types.c.name,
-            name='uq_metadef_resource_types_name').drop()
-
-    # Create dropped unique constraints as bad, non-unique indexes
-    Index('ix_metadef_objects_namespace_id',
-          metadef_objects.c.namespace_id).create()
-    Index('ix_metadef_properties_namespace_id',
-          metadef_properties.c.namespace_id).create()
-
-    # These need to be done before the metadef_tags and metadef_namespaces
-    # unique constraints are created to avoid 'tuple out of range' errors
-    # in db2.
-    Index('ix_metadef_tags_namespace_id',
-          metadef_tags.c.namespace_id,
-          metadef_tags.c.name).create()
-    Index('ix_metadef_namespaces_namespace',
-          metadef_namespaces.c.namespace).create()
-
-    # Create these everywhere, except for db2
-    if migrate_engine.name != 'ibm_db_sa':
-        Index('ix_metadef_resource_types_name',
-              metadef_resource_types.c.name).create()
-        Index('ix_metadef_ns_res_types_res_type_id_ns_id',
-              metadef_ns_res_types.c.resource_type_id,
-              metadef_ns_res_types.c.namespace_id).create()
-    else:
-        # Recreate the badly named unique constraints in db2
-        migrate.UniqueConstraint(
-            metadef_namespaces.c.namespace,
-            name='ix_namespaces_namespace').create()
-        migrate.UniqueConstraint(
-            metadef_objects.c.namespace_id,
-            metadef_objects.c.name,
-            name='ix_objects_namespace_id_name').create()
-        migrate.UniqueConstraint(
-            metadef_properties.c.namespace_id,
-            metadef_properties.c.name,
-            name='ix_metadef_properties_namespace_id_name').create()
-        migrate.UniqueConstraint(
-            metadef_tags.c.namespace_id,
-            metadef_tags.c.name).create()
-        migrate.UniqueConstraint(
-            metadef_resource_types.c.name,
-            name='ix_metadef_resource_types_name').create()

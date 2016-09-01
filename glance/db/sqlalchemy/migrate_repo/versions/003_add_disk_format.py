@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from migrate.changeset import *  # noqa
 from sqlalchemy import *  # noqa
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
@@ -51,17 +50,6 @@ def get_images_table(meta):
                    extend_existing=True)
 
     return images
-
-
-def get_image_properties_table(meta):
-    """
-    No changes to the image properties table from 002...
-    """
-    (define_image_properties_table,) = from_migration_import(
-        '002_add_image_properties_table', ['define_image_properties_table'])
-
-    image_properties = define_image_properties_table(meta)
-    return image_properties
 
 
 def upgrade(migrate_engine):
@@ -119,35 +107,3 @@ def upgrade(migrate_engine):
     container_format.create(images)
 
     images.columns['type'].drop()
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-
-    # Steps to take, in this order:
-    # 1) Add type column back to Image
-    # 2) Move the existing type properties from ImageProperty into
-    #    Image.type
-    # 3) Drop the disk_format and container_format columns in Image
-
-    conn = migrate_engine.connect()
-    images = get_images_table(meta)
-    image_properties = get_image_properties_table(meta)
-
-    type_col = Column('type', String(30))
-    type_col.create(images)
-
-    sel = select([image_properties]).where(image_properties.c.key == 'type')
-    type_property_records = conn.execute(sel).fetchall()
-    for record in type_property_records:
-        upd = images.update().where(
-            images.c.id == record.image_id).values(type=record.value)
-        conn.execute(upd)
-        dlt = image_properties.delete().where(
-            image_properties.c.image_id == record.image_id)
-        conn.execute(dlt)
-    conn.close()
-
-    images.columns['disk_format'].drop()
-    images.columns['container_format'].drop()

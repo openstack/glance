@@ -17,7 +17,6 @@ import re
 
 from migrate.changeset import UniqueConstraint
 from oslo_db import exception as db_exception
-from sqlalchemy import and_, func, orm
 from sqlalchemy import MetaData, Table
 from sqlalchemy.exc import OperationalError, ProgrammingError
 
@@ -45,20 +44,6 @@ def upgrade(migrate_engine):
                          table=image_members).create()
 
 
-def downgrade(migrate_engine):
-    image_members = _get_image_members_table(migrate_engine)
-
-    if migrate_engine.name in ('mysql', 'postgresql'):
-        _sanitize(migrate_engine, image_members)
-        UniqueConstraint('image_id',
-                         name=NEW_KEYNAME,
-                         table=image_members).drop()
-        UniqueConstraint('image_id',
-                         'member',
-                         name=_get_original_keyname(migrate_engine.name),
-                         table=image_members).create()
-
-
 def _get_image_members_table(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
@@ -74,23 +59,3 @@ def _infer_original_keyname(table):
     for i in table.indexes:
         if ORIGINAL_KEYNAME_RE.match(i.name):
             return i.name
-
-
-def _sanitize(migrate_engine, table):
-    """
-    Avoid possible integrity error by removing deleted rows
-    to accommodate less restrictive uniqueness constraint
-    """
-    session = orm.sessionmaker(bind=migrate_engine)()
-    # find the image_member rows containing duplicate combinations
-    # of image_id and member
-    qry = (session.query(table.c.image_id, table.c.member)
-                  .group_by(table.c.image_id, table.c.member)
-                  .having(func.count() > 1))
-    for image_id, member in qry:
-        # only remove duplicate rows already marked deleted
-        d = table.delete().where(and_(table.c.deleted == True,
-                                      table.c.image_id == image_id,
-                                      table.c.member == member))
-        d.execute()
-    session.close()

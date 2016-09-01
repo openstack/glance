@@ -24,11 +24,3 @@ def upgrade(migrate_engine):
     virtual_size = sqlalchemy.Column('virtual_size',
                                      sqlalchemy.BigInteger)
     images.create_column(virtual_size)
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.MetaData()
-    meta.bind = migrate_engine
-
-    images = sqlalchemy.Table('images', meta, autoload=True)
-    images.columns['virtual_size'].drop()

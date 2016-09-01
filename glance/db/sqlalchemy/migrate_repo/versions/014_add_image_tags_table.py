@@ -64,10 +64,3 @@ def upgrade(migrate_engine):
     meta.bind = migrate_engine
     tables = [define_image_tags_table(meta)]
     glance_schema.create_tables(tables)
-
-
-def downgrade(migrate_engine):
-    meta = schema.MetaData()
-    meta.bind = migrate_engine
-    tables = [define_image_tags_table(meta)]
-    glance_schema.drop_tables(tables)

@@ -55,10 +55,3 @@ def upgrade(migrate_engine):
     )
 
     schema.create_tables([image_locations_table])
-
-
-def downgrade(migrate_engine):
-    meta = sqlalchemy.schema.MetaData(migrate_engine)
-    image_locations_table = sqlalchemy.Table('image_locations', meta,
-                                             autoload=True)
-    schema.drop_tables([image_locations_table])

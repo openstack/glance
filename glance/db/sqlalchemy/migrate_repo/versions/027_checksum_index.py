@@ -26,13 +26,3 @@ def upgrade(migrate_engine):
 
     index = Index(INDEX_NAME, images.c.checksum)
     index.create(migrate_engine)
-
-
-def downgrade(migrate_engine):
-    meta = MetaData()
-    meta.bind = migrate_engine
-
-    images = Table('images', meta, autoload=True)
-
-    index = Index(INDEX_NAME, images.c.checksum)
-    index.drop(migrate_engine)
