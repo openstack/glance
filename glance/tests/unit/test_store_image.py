@@ -12,11 +12,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from cursive import exception as cursive_exception
+from cursive import signature_utils
 import glance_store
 import mock
 
 from glance.common import exception
-from glance.common import signature_utils
 import glance.location
 from glance.tests.unit import base as unit_test_base
 from glance.tests.unit import utils as unit_test_utils
@@ -223,7 +224,7 @@ class TestStoreImage(utils.BaseTestCase):
                        unit_test_utils.fake_get_verifier)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
-        self.assertRaises(exception.SignatureVerificationError,
+        self.assertRaises(cursive_exception.SignatureVerificationError,
                           image.set_data,
                           'YYYY', 4)
 

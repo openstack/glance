@@ -17,6 +17,8 @@ import collections
 import copy
 
 from cryptography import exceptions as crypto_exception
+from cursive import exception as cursive_exception
+from cursive import signature_utils
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -24,7 +26,6 @@ from oslo_utils import encodeutils
 from oslo_utils import excutils
 
 from glance.common import exception
-from glance.common import signature_utils
 from glance.common import utils
 import glance.domain.proxy
 from glance.i18n import _, _LE, _LI, _LW
@@ -411,12 +412,18 @@ class ImageProxy(glance.domain.proxy.Image):
 
         # Create the verifier for signature verification (if correct properties
         # are present)
-        if (signature_utils.should_create_verifier(
-                self.image.extra_properties)):
+        extra_props = self.image.extra_properties
+        if (signature_utils.should_create_verifier(extra_props)):
             # NOTE(bpoulos): if creating verifier fails, exception will be
             # raised
+            img_signature = extra_props[signature_utils.SIGNATURE]
+            hash_method = extra_props[signature_utils.HASH_METHOD]
+            key_type = extra_props[signature_utils.KEY_TYPE]
+            cert_uuid = extra_props[signature_utils.CERT_UUID]
             verifier = signature_utils.get_verifier(
-                self.context, self.image.extra_properties)
+                self.context, cert_uuid, hash_method,
+                img_signature, key_type
+            )
         else:
             verifier = None
 
@@ -436,7 +443,7 @@ class ImageProxy(glance.domain.proxy.Image):
                 LOG.info(_LI("Successfully verified signature for image %s"),
                          self.image.image_id)
             except crypto_exception.InvalidSignature:
-                raise exception.SignatureVerificationError(
+                raise cursive_exception.SignatureVerificationError(
                     _('Signature verification failed')
                 )
 
