@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 
 DATA = {
     'images': {},
-    'members': {},
+    'members': [],
     'metadef_namespace_resource_types': [],
     'metadef_namespaces': [],
     'metadef_objects': [],
