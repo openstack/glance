@@ -1,0 +1,22 @@
+---
+other:
+  - |
+    Glance and Nova contain nearly identical digital
+    signature modules. In order to better maintain and
+    evolve this code and to eliminate the possibility that
+    the modules diverge, we have replaced the digital
+    signature module in Glance with the new ``cursive``
+    library.
+
+    * The ``cursive`` library is an OpenStack project which
+      implements OpenStack-specific verification of digital
+      signatures.
+    * In Newton, the majority of the signature verification
+      code was removed from Glance. ``cursive`` has been
+      added to Glance as a dependency and will be installed
+      by default.
+    * Glance uses the ``cursive`` library's functionality to
+      verify digital signatures. To familiarize yourself
+      with this new dependency and see the list of
+      transitive dependencies visit
+      http://git.openstack.org/cgit/openstack/cursive
