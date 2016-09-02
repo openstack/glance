@@ -35,6 +35,23 @@ Requirements
 ------------
 Barbican key manager - See http://docs.openstack.org/developer/barbican/setup/devstack.html
 
+Configuration
+-------------
+The etc/glance-api.conf can be modified to change keystone endpoint of
+barbican. By default barbican will try to connect to keystone at
+http://localhost:5000/v3 but if keystone is on another host then this
+should be changed.
+
+In glance-api.conf find the following lines::
+
+  [barbican]
+  auth_endpoint = http://localhost:5000/v3
+
+Then replace http://localhost:5000/v3 with the url of keystone, also adding /v3
+to the end of it. For example, 'https://192.168.245.9:5000/v3'.
+
+.. note:: If those lines do not exist then simply add them to the end of the file.
+
 Using the Signature Verification
 --------------------------------
 
