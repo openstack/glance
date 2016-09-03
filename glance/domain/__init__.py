@@ -68,7 +68,7 @@ class ImageFactory(object):
                 if key in properties:
                     raise exception.ReservedProperty(property=key)
 
-    def new_image(self, image_id=None, name=None, visibility='private',
+    def new_image(self, image_id=None, name=None, visibility='shared',
                   min_disk=0, min_ram=0, protected=False, owner=None,
                   disk_format=None, container_format=None,
                   extra_properties=None, tags=None, **other_args):
@@ -116,7 +116,7 @@ class Image(object):
         self.created_at = created_at
         self.updated_at = updated_at
         self.name = kwargs.pop('name', None)
-        self.visibility = kwargs.pop('visibility', 'private')
+        self.visibility = kwargs.pop('visibility', 'shared')
         self.min_disk = kwargs.pop('min_disk', 0)
         self.min_ram = kwargs.pop('min_ram', 0)
         self.protected = kwargs.pop('protected', False)
@@ -172,9 +172,9 @@ class Image(object):
 
     @visibility.setter
     def visibility(self, visibility):
-        if visibility not in ('public', 'private'):
-            raise ValueError(_('Visibility must be either "public" '
-                               'or "private"'))
+        if visibility not in ('community', 'public', 'private', 'shared'):
+            raise ValueError(_('Visibility must be one of "community", '
+                               '"public", "private", or "shared"'))
         self._visibility = visibility
 
     @property

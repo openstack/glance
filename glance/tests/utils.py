@@ -492,17 +492,21 @@ class RegistryAPIMixIn(object):
                    'status': 'active',
                    'disk_format': 'vhd',
                    'container_format': 'ovf',
-                   'is_public': True,
+                   'visibility': 'public',
                    'size': 20,
                    'checksum': None}
+        if 'is_public' in kwargs:
+            fixture.pop('visibility')
         fixture.update(kwargs)
         return fixture
 
     def get_minimal_fixture(self, **kwargs):
         fixture = {'name': 'fake public image',
-                   'is_public': True,
+                   'visibility': 'public',
                    'disk_format': 'vhd',
                    'container_format': 'ovf'}
+        if 'is_public' in kwargs:
+            fixture.pop('visibility')
         fixture.update(kwargs)
         return fixture
 

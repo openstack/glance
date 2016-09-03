@@ -61,6 +61,8 @@ def build_image_fixture(**kwargs):
                        'metadata': {}, 'status': 'active'}],
         'properties': {},
     }
+    if 'visibility' in kwargs:
+        image.pop('is_public')
     image.update(kwargs)
     return image
 
@@ -156,7 +158,7 @@ class DriverTests(object):
         self.assertEqual(0, image['min_ram'])
         self.assertEqual(0, image['min_disk'])
         self.assertIsNone(image['owner'])
-        self.assertFalse(image['is_public'])
+        self.assertEqual('shared', image['visibility'])
         self.assertIsNone(image['size'])
         self.assertIsNone(image['checksum'])
         self.assertIsNone(image['disk_format'])
@@ -1083,7 +1085,7 @@ class DriverTests(object):
                                        auth_token='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        # We need private image and context.owner should not match image
+        # We need a shared image and context.owner should not match image
         # owner
         self.db_api.image_create(ctxt1, {'id': UUIDX,
                                          'status': 'queued',
@@ -1136,7 +1138,7 @@ class DriverTests(object):
                                        auth_token='user:%s:user' % TENANT2,
                                        owner_is_tenant=False)
         UUIDX = str(uuid.uuid4())
-        # We need private image and context.owner should not match image
+        # We need a shared image and context.owner should not match image
         # owner
         image = self.db_api.image_create(ctxt1, {'id': UUIDX,
                                                  'status': 'queued',
@@ -1155,6 +1157,31 @@ class DriverTests(object):
 
         result = self.db_api.is_image_visible(ctxt2, image)
         self.assertFalse(result)
+
+    def test_is_community_image_visible(self):
+        TENANT1 = str(uuid.uuid4())
+        TENANT2 = str(uuid.uuid4())
+        owners_ctxt = context.RequestContext(is_admin=False, tenant=TENANT1,
+                                             auth_token='user:%s:user'
+                                             % TENANT1, owner_is_tenant=True)
+        viewing_ctxt = context.RequestContext(is_admin=False, user=TENANT2,
+                                              auth_token='user:%s:user'
+                                              % TENANT2, owner_is_tenant=False)
+        UUIDX = str(uuid.uuid4())
+        # We need a community image and context.owner should not match image
+        # owner
+        image = self.db_api.image_create(owners_ctxt,
+                                         {'id': UUIDX,
+                                          'status': 'queued',
+                                          'visibility': 'community',
+                                          'owner': TENANT1})
+
+        # image should be visible in every context
+        result = self.db_api.is_image_visible(owners_ctxt, image)
+        self.assertTrue(result)
+
+        result = self.db_api.is_image_visible(viewing_ctxt, image)
+        self.assertTrue(result)
 
     def test_image_tag_create(self):
         tag = self.db_api.image_tag_create(self.context, UUID1, 'snap')
@@ -1985,13 +2012,13 @@ class TestVisibility(test_utils.BaseTestCase):
             'Tenant 1': self.tenant1,
             'Tenant 2': self.tenant2,
         }
-        visibilities = {'public': True, 'private': False}
+        visibilities = ['community', 'private', 'public', 'shared']
         for owner_label, owner in owners.items():
-            for visibility, is_public in visibilities.items():
+            for visibility in visibilities:
                 fixture = {
                     'name': '%s, %s' % (owner_label, visibility),
                     'owner': owner,
-                    'is_public': is_public,
+                    'visibility': visibility,
                 }
                 fixtures.append(fixture)
         return [build_image_fixture(**f) for f in fixtures]
@@ -2003,95 +2030,125 @@ class TestVisibility(test_utils.BaseTestCase):
 
 class VisibilityTests(object):
 
-    def test_unknown_admin_sees_all(self):
+    def test_unknown_admin_sees_all_but_community(self):
         images = self.db_api.image_get_all(self.admin_none_context)
-        self.assertEqual(8, len(images))
+        self.assertEqual(12, len(images))
 
     def test_unknown_admin_is_public_true(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            is_public=True)
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
 
     def test_unknown_admin_is_public_false(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            is_public=False)
-        self.assertEqual(4, len(images))
+        self.assertEqual(8, len(images))
         for i in images:
-            self.assertFalse(i['is_public'])
+            self.assertTrue(i['visibility'] in ['shared', 'private'])
 
     def test_unknown_admin_is_public_none(self):
         images = self.db_api.image_get_all(self.admin_none_context)
-        self.assertEqual(8, len(images))
+        self.assertEqual(12, len(images))
 
     def test_unknown_admin_visibility_public(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            filters={'visibility': 'public'})
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
+
+    def test_unknown_admin_visibility_shared(self):
+        images = self.db_api.image_get_all(self.admin_none_context,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(4, len(images))
+        for i in images:
+            self.assertEqual('shared', i['visibility'])
 
     def test_unknown_admin_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_none_context,
                                            filters={'visibility': 'private'})
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertFalse(i['is_public'])
+            self.assertEqual('private', i['visibility'])
 
-    def test_known_admin_sees_all(self):
+    def test_unknown_admin_visibility_community(self):
+        images = self.db_api.image_get_all(self.admin_none_context,
+                                           filters={'visibility': 'community'})
+        self.assertEqual(4, len(images))
+        for i in images:
+            self.assertEqual('community', i['visibility'])
+
+    def test_known_admin_sees_all_but_others_community_images(self):
         images = self.db_api.image_get_all(self.admin_context)
-        self.assertEqual(8, len(images))
+        self.assertEqual(13, len(images))
 
     def test_known_admin_is_public_true(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=True)
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
 
     def test_known_admin_is_public_false(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            is_public=False)
-        self.assertEqual(4, len(images))
+        self.assertEqual(9, len(images))
         for i in images:
-            self.assertFalse(i['is_public'])
+            self.assertTrue(i['visibility']
+                            in ['shared', 'private', 'community'])
 
     def test_known_admin_is_public_none(self):
         images = self.db_api.image_get_all(self.admin_context)
-        self.assertEqual(8, len(images))
+        self.assertEqual(13, len(images))
 
     def test_admin_as_user_true(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            admin_as_user=True)
-        self.assertEqual(5, len(images))
+        self.assertEqual(7, len(images))
         for i in images:
-            self.assertTrue(i['is_public'] or i['owner'] == self.admin_tenant)
+            self.assertTrue(('public' == i['visibility'])
+                            or i['owner'] == self.admin_tenant)
 
     def test_known_admin_visibility_public(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            filters={'visibility': 'public'})
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
+
+    def test_known_admin_visibility_shared(self):
+        images = self.db_api.image_get_all(self.admin_context,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(4, len(images))
+        for i in images:
+            self.assertEqual('shared', i['visibility'])
 
     def test_known_admin_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_context,
                                            filters={'visibility': 'private'})
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertFalse(i['is_public'])
+            self.assertEqual('private', i['visibility'])
+
+    def test_known_admin_visibility_community(self):
+        images = self.db_api.image_get_all(self.admin_context,
+                                           filters={'visibility': 'community'})
+        self.assertEqual(4, len(images))
+        for i in images:
+            self.assertEqual('community', i['visibility'])
 
     def test_what_unknown_user_sees(self):
         images = self.db_api.image_get_all(self.none_context)
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
 
     def test_unknown_user_is_public_true(self):
         images = self.db_api.image_get_all(self.none_context, is_public=True)
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
 
     def test_unknown_user_is_public_false(self):
         images = self.db_api.image_get_all(self.none_context, is_public=False)
@@ -2101,25 +2158,37 @@ class VisibilityTests(object):
         images = self.db_api.image_get_all(self.none_context)
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
 
     def test_unknown_user_visibility_public(self):
         images = self.db_api.image_get_all(self.none_context,
                                            filters={'visibility': 'public'})
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
+
+    def test_unknown_user_visibility_shared(self):
+        images = self.db_api.image_get_all(self.none_context,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(0, len(images))
 
     def test_unknown_user_visibility_private(self):
         images = self.db_api.image_get_all(self.none_context,
                                            filters={'visibility': 'private'})
         self.assertEqual(0, len(images))
 
+    def test_unknown_user_visibility_community(self):
+        images = self.db_api.image_get_all(self.none_context,
+                                           filters={'visibility': 'community'})
+        self.assertEqual(4, len(images))
+        for i in images:
+            self.assertEqual('community', i['visibility'])
+
     def test_what_tenant1_sees(self):
         images = self.db_api.image_get_all(self.tenant1_context)
-        self.assertEqual(5, len(images))
+        self.assertEqual(7, len(images))
         for i in images:
-            if not i['is_public']:
+            if not ('public' == i['visibility']):
                 self.assertEqual(i['owner'], self.tenant1)
 
     def test_tenant1_is_public_true(self):
@@ -2127,20 +2196,22 @@ class VisibilityTests(object):
                                            is_public=True)
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
 
     def test_tenant1_is_public_false(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=False)
-        self.assertEqual(1, len(images))
-        self.assertFalse(images[0]['is_public'])
-        self.assertEqual(images[0]['owner'], self.tenant1)
+        self.assertEqual(3, len(images))
+        for i in images:
+            self.assertEqual(i['owner'], self.tenant1)
+            self.assertTrue(i['visibility']
+                            in ['private', 'shared', 'community'])
 
     def test_tenant1_is_public_none(self):
         images = self.db_api.image_get_all(self.tenant1_context)
-        self.assertEqual(5, len(images))
+        self.assertEqual(7, len(images))
         for i in images:
-            if not i['is_public']:
+            if not ('public' == i['visibility']):
                 self.assertEqual(self.tenant1, i['owner'])
 
     def test_tenant1_visibility_public(self):
@@ -2148,20 +2219,34 @@ class VisibilityTests(object):
                                            filters={'visibility': 'public'})
         self.assertEqual(4, len(images))
         for i in images:
-            self.assertTrue(i['is_public'])
+            self.assertEqual('public', i['visibility'])
+
+    def test_tenant1_visibility_shared(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(1, len(images))
+        self.assertEqual('shared', images[0]['visibility'])
+        self.assertEqual(self.tenant1, images[0]['owner'])
 
     def test_tenant1_visibility_private(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            filters={'visibility': 'private'})
         self.assertEqual(1, len(images))
-        self.assertFalse(images[0]['is_public'])
+        self.assertEqual('private', images[0]['visibility'])
         self.assertEqual(self.tenant1, images[0]['owner'])
+
+    def test_tenant1_visibility_community(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           filters={'visibility': 'community'})
+        self.assertEqual(4, len(images))
+        for i in images:
+            self.assertEqual('community', i['visibility'])
 
     def _setup_is_public_red_herring(self):
         values = {
             'name': 'Red Herring',
             'owner': self.tenant1,
-            'is_public': False,
+            'visibility': 'shared',
             'properties': {'is_public': 'silly'}
         }
         fixture = build_image_fixture(**values)
@@ -2196,6 +2281,16 @@ class VisibilityTests(object):
                                            filters={'visibility': 'public'})
         self.assertEqual(0, len(images))
 
+    def test_admin_is_public_true_and_visibility_shared(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=True,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(0, len(images))
+
+    def test_admin_is_public_false_and_visibility_shared(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=False,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(4, len(images))
+
     def test_admin_is_public_true_and_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=True,
                                            filters={'visibility': 'private'})
@@ -2204,6 +2299,16 @@ class VisibilityTests(object):
     def test_admin_is_public_false_and_visibility_private(self):
         images = self.db_api.image_get_all(self.admin_context, is_public=False,
                                            filters={'visibility': 'private'})
+        self.assertEqual(4, len(images))
+
+    def test_admin_is_public_true_and_visibility_community(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=True,
+                                           filters={'visibility': 'community'})
+        self.assertEqual(0, len(images))
+
+    def test_admin_is_public_false_and_visibility_community(self):
+        images = self.db_api.image_get_all(self.admin_context, is_public=False,
+                                           filters={'visibility': 'community'})
         self.assertEqual(4, len(images))
 
     def test_tenant1_is_public_true_and_visibility_public(self):
@@ -2218,6 +2323,18 @@ class VisibilityTests(object):
                                            filters={'visibility': 'public'})
         self.assertEqual(0, len(images))
 
+    def test_tenant1_is_public_true_and_visibility_shared(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=True,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(0, len(images))
+
+    def test_tenant1_is_public_false_and_visibility_shared(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=False,
+                                           filters={'visibility': 'shared'})
+        self.assertEqual(1, len(images))
+
     def test_tenant1_is_public_true_and_visibility_private(self):
         images = self.db_api.image_get_all(self.tenant1_context,
                                            is_public=True,
@@ -2229,6 +2346,18 @@ class VisibilityTests(object):
                                            is_public=False,
                                            filters={'visibility': 'private'})
         self.assertEqual(1, len(images))
+
+    def test_tenant1_is_public_true_and_visibility_community(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=True,
+                                           filters={'visibility': 'community'})
+        self.assertEqual(0, len(images))
+
+    def test_tenant1_is_public_false_and_visibility_community(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           is_public=False,
+                                           filters={'visibility': 'community'})
+        self.assertEqual(4, len(images))
 
 
 class TestMembershipVisibility(test_utils.BaseTestCase):
@@ -2262,7 +2391,8 @@ class TestMembershipVisibility(test_utils.BaseTestCase):
                                members=[self.tenant1, self.tenant2])
 
     def _create_image(self, name, owner, members=None):
-        image = build_image_fixture(name=name, owner=owner, is_public=False)
+        image = build_image_fixture(name=name, owner=owner,
+                                    visibility='shared')
         self.image_ids[(owner, name)] = image['id']
         self.db_api.image_create(self.admin_ctx, image)
         for member in members or []:

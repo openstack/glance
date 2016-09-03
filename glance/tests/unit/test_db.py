@@ -95,6 +95,8 @@ def _db_fixture(id, **kwargs):
         'min_ram': None,
         'min_disk': None,
     }
+    if 'visibility' in kwargs:
+        obj.pop('is_public')
     obj.update(kwargs)
     return obj
 
@@ -247,6 +249,11 @@ class TestImageRepo(test_utils.BaseTestCase):
 
     def test_list_private_images(self):
         filters = {'visibility': 'private'}
+        images = self.image_repo.list(filters=filters)
+        self.assertEqual(0, len(images))
+
+    def test_list_shared_images(self):
+        filters = {'visibility': 'shared'}
         images = self.image_repo.list(filters=filters)
         image_ids = set([i.image_id for i in images])
         self.assertEqual(set([UUID2]), image_ids)
@@ -488,7 +495,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
             _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
                         status='active'),
             _db_fixture(UUID2, owner=TENANT1, name='2',
-                        size=512, is_public=False),
+                        size=512, visibility='shared'),
         ]
         [self.db.image_create(None, image) for image in self.images]
 

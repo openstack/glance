@@ -240,6 +240,22 @@ class TestImagePolicy(test_utils.BaseTestCase):
         self.policy.enforce.assert_called_once_with({}, "publicize_image",
                                                     image.target)
 
+    def test_communitize_image_not_allowed(self):
+        self.policy.enforce.side_effect = exception.Forbidden
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        self.assertRaises(exception.Forbidden,
+                          setattr, image, 'visibility', 'community')
+        self.assertEqual('private', image.visibility)
+        self.policy.enforce.assert_called_once_with({}, "communitize_image",
+                                                    image.target)
+
+    def test_communitize_image_allowed(self):
+        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        image.visibility = 'community'
+        self.assertEqual('community', image.visibility)
+        self.policy.enforce.assert_called_once_with({}, "communitize_image",
+                                                    image.target)
+
     def test_delete_image_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
@@ -328,7 +344,7 @@ class TestImagePolicy(test_utils.BaseTestCase):
         self.policy.enforce.assert_called_once_with({}, "add_image",
                                                     image.target)
 
-    def test_new_image_visibility(self):
+    def test_new_image_visibility_public_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
         image_factory = glance.api.policy.ImageFactoryProxy(
             self.image_factory_stub, {}, self.policy)
@@ -341,6 +357,24 @@ class TestImagePolicy(test_utils.BaseTestCase):
             self.image_factory_stub, {}, self.policy)
         image_factory.new_image(visibility='public')
         self.policy.enforce.assert_called_once_with({}, "publicize_image", {})
+
+    def test_new_image_visibility_community_not_allowed(self):
+        self.policy.enforce.side_effect = exception.Forbidden
+        image_factory = glance.api.policy.ImageFactoryProxy(
+            self.image_factory_stub, {}, self.policy)
+        self.assertRaises(exception.Forbidden, image_factory.new_image,
+                          visibility='community')
+        self.policy.enforce.assert_called_once_with({},
+                                                    "communitize_image",
+                                                    {})
+
+    def test_new_image_visibility_community_allowed(self):
+        image_factory = glance.api.policy.ImageFactoryProxy(
+            self.image_factory_stub, {}, self.policy)
+        image_factory.new_image(visibility='community')
+        self.policy.enforce.assert_called_once_with({},
+                                                    "communitize_image",
+                                                    {})
 
     def test_image_get_data_policy_enforced_with_target(self):
         extra_properties = {

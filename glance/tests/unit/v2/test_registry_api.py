@@ -57,7 +57,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
              'status': 'active',
              'disk_format': 'ami',
              'container_format': 'ami',
-             'is_public': False,
+             'visibility': 'shared',
              'created_at': uuid1_time,
              'updated_at': uuid1_time,
              'deleted_at': None,
@@ -74,7 +74,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
              'status': 'active',
              'disk_format': 'vhd',
              'container_format': 'ovf',
-             'is_public': True,
+             'visibility': 'public',
              'created_at': uuid2_time,
              'updated_at': uuid2_time,
              'deleted_at': None,
@@ -185,7 +185,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -199,7 +199,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -213,7 +213,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID5 = _gen_uuid()
         extra_fixture = {'id': UUID5,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -251,7 +251,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': None,
@@ -284,7 +284,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': None,
@@ -317,7 +317,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': None,
                          'container_format': 'ovf',
                          'name': 'Fake image',
@@ -350,7 +350,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': None,
                          'container_format': 'ovf',
                          'name': 'Fake image',
@@ -383,7 +383,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': None,
                          'name': 'Fake image',
@@ -416,7 +416,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': None,
                          'name': 'Fake image',
@@ -465,7 +465,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -479,7 +479,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -514,7 +514,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -527,7 +527,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
 
         extra_fixture = {'id': _gen_uuid(),
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -561,7 +561,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         """
         extra_fixture = {'id': _gen_uuid(),
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -572,7 +572,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
 
         extra_fixture = {'id': _gen_uuid(),
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -607,7 +607,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         extra_id = _gen_uuid()
         extra_fixture = {'id': extra_id,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'image-extra-1',
@@ -720,7 +720,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -734,7 +734,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -748,7 +748,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID5 = _gen_uuid()
         extra_fixture = {'id': UUID5,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -784,7 +784,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'asdf',
@@ -796,7 +796,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'xyz',
@@ -807,7 +807,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID5 = _gen_uuid()
         extra_fixture = {'id': UUID5,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': None,
@@ -842,7 +842,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'queued',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'asdf',
@@ -854,7 +854,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'xyz',
@@ -890,7 +890,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'ami',
                          'container_format': 'ami',
                          'name': 'asdf',
@@ -904,7 +904,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vdi',
                          'container_format': 'ovf',
                          'name': 'xyz',
@@ -938,7 +938,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'ami',
                          'container_format': 'ami',
                          'name': 'asdf',
@@ -952,7 +952,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'iso',
                          'container_format': 'bare',
                          'name': 'xyz',
@@ -985,7 +985,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'ami',
                          'container_format': 'ami',
                          'name': 'asdf',
@@ -997,7 +997,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'iso',
                          'container_format': 'bare',
                          'name': 'xyz',
@@ -1033,7 +1033,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -1047,7 +1047,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -1085,7 +1085,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -1099,7 +1099,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'new name! #123',
@@ -1138,7 +1138,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'asdf',
@@ -1152,7 +1152,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'xyz',
@@ -1166,7 +1166,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID5 = _gen_uuid()
         extra_fixture = {'id': UUID5,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'asdf',
@@ -1219,7 +1219,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID3 = _gen_uuid()
         extra_fixture = {'id': UUID3,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'asdf',
@@ -1233,7 +1233,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID4 = _gen_uuid()
         extra_fixture = {'id': UUID4,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'xyz',
@@ -1247,7 +1247,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         UUID5 = _gen_uuid()
         extra_fixture = {'id': UUID5,
                          'status': 'active',
-                         'is_public': True,
+                         'visibility': 'public',
                          'disk_format': 'vhd',
                          'container_format': 'ovf',
                          'name': 'asdf',
@@ -1320,7 +1320,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         """Tests that the registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'status': 'active',
-                   'is_public': True,
+                   'visibility': 'public',
                    'disk_format': 'vhd',
                    'container_format': 'ovf'}
 
@@ -1346,7 +1346,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
     def test_create_image_with_min_disk(self):
         """Tests that the registry API creates the image"""
         fixture = {'name': 'fake public image',
-                   'is_public': True,
+                   'visibility': 'public',
                    'status': 'active',
                    'min_disk': 5,
                    'disk_format': 'vhd',
@@ -1370,7 +1370,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
     def test_create_image_with_min_ram(self):
         """Tests that the registry API creates the image"""
         fixture = {'name': 'fake public image',
-                   'is_public': True,
+                   'visibility': 'public',
                    'status': 'active',
                    'min_ram': 256,
                    'disk_format': 'vhd',
@@ -1395,7 +1395,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         """Tests that the registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'status': 'active',
-                   'is_public': True,
+                   'visibility': 'public',
                    'disk_format': 'vhd',
                    'container_format': 'ovf'}
 
@@ -1418,7 +1418,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         """Tests that the registry API creates the image"""
         fixture = {'name': 'fake public image',
                    'status': 'active',
-                   'is_public': True,
+                   'visibility': 'public',
                    'disk_format': 'vhd',
                    'container_format': 'ovf'}
 

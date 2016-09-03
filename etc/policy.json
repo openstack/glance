@@ -8,6 +8,7 @@
     "get_images": "",
     "modify_image": "",
     "publicize_image": "role:admin",
+    "communitize_image": "",
     "copy_from": "",
 
     "download_image": "",

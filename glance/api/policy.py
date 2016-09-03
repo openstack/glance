@@ -122,6 +122,13 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         return super(ImageRepoProxy, self).add(image)
 
 
+def _enforce_image_visibility(policy, context, visibility, target):
+    if visibility == 'public':
+        policy.enforce(context, 'publicize_image', target)
+    elif visibility == 'community':
+        policy.enforce(context, 'communitize_image', target)
+
+
 class ImageProxy(glance.domain.proxy.Image):
 
     def __init__(self, image, context, policy):
@@ -137,8 +144,8 @@ class ImageProxy(glance.domain.proxy.Image):
 
     @visibility.setter
     def visibility(self, value):
-        if value == 'public':
-            self.policy.enforce(self.context, 'publicize_image', self.target)
+        _enforce_image_visibility(self.policy, self.context, value,
+                                  self.target)
         self.image.visibility = value
 
     @property
@@ -206,8 +213,8 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
                                                 proxy_kwargs=proxy_kwargs)
 
     def new_image(self, **kwargs):
-        if kwargs.get('visibility') == 'public':
-            self.policy.enforce(self.context, 'publicize_image', {})
+        _enforce_image_visibility(self.policy, self.context,
+                                  kwargs.get('visibility'), {})
         return super(ImageFactoryProxy, self).new_image(**kwargs)
 
 

@@ -53,6 +53,7 @@ from glance.db.sqlalchemy.metadef_api import object as metadef_object_api
 from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
 from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
+from glance.db import utils as db_utils
 from glance import glare as ga
 from glance.i18n import _, _LW, _LI
 
@@ -133,28 +134,35 @@ def _check_mutate_authorization(context, image_ref):
     if not is_image_mutable(context, image_ref):
         LOG.warn(_LW("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
-        if image_ref.is_public:
-            exc_class = exception.ForbiddenPublicImage
-        else:
+        if image_ref.visibility in ['private', 'shared']:
             exc_class = exception.Forbidden
+        else:
+            # 'public', or 'community'
+            exc_class = exception.ForbiddenPublicImage
 
         raise exc_class(msg)
 
 
-def image_create(context, values):
+def image_create(context, values, v1_mode=False):
     """Create an image from the values dictionary."""
-    return _image_update(context, values, None, purge_props=False)
+    image = _image_update(context, values, None, purge_props=False)
+    if v1_mode:
+        image = db_utils.mutate_image_dict_to_v1(image)
+    return image
 
 
 def image_update(context, image_id, values, purge_props=False,
-                 from_state=None):
+                 from_state=None, v1_mode=False):
     """
     Set the given properties on an image and update it.
 
     :raises: ImageNotFound if image does not exist.
     """
-    return _image_update(context, values, image_id, purge_props,
-                         from_state=from_state)
+    image = _image_update(context, values, image_id, purge_props,
+                          from_state=from_state)
+    if v1_mode:
+        image = db_utils.mutate_image_dict_to_v1(image)
+    return image
 
 
 @retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
@@ -213,11 +221,14 @@ def _normalize_tags(image):
     return image
 
 
-def image_get(context, image_id, session=None, force_show_deleted=False):
+def image_get(context, image_id, session=None, force_show_deleted=False,
+              v1_mode=False):
     image = _image_get(context, image_id, session=session,
                        force_show_deleted=force_show_deleted)
     image = _normalize_locations(context, image.to_dict(),
                                  force_show_deleted=force_show_deleted)
+    if v1_mode:
+        image = db_utils.mutate_image_dict_to_v1(image)
     return image
 
 
@@ -290,8 +301,8 @@ def is_image_visible(context, image, status=None):
     if image['owner'] is None:
         return True
 
-    # Image is_public == image visible
-    if image['is_public']:
+    # Public or Community visibility == image visible
+    if image['visibility'] in ['public', 'community']:
         return True
 
     # Perform tests based on whether we have an owner
@@ -299,13 +310,14 @@ def is_image_visible(context, image, status=None):
         if context.owner == image['owner']:
             return True
 
-        # Figure out if this image is shared with that tenant
-        members = image_member_find(context,
-                                    image_id=image['id'],
-                                    member=context.owner,
-                                    status=status)
-        if members:
-            return True
+        if 'shared' == image['visibility']:
+            # Figure out if this image is shared with that tenant
+            members = image_member_find(context,
+                                        image_id=image['id'],
+                                        member=context.owner,
+                                        status=status)
+            if members:
+                return True
 
     # Private image
     return False
@@ -456,17 +468,14 @@ def _make_conditions_from_filters(filters, is_public=None):
     tag_conditions = []
 
     if is_public is not None:
-        image_conditions.append(models.Image.is_public == is_public)
+        if is_public:
+            image_conditions.append(models.Image.visibility == 'public')
+        else:
+            image_conditions.append(models.Image.visibility != 'public')
 
     if 'checksum' in filters:
         checksum = filters.pop('checksum')
         image_conditions.append(models.Image.checksum == checksum)
-
-    if 'is_public' in filters:
-        key = 'is_public'
-        value = filters.pop('is_public')
-        prop_filters = _make_image_property_condition(key=key, value=value)
-        prop_conditions.append(prop_filters)
 
     for (k, v) in filters.pop('properties', {}).items():
         prop_filters = _make_image_property_condition(key=k, value=v)
@@ -571,6 +580,7 @@ def _select_images_query(context, image_conditions, admin_as_user,
         models.Image.members).filter(img_conditional_clause)
     if regular_user:
         member_filters = [models.ImageMember.deleted == False]
+        member_filters.extend([models.Image.visibility == 'shared'])
         if context.owner is not None:
             member_filters.extend([models.ImageMember.member == context.owner])
             if member_status != 'all':
@@ -578,14 +588,13 @@ def _select_images_query(context, image_conditions, admin_as_user,
                     models.ImageMember.status == member_status])
         query_member = query_member.filter(sa_sql.and_(*member_filters))
 
-    # NOTE(venkatesh) if the 'visibility' is set to 'shared', we just
-    # query the image members table. No union is required.
-    if visibility is not None and visibility == 'shared':
-        return query_member
-
     query_image = session.query(models.Image).filter(img_conditional_clause)
     if regular_user:
-        query_image = query_image.filter(models.Image.is_public == True)
+        visibility_filters = [
+            models.Image.visibility == 'public',
+            models.Image.visibility == 'community',
+        ]
+        query_image = query_image .filter(sa_sql.or_(*visibility_filters))
         query_image_owner = None
         if context.owner is not None:
             query_image_owner = session.query(models.Image).filter(
@@ -604,7 +613,7 @@ def _select_images_query(context, image_conditions, admin_as_user,
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key=None, sort_dir=None,
                   member_status='accepted', is_public=None,
-                  admin_as_user=False, return_tag=False):
+                  admin_as_user=False, return_tag=False, v1_mode=False):
     """
     Get all images that match zero or more filters.
 
@@ -625,6 +634,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     :param return_tag: To indicates whether image entry in result includes it
                        relevant tag entries. This could improve upper-layer
                        query performance, to prevent using separated calls
+    :param v1_mode: If true, mutates the 'visibility' value of each image
+                    into the v1-compatible field 'is_public'
     """
     sort_key = ['created_at'] if not sort_key else sort_key
 
@@ -650,12 +661,22 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                                  admin_as_user,
                                  member_status,
                                  visibility)
-
     if visibility is not None:
-        if visibility == 'public':
-            query = query.filter(models.Image.is_public == True)
-        elif visibility == 'private':
-            query = query.filter(models.Image.is_public == False)
+        # with a visibility, we always and only include images with that
+        # visibility
+        query = query.filter(models.Image.visibility == visibility)
+    elif context.owner is None:
+        # without either a visibility or an owner, we never include
+        # 'community' images
+        query = query.filter(models.Image.visibility != 'community')
+    else:
+        # without a visibility and with an owner, we only want to include
+        # 'community' images if and only if they are owned by this owner
+        community_filters = [
+            models.Image.owner == context.owner,
+            models.Image.visibility != 'community',
+        ]
+        query = query.filter(sa_sql.or_(*community_filters))
 
     if prop_cond:
         for prop_condition in prop_cond:
@@ -697,6 +718,8 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                                           force_show_deleted=showing_deleted)
         if return_tag:
             image_dict = _normalize_tags(image_dict)
+        if v1_mode:
+            image_dict = db_utils.mutate_image_dict_to_v1(image_dict)
         images.append(image_dict)
     return images
 
@@ -804,7 +827,11 @@ def _image_update(context, values, image_id, purge_props=False,
             if 'min_disk' in values:
                 values['min_disk'] = int(values['min_disk'] or 0)
 
-            values['is_public'] = bool(values.get('is_public', False))
+            if 'is_public' in values:
+                values = db_utils.ensure_image_dict_v2_compliant(values)
+            else:
+                values['visibility'] = values.get('visibility', 'shared')
+
             values['protected'] = bool(values.get('protected', False))
             image_ref = models.Image()
 

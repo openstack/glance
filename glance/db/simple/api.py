@@ -24,6 +24,7 @@ import six
 from glance.common import exception
 from glance.common import timeutils
 from glance.common import utils
+from glance.db import utils as db_utils
 from glance.i18n import _, _LI, _LW
 
 
@@ -199,6 +200,7 @@ def _image_update(image, values, properties):
     if 'properties' not in image.keys():
         image['properties'] = []
     image['properties'].extend(properties)
+    values = db_utils.ensure_image_dict_v2_compliant(values)
     image.update(values)
     return image
 
@@ -212,7 +214,7 @@ def _image_format(image_id, **values):
         'locations': [],
         'status': 'queued',
         'protected': False,
-        'is_public': False,
+        'visibility': 'shared',
         'container_format': None,
         'disk_format': None,
         'min_ram': 0,
@@ -259,27 +261,39 @@ def _filter_images(images, filters, context,
                                    member=context.owner, status=status)
         is_member = len(member) > 0
         has_ownership = context.owner and image['owner'] == context.owner
-        can_see = (image['is_public'] or has_ownership or is_member or
-                   (context.is_admin and not admin_as_user))
+        image_is_public = image['visibility'] == 'public'
+        image_is_community = image['visibility'] == 'community'
+        image_is_shared = image['visibility'] == 'shared'
+        acts_as_admin = context.is_admin and not admin_as_user
+        can_see = (image_is_public
+                   or image_is_community
+                   or has_ownership
+                   or (is_member and image_is_shared)
+                   or acts_as_admin)
         if not can_see:
             continue
 
         if visibility:
             if visibility == 'public':
-                if not image['is_public']:
+                if not image_is_public:
                     continue
             elif visibility == 'private':
-                if image['is_public']:
+                if not (image['visibility'] == 'private'):
                     continue
-                if not (has_ownership or (context.is_admin
-                        and not admin_as_user)):
+                if not (has_ownership or acts_as_admin):
                     continue
             elif visibility == 'shared':
-                if not is_member:
+                if not image_is_shared:
                     continue
+            elif visibility == 'community':
+                if not image_is_community:
+                    continue
+        else:
+            if (not has_ownership) and image_is_community:
+                continue
 
         if is_public is not None:
-            if not image['is_public'] == is_public:
+            if not image_is_public == is_public:
                 continue
 
         to_add = True
@@ -420,17 +434,21 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
 
 
 @log_call
-def image_get(context, image_id, session=None, force_show_deleted=False):
-    image = _image_get(context, image_id, force_show_deleted)
-    return _normalize_locations(context, copy.deepcopy(image),
-                                force_show_deleted=force_show_deleted)
+def image_get(context, image_id, session=None, force_show_deleted=False,
+              v1_mode=False):
+    image = copy.deepcopy(_image_get(context, image_id, force_show_deleted))
+    image = _normalize_locations(context, image,
+                                 force_show_deleted=force_show_deleted)
+    if v1_mode:
+        image = db_utils.mutate_image_dict_to_v1(image)
+    return image
 
 
 @log_call
 def image_get_all(context, filters=None, marker=None, limit=None,
                   sort_key=None, sort_dir=None,
                   member_status='accepted', is_public=None,
-                  admin_as_user=False, return_tag=False):
+                  admin_as_user=False, return_tag=False, v1_mode=False):
     filters = filters or {}
     images = DATA['images'].values()
     images = _filter_images(images, filters, context, member_status,
@@ -446,6 +464,9 @@ def image_get_all(context, filters=None, marker=None, limit=None,
                                    force_show_deleted=force_show_deleted)
         if return_tag:
             img['tags'] = image_tag_get_all(context, img['id'])
+
+        if v1_mode:
+            img = db_utils.mutate_image_dict_to_v1(img)
         res.append(img)
     return res
 
@@ -677,7 +698,7 @@ def _normalize_locations(context, image, force_show_deleted=False):
 
 
 @log_call
-def image_create(context, image_values):
+def image_create(context, image_values, v1_mode=False):
     global DATA
     image_id = image_values.get('id', str(uuid.uuid4()))
 
@@ -691,7 +712,7 @@ def image_create(context, image_values):
                         'virtual_size', 'checksum', 'locations', 'owner',
                         'protected', 'is_public', 'container_format',
                         'disk_format', 'created_at', 'updated_at', 'deleted',
-                        'deleted_at', 'properties', 'tags'])
+                        'deleted_at', 'properties', 'tags', 'visibility'])
 
     incorrect_keys = set(image_values.keys()) - allowed_keys
     if incorrect_keys:
@@ -702,12 +723,15 @@ def image_create(context, image_values):
     DATA['images'][image_id] = image
     DATA['tags'][image_id] = image.pop('tags', [])
 
-    return _normalize_locations(context, copy.deepcopy(image))
+    image = _normalize_locations(context, copy.deepcopy(image))
+    if v1_mode:
+        image = db_utils.mutate_image_dict_to_v1(image)
+    return image
 
 
 @log_call
 def image_update(context, image_id, image_values, purge_props=False,
-                 from_state=None):
+                 from_state=None, v1_mode=False):
     global DATA
     try:
         image = DATA['images'][image_id]
@@ -730,7 +754,11 @@ def image_update(context, image_id, image_values, purge_props=False,
     image['updated_at'] = timeutils.utcnow()
     _image_update(image, image_values, new_properties)
     DATA['images'][image_id] = image
-    return _normalize_locations(context, copy.deepcopy(image))
+
+    image = _normalize_locations(context, copy.deepcopy(image))
+    if v1_mode:
+        image = db_utils.mutate_image_dict_to_v1(image)
+    return image
 
 
 @log_call
@@ -828,8 +856,8 @@ def is_image_visible(context, image, status=None):
     if image['owner'] is None:
         return True
 
-    # Image is_public == image visible
-    if image['is_public']:
+    # Public or Community visibility == image visible
+    if image['visibility'] in ['public', 'community']:
         return True
 
     # Perform tests based on whether we have an owner
@@ -840,12 +868,14 @@ def is_image_visible(context, image, status=None):
         # Figure out if this image is shared with that tenant
         if status == 'all':
             status = None
-        members = image_member_find(context,
-                                    image_id=image['id'],
-                                    member=context.owner,
-                                    status=status)
-        if members:
-            return True
+
+        if 'shared' == image['visibility']:
+            members = image_member_find(context,
+                                        image_id=image['id'],
+                                        member=context.owner,
+                                        status=status)
+            if members:
+                return True
 
     # Private image
     return False

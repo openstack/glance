@@ -33,7 +33,7 @@ def _db_fixture(id, **kwargs):
     obj = {
         'id': id,
         'name': None,
-        'is_public': False,
+        'visibility': 'shared',
         'properties': {},
         'checksum': None,
         'owner': None,
@@ -90,7 +90,7 @@ class TestImageActionsController(base.IsolatedUnitTest):
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, checksum=CHKSUM,
                         name='1', size=256, virtual_size=1024,
-                        is_public=True,
+                        visibility='public',
                         locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
                                     'metadata': {}, 'status': 'active'}],
                         disk_format='raw',

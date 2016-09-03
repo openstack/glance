@@ -50,8 +50,8 @@ class ImageMembersController(object):
 
     def _get_member_repo(self, req, image):
         try:
-            # For public images, a forbidden exception with message
-            # "Public images do not have members" is thrown.
+            # For public, private, and community images, a forbidden exception
+            # with message "Only shared images have members." is thrown.
             return self.gateway.get_member_repo(image, req.context)
         except exception.Forbidden as e:
             msg = (_("Error fetching members of image %(image_id)s: "
