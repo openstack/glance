@@ -74,12 +74,11 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
 
 def _get_member_repo_for_store(image, context, db_api, store_api):
-        image_member_repo = glance.db.ImageMemberRepo(
-            context, db_api, image)
-        store_image_repo = glance.location.ImageMemberRepoProxy(
-            image_member_repo, image, context, store_api)
+    image_member_repo = glance.db.ImageMemberRepo(context, db_api, image)
+    store_image_repo = glance.location.ImageMemberRepoProxy(
+        image_member_repo, image, context, store_api)
 
-        return store_image_repo
+    return store_image_repo
 
 
 def _check_location_uri(context, store_api, store_utils, uri):
