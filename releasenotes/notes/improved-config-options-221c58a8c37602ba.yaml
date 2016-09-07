@@ -1,29 +1,30 @@
 ---
 prelude: >
-    Improved configuration options for glance. Please
-    refer to the ``other`` section for more information.
-
+  - Improved configuration option descriptions and handling.
 other:
-  - The glance configuration options have been
-    improved with detailed help texts, defaults for
-    sample configuration files, explicit choices
-    of values for operators to choose from, and a
-    strict range defined with ``min`` and ``max``
-    boundaries.
+  - |
+    The glance configuration options have been improved with
+    detailed help texts, defaults for sample configuration
+    files, explicit choices of values for operators to
+    choose from, and a strict range defined with ``min`` and
+    ``max`` boundaries.
 
-    It must be noted that the configuration options
-    that take integer values now have a strict range defined
-    with "min" and/or "max" boundaries where appropriate. This
-    renders the configuration options incapable of taking certain
-    values that may have been accepted before but were actually
-    invalid. For example, configuration options specifying counts,
-    where a negative value was undefined, would have still accepted
-    the supplied negative value. Such options will no longer accept
-    negative values. However, options where a negative value was
-    previously defined (for example, -1 to mean unlimited) will
-    remain unaffected by this change.
-
-    Values that do not comply with the appropriate restrictions
-    will prevent the service from starting. The logs will contain
-    a message indicating the problematic configuration option and
-    the reason why the supplied value has been rejected.
+    * It must be noted that the configuration options that
+      take integer values now have a strict range defined
+      with ``min`` and/or ``max`` boundaries where
+      appropriate.
+    * This renders the configuration options incapable of
+      taking certain values that may have been accepted
+      before but were actually invalid.
+    * For example, configuration options specifying counts,
+      where a negative value was undefined, would have still
+      accepted the supplied negative value. Such options
+      will no longer accept negative values.
+    * Options where a negative value was previously defined
+      (for example, -1 to mean unlimited) will remain
+      unaffected by this change.
+    * Values which do not comply with the new restrictions
+      will prevent the service from starting. The logs will
+      contain a message indicating the problematic
+      configuration option and the reason why the supplied
+      value has been rejected.

@@ -1,25 +1,10 @@
 ---
 prelude: >
-    Adds a new function that is called in the
-    tasks_get_all function, so that everytime tasks
-    lists are called, the function checks if tasks in
-    the database have surpassed the expired_at value;
-    if that is the case, then it marks the deleted value
-    as 1 for all the expired tasks.
-
+  - Expired tasks are now deleted.
 other:
-  - Tasks are soft deleted, in Glance, a resource can
-    be soft deleted in the Database Table, these resources
-    still exist in the database. The same thing happens
-    with tasks; they are marked as deleted using the
-    delete flag in the Tasks table which are not queried
-    on the regular list or show call. The tasks are not
-    instantly deleted because there may be information
-    contained in the task resource that may not be
-    available elsewhere(For example, a successful
-    import task will eventually result in the creation
-    of an image in Glance, and it would be useful to
-    know the UUID of this image. Similarly, if the
-    import task fails, end user should be given time
-    to read the task resource to analyze the error
-    message.)
+  - Expired tasks are now deleted in Glance. As with other
+    Glance resources, this is a "soft" deletion, that is, a
+    deleted task is marked as ``deleted`` in the database so
+    that the task will not appear in API responses, but the
+    information associated with the task persists in the
+    database.

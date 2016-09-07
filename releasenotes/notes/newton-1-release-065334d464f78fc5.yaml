@@ -1,35 +1,20 @@
 ---
 prelude: >
-    Several in-tree documentation updates exist in newton-1.
-    An important bug 1570789 that will handle 4 byte unicode
-    chars for metadefs APIs is fixed which will prevent 500s
-    on the same. Deprecated sign-the-hash approach for image
-    signing and old run_tests and related scripts have been
-    removed.
+  - Glance no longer returns a 500 when 4 byte unicode
+    characters are passed to the metadefs API.
+  - Deprecated "sign-the-hash" approach for image signing.
+    Old run_tests and related scripts have been removed.
 upgrade:
-  - The image signature verification feature has been updated
-    to follow the "sign-the-data" approach, which uses a
-    signature of the image data directly. The prior deprecated
-    "sign-the-hash" approach, which uses a signature of an MD5
-    hash of the image data, has been removed.
+  - The image signature verification feature has been
+    updated to follow the "sign-the-data" approach, which
+    uses a signature of the image data directly. The prior
+    deprecated "sign-the-hash" approach, which uses a
+    signature of an MD5 hash of the image data, has been
+    removed.
 security:
   - The initial implementation of the image signature
     verification feature in Glance was insecure, because it
-    relied on an MD5 hash of the image data. More details can
-    be found in bug 1516031. This "sign-the-hash" approach was
-    deprecated in Mitaka, and removed in newton-1.
-    Related CVE-2015-8234.
-fixes:
-  - |
-    Please find below a list of some other important bugs along with
-    their descriptions that have been fixed in newton-1.
-
-    * bug 1580848: There's no exception when import task is created
-      without properties
-    * bug 1585584: Glare v0.1 is unable to create public artifact draft
-    * bug 1582304: Allow tests to run when http proxy is set
-    * bug 1570789: various md-* create and update api's
-      return 500 error if 4 bytes unicode characters is passed
-    * bug 1568894: glance_store opts missing in glance-scrubber.conf
-      and glance-cache.conf sample files
-    * bug 1568723: secure_proxy_ssl_header not in sample config files
+    relied on an MD5 hash of the image data. More details
+    can be found in bug 1516031. This "sign-the-hash"
+    approach was deprecated in Mitaka, and has been removed
+    in Newton. Related CVE-2015-8234.
