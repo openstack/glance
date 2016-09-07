@@ -292,6 +292,11 @@ class ImagesController(object):
                     "invisible.")
             raise webob.exc.HTTPForbidden(explanation=msg)
 
+        if image.status not in ('active', 'queued'):
+            msg = _("It's not allowed to add locations if image status is "
+                    "%s.") % image.status
+            raise webob.exc.HTTPConflict(explanation=msg)
+
         pos = self._get_locations_op_pos(path_pos,
                                          len(image.locations), True)
         if pos is None:
