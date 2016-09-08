@@ -421,8 +421,9 @@ class ImageProxy(glance.domain.proxy.Image):
             key_type = extra_props[signature_utils.KEY_TYPE]
             cert_uuid = extra_props[signature_utils.CERT_UUID]
             verifier = signature_utils.get_verifier(
-                self.context, cert_uuid, hash_method,
-                img_signature, key_type
+                context=self.context, cert_uuid=cert_uuid,
+                hash_method=hash_method, img_signature=img_signature,
+                key_type=key_type
             )
         else:
             verifier = None
