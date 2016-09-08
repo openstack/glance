@@ -768,9 +768,17 @@ class TestImages(functional.FunctionalTest):
             headers = self._headers({'Content-Range': content_range})
             path = self._url('/v2/images/%s/file' % image_id)
             response = requests.get(path, headers=headers)
+            self.assertEqual(206, response.status_code)
             result_body += response.text
 
         self.assertEqual(result_body, image_data)
+
+        # test for failure on unsatisfiable request range.
+        content_range = 'bytes 3-16/15'
+        headers = self._headers({'Content-Range': content_range})
+        path = self._url('/v2/images/%s/file' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(416, response.status_code)
 
         self.stop_servers()
 

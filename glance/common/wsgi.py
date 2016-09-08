@@ -771,14 +771,17 @@ class Request(webob.Request):
         langs = i18n.get_available_languages('glance')
         return self.accept_language.best_match(langs)
 
-    def get_content_range(self):
+    def get_content_range(self, image_size):
         """Return the `Range` in a request."""
         range_str = self.headers.get('Content-Range')
         if range_str is not None:
             range_ = webob.byterange.ContentRange.parse(range_str)
-            if range_ is None:
+            # NOTE(dharinic): Ensure that a range like 1-4/* for an image
+            # size of 3 is invalidated.
+            if range_ is None or (range_.length is None and
+                                  range_.stop > image_size):
                 msg = _('Malformed Content-Range header: %s') % range_str
-                raise webob.exc.HTTPBadRequest(explanation=msg)
+                raise webob.exc.HTTPRequestRangeNotSatisfiable(explanation=msg)
             return range_
 
 
