@@ -56,7 +56,6 @@ from glance.db.sqlalchemy import models
 from glance import glare as ga
 from glance.i18n import _, _LW, _LI
 
-BASE = models.BASE
 sa_logger = None
 LOG = logging.getLogger(__name__)
 
