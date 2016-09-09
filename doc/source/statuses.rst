@@ -62,7 +62,7 @@ Images in Glance can be in one the following statuses:
   image data. An image in this state is not recoverable.
 
 
-.. figure:: /images/image_status_transition.png
+.. figure:: ./images/image_status_transition.png
    :figwidth: 100%
    :align: center
    :alt: The states consist of:
