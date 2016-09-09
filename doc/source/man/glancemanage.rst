@@ -57,11 +57,13 @@ COMMANDS
         Place a database under migration control and upgrade, creating
         it first if necessary.
 
-  **db_export_metadefs**
+  **db_export_metadefs [PATH | PREFIX]**
         Export the metadata definitions into json format. By default the
         definitions are exported to /etc/glance/metadefs directory.
+        **Note: this command will overwrite existing files in the supplied or
+        default path.**
 
-  **db_load_metadefs**
+  **db_load_metadefs [PATH]**
         Load the metadata definitions into glance database. By default the
         definitions are imported from /etc/glance/metadefs directory.
 
