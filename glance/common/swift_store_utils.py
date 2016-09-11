@@ -11,6 +11,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import sys
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -81,7 +82,12 @@ Related options:
 """)),
 ]
 
-CONFIG = configparser.SafeConfigParser()
+# SafeConfigParser was deprecated in Python 3.2
+if sys.version_info >= (3, 2):
+    CONFIG = configparser.ConfigParser()
+else:
+    CONFIG = configparser.SafeConfigParser()
+
 LOG = logging.getLogger(__name__)
 
 
