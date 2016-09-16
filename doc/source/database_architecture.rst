@@ -57,8 +57,8 @@ Image basic methods
      - ``from_state`` — a string filter indicating that the updated
        image must be in the specified state.
 
-#. ``image_destroy(context, image_id)`` — deletes all the database
-   record of an image with the identifier *image_id* (like tags,
+#. ``image_destroy(context, image_id)`` — deletes all database
+   records of an image with the identifier *image_id* (like tags,
    properties, and members) and sets a 'deleted' status on all the
    image locations.
 #. ``image_get(context, image_id, force_show_deleted=False)`` —
