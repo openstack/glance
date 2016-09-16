@@ -47,7 +47,7 @@ same values otherwise the cache will potentially run into problems.
 - ``image_cache_dir`` This is the base directory where Glance stores
   the cache data (Required to be set, as does not have a default).
 - ``image_cache_sqlite_db`` Path to the sqlite file database that will
-  be used for cache manangement. This is a relative path from the
+  be used for cache management. This is a relative path from the
   ``image_cache_dir`` directory (Default:``cache.db``).
 - ``image_cache_driver`` The driver used for cache management.
   (Default:``sqlite``)
@@ -67,7 +67,7 @@ correctly.
 - ``admin_password`` The password to the admin account.
 - ``admin_tenant_name`` The tenant of the admin account.
 - ``auth_url`` The URL used to authenticate to keystone. This will
-  be taken from the environment varibles if it exists.
+  be taken from the environment variables if it exists.
 - ``filesystem_store_datadir`` This is used if using the filesystem
   store, points to where the data is kept.
 - ``filesystem_store_datadirs`` This is used to point to multiple

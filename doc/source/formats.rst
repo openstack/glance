@@ -39,7 +39,7 @@ You can set your image's disk format to one of the following:
 * **vhd**
 
   This is the VHD disk format, a common disk format used by virtual machine
-  monitors from VMWare, Xen, Microsoft, VirtualBox, and others
+  monitors from VMware, Xen, Microsoft, VirtualBox, and others
 
 * **vhdx**
 
