@@ -1,26 +1,32 @@
 ---
 prelude: >
-    Deprecate the ``show_multiple_locations`` configuration
+  - Deprecate the ``show_multiple_locations`` configuration
     option in favor of the existing Role Based Access
     Control (RBAC) for Image locations which uses
     ``policy.json`` file to define the appropriate rules.
-    Maintaining two different ways to configure, enable
-    and/or disable a feature is painful for developers and
-    operators, so the less granular means of controlling
-    this feature will be eliminated in the **Ocata**
-    release. Please read upgrade section for more details.
 upgrade:
-  - For the Newton release, this option will still be
-    honored. However, it is important to update
-    ``policy.json`` file for glance-api nodes. In
-    particular, please consider updating the policies
-    ``delete_image_location``, ``get_image_location`` and
-    ``set_image_location`` as per your requirements. As this
-    is an advanced option and prone to expose some risks,
-    please check the policies to ensure security and privacy
-    of your cloud.
-  - Future releases will ignore this option and just
-    follow the policy rules. It is recommended that this
-    option is disabled for public endpoints and is being
-    only used internally for service-to-service
-    communication.
+  - |
+    Some additional points about ``show_multiple_locations``
+    configuration option deprecation.
+
+    * Maintaining two different ways to configure, enable
+      and/or disable a feature is painful for developers and
+      operators, so the less granular means of controlling
+      this feature will be eliminated in the **Ocata**
+      release.
+    * For the Newton release, this option will still be
+      honored. However, it is important to update
+      ``policy.json`` file for glance-api nodes. In
+      particular, please consider updating the policies
+      ``delete_image_location``, ``get_image_location`` and
+      ``set_image_location`` as per your requirements. As
+      this is an advanced option and prone to expose some
+      risks, please check the policies to ensure security
+      and privacy of your cloud.
+    * Future releases will ignore this option and just
+      follow the policy rules. It is recommended that this
+      option is disabled for public endpoints and is used
+      only internally for service-to-service communication.
+    * As mentioned above, the same recommendation applies
+      to the policy-based configuration for exposing
+      multiple image locations.

@@ -1,0 +1,61 @@
+---
+fixes:
+  - |
+    Here is a list of other important bugs that have been
+    fixed (or partially fixed) along with their
+    descriptions.
+
+    * bug 1617258: Image signature base64 needs to wrap
+      lines
+    * bug 1612341: Add cpu thread pinning flavor metadef
+    * bug 1609571: version negotiation api middleware was
+      NOT up to date to include v2.3
+    * bug 1602081: Glance needs to use oslo.context's
+      policy dict
+    * bug 1599169: glance-replicator size raises object of
+      type 'NoneType' has no len() exception when no args
+      provided
+    * bug 1599192: glance-replicator needs to display
+      human-readable size
+    * bug 1585917: member-create will raise 500 error if
+      member-id is greater than 255 characters
+    * bug 1598985: glance-replicator compare output should
+      show image name in addition to image id for missing
+      images
+    * bug 1533949: Glance tasks missing configuration item
+      "conversion_format"
+    * bug 1593177: The default policy needs to be admin for
+      safer default deployment scenarios
+    * bug 1584076: Swift ACLs disappears on v1 Glance
+      images
+    * bug 1591004: Unable to download image with no
+      checksum when cache is enabled
+    * bug 1584415: Listing images with the created_at and
+      updated_at filters fails if an operator is not
+      specified
+    * bug 1590608: Services should use http_proxy_to_wsgi
+      middleware from oslo.middleware library
+    * bug 1584350: etc/glance-registry.conf sample file has
+      redundant store section
+    * bug 1543937: db-purge fails for very large number
+    * bug 1580848: There's no exception when import task is
+      created without properties
+    * bug 1585584: Glare v0.1 is unable to create public
+      artifact draft
+    * bug 1582304: Allow tests to run when http proxy is set
+    * bug 1570789: Metadefs API returns 500 error when 4
+      byte unicode character is passed
+    * bug 1532243: glance fails silently if a task flow
+      can not be loaded
+    * bug 1568894: glance_store options missing in
+      glance-scrubber.conf and glance-cache.conf sample
+      files
+    * bug 1568723: secure_proxy_ssl_header not in sample
+      configuration files
+    * bug 1535231: md-meta with case insensitive string has
+      problem during creating
+    * bug 1555275: Tags set changes on delete
+    * bug 1558683: Versions endpoint does not support
+      X-Forwarded-Proto
+    * bug 1557495: Possible race conditions during status
+      change

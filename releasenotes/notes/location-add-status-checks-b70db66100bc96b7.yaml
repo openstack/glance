@@ -1,0 +1,38 @@
+---
+prelude: >
+  - Adding locations to a non-active or non-queued image
+    is no longer allowed.
+critical:
+  - |
+    Attempting to set image locations to an image *not* in
+    ``active`` or ``queued`` status will now result in a
+    HTTP Conflict (HTTP status code 409) to the user.
+
+    * Until now, no image status checks were in place while
+      **adding** a location on it. In some circumstances,
+      this may result in a bad user experience. It may also
+      cause problems for a security team evaluating the
+      condition of an image in ``deactivated`` status.
+    * **Adding** locations is disallowed on the following
+      image statuses - ``saving``, ``deactivated``,
+      ``deleted``, ``pending_delete``, ``killed``.
+    * Note that there are race conditions associated with
+      adding a location to an image in the ``active``,
+      ``queued``, ``saving``, or ``deactivated`` status.
+      Because these are non-terminal image statuses, it is
+      possible that when a user attempts to add a location,
+      a status transition could occur that might block the
+      **add** (or might appear to allow an add that should
+      not be allowed).
+    * For example, a user is not allowed to add a location
+      to an image in ``saving`` status. Suppose a user
+      decides to add a location anyway. It is possible that
+      before the user's request is processed, the
+      transmission of data being saved is completed and the
+      image transitioned into ``active`` status, in which
+      case the user's add location request will succeed. To
+      the user, however, this success will appear anomalous
+      because in most cases, an attempt to add a location to
+      an image in ``saving`` status will fail.
+    * We mention this so that you can be aware of this
+      situation in your own testing.

@@ -1,7 +1,7 @@
 ---
 prelude: >
-    Database downgrades have been removed from the Glance source tree. Please
-    see ``upgrade`` section for more details.
+  - Database downgrades have been removed from the Glance
+    source tree.
 upgrade:
   - The ``db_downgrade`` command has been removed from the
     ``glance-manage`` utility and all database downgrade

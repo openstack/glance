@@ -1,6 +1,6 @@
 ---
 prelude: >
-  - Add VHDX to list of supported disk format.
+  - Add ``vhdx`` to list of supported disk format.
 features:
   - The identifier ``vhdx`` has been added to the list of
     supported disk formats in Glance. The respective

@@ -1,0 +1,13 @@
+---
+prelude: >
+  - Glance API ``minor`` version bumped to 2.4.
+upgrade:
+  - |
+    Glance API **CURRENT** ``minor`` version is now ``2.4``.
+
+    * To partially fix an important image locations
+      bug 1587985, an API impacting change has been merged
+      into Glance.
+    * This will result into a non-backward compatible
+      experience before and after **Newton** release, for
+      users using ``add`` feature to image locations.
