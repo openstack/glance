@@ -2231,7 +2231,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
     def test_update_non_existing_image(self):
         self.config(image_size_cap=100)
 
-        req = webob.Request.blank("images/%s" % _gen_uuid)
+        req = webob.Request.blank("images/%s" % _gen_uuid())
         req.method = 'PUT'
         req.body = b'test'
         req.headers['x-image-meta-name'] = 'test'
