@@ -7,9 +7,9 @@
 # KATO Tomoyuki <kato.tomoyuki@jp.fujitsu.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
+"Project-Id-Version: glance 13.0.0.0rc2.dev2\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-06-06 22:42+0000\n"
+"POT-Creation-Date: 2016-09-20 15:01+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -115,10 +115,6 @@ msgstr "%s è già stato arrestato"
 msgid "%s is stopped"
 msgstr "%s è stato arrestato"
 
-#, python-format
-msgid "'%(param)s' value out of range, must not exceed %(max)d"
-msgstr "Valore '%(param)s' fuori dall'intervallo, non deve superare %(max)d"
-
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
 "keystone authentication strategy is enabled\n"
@@ -164,32 +160,6 @@ msgid "A set of URLs to access the image file kept in external store"
 msgstr ""
 "Un insieme di URL per accedere al file di immagini conservato nell'archivio "
 "esterno"
-
-msgid ""
-"AES key for encrypting store 'location' metadata. This includes, if used, "
-"Swift or S3 credentials. Should be set to a random string of length 16, 24 "
-"or 32 bytes"
-msgstr ""
-"Chiave AES per la codifica dei metadati 'location' dell'archivio. Include, "
-"se utilizzate, le credenziali Swift o S3. Deve essere impostata su una "
-"stringa causale di lunghezza pari a 16, 24 o 32 byte"
-
-msgid ""
-"Address to bind the server.  Useful when selecting a particular network "
-"interface."
-msgstr ""
-"Indirizzo per il bind del server.  Utile quando si seleziona una particolare "
-"interfaccia di rete."
-
-msgid "Address to find the registry server."
-msgstr "Indirizzo per trovare il server di registro."
-
-msgid ""
-"Allow unauthenticated users to access the API with read-only privileges. "
-"This only applies when using ContextMiddleware."
-msgstr ""
-"Consenti agli utenti non autenticati di accedere all'API con dei privilegi "
-"di sola lettura. Ciò si applica solo quando si utilizza ContextMiddleware."
 
 #, python-format
 msgid "Allowed values %s are invalid under given validators"
@@ -357,13 +327,6 @@ msgstr ""
 "L'attributo disk_format può essere sostituito solo per un'immagine nella "
 "coda."
 
-msgid ""
-"Auth key for the user authenticating against the Swift authentication "
-"service. (deprecated)"
-msgstr ""
-"Chiave auth per l'utente che si sta autenticando sul servizio di "
-"autenticazione servizio. (obsoleto)"
-
 #, python-format
 msgid "Auth service at URL %(url)s not found."
 msgstr "Servizio di autenticazione all'URL %(url)s non trovato."
@@ -429,10 +392,6 @@ msgstr ""
 "Non è possibile specificare contemporaneamente entrambi file e "
 "legacy_image_id"
 
-msgid "CA certificate file to use to verify connecting clients."
-msgstr ""
-"File certificato CA da utilizzare per verificare la connessione dei client."
-
 msgid "Cannot be a negative value"
 msgstr "Non può essere un valore negativo"
 
@@ -475,22 +434,6 @@ msgstr "Impossibile caricare un'immagine non accodata"
 #, python-format
 msgid "Cannot use this parameter with the operator %(op)s"
 msgstr "Impossibile utilizzare questo parametro con l'operatore %(op)s"
-
-msgid "Certificate file to use when starting API server securely."
-msgstr ""
-"File certificato da utilizzare quando si avvia il server API in modo sicuro."
-
-#, python-format
-msgid "Certificate format not supported: %s"
-msgstr "Formato certificato non supportato: %s"
-
-#, python-format
-msgid "Certificate is not valid after: %s UTC"
-msgstr "Il certificato non è valido dopo: %s UTC"
-
-#, python-format
-msgid "Certificate is not valid before: %s UTC"
-msgstr "Il certificato non è valido prima di: %s UTC"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -624,13 +567,6 @@ msgstr "Data e ora in cui questa risorsa è stata aggiornata"
 msgid "Datetime when this resource would be subject to removal"
 msgstr "Data e ora in cui questa risorsa verrà rimossa"
 
-msgid ""
-"Default value for the number of items returned by a request if not specified "
-"explicitly in the request"
-msgstr ""
-"Il valore predefinito per il numero di elementi restituiti da una richiesta "
-"se non specificato esplicitamente nella richiesta"
-
 msgid "Default value is invalid"
 msgstr "Il valore predefinito non è valido"
 
@@ -655,18 +591,6 @@ msgstr "Prima deve essere eliminata la proprietà dipendenza '%s'"
 msgid "Dependency relations cannot be mutable"
 msgstr "Le relazioni di dipendenza non possono essere mutevoli"
 
-msgid "Deploy the v1 OpenStack Images API."
-msgstr "Distribuire l'API immagini OpenStack v1."
-
-msgid "Deploy the v1 OpenStack Registry API."
-msgstr "Distribuire l'API del registro OpenStack v1."
-
-msgid "Deploy the v2 OpenStack Images API."
-msgstr "Distribuire l'API immagini OpenStack v2."
-
-msgid "Deploy the v2 OpenStack Registry API."
-msgstr "Distribuire l'API del registro OpenStack v2."
-
 msgid "Descriptive name for the image"
 msgstr "Nome descrittivo per l'immagine"
 
@@ -678,17 +602,6 @@ msgstr "La dimensione del dizionario è superiore a quella massima"
 
 msgid "Dictionary size is less than minimum"
 msgstr "La dimensione del dizionario è inferiore a quella minima"
-
-msgid ""
-"Digest algorithm which will be used for digital signature. Use the command "
-"\"openssl list-message-digest-algorithms\" to get the available algorithms "
-"supported by the version of OpenSSL on the platform. Examples are \"sha1\", "
-"\"sha256\", \"sha512\", etc."
-msgstr ""
-"L'algoritmo digest che verrà utilizzato per la firma digitale. Utilizzare il "
-"comando \"openssl list-message-digest-algorithms\" per richiamare gli "
-"algoritmi disponibili supportati dalla versione di OpenSSL sulla "
-"piattaforma. Esempi sono \"sha1\", \"sha256\", \"sha512\" e così via."
 
 msgid "Disk format is not specified."
 msgstr "Formato disco non specificato. "
@@ -727,9 +640,6 @@ msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Errore nella configurazione dell'archivio. L'aggiunta di immagini a questo "
 "archivio non è consentita."
-
-msgid "Error occurred while creating the verifier"
-msgstr "Si è verificato un errore durante la creazione del verificatore"
 
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "Previsto un membro nel formato: {\"member\": \"image_id\"}"
@@ -877,14 +787,6 @@ msgstr "Formato del contenitore"
 msgid "Format of the disk"
 msgstr "Formato del disco"
 
-#, python-format
-msgid "Get blob %(name)s data failed: %(err)s."
-msgstr "Richiamo dati blob %(name)s non riuscito: %(err)s."
-
-#, python-format
-msgid "Get image %(id)s data failed: %(err)s."
-msgstr "Acquisizione dati immagine %(id)s non riuscita: %(err)s."
-
 msgid "Glance client not installed"
 msgstr "Client Glance non installato"
 
@@ -902,20 +804,6 @@ msgid ""
 msgstr ""
 "I messaggi informativi leggibili dall'utente sono inclusi solo se necessario "
 "(di solito in caso di errore)"
-
-msgid ""
-"If False, server will return the header \"Connection: close\", If True, "
-"server will return \"Connection: Keep-Alive\" in its responses. In order to "
-"close the client socket connection explicitly after the response is sent and "
-"read successfully by the client, you simply have to set this option to False "
-"when you create a wsgi server."
-msgstr ""
-"Se False, il server restituirà l'intestazione \"Connection: close\", se "
-"True, il server restituirà \"Connection: Keep-Alive\" nelle proprie "
-"risposte. Per chiudere la connessione socket del client in modo esplicito "
-"dopo che la risposta è stata inviata e letta correttamente dal client, è "
-"necessario semplicemente impostare questa opzione su False durante la "
-"creazione di un server wsgi."
 
 msgid "If true, image will not be deletable."
 msgstr "Se true, l'immagine non sarà eliminabile."
@@ -1069,10 +957,6 @@ msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Puntatore JSON non valido per questa risorsa: '/%s'"
 
 #, python-format
-msgid "Invalid certificate format: %s"
-msgstr "Formato certificato non valido: %s"
-
-#, python-format
 msgid "Invalid checksum '%s': can't exceed 32 characters"
 msgstr "Checksum non valido '%s': non può superare 32 caratteri "
 
@@ -1195,10 +1079,6 @@ msgstr "Posizione non valida per la rimozione di una ubicazione."
 msgid "Invalid property definition"
 msgstr "Definizione della proprietà non valida"
 
-#, python-format
-msgid "Invalid public key type for signature key type: %s"
-msgstr "Tipo di chiave pubblica non valida per il tipo di chiave di firma: %s"
-
 msgid "Invalid reference list specification"
 msgstr "Specifica elenco di riferimento non valida"
 
@@ -1210,14 +1090,6 @@ msgstr "PATCH richiesta non valido per il lavoro con blob"
 
 msgid "Invalid service catalog json."
 msgstr "json del catalogo del servizio non è valido."
-
-#, python-format
-msgid "Invalid signature hash method: %s"
-msgstr "Metodo hash della firma non valido: %s"
-
-#, python-format
-msgid "Invalid signature key type: %s"
-msgstr "Tipo di chiave di firma non valida: %s"
 
 #, python-format
 msgid "Invalid sort direction: %s"
@@ -1371,9 +1243,6 @@ msgstr "Il parametro limite deve essere un numero positivo"
 msgid "Limit param must not be higher than %d"
 msgstr "Il parametro limite non deve essere maggiore di %d"
 
-msgid "Limits request ID length."
-msgstr "Limita la lunghezza dell'ID richiesta."
-
 msgid "List definitions may hot have defaults"
 msgstr "Le definizioni dell'elenco non possono contenere valori predefiniti"
 
@@ -1385,11 +1254,6 @@ msgstr "La dimensione dell'elenco è superiore di quella massima"
 
 msgid "List size is less than minimum"
 msgstr "La dimensione dell'elenco è inferiore a quella minima"
-
-msgid "Loop time between checking for new items to schedule for delete."
-msgstr ""
-"Periodo di loop tra le verifiche per i nuovi elementi da pianificare per "
-"l'eliminazione."
 
 #, python-format
 msgid "Malformed Content-Range header: %s"
@@ -1404,62 +1268,9 @@ msgstr "La lunghezza massima della stringa non può superare i 255 caratteri"
 msgid "Maximal age is count of days since epoch."
 msgstr "L'età massima è il numero di giorni dal periodo."
 
-msgid ""
-"Maximum line size of message headers to be accepted. max_header_line may "
-"need to be increased when using large tokens (typically those generated by "
-"the Keystone v3 API with big service catalogs"
-msgstr ""
-"Dimensione massima della riga di intestazioni del messaggio che deve essere "
-"accettata. max_header_line dovrebbe essere incrementato quando si utilizzano "
-"token grandi (in genere quelli generati dall'API Keystone v3 con cataloghi "
-"del servizio di grandi dimensioni"
-
-msgid ""
-"Maximum number of image members per image. Negative values evaluate to "
-"unlimited."
-msgstr ""
-"Numero massimo di membri per immagine. I valori negativi definiscono un "
-"valore un numero illimitato."
-
-msgid ""
-"Maximum number of locations allowed on an image. Negative values evaluate to "
-"unlimited."
-msgstr ""
-"Il numero massimo di ubicazioni consentite su un'immagine. I valori negativi "
-"definiscono un numero illimitato."
-
-msgid ""
-"Maximum number of properties allowed on an image. Negative values evaluate "
-"to unlimited."
-msgstr ""
-"Il numero massimo di proprietà consentite su un'immagine. I valori negativi "
-"definiscono un numero illimitato."
-
-msgid ""
-"Maximum number of tags allowed on an image. Negative values evaluate to "
-"unlimited."
-msgstr ""
-"Il numero massimo di tag consentiti su un'immagine. I valori negativi "
-"definiscono un valore un numero illimitato."
-
-msgid "Maximum permissible number of items that could be returned by a request"
-msgstr ""
-"Il numero massimo di elementi consentiti che può essere restituito da una "
-"richiesta"
-
 #, python-format
 msgid "Maximum redirects (%(redirects)s) was exceeded."
 msgstr "Il numero massimo di rendirizzamenti (%(redirects)s) è stato superato."
-
-msgid ""
-"Maximum size of image a user can upload in bytes. Defaults to 1099511627776 "
-"bytes (1 TB).WARNING: this value should only be increased after careful "
-"consideration and must be set to a value under 8 EB (9223372036854775808)."
-msgstr ""
-"La dimensione massima in byte dell'immagine che un utente può caricare. "
-"Viene impostata su 1099511627776 byte (1 TB). AVVERTENZA: questo valore deve "
-"essere aumentato solo dopo un'attenta valutazione e deve essere impostato su "
-"un valore inferiore a 8 EB (9223372036854775808)."
 
 #, python-format
 msgid "Member %(member_id)s is duplicated for image %(image_id)s"
@@ -1563,9 +1374,6 @@ msgstr ""
 msgid "Must supply a positive, non-zero value for age."
 msgstr "È necessario fornire un valore positivo, diverso da zero per l'età."
 
-msgid "Name of the paste configuration file."
-msgstr "Nome del file di configurazione paste."
-
 #, python-format
 msgid "No artifact found with ID %s"
 msgstr "Nessuna risorsa trovata con ID %s"
@@ -1667,19 +1475,6 @@ msgstr ""
 msgid "OVA extract is limited to admin"
 msgstr "L'estrazione OVA è limitata all'amministratore"
 
-msgid ""
-"OVF metadata of interest was not specified in ovf-metadata.json config file. "
-"Please set \"cim_pasd\" to a list of interested "
-"CIM_ProcessorAllocationSettingData properties."
-msgstr ""
-"I metadati OVF di interesse non sono stati specificati nel file di "
-"configurazione ovf-metadata.json. Impostare \"cim_pasd\" su un elenco di "
-"CIM_ProcessorAllocationSettingData properties di interesse."
-
-msgid "OVF properties config file \"ovf-metadata.json\" was not found."
-msgstr ""
-"File di configurazione delle proprietà OVF \"ovf-metadata.json\" non trovato."
-
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "Impossibile combinare la nuova e la precedente sintassi di ordinamento"
 
@@ -1730,19 +1525,6 @@ msgstr "Proprietario dello spazio dei nomi."
 msgid "Param values can't contain 4 byte unicode."
 msgstr "I valori dei parametri non possono contenere 4 byte unicode."
 
-msgid ""
-"Partial name of a pipeline in your paste configuration file with the service "
-"name removed. For example, if your paste section name is [pipeline:glance-"
-"api-keystone] use the value \"keystone\""
-msgstr ""
-"Nome parziale di una pipeline nel file di configurazione paste dove il nome "
-"servizio è stato rimosso. Ad esempio, se il nome sezione paste [pipeline:"
-"glance-api-keystone] utilizza il valore \"keystone\""
-
-msgid "Path to the directory where json metadata files are stored"
-msgstr ""
-"Percorso per la directory in cui sono archiviati i file json di metadati"
-
 #, python-format
 msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
 msgstr ""
@@ -1782,17 +1564,9 @@ msgstr ""
 msgid "Port \"%s\" is not valid."
 msgstr "La porta \"%s\" non è valida."
 
-msgid "Port the registry server is listening on."
-msgstr "La porta in cui il server del registro è in ascolto."
-
 #, python-format
 msgid "Prerelease numeric component is too large (%d characters max)"
 msgstr "Componente numerico prerelease troppo grande (massimo %d caratteri)"
-
-msgid "Private key file to use when starting API server securely."
-msgstr ""
-"File di chiave privata da utilizzare quando si avvia il server API in modo "
-"sicuro."
 
 #, python-format
 msgid "Process %d not running"
@@ -1838,15 +1612,6 @@ msgid "Property names can't contain 4 byte unicode."
 msgstr "I nomi delle proprietà non possono contenere 4 byte unicode."
 
 #, python-format
-msgid ""
-"Property protection on operation %(operation)s for rule %(rule)s is not "
-"found. No role will be allowed to perform this operation."
-msgstr ""
-"La protezione della proprietà nell'operazione %(operation)s della regola "
-"%(rule)s non è stata trovata. L'esecuzione di questa operazione non sarà "
-"consentita ad alcun ruolo."
-
-#, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "Impossibile trovare il valore della proprietà %(prop)s"
 
@@ -1876,20 +1641,6 @@ msgstr "Fornisce una semplice descrizione utente dello spazio dei nomi."
 
 msgid "Public images do not have members."
 msgstr "Le immagini pubblica non hanno membri."
-
-msgid ""
-"Public url to use for versions endpoint. The default is None, which will use "
-"the request's host_url attribute to populate the URL base. If Glance is "
-"operating behind a proxy, you will want to change this to represent the "
-"proxy's URL."
-msgstr ""
-"L'URL pubblico da utilizzare per l'endpoint della versione. Il valore "
-"predefinito è None, che utilizzerà l'attributo host_url della richiesta per "
-"popolare la base dell'URL. Se Glance è dietro ad un proxy, sarà necessario "
-"cambiare questo valore riportando l'URL proxy."
-
-msgid "Python module path of data access API"
-msgstr "Il percorso del modulo Python dell'API di accesso dati"
 
 msgid "Received invalid HTTP redirect."
 msgstr "Ricevuto un reindirizzamento HTTP non valido."
@@ -1932,13 +1683,6 @@ msgstr ""
 msgid "Request must be a list of commands"
 msgstr "La richiesta deve essere un elenco di comandi"
 
-msgid ""
-"Required image properties for signature verification do not exist. Cannot "
-"verify signature."
-msgstr ""
-"Le proprietà dell'immagine richieste per la verifica della firma non "
-"esistono. Impossibile verificare la firma."
-
 #, python-format
 msgid "Required store %s is invalid"
 msgstr "Archivio richiesto %s non valido"
@@ -1955,20 +1699,6 @@ msgstr ""
 msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "La risposta dal Keystone non contiene un endpoint Glance."
 
-msgid "Role used to identify an authenticated user as administrator."
-msgstr ""
-"Ruolo utilizzato per identificare un utente autenticato come amministratore."
-
-msgid ""
-"Run as a long-running process. When not specified (the default) run the "
-"scrub operation once and then exits. When specified do not exit and run "
-"scrub on wakeup_time interval as specified in the config."
-msgstr ""
-"Eseguire come un processo di lunga elaborazione. Quando non specificato "
-"(impostazione predefinita) eseguire l'operazione di ripulitura una volta e "
-"quindi uscire. Quando specificato non uscire ed eseguire la ripulitura ad "
-"intervalli wakeup_time come specificato nella configurazione."
-
 msgid "Scope of image accessibility"
 msgstr "Ambito di accessibilità dell'immagine"
 
@@ -1982,23 +1712,6 @@ msgstr "Il server %(serv)s è stato arrestato"
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
 msgstr "Creazione dell'operatore server non riuscita: %(reason)s."
-
-msgid ""
-"Set a system wide quota for every user. This value is the total capacity "
-"that a user can use across all storage systems. A value of 0 means unlimited."
-"Optional unit can be specified for the value. Accepted units are B, KB, MB, "
-"GB and TB representing Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes "
-"respectively. If no unit is specified then Bytes is assumed. Note that there "
-"should not be any space between value and unit and units are case sensitive."
-msgstr ""
-"Impostare un'ampia quota di sistema per ogni utente. Questo valore "
-"rappresenta la capacità totale che un utente può utilizzare tra tutti i "
-"sistemi di archiviazione. Un valore pari a 0 indica una capacità illimitata. "
-"Per un valore è possibile specificare unità opzionali. Le unità accettate "
-"sono B, KB, MB, GB e TB che rappresentano rispettivamente Byte, KiloByte, "
-"MegaByte, GigaByte e TeraByte. Se non è specificata nessuna unità, vengono "
-"utilizzati i Byte. Tener presente che non devono essere presenti spazi tra "
-"il valore e l'unità e le unità sono sensibili al maiuscolo/minuscolo."
 
 #, python-format
 msgid "Show level %(shl)s is not supported in this operation"
@@ -2037,11 +1750,6 @@ msgstr ""
 "Qualsiasi proprietà nello spazio dei nomi deve essere preceduta da un "
 "prefisso quando viene applicata ad un tipo di risorsa specificato. Deve "
 "includere un separatore di prefisso (ad esempio due punti :)."
-
-msgid "Specifies which task executor to be used to run the task scripts."
-msgstr ""
-"Specifica quale esecutore attività deve essere utilizzato per eseguire gli "
-"script di attività."
 
 msgid "Status must be \"pending\", \"accepted\" or \"rejected\"."
 msgstr "Lo stato deve essere \"pending\", \"accepted\" o \"rejected\"."
@@ -2135,12 +1843,6 @@ msgstr ""
 "utilizza l'auth keystone, è possibile specificare l'URL di keystone."
 
 msgid ""
-"The address where the Swift authentication service is listening.(deprecated)"
-msgstr ""
-"L'indirizzo in cui il servizio di autenticazione Swift è in ascolto."
-"(obsoleto)"
-
-msgid ""
 "The administrators password. If \"use_user_token\" is not in effect, then "
 "admin credentials can be specified."
 msgstr ""
@@ -2154,24 +1856,9 @@ msgstr ""
 "Il nome utente degli amministratori. Se non è attiva \"use_user_token\" , è "
 "possibile specificare le credenziali admin."
 
-msgid "The amount of time in seconds to delay before performing a delete."
-msgstr ""
-"La quantità di tempo in secondi da posticipare prima di eseguire "
-"un'eliminazione."
-
-msgid ""
-"The backlog value that will be used when creating the TCP listener socket."
-msgstr ""
-"Il valore backlog che verrà utilizzato durante la creazione del socket "
-"listener TCP."
-
 #, python-format
 msgid "The cert file you specified %s does not exist"
 msgstr "Il file certificato specificato %s non esiste"
-
-msgid "The config file that has the swift account(s)configs."
-msgstr ""
-"Il file di configurazione che contiene le configurazioni account Swift."
 
 msgid "The current status of this task"
 msgstr "Lo stato corrente di questa attività"
@@ -2193,13 +1880,6 @@ msgid "The format of the version %s is not valid. Use semver notation"
 msgstr ""
 "Il formato della versione %s non è valido. Utilizzare la notazione semver"
 
-msgid ""
-"The format to which images will be automatically converted. When using the "
-"RBD backend, this should be set to 'raw'"
-msgstr ""
-"Il formato in cui le immagini verranno convertite automaticamente.  Quando "
-"si utilizza il backend RBD, deve essere impostato su 'raw'"
-
 #, python-format
 msgid ""
 "The given uri is not valid. Please specify a valid uri from the following "
@@ -2207,10 +1887,6 @@ msgid ""
 msgstr ""
 "L'URI fornito non è valido. Specificare un URI valido dal seguente elenco di "
 "uri supportati %(supported)s"
-
-msgid "The hostname/IP of the pydev process listening for debug connections"
-msgstr ""
-"Il nome host/IP del processo pydev in ascolto per le connessioni di debug"
 
 #, python-format
 msgid ""
@@ -2282,20 +1958,6 @@ msgstr "L'ubicazione %(location)s esiste già"
 msgid "The location data has an invalid ID: %d"
 msgstr "I dati dell'ubicazione hanno un ID non valido: %d"
 
-msgid ""
-"The location of the property protection file.This file contains the rules "
-"for property protections and the roles/policies associated with it. If this "
-"config value is not specified, by default, property protections won't be "
-"enforced. If a value is specified and the file is not found, then the glance-"
-"api service will not start."
-msgstr ""
-"Il percorso del file di protezione delle proprietà. Tale file contiene le "
-"regole per le protezioni delle proprietà ed i ruoli/politiche associate. Se "
-"questo valore di configurazione non viene specificato, per impostazione "
-"predefinita le protezioni delle proprietà non verranno applicate. Se viene "
-"specificato un valore ed il file non viene trovato, il servizio glance-api "
-"non verrà avviato."
-
 #, python-format
 msgid ""
 "The metadata definition %(record_type)s with name=%(record_name)s not "
@@ -2359,78 +2021,8 @@ msgstr ""
 "Il tag di definizione dei metadati con nome=%(name)s non è stato trovato "
 "nello spazio dei nomi=%(namespace_name)s."
 
-msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
-msgstr ""
-"La modalità in cui verrà eseguito il motore. Può essere 'seriale' o "
-"'parallela'."
-
-msgid ""
-"The number of child process workers that will be created to service "
-"requests. The default will be equal to the number of CPUs available."
-msgstr ""
-"Il numero di operatori del processo secondario che verrà creato per "
-"soddisfare le richieste. Il valore predefinito sarà uguale al numero di CPU "
-"disponibili."
-
-msgid ""
-"The number of parallel activities executed at the same time by the engine. "
-"The value can be greater than one when the engine mode is 'parallel'."
-msgstr ""
-"Il numero di attività parallele eseguite contemporaneamente dal motore. Il "
-"valore può essere maggiore di uno quando la modalità del motore è "
-"'parallela'."
-
 msgid "The parameters required by task, JSON blob"
 msgstr "I parametri richiesti dall'attività, blob JSON"
-
-msgid ""
-"The path to the cert file to use in SSL connections to the registry server, "
-"if any. Alternately, you may set the GLANCE_CLIENT_CERT_FILE environment "
-"variable to a filepath of the CA cert file"
-msgstr ""
-"Il percorso per il file cert da utilizzare nelle connessioni SSL al server "
-"del registro, se presente. In alternativa è possibile impostare la variabile "
-"di ambiente GLANCE_CLIENT_CERT_FILE sul percorso del file cert CA."
-
-msgid ""
-"The path to the certifying authority cert file to use in SSL connections to "
-"the registry server, if any. Alternately, you may set the "
-"GLANCE_CLIENT_CA_FILE environment variable to a filepath of the CA cert file."
-msgstr ""
-"Il percorso per il file cert dell'autorità di certificazione da utilizzare "
-"nelle connessioni SSL al server del registro, se presente. In alternativa è "
-"possibile impostare la variabile di ambiente GLANCE_CLIENT_CA_FILE su un "
-"percorso del file cert CA."
-
-msgid ""
-"The path to the key file to use in SSL connections to the registry server, "
-"if any. Alternately, you may set the GLANCE_CLIENT_KEY_FILE environment "
-"variable to a filepath of the key file"
-msgstr ""
-"Il percorso del file di chiavi da utilizzare nelle connessioni SSL al server "
-"di registro, se presente. In alternativa, è possibile impostare la variabile "
-"di ambiente GLANCE_CLIENT_KEY_FILE su un percorso del file di chiavi"
-
-msgid ""
-"The period of time, in seconds, that the API server will wait for a registry "
-"request to complete. A value of 0 implies no timeout."
-msgstr ""
-"Il periodo di tempo, in secondi, che il server API attende affinché una "
-"richiesta del registro venga completata. Un valore pari a 0 indica nessun "
-"timeout."
-
-msgid "The port on which a pydev process is listening for connections."
-msgstr "La porta in cui il processo pydev è in ascolto per le connessioni."
-
-msgid "The port on which the server will listen."
-msgstr "La porta su cui il server sarà in ascolto."
-
-msgid ""
-"The protocol to use for communication with the registry server.  Either http "
-"or https."
-msgstr ""
-"Il protocollo da utilizzare per le comunicazioni con il server di registro. "
-"Http o https."
 
 #, python-format
 msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
@@ -2443,13 +2035,6 @@ msgstr "L'immagine fornita è troppo grande."
 #, python-format
 msgid "The provided path '%(path)s' is invalid: %(explanation)s"
 msgstr "Il percorso fornito '%(path)s' non è valido: %(explanation)s"
-
-msgid ""
-"The reference to the default swift account/backing store parameters to use "
-"for adding new images."
-msgstr ""
-"Il riferimento ai parametri di memorizzazione di account/backing Swift "
-"predefiniti per utilizzare l'aggiunta di nuove immagini."
 
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not in "
@@ -2521,9 +2106,6 @@ msgstr ""
 msgid "The result of current task, JSON blob"
 msgstr "Il risultato dell'attività corrente, blob JSON"
 
-msgid "The signature data was not properly encoded using base64"
-msgstr "I dati di firma non sono stati codificati correttamente tramite base64"
-
 #, python-format
 msgid ""
 "The size of the data %(image_size)s will exceed the limit. %(remaining)s "
@@ -2531,16 +2113,6 @@ msgid ""
 msgstr ""
 "La dimensione dei dati %(image_size)s supererà il limite. %(remaining)s byte "
 "rimanenti."
-
-msgid ""
-"The size of thread pool to be used for scrubbing images. The default is one, "
-"which signifies serial scrubbing. Any value above one indicates the max "
-"number of images that may be scrubbed in parallel."
-msgstr ""
-"La dimensione del pool di thread da utilizzare per la ripulitura delle "
-"immagini. Il valore predefinito è uno, che indica la ripulitura di serie. "
-"Qualsiasi valore superiore a uno indica il numero massimo di immagini che "
-"possono essere ripulite in parallelo."
 
 #, python-format
 msgid "The specified member %s could not be found"
@@ -2584,18 +2156,6 @@ msgid "The status of this image member"
 msgstr "Lo stato di questo membro dell'immagine"
 
 msgid ""
-"The store names to use to get store preference order. The name must be "
-"registered by one of the stores defined by the 'stores' config option. This "
-"option will be applied when you using 'store_type' option as image location "
-"strategy defined by the 'location_strategy' config option."
-msgstr ""
-"I nomi degli archivi da utilizzare per ottenere l'ordine di preferenza degli "
-"archivi. Il nome deve essere registrato da uno degli archivi definiti "
-"dall'opzione di configurazione 'stores'. Questa opzione verrà applicata "
-"quando si utilizza l'opzione 'store_type' come strategia di ubicazione "
-"dell'immagine definita dall'opzione di configurazione 'location_strategy'."
-
-msgid ""
 "The strategy to use for authentication. If \"use_user_token\" is not in "
 "effect, then auth strategy can be specified."
 msgstr ""
@@ -2627,20 +2187,6 @@ msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
 "Il nome utente semplice per lo spazio dei nomi. Utilizzato dalla UI se "
 "disponibile."
-
-msgid ""
-"The user to authenticate against the Swift authentication service "
-"(deprecated)"
-msgstr ""
-"L'utente da autenticare per il servizio di autenticazione Swift (obsoleto)"
-
-msgid ""
-"The value for the socket option TCP_KEEPIDLE.  This is the time in seconds "
-"that the connection must be idle before TCP starts sending keepalive probes."
-msgstr ""
-"Il valore dell'opzione socket TCP_KEEPIDLE. Rappresenta il periodo di tempo, "
-"in secondi, per cui la connessione deve essere inattiva prima che il TCP "
-"inizi ad inviare probe keepalive."
 
 #, python-format
 msgid ""
@@ -2674,13 +2220,6 @@ msgid "There was an error connecting to a server"
 msgstr "Si è verificato un errore durante la connessione al server"
 
 msgid ""
-"This config value indicates whether \"roles\" or \"policies\" are used in "
-"the property protection file."
-msgstr ""
-"Questo valore di configurazione indica se si utilizzano i \"ruoli\" o le "
-"\"politiche\" nel file di protezione delle proprietà."
-
-msgid ""
 "This operation is currently not permitted on Glance Tasks. They are auto "
 "deleted after reaching the time based on their expires_at property."
 msgstr ""
@@ -2694,28 +2233,10 @@ msgstr ""
 "Glance."
 
 msgid ""
-"This value sets what strategy will be used to determine the image location "
-"order. Currently two strategies are packaged with Glance 'location_order' "
-"and 'store_type'."
-msgstr ""
-"Questo valore imposta la strategia che verrà utilizzata per determinare "
-"l'ordine di ubicazione dell'immagine. Attualmente due strategie sono "
-"inserite nel package assieme a Glance 'location_order' e 'store_type'."
-
-msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr ""
 "Periodo di tempo, in ore, per cui l'attività prosegue dopo l'esito positivo "
 "o meno"
-
-msgid ""
-"Timeout for client connections' socket operations. If an incoming connection "
-"is idle for this number of seconds it will be closed. A value of '0' means "
-"wait forever."
-msgstr ""
-"Timeout per le operazioni socket delle connessioni client. Se una "
-"connessione in entrata è inattiva per questo numero di secondi, verrà "
-"chiusa. Il valore 0 indica un'attesa illimitata."
 
 msgid "Too few arguments."
 msgstr "Troppo pochi argomenti."
@@ -2725,13 +2246,6 @@ msgstr "Troppo poche ubicazioni"
 
 msgid "Too many locations"
 msgstr "Troppe ubicazioni"
-
-#, python-format
-msgid "Total size is %(size)d bytes across %(img_count)d images"
-msgstr "La dimensione totale è di %(size)d byte tra le immagini %(img_count)d"
-
-msgid "Turn on/off delayed delete."
-msgstr "Attiva/disattiva eliminazione posticipata."
 
 msgid "Type version has to be a valid semver string"
 msgstr "La versione del tipo deve essere una stringa semver valida"
@@ -2822,13 +2336,6 @@ msgstr ""
 "Impossibile modificare la raccolta in una proprietà immutabile o in sola "
 "lettura"
 
-#, python-format
-msgid "Unable to retrieve certificate with ID: %s"
-msgstr "Impossibile richiamare il certificato con ID: %s "
-
-msgid "Unable to retrieve request id from context"
-msgstr "Impossibile recuperare l'ID richiesta dal contesto"
-
 msgid "Unable to specify artifact type explicitly"
 msgstr "Impossibile specificare il tipo di risorsa utente esplicitamente"
 
@@ -2847,16 +2354,6 @@ msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 "Impossibile caricare i dati dell'immagine duplicata per l'immagine "
 "%(image_id)s: %(error)s"
-
-msgid ""
-"Unable to verify signature since the algorithm is unsupported on this system"
-msgstr ""
-"Impossibile verificare la firma perché l'algoritmo non è supportato su "
-"questo sistema"
-
-#, python-format
-msgid "Unable to verify signature: %(reason)s"
-msgstr "Impossibile verificare la firma: %(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "Accesso all'immagine non autorizzato"
@@ -2892,10 +2389,6 @@ msgstr "sort_dir non supportato. Valori consentiti: %s"
 #, python-format
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "sort_key non supportato. Valori consentiti: %s"
-
-#, python-format
-msgid "Value %(value)d out of range, must not exceed %(max)d"
-msgstr "Valore %(value)d fuori dall'intervallo, non deve superare %(max)d"
 
 msgid "Value is greater than maximum"
 msgstr "Il valore è superiore al massimo"
@@ -2940,73 +2433,6 @@ msgstr ""
 "valore dell'opzione cert_file che key_file nel file di configurazione"
 
 msgid ""
-"When true, this option sets the owner of an image to be the tenant. "
-"Otherwise, the owner of the  image will be the authenticated user issuing "
-"the request."
-msgstr ""
-"Quando è true, questa opzione imposta il proprietario di un'immagine "
-"affinché diventi tenant. In caso contrario, il proprietario dell'immagine "
-"sarà l'utente autenticato che avvia la richiesta."
-
-msgid ""
-"When using SSL in connections to the registry server, do not require "
-"validation via a certifying authority. This is the registry's equivalent of "
-"specifying --insecure on the command line using glanceclient for the API."
-msgstr ""
-"Quando si utilizza SSL nelle connessioni al server di registro, non "
-"richiedere la convalida tramite un'autorità di certificazione. Ciò equivale "
-"alla specifica di --insecure sulla riga comandi utilizzando glanceclient per "
-"l'API."
-
-msgid ""
-"Whether to allow users to specify image properties beyond what the image "
-"schema provides"
-msgstr ""
-"Indica se consentire agli utenti di specificare le proprietà dell'immagine "
-"al di là di quanto fornisce lo schema dell'immagine"
-
-msgid ""
-"Whether to include the backend image locations in image properties. For "
-"example, if using the file system store a URL of \"file:///path/to/image\" "
-"will be returned to the user in the 'direct_url' meta-data field. Revealing "
-"storage location can be a security risk, so use this setting with caution! "
-"Setting this to true overrides the show_image_direct_url option."
-msgstr ""
-"Indica se includere i percorsi delle immagini di backend nelle proprietà "
-"dell'immagine. Ad esempio, se viene utilizzato l'archivio del file system, "
-"l'URL \"file:///percorso/immagine\" viene restituito all'utente nel campo di "
-"metadati 'direct_url'. L'indicazione del percorso di archiviazione può "
-"rappresentare un rischio per la sicurezza, pertanto utilizzare questa "
-"impostazione con attenzione. L'impostazione su true sostituisce l'opzione "
-"show_image_direct_url."
-
-msgid ""
-"Whether to include the backend image storage location in image properties. "
-"Revealing storage location can be a security risk, so use this setting with "
-"caution!"
-msgstr ""
-"Indica se includere l'ubicazione dell'archivio di immagini di backend nelle "
-"proprietà dell'immagine. La rivelazione dell'ubicazione dell'archivio può "
-"essere un rischio per la sicurezza, quindi utilizzare questa impostazione "
-"con cautela!"
-
-msgid ""
-"Whether to pass through headers containing user and tenant information when "
-"making requests to the registry. This allows the registry to use the context "
-"middleware without keystonemiddleware's auth_token middleware, removing "
-"calls to the keystone auth service. It is recommended that when using this "
-"option, secure communication between glance api and glance registry is "
-"ensured by means other than auth_token middleware."
-msgstr ""
-"Indica se passare tramite le intestazioni che contengono le informazioni "
-"utente e tenant quando si effettuano richieste al registro. Ciò consente al "
-"registro di utilizzare il middleware di contesto senza il middleware "
-"auth_token di keystonemiddleware, rimuovendo le chiamate sul servizio "
-"keystone auth. Si raccomanda che quando si utilizza questa opzione, la "
-"comunicazione sicura tra l'api glance e il registro glance sia garantita da "
-"mezzi diversi dal middleware auth_token."
-
-msgid ""
 "Whether to pass through the user token when making requests to the registry. "
 "To prevent failures with token expiration during big files upload, it is "
 "recommended to set this parameter to False.If \"use_user_token\" is not in "
@@ -3017,39 +2443,6 @@ msgstr ""
 "caricamento di file grandi, si consiglia di impostare questo parametro su "
 "False. Se \"use_user_token\" non è in vigore, è possibile specificare le "
 "credenziali admin."
-
-msgid ""
-"Work dir for asynchronous task operations. The directory set here will be "
-"used to operate over images - normally before they are imported in the "
-"destination store. When providing work dir, make sure enough space is "
-"provided for concurrent tasks to run efficiently without running out of "
-"space. A rough estimation can be done by multiplying the number of "
-"`max_workers` - or the N of workers running - by an average image size (e.g "
-"500MB). The image size estimation should be done based on the average size "
-"in your deployment. Note that depending on the tasks running you may need to "
-"multiply this number by some factor depending on what the task does. For "
-"example, you may want to double the available size if image conversion is "
-"enabled. All this being said, remember these are just estimations and you "
-"should do them based on the worst case scenario and be prepared to act in "
-"case they were wrong."
-msgstr ""
-"Directory di lavoro per le operazioni delle attività asincrone. La directory "
-"impostata in questo punto verrà utilizzata per eseguire operazioni sulle "
-"immagini - normalmente, prima che vengano importate nell'archivio di "
-"destinazione. Quando viene fornita la directory di lavoro, verificare che "
-"sia fornito spazio sufficiente per consentire di eseguire le attività "
-"simultanee in modo efficace senza esaurire lo spazio. È possibile fare una "
-"stima approssimativa moltiplicando il numero di `max_workers` - o il numero "
-"N di worker in esecuzione - per la dimensione media delle immagini (ad "
-"esempio, 500 MB). La stima della dimensione delle immagini deve essere "
-"eseguita in base alla dimensione media nella propria distribuzione. Notare "
-"che in base alle attività in esecuzione potrebbe essere necessario "
-"moltiplicare tale numero per un fattore che dipende dalle operazioni "
-"eseguite dall'attività. Ad esempio, è possibile che si desideri raddoppiare "
-"la dimensione disponibile se è abilitata la conversione dell'immagine. Fatta "
-"questa premessa, ricordare che queste sono solo stime, effettuate in base "
-"allo scenario peggiore; pertanto, è necessario essere preparati ad agire "
-"diversamente nel caso non siano corrette."
 
 #, python-format
 msgid "Wrong command structure: %s"

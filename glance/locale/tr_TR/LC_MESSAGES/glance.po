@@ -7,9 +7,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
+"Project-Id-Version: glance 13.0.0.0rc2.dev2\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-06-06 22:42+0000\n"
+"POT-Creation-Date: 2016-09-20 15:01+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -109,10 +109,6 @@ msgstr "%s zaten durdurulmuş"
 msgid "%s is stopped"
 msgstr "%s durduruldu"
 
-#, python-format
-msgid "'%(param)s' value out of range, must not exceed %(max)d"
-msgstr "'%(param)s' değeri aralık dışında, %(max)d değerini geçmemelidir"
-
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
 "keystone authentication strategy is enabled\n"
@@ -152,31 +148,6 @@ msgstr ""
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr "Harici depoda tutulan imaj dosyasına erişilecek URL kümesi"
-
-msgid ""
-"AES key for encrypting store 'location' metadata. This includes, if used, "
-"Swift or S3 credentials. Should be set to a random string of length 16, 24 "
-"or 32 bytes"
-msgstr ""
-"Depo 'location' metadatasını şifrelemek için AES anahtarı. Bu, eğer "
-"kullanılırsa, Swift ya da S3 kimlik bilgilerini içerir. 16, 24 ya da 32 bayt "
-"uzunluğunda rastgele bir karakter dizisi ayarlanmış olmalıdır"
-
-msgid ""
-"Address to bind the server.  Useful when selecting a particular network "
-"interface."
-msgstr ""
-"Sunucuya bağlanılacak adres.  Belli bir ağ arayüzü seçerken kullanışlıdır."
-
-msgid "Address to find the registry server."
-msgstr "Kayıt sunucusunu bulmak için adres."
-
-msgid ""
-"Allow unauthenticated users to access the API with read-only privileges. "
-"This only applies when using ContextMiddleware."
-msgstr ""
-"Kimlik doğrulaması yapılamamış kullanıcıların API'lere salt okunur haklarla "
-"erişmesine izin ver. Bu sadece ContextMiddleware kullanılırken uygulanır."
 
 #, python-format
 msgid "Allowed values %s are invalid under given validators"
@@ -315,13 +286,6 @@ msgid "Attribute disk_format can be only replaced for a queued image."
 msgstr ""
 "disk_format özniteliği sadece kuyruğa alınmış bir imaj için değiştirilebilir."
 
-msgid ""
-"Auth key for the user authenticating against the Swift authentication "
-"service. (deprecated)"
-msgstr ""
-"Swift kimlik doğrulama servisine dayalı kullanıcı doğrulama için yetkili "
-"anahtar. (önerilmiyor)"
-
 #, python-format
 msgid "Auth service at URL %(url)s not found."
 msgstr "%(url)s URL'inde kimlik doğrulama servisi bulunamadı."
@@ -368,10 +332,6 @@ msgstr "İstekte beklenen vücut."
 msgid "Both file and legacy_image_id may not be specified at the same time"
 msgstr "Aynı anda hem dosya hem de legacy_image_id belirtilemeyebilir"
 
-msgid "CA certificate file to use to verify connecting clients."
-msgstr ""
-"Bağlanan istemcileri doğrulamak için kullanılacak CA sertifika dosyası."
-
 msgid "Cannot be a negative value"
 msgstr "Negatif bir değer olamaz"
 
@@ -405,9 +365,6 @@ msgstr "Kuyruğa alınmamış imaj yüklenemez"
 #, python-format
 msgid "Cannot use this parameter with the operator %(op)s"
 msgstr "%(op)s operatörü ile bu parametreler kullanılamaz"
-
-msgid "Certificate file to use when starting API server securely."
-msgstr "API sunucusu güvenli başlatılırken kullanılacak sertifika dosyası."
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -498,13 +455,6 @@ msgstr "Bu kaynak güncellendiğindeki tarih saat"
 msgid "Datetime when this resource would be subject to removal"
 msgstr "Bu kaynağın kaldırılacağı tarih zaman"
 
-msgid ""
-"Default value for the number of items returned by a request if not specified "
-"explicitly in the request"
-msgstr ""
-"Eğer istekte açıkça belirtilmediyse, bir istekten dönen öge sayısı için "
-"öntanımlı değer"
-
 msgid "Default value is invalid"
 msgstr "Öntanımlı değer geçersizdir"
 
@@ -526,18 +476,6 @@ msgstr "İlk önce '%s' bağımlılık özelliğinin silinmesi gerekir"
 
 msgid "Dependency relations cannot be mutable"
 msgstr "Bağımlılık ilişkileri değişken olamaz"
-
-msgid "Deploy the v1 OpenStack Images API."
-msgstr "v1 OpenStack İmajları API dağıt."
-
-msgid "Deploy the v1 OpenStack Registry API."
-msgstr "v1 OpenStack Kayıt Defteri API dağıt."
-
-msgid "Deploy the v2 OpenStack Images API."
-msgstr "v2 OpenStack İmajları API dağıt."
-
-msgid "Deploy the v2 OpenStack Registry API."
-msgstr "v2 OpenStack Kayıt Defteri API dağıt."
 
 msgid "Descriptive name for the image"
 msgstr "İmaj için açıklayıcı ad"
@@ -689,14 +627,6 @@ msgid "Format of the disk"
 msgstr "Diskin biçimi"
 
 #, python-format
-msgid "Get blob %(name)s data failed: %(err)s."
-msgstr "blob %(name)s verisi alma işlemi başarısız oldu: %(err)s."
-
-#, python-format
-msgid "Get image %(id)s data failed: %(err)s."
-msgstr "%(id)s imaj verisi alınamadı: %(err)s."
-
-#, python-format
 msgid "Host \"%s\" is not valid."
 msgstr "İstemci \"%s\" geçersizdir."
 
@@ -710,19 +640,6 @@ msgid ""
 msgstr ""
 "Okunabilir bilgilendirme iletisi sadece uygun olduğunda (genellikle "
 "başarısızlıkta) dahildir"
-
-msgid ""
-"If False, server will return the header \"Connection: close\", If True, "
-"server will return \"Connection: Keep-Alive\" in its responses. In order to "
-"close the client socket connection explicitly after the response is sent and "
-"read successfully by the client, you simply have to set this option to False "
-"when you create a wsgi server."
-msgstr ""
-"Sunucu, eğer Yanlışsa, \"Bağlantı: kapat\" başlığını, eğer Doğruysa, "
-"\"Bağlantı: Aktif\" yanıtını döndürecek. Yanıt gönderildikten ve istemci "
-"tarafından başarılı bir şekilde okunduktan sonra, istemci soket bağlantısını "
-"açıkça kapatmak için, bir wsgi sunucusu oluştururken bu seçeneği sadece "
-"Yanlış olarak ayarlamanız gerekir."
 
 msgid "If true, image will not be deletable."
 msgstr "Eğer seçiliyse, imaj silinemeyecektir."
@@ -1111,9 +1028,6 @@ msgstr "Liste boyutu azami değerden daha büyüktür"
 msgid "List size is less than minimum"
 msgstr "Liste boyutu asgari değerden daha azdır"
 
-msgid "Loop time between checking for new items to schedule for delete."
-msgstr "Silmek için planlanan yeni ögelerin kontrolü arasındaki döngü süresi."
-
 #, python-format
 msgid "Malformed Content-Range header: %s"
 msgstr "Bozuk İçerik-Aralık başlığı: %s"
@@ -1124,61 +1038,9 @@ msgstr "İstek gövdesinde bozuk JSON."
 msgid "Max string length may not exceed 255 characters"
 msgstr "Azami karakter dizisi uzunluğu  255 karakter sınırını aşmayabilir"
 
-msgid ""
-"Maximum line size of message headers to be accepted. max_header_line may "
-"need to be increased when using large tokens (typically those generated by "
-"the Keystone v3 API with big service catalogs"
-msgstr ""
-"İleti başlığının kabul edilebilir azami satır boyutu. Büyük jetonlar (tipik "
-"olarak büyük servis katalogları ile Keystone v3 API tarafından oluşturulur) "
-"kullanılırken, max_header_line değişkeninin arttırılması gerekebilir"
-
-msgid ""
-"Maximum number of image members per image. Negative values evaluate to "
-"unlimited."
-msgstr ""
-"İmaj başına üyelerin azami sayısı. Negatif değerler sınırsız olarak "
-"değerlendirilir."
-
-msgid ""
-"Maximum number of locations allowed on an image. Negative values evaluate to "
-"unlimited."
-msgstr ""
-"Bir imaj üzerinde izin verilen azami konum sayısı. Negatif değerler sınırsız "
-"olarak değerlendirilir."
-
-msgid ""
-"Maximum number of properties allowed on an image. Negative values evaluate "
-"to unlimited."
-msgstr ""
-"Bir imaj üzerinde izin verilen azami özellik sayısı. Negatif değerler "
-"sınırsız olarak değerlendirilir."
-
-msgid ""
-"Maximum number of tags allowed on an image. Negative values evaluate to "
-"unlimited."
-msgstr ""
-"Bir imaj üzerinde izin verilen azami etiket sayısı. Negatif değerler "
-"sınırsız olarak değerlendirilir."
-
-msgid "Maximum permissible number of items that could be returned by a request"
-msgstr ""
-"Bir istek tarafından geri döndürülebilen ögelerin izin verilebilir azami "
-"sayısı"
-
 #, python-format
 msgid "Maximum redirects (%(redirects)s) was exceeded."
 msgstr "Yeniden yönlendirmelerin sınırı (%(redirects)s) aşıldı."
-
-msgid ""
-"Maximum size of image a user can upload in bytes. Defaults to 1099511627776 "
-"bytes (1 TB).WARNING: this value should only be increased after careful "
-"consideration and must be set to a value under 8 EB (9223372036854775808)."
-msgstr ""
-"Bir kullanıcının bayt cinsinde yükleyebileceği azami imaj boyutu. Öntanımlı "
-"olarak 1099511627776 bayt (1 TB). UYARI: bu değer sadece dikkatli bir "
-"değerlendirmeden sonra arttırılmalı ve 8 EB (9223372036854775808) altında "
-"bir değere ayarlanmalıdır."
 
 #, python-format
 msgid "Member %(member_id)s is duplicated for image %(image_id)s"
@@ -1262,9 +1124,6 @@ msgid ""
 msgstr ""
 "%(region)s bölgesi için birden fazla 'image' servisi eşleşir. Bu genellikle, "
 "bir bölgenin gerekli olduğu ve sağlamadığınız anlamına gelir."
-
-msgid "Name of the paste configuration file."
-msgstr "Yapıştırma yapılandırma dosyanızın adı."
 
 #, python-format
 msgid "No artifact found with ID %s"
@@ -1408,18 +1267,6 @@ msgstr "Ad alanı sahibi."
 msgid "Param values can't contain 4 byte unicode."
 msgstr "Param değerleri 4 bayt unikod içermez."
 
-msgid ""
-"Partial name of a pipeline in your paste configuration file with the service "
-"name removed. For example, if your paste section name is [pipeline:glance-"
-"api-keystone] use the value \"keystone\""
-msgstr ""
-"Servis adı ile yapıştırma yapılandırma dosyanızdaki iletişim hattının "
-"parçalı adı kaldırıldı. Örnek, eğer yapıştırma bölüm adınız [pipeline:glance-"
-"api-keystone] ise \"keystone\" değerini kullan"
-
-msgid "Path to the directory where json metadata files are stored"
-msgstr "Json metadata dosyalarının depolandığı dizin yolu"
-
 #, python-format
 msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
 msgstr "Eklenti adı '%(plugin)s' ile ürün tür adı '%(name)s' eşleşmelidir"
@@ -1455,15 +1302,9 @@ msgstr "İşaretçi tanınmış [~0, ~1]  kaçış dizisi parçası olmayan '~' 
 msgid "Port \"%s\" is not valid."
 msgstr "Bağlantı noktası \"%s\" geçersizdir."
 
-msgid "Port the registry server is listening on."
-msgstr "Kayıt sunucusunun üzerinde dinlediği bağlantı noktası."
-
 #, python-format
 msgid "Prerelease numeric component is too large (%d characters max)"
 msgstr "Önsürüm sayısal bileşeni çok büyük (en fazla %d karakter)"
-
-msgid "Private key file to use when starting API server securely."
-msgstr "API sunucusu güvenli başlatılırken kullanılacak özel anahtar dosyası."
 
 #, python-format
 msgid "Process %d not running"
@@ -1509,14 +1350,6 @@ msgid "Property names can't contain 4 byte unicode."
 msgstr "Özellik adları 4 bayt unicode içeremez."
 
 #, python-format
-msgid ""
-"Property protection on operation %(operation)s for rule %(rule)s is not "
-"found. No role will be allowed to perform this operation."
-msgstr ""
-"%(rule)s kuralı için %(operation)s işleminde özellik koruma bulunamadı. Bu "
-"işlemi gerçekleştirmek için hiçbir role izin verilmeyecektir."
-
-#, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "Özelliklerin %(prop)s değeri bulunamadı"
 
@@ -1545,20 +1378,6 @@ msgstr "Ad alanı için kullanıcı dostu bir açıklama sağlar."
 
 msgid "Public images do not have members."
 msgstr "Ortak imajlar üyelere sahip değil."
-
-msgid ""
-"Public url to use for versions endpoint. The default is None, which will use "
-"the request's host_url attribute to populate the URL base. If Glance is "
-"operating behind a proxy, you will want to change this to represent the "
-"proxy's URL."
-msgstr ""
-"Sürüm uç noktaları için kullanılacak ortak url. Öntanımlı olan Hiçbiri, URL "
-"tabanını doldurmak için isteğin host_url özniteliğini kullanacak. Eğer "
-"Glance bir vekil sunucu arkasında işletiliyorsa, vekil sunucunun URL'ini "
-"gösterecek şekilde değiştirmek isteyeceksiniz."
-
-msgid "Python module path of data access API"
-msgstr "Veri erişim API'sinin Python modül yolu"
 
 msgid "Received invalid HTTP redirect."
 msgstr "Geçersiz HTTP yeniden yönlendirme isteği alındı."
@@ -1614,20 +1433,6 @@ msgstr ""
 msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "Keystone yanıtı bir Glance uç noktası içermiyor."
 
-msgid "Role used to identify an authenticated user as administrator."
-msgstr ""
-"Rol, kimliği doğrulanmış bir kullanıcıyı yönetici olarak belirlemek için "
-"kullanılır."
-
-msgid ""
-"Run as a long-running process. When not specified (the default) run the "
-"scrub operation once and then exits. When specified do not exit and run "
-"scrub on wakeup_time interval as specified in the config."
-msgstr ""
-"Uzun sürecek bir işlem olarak çalıştır. Belirtilmezse (öntanımlı) iptal "
-"işlemi bir kez çalıştırılır ve sonrasında çıkar. Eğer belirtilirse, çıkmaz "
-"ve yapılandırma ayarında belirtilen wakeup_time aralığında çalıştırılır."
-
 msgid "Scope of image accessibility"
 msgstr "İmaj erişilebilirlik kapsamı"
 
@@ -1641,22 +1446,6 @@ msgstr "Sunucu %(serv)s durdurulur"
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
 msgstr "Sunucu işçisi oluşturma işlemi başarısız oldu: %(reason)s."
-
-msgid ""
-"Set a system wide quota for every user. This value is the total capacity "
-"that a user can use across all storage systems. A value of 0 means unlimited."
-"Optional unit can be specified for the value. Accepted units are B, KB, MB, "
-"GB and TB representing Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes "
-"respectively. If no unit is specified then Bytes is assumed. Note that there "
-"should not be any space between value and unit and units are case sensitive."
-msgstr ""
-"Her kullanıcı için geniş bir sistem kotası ayarla. Bu değer, bir "
-"kullanıcının bütün depolama sistemlerinde kullanabileceği toplam "
-"kapasitedir. 0 değerinin anlamı, limitsizdir. Değer için isteğe bağlı birim "
-"belirtilebilir. Beklenen birimler B, KB, MB, GB ve TB, sırasıyla bayt, "
-"KiloBayt, MegaBayt, GigaBayt ve TeraBayttır. Eğer birim belirtilmezse, Bayt "
-"varsayılır. Değer ve birim arasında boşluk olmaması gerektiğine ve "
-"birimlerin küçük/büyük harf duyarlı olmasına dikkat edin."
 
 #, python-format
 msgid "Show level %(shl)s is not supported in this operation"
@@ -1688,10 +1477,6 @@ msgstr ""
 "Verilen kaynak türü için kullanılacak öneki belirtir. Ad alanındaki her "
 "özellik belirtilen kaynak türüne uygulanırken önek eklenmelidir. Önek "
 "ayıracı içermelidir (örneğin; :)."
-
-msgid "Specifies which task executor to be used to run the task scripts."
-msgstr ""
-"Görev betiklerini çalıştırmak için kullanılacak görev yürütücüsünü belirtir."
 
 msgid "Status must be \"pending\", \"accepted\" or \"rejected\"."
 msgstr "Durum \"bekliyor\", \"kabul edildi\" ya da \"reddedildi\" olmalıdır."
@@ -1784,10 +1569,6 @@ msgstr ""
 "belirtilebilir."
 
 msgid ""
-"The address where the Swift authentication service is listening.(deprecated)"
-msgstr "Swift kimlik doğrulama servisinin dinlediği adres.(önerilmiyor)"
-
-msgid ""
 "The administrators password. If \"use_user_token\" is not in effect, then "
 "admin credentials can be specified."
 msgstr ""
@@ -1801,19 +1582,9 @@ msgstr ""
 "Yönetici kullanıcı adı. Eğer \"use_user_token\" yürürlükte değilse, o zaman "
 "yönetici kimlik bilgileri belirtilebilir."
 
-msgid "The amount of time in seconds to delay before performing a delete."
-msgstr "Bir silme işlemi gerçekleşmeden önce saniye cinsinden gecikme miktarı."
-
-msgid ""
-"The backlog value that will be used when creating the TCP listener socket."
-msgstr "TCP dinleyici soket oluştururken kullanılacak hizmet bekleyen değeri."
-
 #, python-format
 msgid "The cert file you specified %s does not exist"
 msgstr "Belirtilen %s sertifika dosyası mevcut değil"
-
-msgid "The config file that has the swift account(s)configs."
-msgstr "Swift hesap(ları) yapılandırmalarına sahip yapılandırma dosyası."
 
 msgid "The current status of this task"
 msgstr "Görevin şu anki durumu"
@@ -1836,9 +1607,6 @@ msgid ""
 msgstr ""
 "Verilen uri geçersizdir. Lütfen, desteklenen uri listesinden %(supported)s "
 "geçerli bir uri belirtin"
-
-msgid "The hostname/IP of the pydev process listening for debug connections"
-msgstr "Hata ayıklama bağlantıları için pydev süreç dinleme makine adı/IP"
 
 #, python-format
 msgid ""
@@ -1906,19 +1674,6 @@ msgstr "%(location)s konumu zaten mevcut"
 msgid "The location data has an invalid ID: %d"
 msgstr "Konum verisi geçersiz bir kimliğe sahip: %d"
 
-msgid ""
-"The location of the property protection file.This file contains the rules "
-"for property protections and the roles/policies associated with it. If this "
-"config value is not specified, by default, property protections won't be "
-"enforced. If a value is specified and the file is not found, then the glance-"
-"api service will not start."
-msgstr ""
-"Özellik koruma dosyasının konumu. Bu dosya özellik korumaları ve bunlarla "
-"ilişkilendirilmiş rol/ilkeler için kurallar içerir. Eğer yapılandırma değeri "
-"belirtilmemişse, öntanımlı olarak, özellik korumaları zorunlu olmayacaktır. "
-"Eğer bir değer belirtilirse ve dosya bulunamazsa, o zaman glance-api servisi "
-"başlamayacak."
-
 #, python-format
 msgid ""
 "The metadata definition %(record_type)s with name=%(record_name)s not "
@@ -1977,73 +1732,8 @@ msgstr ""
 "Ad=%(name)s ile metadata tanım etiketi ad alanında=%(namespace_name)s "
 "bulunamadı."
 
-msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
-msgstr "Motorun çalıştırılacağı kip. 'serial' ya da 'parallel' olabilir."
-
-msgid ""
-"The number of child process workers that will be created to service "
-"requests. The default will be equal to the number of CPUs available."
-msgstr ""
-"Servis istekleri için oluşturulacak alt süreç işçilerinin sayısı. Öntanımlı "
-"olarak kullanılabilir CPU sayısına eşit olacaktır."
-
-msgid ""
-"The number of parallel activities executed at the same time by the engine. "
-"The value can be greater than one when the engine mode is 'parallel'."
-msgstr ""
-"Motor tarafından aynı anda yürütülen paralel etkinlik sayısı. Bu değer motor "
-"kipi 'parallel' iken birden büyük olabilir."
-
 msgid "The parameters required by task, JSON blob"
 msgstr "JSON blob, görev tarafından istenen parameteler"
-
-msgid ""
-"The path to the cert file to use in SSL connections to the registry server, "
-"if any. Alternately, you may set the GLANCE_CLIENT_CERT_FILE environment "
-"variable to a filepath of the CA cert file"
-msgstr ""
-"Varsa, kayıt defteri sunucusuna SSL bağlantısında kullanılacak sertifika "
-"dosya yolu. Alternatif olarak, CA sertifika dosyasının dosya yolu için "
-"GLANCE_CLIENT_CERT_FILE ortam değişkeni ayarlayabilirsiniz"
-
-msgid ""
-"The path to the certifying authority cert file to use in SSL connections to "
-"the registry server, if any. Alternately, you may set the "
-"GLANCE_CLIENT_CA_FILE environment variable to a filepath of the CA cert file."
-msgstr ""
-"Varsa, kayıt defteri sunucusuna SSL bağlantısında kullanılacak yetki "
-"onaylama sertifika dosyasının yolu. Alternatif olarak, CA sertifika "
-"dosyasının yolu için GLANCE_CLIENT_CA_FILE ortam değişkenini "
-"ayarlayabilirsiniz."
-
-msgid ""
-"The path to the key file to use in SSL connections to the registry server, "
-"if any. Alternately, you may set the GLANCE_CLIENT_KEY_FILE environment "
-"variable to a filepath of the key file"
-msgstr ""
-"Varsa, kayıt defteri sunucusuna SSL bağlantısında kullanılacak anahtar dosya "
-"yolu. Alternatif olarak, anahtar dosyasının dosya yolu için "
-"GLANCE_CLIENT_KEY_FILE ortam değişkeni ayarlayabilirsiniz"
-
-msgid ""
-"The period of time, in seconds, that the API server will wait for a registry "
-"request to complete. A value of 0 implies no timeout."
-msgstr ""
-"Bir kayıt defteri isteğinin tamamlanması için API sunucusunun bekleyeceği "
-"saniye cinsinden zaman aralığı. 0 değeri zaman aşımı olmadığını ifade eder."
-
-msgid "The port on which a pydev process is listening for connections."
-msgstr "Pydev sürecindeki bağlantı noktası bağlantılar için dinliyor."
-
-msgid "The port on which the server will listen."
-msgstr "Sunucu üzerindeki bağlantı noktası dinleyecek."
-
-msgid ""
-"The protocol to use for communication with the registry server.  Either http "
-"or https."
-msgstr ""
-"Kayıt defteri sunucusu ile iletişim için kullanılacak protokol.  Ya http ya "
-"da https."
 
 #, python-format
 msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
@@ -2055,13 +1745,6 @@ msgstr "Getirilen imaj çok büyük."
 #, python-format
 msgid "The provided path '%(path)s' is invalid: %(explanation)s"
 msgstr "Sağlanan yol '%(path)s' geçersizdir: %(explanation)s"
-
-msgid ""
-"The reference to the default swift account/backing store parameters to use "
-"for adding new images."
-msgstr ""
-"Yeni imajlar eklemek için kullanılacak öntanımlı swift hesap/yedekleme "
-"deposu parametrelerine referans."
 
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not in "
@@ -2176,18 +1859,6 @@ msgid "The status of this image member"
 msgstr "Bu imaj üyesinin durumu"
 
 msgid ""
-"The store names to use to get store preference order. The name must be "
-"registered by one of the stores defined by the 'stores' config option. This "
-"option will be applied when you using 'store_type' option as image location "
-"strategy defined by the 'location_strategy' config option."
-msgstr ""
-"Depo tercih sırasını almak için kullanılacak depo adları. Ad, 'stores' "
-"yapılandırma seçeneği tarafından tanımlanan depolardan biri olarak "
-"kaydedilmelidir. Bu seçenek, 'store_type' seçeneğini, 'location_strategy' "
-"yapılandırma seçeneği tarafından tanımlanan imaj konum stratejisi olarak "
-"kullanırken uygulanacaktır."
-
-msgid ""
 "The strategy to use for authentication. If \"use_user_token\" is not in "
 "effect, then auth strategy can be specified."
 msgstr ""
@@ -2218,20 +1889,6 @@ msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
 "Kullanıcı dostu ad alanı adı. Eğer mevcut ise, kullanıcı arayüzü tarafından "
 "kullanılır."
-
-msgid ""
-"The user to authenticate against the Swift authentication service "
-"(deprecated)"
-msgstr ""
-"Swift kimlik doğrulama servisine dayalı doğrulanacak kullanıcı(önerilmiyor)"
-
-msgid ""
-"The value for the socket option TCP_KEEPIDLE.  This is the time in seconds "
-"that the connection must be idle before TCP starts sending keepalive probes."
-msgstr ""
-"TCP_KEEPIDLE soket seçeneği için değer.  Bu TCP canlı mı araştırma istekleri "
-"göndermeye başlamadan önce bağlantının boşta olması gereken saniye cinsinden "
-"süredir."
 
 #, python-format
 msgid ""
@@ -2265,13 +1922,6 @@ msgid "There was an error connecting to a server"
 msgstr "Sunucuya bağlanırken bir hata meydana geldi"
 
 msgid ""
-"This config value indicates whether \"roles\" or \"policies\" are used in "
-"the property protection file."
-msgstr ""
-"Yapılandırma değeri özellik koruma dosyasında \"roller\" ya da \"ilkeler\" "
-"kullanılıp kullanılmadığını gösterir."
-
-msgid ""
 "This operation is currently not permitted on Glance Tasks. They are auto "
 "deleted after reaching the time based on their expires_at property."
 msgstr ""
@@ -2282,27 +1932,10 @@ msgid "This operation is currently not permitted on Glance images details."
 msgstr "Bu işleme şu anda Glance imaj ayrıntılarında izin verilmez."
 
 msgid ""
-"This value sets what strategy will be used to determine the image location "
-"order. Currently two strategies are packaged with Glance 'location_order' "
-"and 'store_type'."
-msgstr ""
-"Bu değer imaj konum sırası tespiti için kullanılacak stratejiyi ayarlar. Şu "
-"anda iki strateji Glance 'location_order' ve 'store_type' ile paketlenir."
-
-msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr ""
 "Bir görevin başarılı ya da başarısız olarak sonuçlanmasından sonra saat "
 "olarak yaşayacağı süre"
-
-msgid ""
-"Timeout for client connections' socket operations. If an incoming connection "
-"is idle for this number of seconds it will be closed. A value of '0' means "
-"wait forever."
-msgstr ""
-"İstemci bağlantılarının soket işlemleri için zaman aşımı. Eğer gelen bir "
-"bağlantı bu süre boyunca boştaysa, kapatılacaktır. '0' değerinin anlamı "
-"sonsuza kadar beklemesidir."
 
 msgid "Too few arguments."
 msgstr "Çok fazla değişken."
@@ -2312,13 +1945,6 @@ msgstr "Çok az konum"
 
 msgid "Too many locations"
 msgstr "Çok fazla konum"
-
-#, python-format
-msgid "Total size is %(size)d bytes across %(img_count)d images"
-msgstr "%(img_count)d imajlarında toplam boyut %(size)d"
-
-msgid "Turn on/off delayed delete."
-msgstr "Gecikmiş silme aç/kapat."
 
 msgid "Type version has to be a valid semver string"
 msgstr "Tür sürümü geçerli bir semver karakter dizisi olmalıdır"
@@ -2391,9 +2017,6 @@ msgstr "%s için yapıştırma yapılandırma dosyası yerleştirilemedi."
 msgid "Unable to modify collection in immutable or readonly property"
 msgstr "Değişmez ya da salt okunur özellikteki koleksiyon değiştirilemedi"
 
-msgid "Unable to retrieve request id from context"
-msgstr "İçerikten istek bilgisi alınamadı"
-
 msgid "Unable to specify artifact type explicitly"
 msgstr "Ürün türü açıkça belirtilemedi"
 
@@ -2442,10 +2065,6 @@ msgstr "Desteklenmeyen sort_dir. Kabul edilen değerler: %s"
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "Desteklenmeyen sort_key. Kabul edilen değerler: %s"
 
-#, python-format
-msgid "Value %(value)d out of range, must not exceed %(max)d"
-msgstr "%(value)d değeri aralık dışında, %(max)d değerini geçmemelidir"
-
 msgid "Value is greater than maximum"
 msgstr "Değer azami değerden daha büyüktür"
 
@@ -2486,55 +2105,6 @@ msgstr ""
 "yapılandırma dosyanızda belirtmelisiniz"
 
 msgid ""
-"When true, this option sets the owner of an image to be the tenant. "
-"Otherwise, the owner of the  image will be the authenticated user issuing "
-"the request."
-msgstr ""
-"Seçildiğinde, bu seçenek bir imajın sahibini kiracı olacak şekilde ayarlar."
-"Diğer bir deyişle,  imajın sahibi, isteği bildiren ve kimliği doğrulanmış "
-"kişi olacaktır."
-
-msgid ""
-"When using SSL in connections to the registry server, do not require "
-"validation via a certifying authority. This is the registry's equivalent of "
-"specifying --insecure on the command line using glanceclient for the API."
-msgstr ""
-"Kayıt defteri sunucusuna bağlantı sırasında SSL kullanılırsa, bir onaylama "
-"otoritesi yoluyla doğrulama gerekmez. API için glanceclient kullanarak komut "
-"satırında --insecure belirtilmesi, kayıt defterine eşdeğerdir."
-
-msgid ""
-"Whether to allow users to specify image properties beyond what the image "
-"schema provides"
-msgstr ""
-"İmaj şema sağlayıcılarının haricinde imaj özelliklerinin belirtilmesinde "
-"kullanıcılara izin verilip verilmemesi"
-
-msgid ""
-"Whether to include the backend image storage location in image properties. "
-"Revealing storage location can be a security risk, so use this setting with "
-"caution!"
-msgstr ""
-"İmaj özelliklerinin, art alanda çalışan imaj depolama konumunu içerip "
-"içermemesi. Depolama konumunu açığa çıkarmak güvenlik tehlikesi "
-"oluşturabilir, bu yüzden bu ayarı dikkatli kullanın!"
-
-msgid ""
-"Whether to pass through headers containing user and tenant information when "
-"making requests to the registry. This allows the registry to use the context "
-"middleware without keystonemiddleware's auth_token middleware, removing "
-"calls to the keystone auth service. It is recommended that when using this "
-"option, secure communication between glance api and glance registry is "
-"ensured by means other than auth_token middleware."
-msgstr ""
-"Kayıt defteri sunucusuna istek yaparken kiracı bilgisi ve kullanıcı içeren "
-"başlığın geçirilip geçirilmemesi. Bu kayıt defteri sunucusunun "
-"keystonemiddleware auth_token katmanı olmadan içerik katmanını kullanmasına, "
-"keystone kimlik doğrulama servisine çağrıların kaldırılmasına izin verir. Bu "
-"seçenek kullanılırken, glance-api ve glance kayıt defteri arasında "
-"auth_token katmanı dışında başka bir yol ile güvenli iletişim sağlanır."
-
-msgid ""
 "Whether to pass through the user token when making requests to the registry. "
 "To prevent failures with token expiration during big files upload, it is "
 "recommended to set this parameter to False.If \"use_user_token\" is not in "
@@ -2545,34 +2115,6 @@ msgstr ""
 "ermesi ile oluşacak hataları engellemek için, bu parametrenin seçilmemiş "
 "olarak ayarlanması önerilir. Eğer \"use_user_token\" yürürlükte değilse, o "
 "zaman yönetici kimlik bilgileri belirtilebilir."
-
-msgid ""
-"Work dir for asynchronous task operations. The directory set here will be "
-"used to operate over images - normally before they are imported in the "
-"destination store. When providing work dir, make sure enough space is "
-"provided for concurrent tasks to run efficiently without running out of "
-"space. A rough estimation can be done by multiplying the number of "
-"`max_workers` - or the N of workers running - by an average image size (e.g "
-"500MB). The image size estimation should be done based on the average size "
-"in your deployment. Note that depending on the tasks running you may need to "
-"multiply this number by some factor depending on what the task does. For "
-"example, you may want to double the available size if image conversion is "
-"enabled. All this being said, remember these are just estimations and you "
-"should do them based on the worst case scenario and be prepared to act in "
-"case they were wrong."
-msgstr ""
-"Eşzamansız görev işlemleri için çalışma dizini. Burada ayarlanan dizin, "
-"imajları işlemek için kullanılacaktır - normalde hedef depoya aktarılmadan "
-"önce. Çalışma dizini sağlanırken, eşzamanlı görevleri verimli bir şekilde "
-"çalıştırmak için yeterli alan sağladığınıza emin olun. Kabaca bir tahmin "
-"`max_workers` sayısı - ya da N çalışan işçi - ortalama imaj boyutu ile "
-"çarpılarak yapılabilir (örneğin 500MB). İmaj boyutu tahmini, dağıtımınızdaki "
-"ortalama boyuta göre yapılmalıdır. Görevin çalışmasına bağlı olarak, göreve "
-"bağlı bazı katsayılar ile bu sayıyı çarpmanızın gerekebileceğini unutmayın. "
-"Örnek olarak, eğer imaj dönüştürme etkinse, kullanılabilir boyutun iki "
-"katını isteyebilirsiniz. Bu söylenenlerin tümünün sadece tahmin olduğunu "
-"unutmamalı ve tahminleri en kötü senaryoya göre yapmalısınız ve hatalı "
-"durumlar için hazır olmalısınız."
 
 #, python-format
 msgid "Wrong command structure: %s"

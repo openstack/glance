@@ -7,9 +7,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0b2.dev4\n"
+"Project-Id-Version: glance 13.0.0.0rc2.dev2\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-06-06 22:42+0000\n"
+"POT-Creation-Date: 2016-09-20 15:01+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -114,10 +114,6 @@ msgstr "%s이(가) 이미 중지되었습니다."
 msgid "%s is stopped"
 msgstr "%s이(가) 중지됨"
 
-#, python-format
-msgid "'%(param)s' value out of range, must not exceed %(max)d"
-msgstr "'%(param)s' 값이 범위를 벗어남, %(max)d을(를) 초과해서는 안 됨"
-
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
 "keystone authentication strategy is enabled\n"
@@ -160,30 +156,6 @@ msgstr ""
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr "외부 저장소에 보관된 이미지 파일에 액세스하기 위한 URL 세트"
-
-msgid ""
-"AES key for encrypting store 'location' metadata. This includes, if used, "
-"Swift or S3 credentials. Should be set to a random string of length 16, 24 "
-"or 32 bytes"
-msgstr ""
-"암호화 저장소 '위치' 메타데이터의 AES 키. 이를 사용하는 경우스위프트 또는 S3 "
-"신임 정보를 포함합니다. 길이 16, 24 또는 32바이트자의 랜덤 문자열로 설정해야 "
-"합니다."
-
-msgid ""
-"Address to bind the server.  Useful when selecting a particular network "
-"interface."
-msgstr "서버를 바인드할 주소. 특정 네트워크 인터페이스를 선택할 때 유용합니다."
-
-msgid "Address to find the registry server."
-msgstr "레지스트리 서버를 찾기 위한 주소입니다."
-
-msgid ""
-"Allow unauthenticated users to access the API with read-only privileges. "
-"This only applies when using ContextMiddleware."
-msgstr ""
-"인증되지 않은 사용자가 읽기 전용 권한으로 API에 액세스하도록 허용합니다. "
-"ContextMiddleware를 사용하는 경우에만 적용됩니다."
 
 #, python-format
 msgid "Allowed values %s are invalid under given validators"
@@ -342,13 +314,6 @@ msgstr "큐에 있는 이미지에 대해 속성 container_format을 대체할 �
 msgid "Attribute disk_format can be only replaced for a queued image."
 msgstr "큐에 있는 이미지에 대해 속성 disk_format을 대체할 수 있습니다."
 
-msgid ""
-"Auth key for the user authenticating against the Swift authentication "
-"service. (deprecated)"
-msgstr ""
-"Swift 인증 서비스에 대한 사용자 인증을 위한인증 키입니다. (더 이상 사용되지 "
-"않음)"
-
 #, python-format
 msgid "Auth service at URL %(url)s not found."
 msgstr "URL %(url)s의 Auth 서비스를 찾을 수 없습니다."
@@ -411,9 +376,6 @@ msgstr "요청에 본문이 있어야 합니다."
 msgid "Both file and legacy_image_id may not be specified at the same time"
 msgstr "파일 및 legacy_image_id를 동시에 지정할 수 없음"
 
-msgid "CA certificate file to use to verify connecting clients."
-msgstr "클라이언트 연결을 확인하기 위해 사용하는 CA 인증 파일"
-
 msgid "Cannot be a negative value"
 msgstr "음수 값일 수 없음"
 
@@ -453,21 +415,6 @@ msgstr "큐에 들어가지 않은 이미지에 업로드할 수 없음"
 #, python-format
 msgid "Cannot use this parameter with the operator %(op)s"
 msgstr "연산자 %(op)s(으)로 이 매개변수를 사용할 수 없음"
-
-msgid "Certificate file to use when starting API server securely."
-msgstr "API 서버를 안전하게 시작할 때 사용하는 인증 파일"
-
-#, python-format
-msgid "Certificate format not supported: %s"
-msgstr "인증서 형식이 지원되지 않음: %s"
-
-#, python-format
-msgid "Certificate is not valid after: %s UTC"
-msgstr "%s UTC 후에 인증서가 올바르지 않음"
-
-#, python-format
-msgid "Certificate is not valid before: %s UTC"
-msgstr "%s UTC 전에 인증서가 올바르지 않음"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -593,12 +540,6 @@ msgstr "이 자원이 업데이트된 Datetime"
 msgid "Datetime when this resource would be subject to removal"
 msgstr "이 자원이 제거되는 Datetime"
 
-msgid ""
-"Default value for the number of items returned by a request if not specified "
-"explicitly in the request"
-msgstr ""
-"요청에 명시적으로 지정하지 않은 경우 요청에 의해 리턴되는 항목 수의 기본값"
-
 msgid "Default value is invalid"
 msgstr "기본값이 올바르지 않음"
 
@@ -621,18 +562,6 @@ msgstr "종속성 특성 '%s'을(를) 먼저 삭제해야 함"
 msgid "Dependency relations cannot be mutable"
 msgstr "종속성 관계는 변경할 수 없음"
 
-msgid "Deploy the v1 OpenStack Images API."
-msgstr "v1 OpenStack 이미지 API를 배치하십시오."
-
-msgid "Deploy the v1 OpenStack Registry API."
-msgstr "v1 OpenStack 레지스트리 API를 배치하십시오."
-
-msgid "Deploy the v2 OpenStack Images API."
-msgstr "v2 OpenStack 이미지 API를 배치하십시오."
-
-msgid "Deploy the v2 OpenStack Registry API."
-msgstr "v2 OpenStack 레지스트리 API를 배치하십시오."
-
 msgid "Descriptive name for the image"
 msgstr "이미지에 대한 설명식 이름"
 
@@ -644,17 +573,6 @@ msgstr "사전 크기가 최대값보다 큼"
 
 msgid "Dictionary size is less than minimum"
 msgstr "사전 크기가 최소값보다 작음"
-
-msgid ""
-"Digest algorithm which will be used for digital signature. Use the command "
-"\"openssl list-message-digest-algorithms\" to get the available algorithms "
-"supported by the version of OpenSSL on the platform. Examples are \"sha1\", "
-"\"sha256\", \"sha512\", etc."
-msgstr ""
-"디지털 서명에 사용할 다이제스트 알고리즘입니다. \"openssl list-message-"
-"digest-algorithms\" 명령을 사용하여 플랫폼에서 OpenSSL 버전이 지원하는 사용 "
-"가능 알고리즘을 가져오십시오. 예를 들어, \"sha1\", \"sha256\", \"sha512\" 등"
-"입니다."
 
 msgid "Disk format is not specified."
 msgstr "디스크 형식이 지정되지 않았습니다."
@@ -687,9 +605,6 @@ msgstr "저장소 구성에 오류가 있습니다. 저장소에 아티팩트를
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr "저장소 구성에 오류가 있습니다. 이미지를 저장소에 추가할 수 없습니다."
-
-msgid "Error occurred while creating the verifier"
-msgstr "확인자를 작성하는 중에 오류 발생"
 
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "{\"member\": \"image_id\"} 형식의 멤버가 있어야 함"
@@ -831,14 +746,6 @@ msgstr "컨테이너의 형식"
 msgid "Format of the disk"
 msgstr "디스크의 형식"
 
-#, python-format
-msgid "Get blob %(name)s data failed: %(err)s."
-msgstr "blob %(name)s 데이터 가져오기 실패: %(err)s."
-
-#, python-format
-msgid "Get image %(id)s data failed: %(err)s."
-msgstr "이미지 %(id)s 데이터를 불러올 수 없음: %(err)s"
-
 msgid "Glance client not installed"
 msgstr "Glance 클라이언트가 설치되지 않음"
 
@@ -856,18 +763,6 @@ msgid ""
 msgstr ""
 "사용자가 읽을 수 있는 정보 메시지는 적절한 경우에만 포함됨 (일반적으로 실패 "
 "시)"
-
-msgid ""
-"If False, server will return the header \"Connection: close\", If True, "
-"server will return \"Connection: Keep-Alive\" in its responses. In order to "
-"close the client socket connection explicitly after the response is sent and "
-"read successfully by the client, you simply have to set this option to False "
-"when you create a wsgi server."
-msgstr ""
-"False인 경우 서버는 헤더 \"연결: 닫음\"을 리턴합니다. True인 경우 서버는 응답"
-"에서 \"연결: 유휴\"를 리턴합니다. 응답을 보내고 클라이언트에서 이를 읽은 후"
-"에 클라이언트 소켓 연결을 명시적으로 닫으려면 wsgi 서버를 작성할 때 이 옵션"
-"을 False로 설정하면 됩니다."
 
 msgid "If true, image will not be deletable."
 msgstr "true일 경우 이미지는 삭제 불가능합니다."
@@ -1016,10 +911,6 @@ msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "이 자원에 대해 올바르지 않은 JSON 포인터: '/%s'"
 
 #, python-format
-msgid "Invalid certificate format: %s"
-msgstr "올바르지 않은 인증서 형식: %s"
-
-#, python-format
 msgid "Invalid checksum '%s': can't exceed 32 characters"
 msgstr "올바르지 않은 체크섬 '%s': 32자를 초과할 수 없음"
 
@@ -1137,10 +1028,6 @@ msgstr "위치를 제거하기에 올바르지 않은 포지션입니다."
 msgid "Invalid property definition"
 msgstr "올바르지 않은 특성 정의"
 
-#, python-format
-msgid "Invalid public key type for signature key type: %s"
-msgstr "서명 키 유형에 올바르지 않은 공용 키: %s"
-
 msgid "Invalid reference list specification"
 msgstr "올바르지 않은 참조 목록 스펙"
 
@@ -1152,14 +1039,6 @@ msgstr "blob와 작업하는 데 올바르지 않은 요청 PATCH"
 
 msgid "Invalid service catalog json."
 msgstr "올바르지 않은 서비스 카탈로그 json입니다."
-
-#, python-format
-msgid "Invalid signature hash method: %s"
-msgstr "올바르지 않은 서명 해시 메소드: %s"
-
-#, python-format
-msgid "Invalid signature key type: %s"
-msgstr "올바르지 않은 서명 키 유형: %s"
 
 #, python-format
 msgid "Invalid sort direction: %s"
@@ -1303,9 +1182,6 @@ msgstr "Limit 매개변수는 양수여야 함"
 msgid "Limit param must not be higher than %d"
 msgstr "Limit 매개변수는 %d보다 크지 않아야 함"
 
-msgid "Limits request ID length."
-msgstr "요청 ID 길이를 제한합니다."
-
 msgid "List definitions may hot have defaults"
 msgstr "목록 정의에 기본값을 사용할 수 없음"
 
@@ -1317,9 +1193,6 @@ msgstr "목록 크기가 최대값보다 큼"
 
 msgid "List size is less than minimum"
 msgstr "목록 크기가 최소값보다 작음"
-
-msgid "Loop time between checking for new items to schedule for delete."
-msgstr "삭제를 위해 스케줄에 대한 새 항목을 확인하는 사이의 루프 시간입니다."
 
 #, python-format
 msgid "Malformed Content-Range header: %s"
@@ -1334,50 +1207,9 @@ msgstr "최대 문자열 길이는 255자를 초과할 수 없음"
 msgid "Maximal age is count of days since epoch."
 msgstr "최대 기간은 epoch 이후의 일 수입니다."
 
-msgid ""
-"Maximum line size of message headers to be accepted. max_header_line may "
-"need to be increased when using large tokens (typically those generated by "
-"the Keystone v3 API with big service catalogs"
-msgstr ""
-"허용할 메시지 헤더의 최대 행 크기입니다. 더 큰 토큰 사용 시 max_header_line"
-"을 늘려야 할 수 있습니다(일반적으로 큰 서비스 카탈로그가 있는 키스톤 v3 API에"
-"서 생성됨)."
-
-msgid ""
-"Maximum number of image members per image. Negative values evaluate to "
-"unlimited."
-msgstr "이미지당 이미지 멤버의 최대 수입니다. 음수 값은 무제한을 의미합니다."
-
-msgid ""
-"Maximum number of locations allowed on an image. Negative values evaluate to "
-"unlimited."
-msgstr "이미지에 허용된 최대 위치 수입니다. 음수 값은 무제한을 의미합니다."
-
-msgid ""
-"Maximum number of properties allowed on an image. Negative values evaluate "
-"to unlimited."
-msgstr "이미지에서 허용된 최대 특성 수입니다. 음수 값은 무제한을 의미합니다."
-
-msgid ""
-"Maximum number of tags allowed on an image. Negative values evaluate to "
-"unlimited."
-msgstr "이미지에 허용된 최대 태그 수입니다. 음수 값은 무제한을 의미합니다."
-
-msgid "Maximum permissible number of items that could be returned by a request"
-msgstr "요청에서 리턴할 수 있는 허용 가능한 최대 항목 수"
-
 #, python-format
 msgid "Maximum redirects (%(redirects)s) was exceeded."
 msgstr "최대 경로 재지정(%(redirects)s)에 도달했습니다."
-
-msgid ""
-"Maximum size of image a user can upload in bytes. Defaults to 1099511627776 "
-"bytes (1 TB).WARNING: this value should only be increased after careful "
-"consideration and must be set to a value under 8 EB (9223372036854775808)."
-msgstr ""
-"사용자가 업로드할 수 있는 이미지의 최대 크기(바이트).1099511627776바이트"
-"(1TB). 경고: 이 값은 신중하게 고려하고 늘려야 하며 8EB(9223372036854775808) "
-"이하의 값으로 설정해야 합니다."
 
 #, python-format
 msgid "Member %(member_id)s is duplicated for image %(image_id)s"
@@ -1472,9 +1304,6 @@ msgstr ""
 
 msgid "Must supply a positive, non-zero value for age."
 msgstr "기간에 0이 아닌 양수 값을 제공해야 합니다."
-
-msgid "Name of the paste configuration file."
-msgstr "붙여넣기 구성 파일의 이름입니다."
 
 #, python-format
 msgid "No artifact found with ID %s"
@@ -1573,18 +1402,6 @@ msgstr "정렬 디렉토리 수가 정렬 키 수와 일치하지 않음"
 msgid "OVA extract is limited to admin"
 msgstr "관리자만 OVA를 추출할 수 있음"
 
-msgid ""
-"OVF metadata of interest was not specified in ovf-metadata.json config file. "
-"Please set \"cim_pasd\" to a list of interested "
-"CIM_ProcessorAllocationSettingData properties."
-msgstr ""
-"관심있는 OVF 메타데이터가 ovf-metadata.json 구성 파일에 지정되지 않았습니다. "
-"\"cim_pasd\"를 원하는 CIM_ProcessorAllocationSettingData 특성 목록으로 설정하"
-"십시오."
-
-msgid "OVF properties config file \"ovf-metadata.json\" was not found."
-msgstr "OVF 특성 구성 파일 \"ovf-metadata.json\"을 찾을 수 없습니다."
-
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "이전 및 새 저장 구문은 결합할 수 없음"
 
@@ -1635,18 +1452,6 @@ msgstr "네임스페이스의 소유자입니다."
 msgid "Param values can't contain 4 byte unicode."
 msgstr "매개변수 값에 4바이트 유니코드를 포함할 수 없습니다."
 
-msgid ""
-"Partial name of a pipeline in your paste configuration file with the service "
-"name removed. For example, if your paste section name is [pipeline:glance-"
-"api-keystone] use the value \"keystone\""
-msgstr ""
-"서비스 이름이 제거된 붙여넣기 구성 파일에 있는 파이프라인의 부분 이름입니다. "
-"예를 들어 붙여넣기 섹션 이름이 [pipeline:glance-api-keystone]이면 값으로 "
-"\"keystone\"을 사용합니다."
-
-msgid "Path to the directory where json metadata files are stored"
-msgstr "Json 메타데이터 파일이 저장된 디렉토리 경로"
-
 #, python-format
 msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
 msgstr ""
@@ -1685,15 +1490,9 @@ msgstr ""
 msgid "Port \"%s\" is not valid."
 msgstr "\"%s\" 포트가 올바르지 않습니다."
 
-msgid "Port the registry server is listening on."
-msgstr "레지스트리 서버가 청취 중인 포트입니다."
-
 #, python-format
 msgid "Prerelease numeric component is too large (%d characters max)"
 msgstr "사전 릴리스 숫자 컴포넌트가 너무 큼(최대 %d자)"
-
-msgid "Private key file to use when starting API server securely."
-msgstr "API 서버를 안전하게 시작할 때 사용할 개인 키 파일"
 
 #, python-format
 msgid "Process %d not running"
@@ -1739,14 +1538,6 @@ msgid "Property names can't contain 4 byte unicode."
 msgstr "특성 이름에 4바이트 유니코드를 포함할 수 없습니다."
 
 #, python-format
-msgid ""
-"Property protection on operation %(operation)s for rule %(rule)s is not "
-"found. No role will be allowed to perform this operation."
-msgstr ""
-"규칙 %(rule)s에 대한 조작 %(operation)s의 특성 보호를 찾을 수 없습니다. 이 조"
-"작 수행을 위해 허용된 역할이 없습니다."
-
-#, python-format
 msgid "Property's %(prop)s value has not been found"
 msgstr "특성의 %(prop)s 값을 찾지 못함"
 
@@ -1775,19 +1566,6 @@ msgstr "사용자에게 익숙한 네임스페이스 설명을 제공합니다."
 
 msgid "Public images do not have members."
 msgstr "공용 이미지에 멤버가 없습니다."
-
-msgid ""
-"Public url to use for versions endpoint. The default is None, which will use "
-"the request's host_url attribute to populate the URL base. If Glance is "
-"operating behind a proxy, you will want to change this to represent the "
-"proxy's URL."
-msgstr ""
-"버전 엔드포인트에 사용할 공용 url입니다. 기본값은 None이며 이를 사용하면 요청"
-"의 host_url 속성을 사용하여 URL의 기본을 채웁니다. Glance가 프록시 뒤에서 작"
-"동 중이면 프록시 URL을 나타내도록 이를 변경할 수 있습니다."
-
-msgid "Python module path of data access API"
-msgstr "데이터 액세스 API의 Python 모듈 경로"
 
 msgid "Received invalid HTTP redirect."
 msgstr "올바르지 않은 HTTP 경로 재지정을 수신했습니다."
@@ -1827,11 +1605,6 @@ msgstr "요청 본문은 오퍼레이션 오브젝트의 JSON 배열이어야 �
 msgid "Request must be a list of commands"
 msgstr "요청은 쉼표로 구분한 목록이어야 합니다."
 
-msgid ""
-"Required image properties for signature verification do not exist. Cannot "
-"verify signature."
-msgstr "서명 검증에 필요한 이미지 특성이 없습니다. 서명을 확인할 수 없습니다."
-
 #, python-format
 msgid "Required store %s is invalid"
 msgstr "필수 저장소 %s이(가) 올바르지 않음"
@@ -1847,18 +1620,6 @@ msgstr ""
 msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "Keystone의 응답에 Glance 엔드포인트가 들어있지 않습니다."
 
-msgid "Role used to identify an authenticated user as administrator."
-msgstr "인증된 사용자를 관리자로 식별하는 데 사용되는 역할."
-
-msgid ""
-"Run as a long-running process. When not specified (the default) run the "
-"scrub operation once and then exits. When specified do not exit and run "
-"scrub on wakeup_time interval as specified in the config."
-msgstr ""
-"장기 실행 프로세스로 실행됩니다. 지정하지 않는 경우(기본값) 삭제 조작을 한 "
-"번 실행한 다음 종료합니다. 종료하지 않도록 지정된 경우 구성에 지정된 "
-"wakeup_time 간격으로 삭제를 실행하십시오."
-
 msgid "Scope of image accessibility"
 msgstr "이미지 접근성의 범위"
 
@@ -1872,21 +1633,6 @@ msgstr "서버 %(serv)s이(가) 중지됨"
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
 msgstr "서버 작업자 작성에 실패함: %(reason)s."
-
-msgid ""
-"Set a system wide quota for every user. This value is the total capacity "
-"that a user can use across all storage systems. A value of 0 means unlimited."
-"Optional unit can be specified for the value. Accepted units are B, KB, MB, "
-"GB and TB representing Bytes, KiloBytes, MegaBytes, GigaBytes and TeraBytes "
-"respectively. If no unit is specified then Bytes is assumed. Note that there "
-"should not be any space between value and unit and units are case sensitive."
-msgstr ""
-"각 사용자에 대한 시스템 차원의 할당량을 설정하십시오. 이 값은 모든 스토리지 "
-"시스템에서 사용자가 사용할 수 있는 전체 용량입니다. 0 값은 무제한을 의미합니"
-"다. 값에 선택적 단위를 지정할 수 있습니다. 허용되는 단위는 각각 바이트, 킬로"
-"바이트, 메가바이트, 기가바이트 및 테라바이트를 나타내는 B, KB, MB, GB 및 TB입"
-"니다. 단위를 지정하지 않으면 바이트로 가정합니다. 값과 단위 사이에 공백을 사"
-"용하지 않아야 하며 단위는 대소문자를 구분합니다."
 
 #, python-format
 msgid "Show level %(shl)s is not supported in this operation"
@@ -1923,10 +1669,6 @@ msgstr ""
 "제공된 자원 유형에 사용할 접두부를 지정합니다. 지정된 자원 유형에 적용되는 경"
 "우 네임스페이스의 모든 특성은 이 접두부로 시작해야 합니다. 접두부 구분 기호"
 "(예: 콜론 :)를 포함해야 합니다."
-
-msgid "Specifies which task executor to be used to run the task scripts."
-msgstr ""
-"태스크 스크립트를 실행하는 데 사용할 태스크 실행 프로그램을 지정합니다."
 
 msgid "Status must be \"pending\", \"accepted\" or \"rejected\"."
 msgstr "상태는 \"보류 중\", \"수락됨\" 또는 \"거부됨\"이어야 합니다."
@@ -2017,10 +1759,6 @@ msgstr ""
 "키스톤 권한을 사용한 다음 키스톤의 URL을 지정할 수 있습니다."
 
 msgid ""
-"The address where the Swift authentication service is listening.(deprecated)"
-msgstr "Swift 인증 서비스가 청취 중인 주소입니다.(더 이상 사용되지 않음)"
-
-msgid ""
 "The administrators password. If \"use_user_token\" is not in effect, then "
 "admin credentials can be specified."
 msgstr ""
@@ -2034,19 +1772,9 @@ msgstr ""
 "관리 사용자 이름입니다. \"use_user_token\"이(가) 적용되지 않는 경우 관리 신"
 "임 정보를 지정할 수 있습니다."
 
-msgid "The amount of time in seconds to delay before performing a delete."
-msgstr "삭제를 수행하기 전에 지연되는 시간(초)입니다."
-
-msgid ""
-"The backlog value that will be used when creating the TCP listener socket."
-msgstr "TCP 리스너 소켓을 작성할 때 사용하는 백로그 값입니다."
-
 #, python-format
 msgid "The cert file you specified %s does not exist"
 msgstr "사용자가 지정한 인증 파일 %s이(가) 존재하지 않음"
-
-msgid "The config file that has the swift account(s)configs."
-msgstr "swift 계정 구성이 있는 구성 파일입니다."
 
 msgid "The current status of this task"
 msgstr "이 태스크의 현재 상태"
@@ -2066,13 +1794,6 @@ msgstr ""
 msgid "The format of the version %s is not valid. Use semver notation"
 msgstr "버전 %s의 형식이 올바르지 않습니다. semver 표기법을 사용하십시오."
 
-msgid ""
-"The format to which images will be automatically converted. When using the "
-"RBD backend, this should be set to 'raw'"
-msgstr ""
-"이미지가 자동으로 변환될 형식입니다. RBD 백엔드를 사용할 때 'raw'로 설정해야 "
-"합니다."
-
 #, python-format
 msgid ""
 "The given uri is not valid. Please specify a valid uri from the following "
@@ -2080,9 +1801,6 @@ msgid ""
 msgstr ""
 "제공된 uri가 올바르지 않습니다. 다음 지원 uri 목록에서 올바른 uri를 지정하십"
 "시오. %(supported)s"
-
-msgid "The hostname/IP of the pydev process listening for debug connections"
-msgstr "디버그 연결을 청취하는 pydev 프로세스의 hostname/IP"
 
 #, python-format
 msgid ""
@@ -2154,18 +1872,6 @@ msgstr "위치 %(location)s이(가) 이미 있음"
 msgid "The location data has an invalid ID: %d"
 msgstr "위치 데이터의 ID가 올바르지 않음: %d"
 
-msgid ""
-"The location of the property protection file.This file contains the rules "
-"for property protections and the roles/policies associated with it. If this "
-"config value is not specified, by default, property protections won't be "
-"enforced. If a value is specified and the file is not found, then the glance-"
-"api service will not start."
-msgstr ""
-"특성 보호 파일의 위치. 이 파일에는 특성 보호 규칙 및 해당 규칙과 연관된 역할/"
-"정책이 포함되어 있습니다. 이 구성 값을 지정하지 않으면 기본적으로 특성 보호"
-"가 적용되지 않습니다. 값을 지정했지만 파일을 찾을 수 없는 경우에는 glance-"
-"api 서비스가 시작되지 않습니다."
-
 #, python-format
 msgid ""
 "The metadata definition %(record_type)s with name=%(record_name)s not "
@@ -2225,69 +1931,8 @@ msgstr ""
 "name=%(name)s인 메타데이터 정의 태그를 namespace=%(namespace_name)s에서 찾을 "
 "수 없습니다."
 
-msgid "The mode in which the engine will run. Can be 'serial' or 'parallel'."
-msgstr "엔진이 실행되는 모드. '직렬' 또는 '병렬' 모드입니다."
-
-msgid ""
-"The number of child process workers that will be created to service "
-"requests. The default will be equal to the number of CPUs available."
-msgstr ""
-"요청을 처리하기 위해 작성하는 하위 프로세스 작업자 수입니다. 기본값은 사용 가"
-"능한 CPU 수와 동일합니다."
-
-msgid ""
-"The number of parallel activities executed at the same time by the engine. "
-"The value can be greater than one when the engine mode is 'parallel'."
-msgstr ""
-"동일한 시간에 엔진에서 실행되는 병렬 활동 수입니다. 엔진 모드가 '병렬'인 경"
-"우 이 값은 1보다 클 수 있습니다."
-
 msgid "The parameters required by task, JSON blob"
 msgstr "태스크에서 필요로 하는 매개변수, JSON blob"
-
-msgid ""
-"The path to the cert file to use in SSL connections to the registry server, "
-"if any. Alternately, you may set the GLANCE_CLIENT_CERT_FILE environment "
-"variable to a filepath of the CA cert file"
-msgstr ""
-"레지스트리 서버에 대한 SSL 연결에 사용할 인증 파일에 대한 경로(있는 경우). 또"
-"는 GLANCE_CLIENT_CERT_FILE 환경 변수를 CA 인증 파일의 파일 경로로 설정할 수 "
-"있습니다."
-
-msgid ""
-"The path to the certifying authority cert file to use in SSL connections to "
-"the registry server, if any. Alternately, you may set the "
-"GLANCE_CLIENT_CA_FILE environment variable to a filepath of the CA cert file."
-msgstr ""
-"레지스트리 서버에 대한 SSL 연결에서 사용할 권한 인증 파일을 인증하는 경로(있"
-"는 경우). 또는 GLANCE_CLIENT_CA_FILE 환경 변수를 CA 인증 파일의 파일 경로로 "
-"설정할 수 있습니다."
-
-msgid ""
-"The path to the key file to use in SSL connections to the registry server, "
-"if any. Alternately, you may set the GLANCE_CLIENT_KEY_FILE environment "
-"variable to a filepath of the key file"
-msgstr ""
-"레지스트리 서버에 대한 SSL 연결에서 사용할 키 파일의 경로(있는 경우). 또는 "
-"GLANCE_CLIENT_KEY_FILE 환경 변수를 키 파일의 파일 경로로 설정할 수 있습니다."
-
-msgid ""
-"The period of time, in seconds, that the API server will wait for a registry "
-"request to complete. A value of 0 implies no timeout."
-msgstr ""
-"레지스트리 요청을 완료하도록 API 서버가 대기하는 시간(초)입니다. 0 값은 제한"
-"시간 초과를 의미합니다."
-
-msgid "The port on which a pydev process is listening for connections."
-msgstr "pydev 프로세스가 연결을 청취하는 포트입니다."
-
-msgid "The port on which the server will listen."
-msgstr "서버가 청취할 포트입니다."
-
-msgid ""
-"The protocol to use for communication with the registry server.  Either http "
-"or https."
-msgstr "레지스트리 서버와의 통신을 위해 사용할 프로토콜. http 또는 https."
 
 #, python-format
 msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
@@ -2299,13 +1944,6 @@ msgstr "제공된 이미지가 너무 큽니다."
 #, python-format
 msgid "The provided path '%(path)s' is invalid: %(explanation)s"
 msgstr "제공된 경로 '%(path)s'이(가) 올바르지 않음: %(explanation)s"
-
-msgid ""
-"The reference to the default swift account/backing store parameters to use "
-"for adding new images."
-msgstr ""
-"새 이미지를 추가하는 데 사용할 기본 swift 계정/백업 저장소 매개변수에 대한 참"
-"조입니다."
 
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not in "
@@ -2372,9 +2010,6 @@ msgstr ""
 msgid "The result of current task, JSON blob"
 msgstr "현재 태스크의 결과, JSON blob"
 
-msgid "The signature data was not properly encoded using base64"
-msgstr "base64를 사용하여 서명 데이터가 올바르게 인코딩되지 않음"
-
 #, python-format
 msgid ""
 "The size of the data %(image_size)s will exceed the limit. %(remaining)s "
@@ -2382,14 +2017,6 @@ msgid ""
 msgstr ""
 "데이터 크기 %(image_size)s이(가) 남은 한도 바이트 %(remaining)s을(를) 초과합"
 "니다."
-
-msgid ""
-"The size of thread pool to be used for scrubbing images. The default is one, "
-"which signifies serial scrubbing. Any value above one indicates the max "
-"number of images that may be scrubbed in parallel."
-msgstr ""
-"이미지 삭제에 사용될 스레드 풀의 크기입니다. 기본값은 1이며 이는직렬 삭제를 "
-"나타냅니다. 1보다 큰 값은 병렬로 삭제될 수 있는 최대 이미지 수를 표시합니다."
 
 #, python-format
 msgid "The specified member %s could not be found"
@@ -2433,17 +2060,6 @@ msgid "The status of this image member"
 msgstr "이 이미지 멤버의 상태"
 
 msgid ""
-"The store names to use to get store preference order. The name must be "
-"registered by one of the stores defined by the 'stores' config option. This "
-"option will be applied when you using 'store_type' option as image location "
-"strategy defined by the 'location_strategy' config option."
-msgstr ""
-"저장소 환경 설정 순서를 가져오는 데 사용하는 저장소 이름입니다. 이름은 "
-"'stores' 구성 옵션에서 정의하는 저장소 중 하나를 사용하여 등록해야 합니다. "
-"이 옵션은 'store_type' 옵션을 'location_strategy' 구성 옵션에서 정의하는 이미"
-"지 위치 전략으로 사용할 때 적용됩니다."
-
-msgid ""
 "The strategy to use for authentication. If \"use_user_token\" is not in "
 "effect, then auth strategy can be specified."
 msgstr ""
@@ -2472,18 +2088,6 @@ msgstr "고유 네임스페이스 텍스트입니다."
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr ""
 "사용자에게 익숙한 네임스페이스의 이름입니다. 가능한 경우 UI에서 사용됩니다."
-
-msgid ""
-"The user to authenticate against the Swift authentication service "
-"(deprecated)"
-msgstr "Swift 인증 서비스에 대해 인증할 사용자입니다.(더 이상 사용되지 않음)"
-
-msgid ""
-"The value for the socket option TCP_KEEPIDLE.  This is the time in seconds "
-"that the connection must be idle before TCP starts sending keepalive probes."
-msgstr ""
-"소켓 옵션 TCP_KEEPIDLE의 값입니다. 이는 TCP가 활성 유지 프로브 전송을 시작하"
-"기 전에 연결이 유휴되어야 하는 시간(초)입니다."
 
 #, python-format
 msgid ""
@@ -2516,13 +2120,6 @@ msgid "There was an error connecting to a server"
 msgstr "서버 연결 오류가 있었습니다."
 
 msgid ""
-"This config value indicates whether \"roles\" or \"policies\" are used in "
-"the property protection file."
-msgstr ""
-"이 구성 값은 \"roles\" 또는 \"policies\"가 특성 보호 파일에서 사용되는지 여부"
-"를 표시합니다."
-
-msgid ""
 "This operation is currently not permitted on Glance Tasks. They are auto "
 "deleted after reaching the time based on their expires_at property."
 msgstr ""
@@ -2533,24 +2130,8 @@ msgid "This operation is currently not permitted on Glance images details."
 msgstr "해당 동작은 현재 Glance 이미지 세부사항에 대해서는 허용되지 않습니다."
 
 msgid ""
-"This value sets what strategy will be used to determine the image location "
-"order. Currently two strategies are packaged with Glance 'location_order' "
-"and 'store_type'."
-msgstr ""
-"이 값은 이미지 위치 순서를 판별하는 데 사용되는 전략을 설정합니다. 현재 두 개"
-"의 전략이 Glance 'location_order' 및 'store_type'으로 패키징됩니다."
-
-msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr "이후에 태스크가 활성이 되는 시간(시), 성공 또는 실패"
-
-msgid ""
-"Timeout for client connections' socket operations. If an incoming connection "
-"is idle for this number of seconds it will be closed. A value of '0' means "
-"wait forever."
-msgstr ""
-"클라이언트 연결의 소켓 조작에 대한 제한시간입니다. 수신 연결이 이 기간(초) 동"
-"안 유휴 상태이면 연결이 닫힙니다. 값이 '0'이면 무기한 대기합니다."
 
 msgid "Too few arguments."
 msgstr "인수가 너무 적습니다."
@@ -2560,13 +2141,6 @@ msgstr "위치가 너무 적음"
 
 msgid "Too many locations"
 msgstr "위치가 너무 많음"
-
-#, python-format
-msgid "Total size is %(size)d bytes across %(img_count)d images"
-msgstr "%(size)d 이미지에 걸쳐 전체 크기는 %(img_count)d 바이트임"
-
-msgid "Turn on/off delayed delete."
-msgstr "지연된 삭제를 켜기/끄기입니다."
 
 msgid "Type version has to be a valid semver string"
 msgstr "유형 버전은 올바른 semver 문자열이어야 함"
@@ -2653,13 +2227,6 @@ msgstr "%s에 대한 붙여넣기 구성 파일을 찾을 수 없습니다."
 msgid "Unable to modify collection in immutable or readonly property"
 msgstr "불변 특성 또는 읽기 전용 특성의 콜렉션을 수정할 수 없음"
 
-#, python-format
-msgid "Unable to retrieve certificate with ID: %s"
-msgstr "ID로 인증서를 검색할 수 없음: %s"
-
-msgid "Unable to retrieve request id from context"
-msgstr "컨텍스트에서 요청 ID를 검색할 수 없음"
-
 msgid "Unable to specify artifact type explicitly"
 msgstr "아티팩트 유형을 명시적으로 지정할 수 없음"
 
@@ -2676,14 +2243,6 @@ msgstr "유형을 지정하지 않은 경우 버전을 지정할 수 없음"
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 "이미지 %(image_id)s에 대한 중복 이미지 데이터를 업로드할 수 없음: %(error)s"
-
-msgid ""
-"Unable to verify signature since the algorithm is unsupported on this system"
-msgstr "이 시스템에서 알고리즘이 지원되지 않으므로 서명을 확인할 수 없음"
-
-#, python-format
-msgid "Unable to verify signature: %(reason)s"
-msgstr "서명을 확인할 수 없음: %(reason)s"
 
 msgid "Unauthorized image access"
 msgstr "권한 없는 이미지 액세스"
@@ -2719,10 +2278,6 @@ msgstr "지원되지 않는 sort_dir. 허용 가능한 값: %s"
 #, python-format
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "지원되지 않는 sort_key. 허용 가능한 값: %s"
-
-#, python-format
-msgid "Value %(value)d out of range, must not exceed %(max)d"
-msgstr "값 %(value)d이(가) 범위를 벗어남, %(max)d을(를) 초과해서는 안 됨"
 
 msgid "Value is greater than maximum"
 msgstr "값이 최대값보다 큼"
@@ -2766,65 +2321,6 @@ msgstr ""
 "두 지정해야 함"
 
 msgid ""
-"When true, this option sets the owner of an image to be the tenant. "
-"Otherwise, the owner of the  image will be the authenticated user issuing "
-"the request."
-msgstr ""
-"true인 경우 이 옵션은 이미지의 소유자를 테넌트로 설정합니다. 그렇지 않은 경"
-"우 이미지의 소유자는 요청을 발행한 인증된사용자가 됩니다."
-
-msgid ""
-"When using SSL in connections to the registry server, do not require "
-"validation via a certifying authority. This is the registry's equivalent of "
-"specifying --insecure on the command line using glanceclient for the API."
-msgstr ""
-"레지스트리 서버에 대한 연결에서 SSL을 사용할 때 권한 인증을 통한 유효성 검증"
-"이 필요하지 않습니다. 이는 API의 glanceclient를 사용하여 명령행에서 --"
-"insecure를 지정하는 레지스트리와 자원입니다."
-
-msgid ""
-"Whether to allow users to specify image properties beyond what the image "
-"schema provides"
-msgstr ""
-"이미지 스키마가 제공하는 것 이상으로 이미지 특성을 지정할 수 있도록 허용할지"
-"의 여부"
-
-msgid ""
-"Whether to include the backend image locations in image properties. For "
-"example, if using the file system store a URL of \"file:///path/to/image\" "
-"will be returned to the user in the 'direct_url' meta-data field. Revealing "
-"storage location can be a security risk, so use this setting with caution! "
-"Setting this to true overrides the show_image_direct_url option."
-msgstr ""
-"이미지 특성에 백엔드 이미지 위치를 포함시킬지의 여부. 예를 들어 파일 시스템 "
-"저장소를 사용하는 경우 URL\"file:///path/to/image\"가 사용자에게 "
-"'direct_url' 메타데이터 필드로 리턴됩니다. 스토리지 위치를 드러내면 보안 위험"
-"이 있을 수 있으므로 이 설정을 주의하여 사용하십시오! 이 값을 true로 설정하면 "
-"show_image_direct_url 옵션을 대체합니다."
-
-msgid ""
-"Whether to include the backend image storage location in image properties. "
-"Revealing storage location can be a security risk, so use this setting with "
-"caution!"
-msgstr ""
-"이미지 특성에 백엔드 이미지 스토리지 위치를 포함시킬지의 여부.  스토리지 위치"
-"를 드러낼 경우 보안상 위험할 수 있으므로이 설정은 주의하여 사용하십시오."
-
-msgid ""
-"Whether to pass through headers containing user and tenant information when "
-"making requests to the registry. This allows the registry to use the context "
-"middleware without keystonemiddleware's auth_token middleware, removing "
-"calls to the keystone auth service. It is recommended that when using this "
-"option, secure communication between glance api and glance registry is "
-"ensured by means other than auth_token middleware."
-msgstr ""
-"레지스트리에 대한 요청을 작성할 때 사용자 및 테넌트 정보를 포함하는 헤더를 전"
-"달할지 여부를 통해 레지스트리는 keystone 인증 서비스에 대한 호출을 제거하면"
-"서 keystonemiddleware의 auth_token 미들웨어 없이 컨텍스트 미들웨어를 사용할 "
-"수 있습니다. 이 옵션을 사용할 경우 auth_token 미들웨어 외의 다른 수단을 통해 "
-"glance api 및 glance 레지스트리 간의 통신을 보호해야 합니다."
-
-msgid ""
 "Whether to pass through the user token when making requests to the registry. "
 "To prevent failures with token expiration during big files upload, it is "
 "recommended to set this parameter to False.If \"use_user_token\" is not in "
@@ -2834,33 +2330,6 @@ msgstr ""
 "을 업로드하는 동안 토큰 만기에 대한 실패를 방지하려면 이 매개변수를 False로 "
 "설정하는 것이 좋습니다. \"use_user_token\"이 적용되지 않은 경우 관리 신임 정"
 "보를 지정할 수 있습니다."
-
-msgid ""
-"Work dir for asynchronous task operations. The directory set here will be "
-"used to operate over images - normally before they are imported in the "
-"destination store. When providing work dir, make sure enough space is "
-"provided for concurrent tasks to run efficiently without running out of "
-"space. A rough estimation can be done by multiplying the number of "
-"`max_workers` - or the N of workers running - by an average image size (e.g "
-"500MB). The image size estimation should be done based on the average size "
-"in your deployment. Note that depending on the tasks running you may need to "
-"multiply this number by some factor depending on what the task does. For "
-"example, you may want to double the available size if image conversion is "
-"enabled. All this being said, remember these are just estimations and you "
-"should do them based on the worst case scenario and be prepared to act in "
-"case they were wrong."
-msgstr ""
-"비동기 태스크 조작을 위한 작업 디렉토리입니다. 이 디렉토리 세트는이미지에서 "
-"작업하는 데 사용됩니다. 일반적으로 대상 저장소에서 가져오기 전에 사용됩니다. "
-"작업 디렉토리를 제공하는 경우 공간 외부에서 실행하지 않고도 동시 태스크를 효"
-"율적으로 실행하기에 충분한 공간이 제공되었는지 확인하십시오. `max_workers` 수"
-"(또는 실행 중인 작업자 수 N)에 평균 이미지 크기(예: 500MB)를 곱하여 대략의 추"
-"정값을 계산할 수 있습니다. 이미지 크기 추정은 배치의 평균 크기를 기반으로 하"
-"여 수행되어야 합니다. 실행 중인 태스크에 따라 이 수를 태스크 수행 항목에 따"
-"른 여러 요인으로 곱해야 할 수 있습니다. 예를 들어 이미지 변환이 사용으로 설정"
-"된 경우 사용 가능 크기를 두 배로 하려고 할 수 있습니다. 여기서는 추정일 뿐이"
-"며,최악의 시나리오를 기반으로 하여 이를 수행해야 하고 잘못되는 경우에 대비하"
-"여 조치를 준비해야 함을 기억하십시오."
 
 #, python-format
 msgid "Wrong command structure: %s"
