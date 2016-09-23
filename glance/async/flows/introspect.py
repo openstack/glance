@@ -48,6 +48,7 @@ class _Introspect(utils.OptionalTask):
         try:
             stdout, stderr = putils.trycmd('qemu-img', 'info',
                                            '--output=json', file_path,
+                                           prlimit=utils.QEMU_IMG_PROC_LIMITS,
                                            log_errors=putils.LOG_ALL_ERRORS)
         except OSError as exc:
             # NOTE(flaper87): errno == 2 means the executable file
