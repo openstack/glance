@@ -51,7 +51,7 @@ which you may want to contribute:
   you notice structural improvements that our API reference is missing, please
   file a bug.  And, of course, we would also welcome your patch implementing
   the improvement!
-  
+
 Release Notes
 -------------
 
@@ -83,3 +83,11 @@ Once the release notes have been committed you can build them by using:
    $ tox -e releasenotes
 
 This will create the HTML files under ``releasenotes/build/html/``.
+
+**NOTE**: The ``prelude`` section in the release notes is to highlight only the
+important changes of the release. Please word your note accordingly and be
+judicious when adding content there. We don't encourage extraneous notes and at
+the same time we don't want to miss out on important ones. In short, not every
+release note will need content in the ``prelude`` section. If what you're
+working on required a spec, then a prelude is appropriate. If you're submitting
+a bugfix, most likely not; a spec-lite is a judgement call.
