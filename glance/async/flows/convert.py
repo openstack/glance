@@ -69,12 +69,23 @@ class _Convert(task.Task):
                 _Convert.conversion_missing_warned = True
             return
 
+        image_obj = self.image_repo.get(image_id)
+        src_format = image_obj.disk_format
+
         # TODO(flaper87): Check whether the image is in the desired
         # format already. Probably using `qemu-img` just like the
         # `Introspection` task.
+
+        # NOTE(hemanthm): We add '-f' parameter to the convert command here so
+        # that the image format need not be inferred by qemu utils. This
+        # shields us from being vulnerable to an attack vector described here
+        # https://bugs.launchpad.net/glance/+bug/1449062
+
         dest_path = os.path.join(CONF.task.work_dir, "%s.converted" % image_id)
-        stdout, stderr = putils.trycmd('qemu-img', 'convert', '-O',
-                                       conversion_format, file_path, dest_path,
+        stdout, stderr = putils.trycmd('qemu-img', 'convert',
+                                       '-f', src_format,
+                                       '-O', conversion_format,
+                                       file_path, dest_path,
                                        log_errors=putils.LOG_ALL_ERRORS)
 
         if stderr:

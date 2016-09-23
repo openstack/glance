@@ -1,0 +1,12 @@
+---
+security:
+  - All ``qemu-img info`` calls are now run under resource
+    limitations that limit the CPU time and address space
+    usage of the process running the command to 2 seconds
+    and 1 GB respectively. This addresses the bug
+    https://bugs.launchpad.net/glance/+bug/1449062
+
+    Current usage of "qemu-img" is limited to Glance tasks,
+    which by default (since the Liberty release) are only
+    available to admin users. We continue to recommend that
+    tasks only be exposed to trusted users
