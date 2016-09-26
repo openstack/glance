@@ -50,6 +50,18 @@ In glance-api.conf find the following lines::
 Then replace http://localhost:5000/v3 with the url of keystone, also adding /v3
 to the end of it. For example, 'https://192.168.245.9:5000/v3'.
 
+
+Another option in etc/glance-api.conf which can be configured is which key manager
+to use. By default Glance will use the default key manager defined by the Castellan
+key manager interface, which is currently the Barbican key manager.
+
+In glance-api.conf find the following lines::
+
+  [key_manager]
+  api_class = castellan.key_manager.barbican_key_manager.BarbicanKeyManager
+
+Then replace the value with the desired key manager class.
+
 .. note:: If those lines do not exist then simply add them to the end of the file.
 
 Using the Signature Verification
