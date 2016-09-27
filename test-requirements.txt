@@ -34,5 +34,5 @@ python-swiftclient>=2.2.0 # Apache-2.0
 
 # Documentation
 os-api-ref>=1.0.0 # Apache-2.0
-oslosphinx!=3.4.0,>=2.5.0 # Apache-2.0
+oslosphinx>=4.7.0 # Apache-2.0
 reno>=1.8.0 # Apache2
