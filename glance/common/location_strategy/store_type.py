@@ -16,19 +16,14 @@
 """Storage preference based location strategy module"""
 
 from oslo_config import cfg
+from oslo_log import log as logging
 import six
 import six.moves.urllib.parse as urlparse
 
-from glance.i18n import _
+from glance.i18n import _, _LW
 
-# TODO(dharinic): The help text for ``store_type_preference`` must be
-# edited to replace ``filesystem``and ``vmware_datastore`` with ``file``
-# and ``vmware`` respectively upon resolution of Bug #1615852.
-# Also, remove the Note from ``Possible Values`` sections upon
-# resolution of Bug #1615852.
+LOG = logging.getLogger(__name__)
 
-# NOTE(dharinic): We cannot restrict the choices for ``store_type_preference``
-# for backward compatability reasons. See Bug #1615852.
 store_type_opts = [
     cfg.ListOpt('store_type_preference',
                 default=[],
@@ -48,18 +43,13 @@ change the location order.
 Possible values:
     * Empty list
     * Comma separated list of registered store names. Legal values are:
-      (NOTE: Use only the following choices, which, unfortunately,
-      are not entirely consistent with the store names used in other
-      similar configuration options. Please take extra care while
-      setting this option, and read the help text carefully when
-      setting other similar options.)
-        * filesystem
+        * file
         * http
         * rbd
         * swift
         * sheepdog
         * cinder
-        * vmware_datastore
+        * vmware
 
 Related options:
     * location_strategy
@@ -89,13 +79,13 @@ def init():
     # possible to prevent make relationships with Glance(server)-specific code,
     # for example: using functions within store module to validate
     # 'store_type_preference' option.
-    mapping = {'filesystem': ['file', 'filesystem'],
+    mapping = {'file': ['file', 'filesystem'],
                'http': ['http', 'https'],
                'rbd': ['rbd'],
                'swift': ['swift', 'swift+https', 'swift+http'],
                'sheepdog': ['sheepdog'],
                'cinder': ['cinder'],
-               'vmware_datastore': ['vsphere']}
+               'vmware': ['vsphere']}
     _STORE_TO_SCHEME_MAP.clear()
     _STORE_TO_SCHEME_MAP.update(mapping)
 
@@ -114,6 +104,27 @@ def get_ordered_locations(locations, uri_key='url', **kwargs):
             preferred_store = str(preferred_store).strip()
             if not preferred_store:
                 continue
+            # NOTE(dharinic): The following conversion of ``filesystem`` and
+            # ``vmware_datastore`` to ``file`` and ``vmware`` respectively
+            # are to make store names consistent in Glance and glance_store
+            # and also be backward compatible.
+            # Reference: Bug 1615852
+            if preferred_store == 'filesystem':
+                preferred_store = 'file'
+                msg = _LW('The value ``filesystem`` is DEPRECATED for use '
+                          'with ``store_type_preference``. It will be '
+                          'removed in the Pike release. Please use ``file`` '
+                          'instead. Please see the Glance Newton release '
+                          'notes for more information.')
+                LOG.warn(msg)
+            if preferred_store == 'vmware_datastore':
+                preferred_store = 'vmware'
+                msg = _LW('The value ``vmware_datastore`` is DEPRECATED for '
+                          'use with ``store_type_preference``. It will be '
+                          'removed in the Pike release. Please use ``vmware`` '
+                          'instead. Please see the Glance Newton release '
+                          'notes for more information.')
+                LOG.warn(msg)
             yield preferred_store
 
     if not locations:
