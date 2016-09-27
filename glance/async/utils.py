@@ -13,14 +13,24 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_concurrency import processutils as putils
 from oslo_log import log as logging
 from oslo_utils import encodeutils
+from oslo_utils import units
 from taskflow import task
 
 from glance.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
+
+# NOTE(hemanthm): As reported in the bug #1449062, "qemu-img info" calls can
+# be exploited to craft DoS attacks by providing malicious input. The process
+# limits defined here are protections against such attacks. This essentially
+# limits the CPU time and address space used by the process that executes
+# "qemu-img info" command to 2 seconds and 1 GB respectively.
+QEMU_IMG_PROC_LIMITS = putils.ProcessLimits(cpu_time=2,
+                                            address_space=1 * units.Gi)
 
 
 class OptionalTask(task.Task):
