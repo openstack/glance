@@ -21,6 +21,7 @@ from oslo_concurrency import processutils
 from oslo_config import cfg
 
 from glance.async.flows import introspect
+from glance.async import utils as async_utils
 from glance import domain
 import glance.tests.utils as test_utils
 
@@ -88,6 +89,13 @@ class TestImportTask(test_utils.BaseTestCase):
             exc_mock.return_value = (result, None)
             image_create.execute(image, '/test/path.qcow2')
             self.assertEqual(10737418240, image.virtual_size)
+
+            # NOTE(hemanthm): Assert that process limits are being applied on
+            # "qemu-img info" calls. See bug #1449062 for more details.
+            kw_args = exc_mock.call_args[1]
+            self.assertIn('prlimit', kw_args)
+            self.assertEqual(async_utils.QEMU_IMG_PROC_LIMITS,
+                             kw_args.get('prlimit'))
 
     def test_introspect_no_image(self):
         image_create = introspect._Introspect(self.task.task_id,

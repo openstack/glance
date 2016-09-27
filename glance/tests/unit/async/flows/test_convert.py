@@ -94,6 +94,12 @@ class TestImportTask(test_utils.BaseTestCase):
                 rm_mock.return_value = None
                 image_convert.execute(image, 'file:///test/path.raw')
 
+                # NOTE(hemanthm): Asserting that the source format is passed
+                # to qemu-utis to avoid inferring the image format. This
+                # shields us from an attack vector described at
+                # https://bugs.launchpad.net/glance/+bug/1449062/comments/72
+                self.assertIn('-f', exc_mock.call_args[0])
+
     def test_convert_revert_success(self):
         image_convert = convert._Convert(self.task.task_id,
                                          self.task_type,
@@ -178,3 +184,15 @@ class TestImportTask(test_utils.BaseTestCase):
                 self.assertEqual([], os.listdir(self.work_dir))
                 self.assertEqual('qcow2', image.disk_format)
                 self.assertEqual(10737418240, image.virtual_size)
+
+                # NOTE(hemanthm): Asserting that the source format is passed
+                # to qemu-utis to avoid inferring the image format when
+                # converting. This shields us from an attack vector described
+                # at https://bugs.launchpad.net/glance/+bug/1449062/comments/72
+                #
+                # A total of three calls will be made to 'execute': 'info',
+                # 'convert' and 'info' towards introspection, conversion and
+                # OVF packaging respectively. We care about the 'convert' call
+                # here, hence we fetch the 2nd set of args from the args list.
+                convert_call_args, _ = exc_mock.call_args_list[1]
+                self.assertIn('-f', convert_call_args)

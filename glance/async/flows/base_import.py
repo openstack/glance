@@ -30,6 +30,7 @@ from taskflow import retry
 from taskflow import task
 from taskflow.types import failure
 
+from glance.async import utils
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
@@ -156,6 +157,7 @@ class _ImportToFS(task.Task):
             # place that other tasks can consume as well.
             stdout, stderr = putils.trycmd('qemu-img', 'info',
                                            '--output=json', path,
+                                           prlimit=utils.QEMU_IMG_PROC_LIMITS,
                                            log_errors=putils.LOG_ALL_ERRORS)
         except OSError as exc:
             with excutils.save_and_reraise_exception():
