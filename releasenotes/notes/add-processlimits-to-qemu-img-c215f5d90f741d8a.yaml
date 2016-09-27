@@ -7,6 +7,6 @@ security:
     https://bugs.launchpad.net/glance/+bug/1449062
 
     Current usage of "qemu-img" is limited to Glance tasks,
-    which by default (since the Liberty release) are only
+    which by default (since the Mitaka release) are only
     available to admin users. We continue to recommend that
     tasks only be exposed to trusted users
