@@ -16,9 +16,9 @@
 
 :tocdepth: 3
 
-================================
-Image Service API v1 (SUPPORTED)
-================================
+=================================
+Image Service API v1 (DEPRECATED)
+=================================
 
 .. rest_expand_all::
 

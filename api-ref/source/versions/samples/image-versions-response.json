@@ -1,7 +1,7 @@
 {
     "versions": [
         {
-            "id": "v2.3",
+            "id": "v2.4",
             "links": [
                 {
                     "href": "http://glance.openstack.example.org/v2/",
@@ -9,6 +9,16 @@
                 }
             ],
             "status": "CURRENT"
+        },
+        {
+            "id": "v2.3",
+            "links": [
+                {
+                    "href": "http://glance.openstack.example.org/v2/",
+                    "rel": "self"
+                }
+            ],
+            "status": "SUPPORTED"
         },
         {
             "id": "v2.2",
@@ -48,7 +58,7 @@
                     "rel": "self"
                 }
             ],
-            "status": "SUPPORTED"
+            "status": "DEPRECATED"
         },
         {
             "id": "v1.0",
@@ -58,7 +68,7 @@
                     "rel": "self"
                 }
             ],
-            "status": "SUPPORTED"
+            "status": "DEPRECATED"
         }
     ]
 }

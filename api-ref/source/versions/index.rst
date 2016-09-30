@@ -20,3 +20,41 @@ Image Service Versions
 .. rest_expand_all::
 
 .. include:: versions.inc
+
+Version History
+***************
+
+**Newton changes**
+
+- version 2.4 is CURRENT
+- version 2.3 is SUPPORTED
+- version 1.1 is DEPRECATED
+- version 1.0 is DEPRECATED
+
+**Kilo changes**
+
+- version 2.3 is CURRENT
+- version 1.1 is SUPPORTED
+
+**Havana changes**
+
+- version 2.2 is CURRENT
+- version 2.1 is SUPPORTED
+
+**Grizzly changes**
+
+- version 2.1 is CURRENT
+- version 2.0 is SUPPORTED
+
+**Folson changes**
+
+- version 2.0 is CURRENT
+
+**Diablo changes**
+
+- version 1.1 is CURRENT
+- version 1.0 is SUPPORTED
+
+**Bexar changes**
+
+- version 1.0 is CURRENT
