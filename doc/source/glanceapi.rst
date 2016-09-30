@@ -20,6 +20,8 @@ Using Glance's Image Public APIs
 Glance is the reference implementation of the OpenStack Images API.  As such,
 Glance fully implements versions 1 and 2 of the Images API.
 
+.. include:: deprecation-note.inc
+
 There used to be a sentence here saying, "The Images API specification is
 developed alongside Glance, but is not considered part of the Glance project."
 That's only partially true (or completely false, depending upon how strict you
@@ -56,22 +58,23 @@ Images v1 API
 
 The v1 API was originally designed as a service API for use by Nova and other
 OpenStack services. In the Kilo release, the v1.1 API was downgraded from
-CURRENT to SUPPORTED. The Images v1 API is closed to further development, and
-the Glance code implementing the v1 API accepts only serious bugfixes.
+CURRENT to SUPPORTED. In the Newton release, the version 1 API is officially
+declared DEPRECATED.
 
-It's possible to deploy OpenStack without exposing the Images v1 API to end
-users.  The Compute v2 API contains image-related API calls allowing users to
-list images, list images details, show image details for a specific image,
-delete images, and manipulate image metadata.  Nova acts as a proxy to Glance
-for these image-related calls.  It's important to note that the image-related
-calls in the Compute v2 API are a proper subset of the calls available in the
-Images APIs.
+During the deprecation period, the Images v1 API is closed to further
+development.  The Glance code implementing the v1 API accepts only serious
+bugfixes.
 
-Currently Nova uses the Images v1 API, but work is in progress to convert Nova
-(and other OpenStack services that consume images) to using the Images v2 API.
-Once that occurs, it will be possible to deploy OpenStack without deploying the
-Images v1 API.  At that point, the Images v1 API will be deprecated, following
-the standard OpenStack deprecation policy.
+Since Folsom, it has been possible to deploy OpenStack without exposing the
+Images v1 API to end users.  The Compute v2 API contains image-related API
+calls allowing users to list images, list images details, show image details
+for a specific image, delete images, and manipulate image metadata.  Nova acts
+as a proxy to Glance for these image-related calls.  It's important to note
+that the image-related calls in the Compute v2 API are a proper subset of the
+calls available in the Images APIs.
+
+In the Newton release, Nova (and other OpenStack services that consume images)
+have been modified to use the Images v2 API by default.
 
 **Reference**
 
@@ -86,10 +89,8 @@ expose images-related functionality as a public-facing endpoint.  It's the
 version that's currently open to development.
 
 A common strategy is to deploy multiple Glance nodes: internal-facing nodes
-providing both Images v1 and v2 APIs for internal consumers like Nova, and
-external-facing nodes providing only the Images v2 API for public use.  Thus,
-there is no reason to rely solely on Nova's image-related calls in the Compute
-API if one does not want to expose the Images v1 API to public endpoints.
+providing the Images APIs for internal consumers like Nova, and external-facing
+nodes providing the Images v2 API for public use.
 
 The Future
 **********
@@ -103,12 +104,12 @@ Images.  Conceptually, a virtual machine image could be an Artifact, and the
 Glare code has been designed to be compatible with the Images v2 API.  But at
 this time, there are no plans to implement an Images v3 API.
 
-As far as the Glance/Glare relationship goes, it's too early to say what the
-future holds.  While it's evident that there's a need for an Artifact
-Repository in OpenStack, whether it will be as ubiquitous as the need for an
-Images Repository isn't clear.  On the other hand, industry trends could go in
-the opposite direction where everyone needs Artifacts and deployers view images
-as simply another type of digital artifact.  As Yogi Berra, an experienced
+During the Newton development cycle, Glare became an independent OpenStack
+project.  While it's evident that there's a need for an Artifact Repository in
+OpenStack, whether it will be as ubiquitous as the need for an Images
+Repository isn't clear.  On the other hand, industry trends could go in the
+opposite direction where everyone needs Artifacts and deployers view images as
+simply another type of digital artifact.  As Yogi Berra, an experienced
 manager, once said, "It's tough to make predictions, especially about the
 future."
 
@@ -125,6 +126,8 @@ See :doc:`authentication` for more information on integrating with Keystone.
 
 Using v1.X
 ----------
+
+.. include:: deprecation-note.inc
 
 For the purpose of examples, assume there is a Glance API server running
 at the URL ``http://glance.openstack.example.org`` on the default port 80.
