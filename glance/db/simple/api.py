@@ -667,7 +667,7 @@ def _normalize_locations(context, image, force_show_deleted=False):
     if force_show_deleted:
         locations = image['locations']
     else:
-        locations = filter(lambda x: not x['deleted'], image['locations'])
+        locations = [x for x in image['locations'] if not x['deleted']]
     image['locations'] = [{'id': loc['id'],
                            'url': loc['url'],
                            'metadata': loc['metadata'],

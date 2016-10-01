@@ -134,7 +134,7 @@ class Controller(object):
 
         """
 
-        funcs = filter(lambda x: not x.startswith("_"), dir(resource))
+        funcs = [x for x in dir(resource) if not x.startswith("_")]
 
         if filtered:
             funcs = [f for f in funcs if f in filtered]
