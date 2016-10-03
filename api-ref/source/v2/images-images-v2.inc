@@ -49,7 +49,7 @@ The possible status values for images are presented in the following table.
       - The Image service reserved an image ID for the image in the catalog
         but did not yet upload any image data.
     * - saving
-      - The Image service is is in the process of saving the the raw data for
+      - The Image service is is in the process of saving the raw data for
         the image into the backing store.
     * - active
       - The image is active and ready for consumption in the Image service.
