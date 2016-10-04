@@ -6,12 +6,7 @@ glance-cache-pruner
 Glance cache pruner
 -------------------
 
-:Author: glance@lists.launchpad.net
-:Date:   2016-10-6
-:Copyright: OpenStack Foundation
-:Version: 13.0.0
-:Manual section: 1
-:Manual group: cloud computing
+.. include:: header.rst
 
 SYNOPSIS
 ========
