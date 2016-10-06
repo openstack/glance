@@ -15,11 +15,8 @@
 
 import fixtures
 import mock
-from oslo_db.sqlalchemy import migration
-from six.moves import StringIO
 
 from glance.cmd import manage
-from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata as db_metadata
 from glance.tests import utils as test_utils
@@ -51,48 +48,35 @@ class TestManageBase(test_utils.BaseTestCase):
 
 class TestLegacyManage(TestManageBase):
 
-    @mock.patch.object(migration, 'db_version')
-    def test_legacy_db_version(self, db_version):
-        with mock.patch('sys.stdout', new_callable=StringIO):
-            self._main_test_helper(['glance.cmd.manage', 'db_version'],
-                                   migration.db_version,
-                                   db_api.get_engine(),
-                                   db_migration.MIGRATE_REPO_PATH, 0)
+    @mock.patch.object(manage.DbCommands, 'version')
+    def test_legacy_db_version(self, db_upgrade):
+        self._main_test_helper(['glance.cmd.manage', 'db_version'],
+                               manage.DbCommands.version)
 
-    @mock.patch.object(migration, 'db_sync')
+    @mock.patch.object(manage.DbCommands, 'sync')
     def test_legacy_db_sync(self, db_sync):
         self._main_test_helper(['glance.cmd.manage', 'db_sync'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               manage.DbCommands.sync, None)
 
-    @mock.patch.object(migration, 'db_sync')
-    def test_legacy_db_upgrade(self, db_sync):
+    @mock.patch.object(manage.DbCommands, 'upgrade')
+    def test_legacy_db_upgrade(self, db_upgrade):
         self._main_test_helper(['glance.cmd.manage', 'db_upgrade'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               manage.DbCommands.upgrade, None)
 
-    @mock.patch.object(migration, 'db_version_control')
+    @mock.patch.object(manage.DbCommands, 'version_control')
     def test_legacy_db_version_control(self, db_version_control):
         self._main_test_helper(['glance.cmd.manage', 'db_version_control'],
-                               migration.db_version_control,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               manage.DbCommands.version_control, None)
 
-    @mock.patch.object(migration, 'db_sync')
+    @mock.patch.object(manage.DbCommands, 'sync')
     def test_legacy_db_sync_version(self, db_sync):
-        self._main_test_helper(['glance.cmd.manage', 'db_sync', '20'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+        self._main_test_helper(['glance.cmd.manage', 'db_sync', 'liberty'],
+                               manage.DbCommands.sync, 'liberty')
 
-    @mock.patch.object(migration, 'db_sync')
-    def test_legacy_db_upgrade_version(self, db_sync):
-        self._main_test_helper(['glance.cmd.manage', 'db_upgrade', '20'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+    @mock.patch.object(manage.DbCommands, 'upgrade')
+    def test_legacy_db_upgrade_version(self, db_upgrade):
+        self._main_test_helper(['glance.cmd.manage', 'db_upgrade', 'liberty'],
+                               manage.DbCommands.upgrade, 'liberty')
 
     def test_db_metadefs_unload(self):
         db_metadata.db_unload_metadefs = mock.Mock()
@@ -157,48 +141,36 @@ class TestLegacyManage(TestManageBase):
 
 class TestManage(TestManageBase):
 
-    @mock.patch.object(migration, 'db_version')
-    def test_db_version(self, db_version):
-        with mock.patch('sys.stdout', new_callable=StringIO):
-            self._main_test_helper(['glance.cmd.manage', 'db', 'version'],
-                                   migration.db_version,
-                                   db_api.get_engine(),
-                                   db_migration.MIGRATE_REPO_PATH, 0)
+    @mock.patch.object(manage.DbCommands, 'version')
+    def test_db_version(self, version):
+        self._main_test_helper(['glance.cmd.manage', 'db', 'version'],
+                               manage.DbCommands.version)
 
-    @mock.patch.object(migration, 'db_sync')
-    def test_db_sync(self, db_sync):
+    @mock.patch.object(manage.DbCommands, 'sync')
+    def test_db_sync(self, sync):
         self._main_test_helper(['glance.cmd.manage', 'db', 'sync'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               manage.DbCommands.sync)
 
-    @mock.patch.object(migration, 'db_sync')
-    def test_db_upgrade(self, db_sync):
+    @mock.patch.object(manage.DbCommands, 'upgrade')
+    def test_db_upgrade(self, upgrade):
         self._main_test_helper(['glance.cmd.manage', 'db', 'upgrade'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               manage.DbCommands.upgrade)
 
-    @mock.patch.object(migration, 'db_version_control')
-    def test_db_version_control(self, db_version_control):
+    @mock.patch.object(manage.DbCommands, 'version_control')
+    def test_db_version_control(self, version_control):
         self._main_test_helper(['glance.cmd.manage', 'db', 'version_control'],
-                               migration.db_version_control,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, None)
+                               manage.DbCommands.version_control)
 
-    @mock.patch.object(migration, 'db_sync')
-    def test_db_sync_version(self, db_sync):
-        self._main_test_helper(['glance.cmd.manage', 'db', 'sync', '20'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+    @mock.patch.object(manage.DbCommands, 'sync')
+    def test_db_sync_version(self, sync):
+        self._main_test_helper(['glance.cmd.manage', 'db', 'sync', 'liberty'],
+                               manage.DbCommands.sync, 'liberty')
 
-    @mock.patch.object(migration, 'db_sync')
-    def test_db_upgrade_version(self, db_sync):
-        self._main_test_helper(['glance.cmd.manage', 'db', 'upgrade', '20'],
-                               migration.db_sync,
-                               db_api.get_engine(),
-                               db_migration.MIGRATE_REPO_PATH, '20')
+    @mock.patch.object(manage.DbCommands, 'upgrade')
+    def test_db_upgrade_version(self, upgrade):
+        self._main_test_helper(['glance.cmd.manage', 'db',
+                                'upgrade', 'liberty'],
+                               manage.DbCommands.upgrade, 'liberty')
 
     def test_db_metadefs_unload(self):
         db_metadata.db_unload_metadefs = mock.Mock()

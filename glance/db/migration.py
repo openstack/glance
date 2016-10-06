@@ -45,6 +45,7 @@ def get_backend():
                     cfg.CONF.database.backend).driver
     return _IMPL
 
+ALEMBIC_INIT_VERSION = 'liberty'
 INIT_VERSION = 0
 
 MIGRATE_REPO_PATH = os.path.join(

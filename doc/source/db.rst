@@ -29,9 +29,10 @@ The commands should be executed as a subcommand of 'db':
 Sync the Database
 -----------------
 
-    glance-manage db sync <version> <current_version>
+    glance-manage db sync <VERSION>
 
-Place a database under migration control and upgrade, creating it first if necessary.
+Place an existing database under migration control and upgrade it to the
+specified VERSION.
 
 
 Determining the Database Version

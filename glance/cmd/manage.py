@@ -39,8 +39,9 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
+from alembic import command as alembic_command
+
 from oslo_config import cfg
-from oslo_db.sqlalchemy import migration
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 import six
@@ -49,6 +50,7 @@ from glance.common import config
 from glance.common import exception
 from glance import context
 from glance.db import migration as db_migration
+from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata
 from glance.i18n import _
@@ -73,39 +75,56 @@ class DbCommands(object):
 
     def version(self):
         """Print database's current migration level"""
-        print(migration.db_version(db_api.get_engine(),
-                                   db_migration.MIGRATE_REPO_PATH,
-                                   db_migration.INIT_VERSION))
+        current_heads = alembic_migrations.get_current_alembic_heads()
+        if current_heads:
+            # Migrations are managed by alembic
+            for head in current_heads:
+                print(head)
+        else:
+            # Migrations are managed by legacy versioning scheme
+            print(_('Database is either not under migration control or under '
+                    'legacy migration control, please run '
+                    '"glance-manage db sync" to place the database under '
+                    'alembic migration control.'))
 
     @args('--version', metavar='<version>', help='Database version')
-    def upgrade(self, version=None):
+    def upgrade(self, version='heads'):
         """Upgrade the database's migration level"""
-        migration.db_sync(db_api.get_engine(),
-                          db_migration.MIGRATE_REPO_PATH,
-                          version)
+        self.sync(version)
 
     @args('--version', metavar='<version>', help='Database version')
-    def version_control(self, version=None):
+    def version_control(self, version=db_migration.ALEMBIC_INIT_VERSION):
         """Place a database under migration control"""
-        migration.db_version_control(db_api.get_engine(),
-                                     db_migration.MIGRATE_REPO_PATH,
-                                     version)
+
+        if version is None:
+            version = db_migration.ALEMBIC_INIT_VERSION
+
+        a_config = alembic_migrations.get_alembic_config()
+        alembic_command.stamp(a_config, version)
+        print(_("Placed database under migration control at "
+                "revision:"), version)
 
     @args('--version', metavar='<version>', help='Database version')
-    @args('--current_version', metavar='<version>',
-          help='Current Database version')
-    def sync(self, version=None, current_version=None):
+    def sync(self, version='heads'):
         """
-        Place a database under migration control and upgrade it,
-        creating first if necessary.
+        Place an existing database under migration control and upgrade it.
         """
-        if current_version not in (None, 'None'):
-            migration.db_version_control(db_api.get_engine(),
-                                         db_migration.MIGRATE_REPO_PATH,
-                                         version=current_version)
-        migration.db_sync(db_api.get_engine(),
-                          db_migration.MIGRATE_REPO_PATH,
-                          version)
+        if version is None:
+            version = 'heads'
+
+        alembic_migrations.place_database_under_alembic_control()
+
+        a_config = alembic_migrations.get_alembic_config()
+        alembic_command.upgrade(a_config, version)
+        heads = alembic_migrations.get_current_alembic_heads()
+        if heads is None:
+            raise Exception("Database sync failed")
+        revs = ", ".join(heads)
+        if version is 'heads':
+            print(_("Upgraded database, current revision(s):"), revs)
+        else:
+            print(_('Upgraded database to: %(v)s, current revision(s): %(r)s')
+                  % {'v': version, 'r': revs})
 
     @args('--path', metavar='<path>', help='Path to the directory or file '
                                            'where json metadata is stored')
@@ -179,15 +198,14 @@ class DbLegacyCommands(object):
     def version(self):
         self.command_object.version()
 
-    def upgrade(self, version=None):
+    def upgrade(self, version='heads'):
         self.command_object.upgrade(CONF.command.version)
 
-    def version_control(self, version=None):
+    def version_control(self, version=db_migration.ALEMBIC_INIT_VERSION):
         self.command_object.version_control(CONF.command.version)
 
-    def sync(self, version=None, current_version=None):
-        self.command_object.sync(CONF.command.version,
-                                 CONF.command.current_version)
+    def sync(self, version='heads'):
+        self.command_object.sync(CONF.command.version)
 
     def load_metadefs(self, path=None, merge=False,
                       prefer_new=False, overwrite=False):
@@ -224,7 +242,6 @@ def add_legacy_command_parsers(command_object, subparsers):
     parser = subparsers.add_parser('db_sync')
     parser.set_defaults(action_fn=legacy_command_object.sync)
     parser.add_argument('version', nargs='?')
-    parser.add_argument('current_version', nargs='?')
     parser.set_defaults(action='db_sync')
 
     parser = subparsers.add_parser('db_load_metadefs')
