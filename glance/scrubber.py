@@ -27,7 +27,7 @@ from glance.common import crypt
 from glance.common import exception
 from glance import context
 import glance.db as db_api
-from glance.i18n import _, _LE, _LI, _LW
+from glance.i18n import _, _LC, _LE, _LI, _LW
 import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
@@ -409,9 +409,12 @@ class Scrubber(object):
         try:
             records = self.db_queue.get_all_locations()
         except Exception as err:
-            LOG.error(_LE("Can not get scrub jobs from queue: %s") %
-                      encodeutils.exception_to_unicode(err))
-            return {}
+            # Note(dharinic): spawn_n, in Daemon mode will log the
+            # exception raised. Otherwise, exit 1 will occur.
+            msg = (_LC("Can not get scrub jobs from queue: %s") %
+                   encodeutils.exception_to_unicode(err))
+            LOG.critical(msg)
+            raise exception.FailedToGetScrubberJobs()
 
         delete_jobs = {}
         for image_id, loc_id, loc_uri in records:

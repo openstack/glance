@@ -292,6 +292,11 @@ class ImageSizeLimitExceeded(GlanceException):
     message = _("The provided image is too large.")
 
 
+class FailedToGetScrubberJobs(GlanceException):
+    message = _("Scrubber encountered an error while trying to fetch "
+                "scrub jobs.")
+
+
 class ImageMemberLimitExceeded(LimitExceeded):
     message = _("The limit has been exceeded on the number of allowed image "
                 "members for this image. Attempted: %(attempted)s, "

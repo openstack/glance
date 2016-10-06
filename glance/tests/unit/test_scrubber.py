@@ -16,12 +16,14 @@
 import uuid
 
 import glance_store
+import mock
 from mock import patch
 from mox3 import mox
 from oslo_config import cfg
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
+from glance.common import exception
 from glance import scrubber
 from glance.tests import utils as test_utils
 
@@ -109,6 +111,16 @@ class TestScrubber(test_utils.BaseTestCase):
         self.mox.ReplayAll()
         scrub._scrub_image(id, [(id, '-', uri)])
         self.mox.VerifyAll()
+
+    def test_scrubber_exits(self):
+        # Checks for Scrubber exits when it is not able to fetch jobs from
+        # the queue
+        scrub_jobs = scrubber.ScrubDBQueue.get_all_locations
+        scrub_jobs = mock.MagicMock()
+        scrub_jobs.side_effect = exception.NotFound
+        scrub = scrubber.Scrubber(glance_store)
+        self.assertRaises(exception.FailedToGetScrubberJobs,
+                          scrub._get_delete_jobs)
 
 
 class TestScrubDBQueue(test_utils.BaseTestCase):

@@ -603,6 +603,10 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
         self.registry_port, reg_sock = test_utils.get_unused_port_and_socket()
+        # NOTE: Scrubber is enabled by default for the functional tests.
+        # Please disbale it by explicitly setting 'self.include_scrubber' to
+        # False in the test SetUps that do not require Scrubber to run.
+        self.include_scrubber = True
 
         self.tracecmd = tracecmd_osmap.get(platform.system())
 
@@ -799,11 +803,11 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.start_with_retry(self.api_server, 'api_port', 3, **kwargs)
 
-        exitcode, out, err = self.scrubber_daemon.start(**kwargs)
-
-        self.assertEqual(0, exitcode,
-                         "Failed to spin up the Scrubber daemon. "
-                         "Got: %s" % err)
+        if self.include_scrubber:
+            exitcode, out, err = self.scrubber_daemon.start(**kwargs)
+            self.assertEqual(0, exitcode,
+                             "Failed to spin up the Scrubber daemon. "
+                             "Got: %s" % err)
 
     def ping_server(self, port):
         """
@@ -919,7 +923,8 @@ class FunctionalTest(test_utils.BaseTestCase):
         # Spin down the API and default registry server
         self.stop_server(self.api_server, 'API server')
         self.stop_server(self.registry_server, 'Registry server')
-        self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
+        if self.include_scrubber:
+            self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
 
         self._reset_database(self.registry_server.sql_connection)
 
