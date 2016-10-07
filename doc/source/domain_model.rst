@@ -228,7 +228,7 @@ previous example. It specifies a ``BaseFactory`` class with a
 
    class LoggerFactory(object):
        """Proxy class to add logging functionality."""
-       def __init__(self, base, proxy_class=None, proxy_kwargs=None):
+       def __init__(self, base, logg, proxy_class=None, proxy_kwargs=None):
            self.helper = Helper(proxy_class, proxy_kwargs)
            self.base = base
            self.logg = logg
@@ -256,7 +256,7 @@ together:
 
    def create_factory(logg, only_positive=True):
        base_factory = BaseFactory()
-       logger_factory = LoggerFactory(base_factory,
+       logger_factory = LoggerFactory(base_factory, logg,
                                       proxy_class=LoggerProxy,
                                       proxy_kwargs=dict(logg=logg))
        validator_factory = ValidatorFactory(logger_factory, only_positive,
@@ -270,7 +270,7 @@ class.
 
 ::
 
-   factory = create_factory(logg, only_positive=False)
+   factory = create_factory(sys.stdout, only_positive=False)
    domain_object = factory.generate()
 
 Why do you need a domain if you can use decorators?
