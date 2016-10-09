@@ -7,13 +7,13 @@
 # howard lee <howard@mail.ustc.edu.cn>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 13.0.0.0rc2.dev45\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2016-10-07 17:40+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-09-30 03:18+0000\n"
+"PO-Revision-Date: 2016-10-09 01:13+0000\n"
 "Last-Translator: howard lee <howard@mail.ustc.edu.cn>\n"
 "Language: zh-CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -216,6 +216,15 @@ msgid ""
 "Task: %(task_id)s failed to import image %(image_id)s to the filesystem."
 msgstr "任务： %(task_id)s 导出镜像  %(image_id)s 到文件系统失败。"
 
+#, python-format
+msgid ""
+"This task type %(task_type)s is not supported by the current deployment of "
+"Glance. Please refer the documentation provided by OpenStack or your "
+"operator for more information."
+msgstr ""
+"当前部署的Glance不支持任务类型 %(task_type)s。请参考OpenStack提供的文档，或者"
+"向操作员获取更多信息。"
+
 msgid ""
 "To use --prefer_new or --overwrite you need to combine of these options with "
 "--merge option."
@@ -240,6 +249,10 @@ msgstr "无法获取镜像"
 #, python-format
 msgid "Unable to kill image %(id)s: "
 msgstr "无法终止镜像 %(id)s:"
+
+#, python-format
+msgid "Unable to load artifacts: %s"
+msgstr "无法加载工件： %s"
 
 #, python-format
 msgid "Unable to restore artifact %(artifact_id)s: %(e)s"
