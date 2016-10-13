@@ -83,6 +83,12 @@
             "description": "This is a background process which helps management applications execute guest OS level commands. For example, freezing and thawing filesystems, entering suspend. However, guest agent (GA) is not bullet proof, and hostile guest OS can send spurious replies.",
             "type": "string",
             "enum": ["yes", "no"]
+        },
+        "hw_pointer_model": {
+            "title": "Pointer Model",
+            "description": "Input devices allow interaction with a graphical framebuffer. For example to provide a graphic tablet for absolute cursor movement. Currently only supported by the KVM/QEMU hypervisor configuration and VNC or SPICE consoles must be enabled.",
+            "type": "string",
+            "enum": ["usbtablet"]
         }
     },
     "objects": []
