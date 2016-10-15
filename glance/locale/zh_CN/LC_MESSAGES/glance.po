@@ -9,16 +9,17 @@
 # Tom Fifield <tom@openstack.org>, 2013
 # 颜海峰 <yanheven@gmail.com>, 2014
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# howard lee <howard@mail.ustc.edu.cn>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 13.0.0.0rc2.dev51\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2016-10-13 13:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-11 03:05+0000\n"
-"Last-Translator: Linda <duleish@cn.ibm.com>\n"
+"PO-Revision-Date: 2016-09-20 12:30+0000\n"
+"Last-Translator: howard lee <howard@mail.ustc.edu.cn>\n"
 "Language: zh-CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -469,6 +470,38 @@ msgstr "找不到任务 %s"
 msgid "Could not update image: %s"
 msgstr "未能更新映像：%s"
 
+#, python-format
+msgid "Couldn't create metadata namespace: %s"
+msgstr "无法创建元数据命名空间：%s"
+
+#, python-format
+msgid "Couldn't create metadata object: %s"
+msgstr "无法创建元数据对象：%s"
+
+#, python-format
+msgid "Couldn't create metadata property: %s"
+msgstr "无法创建元数据属性：%s"
+
+#, python-format
+msgid "Couldn't create metadata tag: %s"
+msgstr "无法创建元数据标签：%s"
+
+#, python-format
+msgid "Couldn't update metadata namespace: %s"
+msgstr "无法更新元数据命名空间：%s"
+
+#, python-format
+msgid "Couldn't update metadata object: %s"
+msgstr "无法更新元数据对象：%s"
+
+#, python-format
+msgid "Couldn't update metadata property: %s"
+msgstr "无法更新元数据属性：%s"
+
+#, python-format
+msgid "Couldn't update metadata tag: %s"
+msgstr "无法更新元数据标签：%s"
+
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "当前包含多个磁盘的 OVA 包不受支持。"
 
@@ -589,6 +622,10 @@ msgstr "存储配置中出错。已禁用将工件添加至存储器。"
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr "存储配置中出错。已禁止将映像添加至存储器。"
+
+#, python-format
+msgid "Error: %(exc_type)s: %(e)s"
+msgstr "错误： %(exc_type)s： %(e)s"
 
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "成员应为以下格式：{\"member\": \"image_id\"}"
@@ -929,6 +966,14 @@ msgstr "无效头“Content-Type”：%s"
 msgid "Invalid image id format"
 msgstr "映像标识格式无效"
 
+#, python-format
+msgid "Invalid int value for age_in_days: %(age_in_days)s"
+msgstr "age_in_days的无效整形值：%(age_in_days)s"
+
+#, python-format
+msgid "Invalid int value for max_rows: %(max_rows)s"
+msgstr "max_rows的无效整形值：%(max_rows)s"
+
 msgid "Invalid item type specification"
 msgstr "指定了无效的项类型"
 
@@ -1107,6 +1152,10 @@ msgstr ""
 
 msgid "It's invalid to provide multiple image sources."
 msgstr "提供多个镜像源无效"
+
+#, python-format
+msgid "It's not allowed to add locations if image status is %s."
+msgstr "如果镜像状态为 %s，则不允许添加位置。"
 
 msgid "It's not allowed to add locations if locations are invisible."
 msgstr "不允许添加不可视的位置。"
@@ -2051,6 +2100,11 @@ msgstr "位置太少"
 
 msgid "Too many locations"
 msgstr "位置太多"
+
+#, python-format
+msgid ""
+"Total size is %(size)d bytes (%(human_size)s) across %(img_count)d images"
+msgstr "总大小为 %(size)d 字节（%(human_size)s）（在 %(img_count)d 个映像上）"
 
 msgid "Type version has to be a valid semver string"
 msgstr "类型版本必须是有效的 semver 字符串"
