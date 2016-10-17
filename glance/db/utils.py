@@ -38,3 +38,36 @@ def ensure_image_dict_v2_compliant(image):
             image['visibility'] = ('public' if image.pop('is_public') else
                                    'shared')
     return image
+
+
+def is_image_visible(context, image, image_member_find, status=None):
+    """Return True if the image is visible in this context."""
+    # Is admin == image visible
+    if context.is_admin:
+        return True
+
+    # No owner == image visible
+    if image['owner'] is None:
+        return True
+
+    # Public or Community visibility == image visible
+    if image['visibility'] in ['public', 'community']:
+        return True
+
+    # Perform tests based on whether we have an owner
+    if context.owner is not None:
+        if context.owner == image['owner']:
+            return True
+
+        # Figure out if this image is shared with that tenant
+
+        if 'shared' == image['visibility']:
+            members = image_member_find(context,
+                                        image_id=image['id'],
+                                        member=context.owner,
+                                        status=status)
+            if members:
+                return True
+
+    # Private image
+    return False
