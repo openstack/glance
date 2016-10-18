@@ -101,8 +101,9 @@ class Image(object):
         # NOTE(flwang): In v2, we are deprecating the 'killed' status, so it's
         # allowed to restore image from 'saving' to 'queued' so that upload
         # can be retried.
-        'queued': ('saving', 'active', 'deleted'),
+        'queued': ('saving', 'importing', 'active', 'deleted'),
         'saving': ('active', 'killed', 'deleted', 'queued'),
+        'importing': ('active', 'deleted', 'queued'),
         'active': ('pending_delete', 'deleted', 'deactivated'),
         'killed': ('deleted',),
         'pending_delete': ('deleted',),
@@ -148,7 +149,9 @@ class Image(object):
                 LOG.debug(e)
                 raise e
 
-            if self._status == 'queued' and status in ('saving', 'active'):
+            if self._status == 'queued' and status in ('saving',
+                                                       'active',
+                                                       'importing'):
                 missing = [k for k in ['disk_format', 'container_format']
                            if not getattr(self, k)]
                 if len(missing) > 0:
