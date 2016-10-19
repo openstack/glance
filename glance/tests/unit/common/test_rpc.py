@@ -16,7 +16,6 @@
 #    under the License.
 import datetime
 
-from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 import routes
@@ -28,8 +27,6 @@ from glance.common import rpc
 from glance.common import wsgi
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
-
-CONF = cfg.CONF
 
 
 class FakeResource(object):
