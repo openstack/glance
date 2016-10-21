@@ -18,6 +18,7 @@ from cursive import exception as cursive_exception
 import glance_store
 import mock
 import six
+from six.moves import http_client as http
 import webob
 
 import glance.api.policy
@@ -662,5 +663,5 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         response.request = request
         self.serializer.upload(response, {})
-        self.assertEqual(204, response.status_int)
+        self.assertEqual(http.NO_CONTENT, response.status_int)
         self.assertEqual('0', response.headers['Content-Length'])

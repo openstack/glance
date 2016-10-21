@@ -21,6 +21,7 @@ import uuid
 from oslo_serialization import jsonutils
 import routes
 import six
+from six.moves import http_client as http
 import webob
 
 import glance.api.common
@@ -128,7 +129,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
         image = res_dict
         for k, v in six.iteritems(fixture):
@@ -164,7 +165,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(1, len(images))
@@ -232,7 +233,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         images = jsonutils.loads(res.body)[0]
         # should be sorted by created_at desc, id desc
@@ -269,7 +270,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(2, len(images))
 
@@ -302,7 +303,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -335,7 +336,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(2, len(images))
 
@@ -368,7 +369,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -401,7 +402,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(2, len(images))
 
@@ -434,7 +435,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -498,7 +499,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
         images = jsonutils.loads(res.body)[0]
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         self._compare_images_and_uuids([UUID4], images)
 
@@ -546,7 +547,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
         res_dict = jsonutils.loads(res.body)[0]
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         images = res_dict
         self._compare_images_and_uuids([UUID2], images)
@@ -589,7 +590,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
         res_dict = jsonutils.loads(res.body)[0]
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         images = res_dict
         self.assertEqual(2, len(images))
@@ -623,7 +624,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(2, len(images))
         self.assertEqual(extra_id, images[0]['id'])
@@ -636,7 +637,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -647,7 +648,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -658,7 +659,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -669,7 +670,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(1, len(images))
         self.assertEqual(extra_id, images[0]['id'])
@@ -681,7 +682,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -692,7 +693,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -703,7 +704,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         images = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(images))
 
@@ -766,7 +767,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
         res_dict = jsonutils.loads(res.body)[0]
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         images = res_dict
         # (flaper87)registry's v1 forced is_public to True
@@ -823,7 +824,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -872,7 +873,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -920,7 +921,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -969,7 +970,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1014,7 +1015,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1066,7 +1067,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1118,7 +1119,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1185,7 +1186,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1199,7 +1200,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1266,7 +1267,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1280,7 +1281,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1294,7 +1295,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1308,7 +1309,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         }]
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         res_dict = jsonutils.loads(res.body)[0]
 
         images = res_dict
@@ -1332,7 +1333,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
 
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         res_dict = jsonutils.loads(res.body)[0]
 
@@ -1360,7 +1361,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         res_dict = jsonutils.loads(res.body)[0]
 
@@ -1384,7 +1385,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         res_dict = jsonutils.loads(res.body)[0]
 
@@ -1407,7 +1408,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         res_dict = jsonutils.loads(res.body)[0]
 
@@ -1430,7 +1431,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         res_dict = jsonutils.loads(res.body)[0]
 
@@ -1453,7 +1454,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         res_dict = jsonutils.loads(res.body)[0]
 
@@ -1480,7 +1481,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         self.assertEqual(error_cls, res_dict['_error']['cls'])
         return res_dict
 
-    def _expect_ok(self, command, kwargs, method, expected_status=200):
+    def _expect_ok(self, command, kwargs, method, expected_status=http.OK):
         code, res_dict = self._send_request(command, kwargs)
         self.assertEqual(expected_status, code)
         return res_dict
@@ -1555,7 +1556,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
         res_dict = jsonutils.loads(res.body)[0]
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         orig_num_images = len(res_dict)
 
@@ -1567,7 +1568,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         # Verify one less image
         cmd = [{
@@ -1577,7 +1578,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
         res_dict = jsonutils.loads(res.body)[0]
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         new_num_images = len(res_dict)
         self.assertEqual(new_num_images, orig_num_images - 1)
@@ -1595,7 +1596,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
         res = req.get_response(self.api)
 
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
         deleted_image = jsonutils.loads(res.body)[0]
 
         self.assertEqual(image['id'], deleted_image['id'])
@@ -1613,7 +1614,7 @@ class TestRegistryRPC(base.IsolatedUnitTest):
         req.body = jsonutils.dump_as_bytes(cmd)
 
         res = req.get_response(self.api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         memb_list = jsonutils.loads(res.body)[0]
         self.assertEqual(0, len(memb_list))

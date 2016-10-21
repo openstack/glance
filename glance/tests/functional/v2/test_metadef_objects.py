@@ -17,6 +17,7 @@ import uuid
 
 from oslo_serialization import jsonutils
 import requests
+from six.moves import http_client as http
 
 from glance.tests import functional
 
@@ -49,7 +50,7 @@ class TestMetadefObjects(functional.FunctionalTest):
         # Namespace should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a namespace
         path = self._url('/v2/metadefs/namespaces')
@@ -65,12 +66,12 @@ class TestMetadefObjects(functional.FunctionalTest):
         }
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Metadata objects should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace/objects/object1')
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a object
         path = self._url('/v2/metadefs/namespaces/MyNamespace/objects')
@@ -105,18 +106,18 @@ class TestMetadefObjects(functional.FunctionalTest):
             }
         )
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(http.CREATED, response.status_code)
 
         # Attempt to insert a duplicate
         response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(409, response.status_code)
+        self.assertEqual(http.CONFLICT, response.status_code)
 
         # Get the metadata object created above
         path = self._url('/v2/metadefs/namespaces/%s/objects/%s' %
                          (namespace_name, metadata_object_name))
         response = requests.get(path,
                                 headers=self._headers())
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(http.OK, response.status_code)
         metadata_object = jsonutils.loads(response.text)
         self.assertEqual("object1", metadata_object['name'])
 
@@ -216,7 +217,7 @@ class TestMetadefObjects(functional.FunctionalTest):
             }
         )
         response = requests.put(path, headers=headers, data=data)
-        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned metadata_object should reflect the changes
         metadata_object = jsonutils.loads(response.text)
@@ -263,10 +264,10 @@ class TestMetadefObjects(functional.FunctionalTest):
         path = self._url('/v2/metadefs/namespaces/%s/objects/%s' %
                          (namespace_name, metadata_object_name))
         response = requests.delete(path, headers=self._headers())
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # metadata_object object1 should not exist
         path = self._url('/v2/metadefs/namespaces/%s/objects/%s' %
                          (namespace_name, metadata_object_name))
         response = requests.get(path, headers=self._headers())
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)

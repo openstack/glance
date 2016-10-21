@@ -19,6 +19,7 @@ import mock
 from oslo_serialization import jsonutils
 import pkg_resources
 import requests
+from six.moves import http_client as http
 
 from glance.api.glare.v0_1 import glare
 from glance.api.glare.v0_1 import router
@@ -182,7 +183,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         super(TestArtifacts, self).start_servers(**kwargs)
 
     def _create_artifact(self, type_name, type_version='1.0', data=None,
-                         status=201):
+                         status=http.CREATED):
         # create an artifact first
         artifact_data = data or {'name': 'artifact-1',
                                  'version': '12'}
@@ -190,7 +191,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                                                              type_version),
                                          artifact_data, status=status)
 
-    def _check_artifact_method(self, method, url, data=None, status=200,
+    def _check_artifact_method(self, method, url, data=None, status=http.OK,
                                headers=None):
         if not headers:
             headers = self._headers()
@@ -202,13 +203,13 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         response = getattr(requests, method)(self._url(url), headers=headers,
                                              data=data)
         self.assertEqual(status, response.status_code)
-        if status >= 400:
+        if status >= http.BAD_REQUEST:
             return response.text
         if "application/json" in response.headers["content-type"]:
             return jsonutils.loads(response.text)
         return response.text
 
-    def _check_artifact_post(self, url, data, status=201,
+    def _check_artifact_post(self, url, data, status=http.CREATED,
                              headers=None):
         if headers is None:
             headers = {'Content-Type': 'application/json'}
@@ -216,20 +217,20 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         return self._check_artifact_method("post", url, data, status=status,
                                            headers=headers)
 
-    def _check_artifact_get(self, url, status=200):
+    def _check_artifact_get(self, url, status=http.OK):
         return self._check_artifact_method("get", url, status=status)
 
-    def _check_artifact_delete(self, url, status=204):
+    def _check_artifact_delete(self, url, status=http.NO_CONTENT):
         response = requests.delete(self._url(url), headers=self._headers())
         self.assertEqual(status, response.status_code)
         return response.text
 
-    def _check_artifact_patch(self, url, data, status=200,
+    def _check_artifact_patch(self, url, data, status=http.OK,
                               headers={'Content-Type': 'application/json'}):
         return self._check_artifact_method("patch", url, data, status=status,
                                            headers=headers)
 
-    def _check_artifact_put(self, url, data, status=200,
+    def _check_artifact_put(self, url, data, status=http.OK,
                             headers={'Content-Type': 'application/json'}):
         return self._check_artifact_method("put", url, data, status=status,
                                            headers=headers)
@@ -268,7 +269,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             '/noprop/v1.0/drafts')["artifacts"]
         self.assertEqual(1, len(list_creating))
         bad_version = self._check_artifact_get('/noprop/v1.0bad',
-                                               status=400)
+                                               status=http.BAD_REQUEST)
         self.assertIn("Invalid version string: u'1.0bad'", bad_version)
 
     def test_list_artifacts_with_pagination(self):
@@ -313,7 +314,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         a wrong version should result in
         400 BadRequest 'No such plugin has been loaded'
         """
-        msg = self._check_artifact_get('/noprop/v0.0.9', 400)
+        msg = self._check_artifact_get('/noprop/v0.0.9', http.BAD_REQUEST)
         self.assertIn("No plugin for 'noprop v 0.0.9' has been loaded",
                       msg)
 
@@ -386,11 +387,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         artifact_id = art['id']
         # 'hui' is invalid show level
         self._check_artifact_get(
-            '/noprop/%s?show_level=yoba' % artifact_id, status=400)
+            '/noprop/%s?show_level=yoba' % artifact_id,
+            status=http.BAD_REQUEST)
 
     def test_get_artifact_no_such_id(self):
         msg = self._check_artifact_get(
-            '/noprop/%s' % str(uuid.uuid4()), status=404)
+            '/noprop/%s' % str(uuid.uuid4()), status=http.NOT_FOUND)
         self.assertIn('No artifact found with ID', msg)
 
     def test_get_artifact_present_id_wrong_type(self):
@@ -402,11 +404,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art2 = self._create_artifact('noprop')
         # ok id and type_name but bad type_version should result in 404
         self._check_artifact_get('/noprop/v0.5/%s' % str(art2['id']),
-                                 status=404)
+                                 status=http.NOT_FOUND)
         # try to access art2 by supplying art1.type and art2.id
         self._check_artifact_get('/withprops/%s' % str(art2['id']),
-                                 status=404)
-        self._check_artifact_get('/noprop/%s' % str(art1['id']), status=404)
+                                 status=http.NOT_FOUND)
+        self._check_artifact_get('/noprop/%s' % str(art1['id']),
+                                 status=http.NOT_FOUND)
 
     def test_delete_artifact(self):
         artifact_data = {'name': 'artifact-1',
@@ -416,12 +419,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art1 = self._create_artifact('withprops', data=artifact_data)
         self._check_artifact_delete('/withprops/v1.0/%s' % art1['id'])
         art1_deleted = self._check_artifact_get('/withprops/%s' % art1['id'],
-                                                status=404)
+                                                status=http.NOT_FOUND)
         self.assertIn('No artifact found with ID', art1_deleted)
 
     def test_delete_artifact_no_such_id(self):
         self._check_artifact_delete('/noprop/v1/%s' % str(uuid.uuid4()),
-                                    status=404)
+                                    status=http.NOT_FOUND)
 
     @unittest.skip("Test is unstable")
     def test_delete_artifact_with_dependency(self):
@@ -441,7 +444,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(1, len(art_updated['depends_on_list']))
         # try to delete an artifact prior to its dependency
         res = self._check_artifact_delete('/withprops/v1/%s' % art['id'],
-                                          status=400)
+                                          status=http.BAD_REQUEST)
         self.assertIn(
             "Dependency property 'depends_on' has to be deleted first", res)
         # delete a dependency
@@ -450,7 +453,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             data=[{'op': 'remove', 'path': '/depends_on'}])
         # try to delete prior to deleting artifact_list dependencies
         res = self._check_artifact_delete('/withprops/v1/%s' % art['id'],
-                                          status=400)
+                                          status=http.BAD_REQUEST)
         self.assertIn(
             "Dependency property 'depends_on_list' has to be deleted first",
             res)
@@ -466,7 +469,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         self._check_artifact_post('/withblob/v1/%s/blob1' % art['id'],
                                   headers=headers,
-                                  data='ZZZZZ', status=200)
+                                  data='ZZZZZ', status=http.OK)
         self._check_artifact_delete('/withblob/v1/%s' % art['id'])
 
     def test_update_nonexistent_property_by_replace_op(self):
@@ -477,7 +480,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         result = self._check_artifact_patch('/withprops/v1/%s' %
                                             art['id'],
                                             data=data,
-                                            status=400)
+                                            status=http.BAD_REQUEST)
         self.assertIn('400 Bad Request', result)
         self.assertIn('Artifact has no property nonexistent_property', result)
 
@@ -489,7 +492,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         result = self._check_artifact_patch('/withprops/v1/%s' %
                                             art['id'],
                                             data=data,
-                                            status=400)
+                                            status=http.BAD_REQUEST)
         self.assertIn('400 Bad Request', result)
         self.assertIn('Artifact has no property nonexistent_property', result)
 
@@ -554,7 +557,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                  'path': '/dict_prop/foo'}]
         art_updated = self._check_artifact_patch('/withprops/v1/%s'
                                                  % art['id'],
-                                                 data=data, status=400)
+                                                 data=data,
+                                                 status=http.BAD_REQUEST)
         self.assertIn("The provided path 'dict_prop/foo' is invalid",
                       art_updated)
 
@@ -564,7 +568,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         data = [{'op': 'remove', 'path': '/dict_prop/bar_list'}]
         art_updated = self._check_artifact_patch('/withprops/v1/%s'
                                                  % art['id'],
-                                                 data=data, status=400)
+                                                 data=data,
+                                                 status=http.BAD_REQUEST)
         self.assertIn("The provided path 'dict_prop/bar_list' is invalid",
                       art_updated)
 
@@ -654,7 +659,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art_updated = self._check_artifact_patch('/withprops/v1/%s'
                                                  % art['id'],
                                                  data=bad_index_data,
-                                                 status=400)
+                                                 status=http.BAD_REQUEST)
         self.assertIn("The provided path 'prop_list/11' is invalid",
                       art_updated)
 
@@ -723,7 +728,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             data = [{'op': 'remove', 'value': 'some value',
                      'path': '/non-existent-path/and-another'}]
             art_updated = self._check_artifact_patch(
-                '/withprops/v1/%s' % art['id'], data=data, status=400)
+                '/withprops/v1/%s' % art['id'], data=data,
+                status=http.BAD_REQUEST)
             self.assertIn('Artifact has no property', art_updated)
 
     def test_update_replace_non_existent_artifact_properties(self):
@@ -733,7 +739,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             data = [{'op': 'replace', 'value': 'some value',
                      'path': '/non-existent-path/and-another'}]
             art_updated = self._check_artifact_patch(
-                '/withprops/v1/%s' % art['id'], data=data, status=400)
+                '/withprops/v1/%s' % art['id'], data=data,
+                status=http.BAD_REQUEST)
             self.assertIn('Artifact has no property', art_updated)
 
     def test_update_artifact_remove_property(self):
@@ -756,7 +763,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             self.assertIsNone(art[prop])
         data = [{'op': 'replace', 'value': 123, 'path': '/prop1'}]
         art_updated = self._check_artifact_patch(
-            '/withprops/v1/%s' % art['id'], data=data, status=400)
+            '/withprops/v1/%s' % art['id'], data=data, status=http.BAD_REQUEST)
         self.assertIn("Property 'prop1' may not have value '123'", art_updated)
 
     def test_update_multiple_properties(self):
@@ -798,7 +805,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             'withprops',
             data={"name": "name", "version": "42",
                   "depends_on_list": [no_prop_art['id'],
-                                      no_prop_art['id']]}, status=400)
+                                      no_prop_art['id']]},
+            status=http.BAD_REQUEST)
         self.assertIn("Items have to be unique", res)
 
     def test_create_artifact_bad_dependency_format(self):
@@ -812,12 +820,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art = self._check_artifact_post(
             '/withprops/v1/drafts',
             {"name": "name", "version": "42",
-             "depends_on": [no_prop_art['id']]}, status=400)
+             "depends_on": [no_prop_art['id']]}, status=http.BAD_REQUEST)
         self.assertIn('Not a valid value type', art)
         art = self._check_artifact_post(
             '/withprops/v1.0/drafts',
             {"name": "name", "version": "42",
-             "depends_on_list": no_prop_art['id']}, status=400)
+             "depends_on_list": no_prop_art['id']}, status=http.BAD_REQUEST)
         self.assertIn('object is not iterable', art)
 
     def test_update_dependency(self):
@@ -846,7 +854,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                  'path': '/depends_on',
                  'value': [with_prop_art['id']]}]
         not_updated = self._check_artifact_patch(
-            '/withprops/v1/%s' % with_prop_art['id'], data=data, status=400)
+            '/withprops/v1/%s' % with_prop_art['id'], data=data,
+            status=http.BAD_REQUEST)
         self.assertIn('Artifact with a circular dependency can not be created',
                       not_updated)
 
@@ -862,14 +871,15 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertNotEqual(0, len(art_updated['depends_on']))
         # artifact can't be published if any dependency is in non-active state
         res = self._check_artifact_post(
-            '/withprops/v1/%s/publish' % art['id'], {}, status=400)
+            '/withprops/v1/%s/publish' % art['id'], {},
+            status=http.BAD_REQUEST)
         self.assertIn("Not all dependencies are in 'active' state", res)
         # after you publish the dependency -> artifact can be published
         dep_published = self._check_artifact_post(
-            '/noprop/v1/%s/publish' % no_prop_art['id'], {}, status=200)
+            '/noprop/v1/%s/publish' % no_prop_art['id'], {}, status=http.OK)
         self.assertEqual('active', dep_published['state'])
         art_published = self._check_artifact_post(
-            '/withprops/v1.0/%s/publish' % art['id'], {}, status=200)
+            '/withprops/v1.0/%s/publish' % art['id'], {}, status=http.OK)
         self.assertEqual('active', art_published['state'])
 
     def test_no_mutable_change_in_published_state(self):
@@ -891,25 +901,26 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(no_prop_other['id'], art_updated['depends_on']['id'])
         # publish dependency
         dep_published = self._check_artifact_post(
-            '/noprop/v1/%s/publish' % no_prop_other['id'], {}, status=200)
+            '/noprop/v1/%s/publish' % no_prop_other['id'], {}, status=http.OK)
         self.assertEqual('active', dep_published['state'])
         # publish artifact
         art_published = self._check_artifact_post(
-            '/withprops/v1.0/%s/publish' % art['id'], {}, status=200)
+            '/withprops/v1.0/%s/publish' % art['id'], {}, status=http.OK)
         self.assertEqual('active', art_published['state'])
         # try to change dependency, should fail as already published
         res = self._check_artifact_patch(
             '/withprops/v1/%s' % art_published['id'],
-            data=[{'op': 'remove', 'path': '/depends_on'}], status=400)
+            data=[{'op': 'remove', 'path': '/depends_on'}],
+            status=http.BAD_REQUEST)
         self.assertIn('Attempt to set value of immutable property', res)
 
     def test_create_artifact_empty_body(self):
-        self._check_artifact_post('/noprop/v1.0/drafts', {}, 400)
+        self._check_artifact_post('/noprop/v1.0/drafts', {}, http.BAD_REQUEST)
 
     def test_create_artifact_insufficient_arguments(self):
         self._check_artifact_post('/noprop/v1.0/drafts',
                                   {'name': 'some name, no version'},
-                                  status=400)
+                                  status=http.BAD_REQUEST)
 
     def test_create_artifact_no_such_version(self):
         """Creation impossible without specifying a correct version.
@@ -919,12 +930,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         400 BadRequest 'No such plugin has been loaded'
         """
         # make sure there is no such artifact noprop
-        self._check_artifact_get('/noprop/v0.0.9', 400)
+        self._check_artifact_get('/noprop/v0.0.9', http.BAD_REQUEST)
         artifact_data = {'name': 'artifact-1',
                          'version': '12'}
         msg = self._check_artifact_post('/noprop/v0.0.9/drafts',
                                         artifact_data,
-                                        status=400)
+                                        status=http.BAD_REQUEST)
         self.assertIn("No plugin for 'noprop v 0.0.9' has been loaded",
                       msg)
 
@@ -936,7 +947,8 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         """
         artifact_data = {'name': 'artifact-1',
                          'version': '12'}
-        self._check_artifact_post('/noprop/drafts', artifact_data, 404)
+        self._check_artifact_post('/noprop/drafts', artifact_data,
+                                  http.NOT_FOUND)
 
     def test_create_artifact_no_properties(self):
         """Create an artifact with minimum parameters"""
@@ -1022,13 +1034,13 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                          'prop1': 1}
         res = self._check_artifact_post('/withprops/v1.0/drafts',
                                         artifact_data,
-                                        status=400)
+                                        status=http.BAD_REQUEST)
         self.assertIn("Property 'prop1' may not have value '1'", res)
         artifact_data.pop('prop1')
         artifact_data['nosuchprop'] = "Random"
         res = self._check_artifact_post('/withprops/v1.0/drafts',
                                         artifact_data,
-                                        status=400)
+                                        status=http.BAD_REQUEST)
         self.assertIn("Artifact has no property nosuchprop", res)
 
     def test_create_public_artifact(self):
@@ -1059,18 +1071,18 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         self._check_artifact_post('/withblob/v1/%s/blob1' % art['id'],
                                   headers=headers,
-                                  data='ZZZZZ', status=200)
+                                  data='ZZZZZ', status=http.OK)
 
     def test_upload_file_with_invalid_content_type(self):
         art = self._create_artifact('withblob')
         data = {'data': 'jjjjjj'}
         res = self._check_artifact_post('/withblob/v1/%s/blob1' % art['id'],
-                                        data=data, status=400)
+                                        data=data, status=http.BAD_REQUEST)
         self.assertIn('Invalid Content-Type for work with blob1', res)
 
         res = self._check_artifact_post('/withblob/v1/%s/blob_list'
                                         % art['id'],
-                                        data=data, status=400)
+                                        data=data, status=http.BAD_REQUEST)
         self.assertIn('Invalid Content-Type for work with blob_list', res)
 
     def test_upload_list_files(self):
@@ -1078,10 +1090,10 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         self._check_artifact_post('/withblob/v1/%s/blob_list' % art['id'],
                                   headers=headers,
-                                  data='ZZZZZ', status=200)
+                                  data='ZZZZZ', status=http.OK)
         self._check_artifact_post('/withblob/v1/%s/blob_list' % art['id'],
                                   headers=headers,
-                                  data='YYYYY', status=200)
+                                  data='YYYYY', status=http.OK)
 
     def test_download_file(self):
         # Download some data from an artifact
@@ -1090,7 +1102,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         self._check_artifact_post('/withblob/v1/%s/blob1' % art['id'],
                                   headers=headers,
-                                  data='ZZZZZ', status=200)
+                                  data='ZZZZZ', status=http.OK)
 
         art = self._check_artifact_get('/withblob/%s' % artifact_id)
         self.assertEqual(artifact_id, art['id'])
@@ -1113,7 +1125,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         self._check_artifact_post('/withblob/v1/%s/blob1' % art['id'],
                                   headers=headers,
-                                  data=iterate_string('ZZZZZ'), status=200)
+                                  data=iterate_string('ZZZZZ'), status=http.OK)
 
         art = self._check_artifact_get('/withblob/%s' % artifact_id)
         self.assertEqual(artifact_id, art['id'])
@@ -1212,12 +1224,12 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         # append to list property via POST
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/prop_list' % art['id'], data={'data': [11]},
-            status=200)
+            status=http.OK)
         self.assertEqual([11], upd['prop_list'])
         # append to list property via POST
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/prop_list/-' % art['id'],
-            status=200, data={'data': 10})
+            status=http.OK, data={'data': 10})
         self.assertEqual([11, 10], upd['prop_list'])
 
     def test_bad_update_property(self):
@@ -1227,22 +1239,23 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         # try to update nonexistent property
         upd = self._check_artifact_put(
             '/withprops/v1.0/%s/nosuchprop' % art['id'],
-            data={'data': 'wont be set'}, status=400)
+            data={'data': 'wont be set'}, status=http.BAD_REQUEST)
         self.assertIn('Artifact has no property nosuchprop', upd)
         # try to pass wrong property value
         upd = self._check_artifact_put(
             '/withprops/v1.0/%s/tuple_prop' % art['id'],
-            data={'data': ['should be an int', False]}, status=400)
+            data={'data': ['should be an int', False]},
+            status=http.BAD_REQUEST)
         self.assertIn("Property 'tuple_prop[0]' may not have value", upd)
         # try to pass bad body (not a valid json)
         upd = self._check_artifact_put(
             '/withprops/v1.0/%s/tuple_prop' % art['id'], data="not a json",
-            status=400)
+            status=http.BAD_REQUEST)
         self.assertIn("Invalid json body", upd)
         # try to pass json body invalid under schema
         upd = self._check_artifact_put(
             '/withprops/v1.0/%s/tuple_prop' % art['id'],
-            data={"bad": "schema"}, status=400)
+            data={"bad": "schema"}, status=http.BAD_REQUEST)
         self.assertIn("Invalid json body", upd)
 
     def test_update_different_depths_levels(self):
@@ -1251,36 +1264,36 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         art = self._create_artifact('withprops', data=data)
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/dict_prop' % art['id'],
-            data={'data': {'foo': 'some value'}}, status=200)
+            data={'data': {'foo': 'some value'}}, status=http.OK)
         self.assertEqual({'foo': 'some value'}, upd['dict_prop'])
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/dict_prop/bar_list' % art['id'],
-            data={'data': [5]}, status=200)
+            data={'data': [5]}, status=http.OK)
         self.assertEqual({'foo': 'some value', 'bar_list': [5]},
                          upd['dict_prop'])
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/dict_prop/bar_list/0' % art['id'],
-            data={'data': 15}, status=200)
+            data={'data': 15}, status=http.OK)
         self.assertEqual({'foo': 'some value', 'bar_list': [5, 15]},
                          upd['dict_prop'])
         # try to attempt dict_property by nonexistent path
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/dict_prop/bar_list/nosuchkey' % art['id'],
-            data={'data': 15}, status=400)
+            data={'data': 15}, status=http.BAD_REQUEST)
 
     def test_artifact_inaccessible_by_different_user(self):
         data = {'name': 'an artifact',
                 'version': '42'}
         art = self._create_artifact('withprops', data=data)
         self._set_user('user2')
-        self._check_artifact_get('/withprops/%s' % art['id'], 404)
+        self._check_artifact_get('/withprops/%s' % art['id'], http.NOT_FOUND)
 
     def test_artifact_accessible_by_admin(self):
         data = {'name': 'an artifact',
                 'version': '42'}
         art = self._create_artifact('withprops', data=data)
         self._set_user('admin')
-        self._check_artifact_get('/withprops/%s' % art['id'], 200)
+        self._check_artifact_get('/withprops/%s' % art['id'], http.OK)
 
     def test_public_artifact_accessible_by_different_user(self):
         data = {'name': 'an artifact',
@@ -1290,7 +1303,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
             '/withprops/v1.0/%s' % art['id'],
             data=[{'op': 'replace', 'value': 'public', 'path': '/visibility'}])
         self._set_user('user2')
-        self._check_artifact_get('/withprops/%s' % art['id'], 200)
+        self._check_artifact_get('/withprops/%s' % art['id'], http.OK)
 
     def test_public_artifact_not_editable_by_different_user(self):
         data = {'name': 'an artifact',
@@ -1303,7 +1316,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._check_artifact_patch(
             '/withprops/v1.0/%s' % art['id'],
             data=[{'op': 'replace', 'value': 'private',
-                   'path': '/visibility'}], status=403)
+                   'path': '/visibility'}], status=http.FORBIDDEN)
 
     def test_public_artifact_editable_by_admin(self):
         data = {'name': 'an artifact',
@@ -1316,7 +1329,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self._check_artifact_patch(
             '/withprops/v1.0/%s' % art['id'],
             data=[{'op': 'replace', 'value': 'private',
-                   'path': '/visibility'}], status=200)
+                   'path': '/visibility'}], status=http.OK)
 
     def test_list_artifact_types(self):
         actual = {
@@ -1347,7 +1360,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                            u'http://127.0.0.1:%d/v0.1/artifacts/withprops/v1.0'
                            % self.api_port}]}]}
 
-        response = self._check_artifact_get("", status=200)
+        response = self._check_artifact_get("", status=http.OK)
         response[u'artifact_types'].sort(key=lambda x: x[u'type_name'])
         for artifact_type in response[u'artifact_types']:
             artifact_type[u'versions'].sort(key=lambda x: x[u'id'])
@@ -1358,7 +1371,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         data = {'name': 'name1', 'version': '2.2'}
         self._check_artifact_post('/withprops/v1.0/drafts',
                                   data=data,
-                                  status=400,
+                                  status=http.BAD_REQUEST,
                                   headers={'Content-Type': 'lalala'})
 
     def test_filter_by_non_dict_props(self):
@@ -1905,7 +1918,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
         self.assertEqual(2, len(result))
 
         url = '/withprops/v1.0/drafts?version=latest'
-        self._check_artifact_get(url=url, status=400)
+        self._check_artifact_get(url=url, status=http.BAD_REQUEST)
 
     def test_filter_by_version_only(self):
         data = {'name': 'art1',
@@ -1942,7 +1955,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 
         result = self._check_artifact_patch(
             '/withblob/v1.0/%s' % art['id'],
-            status=400,
+            status=http.BAD_REQUEST,
             data=[{'op': 'replace',
                    'value': 'public',
                    'path': '/blob1'}])
@@ -1950,7 +1963,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 
         result = self._check_artifact_patch(
             '/withblob/v1.0/%s' % art['id'],
-            status=400,
+            status=http.BAD_REQUEST,
             data=[{'op': 'remove',
                    'value': 'public',
                    'path': '/blob1'}])
@@ -1958,7 +1971,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 
         result = self._check_artifact_patch(
             '/withblob/v1.0/%s' % art['id'],
-            status=400,
+            status=http.BAD_REQUEST,
             data=[{'op': 'add',
                    'value': 'public',
                    'path': '/blob1'}])
@@ -1970,7 +1983,7 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
                            'Use semver notation')
         for bad_version in bad_versions:
             url = '/withprops/v1.0/drafts?version=gt:%s' % bad_version
-            result = self._check_artifact_get(url=url, status=400)
+            result = self._check_artifact_get(url=url, status=http.BAD_REQUEST)
             self.assertIn(response_string % bad_version, result)
 
     def test_circular_dependency(self):
@@ -1980,6 +1993,6 @@ paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 
         upd = self._check_artifact_post(
             '/withprops/v1.0/%s/depends_on' % art['id'],
-            data={'data': art['id']}, status=400)
+            data={'data': art['id']}, status=http.BAD_REQUEST)
         self.assertIn(
             'Artifact with a circular dependency can not be created', upd)

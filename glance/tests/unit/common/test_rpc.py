@@ -20,6 +20,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 import routes
 import six
+from six.moves import http_client as http
 import webob
 
 from glance.common import exception
@@ -154,27 +155,27 @@ class TestRPCController(base.IsolatedUnitTest):
         # Body is not a list, it should fail
         req.body = jsonutils.dump_as_bytes({})
         res = req.get_response(api)
-        self.assertEqual(400, res.status_int)
+        self.assertEqual(http.BAD_REQUEST, res.status_int)
 
         # cmd is not dict, it should fail.
         req.body = jsonutils.dump_as_bytes([None])
         res = req.get_response(api)
-        self.assertEqual(400, res.status_int)
+        self.assertEqual(http.BAD_REQUEST, res.status_int)
 
         # No command key, it should fail.
         req.body = jsonutils.dump_as_bytes([{}])
         res = req.get_response(api)
-        self.assertEqual(400, res.status_int)
+        self.assertEqual(http.BAD_REQUEST, res.status_int)
 
         # kwargs not dict, it should fail.
         req.body = jsonutils.dump_as_bytes([{"command": "test", "kwargs": 2}])
         res = req.get_response(api)
-        self.assertEqual(400, res.status_int)
+        self.assertEqual(http.BAD_REQUEST, res.status_int)
 
         # Command does not exist, it should fail.
         req.body = jsonutils.dump_as_bytes([{"command": "test"}])
         res = req.get_response(api)
-        self.assertEqual(404, res.status_int)
+        self.assertEqual(http.NOT_FOUND, res.status_int)
 
     def test_rpc_exception_propagation(self):
         api = create_api()
@@ -184,7 +185,7 @@ class TestRPCController(base.IsolatedUnitTest):
 
         req.body = jsonutils.dump_as_bytes([{"command": "raise_value_error"}])
         res = req.get_response(api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         returned = jsonutils.loads(res.body)[0]
         err_cls = 'builtins.ValueError' if six.PY3 else 'exceptions.ValueError'
@@ -192,7 +193,7 @@ class TestRPCController(base.IsolatedUnitTest):
 
         req.body = jsonutils.dump_as_bytes([{"command": "raise_weird_error"}])
         res = req.get_response(api)
-        self.assertEqual(200, res.status_int)
+        self.assertEqual(http.OK, res.status_int)
 
         returned = jsonutils.loads(res.body)[0]
         self.assertEqual('glance.common.exception.RPCError',
@@ -281,7 +282,7 @@ class TestRPCJSONSerializer(test_utils.BaseTestCase):
         fixture = {"key": "value"}
         response = webob.Response()
         rpc.RPCJSONSerializer().default(response, fixture)
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(http.OK, response.status_int)
         content_types = [h for h in response.headerlist
                          if h[0] == 'Content-Type']
         self.assertEqual(1, len(content_types))

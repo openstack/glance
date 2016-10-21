@@ -27,6 +27,7 @@ from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 import routes
 import six
+from six.moves import http_client as http
 import webob
 
 from glance.api.v1 import router as router_v1
@@ -188,7 +189,7 @@ class RequestTest(test_utils.BaseTestCase):
                 req = webob.Request.blank(uri)
                 req.method = method
                 res = req.get_response(api)
-                self.assertEqual(405, res.status_int)
+                self.assertEqual(http.METHOD_NOT_ALLOWED, res.status_int)
 
         """Makes sure v2 unallowed methods return 405"""
         unallowed_methods = [
@@ -217,13 +218,13 @@ class RequestTest(test_utils.BaseTestCase):
                 req = webob.Request.blank(uri)
                 req.method = method
                 res = req.get_response(api)
-                self.assertEqual(405, res.status_int)
+                self.assertEqual(http.METHOD_NOT_ALLOWED, res.status_int)
 
         # Makes sure not implemented methods return 405
         req = webob.Request.blank('/schemas/image')
         req.method = 'NonexistentMethod'
         res = req.get_response(api)
-        self.assertEqual(405, res.status_int)
+        self.assertEqual(http.METHOD_NOT_ALLOWED, res.status_int)
 
 
 class ResourceTest(test_utils.BaseTestCase):
@@ -317,7 +318,7 @@ class ResourceTest(test_utils.BaseTestCase):
         response = resource.__call__(request)
 
         self.assertIsInstance(response, webob.exc.HTTPForbidden)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
 
     def test_call_raises_exception(self):
         class FakeController(object):
@@ -336,7 +337,7 @@ class ResourceTest(test_utils.BaseTestCase):
         response = resource.__call__(request)
 
         self.assertIsInstance(response, webob.exc.HTTPInternalServerError)
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(http.INTERNAL_SERVER_ERROR, response.status_code)
 
     @mock.patch.object(wsgi, 'translate_exception')
     def test_resource_call_error_handle_localized(self,
@@ -433,7 +434,7 @@ class JSONResponseSerializerTest(test_utils.BaseTestCase):
         fixture = {"key": "value"}
         response = webob.Response()
         wsgi.JSONResponseSerializer().default(response, fixture)
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(http.OK, response.status_int)
         content_types = [h for h in response.headerlist
                          if h[0] == 'Content-Type']
         self.assertEqual(1, len(content_types))

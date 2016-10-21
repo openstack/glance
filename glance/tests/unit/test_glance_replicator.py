@@ -22,6 +22,7 @@ import mock
 from oslo_serialization import jsonutils
 import six
 from six import moves
+from six.moves import http_client as http
 import webob
 
 from glance.cmd import replicator as glance_replicator
@@ -126,11 +127,12 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
     def test_rest_errors(self):
         c = glance_replicator.ImageService(FakeHTTPConnection(), 'noauth')
 
-        for code, exc in [(400, webob.exc.HTTPBadRequest),
-                          (401, webob.exc.HTTPUnauthorized),
-                          (403, webob.exc.HTTPForbidden),
-                          (409, webob.exc.HTTPConflict),
-                          (500, webob.exc.HTTPInternalServerError)]:
+        for code, exc in [(http.BAD_REQUEST, webob.exc.HTTPBadRequest),
+                          (http.UNAUTHORIZED, webob.exc.HTTPUnauthorized),
+                          (http.FORBIDDEN, webob.exc.HTTPForbidden),
+                          (http.CONFLICT, webob.exc.HTTPConflict),
+                          (http.INTERNAL_SERVER_ERROR,
+                           webob.exc.HTTPInternalServerError)]:
             c.conn.prime_request('GET',
                                  ('v1/images/'
                                   '5dcddce0-cba5-4f18-9cf4-9853c7b207a6'), '',
@@ -145,12 +147,12 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         resp = {'images': [IMG_RESPONSE_ACTIVE, IMG_RESPONSE_QUEUED]}
         c.conn.prime_request('GET', 'v1/images/detail?is_public=None', '',
                              {'x-auth-token': 'noauth'},
-                             200, jsonutils.dumps(resp), {})
+                             http.OK, jsonutils.dumps(resp), {})
         c.conn.prime_request('GET',
                              ('v1/images/detail?marker=%s&is_public=None'
                               % IMG_RESPONSE_QUEUED['id']),
                              '', {'x-auth-token': 'noauth'},
-                             200, jsonutils.dumps({'images': []}), {})
+                             http.OK, jsonutils.dumps({'images': []}), {})
 
         imgs = list(c.get_images())
         self.assertEqual(2, len(imgs))
@@ -163,7 +165,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         c.conn.prime_request('GET',
                              'v1/images/%s' % IMG_RESPONSE_ACTIVE['id'],
                              '', {'x-auth-token': 'noauth'},
-                             200, image_contents, IMG_RESPONSE_ACTIVE)
+                             http.OK, image_contents, IMG_RESPONSE_ACTIVE)
 
         body = c.get_image(IMG_RESPONSE_ACTIVE['id'])
         self.assertEqual(image_contents, body.read())
@@ -187,7 +189,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         c.conn.prime_request('HEAD',
                              'v1/images/%s' % IMG_RESPONSE_ACTIVE['id'],
                              '', {'x-auth-token': 'noauth'},
-                             200, '', IMG_RESPONSE_ACTIVE)
+                             http.OK, '', IMG_RESPONSE_ACTIVE)
 
         header = c.get_image_meta(IMG_RESPONSE_ACTIVE['id'])
         self.assertIn('id', header)
@@ -222,7 +224,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
 
         c.conn.prime_request('POST', 'v1/images',
                              image_body, image_meta_with_proto,
-                             200, '', IMG_RESPONSE_ACTIVE)
+                             http.OK, '', IMG_RESPONSE_ACTIVE)
 
         headers, body = c.add_image(IMG_RESPONSE_ACTIVE, image_body)
         self.assertEqual(IMG_RESPONSE_ACTIVE, headers)
@@ -237,7 +239,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
         image_meta_headers['x-auth-token'] = 'noauth'
         image_meta_headers['Content-Type'] = 'application/octet-stream'
         c.conn.prime_request('PUT', 'v1/images/%s' % image_meta['id'],
-                             '', image_meta_headers, 200, '', '')
+                             '', image_meta_headers, http.OK, '', '')
         headers, body = c.add_image_meta(image_meta)
 
 
@@ -292,10 +294,10 @@ class FakeImageService(object):
         return {}
 
     def add_image_meta(self, meta):
-        return {'status': 200}, None
+        return {'status': http.OK}, None
 
     def add_image(self, meta, data):
-        return {'status': 200}, None
+        return {'status': http.OK}, None
 
 
 def get_image_service():

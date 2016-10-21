@@ -18,6 +18,7 @@ import os
 import httplib2
 from oslo_serialization import jsonutils
 from oslo_utils import units
+from six.moves import http_client
 
 from glance.tests import functional
 from glance.tests.utils import minimal_headers
@@ -57,7 +58,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'POST', headers=headers,
                                          body=image_data)
-        self.assertEqual(201, response.status)
+        self.assertEqual(http_client.CREATED, response.status)
         data = jsonutils.loads(content)
         self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          data['image']['checksum'])
@@ -75,7 +76,7 @@ class TestMiscellaneous(functional.FunctionalTest):
                                               data['image']['id'])
         http = httplib2.Http()
         response, content = http.request(path, 'HEAD')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
         self.assertEqual("Image1", response['x-image-meta-name'])
 
         # 4. GET /images/1
@@ -83,7 +84,7 @@ class TestMiscellaneous(functional.FunctionalTest):
         path = "http://%s:%d/v1/images/1" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(404, response.status)
+        self.assertEqual(http_client.NOT_FOUND, response.status)
 
         self.stop_servers()
 
@@ -106,7 +107,7 @@ class TestMiscellaneous(functional.FunctionalTest):
 
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
         self.assertEqual('{"images": []}', content)
 
         headers = {'Content-Type': 'application/octet-stream',

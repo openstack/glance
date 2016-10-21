@@ -17,6 +17,7 @@ import time
 
 import httplib2
 import psutil
+from six.moves import http_client
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
@@ -39,7 +40,7 @@ class TestMultiprocessing(functional.FunctionalTest):
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
-        self.assertEqual(200, response.status)
+        self.assertEqual(http_client.OK, response.status)
         self.assertEqual(b'{"images": []}', content)
         self.stop_servers()
 

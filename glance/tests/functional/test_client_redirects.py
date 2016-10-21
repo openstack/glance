@@ -16,6 +16,7 @@
 """Functional test cases testing glance client redirect-following."""
 
 import eventlet.patcher
+from six.moves import http_client as http
 import webob.dec
 import webob.exc
 
@@ -97,7 +98,7 @@ class TestClientRedirects(functional.FunctionalTest):
         Test GET with no redirect
         """
         response = self.client.do_request("GET", "/")
-        self.assertEqual(200, response.status)
+        self.assertEqual(http.OK, response.status)
         self.assertEqual("root", response.read())
 
     def test_get_with_one_redirect(self):
@@ -105,7 +106,7 @@ class TestClientRedirects(functional.FunctionalTest):
         Test GET with one 302 FOUND redirect
         """
         response = self.client.do_request("GET", "/302")
-        self.assertEqual(200, response.status)
+        self.assertEqual(http.OK, response.status)
         self.assertEqual("success_from_host_one", response.read())
 
     def test_get_with_one_redirect_query_string(self):
@@ -114,7 +115,7 @@ class TestClientRedirects(functional.FunctionalTest):
         """
         response = self.client.do_request("GET", "/302",
                                           params={'with_qs': 'yes'})
-        self.assertEqual(200, response.status)
+        self.assertEqual(http.OK, response.status)
         self.assertEqual("success_with_qs", response.read())
 
     def test_get_with_max_redirects(self):
@@ -131,7 +132,7 @@ class TestClientRedirects(functional.FunctionalTest):
         Test POST with 302 redirect
         """
         response = self.client.do_request("POST", "/302")
-        self.assertEqual(200, response.status)
+        self.assertEqual(http.OK, response.status)
         self.assertEqual("success_from_host_one", response.read())
 
     def test_redirect_to_new_host(self):
@@ -141,9 +142,9 @@ class TestClientRedirects(functional.FunctionalTest):
         url = "/redirect-to-%d" % self.port_two
         response = self.client.do_request("POST", url)
 
-        self.assertEqual(200, response.status)
+        self.assertEqual(http.OK, response.status)
         self.assertEqual("success_from_host_two", response.read())
 
         response = self.client.do_request("POST", "/success")
-        self.assertEqual(200, response.status)
+        self.assertEqual(http.OK, response.status)
         self.assertEqual("success_from_host_one", response.read())

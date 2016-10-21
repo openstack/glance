@@ -19,6 +19,7 @@ import time
 
 import psutil
 import requests
+from six.moves import http_client as http
 
 from glance.tests import functional
 from glance.tests.utils import execute
@@ -143,7 +144,7 @@ class TestReload(functional.FunctionalTest):
         # This recycles the existing socket
         path = self._url('http', '/')
         response = requests.get(path)
-        self.assertEqual(300, response.status_code)
+        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response  # close socket so that process audit is reliable
 
         pre_pids['api'] = self._get_children('api')
@@ -163,7 +164,7 @@ class TestReload(functional.FunctionalTest):
         ca_file = os.path.join(TEST_VAR_DIR, 'ca.crt')
         path = self._url('https', '/')
         response = requests.get(path, verify=ca_file)
-        self.assertEqual(300, response.status_code)
+        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response
 
         # Test https restart
@@ -181,7 +182,7 @@ class TestReload(functional.FunctionalTest):
         ca_file = os.path.join(TEST_VAR_DIR, 'ca.crt')
         path = self._url('https', '/')
         response = requests.get(path, verify=ca_file)
-        self.assertEqual(300, response.status_code)
+        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response
 
         # Test changing the https bind_host
@@ -199,7 +200,7 @@ class TestReload(functional.FunctionalTest):
 
         path = self._url('https', '/')
         response = requests.get(path, verify=ca_file)
-        self.assertEqual(300, response.status_code)
+        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response
 
         # Test https -> http
@@ -218,7 +219,7 @@ class TestReload(functional.FunctionalTest):
 
         path = self._url('http', '/')
         response = requests.get(path)
-        self.assertEqual(300, response.status_code)
+        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response
 
         # Test changing the http bind_host
@@ -236,7 +237,7 @@ class TestReload(functional.FunctionalTest):
 
         path = self._url('http', '/')
         response = requests.get(path)
-        self.assertEqual(300, response.status_code)
+        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response
 
         # Test logging configuration change
