@@ -15,6 +15,7 @@
 import glance_store
 from oslo_log import log as logging
 from oslo_utils import encodeutils
+from six.moves import http_client as http
 import webob.exc
 
 from glance.api import policy
@@ -89,10 +90,10 @@ class Controller(object):
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def update(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
     def delete(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):

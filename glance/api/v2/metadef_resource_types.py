@@ -17,6 +17,7 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 import six
+from six.moves import http_client as http
 import webob.exc
 from wsme.rest import json
 
@@ -188,13 +189,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def create(self, response, result):
         resource_type_json = json.tojson(ResourceTypeAssociation, result)
-        response.status_int = 201
+        response.status_int = http.CREATED
         body = jsonutils.dumps(resource_type_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
         response.content_type = 'application/json'
 
     def delete(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
 
 def _get_base_properties():

@@ -31,6 +31,7 @@ Keystone (an identity management system).
 import httplib2
 from keystoneclient import service_catalog as ks_service_catalog
 from oslo_serialization import jsonutils
+from six.moves import http_client as http
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import six.moves.urllib.parse as urlparse
@@ -167,20 +168,20 @@ class KeystoneStrategy(BaseStrategy):
                     not_found = e
             raise not_found
 
-        if resp.status in (200, 204):
+        if resp.status in (http.OK, http.NO_CONTENT):
             try:
                 if self.configure_via_auth:
                     self.management_url = _management_url(self, resp)
                 self.auth_token = resp['x-auth-token']
             except KeyError:
                 raise exception.AuthorizationFailure()
-        elif resp.status == 305:
+        elif resp.status == http.USE_PROXY:
             raise exception.AuthorizationRedirect(uri=resp['location'])
-        elif resp.status == 400:
+        elif resp.status == http.BAD_REQUEST:
             raise exception.AuthBadRequest(url=token_url)
-        elif resp.status == 401:
+        elif resp.status == http.UNAUTHORIZED:
             raise exception.NotAuthenticated()
-        elif resp.status == 404:
+        elif resp.status == http.NOT_FOUND:
             raise exception.AuthUrlNotFound(url=token_url)
         else:
             raise Exception(_('Unexpected response: %s') % resp.status)
@@ -205,7 +206,7 @@ class KeystoneStrategy(BaseStrategy):
         resp, resp_body = self._do_request(
             token_url, 'POST', headers=headers, body=req_body)
 
-        if resp.status == 200:
+        if resp.status == http.OK:
             resp_auth = jsonutils.loads(resp_body)['access']
             creds_region = self.creds.get('region')
             if self.configure_via_auth:
@@ -213,13 +214,13 @@ class KeystoneStrategy(BaseStrategy):
                                         endpoint_region=creds_region)
                 self.management_url = endpoint
             self.auth_token = resp_auth['token']['id']
-        elif resp.status == 305:
+        elif resp.status == http.USE_PROXY:
             raise exception.RedirectException(resp['location'])
-        elif resp.status == 400:
+        elif resp.status == http.BAD_REQUEST:
             raise exception.AuthBadRequest(url=token_url)
-        elif resp.status == 401:
+        elif resp.status == http.UNAUTHORIZED:
             raise exception.NotAuthenticated()
-        elif resp.status == 404:
+        elif resp.status == http.NOT_FOUND:
             raise exception.AuthUrlNotFound(url=token_url)
         else:
             raise Exception(_('Unexpected response: %s') % resp.status)

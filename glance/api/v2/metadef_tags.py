@@ -17,6 +17,7 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 import six
+from six.moves import http_client as http
 import webob.exc
 from wsme.rest import json
 
@@ -365,11 +366,11 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         self.schema = schema or get_schema()
 
     def create(self, response, metadata_tag):
-        response.status_int = 201
+        response.status_int = http.CREATED
         self.show(response, metadata_tag)
 
     def create_tags(self, response, result):
-        response.status_int = 201
+        response.status_int = http.CREATED
         metadata_tags_json = json.tojson(MetadefTags, result)
         body = jsonutils.dumps(metadata_tags_json, ensure_ascii=False)
         response.unicode_body = six.text_type(body)
@@ -382,7 +383,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.content_type = 'application/json'
 
     def update(self, response, metadata_tag):
-        response.status_int = 200
+        response.status_int = http.OK
         self.show(response, metadata_tag)
 
     def index(self, response, result):
@@ -392,7 +393,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.content_type = 'application/json'
 
     def delete(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
 
 def get_tag_href(namespace_name, metadef_tag):

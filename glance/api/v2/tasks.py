@@ -24,6 +24,7 @@ import oslo_serialization.jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 import six
+from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
@@ -289,7 +290,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         return task_view
 
     def create(self, response, task):
-        response.status_int = 201
+        response.status_int = http.CREATED
         self._inject_location_header(response, task)
         self.get(response, task)
 

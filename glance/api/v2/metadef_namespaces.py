@@ -18,6 +18,7 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 import six
+from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 from wsme.rest import json
@@ -510,7 +511,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def create(self, response, namespace):
         ns_json = json.tojson(Namespace, namespace)
-        response = self.__render(ns_json, response, 201)
+        response = self.__render(ns_json, response, http.CREATED)
         response.location = get_namespace_href(namespace)
 
     def show(self, response, namespace):
@@ -535,16 +536,16 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def update(self, response, namespace):
         ns_json = json.tojson(Namespace, namespace)
-        response = self.__render(ns_json, response, 200)
+        response = self.__render(ns_json, response, http.OK)
 
     def delete(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
     def delete_objects(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
     def delete_properties(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
     def __render(self, json_data, response, response_status=None):
         body = jsonutils.dumps(json_data, ensure_ascii=False)

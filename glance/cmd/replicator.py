@@ -27,7 +27,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 import six
-from six.moves import http_client
+from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 from webob import exc
 
@@ -147,29 +147,29 @@ class ImageService(object):
         response = self.conn.getresponse()
         headers = self._header_list_to_dict(response.getheaders())
         code = response.status
-        code_description = http_client.responses[code]
+        code_description = http.responses[code]
         LOG.debug('Response: %(code)s %(status)s %(headers)s',
                   {'code': code,
                    'status': code_description,
                    'headers': repr(headers)})
 
-        if code == 400:
+        if code == http.BAD_REQUEST:
             raise exc.HTTPBadRequest(
                 explanation=response.read())
 
-        if code == 500:
+        if code == http.INTERNAL_SERVER_ERROR:
             raise exc.HTTPInternalServerError(
                 explanation=response.read())
 
-        if code == 401:
+        if code == http.UNAUTHORIZED:
             raise exc.HTTPUnauthorized(
                 explanation=response.read())
 
-        if code == 403:
+        if code == http.FORBIDDEN:
             raise exc.HTTPForbidden(
                 explanation=response.read())
 
-        if code == 409:
+        if code == http.CONFLICT:
             raise exc.HTTPConflict(
                 explanation=response.read())
 
@@ -339,7 +339,7 @@ def replication_size(options, args):
     count = 0
 
     imageservice = get_image_service()
-    client = imageservice(http_client.HTTPConnection(server, port),
+    client = imageservice(http.HTTPConnection(server, port),
                           options.slavetoken)
     for image in client.get_images():
         LOG.debug('Considering image: %(image)s', {'image': image})
@@ -371,7 +371,7 @@ def replication_dump(options, args):
     server, port = utils.parse_valid_host_port(args.pop())
 
     imageservice = get_image_service()
-    client = imageservice(http_client.HTTPConnection(server, port),
+    client = imageservice(http.HTTPConnection(server, port),
                           options.mastertoken)
     for image in client.get_images():
         LOG.debug('Considering: %(image_id)s (%(image_name)s) '
@@ -457,7 +457,7 @@ def replication_load(options, args):
     server, port = utils.parse_valid_host_port(args.pop())
 
     imageservice = get_image_service()
-    client = imageservice(http_client.HTTPConnection(server, port),
+    client = imageservice(http.HTTPConnection(server, port),
                           options.slavetoken)
 
     updated = []
@@ -531,11 +531,11 @@ def replication_livecopy(options, args):
     imageservice = get_image_service()
 
     slave_server, slave_port = utils.parse_valid_host_port(args.pop())
-    slave_conn = http_client.HTTPConnection(slave_server, slave_port)
+    slave_conn = http.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
     master_server, master_port = utils.parse_valid_host_port(args.pop())
-    master_conn = http_client.HTTPConnection(master_server, master_port)
+    master_conn = http.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
 
     updated = []
@@ -609,11 +609,11 @@ def replication_compare(options, args):
     imageservice = get_image_service()
 
     slave_server, slave_port = utils.parse_valid_host_port(args.pop())
-    slave_conn = http_client.HTTPConnection(slave_server, slave_port)
+    slave_conn = http.HTTPConnection(slave_server, slave_port)
     slave_client = imageservice(slave_conn, options.slavetoken)
 
     master_server, master_port = utils.parse_valid_host_port(args.pop())
-    master_conn = http_client.HTTPConnection(master_server, master_port)
+    master_conn = http.HTTPConnection(master_server, master_port)
     master_client = imageservice(master_conn, options.mastertoken)
 
     differences = {}

@@ -14,6 +14,7 @@
 #    under the License.
 import glance_store
 from oslo_log import log as logging
+from six.moves import http_client as http
 import webob.exc
 
 from glance.api import policy
@@ -81,10 +82,10 @@ class ImageActionsController(object):
 class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def deactivate(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
     def reactivate(self, response, result):
-        response.status_int = 204
+        response.status_int = http.NO_CONTENT
 
 
 def create_resource():

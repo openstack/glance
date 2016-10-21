@@ -20,6 +20,7 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 import six
+from six.moves import http_client as http
 import webob
 
 from glance.api import policy
@@ -234,7 +235,7 @@ class ImageMembersController(object):
         member = self._lookup_member(req, image, member_id)
         try:
             member_repo.remove(member)
-            return webob.Response(body='', status=204)
+            return webob.Response(body='', status=http.NO_CONTENT)
         except exception.Forbidden:
             msg = _("Not allowed to delete members for image %s.") % image_id
             LOG.warning(msg)
