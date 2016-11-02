@@ -47,28 +47,20 @@ class TestGlanceManage(functional.FunctionalTest):
                (sys.executable, self.conf_filepath))
         execute(cmd, raise_error=True)
 
-    def _assert_tables(self):
-        cmd = "sqlite3 %s '.schema'" % self.db_filepath
+    def _assert_table_exists(self, db_table):
+        cmd = ("sqlite3 {0} \"SELECT name FROM sqlite_master WHERE "
+               "type='table' AND name='{1}'\"").format(self.db_filepath,
+                                                       db_table)
         exitcode, out, err = execute(cmd, raise_error=True)
-
-        self.assertIn('CREATE TABLE images', out)
-        self.assertIn('CREATE TABLE image_tags', out)
-        self.assertIn('CREATE TABLE image_locations', out)
-
-        # NOTE(bcwaldon): For some reason we need double-quotes around
-        # these two table names
-        # NOTE(vsergeyev): There are some cases when we have no double-quotes
-        self.assertTrue(
-            'CREATE TABLE "image_members"' in out or
-            'CREATE TABLE image_members' in out)
-        self.assertTrue(
-            'CREATE TABLE "image_properties"' in out or
-            'CREATE TABLE image_properties' in out)
+        msg = "Expected table {0} was not found in the schema".format(db_table)
+        self.assertEqual(out.rstrip(), db_table, msg)
 
     @depends_on_exe('sqlite3')
     @skip_if_disabled
     def test_db_creation(self):
-        """Test DB creation by db_sync on a fresh DB"""
+        """Test schema creation by db_sync on a fresh DB"""
         self._sync_db()
 
-        self._assert_tables()
+        for table in ['images', 'image_tags', 'image_locations',
+                      'image_members', 'image_properties']:
+            self._assert_table_exists(table)

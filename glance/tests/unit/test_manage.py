@@ -78,6 +78,21 @@ class TestLegacyManage(TestManageBase):
         self._main_test_helper(['glance.cmd.manage', 'db_upgrade', 'liberty'],
                                manage.DbCommands.upgrade, 'liberty')
 
+    @mock.patch.object(manage.DbCommands, 'expand')
+    def test_legacy_db_expand(self, db_expand):
+        self._main_test_helper(['glance.cmd.manage', 'db_expand'],
+                               manage.DbCommands.expand)
+
+    @mock.patch.object(manage.DbCommands, 'migrate')
+    def test_legacy_db_migrate(self, db_migrate):
+        self._main_test_helper(['glance.cmd.manage', 'db_migrate'],
+                               manage.DbCommands.migrate)
+
+    @mock.patch.object(manage.DbCommands, 'contract')
+    def test_legacy_db_contract(self, db_contract):
+        self._main_test_helper(['glance.cmd.manage', 'db_contract'],
+                               manage.DbCommands.contract)
+
     def test_db_metadefs_unload(self):
         db_metadata.db_unload_metadefs = mock.Mock()
         self._main_test_helper(['glance.cmd.manage', 'db_unload_metadefs'],
@@ -171,6 +186,21 @@ class TestManage(TestManageBase):
         self._main_test_helper(['glance.cmd.manage', 'db',
                                 'upgrade', 'liberty'],
                                manage.DbCommands.upgrade, 'liberty')
+
+    @mock.patch.object(manage.DbCommands, 'expand')
+    def test_db_expand(self, expand):
+        self._main_test_helper(['glance.cmd.manage', 'db', 'expand'],
+                               manage.DbCommands.expand)
+
+    @mock.patch.object(manage.DbCommands, 'migrate')
+    def test_db_migrate(self, migrate):
+        self._main_test_helper(['glance.cmd.manage', 'db', 'migrate'],
+                               manage.DbCommands.migrate)
+
+    @mock.patch.object(manage.DbCommands, 'contract')
+    def test_db_contract(self, contract):
+        self._main_test_helper(['glance.cmd.manage', 'db', 'contract'],
+                               manage.DbCommands.contract)
 
     def test_db_metadefs_unload(self):
         db_metadata.db_unload_metadefs = mock.Mock()

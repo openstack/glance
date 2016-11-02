@@ -43,7 +43,13 @@ def get_backend():
                     cfg.CONF.database.backend).driver
     return _IMPL
 
+
+# Migration-related constants
+EXPAND_BRANCH = 'expand'
+CONTRACT_BRANCH = 'contract'
+CURRENT_RELEASE = 'ocata'
 ALEMBIC_INIT_VERSION = 'liberty'
+LATEST_REVISION = 'ocata01'
 INIT_VERSION = 0
 
 MIGRATE_REPO_PATH = os.path.join(

@@ -51,6 +51,7 @@ from glance.common import exception
 from glance import context
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import alembic_migrations
+from glance.db.sqlalchemy.alembic_migrations import data_migrations
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata
 from glance.i18n import _
@@ -88,7 +89,7 @@ class DbCommands(object):
                     'alembic migration control.'))
 
     @args('--version', metavar='<version>', help='Database version')
-    def upgrade(self, version='heads'):
+    def upgrade(self, version=db_migration.LATEST_REVISION):
         """Upgrade the database's migration level"""
         self.sync(version)
 
@@ -105,12 +106,12 @@ class DbCommands(object):
                 "revision:"), version)
 
     @args('--version', metavar='<version>', help='Database version')
-    def sync(self, version='heads'):
+    def sync(self, version=db_migration.LATEST_REVISION):
         """
         Place an existing database under migration control and upgrade it.
         """
         if version is None:
-            version = 'heads'
+            version = db_migration.LATEST_REVISION
 
         alembic_migrations.place_database_under_alembic_control()
 
@@ -118,13 +119,75 @@ class DbCommands(object):
         alembic_command.upgrade(a_config, version)
         heads = alembic_migrations.get_current_alembic_heads()
         if heads is None:
-            raise Exception("Database sync failed")
+            raise exception.GlanceException("Database sync failed")
         revs = ", ".join(heads)
-        if version is 'heads':
+        if version == 'heads':
             print(_("Upgraded database, current revision(s):"), revs)
         else:
             print(_('Upgraded database to: %(v)s, current revision(s): %(r)s')
                   % {'v': version, 'r': revs})
+
+    def expand(self):
+        """Run the expansion phase of a rolling upgrade procedure."""
+        expand_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.EXPAND_BRANCH)
+        if not expand_head:
+            sys.exit(_('Database expansion failed. Couldn\'t find head '
+                       'revision of expand branch.'))
+
+        self.sync(version=expand_head)
+
+        curr_heads = alembic_migrations.get_current_alembic_heads()
+        if expand_head not in curr_heads:
+            sys.exit(_('Database expansion failed. Database expansion should '
+                       'have brought the database version up to "%(e_rev)s" '
+                       'revision. But, current revisions are: %(curr_revs)s ')
+                     % {'e_rev': expand_head, 'curr_revs': curr_heads})
+
+    def contract(self):
+        """Run the contraction phase of a rolling upgrade procedure."""
+        contract_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.CONTRACT_BRANCH)
+        if not contract_head:
+            sys.exit(_('Database contraction failed. Couldn\'t find head '
+                       'revision of contract branch.'))
+
+        curr_heads = alembic_migrations.get_current_alembic_heads()
+        expand_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.EXPAND_BRANCH)
+        if expand_head not in curr_heads:
+            sys.exit(_('Database contraction did not run. Database '
+                       'contraction cannot be run before database expansion. '
+                       'Run database expansion first using '
+                       '"glance-manage db expand"'))
+
+        if data_migrations.has_pending_migrations(db_api.get_engine()):
+            sys.exit(_('Database contraction did not run. Database '
+                       'contraction cannot be run before data migration is '
+                       'complete. Run data migration using "glance-manage db '
+                       'migrate".'))
+
+        self.sync(version=contract_head)
+
+        curr_heads = alembic_migrations.get_current_alembic_heads()
+        if contract_head not in curr_heads:
+            sys.exit(_('Database contraction failed. Database contraction '
+                       'should have brought the database version up to '
+                       '"%(e_rev)s" revision. But, current revisions are: '
+                       '%(curr_revs)s ') % {'e_rev': expand_head,
+                                            'curr_revs': curr_heads})
+
+    def migrate(self):
+        curr_heads = alembic_migrations.get_current_alembic_heads()
+        expand_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.EXPAND_BRANCH)
+        if expand_head not in curr_heads:
+            sys.exit(_('Data migration did not run. Data migration cannot be '
+                       'run before database expansion. Run database '
+                       'expansion first using "glance-manage db expand"'))
+
+        rows_migrated = data_migrations.migrate(db_api.get_engine())
+        print(_('Migrated %s rows') % rows_migrated)
 
     @args('--path', metavar='<path>', help='Path to the directory or file '
                                            'where json metadata is stored')
@@ -198,14 +261,23 @@ class DbLegacyCommands(object):
     def version(self):
         self.command_object.version()
 
-    def upgrade(self, version='heads'):
+    def upgrade(self, version=db_migration.LATEST_REVISION):
         self.command_object.upgrade(CONF.command.version)
 
     def version_control(self, version=db_migration.ALEMBIC_INIT_VERSION):
         self.command_object.version_control(CONF.command.version)
 
-    def sync(self, version='heads'):
+    def sync(self, version=db_migration.LATEST_REVISION):
         self.command_object.sync(CONF.command.version)
+
+    def expand(self):
+        self.command_object.expand()
+
+    def contract(self):
+        self.command_object.contract()
+
+    def migrate(self):
+        self.command_object.migrate()
 
     def load_metadefs(self, path=None, merge=False,
                       prefer_new=False, overwrite=False):
@@ -243,6 +315,18 @@ def add_legacy_command_parsers(command_object, subparsers):
     parser.set_defaults(action_fn=legacy_command_object.sync)
     parser.add_argument('version', nargs='?')
     parser.set_defaults(action='db_sync')
+
+    parser = subparsers.add_parser('db_expand')
+    parser.set_defaults(action_fn=legacy_command_object.expand)
+    parser.set_defaults(action='db_expand')
+
+    parser = subparsers.add_parser('db_contract')
+    parser.set_defaults(action_fn=legacy_command_object.contract)
+    parser.set_defaults(action='db_contract')
+
+    parser = subparsers.add_parser('db_migrate')
+    parser.set_defaults(action_fn=legacy_command_object.migrate)
+    parser.set_defaults(action='db_migrate')
 
     parser = subparsers.add_parser('db_load_metadefs')
     parser.set_defaults(action_fn=legacy_command_object.load_metadefs)

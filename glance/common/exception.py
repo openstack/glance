@@ -557,3 +557,9 @@ class InvalidJsonPatchPath(JsonPatchException):
     def __init__(self, message=None, *args, **kwargs):
         self.explanation = kwargs.get("explanation")
         super(InvalidJsonPatchPath, self).__init__(message, *args, **kwargs)
+
+
+class InvalidDataMigrationScript(GlanceException):
+    message = _("Invalid data migration script '%(script)s'. A valid data "
+                "migration script must implement functions 'has_migrations' "
+                "and 'migrate'.")
