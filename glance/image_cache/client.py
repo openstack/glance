@@ -128,4 +128,5 @@ def get_client(host, port=None, timeout=None, use_ssl=False, username=None,
         auth_token=auth_token or
         os.getenv('OS_TOKEN'),
         creds=creds,
-        insecure=insecure)
+        insecure=insecure,
+        configure_via_auth=False)
