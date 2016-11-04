@@ -79,7 +79,7 @@ Response Example
     HTTP/1.1 201 Created
     Content-Length: 427
     Content-Type: application/json; charset=UTF-8
-    Location: http://glance.openstack.org/v2/metadefs/namespaces/FredCo::SomeCategory::Example
+    Location: http://glance.openstack.example.org/v2/metadefs/namespaces/FredCo::SomeCategory::Example
     X-Openstack-Request-Id: req-6d4a8ad2-c018-4bfc-8fe5-1a36c23c43eb
     Date: Thu, 19 May 2016 16:05:48 GMT
 

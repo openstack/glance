@@ -71,7 +71,7 @@ Response Example (create with data)
      HTTP/1.1 201 Created
      Content-Type: application/json
      Content-Length: 491
-     Location: http://glance.example.com/v1/images/de2f2211-3ac7-4260-9142-41db0ecfb425
+     Location: http://glance.openstack.example.org/v1/images/de2f2211-3ac7-4260-9142-41db0ecfb425
      Etag: 7b1b10607acc1319506185e7227ca30d
      X-Openstack-Request-Id: req-70adeab4-740c-4db3-a002-fd1559ecf40f
      Date: Tue, 10 May 2016 21:41:41 GMT
@@ -91,7 +91,7 @@ with no headers specified and no data passed.  Here's the response:
      HTTP/1.1 201 Created
      Content-Type: application/json
      Content-Length: 447
-     Location: http://glance.example.com/v1/images/6b3ecfca-d445-4946-a8d1-c4938352b251
+     Location: http://glance.openstack.example.org/v1/images/6b3ecfca-d445-4946-a8d1-c4938352b251
      X-Openstack-Request-Id: req-db1ff3c7-3d4f-451f-9ef1-c414343f809d
      Date: Tue, 10 May 2016 21:35:14 GMT
 
