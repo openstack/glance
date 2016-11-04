@@ -14,7 +14,7 @@ WebOb>=1.6.0 # MIT
 sqlalchemy-migrate>=0.9.6 # Apache-2.0
 httplib2>=0.7.5 # MIT
 pycrypto>=2.6 # Public Domain
-oslo.config>=3.14.0 # Apache-2.0
+oslo.config!=3.18.0,>=3.14.0 # Apache-2.0
 oslo.concurrency>=3.8.0 # Apache-2.0
 oslo.context>=2.9.0 # Apache-2.0
 oslo.utils>=3.17.0 # Apache-2.0
