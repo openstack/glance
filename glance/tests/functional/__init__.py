@@ -811,10 +811,11 @@ class FunctionalTest(test_utils.BaseTestCase):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             s.connect(("127.0.0.1", port))
-            s.close()
             return True
         except socket.error:
             return False
+        finally:
+            s.close()
 
     def wait_for_servers(self, servers, expect_launch=True, timeout=30):
         """
