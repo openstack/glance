@@ -281,6 +281,8 @@ class ApiServer(Server):
         self.server_name = 'api'
         self.server_module = 'glance.cmd.%s' % self.server_name
         self.default_store = kwargs.get("default_store", "file")
+        self.bind_host = "127.0.0.1"
+        self.registry_host = "127.0.0.1"
         self.key_file = ""
         self.cert_file = ""
         self.metadata_encryption_key = "012345678901234567890123456789ab"
@@ -321,12 +323,12 @@ class ApiServer(Server):
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG
-bind_host = 127.0.0.1
+bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 key_file = %(key_file)s
 cert_file = %(cert_file)s
 metadata_encryption_key = %(metadata_encryption_key)s
-registry_host = 127.0.0.1
+registry_host = %(registry_host)s
 registry_port = %(registry_port)s
 use_user_token = %(use_user_token)s
 send_identity_credentials = %(send_identity_credentials)s
@@ -462,6 +464,7 @@ class RegistryServer(Server):
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
 
+        self.bind_host = "127.0.0.1"
         self.pid_file = os.path.join(self.test_dir, "registry.pid")
         self.log_file = os.path.join(self.test_dir, "registry.log")
         self.owner_is_tenant = True
@@ -475,7 +478,7 @@ class RegistryServer(Server):
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
-bind_host = 127.0.0.1
+bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 log_file = %(log_file)s
 sql_connection = %(sql_connection)s
@@ -534,6 +537,8 @@ class ScrubberDaemon(Server):
         self.server_module = 'glance.cmd.%s' % self.server_name
         self.daemon = daemon
 
+        self.registry_host = "127.0.0.1"
+
         self.image_dir = os.path.join(self.test_dir, "images")
         self.scrub_time = 5
         self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
@@ -556,7 +561,7 @@ log_file = %(log_file)s
 daemon = %(daemon)s
 wakeup_time = 2
 scrub_time = %(scrub_time)s
-registry_host = 127.0.0.1
+registry_host = %(registry_host)s
 registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
 lock_path = %(lock_path)s
@@ -811,6 +816,25 @@ class FunctionalTest(test_utils.BaseTestCase):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             s.connect(("127.0.0.1", port))
+            return True
+        except socket.error:
+            return False
+        finally:
+            s.close()
+
+    def ping_server_ipv6(self, port):
+        """
+        Simple ping on the port. If responsive, return True, else
+        return False.
+
+        :note We use raw sockets, not ping here, since ping uses ICMP and
+        has no concept of ports...
+
+        The function uses IPv6 (therefore AF_INET6 and ::1).
+        """
+        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        try:
+            s.connect(("::1", port))
             return True
         except socket.error:
             return False

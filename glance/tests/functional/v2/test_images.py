@@ -2910,6 +2910,76 @@ class TestImagesWithRegistry(TestImages):
         self.registry_server.deployment_flavor = 'trusted-auth'
 
 
+class TestImagesIPv6(functional.FunctionalTest):
+    """Verify that API and REG servers running IPv6 can communicate"""
+
+    def setUp(self):
+        """
+        First applying monkey patches of functions and methods which have
+        IPv4 hardcoded.
+        """
+        # Setting up initial monkey patch (1)
+        test_utils.get_unused_port_ipv4 = test_utils.get_unused_port
+        test_utils.get_unused_port_and_socket_ipv4 = (
+            test_utils.get_unused_port_and_socket)
+        test_utils.get_unused_port = test_utils.get_unused_port_ipv6
+        test_utils.get_unused_port_and_socket = (
+            test_utils.get_unused_port_and_socket_ipv6)
+        super(TestImagesIPv6, self).setUp()
+        self.cleanup()
+        # Setting up monkey patch (2), after object is ready...
+        self.ping_server_ipv4 = self.ping_server
+        self.ping_server = self.ping_server_ipv6
+
+    def tearDown(self):
+        # Cleaning up monkey patch (2).
+        self.ping_server = self.ping_server_ipv4
+        super(TestImagesIPv6, self).tearDown()
+        # Cleaning up monkey patch (1).
+        test_utils.get_unused_port = test_utils.get_unused_port_ipv4
+        test_utils.get_unused_port_and_socket = (
+            test_utils.get_unused_port_and_socket_ipv4)
+
+    def _url(self, path):
+        return "http://[::1]:%d%s" % (self.api_port, path)
+
+    def _headers(self, custom_headers=None):
+        base_headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': TENANT1,
+            'X-Roles': 'member',
+        }
+        base_headers.update(custom_headers or {})
+        return base_headers
+
+    def test_image_list_ipv6(self):
+        # Image list should be empty
+        self.api_server.data_api = (
+            'glance.tests.functional.v2.registry_data_api')
+        self.registry_server.deployment_flavor = 'trusted-auth'
+
+        # Setting up configuration parameters properly
+        # (bind_host is not needed since it is replaced by monkey patches,
+        #  but it would be reflected in the configuration file, which is
+        #  at least improving consistency)
+        self.registry_server.bind_host = "::1"
+        self.api_server.bind_host = "::1"
+        self.api_server.registry_host = "::1"
+        self.scrubber_daemon.registry_host = "::1"
+
+        self.start_servers(**self.__dict__.copy())
+
+        requests.get(self._url('/'), headers=self._headers())
+
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(200, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+
 class TestImageDirectURLVisibility(functional.FunctionalTest):
 
     def setUp(self):
