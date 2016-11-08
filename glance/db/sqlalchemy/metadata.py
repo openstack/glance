@@ -464,6 +464,8 @@ def _export_data_to_file(meta, path):
 
         try:
             file_name = ''.join([path, namespace_file_name, '.json'])
+            if isfile(file_name):
+                LOG.info(_LI("Overwriting: %s"), file_name)
             with open(file_name, 'w') as json_file:
                 json_file.write(json.dumps(values))
         except Exception as e:
