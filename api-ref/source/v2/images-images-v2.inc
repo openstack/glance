@@ -476,13 +476,17 @@ fail with a 403 (Forbidden) response code:
   :ref:`Image Schema <image-schema>`.
 
 - An attempt to create or modify image properties for which you do not have
-  permission to do so.  This depends upon how property protections are
-  configured in the OpenStack cloud in which you are making the call.  Consult
-  your cloud's documentation for details.
+  permission to do so *(since Image API v2.2)*.  This depends upon how property
+  protections are configured in the OpenStack cloud in which you are making the
+  call.  Consult your cloud's documentation for details.
+
+Attempting to add a location path to an image that is not in ``queued`` or
+``active`` state will result in a 409 (Conflict) response code
+*(since Image API v2.4)*.
 
 Normal response codes: 200
 
-Error response codes: 400, 401, 403, 404, 413, 415
+Error response codes: 400, 401, 403, 404, 409, 413, 415
 
 
 Request
