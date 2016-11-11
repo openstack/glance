@@ -96,8 +96,7 @@ assigned an expiration datetime that's displayed in the ``expires_at`` field.
 datetime, the task resource is subject to being deleted.  The result of the
 task (for example, an imported image) will still exist.
 
-For details about the defined task statuses, please see :doc:`Task
-Statuses <statuses>`
+For details about the defined task statuses, please see :ref:`task-statuses`.
 
 Tasks expire eventually because there's no reason to keep them around,
 as the user will have the result of the task, which was the point of creating
