@@ -170,6 +170,12 @@ class TestImageNotifications(utils.BaseTestCase):
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
 
+    def test_image_save_notification_disabled(self):
+        self.config(disabled_notifications=["image.update"])
+        self.image_repo_proxy.save(self.image_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_image_add_notification(self):
         self.image_repo_proxy.add(self.image_proxy)
         output_logs = self.notifier.get_logs()
@@ -180,6 +186,12 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(self.image.image_id, output_log['payload']['id'])
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
+
+    def test_image_add_notification_disabled(self):
+        self.config(disabled_notifications=["image.create"])
+        self.image_repo_proxy.add(self.image_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
 
     def test_image_delete_notification(self):
         self.image_repo_proxy.remove(self.image_proxy)
@@ -192,6 +204,12 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertTrue(output_log['payload']['deleted'])
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
+
+    def test_image_delete_notification_disabled(self):
+        self.config(disabled_notifications=['image.delete'])
+        self.image_repo_proxy.remove(self.image_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
 
     def test_image_get(self):
         image = self.image_repo_proxy.get(UUID1)
@@ -225,6 +243,14 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual(10, output_log['payload']['bytes_sent'])
         self.assertEqual(TENANT1, output_log['payload']['owner_id'])
 
+    def test_image_get_data_notification_disabled(self):
+        self.config(disabled_notifications=['image.send'])
+        self.image_proxy.size = 10
+        data = ''.join(self.image_proxy.get_data())
+        self.assertEqual('0123456789', data)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_image_get_data_size_mismatch(self):
         self.image_proxy.size = 11
         list(self.image_proxy.get_data())
@@ -253,6 +279,20 @@ class TestImageNotifications(utils.BaseTestCase):
         self.image_proxy.set_data(data_iterator(), 8)
         self.assertTrue(insurance['called'])
 
+    def test_image_set_data_prepare_notification_disabled(self):
+        insurance = {'called': False}
+
+        def data_iterator():
+            output_logs = self.notifier.get_logs()
+            self.assertEqual(0, len(output_logs))
+            yield 'abcd'
+            yield 'efgh'
+            insurance['called'] = True
+
+        self.config(disabled_notifications=['image.prepare'])
+        self.image_proxy.set_data(data_iterator(), 8)
+        self.assertTrue(insurance['called'])
+
     def test_image_set_data_upload_and_activate_notification(self):
         def data_iterator():
             self.notifier.log = []
@@ -273,6 +313,21 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertEqual('INFO', output_log['notification_type'])
         self.assertEqual('image.activate', output_log['event_type'])
         self.assertEqual(self.image.image_id, output_log['payload']['id'])
+
+    def test_image_set_data_upload_and_activate_notification_disabled(self):
+        insurance = {'called': False}
+
+        def data_iterator():
+            self.notifier.log = []
+            yield 'abcde'
+            yield 'fghij'
+            insurance['called'] = True
+
+        self.config(disabled_notifications=['image.activate', 'image.upload'])
+        self.image_proxy.set_data(data_iterator(), 10)
+        self.assertTrue(insurance['called'])
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
 
     def test_image_set_data_storage_full(self):
         def data_iterator():
@@ -465,6 +520,12 @@ class TestImageMemberNotifications(utils.BaseTestCase):
         self.assertEqual('image.member.create', output_log['event_type'])
         self._assert_image_member_with_notifier(output_log)
 
+    def test_image_member_add_notification_disabled(self):
+        self.config(disabled_notifications=['image.member.create'])
+        self.image_member_repo_proxy.add(self.image_member_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_image_member_save_notification(self):
         self.image_member_repo_proxy.save(self.image_member_proxy)
         output_logs = self.notifier.get_logs()
@@ -474,6 +535,12 @@ class TestImageMemberNotifications(utils.BaseTestCase):
         self.assertEqual('image.member.update', output_log['event_type'])
         self._assert_image_member_with_notifier(output_log)
 
+    def test_image_member_save_notification_disabled(self):
+        self.config(disabled_notifications=['image.member.update'])
+        self.image_member_repo_proxy.save(self.image_member_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_image_member_delete_notification(self):
         self.image_member_repo_proxy.remove(self.image_member_proxy)
         output_logs = self.notifier.get_logs()
@@ -482,6 +549,12 @@ class TestImageMemberNotifications(utils.BaseTestCase):
         self.assertEqual('INFO', output_log['notification_type'])
         self.assertEqual('image.member.delete', output_log['event_type'])
         self._assert_image_member_with_notifier(output_log, deleted=True)
+
+    def test_image_member_delete_notification_disabled(self):
+        self.config(disabled_notifications=['image.member.delete'])
+        self.image_member_repo_proxy.remove(self.image_member_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
 
     def test_image_member_get(self):
         image_member = self.image_member_repo_proxy.get(TENANT1)
@@ -571,6 +644,12 @@ class TestTaskNotifications(utils.BaseTestCase):
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
 
+    def test_task_create_notification_disabled(self):
+        self.config(disabled_notifications=['task.create'])
+        self.task_repo_proxy.add(self.task_stub_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_task_delete_notification(self):
         now = timeutils.isotime()
         self.task_repo_proxy.remove(self.task_stub_proxy)
@@ -595,6 +674,12 @@ class TestTaskNotifications(utils.BaseTestCase):
         if 'location' in output_log['payload']:
             self.fail('Notification contained location field.')
 
+    def test_task_delete_notification_disabled(self):
+        self.config(disabled_notifications=['task.delete'])
+        self.task_repo_proxy.remove(self.task_stub_proxy)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_task_run_notification(self):
         with mock.patch('glance.async.TaskExecutor') as mock_executor:
             executor = mock_executor.return_value
@@ -607,6 +692,15 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual('task.run', output_log['event_type'])
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
 
+    def test_task_run_notification_disabled(self):
+        self.config(disabled_notifications=['task.run'])
+        with mock.patch('glance.async.TaskExecutor') as mock_executor:
+            executor = mock_executor.return_value
+            executor._run.return_value = mock.Mock()
+            self.task_proxy.run(executor=mock_executor)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_task_processing_notification(self):
         self.task_proxy.begin_processing()
         output_logs = self.notifier.get_logs()
@@ -615,6 +709,12 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual('INFO', output_log['notification_type'])
         self.assertEqual('task.processing', output_log['event_type'])
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
+
+    def test_task_processing_notification_disabled(self):
+        self.config(disabled_notifications=['task.processing'])
+        self.task_proxy.begin_processing()
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
 
     def test_task_success_notification(self):
         self.task_proxy.begin_processing()
@@ -626,6 +726,13 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual('task.success', output_log['event_type'])
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
 
+    def test_task_success_notification_disabled(self):
+        self.config(disabled_notifications=['task.processing', 'task.success'])
+        self.task_proxy.begin_processing()
+        self.task_proxy.succeed(result=None)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
+
     def test_task_failure_notification(self):
         self.task_proxy.fail(message=None)
         output_logs = self.notifier.get_logs()
@@ -634,3 +741,9 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual('INFO', output_log['notification_type'])
         self.assertEqual('task.failure', output_log['event_type'])
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
+
+    def test_task_failure_notification_disabled(self):
+        self.config(disabled_notifications=['task.failure'])
+        self.task_proxy.fail(message=None)
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(0, len(output_logs))
