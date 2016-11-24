@@ -28,6 +28,6 @@ class TestGlanceReplicator(functional.FunctionalTest):
                (sys.executable,))
         exitcode, out, err = execute(cmd, raise_error=False)
         self.assertIn(
-            'Request: GET http://az1:9292/v1/images/detail?is_public=None',
+            b'Request: GET http://az1:9292/v1/images/detail?is_public=None',
             err
         )
