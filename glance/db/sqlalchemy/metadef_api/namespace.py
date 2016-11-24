@@ -206,7 +206,7 @@ def get_all(context, session, marker=None, limit=None,
         namespaces = _get_all(
             context, session, filters, marker, limit, sort_key, sort_dir)
 
-    return map(lambda ns: ns.to_dict(), namespaces)
+    return [ns.to_dict() for ns in namespaces]
 
 
 def get(context, name, session):

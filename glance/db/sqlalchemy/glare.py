@@ -253,8 +253,8 @@ def get_all(context, session, marker=None, limit=None,
         context, session, filters, marker,
         limit, sort_keys, sort_dirs, show_level)
 
-    return map(lambda ns: _out(ns, show_level, show_text_properties=False),
-               artifacts)
+    return [_out(ns, show_level, show_text_properties=False)
+            for ns in artifacts]
 
 
 def _get_all(context, session, filters=None, marker=None,
