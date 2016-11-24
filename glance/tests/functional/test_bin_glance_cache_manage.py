@@ -56,7 +56,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         Adds an image with supplied name and returns the newly-created
         image identifier.
         """
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers(name)
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -81,6 +81,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
+        out = out.decode('utf-8')
         return image_id in out
 
     def iso_date(self, image_id):
@@ -91,6 +92,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         cmd = "%s --port=%d list-cached" % (exe_cmd, self.api_port)
 
         exitcode, out, err = execute(cmd)
+        out = out.decode('utf-8')
 
         return datetime.datetime.utcnow().strftime("%Y-%m-%d") in out
 
@@ -111,7 +113,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         exitcode, out, err = execute(cmd, raise_error=False)
 
         self.assertEqual(1, exitcode)
-        self.assertIn('Cache management middleware not enabled on host',
+        self.assertIn(b'Cache management middleware not enabled on host',
                       out.strip())
 
         self.stop_servers()
@@ -132,7 +134,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertIn('No cached images', out.strip())
+        self.assertIn(b'No cached images', out.strip())
 
         ids = {}
 
@@ -171,7 +173,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertIn('No cached images', out.strip())
+        self.assertIn(b'No cached images', out.strip())
 
         # Verify no queued images
         cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
@@ -179,7 +181,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertIn('No queued images', out.strip())
+        self.assertIn(b'No queued images', out.strip())
 
         ids = {}
 
@@ -202,6 +204,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
+        out = out.decode('utf-8')
         self.assertIn(ids[1], out, 'Image %s was not queued!' % ids[1])
 
         # Cache images in the queue by running the prefetcher
@@ -235,7 +238,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('', out.strip(), out)
+        self.assertEqual(b'', out.strip(), out)
 
         # Verify no queued images
         cmd = "%s --port=%d list-queued" % (exe_cmd, api_port)
@@ -243,7 +246,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertIn('No queued images', out.strip())
+        self.assertIn(b'No queued images', out.strip())
 
         # Verify second image now cached
         cmd = "%s --port=%d list-cached" % (exe_cmd, api_port)
@@ -251,6 +254,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
+        out = out.decode('utf-8')
         self.assertIn(ids[1], out, 'Image %s was not cached!' % ids[1])
 
         # Queue third image and then delete it from queue
@@ -267,6 +271,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
+        out = out.decode('utf-8')
         self.assertIn(ids[2], out, 'Image %s was not queued!' % ids[2])
 
         # Delete the image from the queue
@@ -283,7 +288,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertIn('No queued images', out.strip())
+        self.assertIn(b'No queued images', out.strip())
 
         # Queue all images
         for x in range(4):
@@ -300,7 +305,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertIn('Found 3 queued images', out)
+        self.assertIn(b'Found 3 queued images', out)
 
         # Delete the image from the queue
         cmd = ("%s --port=%d --force "
@@ -316,7 +321,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertIn('No queued images', out.strip())
+        self.assertIn(b'No queued images', out.strip())
 
         # verify two image id when queue-image
         cmd = ("%s --port=%d --force "
@@ -325,8 +330,8 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd, raise_error=False)
 
         self.assertEqual(1, exitcode)
-        self.assertIn('Please specify one and only ID of '
-                      'the image you wish to ', out.strip())
+        self.assertIn(b'Please specify one and only ID of '
+                      b'the image you wish to ', out.strip())
 
         # verify two image id when delete-queued-image
         cmd = ("%s --port=%d --force delete-queued-image "
@@ -335,8 +340,8 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd, raise_error=False)
 
         self.assertEqual(1, exitcode)
-        self.assertIn('Please specify one and only ID of '
-                      'the image you wish to ', out.strip())
+        self.assertIn(b'Please specify one and only ID of '
+                      b'the image you wish to ', out.strip())
 
         # verify two image id when delete-cached-image
         cmd = ("%s --port=%d --force delete-cached-image "
@@ -345,7 +350,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd, raise_error=False)
 
         self.assertEqual(1, exitcode)
-        self.assertIn('Please specify one and only ID of '
-                      'the image you wish to ', out.strip())
+        self.assertIn(b'Please specify one and only ID of '
+                      b'the image you wish to ', out.strip())
 
         self.stop_servers()
