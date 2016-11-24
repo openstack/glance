@@ -37,7 +37,7 @@ class HealthcheckMiddlewareTest(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         response, content = self.request()
-        self.assertEqual('OK', content)
+        self.assertEqual(b'OK', content)
         self.assertEqual(http_client.OK, response.status)
 
         self.stop_servers()
@@ -49,7 +49,7 @@ class HealthcheckMiddlewareTest(functional.FunctionalTest):
             self.start_servers(**self.__dict__.copy())
 
             response, content = self.request()
-            self.assertEqual('DISABLED BY FILE', content)
+            self.assertEqual(b'DISABLED BY FILE', content)
             self.assertEqual(http_client.SERVICE_UNAVAILABLE, response.status)
 
             self.stop_servers()
