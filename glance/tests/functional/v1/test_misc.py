@@ -52,7 +52,7 @@ class TestMiscellaneous(functional.FunctionalTest):
 
         # 1. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -108,14 +108,14 @@ class TestMiscellaneous(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual('{"images": []}', content)
+        self.assertEqual(b'{"images": []}', content)
 
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'ImageName',
                    'X-Image-Meta-Disk-Format': 'Invalid', }
         ignored, content = http.request(path, 'POST', headers=headers)
 
-        self.assertIn('Invalid disk format', content,
+        self.assertIn(b'Invalid disk format', content,
                       "Could not find 'Invalid disk format' "
                       "in output: %s" % content)
 
