@@ -1400,7 +1400,7 @@ class TestImages(functional.FunctionalTest):
                 self.size = size
 
             def __iter__(self):
-                yield 'Z' * self.size
+                yield b'Z' * self.size
 
         response = requests.put(path, headers=headers, data=StreamSim(
                                 self.api_server.image_size_cap + 1))
@@ -3665,22 +3665,22 @@ class TestQuotas(functional.FunctionalTest):
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
     def test_image_upload_under_quota(self):
-        data = 'x' * (self.user_storage_quota - 1)
+        data = b'x' * (self.user_storage_quota - 1)
         self._upload_image_test(data, http.NO_CONTENT)
 
     def test_image_upload_exceed_quota(self):
-        data = 'x' * (self.user_storage_quota + 1)
+        data = b'x' * (self.user_storage_quota + 1)
         self._upload_image_test(data, http.REQUEST_ENTITY_TOO_LARGE)
 
     def test_chunked_image_upload_under_quota(self):
         def data_gen():
-            yield 'x' * (self.user_storage_quota - 1)
+            yield b'x' * (self.user_storage_quota - 1)
 
         self._upload_image_test(data_gen(), http.NO_CONTENT)
 
     def test_chunked_image_upload_exceed_quota(self):
         def data_gen():
-            yield 'x' * (self.user_storage_quota + 1)
+            yield b'x' * (self.user_storage_quota + 1)
 
         self._upload_image_test(data_gen(), http.REQUEST_ENTITY_TOO_LARGE)
 
