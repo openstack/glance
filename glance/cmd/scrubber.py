@@ -43,6 +43,7 @@ eventlet.patcher.monkey_patch(all=False, socket=True, time=True, select=True,
 
 CONF = cfg.CONF
 logging.register_options(CONF)
+CONF.set_default(name='use_stderr', default=True, enforce_type=True)
 
 
 def main():
