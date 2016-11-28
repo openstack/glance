@@ -382,6 +382,27 @@ def get_unused_port_and_socket():
     return (port, s)
 
 
+def get_unused_port_ipv6():
+    """
+    Returns an unused port on localhost on IPv6 (uses ::1).
+    """
+    port, s = get_unused_port_and_socket_ipv6()
+    s.close()
+    return port
+
+
+def get_unused_port_and_socket_ipv6():
+    """
+    Returns an unused port on localhost and the open socket
+    from which it was created, but uses IPv6 (::1).
+    """
+    s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+    s.bind(('::1', 0))
+    # Ignoring flowinfo and scopeid...
+    addr, port, flowinfo, scopeid = s.getsockname()
+    return (port, s)
+
+
 def xattr_writes_supported(path):
     """
     Returns True if the we can write a file to the supplied

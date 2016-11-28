@@ -41,6 +41,7 @@ except ImportError:
 
 from oslo_log import log as logging
 from oslo_utils import encodeutils
+from oslo_utils import netutils
 import six
 from six.moves import http_client
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -379,7 +380,10 @@ class BaseClient(object):
         action = urlparse.quote(action)
         path = '/'.join([self.doc_root or '', action.lstrip('/')])
         scheme = "https" if self.use_ssl else "http"
-        netloc = "%s:%d" % (self.host, self.port)
+        if netutils.is_valid_ipv6(self.host):
+            netloc = "[%s]:%d" % (self.host, self.port)
+        else:
+            netloc = "%s:%d" % (self.host, self.port)
 
         if isinstance(params, dict):
             for (key, value) in list(params.items()):
