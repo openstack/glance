@@ -1,0 +1,14 @@
+---
+upgrade:
+  - A recent change to oslo.log (>= 3.17.0) set the default value
+    of ``[DEFAULT]/use_stderr`` to ``False`` in order to produce
+    duplication of logs (as reported in bug \#1588051). Since this
+    would change the current behaviour of certain glance commands
+    (e.g., glance-replicator, glance-cache-manage, etc.), we chose to
+    override the default value of ``use_stderr`` to ``True`` in those
+    commands. We also chose not to override that value in any Glance
+    service (e.g., glance-api, glance-registry) so that duplicate
+    logs are not created by those services. Operators that have a
+    usecase that relies on logs being reported on standard error may
+    set ``[DEFAULT]/use_stderr = True`` in the appropriate service's
+    configuration file upon deployment.

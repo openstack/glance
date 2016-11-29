@@ -81,6 +81,7 @@ cli_opts = [
 CONF = cfg.CONF
 CONF.register_cli_opts(cli_opts)
 logging.register_options(CONF)
+CONF.set_default(name='use_stderr', default=True, enforce_type=True)
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...

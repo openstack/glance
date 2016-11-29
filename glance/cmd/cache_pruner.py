@@ -39,6 +39,7 @@ from glance.image_cache import pruner
 
 CONF = config.CONF
 logging.register_options(CONF)
+CONF.set_default(name='use_stderr', default=True, enforce_type=True)
 
 
 def main():
