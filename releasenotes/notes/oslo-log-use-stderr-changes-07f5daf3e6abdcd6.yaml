@@ -1,7 +1,7 @@
 ---
 upgrade:
   - A recent change to oslo.log (>= 3.17.0) set the default value
-    of ``[DEFAULT]/use_stderr`` to ``False`` in order to produce
+    of ``[DEFAULT]/use_stderr`` to ``False`` in order to prevent
     duplication of logs (as reported in bug \#1588051). Since this
     would change the current behaviour of certain glance commands
     (e.g., glance-replicator, glance-cache-manage, etc.), we chose to
