@@ -4,6 +4,19 @@ Team and repository tags
 
 .. image:: http://governance.openstack.org/badges/glance.svg
     :target: http://governance.openstack.org/reference/tags/index.html
+    :alt: The following tags have been asserted for the Glance project:
+          "project:official",
+          "tc:approved-release",
+          "stable:follows-policy",
+          "tc:starter-kit:compute",
+          "vulnerability:managed",
+          "team:diverse-affiliation",
+          "assert:supports-upgrade",
+          "assert:follows-standard-deprecation".
+          Follow the link for an explanation of these tags.
+.. NOTE(rosmaita): the alt text above will have to be updated when
+   additional tags are asserted for Glance.  (The SVG in the
+   governance repo is updated automatically.)
 
 .. Change things from this point on
 
