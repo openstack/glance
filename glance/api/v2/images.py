@@ -275,12 +275,15 @@ class ImagesController(object):
                     "invisible.")
             raise webob.exc.HTTPForbidden(explanation=msg)
 
+        if image.status not in ('active', 'queued'):
+            msg = _("It's not allowed to replace locations if image status is "
+                    "%s.") % image.status
+            raise webob.exc.HTTPConflict(explanation=msg)
+
         try:
             # NOTE(flwang): _locations_proxy's setattr method will check if
             # the update is acceptable.
             image.locations = value
-            if image.status == 'queued':
-                image.status = 'active'
         except (exception.BadStoreUri, exception.DuplicateLocation) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except ValueError as ve:    # update image status failed.
@@ -318,6 +321,11 @@ class ImagesController(object):
             msg = _("It's not allowed to remove locations if locations are "
                     "invisible.")
             raise webob.exc.HTTPForbidden(explanation=msg)
+
+        if image.status not in ('active'):
+            msg = _("It's not allowed to remove locations if image status is "
+                    "%s.") % image.status
+            raise webob.exc.HTTPConflict(explanation=msg)
 
         if len(image.locations) == 1:
             LOG.debug("User forbidden to remove last location of image %s",

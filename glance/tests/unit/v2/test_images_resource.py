@@ -1569,90 +1569,113 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output.locations))
         self.assertEqual(new_location, output.locations[1])
 
-    def test_update_add_locations_status_saving(self):
+    def test_replace_location_possible_on_queued(self):
+        self.config(show_multiple_locations=True)
+        self.images = [
+            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        is_public=True,
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location = {'url': '%s/fake_location_1' % BASE_URI, 'metadata': {}}
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [new_location]}]
+        output = self.controller.update(request, '1', changes)
+        self.assertEqual('1', output.image_id)
+        self.assertEqual(1, len(output.locations))
+        self.assertEqual(new_location, output.locations[0])
+
+    def test_add_location_possible_on_queued(self):
+        self.config(show_multiple_locations=True)
+        self.images = [
+            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        is_public=True,
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location = {'url': '%s/fake_location_1' % BASE_URI, 'metadata': {}}
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        output = self.controller.update(request, '1', changes)
+        self.assertEqual('1', output.image_id)
+        self.assertEqual(1, len(output.locations))
+        self.assertEqual(new_location, output.locations[0])
+
+    def _test_update_locations_status(self, image_status, update):
         self.config(show_multiple_locations=True)
         self.images = [
             _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
                         name='1',
                         disk_format='raw',
                         container_format='bare',
-                        status='saving'),
+                        status=image_status),
         ]
-        self.db.image_create(None, self.images[0])
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
         request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'add', 'path': ['locations', '-'],
+        if image_status == 'deactivated':
+            self.db.image_create(request.context, self.images[0])
+        else:
+            self.db.image_create(None, self.images[0])
+        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
+        changes = [{'op': update, 'path': ['locations', '-'],
                     'value': new_location}]
         self.assertRaises(webob.exc.HTTPConflict,
                           self.controller.update, request, '1', changes)
 
-    def test_update_add_locations_status_deactivated(self):
-        self.config(show_multiple_locations=True)
-        self.images = [
-            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
-                        name='1',
-                        disk_format='raw',
-                        container_format='bare',
-                        status='deactivated'),
-        ]
-        request = unit_test_utils.get_fake_request()
-        self.db.image_create(request.context, self.images[0])
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        changes = [{'op': 'add', 'path': ['locations', '-'],
-                    'value': new_location}]
-        self.assertRaises(webob.exc.HTTPConflict,
-                          self.controller.update, request, '1', changes)
+    def test_location_add_not_permitted_status_saving(self):
+        self._test_update_locations_status('saving', 'add')
 
-    def test_update_add_locations_status_deleted(self):
-        self.config(show_multiple_locations=True)
-        self.images = [
-            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
-                        name='1',
-                        disk_format='raw',
-                        container_format='bare',
-                        status='deleted'),
-        ]
-        self.db.image_create(None, self.images[0])
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'add', 'path': ['locations', '-'],
-                    'value': new_location}]
-        self.assertRaises(webob.exc.HTTPConflict,
-                          self.controller.update, request, '1', changes)
+    def test_location_add_not_permitted_status_deactivated(self):
+        self._test_update_locations_status('deactivated', 'add')
 
-    def test_update_add_locations_status_pending_delete(self):
-        self.config(show_multiple_locations=True)
-        self.images = [
-            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
-                        name='1',
-                        disk_format='raw',
-                        container_format='bare',
-                        status='pending_delete'),
-        ]
-        self.db.image_create(None, self.images[0])
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'add', 'path': ['locations', '-'],
-                    'value': new_location}]
-        self.assertRaises(webob.exc.HTTPConflict,
-                          self.controller.update, request, '1', changes)
+    def test_location_add_not_permitted_status_deleted(self):
+        self._test_update_locations_status('deleted', 'add')
 
-    def test_update_add_locations_status_killed(self):
-        self.config(show_multiple_locations=True)
-        self.images = [
-            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
-                        name='1',
-                        disk_format='raw',
-                        container_format='bare',
-                        status='killed'),
-        ]
-        self.db.image_create(None, self.images[0])
-        new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
-        request = unit_test_utils.get_fake_request()
-        changes = [{'op': 'add', 'path': ['locations', '-'],
-                    'value': new_location}]
-        self.assertRaises(webob.exc.HTTPConflict,
-                          self.controller.update, request, '1', changes)
+    def test_location_add_not_permitted_status_pending_delete(self):
+        self._test_update_locations_status('pending_delete', 'add')
+
+    def test_location_add_not_permitted_status_killed(self):
+        self._test_update_locations_status('killed', 'add')
+
+    def test_location_remove_not_permitted_status_saving(self):
+        self._test_update_locations_status('saving', 'remove')
+
+    def test_location_remove_not_permitted_status_deactivated(self):
+        self._test_update_locations_status('deactivated', 'remove')
+
+    def test_location_remove_not_permitted_status_deleted(self):
+        self._test_update_locations_status('deleted', 'remove')
+
+    def test_location_remove_not_permitted_status_pending_delete(self):
+        self._test_update_locations_status('pending_delete', 'remove')
+
+    def test_location_remove_not_permitted_status_killed(self):
+        self._test_update_locations_status('killed', 'remove')
+
+    def test_location_remove_not_permitted_status_queued(self):
+        self._test_update_locations_status('queued', 'remove')
+
+    def test_location_replace_not_permitted_status_saving(self):
+        self._test_update_locations_status('saving', 'replace')
+
+    def test_location_replace_not_permitted_status_deactivated(self):
+        self._test_update_locations_status('deactivated', 'replace')
+
+    def test_location_replace_not_permitted_status_deleted(self):
+        self._test_update_locations_status('deleted', 'replace')
+
+    def test_location_replace_not_permitted_status_pending_delete(self):
+        self._test_update_locations_status('pending_delete', 'replace')
+
+    def test_location_replace_not_permitted_status_killed(self):
+        self._test_update_locations_status('killed', 'replace')
 
     def test_update_add_locations_insertion(self):
         self.config(show_multiple_locations=True)
