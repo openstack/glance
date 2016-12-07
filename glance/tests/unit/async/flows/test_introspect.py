@@ -97,6 +97,42 @@ class TestImportTask(test_utils.BaseTestCase):
             self.assertEqual(async_utils.QEMU_IMG_PROC_LIMITS,
                              kw_args.get('prlimit'))
 
+    def test_introspect_quietly_refuses_to_apply_process_limits(self):
+        image_create = introspect._Introspect(self.task.task_id,
+                                              self.task_type,
+                                              self.img_repo)
+
+        self.task_repo.get.return_value = self.task
+        image_id = mock.sentinel.image_id
+        image = mock.MagicMock(image_id=image_id)
+        self.img_repo.get.return_value = image
+
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            with mock.patch('glance.async.utils.QEMU_IMG_PROC_LIMITS', None):
+                result = json.dumps({
+                    "virtual-size": 10737418240,
+                    "filename": "/tmp/image.qcow2",
+                    "cluster-size": 65536,
+                    "format": "qcow2",
+                    "actual-size": 373030912,
+                    "format-specific": {
+                        "type": "qcow2",
+                        "data": {
+                            "compat": "0.10"
+                        }
+                    },
+                    "dirty-flag": False
+                })
+
+                exc_mock.return_value = (result, None)
+                image_create.execute(image, '/test/path.qcow2')
+                self.assertEqual(10737418240, image.virtual_size)
+
+                # NOTE(sigmavirus24): Assert that process limits are being
+                # ignored when oslo.concurrency is too old.
+                kw_args = exc_mock.call_args[1]
+                self.assertNotIn('prlimit', kw_args)
+
     def test_introspect_no_image(self):
         image_create = introspect._Introspect(self.task.task_id,
                                               self.task_type,

@@ -408,6 +408,35 @@ class TestImportTask(test_utils.BaseTestCase):
                 self.assertTrue(os.path.exists(tmp_image_path))
                 self._assert_qemu_process_limits(tmock)
 
+    def test_import_to_fs_ignores_process_limits(self):
+        import_fs = import_flow._ImportToFS(self.task.task_id,
+                                            self.task_type,
+                                            self.task_repo,
+                                            'http://example.com/image.qcow2')
+
+        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
+            with mock.patch('glance.async.utils.QEMU_IMG_PROC_LIMITS', None):
+                dmock.return_value = "test"
+
+                with mock.patch.object(putils, 'trycmd') as tmock:
+                    tmock.return_value = (json.dumps({
+                        'format': 'qcow2',
+                    }), None)
+
+                    image_id = UUID1
+                    path = import_fs.execute(image_id)
+                    reader, size = glance_store.get_from_backend(path)
+                    self.assertEqual(4, size)
+                    self.assertEqual(dmock.return_value, "".join(reader))
+
+                    image_path = os.path.join(self.work_dir, image_id)
+                    tmp_image_path = os.path.join(self.work_dir, image_path)
+                    self.assertTrue(os.path.exists(tmp_image_path))
+                    # NOTE(sigmavirus234): Assert that process limits are
+                    # being ignores for older oslo.concurrency versions.
+                    kw_args = tmock.call_args[1]
+                    self.assertNotIn('prlimit', kw_args)
+
     def test_delete_from_fs(self):
         delete_fs = import_flow._DeleteFromFS(self.task.task_id,
                                               self.task_type)

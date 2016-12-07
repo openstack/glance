@@ -44,12 +44,15 @@ class _Introspect(utils.OptionalTask):
         :param image_id: Glance image ID
         :param file_path: Path to the file being introspected
         """
+        trycmd_kwargs = {}
+        if utils.QEMU_IMG_PROC_LIMITS is not None:
+            trycmd_kwargs['prlimit'] = utils.QEMU_IMG_PROC_LIMITS
 
         try:
             stdout, stderr = putils.trycmd('qemu-img', 'info',
                                            '--output=json', file_path,
-                                           prlimit=utils.QEMU_IMG_PROC_LIMITS,
-                                           log_errors=putils.LOG_ALL_ERRORS)
+                                           log_errors=putils.LOG_ALL_ERRORS,
+                                           **trycmd_kwargs)
         except OSError as exc:
             # NOTE(flaper87): errno == 2 means the executable file
             # was not found. For now, log an error and move forward

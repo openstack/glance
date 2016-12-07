@@ -23,14 +23,22 @@ from glance import i18n
 
 LOG = logging.getLogger(__name__)
 _LW = i18n._LW
+_LE = i18n._LE
 
-# NOTE(hemanthm): As reported in the bug #1449062, "qemu-img info" calls can
-# be exploited to craft DoS attacks by providing malicious input. The process
-# limits defined here are protections against such attacks. This essentially
-# limits the CPU time and address space used by the process that executes
-# "qemu-img info" command to 2 seconds and 1 GB respectively.
-QEMU_IMG_PROC_LIMITS = putils.ProcessLimits(cpu_time=2,
-                                            address_space=1 * units.Gi)
+QEMU_IMG_PROC_LIMITS = None
+try:
+    # NOTE(hemanthm): As reported in the bug #1449062, "qemu-img info" calls
+    # can be exploited to craft DoS attacks by providing malicious input. The
+    # process limits defined here are protections against such attacks. This
+    # essentially limits the CPU time and address space used by the process
+    # that executes "qemu-img info" command to 2 seconds and 1 GB
+    # respectively.
+    QEMU_IMG_PROC_LIMITS = putils.ProcessLimits(cpu_time=2,
+                                                address_space=1 * units.Gi)
+except Exception:
+    LOG.error(_LE('Please upgrade to oslo.concurrency version 2.6.1 -- '
+                  'the version presently installed prevents fixing the '
+                  'vulnerability CVE-2015-5162.'))
 
 
 class OptionalTask(task.Task):

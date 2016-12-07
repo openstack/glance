@@ -152,13 +152,17 @@ class _ImportToFS(task.Task):
 
         path = self.store.add(image_id, data, 0, context=None)[0]
 
+        trycmd_kwargs = {}
+        if utils.QEMU_IMG_PROC_LIMITS is not None:
+            trycmd_kwargs['prlimit'] = utils.QEMU_IMG_PROC_LIMITS
+
         try:
             # NOTE(flaper87): Consider moving this code to a common
             # place that other tasks can consume as well.
             stdout, stderr = putils.trycmd('qemu-img', 'info',
                                            '--output=json', path,
-                                           prlimit=utils.QEMU_IMG_PROC_LIMITS,
-                                           log_errors=putils.LOG_ALL_ERRORS)
+                                           log_errors=putils.LOG_ALL_ERRORS,
+                                           **trycmd_kwargs)
         except OSError as exc:
             with excutils.save_and_reraise_exception():
                 msg = (_LE('Failed to execute security checks on the image '
