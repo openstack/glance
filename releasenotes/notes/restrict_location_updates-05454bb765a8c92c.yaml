@@ -2,12 +2,12 @@
 prelude: >
     Location updates for images are now restricted to
     images in ``active`` or ``queued`` status. Please
-    refer to the "Fixes" section for more information.
+    refer to the "Bug Fixes" section for more information.
 
 fixes:
   - |
-    Image location updates to an image not in status
-    ``active`` or ``queued`` can introduce race
+    Image location updates to an image which is not in
+    ``active`` or ``queued`` status can introduce race
     conditions and security issues and hence a bad
     experience for users and operators. As a result,
     we have restricted image location updates in this
