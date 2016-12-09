@@ -47,8 +47,12 @@ class TestMultiprocessing(functional.FunctionalTest):
     def _get_children(self):
         api_pid = self.api_server.process_pid
         process = psutil.Process(api_pid)
-
-        children = process.get_children()
+        try:
+            # psutils version >= 2
+            children = process.children()
+        except AttributeError:
+            # psutils version < 2
+            children = process.get_children()
         pids = [str(child.pid) for child in children]
         return pids
 

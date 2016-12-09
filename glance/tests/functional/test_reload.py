@@ -76,7 +76,12 @@ class TestReload(functional.FunctionalTest):
         pid = None
         pid = self._get_parent(server)
         process = psutil.Process(pid)
-        children = process.get_children()
+        try:
+            # psutils version >= 2
+            children = process.children()
+        except AttributeError:
+            # psutils version < 2
+            children = process.get_children()
         pids = set()
         for child in children:
             pids.add(child.pid)
