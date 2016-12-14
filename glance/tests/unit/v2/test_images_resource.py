@@ -1570,6 +1570,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(new_location, output.locations[1])
 
     def test_replace_location_possible_on_queued(self):
+        self.skipTest('This test is intermittently failing at the gate. '
+                      'See bug #1649300')
         self.config(show_multiple_locations=True)
         self.images = [
             _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
@@ -1590,6 +1592,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(new_location, output.locations[0])
 
     def test_add_location_possible_on_queued(self):
+        self.skipTest('This test is intermittently failing at the gate. '
+                      'See bug #1649300')
         self.config(show_multiple_locations=True)
         self.images = [
             _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
