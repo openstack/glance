@@ -1412,7 +1412,7 @@ def task_create(context, values, session=None):
 
 def _pop_task_info_values(values):
     task_info_values = {}
-    for k, v in values.items():
+    for k, v in list(values.items()):
         if k in ['input', 'result', 'message']:
             values.pop(k)
             task_info_values[k] = v
