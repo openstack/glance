@@ -283,7 +283,7 @@ class TestScrubber(functional.FunctionalTest):
         http = httplib2.Http()
         wait_for = 300    # seconds
         check_every = 15  # seconds
-        for _ in range(wait_for / check_every):
+        for _ in range(wait_for // check_every):
             time.sleep(check_every)
 
             response, content = http.request(path, 'HEAD', headers=headers)
