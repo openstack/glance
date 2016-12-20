@@ -36,8 +36,8 @@ class DBCommandsTestCase(test_utils.BaseTestCase):
     @mock.patch.object(context, 'get_admin_context')
     def test_purge_command(self, mock_context, mock_db_purge):
         mock_context.return_value = self.context
-        self.commands.purge(1, 100)
-        mock_db_purge.assert_called_once_with(self.context, 1, 100)
+        self.commands.purge(0, 100)
+        mock_db_purge.assert_called_once_with(self.context, 0, 100)
 
     def test_purge_command_negative_rows(self):
         exit = self.assertRaises(SystemExit, self.commands.purge, 1, -1)
@@ -49,6 +49,10 @@ class DBCommandsTestCase(test_utils.BaseTestCase):
         expected = ("Invalid int value for age_in_days: "
                     "%(age_in_days)s") % {'age_in_days': age_in_days}
         self.assertEqual(expected, ex.code)
+
+    def test_purge_negative_age_in_days(self):
+        ex = self.assertRaises(SystemExit, self.commands.purge, '-1')
+        self.assertEqual("Must supply a non-negative value for age.", ex.code)
 
     def test_purge_invalid_max_rows(self):
         max_rows = 'abcd'
