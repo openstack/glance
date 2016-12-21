@@ -18,7 +18,7 @@ Adds the tenant whose tenant ID is ``member_id`` as a member of the
 image denoted by ``image_id``.
 
 By default, an image member cannot further share the image with other
-tenants.  This behavior can be overriden by supplying a request body
+tenants.  This behavior can be overridden by supplying a request body
 with the call that specifies ``can_share`` as ``true``.
 
 Thus:

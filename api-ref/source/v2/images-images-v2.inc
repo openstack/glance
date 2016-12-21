@@ -382,7 +382,7 @@ Alternatively, specify the ``sort`` query parameter:
    GET /v2/images?sort=name:asc,status:desc
 
 .. note::
-    Although this call has been available since verison 2.0 of this API,
+    Although this call has been available since version 2.0 of this API,
     it has been enhanced from release to release.  The filtering and
     sorting functionality and syntax described above apply to the most
     recent release (Newton).  Not everything described above will be
