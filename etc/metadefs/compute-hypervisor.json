@@ -12,7 +12,7 @@
     "properties": {
         "hypervisor_type": {
             "title": "Hypervisor Type",
-            "description": "Hypervisor type required by the image. Used with the ImagePropertiesFilter. \n\n KVM - Kernel-based Virtual Machine. LXC - Linux Containers (through libvirt). QEMU - Quick EMUlator. UML - User Mode Linux. hyperv - Microsoft® hyperv. vmware - VMware® vsphere. Baremetal - physical provisioning. For more information, see: http://docs.openstack.org/trunk/config-reference/content/section_compute-hypervisors.html",
+            "description": "Hypervisor type required by the image. Used with the ImagePropertiesFilter. \n\n KVM - Kernel-based Virtual Machine. LXC - Linux Containers (through libvirt). QEMU - Quick EMUlator. UML - User Mode Linux. hyperv - Microsoft® hyperv. vmware - VMware® vsphere. Baremetal - physical provisioning. VZ - Virtuozzo OS Containers and Virtual Machines (through libvirt). For more information, see: http://docs.openstack.org/trunk/config-reference/content/section_compute-hypervisors.html",
             "type": "string",
             "enum": [
                 "baremetal",
@@ -22,6 +22,7 @@
                 "qemu",
                 "uml",
                 "vmware",
+                "vz",
                 "xen"
             ]
         },

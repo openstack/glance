@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    The metadata definition for ``hypervisor_type`` in the
+    ``OS::Compute::Hypervisor`` namespace has been extended to include
+    the Virtuozzo hypervisor, designated as ``vz``.  You may upgrade
+    the definition using:
+
+    ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``
