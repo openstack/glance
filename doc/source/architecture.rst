@@ -35,7 +35,7 @@ the components in the system and is sql-based by default. Other types
 of database backends are somewhat supported and used by operators
 but are not extensively tested upstream.
 
-.. figure:: /images/architecture.png
+.. figure:: ./images/architecture.png
    :figwidth: 100%
    :align: center
    :alt: OpenStack Glance Architecture Diagram.
