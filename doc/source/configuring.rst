@@ -510,9 +510,8 @@ Deprecated. Use ``auth_address`` in the Swift back-end configuration file instea
 
 Sets the authentication URL supplied to Swift when making calls to its storage
 system. For more information about the Swift authentication system, please
-see the `Swift auth <http://swift.openstack.org/overview_auth.html>`_
-documentation and the
-`overview of Swift authentication <http://docs.openstack.org/openstack-object-storage/admin/content/ch02s02.html>`_.
+see the `Swift auth <http://docs.openstack.org/developer/swift/overview_auth.html>`_
+documentation.
 
 **IMPORTANT NOTE**: Swift authentication addresses use HTTPS by default. This
 means that if you are running Swift with authentication over HTTP, you need
