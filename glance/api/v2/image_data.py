@@ -18,6 +18,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
+import six
 import webob.exc
 
 import glance.api.policy
@@ -282,16 +283,19 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def download(self, response, image):
         offset, chunk_size = 0, None
-        range_val = response.request.get_content_range()
+        # NOTE(dharinic): In case of a malformed content range,
+        # glance/common/wsgi.py will raise HTTPRequestRangeNotSatisfiable
+        # (setting status_code to 416)
+        range_val = response.request.get_content_range(image.size)
 
         if range_val:
             # NOTE(flaper87): if not present, both, start
             # and stop, will be None.
-            if range_val.start is not None:
+            if range_val.start is not None and range_val.stop is not None:
                 offset = range_val.start
-
-            if range_val.stop is not None:
                 chunk_size = range_val.stop - offset
+
+            response.status_int = 206
 
         response.headers['Content-Type'] = 'application/octet-stream'
 
@@ -301,6 +305,11 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             # an iterator very strange
             response.app_iter = iter(image.get_data(offset=offset,
                                                     chunk_size=chunk_size))
+            # NOTE(dharinic): In case of a full image download, when
+            # chunk_size was none, reset it to image.size to set the
+            # response header's Content-Length.
+            if not chunk_size:
+                chunk_size = image.size
         except glance_store.NotFound as e:
             raise webob.exc.HTTPNoContent(explanation=e.msg)
         except glance_store.RemoteServiceUnavailable as e:
@@ -318,7 +327,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             response.headers['Content-MD5'] = image.checksum
         # NOTE(markwash): "response.app_iter = ..." also erroneously resets the
         # content-length
-        response.headers['Content-Length'] = str(image.size)
+        response.headers['Content-Length'] = six.text_type(chunk_size)
 
     def upload(self, response, result):
         response.status_int = 204

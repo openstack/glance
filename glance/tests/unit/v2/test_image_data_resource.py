@@ -548,6 +548,54 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.assertEqual('application/octet-stream',
                          response.headers['Content-Type'])
 
+    def _test_partial_download_successful(self, d_range):
+        request = wsgi.Request.blank('/')
+        request.environ = {}
+        request.headers['Content-Range'] = d_range
+        response = webob.Response()
+        response.request = request
+        image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
+        self.serializer.download(response, image)
+        self.assertEqual(206, response.status_code)
+        self.assertEqual('2', response.headers['Content-Length'])
+
+    def test_partial_download_successful_with_range(self):
+        self._test_partial_download_successful('bytes 1-2/3')
+        self._test_partial_download_successful('bytes 1-2/*')
+
+    def _test_partial_download_failures(self, d_range):
+        request = wsgi.Request.blank('/')
+        request.environ = {}
+        request.headers['Content-Range'] = d_range
+        response = webob.Response()
+        response.request = request
+        image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
+        self.assertRaises(webob.exc.HTTPRequestRangeNotSatisfiable,
+                          self.serializer.download,
+                          response, image)
+        return
+
+    def test_partial_download_failure_with_range(self):
+        self._test_partial_download_failures('bytes 1-4/3')
+        self._test_partial_download_failures('bytes 1-4/*')
+        self._test_partial_download_failures('bytes 4-1/3')
+        self._test_partial_download_failures('bytes 4-1/*')
+
+    def test_download_failure_with_valid_range(self):
+        with mock.patch.object(glance.api.policy.ImageProxy,
+                               'get_data') as mock_get_data:
+            mock_get_data.side_effect = glance_store.NotFound(image="image")
+        request = wsgi.Request.blank('/')
+        request.environ = {}
+        request.headers['Content-Range'] = 'bytes %s-%s/3' % (1, 2)
+        response = webob.Response()
+        response.request = request
+        image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
+        image.get_data = mock_get_data
+        self.assertRaises(webob.exc.HTTPNoContent,
+                          self.serializer.download,
+                          response, image)
+
     def test_download_with_checksum(self):
         request = wsgi.Request.blank('/')
         request.environ = {}
