@@ -52,14 +52,19 @@ def unpack_task_input(task):
 
     :param task: Task domain object
     """
+    task_type = task.type
     task_input = task.task_input
 
-    # NOTE: until we support multiple task types, we just check for
-    # input fields related to 'import task'.
-    for key in ["import_from", "import_from_format", "image_properties"]:
-        if key not in task_input:
-            msg = _("Input does not contain '%(key)s' field") % {"key": key}
+    if task_type == 'api_image_import':
+        if 'import_method' not in task_input:
+            msg = _("Input does not contain 'import_method'")
             raise exception.Invalid(msg)
+    else:
+        for key in ["import_from", "import_from_format", "image_properties"]:
+            if key not in task_input:
+                msg = (_("Input does not contain '%(key)s' field") %
+                       {"key": key})
+                raise exception.Invalid(msg)
 
     return task_input
 

@@ -112,11 +112,8 @@ class TaskExecutor(glance.async.TaskExecutor):
     def _get_flow(self, task):
         try:
             task_input = script_utils.unpack_task_input(task)
-            uri = script_utils.validate_location_uri(
-                task_input.get('import_from'))
 
             kwds = {
-                'uri': uri,
                 'task_id': task.task_id,
                 'task_type': task.type,
                 'context': self.context,
@@ -125,6 +122,10 @@ class TaskExecutor(glance.async.TaskExecutor):
                 'image_factory': self.image_factory
             }
 
+            if task.type == "import":
+                uri = script_utils.validate_location_uri(
+                    task_input.get('import_from'))
+                kwds['uri'] = uri
             return driver.DriverManager('glance.flows', task.type,
                                         invoke_on_load=True,
                                         invoke_kwds=kwds).driver
