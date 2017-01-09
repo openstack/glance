@@ -94,7 +94,7 @@ image_format_opts = [
                                                    group='DEFAULT')]),
     cfg.ListOpt('disk_formats',
                 default=['ami', 'ari', 'aki', 'vhd', 'vhdx', 'vmdk', 'raw',
-                         'qcow2', 'vdi', 'iso'],
+                         'qcow2', 'vdi', 'iso', 'ploop'],
                 help=_("Supported values for the 'disk_format' "
                        "image attribute"),
                 deprecated_opts=[cfg.DeprecatedOpt('disk_formats',

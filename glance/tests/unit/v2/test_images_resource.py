@@ -3837,7 +3837,7 @@ class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
     def test_default_disk_formats(self):
         schema = glance.api.v2.images.get_schema()
         expected = [None, 'ami', 'ari', 'aki', 'vhd', 'vhdx', 'vmdk',
-                    'raw', 'qcow2', 'vdi', 'iso']
+                    'raw', 'qcow2', 'vdi', 'iso', 'ploop']
         actual = schema.properties['disk_format']['enum']
         self.assertEqual(expected, actual)
 
