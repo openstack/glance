@@ -34,6 +34,7 @@ import sys
 import tempfile
 import time
 
+import eventlet
 import fixtures
 from oslo_serialization import jsonutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -48,6 +49,8 @@ from glance.tests import utils as test_utils
 
 execute, get_unused_port = test_utils.execute, test_utils.get_unused_port
 tracecmd_osmap = {'Linux': 'strace', 'FreeBSD': 'truss'}
+
+eventlet.patcher.monkey_patch()
 
 
 class Server(object):
