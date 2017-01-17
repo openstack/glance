@@ -13,11 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import glance.cmd as glance_cmd
-
-
-glance_cmd.fix_greendns_ipv6()
-
 # See http://code.google.com/p/python-nose/issues/detail?id=373
 # The code below enables tests to work with i18n _() blocks
 import six.moves.builtins as __builtin__
