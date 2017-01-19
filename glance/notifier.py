@@ -157,6 +157,7 @@ def format_image_notification(image):
         'size': image.size,
         'virtual_size': image.virtual_size,
         'is_public': image.visibility == 'public',
+        'visibility': image.visibility,
         'properties': dict(image.extra_properties),
         'tags': list(image.tags),
         'deleted': False,

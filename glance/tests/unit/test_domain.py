@@ -50,7 +50,7 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.assertIsNotNone(image.created_at)
         self.assertEqual(image.created_at, image.updated_at)
         self.assertEqual('queued', image.status)
-        self.assertEqual('private', image.visibility)
+        self.assertEqual('shared', image.visibility)
         self.assertIsNone(image.owner)
         self.assertIsNone(image.name)
         self.assertIsNone(image.size)
@@ -70,7 +70,7 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.assertIsNotNone(image.created_at)
         self.assertEqual(image.created_at, image.updated_at)
         self.assertEqual('queued', image.status)
-        self.assertEqual('private', image.visibility)
+        self.assertEqual('shared', image.visibility)
         self.assertEqual(TENANT1, image.owner)
         self.assertEqual('image-1', image.name)
         self.assertIsNone(image.size)
@@ -93,7 +93,7 @@ class TestImageFactory(test_utils.BaseTestCase):
         self.assertIsNotNone(image.created_at)
         self.assertEqual(image.created_at, image.updated_at)
         self.assertEqual('queued', image.status)
-        self.assertEqual('private', image.visibility)
+        self.assertEqual('shared', image.visibility)
         self.assertIsNone(image.owner)
         self.assertEqual('image-1', image.name)
         self.assertIsNone(image.size)
@@ -153,6 +153,8 @@ class TestImage(test_utils.BaseTestCase):
     def test_visibility_enumerated(self):
         self.image.visibility = 'public'
         self.image.visibility = 'private'
+        self.image.visibility = 'shared'
+        self.image.visibility = 'community'
         self.assertRaises(ValueError, setattr,
                           self.image, 'visibility', 'ellison')
 

@@ -68,7 +68,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
         uuid2_time = uuid1_time + datetime.timedelta(seconds=5)
         self.FIXTURES = [
             self.get_extra_fixture(
-                id=UUID1, name='fake image #1', is_public=False,
+                id=UUID1, name='fake image #1', visibility='shared',
                 disk_format='ami', container_format='ami', size=13,
                 virtual_size=26, properties={'type': 'kernel'},
                 location="swift://user:passwd@acct/container/obj.tar.0",
@@ -469,7 +469,8 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
     def test_image_get(self):
         """Tests that the detailed info about an image returned"""
         fixture = self.get_fixture(id=UUID1, name='fake image #1',
-                                   is_public=False, size=13, virtual_size=26,
+                                   visibility='shared',
+                                   size=13, virtual_size=26,
                                    disk_format='ami', container_format='ami')
 
         data = self.client.image_get(image_id=UUID1)

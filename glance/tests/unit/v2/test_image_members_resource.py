@@ -50,7 +50,7 @@ def _db_fixture(id, **kwargs):
     obj = {
         'id': id,
         'name': None,
-        'is_public': False,
+        'visibility': 'shared',
         'properties': {},
         'checksum': None,
         'owner': None,
@@ -113,7 +113,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
     def _create_images(self):
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, name='1', size=256,
-                        is_public=True,
+                        visibility='public',
                         locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
                                     'metadata': {}, 'status': 'active'}]),
             _db_fixture(UUID2, owner=TENANT1, name='2', size=512),
@@ -151,7 +151,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertEqual({'members': []}, output)
 
     def test_index_member_view(self):
-        # UUID3 is a private image owned by TENANT3
+        # UUID3 is a shared image owned by TENANT3
         # UUID3 has members TENANT2 and TENANT4
         # When TENANT4 lists members for UUID3, should not see TENANT2
         request = unit_test_utils.get_fake_request(tenant=TENANT4)

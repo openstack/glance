@@ -375,7 +375,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_get_image_details(self):
         """Tests that the detailed info about public images returned"""
         fixture = self.get_fixture(id=UUID2, name='fake image #2',
-                                   properties={}, size=19)
+                                   properties={}, size=19, is_public=True)
 
         images = self.client.get_images_detailed()
 
@@ -646,7 +646,7 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
 
     def test_add_image_basic(self):
         """Tests that we can add image metadata and returns the new id"""
-        fixture = self.get_fixture()
+        fixture = self.get_fixture(is_public=True)
 
         new_image = self.client.add_image(fixture)
 
@@ -663,7 +663,8 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_add_image_with_properties(self):
         """Tests that we can add image metadata with properties"""
         fixture = self.get_fixture(location="file:///tmp/glance-tests/2",
-                                   properties={'distro': 'Ubuntu 10.04 LTS'})
+                                   properties={'distro': 'Ubuntu 10.04 LTS'},
+                                   is_public=True)
 
         new_image = self.client.add_image(fixture)
 

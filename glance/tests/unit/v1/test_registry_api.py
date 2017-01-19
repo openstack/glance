@@ -1225,7 +1225,7 @@ class TestRegistryAPI(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
     def test_create_image(self):
         """Tests that the /images POST registry API creates the image"""
 
-        fixture = self.get_minimal_fixture()
+        fixture = self.get_minimal_fixture(is_public=True)
         body = jsonutils.dump_as_bytes(dict(image=fixture))
 
         res = self.get_api_response_ext(http.OK, body=body,

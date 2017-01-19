@@ -25,7 +25,7 @@ def _fake_image(owner, is_public):
     return {
         'id': None,
         'owner': owner,
-        'is_public': is_public,
+        'visibility': 'public' if is_public else 'shared',
     }
 
 

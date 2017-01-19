@@ -63,7 +63,7 @@ class Controller(object):
         Get the members of an image.
         """
         try:
-            self.db_api.image_get(req.context, image_id)
+            self.db_api.image_get(req.context, image_id, v1_mode=True)
         except exception.NotFound:
             msg = _("Image %(id)s not found") % {'id': image_id}
             LOG.warn(msg)
@@ -97,7 +97,7 @@ class Controller(object):
 
         # Make sure the image exists
         try:
-            image = self.db_api.image_get(req.context, image_id)
+            image = self.db_api.image_get(req.context, image_id, v1_mode=True)
         except exception.NotFound:
             msg = _("Image %(id)s not found") % {'id': image_id}
             LOG.warn(msg)
@@ -217,7 +217,7 @@ class Controller(object):
 
         # Make sure the image exists
         try:
-            image = self.db_api.image_get(req.context, image_id)
+            image = self.db_api.image_get(req.context, image_id, v1_mode=True)
         except exception.NotFound:
             msg = _("Image %(id)s not found") % {'id': image_id}
             LOG.warn(msg)
@@ -281,7 +281,7 @@ class Controller(object):
 
         # Make sure the image exists
         try:
-            image = self.db_api.image_get(req.context, image_id)
+            image = self.db_api.image_get(req.context, image_id, v1_mode=True)
         except exception.NotFound:
             msg = _("Image %(id)s not found") % {'id': image_id}
             LOG.warn(msg)

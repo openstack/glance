@@ -119,7 +119,7 @@ class Controller(object):
             del params['is_public']
         try:
             return self.db_api.image_get_all(context, filters=filters,
-                                             **params)
+                                             v1_mode=True, **params)
         except exception.ImageNotFound:
             LOG.warn(_LW("Invalid marker. Image %(id)s could not be "
                          "found.") % {'id': params.get('marker')})
@@ -358,7 +358,7 @@ class Controller(object):
     def show(self, req, id):
         """Return data about the given image id."""
         try:
-            image = self.db_api.image_get(req.context, id)
+            image = self.db_api.image_get(req.context, id, v1_mode=True)
             LOG.debug("Successfully retrieved image %(id)s", {'id': id})
         except exception.ImageNotFound:
             LOG.info(_LI("Image %(id)s not found"), {'id': id})
@@ -438,7 +438,8 @@ class Controller(object):
 
         try:
             image_data = _normalize_image_location_for_db(image_data)
-            image_data = self.db_api.image_create(req.context, image_data)
+            image_data = self.db_api.image_create(req.context, image_data,
+                                                  v1_mode=True)
             image_data = dict(image=make_image_dict(image_data))
             LOG.info(_LI("Successfully created image %(id)s"),
                      {'id': image_data['image']['id']})
@@ -494,7 +495,8 @@ class Controller(object):
             updated_image = self.db_api.image_update(req.context, id,
                                                      image_data,
                                                      purge_props=purge_props,
-                                                     from_state=from_state)
+                                                     from_state=from_state,
+                                                     v1_mode=True)
 
             LOG.info(_LI("Updating metadata for image %(id)s"), {'id': id})
             return dict(image=make_image_dict(updated_image))

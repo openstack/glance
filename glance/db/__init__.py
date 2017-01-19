@@ -186,7 +186,6 @@ class ImageRepo(object):
         return images
 
     def _format_image_from_db(self, db_image, db_tags):
-        visibility = 'public' if db_image['is_public'] else 'private'
         properties = {}
         for prop in db_image.pop('properties'):
             # NOTE(markwash) db api requires us to filter deleted
@@ -204,7 +203,7 @@ class ImageRepo(object):
             status=db_image['status'],
             created_at=db_image['created_at'],
             updated_at=db_image['updated_at'],
-            visibility=visibility,
+            visibility=db_image['visibility'],
             min_disk=db_image['min_disk'],
             min_ram=db_image['min_ram'],
             protected=db_image['protected'],
@@ -246,7 +245,7 @@ class ImageRepo(object):
             'container_format': image.container_format,
             'size': image.size,
             'virtual_size': image.virtual_size,
-            'is_public': image.visibility == 'public',
+            'visibility': image.visibility,
             'properties': dict(image.extra_properties),
         }
 

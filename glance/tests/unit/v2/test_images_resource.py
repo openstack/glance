@@ -60,7 +60,7 @@ def _db_fixture(id, **kwargs):
     obj = {
         'id': id,
         'name': None,
-        'is_public': False,
+        'visibility': 'shared',
         'properties': {},
         'checksum': None,
         'owner': None,
@@ -140,7 +140,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.images = [
             _db_fixture(UUID1, owner=TENANT1, checksum=CHKSUM,
                         name='1', size=256, virtual_size=1024,
-                        is_public=True,
+                        visibility='public',
                         locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
                                     'metadata': {}, 'status': 'active'}],
                         disk_format='raw',
@@ -148,7 +148,7 @@ class TestImagesController(base.IsolatedUnitTest):
                         status='active'),
             _db_fixture(UUID2, owner=TENANT1, checksum=CHKSUM1,
                         name='2', size=512, virtual_size=2048,
-                        is_public=True,
+                        visibility='public',
                         disk_format='raw',
                         container_format='bare',
                         status='active',
@@ -157,7 +157,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                     'bar': 'foo'}),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
                         name='3', size=512, virtual_size=2048,
-                        is_public=True, tags=['windows', '64bit', 'x86']),
+                        visibility='public', tags=['windows', '64bit', 'x86']),
             _db_fixture(UUID4, owner=TENANT4, name='4',
                         size=1024, virtual_size=3072),
         ]
@@ -356,15 +356,29 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(0, len(images))
 
     def test_index_with_non_default_is_public_filter(self):
-        image = _db_fixture(str(uuid.uuid4()),
-                            is_public=False,
-                            owner=TENANT3)
-        self.db.image_create(None, image)
+        private_uuid = str(uuid.uuid4())
+        new_image = _db_fixture(private_uuid,
+                                visibility='private',
+                                owner=TENANT3)
+        self.db.image_create(None, new_image)
+
         path = '/images?visibility=private'
         request = unit_test_utils.get_fake_request(path, is_admin=True)
         output = self.controller.index(request,
                                        filters={'visibility': 'private'})
-        self.assertEqual(2, len(output['images']))
+        self.assertEqual(1, len(output['images']))
+        actual = set([image.image_id for image in output['images']])
+        expected = set([private_uuid])
+        self.assertEqual(expected, actual)
+
+        path = '/images?visibility=shared'
+        request = unit_test_utils.get_fake_request(path, is_admin=True)
+        output = self.controller.index(request,
+                                       filters={'visibility': 'shared'})
+        self.assertEqual(1, len(output['images']))
+        actual = set([image.image_id for image in output['images']])
+        expected = set([UUID4])
+        self.assertEqual(expected, actual)
 
     def test_index_with_many_filters(self):
         url = '/images?status=queued&name=3'
@@ -594,7 +608,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('image-1', output.name)
         self.assertEqual({}, output.extra_properties)
         self.assertEqual(set([]), output.tags)
-        self.assertEqual('private', output.visibility)
+        self.assertEqual('shared', output.visibility)
         output_logs = self.notifier.get_logs()
         self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
@@ -612,7 +626,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('image-1', output.name)
         self.assertEqual({}, output.extra_properties)
         self.assertEqual(set([]), output.tags)
-        self.assertEqual('private', output.visibility)
+        self.assertEqual('shared', output.visibility)
         output_logs = self.notifier.get_logs()
         self.assertEqual(0, len(output_logs))
 
@@ -626,7 +640,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('image-1', output.name)
         self.assertEqual(image_properties, output.extra_properties)
         self.assertEqual(set([]), output.tags)
-        self.assertEqual('private', output.visibility)
+        self.assertEqual('shared', output.visibility)
         output_logs = self.notifier.get_logs()
         self.assertEqual(1, len(output_logs))
         output_log = output_logs[0]
@@ -2219,6 +2233,16 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
                           request, image, extra_properties, tags)
 
+    def test_create_community_image_unauthorized(self):
+        rules = {"communitize_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        image = {'name': 'image-c1', 'visibility': 'community'}
+        extra_properties = {}
+        tags = []
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
+                          request, image, extra_properties, tags)
+
     def test_update_unauthorized(self):
         rules = {"modify_image": False}
         self.policy.set_rules(rules)
@@ -2236,8 +2260,26 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID1, changes)
 
+    def test_update_communitize_image_unauthorized(self):
+        rules = {"communitize_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['visibility'],
+                    'value': 'community'}]
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
+                          request, UUID1, changes)
+
     def test_update_depublicize_image_unauthorized(self):
         rules = {"publicize_image": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'replace', 'path': ['visibility'],
+                    'value': 'private'}]
+        output = self.controller.update(request, UUID1, changes)
+        self.assertEqual('private', output.visibility)
+
+    def test_update_decommunitize_image_unauthorized(self):
+        rules = {"communitize_image": False}
         self.policy.set_rules(rules)
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['visibility'],
