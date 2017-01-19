@@ -1,0 +1,175 @@
+---
+prelude: >
+
+  - The *Community Images* feature has been introduced in the Images API v2.
+    This enables a user to make an image available for consumption by all other
+    users.  In association with this change, the 'visibility' values for an
+    image have been expanded to include 'community' and 'shared'.
+features:
+  - |
+    Image 'visibility' changes.
+
+    * Prior to Ocata, an image with 'private' visibility could become shared by
+      adding members to it, though its visibility remained 'private'.  In order
+      to make the visibility of images more clear, in Ocata the following
+      changes are introduced:
+
+      - A new value for visibility, 'shared', is introduced.  Images that have
+        or can accept members will no longer be displayed as having 'private'
+        visibility, reducing confusion among end users.
+
+      - An image must have 'shared' visibility in order to accept members.
+        This provides a safeguard from 'private' images being shared
+        inadvertently.
+
+      - In order to preserve backward compatibilty with the current sharing
+        workflow, the default visibility of an image in Ocata is 'shared'.
+        Consistent with pre-Ocata behavior, this will allow the image to accept
+        member operations without first updating the visibility of the image.
+        (Keep in mind that an image with visibility 'shared' but having no
+        members is not actually accessible to anyone other than the image
+        owner, so this is not in itself a security problem.)
+
+  - |
+    Image visibility may be specified at the time of image creation.
+
+    * As mentioned above, the default visibility of an image is 'shared'.
+      If a user wants an image to be private and not accept any members, a
+      visibility of 'private' can be explicitly assigned at the time of
+      creation.
+
+      - Such an image will require its visibility to be updated to
+        'shared' before it will accept members.
+
+  - |
+    Image visibility is changed using the image update (PATCH) call.
+
+    * Note: This is not a change.  It's simply mentioned for completeness.
+
+  - |
+    A new value for the Image 'visibility' field, 'community', is introduced.
+
+    * An image with 'community' visibility is available for consumption by any
+      user.
+
+    * In order to prevent users spamming other users' image-list response,
+      community images are not included in the image-list response unless
+      specifically requested by a user.
+
+      - For example, ``GET v2/images?visibility=community``
+
+      - As is standard behavior for the image-list call, other filters may
+        be applied to the request.  For example, to see the community images
+        supplied by user ``931efe8a-0ad7-4610-9116-c199f8807cda``, the
+        following call would be made: ``GET v2/images?visibility=community&owner=931efe8a-0ad7-4610-9116-c199f8807cda``
+upgrade:
+  - |
+    A new value for the Image 'visibility' field, 'community', is introduced.
+
+    * The ability to update an image to have 'community' visibility is
+      governed by a policy target named 'communitize_image'.  The default
+      is empty, that is, any user may communitize an image.
+
+  - |
+    Visibility migration of current images
+
+    * Prior to Ocata, the Glance database did not have a 'visibility' column,
+      but instead used a boolean 'is_public' column, which was translated
+      into 'public' or 'private' visibility in the Images API v2 image
+      response.  As part of the upgrade to Ocata, a 'visibility' column
+      is introduced into the images table.  It will be populated as follows
+
+      - All images currently with 'public' visibility (that is, images for
+        which 'is_public' is True in the database) will have their visibility
+        set to 'public'.
+
+      - Images currently with 'private' visibility (that is, images for which
+        'is_public' is False in the database) **and** that have image members,
+        will have their visibility set to 'shared'.
+
+      - Those images currently with 'private' visibility (that is, images for
+        which 'is_public' is False in the database) and that have **no**
+        image members, will have their visibility set to 'private'.
+
+        * Note that such images will have to have their visibility updated
+          to 'shared' before they will accept members.
+  - |
+    Impact of the Ocata visibility changes on end users of the Images API v2
+
+    * We have tried to minimize the impact upon end users, but want to point
+      out some issues to be aware of.
+
+      - The migration of image visibility assigns sensible values to images,
+        namely, 'private' to images that end users have *not* assigned members,
+        and 'shared' to those images that have members at the time of the
+        upgrade.  Previously, if an end user wanted to share a private image,
+        a member could be added directly.  After the upgrade, the image will
+        have to have its visibility changed to 'shared' before a member can
+        be assigned.
+
+      - The default value of 'shared' may seem weird, but it preserves the
+        pre-upgrade workflow of: (1) create an image with default visibility,
+        (2) add members to that image.  Further, an image with a visibility
+        of 'shared' that has no members is not accessible to other users, so
+        it is functionally a private image.
+
+      - The image-create operation allows a visibility to be set at the time
+        of image creation.  This option was probably not used much given that
+        previously there were only two visibility values available, one of
+        which ('public') is by default unassignable by end users.  Operators
+        may wish to update their documentation or tooling to specify a
+        visibility value when end users create images.  To summarize:
+
+        * 'public' - reserved by default for images supplied by the operator
+          for the use of all users
+
+        * 'private' - the image is accessible only to its owner
+
+        * 'community' - the image is available for consumption by all users
+
+        * 'shared' - the image is completely accessible to the owner and
+          available for consumption by any image members
+
+  - |
+    Impact of the Ocata visibility changes on the Images API v1
+
+    * The DEPRECATED Images API v1 does not have a concept of "visibility",
+      and in a "pure" v1 deployment, you would not notice that anything had
+      changed.  Since, however, we hope that there aren't many of those around
+      anymore, here's what you can expect to see if you use the Images API v1
+      in a "mixed" deployment.
+
+      - In the v1 API, images have an ``is_public`` field (but no
+        ``visibility`` field).  Images for which ``is_public`` is True are the
+        equivalent of images with 'public' visibility in the v2 API.  Images
+        for which ``is_public`` is false are the equivalent of v2 'shared'
+        images if they have members, or the equivalent of v2 'private' images
+        if they have no members.
+
+      - An image that has 'community' visibility in the v2 API will have
+        ``is_public`` == False in the v1 API.  It will behave like a private
+        image, that is, only the owner (or an admin) will have access to the
+        image, and only the owner (or an admin) will see the image in the
+        image-list response.
+
+      - Since the default value for 'visibility' upon image creation is
+        'shared', an image freshly created using the v1 API can have members
+        added to it, just as it did pre-Ocata.
+
+      - If an image has a visiblity of 'private' when viewed in the v2 API,
+        then that image will not accept members in the v1 API.  If a user
+        wants to share such an image, the user can:
+
+        * Use the v2 API to change the visibility of the image to 'shared'.
+          Then it will accept members in either the v1 or v2 API.
+
+        * Use the v1 API to update the image so that ``is_public`` is
+          False.  This will reset the image's visibility to 'shared', and
+          it will now accept member operations.
+
+        * Note that in either case, when dealing with an image that has
+          'private' visibility in the v2 API, there is a safeguard against
+          a user unintentionally adding a member to an image and exposing
+          data.  The safeguard is that you must perform an additional
+          image update operation in either the v1 or v2 API before you
+          can expose it to other users.
