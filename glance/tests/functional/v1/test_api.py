@@ -84,6 +84,108 @@ class TestApi(functional.FunctionalTest):
             headers['X-Image-Meta-%s' % param] = str((2 ** 31) - 1)
             self._check_image_create(headers)
 
+    def test_updating_is_public(self):
+        """Verify that we can update the is_public attribute."""
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # Verify no public images
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(http_client.OK, response.status)
+        self.assertEqual('{"images": []}', content)
+
+        # Verify no public images
+        path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(http_client.OK, response.status)
+        self.assertEqual('{"images": []}', content)
+
+        # POST /images with private image named Image1
+        # attribute and no custom properties. Verify a 200 OK is returned
+        image_data = "*" * FIVE_KB
+        headers = minimal_headers('Image1', public=False)
+        path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        http = httplib2.Http()
+        response, content = http.request(path, 'POST', headers=headers,
+                                         body=image_data)
+        self.assertEqual(http_client.CREATED, response.status)
+        data = jsonutils.loads(content)
+        image_id = data['image']['id']
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
+                         data['image']['checksum'])
+        self.assertEqual(FIVE_KB, data['image']['size'])
+        self.assertEqual("Image1", data['image']['name'])
+        self.assertFalse(data['image']['is_public'])
+
+        # Retrieve image again to verify it was created appropriately
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(http_client.OK, response.status)
+
+        expected_image_headers = {
+            'x-image-meta-id': image_id,
+            'x-image-meta-name': 'Image1',
+            'x-image-meta-is_public': 'False',
+            'x-image-meta-status': 'active',
+            'x-image-meta-disk_format': 'raw',
+            'x-image-meta-container_format': 'ovf',
+            'x-image-meta-size': str(FIVE_KB)}
+
+        expected_std_headers = {
+            'content-length': str(FIVE_KB),
+            'content-type': 'application/octet-stream'}
+
+        for expected_key, expected_value in expected_image_headers.items():
+            self.assertEqual(expected_value, response[expected_key],
+                             "For key '%s' expected header value '%s'. "
+                             "Got '%s'" % (expected_key,
+                                           expected_value,
+                                           response[expected_key]))
+
+        for expected_key, expected_value in expected_std_headers.items():
+            self.assertEqual(expected_value, response[expected_key],
+                             "For key '%s' expected header value '%s'. "
+                             "Got '%s'" % (expected_key,
+                                           expected_value,
+                                           response[expected_key]))
+
+        self.assertEqual("*" * FIVE_KB, content)
+        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+                         hashlib.md5(content).hexdigest())
+
+        # PUT image with custom properties to make public and then
+        # Verify 200 returned
+        headers = {'X-Image-Meta-is_public': 'True'}
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(http_client.OK, response.status)
+        image = jsonutils.loads(content)
+        is_public = image['image']['is_public']
+        self.assertTrue(
+            is_public,
+            "Expected image to be public but received %s" % is_public)
+
+        # PUT image with custom properties to make private and then
+        # Verify 200 returned
+        headers = {'X-Image-Meta-is_public': 'False'}
+        path = "http://%s:%d/v1/images/%s" % ("127.0.0.1", self.api_port,
+                                              image_id)
+        http = httplib2.Http()
+        response, content = http.request(path, 'PUT', headers=headers)
+        self.assertEqual(http_client.OK, response.status)
+        image = jsonutils.loads(content)
+        is_public = image['image']['is_public']
+        self.assertFalse(
+            is_public,
+            "Expected image to be private but received %s" % is_public)
+
     @skip_if_disabled
     def test_get_head_simple_post(self):
         """

@@ -827,13 +827,10 @@ def _image_update(context, values, image_id, purge_props=False,
             if 'min_disk' in values:
                 values['min_disk'] = int(values['min_disk'] or 0)
 
-            if 'is_public' in values:
-                values = db_utils.ensure_image_dict_v2_compliant(values)
-            else:
-                values['visibility'] = values.get('visibility', 'shared')
-
             values['protected'] = bool(values.get('protected', False))
             image_ref = models.Image()
+
+        values = db_utils.ensure_image_dict_v2_compliant(values)
 
         # Need to canonicalize ownership
         if 'owner' in values and not values['owner']:
