@@ -754,6 +754,34 @@ class TestRegistryV1Client(base.IsolatedUnitTest, test_utils.RegistryAPIMixIn):
         for k, v in fixture.items():
             self.assertEqual(v, data[k])
 
+    def test_update_image_public(self):
+        """Tests that the /images PUT registry API updates the image"""
+        fixture = {'name': 'fake public image #2',
+                   'is_public': True,
+                   'disk_format': 'vmdk'}
+
+        self.assertTrue(self.client.update_image(UUID2, fixture))
+
+        # Test all other attributes set
+        data = self.client.get_image(UUID2)
+
+        for k, v in fixture.items():
+            self.assertEqual(v, data[k])
+
+    def test_update_image_private(self):
+        """Tests that the /images PUT registry API updates the image"""
+        fixture = {'name': 'fake public image #2',
+                   'is_public': False,
+                   'disk_format': 'vmdk'}
+
+        self.assertTrue(self.client.update_image(UUID2, fixture))
+
+        # Test all other attributes set
+        data = self.client.get_image(UUID2)
+
+        for k, v in fixture.items():
+            self.assertEqual(v, data[k])
+
     def test_update_image_not_existing(self):
         """Tests non existing image update doesn't work"""
         fixture = self.get_fixture(status='bad status')
