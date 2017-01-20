@@ -275,6 +275,9 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         except exception.InvalidContentType as e:
             raise webob.exc.HTTPUnsupportedMediaType(explanation=e.msg)
 
+        if self.is_valid_encoding(request) and self.is_valid_method(request):
+            request.is_body_readable = True
+
         image_size = request.content_length or None
         return {'size': image_size, 'data': request.body_file}
 

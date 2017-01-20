@@ -48,7 +48,7 @@ class GzipMiddleware(wsgi.Middleware):
             # that they can be compressed without reading
             # the whole content in memory. Notice that using
             # lazy will set response's content-length to 0.
-            content_type = response.headers["Content-Type"]
+            content_type = response.headers.get("Content-Type", "")
             lazy = content_type == "application/octet-stream"
 
             # NOTE(flaper87): Webob takes care of the compression
