@@ -11,7 +11,7 @@ properties.
 Create property
 ~~~~~~~~~~~~~~~
 
-.. rest_method::  POST /v2/metadefs/namespaces/{namespace_id}/properties
+.. rest_method::  POST /v2/metadefs/namespaces/{namespace_name}/properties
 
 Creates a property definition in a namespace.
 
@@ -103,7 +103,7 @@ Request
 
 .. rest_parameters:: metadefs-parameters.yaml
 
-   - namespace_id: namespace_name
+   - namespace_name: namespace_name
 
 There is no request body.
 
