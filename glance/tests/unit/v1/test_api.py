@@ -833,7 +833,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
         self.assertEqual(http_client.REQUEST_ENTITY_TOO_LARGE, res.status_int)
 
     def test_add_image_size_data_exceed_quota(self):
-        quota = http_client.INTERNAL_SERVER_ERROR
+        quota = 500
         self.config(user_storage_quota=str(quota))
         fixture_headers = {
             'x-image-meta-name': 'fake image #3',
