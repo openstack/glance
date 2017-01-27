@@ -102,16 +102,24 @@ verify the integrity of the image data.
 - You can download the binary image data in your machine if the
   image has image data.
 
-- If image data exists, the call returns the HTTP ``200`` response code.
+- If image data exists, the call returns the HTTP ``200`` response code for a
+  full image download request.
+
+- If image data exists, the call returns the HTTP ``206`` response code for a
+  partial download request.
 
 - If no image data exists, the call returns the HTTP ``204`` (No Content)
   response code.
 
-- If no image record exists, the call returns the HTTP ``404`` response code.
+- If no image record exists, the call returns the HTTP ``404`` response code
+  for an attempted full image download request.
 
-Normal response codes: 200, 204
+- For an unsatisfiable partial download request, the call returns the HTTP
+  ``416`` response code.
 
-Error response codes: 400, 403, 404
+Normal response codes: 200, 204, 206
+
+Error response codes: 400, 403, 404, 416
 
 
 Request
