@@ -1,0 +1,11 @@
+---
+other:
+  - |
+    The deprecation path for the configuration option
+    ``show_multiple_locations`` has been changed because
+    the mitigation instructions for `OSSN-0065`_ refer to
+    this option. It is now subject to removal on or after
+    the **Pike**  release. The help text for this option
+    has been updated accordingly.
+
+    .. _`OSSN-0065`: https://wiki.openstack.org/wiki/OSSN/OSSN-0065
