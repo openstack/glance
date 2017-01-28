@@ -1,0 +1,18 @@
+---
+prelude: >
+  - The *minor* version of the Images API v2 is bumped to **2.5**.
+upgrade:
+  - |
+    The **CURRENT** version of the version 2 Images API supplied
+    by Glance is now **2.5**.  Changes include:
+
+    * The 'visibility' enumeration has been increased from two values
+      (``public``, ``private``) to four values (``public``, ``private``,
+      ``shared``, and ``community``).
+
+    * Formerly, it was possible to add members to an image whose
+      visibility was ``private``, thereby creating a "shared" image.
+      In this release, an image must have a visibility of ``shared``
+      in order to accept member operations.  Attempting to add a
+      member to an image with a visibility of ``private`` will result
+      in a 409 (Conflict) response.

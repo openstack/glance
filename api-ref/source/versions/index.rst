@@ -24,6 +24,11 @@ Image Service Versions
 Version History
 ***************
 
+**Ocata changes**
+
+- version 2.5 is CURRENT
+- version 2.4 is SUPPORTED
+
 **Newton changes**
 
 - version 2.4 is CURRENT

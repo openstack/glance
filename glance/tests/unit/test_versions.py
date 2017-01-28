@@ -37,8 +37,14 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
-                'id': 'v2.4',
+                'id': 'v2.5',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'http://127.0.0.1:9292/v2/'}],
+            },
+            {
+                'id': 'v2.4',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'http://127.0.0.1:9292/v2/'}],
             },
@@ -92,8 +98,14 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
-                'id': 'v2.4',
+                'id': 'v2.5',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v2/'}],
+            },
+            {
+                'id': 'v2.4',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'https://example.com:9292/v2/'}],
             },
@@ -146,8 +158,14 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
-                'id': 'v2.4',
+                'id': 'v2.5',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.4',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'http://localhost:9292/v2/'}],
             },
@@ -201,8 +219,14 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
-                'id': 'v2.4',
+                'id': 'v2.5',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v2/'}],
+            },
+            {
+                'id': 'v2.4',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': 'https://localhost:9292/v2/'}],
             },
@@ -303,8 +327,13 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v2_5_unsupported(self):
+    def test_request_url_v2_5(self):
         request = webob.Request.blank('/v2.5/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    def test_request_url_v2_6_unsupported(self):
+        request = webob.Request.blank('/v2.6/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
