@@ -16,6 +16,7 @@ import os
 
 import mock
 import pkg_resources
+import stevedore
 
 from glance.common import exception
 from glance.common.glare import loader
@@ -43,12 +44,22 @@ class TestArtifactsLoader(utils.BaseTestCase):
 
     def _setup_loader(self, artifacts):
         self.loader = None
-        mock_this = 'stevedore.extension.ExtensionManager._find_entry_points'
-        with mock.patch(mock_this) as fep:
-            fep.return_value = [
-                pkg_resources.EntryPoint.parse(art) for art in artifacts]
-            self.loader = loader.ArtifactsPluginLoader(
-                'glance.artifacts.types')
+        try:
+            # FIXME(dims) : We should not be relying on the internal class
+            # methods of stevedore.
+            with mock.patch.object(stevedore.extension.ExtensionManager,
+                                   '_find_entry_points') as fep:
+                fep.return_value = [
+                    pkg_resources.EntryPoint.parse(art) for art in artifacts]
+                self.loader = loader.ArtifactsPluginLoader(
+                    'glance.artifacts.types')
+        except AttributeError:
+            with mock.patch.object(stevedore.extension.ExtensionManager,
+                                   'list_entry_points') as fep:
+                fep.return_value = [
+                    pkg_resources.EntryPoint.parse(art) for art in artifacts]
+                self.loader = loader.ArtifactsPluginLoader(
+                    'glance.artifacts.types')
 
     def test_load(self):
         """
