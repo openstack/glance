@@ -17,9 +17,9 @@ import uuid
 
 import mock
 from oslo_serialization import jsonutils
-import pkg_resources
 import requests
 from six.moves import http_client as http
+from stevedore import extension
 
 from glance.api.glare.v0_1 import glare
 from glance.api.glare.v0_1 import router
@@ -60,20 +60,38 @@ class ArtifactWithBlob(definitions.ArtifactType):
 
 
 def _create_resource():
-    plugins = None
-    mock_this = 'stevedore.extension.ExtensionManager._find_entry_points'
-    with mock.patch(mock_this) as fep:
-        path = 'glance.tests.functional.glare.test_glare'
-        fep.return_value = [
-            pkg_resources.EntryPoint.parse('WithProps=%s:Artifact' % path),
-            pkg_resources.EntryPoint.parse(
-                'NoProp=%s:ArtifactNoProps' % path),
-            pkg_resources.EntryPoint.parse(
-                'NoProp=%s:ArtifactNoProps1' % path),
-            pkg_resources.EntryPoint.parse(
-                'WithBlob=%s:ArtifactWithBlob' % path)
-        ]
-        plugins = loader.ArtifactsPluginLoader('glance.artifacts.types')
+    test_loader = extension.ExtensionManager.make_test_instance(
+        extensions=[
+            extension.Extension(
+                name='WithProps',
+                entry_point=mock.Mock(),
+                plugin=Artifact,
+                obj=None,
+            ),
+            extension.Extension(
+                name='NoProp',
+                entry_point=mock.Mock(),
+                plugin=ArtifactNoProps,
+                obj=None,
+            ),
+            extension.Extension(
+                name='NoProp',
+                entry_point=mock.Mock(),
+                plugin=ArtifactNoProps1,
+                obj=None,
+            ),
+            extension.Extension(
+                name='WithBlob',
+                entry_point=mock.Mock(),
+                plugin=ArtifactWithBlob,
+                obj=None,
+            ),
+        ],
+    )
+    plugins = loader.ArtifactsPluginLoader(
+        'glance.artifacts.types',
+        test_plugins=test_loader,
+    )
     deserializer = glare.RequestDeserializer(plugins=plugins)
     serializer = glare.ResponseSerializer()
     controller = glare.ArtifactsController(plugins=plugins)
