@@ -1540,6 +1540,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                     can_share=True,
                     id=45)
         image_members.insert().values(temp).execute()
+
         # adding an image member, but marking it deleted,
         # for testing 'private' visibility
         temp = dict(deleted=True,
@@ -1548,6 +1549,16 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
                     member='fake_member_451',
                     can_share=True,
                     id=451)
+        image_members.insert().values(temp).execute()
+
+        # adding an active image member for the 'public' image,
+        # to test it remains public regardless.
+        temp = dict(deleted=False,
+                    created_at=now,
+                    image_id='public_id',
+                    member='fake_member_450',
+                    can_share=True,
+                    id=450)
         image_members.insert().values(temp).execute()
 
     def _check_045(self, engine, data):

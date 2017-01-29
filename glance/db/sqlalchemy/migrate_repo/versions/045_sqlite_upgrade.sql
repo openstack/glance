@@ -157,6 +157,6 @@ INSERT INTO images (
     WHERE is_public=0;
 
 UPDATE images SET visibility='private' WHERE visibility='shared';
-UPDATE images SET visibility='shared' WHERE visibility <> 'public' AND id IN (SELECT DISTINCT image_id FROM image_members WHERE deleted != 1);
+UPDATE images SET visibility='shared' WHERE visibility='private' AND id IN (SELECT DISTINCT image_id FROM image_members WHERE deleted != 1);
 
 DROP TABLE images_backup;
