@@ -1,5 +1,7 @@
 .. -*- rst -*-
 
+.. _image-data:
+
 Image data
 **********
 

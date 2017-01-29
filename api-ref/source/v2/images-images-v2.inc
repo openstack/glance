@@ -16,6 +16,13 @@ pairs.  Some of these keys are *base properties* that are managed by the
 Image service. The remainder are properties put on the image by the operator
 or the image owner.
 
+.. note::
+   Another common term for "image properties" is "image metadata" because
+   what we're talking about here are properties that *describe* the image
+   data that can be consumed by various OpenStack services (for example,
+   by the Compute service to boot a server, or by the Volume service to
+   create a bootable volume).
+
 Here's some important information about image properties:
 
 * The base properties are always included in the image representation.  A
@@ -35,6 +42,18 @@ Here's some important information about image properties:
   situation of the image (which, in turn, indicates what you can do with the
   image), and its *visibility*, which indicates who has access to the image.
 
+.. note::
+   In addition to image properties, there's usually a data payload that is
+   accessible via the image.  In order to give image consumers some guarantees
+   about the data payload (for example, that the data associated with image
+   ``06b73bc7-9d62-4d37-ad95-d4708f37734f`` is the same today as it was when
+   you used it to boot a server yesterday) the Image service controls
+   particular image properties (for example, ``checksum``) that cannot be
+   modified.  A shorthand way to refer to the way the image data payload is
+   related to its representation as an *image* in the Images API is to say that
+   "images are immutable".  (This obviously applies to the image data payload,
+   not its representation in the Image service.)  See the :ref:`Image Data
+   <image-data>` section of this document for more information.
 
 **Image status**
 
@@ -74,12 +93,41 @@ The possible values for image visibility are presented in the following table.
     * - Visibility
       - Description
     * - ``public``
-      - Any tenant may access the image.  Additionally, the image appears in
-        the default image list of all tenants.
+      - Any user may read the image and its data payload.  Additionally, the
+        image appears in the default image list of all users.
+    * - ``community``
+      - Any user may read the image and its data payload, but the image does
+        *not* appear in the default image list of any user other than the
+        owner.
+
+        *(This visibility value was added in the Image API v2.5)*
+    * - ``shared``
+      - An image must have this visibility in order for *image members* to be
+        added to it.  Only the owner and the specific image members who have
+        been added to the image may read the image or its data payload.
+
+        The image appears in the default image list of the owner.  It also
+        appears in the default image list of members who have *accepted* the
+        image.  See the :ref:`Image Sharing <image-sharing>` section of this
+        document for more information.
+
+        If you do not specify a visibility value when you create an image,
+        it is assigned this visibility by default.  Non-owners, however, will
+        not have access to the image until they are added as image members.
+
+        *(This visibility value was added in the Image API v2.5)*
     * - ``private``
-      - Only the tenant who owns the image, or any tenants the image has been
-        shared with, may access the image.  Additionally, the image appears in
-        the default image list of the owning tenant.
+      - Only the owner image may read the image or its data payload.
+        Additionally, the image appears in the owner's default image list.
+
+        *Since Image API v2.5, an image with private visibility cannot have
+        members added to it.*
+
+Note that the descriptions above discuss *read* access to images.  Only the
+image owner (or an administrator) has write access to image properties and the
+image data payload.  Further, in order to promise image immutability, the Image
+service will allow even the owner (or an administrator) only write-once
+permissions to specific image properties and the image data payload.
 
 
 Create an image

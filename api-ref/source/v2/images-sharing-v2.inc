@@ -1,10 +1,13 @@
 .. -*- rst -*-
 
+.. _image-sharing:
+
 Sharing
 *******
 
-Images may be shared among projects by creating *members* on the image.  The
-following calls allow you to create, list, update, and delete image members.
+Images may be shared among projects by creating *members* on the image.  Image
+members have read-only privileges on the image.  The following calls allow you
+to create, list, update, and delete image members.
 
 .. note::
 
@@ -44,6 +47,16 @@ please consult `Image API v2 Sharing`_.
 .. _Image API v2 Sharing:
     http://specs.openstack.org/openstack/glance-specs/specs/api/v2/sharing-image-api-v2.html
 
+.. note::
+
+   If you don't want to maintain a sharing relationship with particular
+   image consumers, but instead want to make an image available to *all*
+   users, you may update your image's ``visibility`` property to
+   ``community``.
+
+   * In some clouds, the ability to "communitize" an image may be prohibited
+     or restricted to trusted users.  Please consult your cloud's local
+     documentation for details.
 
 Create image member
 ~~~~~~~~~~~~~~~~~~~
@@ -58,7 +71,7 @@ Preconditions
 
 - The image must exist.
 
-- The image cannot be a public image.
+- The image must have a ``visibility`` value of ``shared``.
 
 - You must be the owner of the image.
 
@@ -70,7 +83,7 @@ Synchronous Postconditions
 Troubleshooting
 
 - Even if you have correct permissions, if the ``visibility``
-  attribute is set to ``public``, the request returns the HTTP
+  attribute is not set to ``shared``, the request returns the HTTP
   ``403`` response code. Ensure that you meet the preconditions and
   run the request again. If the request fails again, review your
   API request.
@@ -134,6 +147,8 @@ Preconditions
 
 - The image must exist.
 
+- The image must have a ``visibility`` value of ``shared``.
+
 - You must be the owner or the member of the image who's referenced in the
   call.
 
@@ -193,12 +208,14 @@ Preconditions
 
 - The image must exist.
 
+- The image must have a ``visibility`` value of ``shared``.
+
 - You must be the owner or a member of the image.
 
 
 Normal response codes: 200
 
-Error response codes: 400, 401, 404
+Error response codes: 400, 401, 403, 404
 
 
 Request
@@ -267,6 +284,8 @@ Preconditions
 
 - The image must exist.
 
+- The image must have a ``visibility`` value of ``shared``.
+
 - You must be the member of the image referenced in the call.
 
 Synchronous Postconditions
@@ -331,6 +350,8 @@ Deletes a tenant ID from the member list of an image.
 Preconditions
 
 - The image must exist.
+
+- The image must have a ``visibility`` value of ``shared``.
 
 - You must be the owner of the image.
 
