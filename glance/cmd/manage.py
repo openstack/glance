@@ -129,6 +129,11 @@ class DbCommands(object):
 
     def expand(self):
         """Run the expansion phase of a rolling upgrade procedure."""
+        engine = db_api.get_engine()
+        if engine.engine.name != 'mysql':
+            sys.exit(_('Rolling upgrades are currently supported only for '
+                       'MySQL'))
+
         expand_head = alembic_migrations.get_alembic_branch_head(
             db_migration.EXPAND_BRANCH)
         if not expand_head:
@@ -146,6 +151,11 @@ class DbCommands(object):
 
     def contract(self):
         """Run the contraction phase of a rolling upgrade procedure."""
+        engine = db_api.get_engine()
+        if engine.engine.name != 'mysql':
+            sys.exit(_('Rolling upgrades are currently supported only for '
+                       'MySQL'))
+
         contract_head = alembic_migrations.get_alembic_branch_head(
             db_migration.CONTRACT_BRANCH)
         if not contract_head:
@@ -178,6 +188,11 @@ class DbCommands(object):
                                             'curr_revs': curr_heads})
 
     def migrate(self):
+        engine = db_api.get_engine()
+        if engine.engine.name != 'mysql':
+            sys.exit(_('Rolling upgrades are currently supported only for '
+                       'MySQL'))
+
         curr_heads = alembic_migrations.get_current_alembic_heads()
         expand_head = alembic_migrations.get_alembic_branch_head(
             db_migration.EXPAND_BRANCH)
