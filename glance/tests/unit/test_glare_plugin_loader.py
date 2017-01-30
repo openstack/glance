@@ -12,11 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
-
 import mock
-import pkg_resources
-import stevedore
+from stevedore import extension
 
 from glance.common import exception
 from glance.common.glare import loader
@@ -37,29 +34,28 @@ class MyArtifactOk(art1.MyArtifact):
 
 class TestArtifactsLoader(utils.BaseTestCase):
     def setUp(self):
-        self.path = 'glance.contrib.plugins.artifacts_sample'
-        self._setup_loader(['MyArtifact=%s.v1.artifact:MyArtifact' %
-                            self.path])
+        self._setup_loader([('MyArtifact', art1.MyArtifact)])
         super(TestArtifactsLoader, self).setUp()
 
     def _setup_loader(self, artifacts):
         self.loader = None
-        try:
-            # FIXME(dims) : We should not be relying on the internal class
-            # methods of stevedore.
-            with mock.patch.object(stevedore.extension.ExtensionManager,
-                                   '_find_entry_points') as fep:
-                fep.return_value = [
-                    pkg_resources.EntryPoint.parse(art) for art in artifacts]
-                self.loader = loader.ArtifactsPluginLoader(
-                    'glance.artifacts.types')
-        except AttributeError:
-            with mock.patch.object(stevedore.extension.ExtensionManager,
-                                   'list_entry_points') as fep:
-                fep.return_value = [
-                    pkg_resources.EntryPoint.parse(art) for art in artifacts]
-                self.loader = loader.ArtifactsPluginLoader(
-                    'glance.artifacts.types')
+        self.extensions = [
+            extension.Extension(
+                name=a[0],
+                entry_point=mock.Mock(),
+                plugin=a[1],
+                obj=None,
+            )
+            for a in artifacts
+        ]
+        test_plugins = extension.ExtensionManager.make_test_instance(
+            extensions=self.extensions,
+            propagate_map_exceptions=True,
+        )
+        self.loader = loader.ArtifactsPluginLoader(
+            'glance.artifacts.types',
+            test_plugins=test_plugins,
+        )
 
     def test_load(self):
         """
@@ -71,12 +67,11 @@ class TestArtifactsLoader(utils.BaseTestCase):
         self.assertEqual(art1.MyArtifact,
                          self.loader.get_class_by_endpoint('myartifact'))
         # entrypoint = [a, list]
-        path = os.path.splitext(__file__)[0][__file__.rfind(
-            'glance'):].replace('/', '.')
         self._setup_loader([
-            'MyArtifact=%s:MyArtifactOk' % path,
-            'MyArtifact=%s.v2.artifact:MyArtifact' % self.path,
-            'MyArtifact=%s.v1.artifact:MyArtifact' % self.path]),
+            ('MyArtifact', MyArtifactOk),
+            ('MyArtifact', art2.MyArtifact),
+            ('MyArtifact', art1.MyArtifact),
+        ])
         self.assertEqual(3, len(self.loader.mgr.extensions))
         # returns the plugin with the latest version
         self.assertEqual(art2.MyArtifact,
@@ -88,8 +83,7 @@ class TestArtifactsLoader(utils.BaseTestCase):
     def test_basic_loader_func(self):
         """Test public methods of PluginLoader class here"""
         # type_version 2 == 2.0 == 2.0.0
-        self._setup_loader(
-            ['MyArtifact=%s.v2.artifact:MyArtifact' % self.path])
+        self._setup_loader([('MyArtifact', art2.MyArtifact)])
         self.assertEqual(art2.MyArtifact,
                          self.loader.get_class_by_endpoint('myartifact'))
         self.assertEqual(art2.MyArtifact,
@@ -114,21 +108,18 @@ class TestArtifactsLoader(utils.BaseTestCase):
             * no plugin with the same type_name and version has been already
               loaded
         """
-        path = 'glance.contrib.plugins.artifacts_sample'
         # here artifacts specific validation is checked
         self.assertRaises(exception.ArtifactNonMatchingTypeName,
                           self._setup_loader,
-                          ['non_matching_name=%s.v1.artifact:MyArtifact' %
-                           path])
+                          [('non_matching_name', art1.MyArtifact)],
+                          )
         # make sure this call is ok
-        self._setup_loader(['MyArtifact=%s.v1.artifact:MyArtifact' % path])
+        self._setup_loader([('MyArtifact', art1.MyArtifact)])
         art_type = self.loader.get_class_by_endpoint('myartifact')
         self.assertEqual('MyArtifact', art_type.metadata.type_name)
         self.assertEqual('1.0.1', art_type.metadata.type_version)
         # now try to add duplicate artifact with the same type_name and
         # type_version as already exists
-        bad_art_path = os.path.splitext(__file__)[0][__file__.rfind(
-            'glance'):].replace('/', '.')
         self.assertEqual(art_type.metadata.type_version,
                          MyArtifactDuplicate.metadata.type_version)
         self.assertEqual(art_type.metadata.type_name,
@@ -136,14 +127,14 @@ class TestArtifactsLoader(utils.BaseTestCase):
         # should raise an exception as (name, version) is not unique
         self.assertRaises(
             exception.ArtifactDuplicateNameTypeVersion, self._setup_loader,
-            ['MyArtifact=%s.v1.artifact:MyArtifact' % path,
-             'MyArtifact=%s:MyArtifactDuplicate' % bad_art_path])
+            [('MyArtifact', art1.MyArtifact),
+             ('MyArtifact', MyArtifactDuplicate)])
         # two artifacts with the same name but different versions coexist fine
         self.assertEqual('MyArtifact', MyArtifactOk.metadata.type_name)
         self.assertNotEqual(art_type.metadata.type_version,
                             MyArtifactOk.metadata.type_version)
-        self._setup_loader(['MyArtifact=%s.v1.artifact:MyArtifact' % path,
-                            'MyArtifact=%s:MyArtifactOk' % bad_art_path])
+        self._setup_loader([('MyArtifact', art1.MyArtifact),
+                            ('MyArtifact', MyArtifactOk)])
 
     def test_check_function(self):
         """
@@ -156,16 +147,22 @@ class TestArtifactsLoader(utils.BaseTestCase):
 
         """
         self.config(load_enabled=False)
-        self.assertRaises(exception.ArtifactLoadError,
-                          self._setup_loader,
-                          ['MyArtifact=%s.v1.artifact:MyArtifact' % self.path])
+        self._setup_loader([('MyArtifact', art1.MyArtifact)])
+        checker = self.loader._gen_check_func()
+        self.assertRaises(
+            exception.ArtifactLoadError,
+            checker,
+            self.extensions[0],
+        )
         self.config(load_enabled=True, available_plugins=['MyArtifact-1.0.2'])
-        self.assertRaises(exception.ArtifactLoadError,
-                          self._setup_loader,
-                          ['MyArtifact=%s.v1.artifact:MyArtifact' % self.path])
-        path = os.path.splitext(__file__)[0][__file__.rfind(
-            'glance'):].replace('/', '.')
-        self._setup_loader(['MyArtifact=%s:MyArtifactOk' % path])
+        self._setup_loader([('MyArtifact', art1.MyArtifact)])
+        checker = self.loader._gen_check_func()
+        self.assertRaises(
+            exception.ArtifactLoadError,
+            checker,
+            self.extensions[0],
+        )
+        self._setup_loader([('MyArtifact', MyArtifactOk)])
         # make sure that plugin_map has the expected plugin
         self.assertEqual(MyArtifactOk,
                          self.loader.get_class_by_endpoint('myartifact',
