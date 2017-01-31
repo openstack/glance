@@ -15,4 +15,6 @@ upgrade:
       In this release, an image must have a visibility of ``shared``
       in order to accept member operations.  Attempting to add a
       member to an image with a visibility of ``private`` will result
-      in a 409 (Conflict) response.
+      in a `4xx response`_ containing an informative message.
+
+      .. _`4xx response`: https://developer.openstack.org/api-ref/image/v2/?expanded=create-image-member-detail#create-image-member
