@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy import Column, Enum, Index, MetaData, Table, select, not_
+from sqlalchemy import Column, Enum, Index, MetaData, Table, select, not_, and_
 from sqlalchemy.engine import reflection
 
 
@@ -37,10 +37,10 @@ def upgrade(migrate_engine):
     images.update().values(visibility='private').where(
         not_(images.c.is_public)).execute()
     # NOTE(dharinic): Identify 'shared' images from the above
-    images.update().values(visibility='shared').where(
-        images.c.visibility != 'public' and images.c.id.in_(select(
+    images.update().values(visibility='shared').where(and_(
+        images.c.visibility == 'private', images.c.id.in_(select(
             [image_members.c.image_id]).distinct().where(
-                not_(image_members.c.deleted)))).execute()
+                not_(image_members.c.deleted))))).execute()
 
     insp = reflection.Inspector.from_engine(migrate_engine)
     for index in insp.get_indexes('images'):
