@@ -367,10 +367,11 @@ Related options:
     # related rules set to admin only once this option is finally removed.
     cfg.BoolOpt('show_multiple_locations', default=False,
                 deprecated_for_removal=True,
-                deprecated_reason=_('This option will be removed in the Ocata '
-                                    'release because the same functionality '
-                                    'can be achieved with greater granularity '
-                                    'by using policies. Please see the Newton '
+                deprecated_reason=_('This option will be removed in the Pike '
+                                    'release or later because the same '
+                                    'functionality can be achieved with '
+                                    'greater granularity by using policies. '
+                                    'Please see the Newton '
                                     'release notes for more information.'),
                 deprecated_since='Newton',
                 help=_("""
