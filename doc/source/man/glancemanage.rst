@@ -53,9 +53,9 @@ COMMANDS
   **db_version_control**
         Place the database under migration control.
 
-  **db_sync <VERSION> <CURRENT_VERSION>**
-        Place a database under migration control and upgrade, creating
-        it first if necessary.
+  **db_sync <VERSION>**
+        Place an existing database under migration control and upgrade it to
+        the specified VERSION.
 
   **db_export_metadefs [PATH | PREFIX]**
         Export the metadata definitions into json format. By default the
@@ -79,10 +79,6 @@ OPTIONS
   **General Options**
 
   .. include:: general_options.rst
-
-  **--sql_connection=CONN_STRING**
-        A proper SQLAlchemy connection string as described
-        `here <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html?highlight=engine#sqlalchemy.create_engine>`_
 
 .. include:: footer.rst
 
