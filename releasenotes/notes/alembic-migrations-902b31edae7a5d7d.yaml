@@ -1,0 +1,38 @@
+---
+prelude: >
+  - **Experimental** zero-downtime database upgrade using an
+    expand-migrate-contract series of operations is available.
+upgrade:
+  - |
+    The database migration engine used by Glance for database upgrades has been
+    changed from *SQLAlchemy Migrate* to *Alembic* in this release.
+
+    * This has necessitated a change in the location and naming convention for
+      migration scripts.  Developers, operators, and DevOps are strongly
+      encouraged to read through the `Database Management`_ section of the
+      Glance documentation for details of the changes introduced in the Ocata
+      release.  Here's a brief summary of the changes:
+
+      - All the ``glance manage db`` commands are changed appropriately to use
+        Alembic to perform operations such as ``version``, ``upgrade``,
+        ``sync`` and ``version_control``.  Hence, the "old-style" migration
+        scripts will no longer work with the Ocata glance manage db commands.
+
+      - Database versions are no longer numerical.  Instead, they are the
+        *revision ID* of the last migration applied on the database.
+
+        * For example, the Liberty migration, which was version ``42`` under
+          the old system, will now appear as ``liberty``.  The Mitaka
+          migrations ``43`` and ``44`` appear as ``mitaka01`` and ``mitaka02``,
+          respectively.
+
+    * The change in migration engine has been undertaken in order to enable
+      zero-downtime database upgrades, which are part of the effort to
+      implement rolling upgrades for Glance (scheduled for the Pike release).
+
+      - A preview of zero-downtime database upgrades is available in this
+        release, but it is **experimental** and **not supported for production
+        systems**.  Please consult the `Database Management`_ section of the
+        Glance documentation for details.
+
+    .. _`Database Management`: http://docs.openstack.org/developer/glance/db.html
