@@ -27,7 +27,6 @@ from glance.db import migration as db_migration
 from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy.alembic_migrations import versions
 from glance.db.sqlalchemy import models
-from glance.db.sqlalchemy import models_glare
 from glance.db.sqlalchemy import models_metadef
 import glance.tests.utils as test_utils
 
@@ -119,8 +118,6 @@ class ModelsMigrationSyncMixin(object):
 
     def get_metadata(self):
         for table in models_metadef.BASE_DICT.metadata.sorted_tables:
-            models.BASE.metadata._add_table(table.name, table.schema, table)
-        for table in models_glare.BASE.metadata.sorted_tables:
             models.BASE.metadata._add_table(table.name, table.schema, table)
         return models.BASE.metadata
 

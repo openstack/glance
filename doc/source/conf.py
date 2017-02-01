@@ -60,8 +60,6 @@ config_generator_config_file = [
      '_static/glance-api'),
     ('../../etc/oslo-config-generator/glance-cache.conf',
      '_static/glance-cache'),
-    ('../../etc/oslo-config-generator/glance-glare.conf',
-     '_static/glance-glare'),
     ('../../etc/oslo-config-generator/glance-manage.conf',
      '_static/glance-manage'),
     ('../../etc/oslo-config-generator/glance-registry.conf',

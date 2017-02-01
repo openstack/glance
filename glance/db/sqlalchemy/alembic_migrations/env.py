@@ -20,7 +20,6 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from glance.db.sqlalchemy import models
-from glance.db.sqlalchemy import models_glare
 from glance.db.sqlalchemy import models_metadef
 
 # this is the Alembic Config object, which provides
@@ -39,8 +38,6 @@ log_config.fileConfig(config.config_file_name)
 # add your model's MetaData object here
 # for 'autogenerate' support
 target_metadata = models.BASE.metadata
-for table in models_glare.BASE.metadata.sorted_tables:
-    target_metadata._add_table(table.name, table.schema, table)
 for table in models_metadef.BASE_DICT.metadata.sorted_tables:
     target_metadata._add_table(table.name, table.schema, table)
 

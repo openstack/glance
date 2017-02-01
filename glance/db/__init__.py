@@ -24,11 +24,9 @@ from wsme.rest import json
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.common import crypt
 from glance.common import exception
-from glance.common.glare import serialization
 from glance.common import location_strategy
 import glance.domain
 import glance.domain.proxy
-from glance import glare as ga
 from glance.i18n import _
 
 CONF = cfg.CONF
@@ -57,99 +55,6 @@ IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size', 'virtual_size',
                                       'min_disk', 'min_ram', 'is_public',
                                       'locations', 'checksum', 'owner',
                                       'protected'])
-
-
-class ArtifactRepo(object):
-    fields = ['id', 'name', 'version', 'type_name', 'type_version',
-              'visibility', 'state', 'owner', 'scope', 'created_at',
-              'updated_at', 'tags', 'dependencies', 'blobs', 'properties']
-
-    def __init__(self, context, db_api, plugins):
-        self.context = context
-        self.db_api = db_api
-        self.plugins = plugins
-
-    def get(self, artifact_id, type_name=None, type_version=None,
-            show_level=None, include_deleted=False):
-        if show_level is None:
-            show_level = ga.Showlevel.BASIC
-        try:
-            db_api_artifact = self.db_api.artifact_get(self.context,
-                                                       artifact_id,
-                                                       type_name,
-                                                       type_version,
-                                                       show_level)
-            if db_api_artifact["state"] == 'deleted' and not include_deleted:
-                raise exception.ArtifactNotFound(artifact_id)
-        except (exception.ArtifactNotFound, exception.ArtifactForbidden):
-            msg = _("No artifact found with ID %s") % artifact_id
-            raise exception.ArtifactNotFound(msg)
-        return serialization.deserialize_from_db(db_api_artifact, self.plugins)
-
-    def list(self, marker=None, limit=None,
-             sort_keys=None, sort_dirs=None, filters=None,
-             show_level=None):
-        sort_keys = ['created_at'] if sort_keys is None else sort_keys
-        sort_dirs = ['desc'] if sort_dirs is None else sort_dirs
-        if show_level is None:
-            show_level = ga.Showlevel.NONE
-        db_api_artifacts = self.db_api.artifact_get_all(
-            self.context, filters=filters, marker=marker, limit=limit,
-            sort_keys=sort_keys, sort_dirs=sort_dirs, show_level=show_level)
-        artifacts = []
-        for db_api_artifact in db_api_artifacts:
-            artifact = serialization.deserialize_from_db(db_api_artifact,
-                                                         self.plugins)
-            artifacts.append(artifact)
-        return artifacts
-
-    def _format_artifact_from_db(self, db_artifact):
-        kwargs = {k: db_artifact.get(k, None) for k in self.fields}
-        return glance.domain.Artifact(**kwargs)
-
-    def add(self, artifact):
-        artifact_values = serialization.serialize_for_db(artifact)
-        artifact_values['updated_at'] = artifact.updated_at
-        self.db_api.artifact_create(self.context, artifact_values,
-                                    artifact.type_name, artifact.type_version)
-
-    def save(self, artifact):
-        artifact_values = serialization.serialize_for_db(artifact)
-        try:
-            db_api_artifact = self.db_api.artifact_update(
-                self.context,
-                artifact_values,
-                artifact.id,
-                artifact.type_name,
-                artifact.type_version)
-        except (exception.ArtifactNotFound,
-                exception.ArtifactForbidden):
-            msg = _("No artifact found with ID %s") % artifact.id
-            raise exception.ArtifactNotFound(msg)
-        return serialization.deserialize_from_db(db_api_artifact, self.plugins)
-
-    def remove(self, artifact):
-        try:
-            self.db_api.artifact_delete(self.context, artifact.id,
-                                        artifact.type_name,
-                                        artifact.type_version)
-        except (exception.NotFound, exception.Forbidden):
-            msg = _("No artifact found with ID %s") % artifact.id
-            raise exception.ArtifactNotFound(msg)
-
-    def publish(self, artifact):
-        try:
-            artifact_changed = (
-                self.db_api.artifact_publish(
-                    self.context,
-                    artifact.id,
-                    artifact.type_name,
-                    artifact.type_version))
-            return serialization.deserialize_from_db(artifact_changed,
-                                                     self.plugins)
-        except (exception.NotFound, exception.Forbidden):
-            msg = _("No artifact found with ID %s") % artifact.id
-            raise exception.ArtifactNotFound(msg)
 
 
 class ImageRepo(object):

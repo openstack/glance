@@ -1,6 +1,3 @@
-# Copyright 2011-2012 OpenStack Foundation
-# All Rights Reserved.
-#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -13,8 +10,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import setuptools
+# NOTE(rosmaita): This file implements the migration interface, but doesn't
+# migrate any data.  The pike01 migration is contract-only.
 
-# all other params will be taken from setup.cfg
-setuptools.setup(packages=setuptools.find_packages(),
-                 setup_requires=['pbr'], pbr=True)
+
+def has_migrations(engine):
+    """Returns true if at least one data row can be migrated."""
+
+    return False
+
+
+def migrate(engine):
+    """Return the number of rows migrated."""
+
+    return 0

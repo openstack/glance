@@ -50,12 +50,3 @@ This sample configuration can also be viewed in `glance-cache.conf.sample
 <_static/glance-cache.conf.sample>`_.
 
 .. literalinclude:: _static/glance-cache.conf.sample
-
-
-Sample configuration for Glare
-------------------------------
-
-This sample configuration can also be viewed in `glance-glare.conf.sample
-<_static/glance-glare.conf.sample>`_.
-
-.. literalinclude:: _static/glance-glare.conf.sample
