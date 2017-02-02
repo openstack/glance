@@ -20,19 +20,20 @@ from alembic import command as alembic_command
 from alembic import config as alembic_config
 from alembic import migration as alembic_migration
 from oslo_db import exception as db_exception
-from oslo_db.sqlalchemy import migration
+from oslo_db.sqlalchemy import migration as sqla_migration
 
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
 from glance.i18n import _
 
 
-def get_alembic_config():
+def get_alembic_config(engine=None):
     """Return a valid alembic config object"""
     ini_path = os.path.join(os.path.dirname(__file__), 'alembic.ini')
     config = alembic_config.Config(os.path.abspath(ini_path))
-    dbconn = str(db_api.get_engine().url)
-    config.set_main_option('sqlalchemy.url', dbconn)
+    if engine is None:
+        engine = db_api.get_engine()
+    config.set_main_option('sqlalchemy.url', str(engine.url))
     return config
 
 
@@ -47,9 +48,9 @@ def get_current_alembic_heads():
 
 def get_current_legacy_head():
     try:
-        legacy_head = migration.db_version(db_api.get_engine(),
-                                           db_migration.MIGRATE_REPO_PATH,
-                                           db_migration.INIT_VERSION)
+        legacy_head = sqla_migration.db_version(db_api.get_engine(),
+                                                db_migration.MIGRATE_REPO_PATH,
+                                                db_migration.INIT_VERSION)
     except db_exception.DbMigrationError:
         legacy_head = None
     return legacy_head

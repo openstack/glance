@@ -26,8 +26,6 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from stevedore import driver
 
-from glance.db.sqlalchemy import api as db_api
-
 
 _IMPL = None
 _LOCK = threading.Lock()
@@ -53,14 +51,3 @@ MIGRATE_REPO_PATH = os.path.join(
     'sqlalchemy',
     'migrate_repo',
 )
-
-
-def db_sync(version=None, init_version=0, engine=None):
-    """Migrate the database to `version` or the most recent version."""
-
-    if engine is None:
-        engine = db_api.get_engine()
-    return get_backend().db_sync(engine=engine,
-                                 abs_path=MIGRATE_REPO_PATH,
-                                 version=version,
-                                 init_version=init_version)

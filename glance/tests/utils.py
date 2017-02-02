@@ -23,6 +23,7 @@ import shutil
 import socket
 import subprocess
 
+from alembic import command as alembic_command
 import fixtures
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
@@ -42,6 +43,7 @@ from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
 from glance import context
+from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
 
@@ -670,3 +672,14 @@ class HttplibWsgiAdapter(object):
         response = self.req.get_response(self.app)
         return FakeHTTPResponse(response.status_code, response.headers,
                                 response.body)
+
+
+def db_sync(version=None, engine=None):
+    """Migrate the database to `version` or the most recent version."""
+    if version is None:
+        version = 'heads'
+    if engine is None:
+        engine = db_api.get_engine()
+
+    alembic_config = alembic_migrations.get_alembic_config(engine=engine)
+    alembic_command.upgrade(alembic_config, version)
