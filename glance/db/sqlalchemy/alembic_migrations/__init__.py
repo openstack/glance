@@ -19,6 +19,7 @@ import sys
 from alembic import command as alembic_command
 from alembic import config as alembic_config
 from alembic import migration as alembic_migration
+from alembic import script as alembic_script
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import migration as sqla_migration
 
@@ -98,3 +99,10 @@ def place_database_under_alembic_control():
         print(_("Placing database under Alembic's migration control at "
                 "revision:"), alembic_version)
         alembic_command.stamp(a_config, alembic_version)
+
+
+def get_alembic_branch_head(branch):
+    """Return head revision name for particular branch"""
+    a_config = get_alembic_config()
+    script = alembic_script.ScriptDirectory.from_config(a_config)
+    return script.revision_map.get_current_head(branch)

@@ -57,6 +57,18 @@ COMMANDS
         Place an existing database under migration control and upgrade it to
         the specified VERSION.
 
+  **db_expand**
+        Run this command to expand the database as the first step of a rolling
+        upgrade process.
+
+  **db_migrate**
+        Run this command to migrate the database as the second step of a
+        rolling upgrade process.
+
+  **db_contract**
+        Run this command to contract the database as the last step of a rolling
+        upgrade process.
+
   **db_export_metadefs [PATH | PREFIX]**
         Export the metadata definitions into json format. By default the
         definitions are exported to /etc/glance/metadefs directory.
