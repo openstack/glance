@@ -55,6 +55,11 @@ class TestDbUtilities(test_utils.BaseTestCase):
         import_module.assert_called_once_with('silly pants')
         self.assertFalse(hasattr(self.api, 'configure'))
 
+    def test_get_api_calls_for_v1_api(self, import_module):
+        api = glance.db.get_api(v1_mode=True)
+        self.assertNotEqual(api, self.api)
+        import_module.assert_called_once_with('glance.db.sqlalchemy.api')
+        api.configure.assert_called_once_with()
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'

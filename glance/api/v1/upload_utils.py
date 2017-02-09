@@ -84,7 +84,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
     """
     image_id = image_meta['id']
 
-    db_api = glance.db.get_api()
+    db_api = glance.db.get_api(v1_mode=True)
     image_size = image_meta.get('size')
 
     try:
