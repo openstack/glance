@@ -274,6 +274,33 @@ class TestScrubber(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_scrubber_app_queue_errors_not_daemon(self):
+        """
+        test that the glance-scrubber exits with an exit code > 0 when it
+        fails to lookup images, indicating a configuration error when not
+        in daemon mode.
+
+        Related-Bug: #1548289
+        """
+        # Don't start the registry server to cause intended failure
+        # Don't start the api server to save time
+        exitcode, out, err = self.scrubber_daemon.start(
+            delayed_delete=True, daemon=False, registry_port=28890)
+        self.assertEqual(0, exitcode,
+                         "Failed to spin up the Scrubber daemon. "
+                         "Got: %s" % err)
+
+        # Run the Scrubber
+        exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
+        cmd = ("%s --config-file %s" %
+               (exe_cmd, self.scrubber_daemon.conf_file_name))
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(1, exitcode)
+        self.assertIn('Can not get scrub jobs from queue', err)
+
+        self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
+
     def wait_for_scrub(self, path, headers=None):
         """
         NOTE(jkoelker) The build servers sometimes take longer than 15 seconds

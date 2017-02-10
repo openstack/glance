@@ -143,3 +143,4 @@ class TestTasksWithRegistry(TestTasks):
         self.api_server.data_api = (
             'glance.tests.functional.v2.registry_data_api')
         self.registry_server.deployment_flavor = 'trusted-auth'
+        self.include_scrubber = False

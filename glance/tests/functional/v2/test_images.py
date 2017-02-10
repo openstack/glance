@@ -40,6 +40,7 @@ class TestImages(functional.FunctionalTest):
     def setUp(self):
         super(TestImages, self).setUp()
         self.cleanup()
+        self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
         self.api_server.data_api = 'glance.db.sqlalchemy.api'
         for i in range(3):
@@ -3028,6 +3029,7 @@ class TestImagesIPv6(functional.FunctionalTest):
         # Setting up monkey patch (2), after object is ready...
         self.ping_server_ipv4 = self.ping_server
         self.ping_server = self.ping_server_ipv6
+        self.include_scrubber = False
 
     def tearDown(self):
         # Cleaning up monkey patch (2).
@@ -3083,6 +3085,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
     def setUp(self):
         super(TestImageDirectURLVisibility, self).setUp()
         self.cleanup()
+        self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
 
     def _url(self, path):
@@ -3292,6 +3295,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
     def setUp(self):
         super(TestImageLocationSelectionStrategy, self).setUp()
         self.cleanup()
+        self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
@@ -3395,6 +3399,7 @@ class TestImageMembers(functional.FunctionalTest):
     def setUp(self):
         super(TestImageMembers, self).setUp()
         self.cleanup()
+        self.include_scrubber = False
         self.api_server.deployment_flavor = 'fakeauth'
         self.registry_server.deployment_flavor = 'fakeauth'
         self.start_servers(**self.__dict__.copy())
@@ -3761,6 +3766,7 @@ class TestQuotas(functional.FunctionalTest):
     def setUp(self):
         super(TestQuotas, self).setUp()
         self.cleanup()
+        self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
         self.registry_server.deployment_flavor = 'trusted-auth'
         self.user_storage_quota = 100

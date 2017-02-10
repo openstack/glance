@@ -1,0 +1,12 @@
+---
+fixes:
+  - |
+    Please note a change in the Scrubber's behavior in case
+    of job fetching errors:
+
+    * If configured to work in daemon mode, the Scrubber
+      will log an error message at level critical, but
+      will not exit the process.
+    * If configured to work in non-daemon mode, the Scrubber
+      will log an error message at level critical and exit
+      with status one.
