@@ -18,7 +18,7 @@ httplib2>=0.7.5 # MIT
 pycrypto>=2.6 # Public Domain
 oslo.config!=3.18.0,>=3.14.0 # Apache-2.0
 oslo.concurrency>=3.8.0 # Apache-2.0
-oslo.context>=2.9.0 # Apache-2.0
+oslo.context>=2.12.0 # Apache-2.0
 oslo.utils>=3.18.0 # Apache-2.0
 stevedore>=1.17.1 # Apache-2.0
 futurist!=0.15.0,>=0.11.0 # Apache-2.0
