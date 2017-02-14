@@ -46,14 +46,14 @@ COMMANDS
   **db_version**
         This will print the current migration level of a glance database.
 
-  **db_upgrade <VERSION>**
+  **db_upgrade [VERSION]**
         This will take an existing database and upgrade it to the
         specified VERSION.
 
   **db_version_control**
         Place the database under migration control.
 
-  **db_sync <VERSION>**
+  **db_sync [VERSION]**
         Place an existing database under migration control and upgrade it to
         the specified VERSION.
 
