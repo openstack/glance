@@ -297,7 +297,7 @@ class TestScrubber(functional.FunctionalTest):
         exitcode, out, err = execute(cmd, raise_error=False)
 
         self.assertEqual(1, exitcode)
-        self.assertIn('Can not get scrub jobs from queue', err)
+        self.assertIn('Can not get scrub jobs from queue', str(err))
 
         self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
 
