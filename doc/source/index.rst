@@ -89,6 +89,7 @@ Operating Glance
 
    controllingservers
    db
+   rollingupgrades
    cache
    notifications
 
