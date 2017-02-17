@@ -116,6 +116,15 @@ class GetClientTestCase(utils.BaseTestCase):
         ).creds
         self.assertEqual(expected_creds, creds)
 
+    def test_get_client_using_provided_host(self):
+        cli = client.get_client(self.host)
+        cli._do_request = mock.MagicMock()
+        cli.configure_from_url = mock.MagicMock()
+        cli.auth_plugin.management_url = mock.MagicMock()
+        cli.do_request("GET", "/queued_images")
+        self.assertFalse(cli.configure_from_url.called)
+        self.assertFalse(client.get_client(self.host).configure_via_auth)
+
     def test_get_client_client_configuration_error(self):
         self.assertRaises(exception.ClientConfigurationError,
                           client.get_client, self.host, username='name',
