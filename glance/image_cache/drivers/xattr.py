@@ -157,7 +157,6 @@ class Driver(base.Driver):
             entry['hits'] = self.get_hit_count(image_id)
 
             entries.append(entry)
-        entries.sort()  # Order by ID
         return entries
 
     def is_cached(self, image_id):
