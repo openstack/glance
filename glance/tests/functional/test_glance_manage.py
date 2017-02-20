@@ -38,7 +38,7 @@ class TestGlanceManage(functional.FunctionalTest):
                            self.db_filepath)
 
     def _sync_db(self):
-        with open(self.conf_filepath, 'wb') as conf_file:
+        with open(self.conf_filepath, 'w') as conf_file:
             conf_file.write('[DEFAULT]\n')
             conf_file.write(self.connection)
             conf_file.flush()
@@ -53,7 +53,7 @@ class TestGlanceManage(functional.FunctionalTest):
                                                        db_table)
         exitcode, out, err = execute(cmd, raise_error=True)
         msg = "Expected table {0} was not found in the schema".format(db_table)
-        self.assertEqual(out.rstrip(), db_table, msg)
+        self.assertEqual(out.rstrip().decode("utf-8"), db_table, msg)
 
     @depends_on_exe('sqlite3')
     @skip_if_disabled
