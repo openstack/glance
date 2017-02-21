@@ -56,7 +56,7 @@ class TestCopyToFile(functional.FunctionalTest):
 
         # POST /images with public image to be stored in from_store,
         # to stand in for the 'external' image
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = {'Content-Type': 'application/octet-stream',
                    'X-Image-Meta-Name': 'external',
                    'X-Image-Meta-Store': from_store,
@@ -110,8 +110,8 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(http_client.OK, response.status)
         self.assertEqual(str(FIVE_KB), response['content-length'])
 
-        self.assertEqual("*" * FIVE_KB, content)
-        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+        self.assertEqual(image_data, content)
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          hashlib.md5(content).hexdigest())
         self.assertEqual(FIVE_KB, data['image']['size'])
         self.assertEqual("copied", data['image']['name'])
@@ -132,8 +132,8 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(http_client.OK, response.status)
         self.assertEqual(str(FIVE_KB), response['content-length'])
 
-        self.assertEqual("*" * FIVE_KB, content)
-        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+        self.assertEqual(image_data, content)
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          hashlib.md5(content).hexdigest())
         self.assertEqual(FIVE_KB, data['image']['size'])
         self.assertEqual("copied", data['image']['name'])
@@ -202,8 +202,8 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(http_client.OK, response.status)
 
         self.assertEqual(str(FIVE_KB), response['content-length'])
-        self.assertEqual("*" * FIVE_KB, content)
-        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+        self.assertEqual(b"*" * FIVE_KB, content)
+        self.assertEqual(hashlib.md5(b"*" * FIVE_KB).hexdigest(),
                          hashlib.md5(content).hexdigest())
 
         # DELETE copied image
@@ -238,7 +238,7 @@ class TestCopyToFile(functional.FunctionalTest):
         self.assertEqual(http_client.NOT_FOUND, response.status, content)
 
         expected = 'HTTP datastore could not find image at URI.'
-        self.assertIn(expected, content)
+        self.assertIn(expected, content.decode())
 
         self.stop_servers()
 
@@ -252,7 +252,7 @@ class TestCopyToFile(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         with tempfile.NamedTemporaryFile() as image_file:
-            image_file.write("XXX")
+            image_file.write(b"XXX")
             image_file.flush()
             copy_from = 'file://' + image_file.name
 
@@ -269,7 +269,7 @@ class TestCopyToFile(functional.FunctionalTest):
 
         expected = 'External sources are not supported: \'%s\'' % copy_from
         msg = 'expected "%s" in "%s"' % (expected, content)
-        self.assertIn(expected, content, msg)
+        self.assertIn(expected, content.decode(), msg)
 
         self.stop_servers()
 
@@ -295,6 +295,6 @@ class TestCopyToFile(functional.FunctionalTest):
 
         expected = 'External sources are not supported: \'swift+config://xxx\''
         msg = 'expected "%s" in "%s"' % (expected, content)
-        self.assertIn(expected, content, msg)
+        self.assertIn(expected, content.decode(), msg)
 
         self.stop_servers()
