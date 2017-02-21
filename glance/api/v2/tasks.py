@@ -249,7 +249,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def _inject_location_header(self, response, task):
         location = self._get_task_location(task)
-        response.headers['Location'] = location.encode('utf-8')
+        if six.PY2:
+            location = location.encode('utf-8')
+        response.headers['Location'] = location
 
     def _get_task_location(self, task):
         return '/v2/tasks/%s' % task.task_id

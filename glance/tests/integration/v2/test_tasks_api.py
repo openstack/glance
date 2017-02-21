@@ -114,6 +114,8 @@ class TestTasksApi(base.ApiTest):
         self.assertEqual(task_owner, task['owner'])
         self.assertEqual(task_data['type'], task['type'])
         self.assertEqual(task_data['input'], task['input'])
+        self.assertEqual("http://localhost" + path + "/" + task_id,
+                         response.webob_resp.headers['Location'])
 
         return task, task_data
 

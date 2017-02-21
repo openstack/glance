@@ -202,7 +202,7 @@ class ApiTest(test_utils.BaseTestCase):
 
     def _load_paste_app(self, name, flavor, conf):
         conf_file_path = os.path.join(self.test_dir, '%s-paste.ini' % name)
-        with open(conf_file_path, 'wb') as conf_file:
+        with open(conf_file_path, 'w') as conf_file:
             conf_file.write(conf)
             conf_file.flush()
         return config.load_paste_app(name, flavor=flavor,
