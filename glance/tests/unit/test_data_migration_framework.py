@@ -173,6 +173,7 @@ class TestDataMigrationFramework(test_utils.BaseTestCase):
         actual = data_migrations._run_migrations(mock.Mock(), migrations)
         self.assertEqual(0, actual)
 
+    @mock.patch('glance.db.migration.CURRENT_RELEASE', 'ocata')
     @mock.patch('importlib.import_module')
     @mock.patch('pkgutil.iter_modules')
     def test_migrate(self, mock_iter, mock_import):
