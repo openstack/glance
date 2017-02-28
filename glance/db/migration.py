@@ -47,7 +47,7 @@ def get_backend():
 # Migration-related constants
 EXPAND_BRANCH = 'expand'
 CONTRACT_BRANCH = 'contract'
-CURRENT_RELEASE = 'ocata'
+CURRENT_RELEASE = 'pike'
 ALEMBIC_INIT_VERSION = 'liberty'
 LATEST_REVISION = 'ocata01'
 INIT_VERSION = 0
