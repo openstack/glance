@@ -148,30 +148,6 @@ modindex_common_prefix = ['glance.']
 # Grouping the document tree for man pages.
 # List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
 
-man_pages = [
-    ('man/glanceapi', 'glance-api', u'Glance API Server',
-     [u'OpenStack'], 1),
-    ('man/glancecachecleaner', 'glance-cache-cleaner', u'Glance Cache Cleaner',
-     [u'OpenStack'], 1),
-    ('man/glancecachemanage', 'glance-cache-manage', u'Glance Cache Manager',
-     [u'OpenStack'], 1),
-    ('man/glancecacheprefetcher', 'glance-cache-prefetcher',
-     u'Glance Cache Pre-fetcher', [u'OpenStack'], 1),
-    ('man/glancecachepruner', 'glance-cache-pruner', u'Glance Cache Pruner',
-     [u'OpenStack'], 1),
-    ('man/glancecontrol', 'glance-control', u'Glance Daemon Control Helper ',
-     [u'OpenStack'], 1),
-    ('man/glancemanage', 'glance-manage', u'Glance Management Utility',
-     [u'OpenStack'], 1),
-    ('man/glanceregistry', 'glance-registry', u'Glance Registry Server',
-     [u'OpenStack'], 1),
-    ('man/glancereplicator', 'glance-replicator', u'Glance Replicator',
-     [u'OpenStack'], 1),
-    ('man/glancescrubber', 'glance-scrubber', u'Glance Scrubber Service',
-     [u'OpenStack'], 1)
-]
-
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
