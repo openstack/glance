@@ -56,16 +56,9 @@ from glance.i18n import _, _LE, _LI, _LW
 
 
 bind_opts = [
-    # NOTE(dharinic): Since ``bind_host`` accepts symbolic names
-    # mapped to IP address apart from IP addresses, we use
-    # ``StrOpt`` as against ``IPOpt`` for backward compatibility
-    # reasons. We do not use ``HostnameOpt`` as it would prevent the
-    # opt from accepting IPv6 addresses.
-    # TODO(dharinic): Change the Opt type upon resolution of
-    # bug-1619044
-    cfg.StrOpt('bind_host',
-               default='0.0.0.0',
-               help=_("""
+    cfg.HostAddressOpt('bind_host',
+                       default='0.0.0.0',
+                       help=_("""
 IP address to bind the glance servers to.
 
 Provide an IP address to bind the glance server to. The default

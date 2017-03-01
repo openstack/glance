@@ -584,9 +584,9 @@ Related options:
     * data_api
 
 """)),
-    cfg.StrOpt('pydev_worker_debug_host',
-               sample_default='localhost',
-               help=_("""
+    cfg.HostAddressOpt('pydev_worker_debug_host',
+                       sample_default='localhost',
+                       help=_("""
 Host address of the pydev server.
 
 Provide a string value representing the hostname or IP of the

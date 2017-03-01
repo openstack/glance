@@ -23,8 +23,9 @@ from glance.i18n import _
 
 
 registry_addr_opts = [
-    cfg.StrOpt('registry_host', default='0.0.0.0',
-               help=_("""
+    cfg.HostAddressOpt('registry_host',
+                       default='0.0.0.0',
+                       help=_("""
 Address the registry server is hosted on.
 
 Possible values:
