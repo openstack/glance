@@ -40,7 +40,7 @@ def has_migrations(engine):
         return True
 
     image_members = Table('image_members', meta, autoload=True)
-    rows_with_pending_shared = (select[images.c.id]
+    rows_with_pending_shared = (select([images.c.id])
                                 .where(and_(
                                     images.c.visibility == 'private',
                                     images.c.id.in_(
