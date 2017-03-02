@@ -18,6 +18,7 @@ import copy
 import functools
 import uuid
 
+from oslo_config import cfg
 from oslo_log import log as logging
 import six
 
@@ -27,7 +28,7 @@ from glance.common import utils
 from glance.db import utils as db_utils
 from glance.i18n import _, _LI, _LW
 
-
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 DATA = {
@@ -68,6 +69,15 @@ def log_call(func):
                   "output": output})
         return output
     return wrapped
+
+
+def configure():
+    if CONF.workers not in [0, 1]:
+        msg = _('CONF.workers should be set to 0 or 1 when using the '
+                'db.simple.api backend. Fore more info, see '
+                'https://bugs.launchpad.net/glance/+bug/1619508')
+        LOG.critical(msg)
+        raise SystemExit(msg)
 
 
 def reset():

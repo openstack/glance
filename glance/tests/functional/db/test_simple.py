@@ -20,9 +20,10 @@ import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
 
 
-def get_db(config):
+def get_db(config, workers=1):
     CONF.set_override('data_api', 'glance.db.simple.api',
                       enforce_type=True)
+    CONF.set_override('workers', workers, enforce_type=True)
     db_api = glance.db.get_api()
     return db_api
 
@@ -76,4 +77,16 @@ class TestSimpleTask(base.TaskTests,
     def setUp(self):
         db_tests.load(get_db, reset_db)
         super(TestSimpleTask, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+
+class TestTooManyWorkers(base.TaskTests):
+
+    def setUp(self):
+        def get_db_too_many_workers(config):
+            self.assertRaises(SystemExit, get_db, config, 2)
+            return get_db(config)
+
+        db_tests.load(get_db_too_many_workers, reset_db)
+        super(TestTooManyWorkers, self).setUp()
         self.addCleanup(db_tests.reset)
