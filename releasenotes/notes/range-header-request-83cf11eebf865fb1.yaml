@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    Glance had been accepting the Content-Range header for GET v2/images/{image_id}/file requests,
+    contrary to RFC 7233.
+    Following RFC 7233, Glance will now:
+
+    * Accept the Range header in requests to serve partial images.
+    * Include a ``Content-Range`` header upon successful delivery of the requested partial content.
+
+    Please note that not all Glance storage backends support partial downloads. A Range request to a
+    Glance server with such a backend will result in the entire image content being delivered
+    despite the 206 response code.
