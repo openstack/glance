@@ -22,7 +22,6 @@ return
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from glance.api.glare import versions as artifacts_versions
 from glance.api import versions
 from glance.common import wsgi
 
@@ -119,15 +118,3 @@ class VersionNegotiationFilter(wsgi.Middleware):
         r = path[:idx]
         req.path_info = path[idx:]
         return r
-
-
-class GlareVersionNegotiationFilter(VersionNegotiationFilter):
-    def __init__(self, app):
-        super(GlareVersionNegotiationFilter, self).__init__(app)
-        self.versions_app = artifacts_versions.Controller()
-        self.vnd_mime_type = 'application/vnd.openstack.artifacts-'
-
-    def _get_allowed_versions(self):
-        return {
-            'v0.1': 0.1
-        }

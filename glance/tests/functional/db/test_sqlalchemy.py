@@ -20,11 +20,9 @@ from oslo_db import options
 from glance.common import exception
 import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import models as db_models
-from glance.db.sqlalchemy import models_glare as artifact_models
 from glance.db.sqlalchemy import models_metadef as metadef_models
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
-from glance.tests.functional.db import base_glare
 from glance.tests.functional.db import base_metadef
 
 CONF = cfg.CONF
@@ -45,11 +43,6 @@ def reset_db(db_api):
 def reset_db_metadef(db_api):
     metadef_models.unregister_models(db_api.get_engine())
     metadef_models.register_models(db_api.get_engine())
-
-
-def reset_db_artifacts(db_api):
-    artifact_models.unregister_models(db_api.get_engine())
-    artifact_models.register_models(db_api.get_engine())
 
 
 class TestSqlAlchemyDriver(base.TestDriver,
@@ -166,14 +159,6 @@ class TestDBPurge(base.DBPurgeTests,
     def setUp(self):
         db_tests.load(get_db, reset_db)
         super(TestDBPurge, self).setUp()
-        self.addCleanup(db_tests.reset)
-
-
-class TestArtifacts(base_glare.ArtifactsTestDriver,
-                    base_glare.ArtifactTests):
-    def setUp(self):
-        db_tests.load(get_db, reset_db_artifacts)
-        super(TestArtifacts, self).setUp()
         self.addCleanup(db_tests.reset)
 
 

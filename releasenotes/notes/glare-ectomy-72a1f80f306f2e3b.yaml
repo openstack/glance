@@ -1,0 +1,41 @@
+---
+upgrade:
+  - |
+    Code for the OpenStack Artifacts Service (`Glare`_) and its EXPERIMENTAL
+    API has been removed from the Glance codebase, as it was relocated into an
+    independent `Glare`_ project repository during a previous release cycle.
+    The database upgrade for the Glance Pike release drops the Glare tables
+    (named 'artifacts' and 'artifact_*') from the Glance database.
+
+    OpenStack deployments, packagers, and deployment projects which provided
+    Glare should have begun to consume Glare from its own `Glare`_ respository
+    during the Newton and Ocata releases.  With the Pike release, it is no
+    longer possible to consume Glare code from the Glance repository.
+
+    .. _`Glare`: https://git.openstack.org/cgit/openstack/glare
+other:
+  - |
+    Code for the OpenStack Artifacts Service (Glare) and its EXPERIMENTAL API
+    has been `removed`_ from the Glance codebase.
+
+    The Artifacts API was an EXPERIMENTAL API that ran on the Glance service
+    endpoint as ``/v3`` in the Liberty release.  In the Mitaka release, the
+    Glance ``/v3`` EXPERIMENTAL API was deprecated and the Artifacts Service
+    ran on its own endpoint (completely independent from the Glance service
+    endpoint) as an EXPERIMENTAL API, versioned as ``v0.1``.  In both the
+    Liberty and Mitaka releases, Glare ran on code stored in the Glance code
+    repository and used its own tables in the Glance database.
+
+    In the Newton release, the Glare code was relocated into its own `Glare`_
+    project repository.  Also in the Newton release, Glare ran an EXPERIMENTAL
+    Artifacts API versioned as ``v1.0`` on its own endpoint and used its own
+    database.
+
+    For the Pike release, the legacy Glare code has been removed from the
+    Glance code repository and the legacy 'artifacts' and 'artifact_*' database
+    tables are dropped from the Glance database.  As the Artifacts service API
+    was an EXPERIMENTAL API in Glance and has not used the Glance database
+    since Mitaka, no provision is made for migrating data from the Glance
+    database to the Glare database.
+
+    .. _`removed`: http://specs.openstack.org/openstack/glance-specs/specs/mitaka/implemented/deprecate-v3-api.html

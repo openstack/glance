@@ -44,12 +44,6 @@ DATA = {
     'locations': [],
     'tasks': {},
     'task_info': {},
-    'artifacts': {},
-    'artifact_properties': {},
-    'artifact_tags': {},
-    'artifact_dependencies': {},
-    'artifact_blobs': {},
-    'artifact_blob_locations': {}
 }
 
 INDEX = 0
@@ -95,7 +89,6 @@ def reset():
         'locations': [],
         'tasks': {},
         'task_info': {},
-        'artifacts': {}
     }
 
 
@@ -1947,96 +1940,6 @@ def metadef_tag_count(context, namespace_name):
             count = count + 1
 
     return count
-
-
-def _artifact_format(artifact_id, **values):
-    dt = timeutils.utcnow()
-    artifact = {
-        'id': artifact_id,
-        'type_name': None,
-        'type_version_prefix': None,
-        'type_version_suffix': None,
-        'type_version_meta': None,
-        'version_prefix': None,
-        'version_suffix': None,
-        'version_meta': None,
-        'description': None,
-        'visibility': None,
-        'state': None,
-        'owner': None,
-        'scope': None,
-        'tags': [],
-        'properties': {},
-        'blobs': [],
-        'created_at': dt,
-        'updated_at': dt,
-        'deleted_at': None,
-        'deleted': False,
-    }
-
-    artifact.update(values)
-    return artifact
-
-
-@log_call
-def artifact_create(context, values, type_name, type_version):
-    global DATA
-    artifact_id = values.get('id', str(uuid.uuid4()))
-
-    if artifact_id in DATA['artifacts']:
-        raise exception.Duplicate()
-
-    if 'state' not in values:
-        raise exception.Invalid('state is a required attribute')
-
-    allowed_keys = set(['id',
-                        'type_name',
-                        'type_version',
-                        'name',
-                        'version',
-                        'description',
-                        'visibility',
-                        'state',
-                        'owner',
-                        'scope'])
-
-    incorrect_keys = set(values.keys()) - allowed_keys
-    if incorrect_keys:
-        raise exception.Invalid(
-            'The keys %s are not valid' % str(incorrect_keys))
-
-    artifact = _artifact_format(artifact_id, **values)
-    DATA['artifacts'][artifact_id] = artifact
-
-    return copy.deepcopy(artifact)
-
-
-def _artifact_get(context, artifact_id, type_name,
-                  type_version=None):
-    try:
-        artifact = DATA['artifacts'][artifact_id]
-        if (artifact['type_name'] != type_name or
-                (type_version is not None and
-                 artifact['type_version'] != type_version)):
-            raise KeyError
-    except KeyError:
-        LOG.info(_LI('Could not find artifact %s'), artifact_id)
-        raise exception.NotFound()
-
-    if artifact['deleted_at']:
-        LOG.info(_LI('Unable to get deleted image'))
-        raise exception.NotFound()
-
-    return artifact
-
-
-@log_call
-def artifact_get(context, artifact_id,
-                 type_name,
-                 type_version=None, session=None):
-    artifact = _artifact_get(context, artifact_id, type_name,
-                             type_version)
-    return copy.deepcopy(artifact)
 
 
 def _format_association(namespace, resource_type, association_values):

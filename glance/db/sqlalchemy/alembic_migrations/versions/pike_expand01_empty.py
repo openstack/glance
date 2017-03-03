@@ -1,6 +1,3 @@
-# Copyright 2011-2012 OpenStack Foundation
-# All Rights Reserved.
-#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -13,8 +10,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import setuptools
+"""empty expand for symmetry with pike_contract01
 
-# all other params will be taken from setup.cfg
-setuptools.setup(packages=setuptools.find_packages(),
-                 setup_requires=['pbr'], pbr=True)
+Revision ID: pike_expand01
+Revises: ocata_expand01
+Create Date: 2017-02-09 19:55:16.657499
+
+"""
+
+# revision identifiers, used by Alembic.
+revision = 'pike_expand01'
+down_revision = 'ocata_expand01'
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    pass
