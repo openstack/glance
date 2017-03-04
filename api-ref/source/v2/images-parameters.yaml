@@ -162,7 +162,7 @@ sort:
     Use the comma (``,``) character to separate multiple values. For
     example:
 
-    .. code-block:: json
+    .. code-block:: none
 
        GET /v2/images?sort=name:asc,status:desc
   in: query
