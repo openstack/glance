@@ -3,7 +3,7 @@
 # process, which may cause wedges in the gate later.
 
 # Hacking already pins down pep8, pyflakes and flake8
-hacking>=0.12.0,!=0.13.0,<0.14  # Apache-2.0
+hacking!=0.13.0,<0.14,>=0.12.0 # Apache-2.0
 
 # For translations processing
 Babel>=2.3.4 # BSD
