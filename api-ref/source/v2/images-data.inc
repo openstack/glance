@@ -130,8 +130,7 @@ Request
 .. rest_parameters:: images-parameters.yaml
 
    - image_id: image_id-in-path
-   - Content-Range: Content-Range
-
+   - Range: Range
 
 Response
 --------
@@ -140,3 +139,4 @@ Response
    - Content-Type: Content-Type-data-response
    - Content-Md5: Content-Md5
    - Content-Length: Content-Length
+   - Content-Range: Content-Range

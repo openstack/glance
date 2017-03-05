@@ -56,6 +56,15 @@ Location:
   in: header
   required: true
   type: string
+Range:
+  description: |
+    The range of image data requested. Note that multi range requests are
+    not supported. For details, see
+    `Hypertext Transfer Protocol (HTTP/1.1): Range Requests
+    <http://tools.ietf.org/html/rfc7233>`_.
+  in: header
+  required: false
+  type: string
 
 # variables in path
 image_id-in-path:
