@@ -47,7 +47,7 @@ In glance-api.conf find the following lines::
   [barbican]
   auth_endpoint = http://localhost:5000/v3
 
-Then replace http://localhost:5000/v3 with the url of keystone, also adding /v3
+Then replace http://localhost:5000/v3 with the URL of keystone, also adding /v3
 to the end of it. For example, 'https://192.168.245.9:5000/v3'.
 
 
