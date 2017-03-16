@@ -150,7 +150,7 @@ class RequestTest(test_utils.BaseTestCase):
         # best_match_language() returns None.
         self._set_expected_languages(all_locales=['it'])
 
-        req = wsgi.Request.blank('/', headers={'Accept-Language': 'zh'})
+        req = wsgi.Request.blank('/', headers={'Accept-Language': 'unknown'})
         self.assertIsNone(req.best_match_language())
 
     @mock.patch.object(webob.acceptparse.AcceptLanguage, 'best_match')
