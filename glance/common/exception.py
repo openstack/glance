@@ -452,23 +452,6 @@ class MetadefTagNotFound(NotFound):
                 " namespace=%(namespace_name)s.")
 
 
-class JsonPatchException(GlanceException):
-    message = _("Invalid jsonpatch request")
-
-
-class InvalidJsonPatchBody(JsonPatchException):
-    message = _("The provided body %(body)s is invalid "
-                "under given schema: %(schema)s")
-
-
-class InvalidJsonPatchPath(JsonPatchException):
-    message = _("The provided path '%(path)s' is invalid: %(explanation)s")
-
-    def __init__(self, message=None, *args, **kwargs):
-        self.explanation = kwargs.get("explanation")
-        super(InvalidJsonPatchPath, self).__init__(message, *args, **kwargs)
-
-
 class InvalidDataMigrationScript(GlanceException):
     message = _("Invalid data migration script '%(script)s'. A valid data "
                 "migration script must implement functions 'has_migrations' "
