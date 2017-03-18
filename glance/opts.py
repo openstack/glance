@@ -53,7 +53,6 @@ _api_opts = [
         glance.common.wsgi.bind_opts,
         glance.common.wsgi.eventlet_opts,
         glance.common.wsgi.socket_opts,
-        glance.common.wsgi.wsgi_opts,
         glance.common.wsgi.store_opts,
         glance.common.wsgi.cache_opts,
         glance.common.wsgi.cli_opts,

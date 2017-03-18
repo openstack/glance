@@ -22,7 +22,6 @@ from oslo_serialization import jsonutils
 
 from glance.api.middleware import version_negotiation
 from glance.api import versions
-from glance.common.wsgi import Request as WsgiRequest
 from glance.tests.unit import base
 
 
@@ -209,60 +208,6 @@ class VersionsTest(base.IsolatedUnitTest):
         res = versions.Controller().index(req)
         results = jsonutils.loads(res.body)['versions']
         expected = get_versions_list('https://example.com:9292',
-                                     enabled_backends=True,
-                                     enabled_cache=True)
-        self.assertEqual(expected, results)
-
-    def test_get_version_list_secure_proxy_ssl_header(self):
-        self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO')
-        url = 'http://localhost:9292'
-        environ = webob.request.environ_from_url(url)
-        req = WsgiRequest(environ)
-        res = versions.Controller().index(req)
-        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
-        self.assertEqual('application/json', res.content_type)
-        results = jsonutils.loads(res.body)['versions']
-        expected = get_versions_list(url)
-        self.assertEqual(expected, results)
-
-        self.config(enabled_backends='slow:one,fast:two')
-        res = versions.Controller().index(req)
-        results = jsonutils.loads(res.body)['versions']
-        expected = get_versions_list(url, enabled_backends=True)
-        self.assertEqual(expected, results)
-
-        self.config(image_cache_dir='/tmp/cache')
-        res = versions.Controller().index(req)
-        results = jsonutils.loads(res.body)['versions']
-        expected = get_versions_list(url,
-                                     enabled_backends=True,
-                                     enabled_cache=True)
-        self.assertEqual(expected, results)
-
-    def test_get_version_list_secure_proxy_ssl_header_https(self):
-        self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO')
-        url = 'http://localhost:9292'
-        ssl_url = 'https://localhost:9292'
-        environ = webob.request.environ_from_url(url)
-        environ['HTTP_X_FORWARDED_PROTO'] = "https"
-        req = WsgiRequest(environ)
-        res = versions.Controller().index(req)
-        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
-        self.assertEqual('application/json', res.content_type)
-        results = jsonutils.loads(res.body)['versions']
-        expected = get_versions_list(ssl_url)
-        self.assertEqual(expected, results)
-
-        self.config(enabled_backends='slow:one,fast:two')
-        res = versions.Controller().index(req)
-        results = jsonutils.loads(res.body)['versions']
-        expected = get_versions_list(ssl_url, enabled_backends=True)
-        self.assertEqual(expected, results)
-
-        self.config(image_cache_dir='/tmp/cache')
-        res = versions.Controller().index(req)
-        results = jsonutils.loads(res.body)['versions']
-        expected = get_versions_list(ssl_url,
                                      enabled_backends=True,
                                      enabled_cache=True)
         self.assertEqual(expected, results)

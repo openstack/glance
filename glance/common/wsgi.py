@@ -245,17 +245,6 @@ Related options:
 """)),
 ]
 
-wsgi_opts = [
-    cfg.StrOpt('secure_proxy_ssl_header',
-               deprecated_for_removal=True,
-               deprecated_reason=_('Use the http_proxy_to_wsgi middleware '
-                                   'instead.'),
-               help=_('The HTTP header used to determine the scheme for the '
-                      'original request, even if it was removed by an SSL '
-                      'terminating proxy. Typical value is '
-                      '"HTTP_X_FORWARDED_PROTO".')),
-]
-
 store_opts = [
     cfg.DictOpt('enabled_backends',
                 help=_('Key:Value pair of store identifier and store type. '
@@ -293,7 +282,6 @@ CONF = cfg.CONF
 CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
-CONF.register_opts(wsgi_opts)
 CONF.register_opts(store_opts)
 CONF.register_opts(cache_opts)
 profiler_opts.set_defaults(CONF)
@@ -1084,10 +1072,6 @@ class Request(webob.Request):
     """Add some OpenStack API-specific logic to the base webob.Request."""
 
     def __init__(self, environ, *args, **kwargs):
-        if CONF.secure_proxy_ssl_header:
-            scheme = environ.get(CONF.secure_proxy_ssl_header)
-            if scheme:
-                environ['wsgi.url_scheme'] = scheme
         super(Request, self).__init__(environ, *args, **kwargs)
 
     @property

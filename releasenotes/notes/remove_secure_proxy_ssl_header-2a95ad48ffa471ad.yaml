@@ -1,0 +1,9 @@
+---
+deprecations:
+  - |
+    Removed the deprecated 'secure_proxy_ssl_header' config option. Image import
+    will be always enabled from this release onwards as designed.
+upgrade:
+  - |
+    As Glance relies on oslo.middleware for this feature, care needs to be taken
+    that it is configured properly from this release forward.
