@@ -28,6 +28,7 @@ Policies
    documentation
    minor-code-changes
    refreshing-configs
+   release-cpl
 .. bugs
    contributor-onboarding
    core-reviewers
