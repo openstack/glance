@@ -14,6 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+# NOTE(rosmaita): mriedem says this is needed for importing from fixtures,
+# and he's right!
+from __future__ import absolute_import
+
 import datetime
 import gettext
 import os
