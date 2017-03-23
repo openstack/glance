@@ -150,7 +150,8 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'content-type': 'application/json'})
         data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
                                 'foo': 'bar', 'disk_format': 'aki',
-                                'container_format': 'aki', 'abc': 'xyz'})
+                                'container_format': 'aki', 'abc': 'xyz',
+                                'protected': True})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.CREATED, response.status_code)
         image_location_header = response.headers['Location']
@@ -190,7 +191,7 @@ class TestImages(functional.FunctionalTest):
             'tags': [],
             'visibility': 'shared',
             'self': '/v2/images/%s' % image_id,
-            'protected': False,
+            'protected': True,
             'file': '/v2/images/%s/file' % image_id,
             'min_disk': 0,
             'foo': 'bar',
@@ -303,6 +304,30 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Image list should list only image-1 based on the filter
+        # 'protected=true'
+        path = self._url('/v2/images?protected=true')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Image list should list only image-2 based on the filter
+        # 'protected=false'
+        path = self._url('/v2/images?protected=false')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
+
+        # Image list should return 400 based on the filter
+        # 'protected=False'
+        path = self._url('/v2/images?protected=False')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
+
+        # Image list should list only image-1 based on the filter
         # 'foo=bar&abc=xyz'
         path = self._url('/v2/images?foo=bar&abc=xyz')
         response = requests.get(path, headers=self._headers())
@@ -337,7 +362,7 @@ class TestImages(functional.FunctionalTest):
         self.assertIsNone(image['size'])
         self.assertIsNone(image['virtual_size'])
         self.assertEqual('bar', image['foo'])
-        self.assertFalse(image['protected'])
+        self.assertTrue(image['protected'])
         self.assertEqual('kernel', image['type'])
         self.assertTrue(image['created_at'])
         self.assertTrue(image['updated_at'])

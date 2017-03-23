@@ -121,6 +121,15 @@ class ImagesController(object):
             filters = {}
         filters['deleted'] = False
 
+        protected = filters.get('protected')
+        if protected is not None:
+            if protected not in ['true', 'false']:
+                message = _("Invalid value '%s' for 'protected' filter."
+                            " Valid values are 'true' or 'false'.") % protected
+                raise webob.exc.HTTPBadRequest(explanation=message)
+            # ensure the type of protected is boolean
+            filters['protected'] = protected == 'true'
+
         if limit is None:
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)
