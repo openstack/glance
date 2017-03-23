@@ -47,13 +47,13 @@ class TestApi(functional.FunctionalTest):
         response, content = http.request(
             path, 'POST', headers=headers, body=image_data)
         self.assertEqual(status, response.status)
-        return content
+        return content.decode()
 
     def test_checksum_32_chars_at_image_create(self):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
         headers = minimal_headers('Image1')
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
 
         # checksum can be no longer that 32 characters (String(32))
         headers['X-Image-Meta-Checksum'] = 'x' * 42
@@ -71,7 +71,7 @@ class TestApi(functional.FunctionalTest):
         for param in ['min_disk', 'min_ram']:
             headers = minimal_headers('Image1')
             # check that long numbers result in 400
-            headers['X-Image-Meta-%s' % param] = str(sys.maxint + 1)
+            headers['X-Image-Meta-%s' % param] = str(sys.maxsize + 1)
             content = self._check_image_create(headers,
                                                http_client.BAD_REQUEST)
             self.assertIn("'%s' value out of range" % param, content)
@@ -94,18 +94,18 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual('{"images": []}', content)
+        self.assertEqual('{"images": []}', content.decode())
 
         # Verify no public images
         path = "http://%s:%d/v1/images/detail" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual('{"images": []}', content)
+        self.assertEqual('{"images": []}', content.decode())
 
         # POST /images with private image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1', public=False)
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -154,8 +154,8 @@ class TestApi(functional.FunctionalTest):
                                            expected_value,
                                            response[expected_key]))
 
-        self.assertEqual("*" * FIVE_KB, content)
-        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+        self.assertEqual(image_data, content)
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          hashlib.md5(content).hexdigest())
 
         # PUT image with custom properties to make public and then
@@ -271,7 +271,7 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual('{"images": []}', content)
+        self.assertEqual('{"images": []}', content.decode())
 
         # 1. GET /images/detail
         # Verify no public images
@@ -279,11 +279,11 @@ class TestApi(functional.FunctionalTest):
         http = httplib2.Http()
         response, content = http.request(path, 'GET')
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual('{"images": []}', content)
+        self.assertEqual('{"images": []}', content.decode())
 
         # 2. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -342,8 +342,8 @@ class TestApi(functional.FunctionalTest):
                                            expected_value,
                                            response[expected_key]))
 
-        self.assertEqual("*" * FIVE_KB, content)
-        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+        self.assertEqual(image_data, content)
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          hashlib.md5(content).hexdigest())
 
         # 5. GET /images
@@ -546,7 +546,7 @@ class TestApi(functional.FunctionalTest):
         # 18. POST /images with another public image named Image2
         # attribute and three custom properties, "distro", "arch" & "foo".
         # Verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image2')
         headers['X-Image-Meta-Property-Distro'] = 'Ubuntu'
         headers['X-Image-Meta-Property-Arch'] = 'i386'
@@ -735,7 +735,7 @@ class TestApi(functional.FunctionalTest):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -814,7 +814,7 @@ class TestApi(functional.FunctionalTest):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
