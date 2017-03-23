@@ -54,7 +54,7 @@ class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/octet-stream')
             self.send_header('Content-Length', FIVE_KB)
             self.end_headers()
-            image_data = '*' * FIVE_KB
+            image_data = b'*' * FIVE_KB
             self.wfile.write(image_data)
             self.wfile.close()
             return

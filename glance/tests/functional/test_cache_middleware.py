@@ -56,7 +56,7 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         # Add an image and verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -228,7 +228,7 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         # Add an image and verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -345,7 +345,7 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         # Add an image and verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
@@ -447,7 +447,7 @@ class BaseCacheManageMiddlewareTest(object):
         Adds an image and returns the newly-added image
         identifier
         """
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('%s' % name)
 
         path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
@@ -796,7 +796,7 @@ filesystem_store_datadir=%(filesystem_store_datadir)s
         exitcode, out, err = execute(cmd)
 
         self.assertEqual(0, exitcode)
-        self.assertEqual('', out.strip(), out)
+        self.assertEqual(b'', out.strip(), out)
 
         # Verify first image now in cache
         path = "http://%s:%d/v1/cached_images" % ("127.0.0.1", self.api_port)
