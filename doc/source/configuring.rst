@@ -61,85 +61,81 @@ Common Configuration Options in Glance
 
 Glance has a few command-line options that are common to all Glance programs:
 
-* ``--verbose``
+``--verbose``
+  Optional. Default: ``False``
 
-Optional. Default: ``False``
+  Can be specified on the command line and in configuration files.
 
-Can be specified on the command line and in configuration files.
+  Turns on the INFO level in logging and prints more verbose command-line
+  interface printouts.
 
-Turns on the INFO level in logging and prints more verbose command-line
-interface printouts.
+``--debug``
+  Optional. Default: ``False``
 
-* ``--debug``
+  Can be specified on the command line and in configuration files.
 
-Optional. Default: ``False``
+  Turns on the DEBUG level in logging.
 
-Can be specified on the command line and in configuration files.
+``--config-file=PATH``
+  Optional. Default: See below for default search order.
 
-Turns on the DEBUG level in logging.
+  Specified on the command line only.
 
-* ``--config-file=PATH``
+  Takes a path to a configuration file to use when running the program. If this
+  CLI option is not specified, then we check to see if the first argument is a
+  file. If it is, then we try to use that as the configuration file. If there is
+  no file or there were no arguments, we search for a configuration file in the
+  following order:
 
-Optional. Default: See below for default search order.
+  * ``~/.glance``
+  * ``~/``
+  * ``/etc/glance``
+  * ``/etc``
 
-Specified on the command line only.
+  The filename that is searched for depends on the server application name. So,
+  if you are starting up the API server, ``glance-api.conf`` is searched for,
+  otherwise ``glance-registry.conf``.
 
-Takes a path to a configuration file to use when running the program. If this
-CLI option is not specified, then we check to see if the first argument is a
-file. If it is, then we try to use that as the configuration file. If there is
-no file or there were no arguments, we search for a configuration file in the
-following order:
+``--config-dir=DIR``
+  Optional. Default: ``None``
 
-* ``~/.glance``
-* ``~/``
-* ``/etc/glance``
-* ``/etc``
+  Specified on the command line only.
 
-The filename that is searched for depends on the server application name. So,
-if you are starting up the API server, ``glance-api.conf`` is searched for,
-otherwise ``glance-registry.conf``.
+  Takes a path to a configuration directory from which all \*.conf fragments
+  are loaded. This provides an alternative to multiple --config-file options
+  when it is inconvenient to explicitly enumerate all the configuration files,
+  for example when an unknown number of config fragments are being generated
+  by a deployment framework.
 
-* ``--config-dir=DIR``
+  If --config-dir is set, then --config-file is ignored.
 
-Optional. Default: ``None``
+  An example usage would be:
 
-Specified on the command line only.
+    $ glance-api --config-dir=/etc/glance/glance-api.d
 
-Takes a path to a configuration directory from which all \*.conf fragments
-are loaded. This provides an alternative to multiple --config-file options
-when it is inconvenient to explicitly enumerate all the configuration files,
-for example when an unknown number of config fragments are being generated
-by a deployment framework.
+    $ ls /etc/glance/glance-api.d
+     00-core.conf
+     01-swift.conf
+     02-ssl.conf
+     ... etc.
 
-If --config-dir is set, then --config-file is ignored.
+  The numeric prefixes in the example above are only necessary if a specific
+  parse ordering is required (i.e. if an individual config option set in an
+  earlier fragment is overridden in a later fragment).
 
-An example usage would be:
+  Note that ``glance-manage`` currently loads configuration from three files:
 
-  $ glance-api --config-dir=/etc/glance/glance-api.d
+  * ``glance-registry.conf``
+  * ``glance-api.conf``
+  * ``glance-manage.conf``
 
-  $ ls /etc/glance/glance-api.d
-   00-core.conf
-   01-swift.conf
-   02-ssl.conf
-   ... etc.
-
-The numeric prefixes in the example above are only necessary if a specific
-parse ordering is required (i.e. if an individual config option set in an
-earlier fragment is overridden in a later fragment).
-
-Note that ``glance-manage`` currently loads configuration from three files:
-
-* ``glance-registry.conf``
-* ``glance-api.conf``
-* ``glance-manage.conf``
-
-By default ``glance-manage.conf`` only specifies a custom logging file but
-other configuration options for ``glance-manage`` should be migrated in there.
-**Warning**: Options set in ``glance-manage.conf`` will override options of
-the same section and name set in the other two. Similarly, options in
-``glance-api.conf`` will override options set in ``glance-registry.conf``.
-This tool is planning to stop loading ``glance-registry.conf`` and
-``glance-api.conf`` in a future cycle.
+  By default ``glance-manage.conf`` only specifies a custom logging file but
+  other configuration options for ``glance-manage`` should be migrated in there.
+  **Warning**: Options set in ``glance-manage.conf`` will override options of
+  the same section and name set in the other two. Similarly, options in
+  ``glance-api.conf`` will override options set in ``glance-registry.conf``.
+  This tool is planning to stop loading ``glance-registry.conf`` and
+  ``glance-api.conf`` in a future cycle.
 
 Configuring Server Startup Options
 ----------------------------------
@@ -148,83 +144,72 @@ You can put the following options in the ``glance-api.conf`` and
 ``glance-registry.conf`` files, under the ``[DEFAULT]`` section. They enable
 startup and binding behaviour for the API and registry servers, respectively.
 
-* ``bind_host=ADDRESS``
+``bind_host=ADDRESS``
+  The address of the host to bind to.
 
-The address of the host to bind to.
+  Optional. Default: ``0.0.0.0``
 
-Optional. Default: ``0.0.0.0``
+``bind_port=PORT``
+  The port the server should bind to.
 
-* ``bind_port=PORT``
+  Optional. Default: ``9191`` for the registry server, ``9292`` for the API server
 
-The port the server should bind to.
+``backlog=REQUESTS``
+  Number of backlog requests to configure the socket with.
 
-Optional. Default: ``9191`` for the registry server, ``9292`` for the API server
+  Optional. Default: ``4096``
 
-* ``backlog=REQUESTS``
+``tcp_keepidle=SECONDS``
+  Sets the value of TCP_KEEPIDLE in seconds for each server socket.
+  Not supported on OS X.
 
-Number of backlog requests to configure the socket with.
+  Optional. Default: ``600``
 
-Optional. Default: ``4096``
+``client_socket_timeout=SECONDS``
+  Timeout for client connections' socket operations.  If an incoming
+  connection is idle for this period it will be closed.  A value of `0`
+  means wait forever.
 
-* ``tcp_keepidle=SECONDS``
+  Optional. Default: ``900``
 
-Sets the value of TCP_KEEPIDLE in seconds for each server socket.
-Not supported on OS X.
+``workers=PROCESSES``
+  Number of Glance API or Registry worker processes to start. Each worker
+  process will listen on the same port. Increasing this value may increase
+  performance (especially if using SSL with compression enabled). Typically
+  it is recommended to have one worker process per CPU. The value `0`
+  will prevent any new worker processes from being created. When ``data_api``
+  is set to ``glance.db.simple.api``, ``workers`` MUST be set to either ``0`` or
+  ``1``.
 
-Optional. Default: ``600``
+  Optional. Default: The number of CPUs available will be used by default.
 
-* ``client_socket_timeout=SECONDS``
+``max_request_id_length=LENGTH``
+  Limits the maximum size of the x-openstack-request-id header which is
+  logged. Affects only if context middleware is configured in pipeline.
 
-Timeout for client connections' socket operations.  If an incoming
-connection is idle for this period it will be closed.  A value of `0`
-means wait forever.
-
-Optional. Default: ``900``
-
-
-* ``workers=PROCESSES``
-
-Number of Glance API or Registry worker processes to start. Each worker
-process will listen on the same port. Increasing this value may increase
-performance (especially if using SSL with compression enabled). Typically
-it is recommended to have one worker process per CPU. The value `0`
-will prevent any new worker processes from being created. When ``data_api``
-is set to ``glance.db.simple.api``, ``workers`` MUST be set to either ``0`` or
-``1``.
-
-Optional. Default: The number of CPUs available will be used by default.
-
-* ``max_request_id_length=LENGTH``
-
-Limits the maximum size of the x-openstack-request-id header which is
-logged. Affects only if context middleware is configured in pipeline.
-
-Optional. Default: ``64`` (Limited by max_header_line default: 16384)
+  Optional. Default: ``64`` (Limited by max_header_line default: 16384)
 
 Configuring SSL Support
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``cert_file=PATH``
+``cert_file=PATH``
+  Path to the certificate file the server should use when binding to an
+  SSL-wrapped socket.
 
-Path to the certificate file the server should use when binding to an
-SSL-wrapped socket.
+  Optional. Default: not enabled.
 
-Optional. Default: not enabled.
+``key_file=PATH``
+  Path to the private key file the server should use when binding to an
+  SSL-wrapped socket.
 
-* ``key_file=PATH``
+  Optional. Default: not enabled.
 
-Path to the private key file the server should use when binding to an
-SSL-wrapped socket.
+``ca_file=PATH``
+  Path to the CA certificate file the server should use to validate client
+  certificates provided during an SSL handshake. This is ignored if
+  ``cert_file`` and ''key_file`` are not set.
 
-Optional. Default: not enabled.
-
-* ``ca_file=PATH``
-
-Path to the CA certificate file the server should use to validate client
-certificates provided during an SSL handshake. This is ignored if
-``cert_file`` and ''key_file`` are not set.
-
-Optional. Default: not enabled.
+  Optional. Default: not enabled.
 
 Configuring Registry Access
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -232,52 +217,46 @@ Configuring Registry Access
 There are a number of configuration options in Glance that control how
 the API server accesses the registry server.
 
-* ``registry_client_protocol=PROTOCOL``
+``registry_client_protocol=PROTOCOL``
+  If you run a secure Registry server, you need to set this value to ``https``
+  and also set ``registry_client_key_file`` and optionally
+  ``registry_client_cert_file``.
 
-If you run a secure Registry server, you need to set this value to ``https``
-and also set ``registry_client_key_file`` and optionally
-``registry_client_cert_file``.
+  Optional. Default: http
 
-Optional. Default: http
+``registry_client_key_file=PATH``
+  The path to the key file to use in SSL connections to the
+  registry server, if any. Alternately, you may set the
+  ``GLANCE_CLIENT_KEY_FILE`` environ variable to a filepath of the key file
 
-* ``registry_client_key_file=PATH``
+  Optional. Default: Not set.
 
-The path to the key file to use in SSL connections to the
-registry server, if any. Alternately, you may set the
-``GLANCE_CLIENT_KEY_FILE`` environ variable to a filepath of the key file
+``registry_client_cert_file=PATH``
+  Optional. Default: Not set.
 
-Optional. Default: Not set.
+  The path to the cert file to use in SSL connections to the
+  registry server, if any. Alternately, you may set the
+  ``GLANCE_CLIENT_CERT_FILE`` environ variable to a filepath of the cert file
 
-* ``registry_client_cert_file=PATH``
+``registry_client_ca_file=PATH``
+  Optional. Default: Not set.
 
-Optional. Default: Not set.
+  The path to a Certifying Authority's cert file to use in SSL connections to the
+  registry server, if any. Alternately, you may set the
+  ``GLANCE_CLIENT_CA_FILE`` environ variable to a filepath of the CA cert file
 
-The path to the cert file to use in SSL connections to the
-registry server, if any. Alternately, you may set the
-``GLANCE_CLIENT_CERT_FILE`` environ variable to a filepath of the cert file
+``registry_client_insecure=False``
+  Optional. Default: False.
 
-* ``registry_client_ca_file=PATH``
+  When using SSL in connections to the registry server, do not require
+  validation via a certifying authority. This is the registry's equivalent of
+  specifying --insecure on the command line using glanceclient for the API
 
-Optional. Default: Not set.
+``registry_client_timeout=SECONDS``
+  Optional. Default: ``600``.
 
-The path to a Certifying Authority's cert file to use in SSL connections to the
-registry server, if any. Alternately, you may set the
-``GLANCE_CLIENT_CA_FILE`` environ variable to a filepath of the CA cert file
-
-* ``registry_client_insecure=False``
-
-Optional. Default: False.
-
-When using SSL in connections to the registry server, do not require
-validation via a certifying authority. This is the registry's equivalent of
-specifying --insecure on the command line using glanceclient for the API
-
-* ``registry_client_timeout=SECONDS``
-
-Optional. Default: ``600``.
-
-The period of time, in seconds, that the API server will wait for a registry
-request to complete. A value of '0' implies no timeout.
+  The period of time, in seconds, that the API server will wait for a registry
+  request to complete. A value of '0' implies no timeout.
 
 .. note::
    ``use_user_token``, ``admin_user``, ``admin_password``,
@@ -288,72 +267,65 @@ request to complete. A value of '0' implies no timeout.
    Related functionality with uploading big images has been implemented with
    Keystone trusts support.
 
-* ``use_user_token=True``
+``use_user_token=True``
+  Optional. Default: True
 
-Optional. Default: True
+  DEPRECATED. This option will be removed in O release.
 
-DEPRECATED. This option will be removed in O release.
+  Pass the user token through for API requests to the registry.
 
-Pass the user token through for API requests to the registry.
+  If 'use_user_token' is not in effect then admin credentials can be
+  specified (see below). If admin credentials are specified then they are
+  used to generate a token; this token rather than the original user's
+  token is used for requests to the registry.
 
-If 'use_user_token' is not in effect then admin credentials can be
-specified (see below). If admin credentials are specified then they are
-used to generate a token; this token rather than the original user's
-token is used for requests to the registry.
+``admin_user=USER``
+  DEPRECATED. This option will be removed in O release.
 
-* ``admin_user=USER``
+  If 'use_user_token' is not in effect then admin credentials can be
+  specified. Use this parameter to specify the username.
 
-DEPRECATED. This option will be removed in O release.
+  Optional. Default: None
 
-If 'use_user_token' is not in effect then admin credentials can be
-specified. Use this parameter to specify the username.
+``admin_password=PASSWORD``
+  DEPRECATED. This option will be removed in O release.
 
-Optional. Default: None
+  If 'use_user_token' is not in effect then admin credentials can be
+  specified. Use this parameter to specify the password.
 
-* ``admin_password=PASSWORD``
+  Optional. Default: None
 
-DEPRECATED. This option will be removed in O release.
+``admin_tenant_name=TENANTNAME``
+  DEPRECATED. This option will be removed in O release.
 
-If 'use_user_token' is not in effect then admin credentials can be
-specified. Use this parameter to specify the password.
+  If 'use_user_token' is not in effect then admin credentials can be
+  specified. Use this parameter to specify the tenant name.
 
-Optional. Default: None
+  Optional. Default: None
 
-* ``admin_tenant_name=TENANTNAME``
+``auth_url=URL``
+  DEPRECATED. This option will be removed in O release.
 
-DEPRECATED. This option will be removed in O release.
+  If 'use_user_token' is not in effect then admin credentials can be
+  specified. Use this parameter to specify the Keystone endpoint.
 
-If 'use_user_token' is not in effect then admin credentials can be
-specified. Use this parameter to specify the tenant name.
+  Optional. Default: None
 
-Optional. Default: None
+``auth_strategy=STRATEGY``
+  DEPRECATED. This option will be removed in O release.
 
-* ``auth_url=URL``
+  If 'use_user_token' is not in effect then admin credentials can be
+  specified. Use this parameter to specify the auth strategy.
 
-DEPRECATED. This option will be removed in O release.
+  Optional. Default: noauth
 
-If 'use_user_token' is not in effect then admin credentials can be
-specified. Use this parameter to specify the Keystone endpoint.
+``auth_region=REGION``
+  DEPRECATED. This option will be removed in O release.
 
-Optional. Default: None
+  If 'use_user_token' is not in effect then admin credentials can be
+  specified. Use this parameter to specify the region.
 
-* ``auth_strategy=STRATEGY``
-
-DEPRECATED. This option will be removed in O release.
-
-If 'use_user_token' is not in effect then admin credentials can be
-specified. Use this parameter to specify the auth strategy.
-
-Optional. Default: noauth
-
-* ``auth_region=REGION``
-
-DEPRECATED. This option will be removed in O release.
-
-If 'use_user_token' is not in effect then admin credentials can be
-specified. Use this parameter to specify the region.
-
-Optional. Default: None
+  Optional. Default: None
 
 
 Configuring Logging in Glance
@@ -362,13 +334,12 @@ Configuring Logging in Glance
 There are a number of configuration options in Glance that control how Glance
 servers log messages.
 
-* ``--log-config=PATH``
+``--log-config=PATH``
+  Optional. Default: ``None``
 
-Optional. Default: ``None``
+  Specified on the command line only.
 
-Specified on the command line only.
-
-Takes a path to a configuration file to use for configuring logging.
+  Takes a path to a configuration file to use for configuring logging.
 
 Logging Options Available Only in Configuration Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -380,31 +351,27 @@ for the API server, in a configuration file called ``etc/glance-api.conf``::
   [DEFAULT]
   log_file = /var/log/glance/api.log
 
-* ``log_file``
+``log_file``
+  The filepath of the file to use for logging messages from Glance's servers. If
+  missing, the default is to output messages to ``stdout``, so if you are running
+  Glance servers in a daemon mode (using ``glance-control``) you should make
+  sure that the ``log_file`` option is set appropriately.
 
-The filepath of the file to use for logging messages from Glance's servers. If
-missing, the default is to output messages to ``stdout``, so if you are running
-Glance servers in a daemon mode (using ``glance-control``) you should make
-sure that the ``log_file`` option is set appropriately.
+``log_dir``
+  The filepath of the directory to use for log files. If not specified (the default)
+  the ``log_file`` is used as an absolute filepath.
 
-* ``log_dir``
+``log_date_format``
+  The format string for timestamps in the log output.
 
-The filepath of the directory to use for log files. If not specified (the default)
-the ``log_file`` is used as an absolute filepath.
+  Defaults to ``%Y-%m-%d %H:%M:%S``. See the
+  `logging module <http://docs.python.org/library/logging.html>`_ documentation for
+  more information on setting this format string.
 
-* ``log_date_format``
+``log_use_syslog``
+  Use syslog logging functionality.
 
-The format string for timestamps in the log output.
-
-Defaults to ``%Y-%m-%d %H:%M:%S``. See the
-`logging module <http://docs.python.org/library/logging.html>`_ documentation for
-more information on setting this format string.
-
-* ``log_use_syslog``
-
-Use syslog logging functionality.
-
-Defaults to False.
+  Defaults to False.
 
 Configuring Glance Storage Backends
 -----------------------------------
@@ -413,328 +380,306 @@ There are a number of configuration options in Glance that control how Glance
 stores disk images. These configuration options are specified in the
 ``glance-api.conf`` configuration file in the section ``[glance_store]``.
 
-* ``default_store=STORE``
+``default_store=STORE``
+  Optional. Default: ``file``
 
-Optional. Default: ``file``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  Sets the storage backend to use by default when storing images in Glance.
+  Available options for this option are (``file``, ``swift``, ``rbd``,
+  ``sheepdog``, ``cinder`` or ``vsphere``). In order to select a default store
+  it must also be listed in the ``stores`` list described below.
 
-Sets the storage backend to use by default when storing images in Glance.
-Available options for this option are (``file``, ``swift``, ``rbd``,
-``sheepdog``, ``cinder`` or ``vsphere``). In order to select a default store
-it must also be listed in the ``stores`` list described below.
+``stores=STORES``
+  Optional. Default: ``file, http``
 
-* ``stores=STORES``
-
-Optional. Default: ``file, http``
-
-A comma separated list of enabled glance stores. Some available options for
-this option are (``filesystem``, ``http``, ``rbd``, ``swift``,
-``sheepdog``, ``cinder``, ``vmware_datastore``)
+  A comma separated list of enabled glance stores. Some available options for
+  this option are (``filesystem``, ``http``, ``rbd``, ``swift``,
+  ``sheepdog``, ``cinder``, ``vmware_datastore``)
 
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``filesystem_store_datadir=PATH``
+``filesystem_store_datadir=PATH``
+  Optional. Default: ``/var/lib/glance/images/``
 
-Optional. Default: ``/var/lib/glance/images/``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the filesystem storage backend.`
 
-`This option is specific to the filesystem storage backend.`
+  Sets the path where the filesystem storage backend write disk images. Note that
+  the filesystem storage backend will attempt to create this directory if it does
+  not exist. Ensure that the user that ``glance-api`` runs under has write
+  permissions to this directory.
 
-Sets the path where the filesystem storage backend write disk images. Note that
-the filesystem storage backend will attempt to create this directory if it does
-not exist. Ensure that the user that ``glance-api`` runs under has write
-permissions to this directory.
+``filesystem_store_file_perm=PERM_MODE``
+  Optional. Default: ``0``
 
-* ``filesystem_store_file_perm=PERM_MODE``
+  Can only be specified in configuration files.
 
-Optional. Default: ``0``
+  `This option is specific to the filesystem storage backend.`
 
-Can only be specified in configuration files.
-
-`This option is specific to the filesystem storage backend.`
-
-The required permission value, in octal representation, for the created image file.
-You can use this value to specify the user of the consuming service (such as Nova) as
-the only member of the group that owns the created files. To keep the default value,
-assign a permission value that is less than or equal to 0.  Note that the file owner
-must maintain read permission; if this value removes that permission an error message
-will be logged and the BadStoreConfiguration exception will be raised.  If the Glance
-service has insufficient privileges to change file access permissions, a file will still
-be saved, but a warning message will appear in the Glance log.
+  The required permission value, in octal representation, for the created image file.
+  You can use this value to specify the user of the consuming service (such as Nova) as
+  the only member of the group that owns the created files. To keep the default value,
+  assign a permission value that is less than or equal to 0.  Note that the file owner
+  must maintain read permission; if this value removes that permission an error message
+  will be logged and the BadStoreConfiguration exception will be raised.  If the Glance
+  service has insufficient privileges to change file access permissions, a file will still
+  be saved, but a warning message will appear in the Glance log.
 
 Configuring the Filesystem Storage Backend with multiple stores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``filesystem_store_datadirs=PATH:PRIORITY``
+``filesystem_store_datadirs=PATH:PRIORITY``
+  Optional. Default: ``/var/lib/glance/images/:1``
 
-Optional. Default: ``/var/lib/glance/images/:1``
+  Example::
 
-Example::
+    filesystem_store_datadirs = /var/glance/store
+    filesystem_store_datadirs = /var/glance/store1:100
+    filesystem_store_datadirs = /var/glance/store2:200
 
-  filesystem_store_datadirs = /var/glance/store
-  filesystem_store_datadirs = /var/glance/store1:100
-  filesystem_store_datadirs = /var/glance/store2:200
+  This option can only be specified in configuration file and is specific
+  to the filesystem storage backend only.
 
-This option can only be specified in configuration file and is specific
-to the filesystem storage backend only.
+  filesystem_store_datadirs option allows administrators to configure
+  multiple store directories to save glance image in filesystem storage backend.
+  Each directory can be coupled with its priority.
 
-filesystem_store_datadirs option allows administrators to configure
-multiple store directories to save glance image in filesystem storage backend.
-Each directory can be coupled with its priority.
+  **NOTE**:
 
-**NOTE**:
-
-* This option can be specified multiple times to specify multiple stores.
-* Either filesystem_store_datadir or filesystem_store_datadirs option must be
-  specified in glance-api.conf
-* Store with priority 200 has precedence over store with priority 100.
-* If no priority is specified, default priority '0' is associated with it.
-* If two filesystem stores have same priority store with maximum free space
-  will be chosen to store the image.
-* If same store is specified multiple times then BadStoreConfiguration
-  exception will be raised.
+  * This option can be specified multiple times to specify multiple stores.
+  * Either filesystem_store_datadir or filesystem_store_datadirs option must be
+    specified in glance-api.conf
+  * Store with priority 200 has precedence over store with priority 100.
+  * If no priority is specified, default priority '0' is associated with it.
+  * If two filesystem stores have same priority store with maximum free space
+    will be chosen to store the image.
+  * If same store is specified multiple times then BadStoreConfiguration
+    exception will be raised.
 
 Configuring the Swift Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``swift_store_auth_address=URL``
+``swift_store_auth_address=URL``
+  Required when using the Swift storage backend.
 
-Required when using the Swift storage backend.
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  Deprecated. Use ``auth_address`` in the Swift back-end configuration file instead.
 
-Deprecated. Use ``auth_address`` in the Swift back-end configuration file instead.
+  `This option is specific to the Swift storage backend.`
 
-`This option is specific to the Swift storage backend.`
+  Sets the authentication URL supplied to Swift when making calls to its storage
+  system. For more information about the Swift authentication system, please
+  see the `Swift auth <http://docs.openstack.org/developer/swift/overview_auth.html>`_
+  documentation.
 
-Sets the authentication URL supplied to Swift when making calls to its storage
-system. For more information about the Swift authentication system, please
-see the `Swift auth <http://docs.openstack.org/developer/swift/overview_auth.html>`_
-documentation.
+  **IMPORTANT NOTE**: Swift authentication addresses use HTTPS by default. This
+  means that if you are running Swift with authentication over HTTP, you need
+  to set your ``swift_store_auth_address`` to the full URL, including the ``http://``.
 
-**IMPORTANT NOTE**: Swift authentication addresses use HTTPS by default. This
-means that if you are running Swift with authentication over HTTP, you need
-to set your ``swift_store_auth_address`` to the full URL, including the ``http://``.
+``swift_store_user=USER``
+  Required when using the Swift storage backend.
 
-* ``swift_store_user=USER``
+  Can only be specified in configuration files.
 
-Required when using the Swift storage backend.
+  Deprecated. Use ``user`` in the Swift back-end configuration file instead.
 
-Can only be specified in configuration files.
+  `This option is specific to the Swift storage backend.`
 
-Deprecated. Use ``user`` in the Swift back-end configuration file instead.
+  Sets the user to authenticate against the ``swift_store_auth_address`` with.
 
-`This option is specific to the Swift storage backend.`
+``swift_store_key=KEY``
+  Required when using the Swift storage backend.
 
-Sets the user to authenticate against the ``swift_store_auth_address`` with.
+  Can only be specified in configuration files.
 
-* ``swift_store_key=KEY``
+  Deprecated. Use ``key`` in the Swift back-end configuration file instead.
 
-Required when using the Swift storage backend.
+  `This option is specific to the Swift storage backend.`
 
-Can only be specified in configuration files.
+  Sets the authentication key to authenticate against the
+  ``swift_store_auth_address`` with for the user ``swift_store_user``.
 
-Deprecated. Use ``key`` in the Swift back-end configuration file instead.
+``swift_store_container=CONTAINER``
+  Optional. Default: ``glance``
 
-`This option is specific to the Swift storage backend.`
+  Can only be specified in configuration files.
 
-Sets the authentication key to authenticate against the
-``swift_store_auth_address`` with for the user ``swift_store_user``.
+  `This option is specific to the Swift storage backend.`
 
-* ``swift_store_container=CONTAINER``
+  Sets the name of the container to use for Glance images in Swift.
 
-Optional. Default: ``glance``
+``swift_store_create_container_on_put``
+  Optional. Default: ``False``
 
-Can only be specified in configuration files.
+  Can only be specified in configuration files.
 
-`This option is specific to the Swift storage backend.`
+  `This option is specific to the Swift storage backend.`
 
-Sets the name of the container to use for Glance images in Swift.
+  If true, Glance will attempt to create the container ``swift_store_container``
+  if it does not exist.
 
-* ``swift_store_create_container_on_put``
+``swift_store_large_object_size=SIZE_IN_MB``
+  Optional. Default: ``5120``
 
-Optional. Default: ``False``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the Swift storage backend.`
 
-`This option is specific to the Swift storage backend.`
+  What size, in MB, should Glance start chunking image files
+  and do a large object manifest in Swift? By default, this is
+  the maximum object size in Swift, which is 5GB
 
-If true, Glance will attempt to create the container ``swift_store_container``
-if it does not exist.
+``swift_store_large_object_chunk_size=SIZE_IN_MB``
+  Optional. Default: ``200``
 
-* ``swift_store_large_object_size=SIZE_IN_MB``
+  Can only be specified in configuration files.
 
-Optional. Default: ``5120``
+  `This option is specific to the Swift storage backend.`
 
-Can only be specified in configuration files.
+  When doing a large object manifest, what size, in MB, should
+  Glance write chunks to Swift?  The default is 200MB.
 
-`This option is specific to the Swift storage backend.`
+``swift_store_multi_tenant=False``
+  Optional. Default: ``False``
 
-What size, in MB, should Glance start chunking image files
-and do a large object manifest in Swift? By default, this is
-the maximum object size in Swift, which is 5GB
+  Can only be specified in configuration files.
 
-* ``swift_store_large_object_chunk_size=SIZE_IN_MB``
+  `This option is specific to the Swift storage backend.`
 
-Optional. Default: ``200``
+  If set to True enables multi-tenant storage mode which causes Glance images
+  to be stored in tenant specific Swift accounts. When set to False Glance
+  stores all images in a single Swift account.
 
-Can only be specified in configuration files.
+``swift_store_multiple_containers_seed``
+  Optional. Default: ``0``
 
-`This option is specific to the Swift storage backend.`
+  Can only be specified in configuration files.
 
-When doing a large object manifest, what size, in MB, should
-Glance write chunks to Swift?  The default is 200MB.
+  `This option is specific to the Swift storage backend.`
 
-* ``swift_store_multi_tenant=False``
+  When set to 0, a single-tenant store will only use one container to store all
+  images. When set to an integer value between 1 and 32, a single-tenant store
+  will use multiple containers to store images, and this value will determine
+  how many characters from an image UUID are checked when determining what
+  container to place the image in. The maximum number of containers that will be
+  created is approximately equal to 16^N. This setting is used only when
+  swift_store_multi_tenant is disabled.
 
-Optional. Default: ``False``
+  Example: if this config option is set to 3 and
+  swift_store_container = 'glance', then an image with UUID
+  'fdae39a1-bac5-4238-aba4-69bcc726e848' would be placed in the container
+  'glance_fda'. All dashes in the UUID are included when creating the container
+  name but do not count toward the character limit, so in this example with N=10
+  the container name would be 'glance_fdae39a1-ba'.
 
-Can only be specified in configuration files.
+  When choosing the value for swift_store_multiple_containers_seed, deployers
+  should discuss a suitable value with their swift operations team. The authors
+  of this option recommend that large scale deployments use a value of '2',
+  which will create a maximum of ~256 containers. Choosing a higher number than
+  this, even in extremely large scale deployments, may not have any positive
+  impact on performance and could lead to a large number of empty, unused
+  containers. The largest of deployments could notice an increase in performance
+  if swift rate limits are throttling on single container. Note: If dynamic
+  container creation is turned off, any value for this configuration option
+  higher than '1' may be unreasonable as the deployer would have to manually
+  create each container.
 
-`This option is specific to the Swift storage backend.`
+``swift_store_admin_tenants``
+  Can only be specified in configuration files.
 
-If set to True enables multi-tenant storage mode which causes Glance images
-to be stored in tenant specific Swift accounts. When set to False Glance
-stores all images in a single Swift account.
+  `This option is specific to the Swift storage backend.`
 
-* ``swift_store_multiple_containers_seed``
+  Optional. Default: Not set.
 
-Optional. Default: ``0``
+  A list of swift ACL strings that will be applied as both read and
+  write ACLs to the containers created by Glance in multi-tenant
+  mode. This grants the specified tenants/users read and write access
+  to all newly created image objects. The standard swift ACL string
+  formats are allowed, including:
 
-Can only be specified in configuration files.
+  <tenant_id>:<username>
+  <tenant_name>:<username>
+  \*:<username>
 
-`This option is specific to the Swift storage backend.`
+  Multiple ACLs can be combined using a comma separated list, for
+  example: swift_store_admin_tenants = service:glance,*:admin
 
-When set to 0, a single-tenant store will only use one container to store all
-images. When set to an integer value between 1 and 32, a single-tenant store
-will use multiple containers to store images, and this value will determine
-how many characters from an image UUID are checked when determining what
-container to place the image in. The maximum number of containers that will be
-created is approximately equal to 16^N. This setting is used only when
-swift_store_multi_tenant is disabled.
+``swift_store_auth_version``
+  Can only be specified in configuration files.
 
-Example: if this config option is set to 3 and
-swift_store_container = 'glance', then an image with UUID
-'fdae39a1-bac5-4238-aba4-69bcc726e848' would be placed in the container
-'glance_fda'. All dashes in the UUID are included when creating the container
-name but do not count toward the character limit, so in this example with N=10
-the container name would be 'glance_fdae39a1-ba'.
+  Deprecated. Use ``auth_version`` in the Swift back-end configuration
+  file instead.
 
-When choosing the value for swift_store_multiple_containers_seed, deployers
-should discuss a suitable value with their swift operations team. The authors
-of this option recommend that large scale deployments use a value of '2',
-which will create a maximum of ~256 containers. Choosing a higher number than
-this, even in extremely large scale deployments, may not have any positive
-impact on performance and could lead to a large number of empty, unused
-containers. The largest of deployments could notice an increase in performance
-if swift rate limits are throttling on single container. Note: If dynamic
-container creation is turned off, any value for this configuration option
-higher than '1' may be unreasonable as the deployer would have to manually
-create each container.
+  `This option is specific to the Swift storage backend.`
 
-* ``swift_store_admin_tenants``
+  Optional. Default: ``2``
 
-Can only be specified in configuration files.
+  A string indicating which version of Swift OpenStack authentication
+  to use. See the project
+  `python-swiftclient <http://docs.openstack.org/developer/python-swiftclient/>`_
+  for more details.
 
-`This option is specific to the Swift storage backend.`
+``swift_store_service_type``
+  Can only be specified in configuration files.
 
-Optional. Default: Not set.
+  `This option is specific to the Swift storage backend.`
 
-A list of swift ACL strings that will be applied as both read and
-write ACLs to the containers created by Glance in multi-tenant
-mode. This grants the specified tenants/users read and write access
-to all newly created image objects. The standard swift ACL string
-formats are allowed, including:
+  Optional. Default: ``object-store``
 
-<tenant_id>:<username>
-<tenant_name>:<username>
-\*:<username>
+  A string giving the service type of the swift service to use. This
+  setting is only used if swift_store_auth_version is ``2``.
 
-Multiple ACLs can be combined using a comma separated list, for
-example: swift_store_admin_tenants = service:glance,*:admin
+``swift_store_region``
+  Can only be specified in configuration files.
 
-* ``swift_store_auth_version``
+  `This option is specific to the Swift storage backend.`
 
-Can only be specified in configuration files.
+  Optional. Default: Not set.
 
-Deprecated. Use ``auth_version`` in the Swift back-end configuration
-file instead.
+  A string giving the region of the swift service endpoint to use. This
+  setting is only used if swift_store_auth_version is ``2``. This
+  setting is especially useful for disambiguation if multiple swift
+  services might appear in a service catalog during authentication.
 
-`This option is specific to the Swift storage backend.`
+``swift_store_endpoint_type``
+  Can only be specified in configuration files.
 
-Optional. Default: ``2``
+  `This option is specific to the Swift storage backend.`
 
-A string indicating which version of Swift OpenStack authentication
-to use. See the project
-`python-swiftclient <http://docs.openstack.org/developer/python-swiftclient/>`_
-for more details.
+  Optional. Default: ``publicURL``
 
-* ``swift_store_service_type``
+  A string giving the endpoint type of the swift service endpoint to
+  use. This setting is only used if swift_store_auth_version is ``2``.
 
-Can only be specified in configuration files.
+``swift_store_ssl_compression``
+  Can only be specified in configuration files.
 
-`This option is specific to the Swift storage backend.`
+  `This option is specific to the Swift storage backend.`
 
-Optional. Default: ``object-store``
+  Optional. Default: True.
 
-A string giving the service type of the swift service to use. This
-setting is only used if swift_store_auth_version is ``2``.
+  If set to False, disables SSL layer compression of https swift
+  requests. Setting to 'False' may improve performance for images which
+  are already in a compressed format, e.g. qcow2. If set to True then
+  compression will be enabled (provided it is supported by the swift
+  proxy).
 
-* ``swift_store_region``
+``swift_store_cacert``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  Optional. Default: ``None``
 
-`This option is specific to the Swift storage backend.`
+  A string giving the path to a CA certificate bundle that will allow Glance's
+  services to perform SSL verification when communicating with Swift.
 
-Optional. Default: Not set.
-
-A string giving the region of the swift service endpoint to use. This
-setting is only used if swift_store_auth_version is ``2``. This
-setting is especially useful for disambiguation if multiple swift
-services might appear in a service catalog during authentication.
-
-* ``swift_store_endpoint_type``
-
-Can only be specified in configuration files.
-
-`This option is specific to the Swift storage backend.`
-
-Optional. Default: ``publicURL``
-
-A string giving the endpoint type of the swift service endpoint to
-use. This setting is only used if swift_store_auth_version is ``2``.
-
-* ``swift_store_ssl_compression``
-
-Can only be specified in configuration files.
-
-`This option is specific to the Swift storage backend.`
-
-Optional. Default: True.
-
-If set to False, disables SSL layer compression of https swift
-requests. Setting to 'False' may improve performance for images which
-are already in a compressed format, e.g. qcow2. If set to True then
-compression will be enabled (provided it is supported by the swift
-proxy).
-
-* ``swift_store_cacert``
-
-Can only be specified in configuration files.
-
-Optional. Default: ``None``
-
-A string giving the path to a CA certificate bundle that will allow Glance's
-services to perform SSL verification when communicating with Swift.
-
-* ``swift_store_retry_get_count``
-
-The number of times a Swift download will be retried before the request
-fails.
-Optional. Default: ``0``
+``swift_store_retry_get_count``
+  The number of times a Swift download will be retried before the request
+  fails.
+  Optional. Default: ``0``
 
 Configuring Multiple Swift Accounts/Stores
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -748,28 +693,27 @@ Optional.  Default: not enabled.
 The location for this file is specified using the ``swift_store_config_file``
 configuration file in the section ``[DEFAULT]``. **If an incorrect value is
 specified, Glance API Swift store service will not be configured.**
-* ``swift_store_config_file=PATH``
 
-`This option is specific to the Swift storage backend.`
+``swift_store_config_file=PATH``
+  `This option is specific to the Swift storage backend.`
 
-* ``default_swift_reference=DEFAULT_REFERENCE``
+``default_swift_reference=DEFAULT_REFERENCE``
+  Required when multiple Swift accounts/backing stores are configured.
 
-Required when multiple Swift accounts/backing stores are configured.
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the Swift storage backend.`
 
-`This option is specific to the Swift storage backend.`
+  It is the default swift reference that is used to add any new images.
 
-It is the default swift reference that is used to add any new images.
-* ``swift_store_auth_insecure``
+``swift_store_auth_insecure``
+  If True, bypass SSL certificate verification for Swift.
 
-If True, bypass SSL certificate verification for Swift.
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the Swift storage backend.`
 
-`This option is specific to the Swift storage backend.`
-
-Optional. Default: ``False``
+  Optional. Default: ``False``
 
 Configuring Swift configuration file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -812,30 +756,25 @@ reference, add the following value to the [glance_store] section of
 
 In the reference, a user can specify the following parameters:
 
-* ``user``
-
+``user``
   A *project_name user_name* pair in the ``project_name:user_name`` format
   to authenticate against the Swift authentication service.
 
-* ``key``
-
+``key``
   An authentication key for a user authenticating against the Swift
   authentication service.
 
-* ``auth_address``
-
+``auth_address``
   An address where the Swift authentication service is located.
 
-* ``auth_version``
-
+``auth_version``
   A version of the authentication service to use.
   Valid versions are ``2`` and ``3`` for Keystone and ``1``
   (deprecated) for Swauth and Rackspace.
 
   Optional. Default: ``2``
 
-* ``project_domain_id``
-
+``project_domain_id``
   A domain ID of the project which is the requested project-level
   authorization scope.
 
@@ -843,8 +782,7 @@ In the reference, a user can specify the following parameters:
 
   `This option can be specified if ``auth_version`` is ``3`` .`
 
-* ``project_domain_name``
-
+``project_domain_name``
   A domain name of the project which is the requested project-level
   authorization scope.
 
@@ -852,8 +790,7 @@ In the reference, a user can specify the following parameters:
 
   `This option can be specified if ``auth_version`` is ``3`` .`
 
-* ``user_domain_id``
-
+``user_domain_id``
   A domain ID of the user which is the requested domain-level
   authorization scope.
 
@@ -861,8 +798,7 @@ In the reference, a user can specify the following parameters:
 
   `This option can be specified if ``auth_version`` is ``3`` .`
 
-* ``user_domain_name``
-
+``user_domain_name``
   A domain name of the user which is the requested domain-level
   authorization scope.
 
@@ -877,61 +813,56 @@ Configuring the RBD Storage Backend
 librados and librbd. These are in the python-ceph package on
 Debian-based distributions.
 
-* ``rbd_store_pool=POOL``
+``rbd_store_pool=POOL``
+  Optional. Default: ``rbd``
 
-Optional. Default: ``rbd``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the RBD storage backend.`
 
-`This option is specific to the RBD storage backend.`
+  Sets the RADOS pool in which images are stored.
 
-Sets the RADOS pool in which images are stored.
+``rbd_store_chunk_size=CHUNK_SIZE_MB``
+  Optional. Default: ``4``
 
-* ``rbd_store_chunk_size=CHUNK_SIZE_MB``
+  Can only be specified in configuration files.
 
-Optional. Default: ``4``
+  `This option is specific to the RBD storage backend.`
 
-Can only be specified in configuration files.
+  Images will be chunked into objects of this size (in megabytes).
+  For best performance, this should be a power of two.
 
-`This option is specific to the RBD storage backend.`
+``rados_connect_timeout``
+  Optional. Default: ``0``
 
-Images will be chunked into objects of this size (in megabytes).
-For best performance, this should be a power of two.
+  Can only be specified in configuration files.
 
-* ``rados_connect_timeout``
+  `This option is specific to the RBD storage backend.`
 
-Optional. Default: ``0``
+  Prevents glance-api hangups during the connection to RBD. Sets the time
+  to wait (in seconds) for glance-api before closing the connection.
+  Setting ``rados_connect_timeout<=0`` means no timeout.
 
-Can only be specified in configuration files.
+``rbd_store_ceph_conf=PATH``
+  Optional. Default: ``/etc/ceph/ceph.conf``, ``~/.ceph/config``, and
+  ``./ceph.conf``
 
-`This option is specific to the RBD storage backend.`
+  Can only be specified in configuration files.
 
-Prevents glance-api hangups during the connection to RBD. Sets the time
-to wait (in seconds) for glance-api before closing the connection.
-Setting ``rados_connect_timeout<=0`` means no timeout.
+  `This option is specific to the RBD storage backend.`
 
-* ``rbd_store_ceph_conf=PATH``
+  Sets the Ceph configuration file to use.
 
-Optional. Default: ``/etc/ceph/ceph.conf``, ``~/.ceph/config``, and
-``./ceph.conf``
+``rbd_store_user=NAME``
+  Optional. Default: ``admin``
 
-Can only be specified in configuration files.
+  Can only be specified in configuration files.
 
-`This option is specific to the RBD storage backend.`
+  `This option is specific to the RBD storage backend.`
 
-Sets the Ceph configuration file to use.
-
-* ``rbd_store_user=NAME``
-
-Optional. Default: ``admin``
-
-Can only be specified in configuration files.
-
-`This option is specific to the RBD storage backend.`
-
-Sets the RADOS user to authenticate as. This is only needed
-when `RADOS authentication <http://ceph.newdream.net/wiki/Cephx>`_
-is `enabled. <http://ceph.newdream.net/wiki/Cluster_configuration#Cephx_auth>`_
+  Sets the RADOS user to authenticate as. This is only needed
+  when `RADOS authentication <http://ceph.newdream.net/wiki/Cephx>`_
+  is `enabled. <http://ceph.newdream.net/wiki/Cluster_configuration#Cephx_auth>`_
 
 A keyring must be set for this user in the Ceph
 configuration file, e.g. with a user ``glance``::
@@ -950,36 +881,33 @@ To set up a user named ``glance`` with minimal permissions, using a pool called
 Configuring the Sheepdog Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``sheepdog_store_address=ADDR``
+``sheepdog_store_address=ADDR``
+  Optional. Default: ``localhost``
 
-Optional. Default: ``localhost``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the Sheepdog storage backend.`
 
-`This option is specific to the Sheepdog storage backend.`
+  Sets the IP address of the sheep daemon
 
-Sets the IP address of the sheep daemon
+``sheepdog_store_port=PORT``
+  Optional. Default: ``7000``
 
-* ``sheepdog_store_port=PORT``
+  Can only be specified in configuration files.
 
-Optional. Default: ``7000``
+  `This option is specific to the Sheepdog storage backend.`
 
-Can only be specified in configuration files.
+  Sets the IP port of the sheep daemon
 
-`This option is specific to the Sheepdog storage backend.`
+``sheepdog_store_chunk_size=SIZE_IN_MB``
+  Optional. Default: ``64``
 
-Sets the IP port of the sheep daemon
+  Can only be specified in configuration files.
 
-* ``sheepdog_store_chunk_size=SIZE_IN_MB``
+  `This option is specific to the Sheepdog storage backend.`
 
-Optional. Default: ``64``
-
-Can only be specified in configuration files.
-
-`This option is specific to the Sheepdog storage backend.`
-
-Images will be chunked into objects of this size (in megabytes).
-For best performance, this should be a power of two.
+  Images will be chunked into objects of this size (in megabytes).
+  For best performance, this should be a power of two.
 
 Configuring the Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -994,280 +922,256 @@ settings are required. Please see the
 `Volume-backed image <http://docs.openstack.org/admin-guide/blockstorage_volume_backed_image.html>`_
 documentation for more information.
 
-* ``cinder_catalog_info=<service_type>:<service_name>:<endpoint_type>``
+``cinder_catalog_info=<service_type>:<service_name>:<endpoint_type>``
+  Optional. Default: ``volumev2::publicURL``
 
-Optional. Default: ``volumev2::publicURL``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the Cinder storage backend.`
 
-`This option is specific to the Cinder storage backend.`
+  Sets the info to match when looking for cinder in the service catalog.
+  Format is : separated values of the form: <service_type>:<service_name>:<endpoint_type>
 
-Sets the info to match when looking for cinder in the service catalog.
-Format is : separated values of the form: <service_type>:<service_name>:<endpoint_type>
+``cinder_endpoint_template=http://ADDR:PORT/VERSION/%(tenant)s``
+  Optional. Default: ``None``
 
-* ``cinder_endpoint_template=http://ADDR:PORT/VERSION/%(tenant)s``
+  Can only be specified in configuration files.
 
-Optional. Default: ``None``
+  `This option is specific to the Cinder storage backend.`
 
-Can only be specified in configuration files.
+  Override service catalog lookup with template for cinder endpoint.
+  ``%(...)s`` parts are replaced by the value in the request context.
+  e.g. http://localhost:8776/v2/%(tenant)s
 
-`This option is specific to the Cinder storage backend.`
+``os_region_name=REGION_NAME``
+  Optional. Default: ``None``
 
-Override service catalog lookup with template for cinder endpoint.
-``%(...)s`` parts are replaced by the value in the request context.
-e.g. http://localhost:8776/v2/%(tenant)s
+  Can only be specified in configuration files.
 
-* ``os_region_name=REGION_NAME``
+  `This option is specific to the Cinder storage backend.`
 
-Optional. Default: ``None``
+  Region name of this node.
 
-Can only be specified in configuration files.
+  Deprecated. Use ``cinder_os_region_name`` instead.
 
-`This option is specific to the Cinder storage backend.`
+``cinder_os_region_name=REGION_NAME``
+  Optional. Default: ``None``
 
-Region name of this node.
+  Can only be specified in configuration files.
 
-Deprecated. Use ``cinder_os_region_name`` instead.
+  `This option is specific to the Cinder storage backend.`
 
-* ``cinder_os_region_name=REGION_NAME``
+  Region name of this node.  If specified, it is used to locate cinder from
+  the service catalog.
 
-Optional. Default: ``None``
+``cinder_ca_certificates_file=CA_FILE_PATH``
+  Optional. Default: ``None``
 
-Can only be specified in configuration files.
+  Can only be specified in configuration files.
 
-`This option is specific to the Cinder storage backend.`
+  `This option is specific to the Cinder storage backend.`
 
-Region name of this node.  If specified, it is used to locate cinder from
-the service catalog.
+  Location of ca certificates file to use for cinder client requests.
 
-* ``cinder_ca_certificates_file=CA_FILE_PATH``
+``cinder_http_retries=TIMES``
+  Optional. Default: ``3``
 
-Optional. Default: ``None``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  `This option is specific to the Cinder storage backend.`
 
-`This option is specific to the Cinder storage backend.`
+  Number of cinderclient retries on failed http calls.
 
-Location of ca certificates file to use for cinder client requests.
+``cinder_state_transition_timeout``
+  Optional. Default: ``300``
 
-* ``cinder_http_retries=TIMES``
+  Can only be specified in configuration files.
 
-Optional. Default: ``3``
+  `This option is specific to the Cinder storage backend.`
 
-Can only be specified in configuration files.
+  Time period, in seconds, to wait for a cinder volume transition to complete.
 
-`This option is specific to the Cinder storage backend.`
+``cinder_api_insecure=ON_OFF``
+  Optional. Default: ``False``
 
-Number of cinderclient retries on failed http calls.
+  Can only be specified in configuration files.
 
-* ``cinder_state_transition_timeout``
+  `This option is specific to the Cinder storage backend.`
 
-Optional. Default: ``300``
+  Allow to perform insecure SSL requests to cinder.
 
-Can only be specified in configuration files.
+``cinder_store_user_name=NAME``
+  Optional. Default: ``None``
 
-`This option is specific to the Cinder storage backend.`
+  Can only be specified in configuration files.
 
-Time period, in seconds, to wait for a cinder volume transition to complete.
+  `This option is specific to the Cinder storage backend.`
 
-* ``cinder_api_insecure=ON_OFF``
+  User name to authenticate against Cinder. If <None>, the user of current
+  context is used.
 
-Optional. Default: ``False``
+  **NOTE**: This option is applied only if all of ``cinder_store_user_name``,
+  ``cinder_store_password``, ``cinder_store_project_name`` and
+  ``cinder_store_auth_address`` are set.
+  These options are useful to put image volumes into the internal service
+  project in order to hide the volume from users, and to make the image
+  sharable among projects.
 
-Can only be specified in configuration files.
+``cinder_store_password=PASSWORD``
+  Optional. Default: ``None``
 
-`This option is specific to the Cinder storage backend.`
+  Can only be specified in configuration files.
 
-Allow to perform insecure SSL requests to cinder.
+  `This option is specific to the Cinder storage backend.`
 
-* ``cinder_store_user_name=NAME``
+  Password for the user authenticating against Cinder. If <None>, the current
+  context auth token is used.
 
-Optional. Default: ``None``
+``cinder_store_project_name=NAME``
+  Optional. Default: ``None``
 
-Can only be specified in configuration files.
+  Can only be specified in configuration files.
 
-`This option is specific to the Cinder storage backend.`
+  `This option is specific to the Cinder storage backend.`
 
-User name to authenticate against Cinder. If <None>, the user of current
-context is used.
+  Project name where the image is stored in Cinder. If <None>, the project
+  in current context is used.
 
-**NOTE**: This option is applied only if all of ``cinder_store_user_name``,
-``cinder_store_password``, ``cinder_store_project_name`` and
-``cinder_store_auth_address`` are set.
-These options are useful to put image volumes into the internal service
-project in order to hide the volume from users, and to make the image
-sharable among projects.
+``cinder_store_auth_address=URL``
+  Optional. Default: ``None``
 
-* ``cinder_store_password=PASSWORD``
+  Can only be specified in configuration files.
 
-Optional. Default: ``None``
+  `This option is specific to the Cinder storage backend.`
 
-Can only be specified in configuration files.
+  The address where the Cinder authentication service is listening. If <None>,
+  the cinder endpoint in the service catalog is used.
 
-`This option is specific to the Cinder storage backend.`
+``rootwrap_config=NAME``
+  Optional. Default: ``/etc/glance/rootwrap.conf``
 
-Password for the user authenticating against Cinder. If <None>, the current
-context auth token is used.
+  Can only be specified in configuration files.
 
-* ``cinder_store_project_name=NAME``
+  `This option is specific to the Cinder storage backend.`
 
-Optional. Default: ``None``
-
-Can only be specified in configuration files.
-
-`This option is specific to the Cinder storage backend.`
-
-Project name where the image is stored in Cinder. If <None>, the project
-in current context is used.
-
-* ``cinder_store_auth_address=URL``
-
-Optional. Default: ``None``
-
-Can only be specified in configuration files.
-
-`This option is specific to the Cinder storage backend.`
-
-The address where the Cinder authentication service is listening. If <None>,
-the cinder endpoint in the service catalog is used.
-
-* ``rootwrap_config=NAME``
-
-Optional. Default: ``/etc/glance/rootwrap.conf``
-
-Can only be specified in configuration files.
-
-`This option is specific to the Cinder storage backend.`
-
-Path to the rootwrap configuration file to use for running commands as root.
+  Path to the rootwrap configuration file to use for running commands as root.
 
 Configuring the VMware Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``vmware_server_host=ADDRESS``
+``vmware_server_host=ADDRESS``
+  Required when using the VMware storage backend.
 
-Required when using the VMware storage backend.
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  Sets the address of the ESX/ESXi or vCenter Server target system.
+  The address can contain an IP (``127.0.0.1``), an IP and port
+  (``127.0.0.1:443``), a DNS name (``www.my-domain.com``) or DNS and port.
 
-Sets the address of the ESX/ESXi or vCenter Server target system.
-The address can contain an IP (``127.0.0.1``), an IP and port
-(``127.0.0.1:443``), a DNS name (``www.my-domain.com``) or DNS and port.
+  `This option is specific to the VMware storage backend.`
 
-`This option is specific to the VMware storage backend.`
+``vmware_server_username=USERNAME``
+  Required when using the VMware storage backend.
 
-* ``vmware_server_username=USERNAME``
+  Can only be specified in configuration files.
 
-Required when using the VMware storage backend.
+  Username for authenticating with VMware ESX/ESXi or vCenter Server.
 
-Can only be specified in configuration files.
+``vmware_server_password=PASSWORD``
+  Required when using the VMware storage backend.
 
-Username for authenticating with VMware ESX/ESXi or vCenter Server.
+  Can only be specified in configuration files.
 
-* ``vmware_server_password=PASSWORD``
+  Password for authenticating with VMware ESX/ESXi or vCenter Server.
 
-Required when using the VMware storage backend.
+``vmware_datacenter_path=DC_PATH``
+  Optional. Default: ``ha-datacenter``
 
-Can only be specified in configuration files.
+  Can only be specified in configuration files.
 
-Password for authenticating with VMware ESX/ESXi or vCenter Server.
+  Inventory path to a datacenter. If the ``vmware_server_host`` specified
+  is an ESX/ESXi, the ``vmware_datacenter_path`` is optional. If specified,
+  it should be ``ha-datacenter``.
 
-* ``vmware_datacenter_path=DC_PATH``
+``vmware_datastore_name=DS_NAME``
+  Required when using the VMware storage backend.
 
-Optional. Default: ``ha-datacenter``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  Datastore name associated with the ``vmware_datacenter_path``
 
-Inventory path to a datacenter. If the ``vmware_server_host`` specified
-is an ESX/ESXi, the ``vmware_datacenter_path`` is optional. If specified,
-it should be ``ha-datacenter``.
+``vmware_datastores``
+  Optional. Default: Not set.
 
-* ``vmware_datastore_name=DS_NAME``
+  This option can only be specified in configuration file and is specific
+  to the VMware storage backend.
 
-Required when using the VMware storage backend.
+  vmware_datastores allows administrators to configure multiple datastores to
+  save glance image in the VMware store backend. The required format for the
+  option is: <datacenter_path>:<datastore_name>:<optional_weight>.
 
-Can only be specified in configuration files.
+  where datacenter_path is the inventory path to the datacenter where the
+  datastore is located. An optional weight can be given to specify the priority.
 
-Datastore name associated with the ``vmware_datacenter_path``
+  Example::
 
-* ``vmware_datastores``
+    vmware_datastores = datacenter1:datastore1
+    vmware_datastores = dc_folder/datacenter2:datastore2:100
+    vmware_datastores = datacenter1:datastore3:200
 
-Optional. Default: Not set.
+  **NOTE**:
 
-This option can only be specified in configuration file and is specific
-to the VMware storage backend.
+    - This option can be specified multiple times to specify multiple datastores.
+    - Either vmware_datastore_name or vmware_datastores option must be specified
+      in glance-api.conf
+    - Datastore with weight 200 has precedence over datastore with weight 100.
+    - If no weight is specified, default weight '0' is associated with it.
+    - If two datastores have same weight, the datastore with maximum free space
+      will be chosen to store the image.
+    - If the datacenter path or datastore name contains a colon (:) symbol, it
+      must be escaped with a backslash.
 
-vmware_datastores allows administrators to configure multiple datastores to
-save glance image in the VMware store backend. The required format for the
-option is: <datacenter_path>:<datastore_name>:<optional_weight>.
+``vmware_api_retry_count=TIMES``
+  Optional. Default: ``10``
 
-where datacenter_path is the inventory path to the datacenter where the
-datastore is located. An optional weight can be given to specify the priority.
+  Can only be specified in configuration files.
 
-Example::
+  The number of times VMware ESX/VC server API must be
+  retried upon connection related issues.
 
-  vmware_datastores = datacenter1:datastore1
-  vmware_datastores = dc_folder/datacenter2:datastore2:100
-  vmware_datastores = datacenter1:datastore3:200
+``vmware_task_poll_interval=SECONDS``
+  Optional. Default: ``5``
 
-**NOTE**:
+  Can only be specified in configuration files.
 
-  - This option can be specified multiple times to specify multiple datastores.
-  - Either vmware_datastore_name or vmware_datastores option must be specified
-    in glance-api.conf
-  - Datastore with weight 200 has precedence over datastore with weight 100.
-  - If no weight is specified, default weight '0' is associated with it.
-  - If two datastores have same weight, the datastore with maximum free space
-    will be chosen to store the image.
-  - If the datacenter path or datastore name contains a colon (:) symbol, it
-    must be escaped with a backslash.
+  The interval used for polling remote tasks invoked on VMware ESX/VC server.
 
-* ``vmware_api_retry_count=TIMES``
+``vmware_store_image_dir``
+  Optional. Default: ``/openstack_glance``
 
-Optional. Default: ``10``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
+  The path to access the folder where the images will be stored in the datastore.
 
-The number of times VMware ESX/VC server API must be
-retried upon connection related issues.
+``vmware_api_insecure=ON_OFF``
+  Optional. Default: ``False``
 
-* ``vmware_task_poll_interval=SECONDS``
+  Can only be specified in configuration files.
 
-Optional. Default: ``5``
-
-Can only be specified in configuration files.
-
-The interval used for polling remote tasks invoked on VMware ESX/VC server.
-
-* ``vmware_store_image_dir``
-
-Optional. Default: ``/openstack_glance``
-
-Can only be specified in configuration files.
-
-The path to access the folder where the images will be stored in the datastore.
-
-* ``vmware_api_insecure=ON_OFF``
-
-Optional. Default: ``False``
-
-Can only be specified in configuration files.
-
-Allow to perform insecure SSL requests to ESX/VC server.
+  Allow to perform insecure SSL requests to ESX/VC server.
 
 Configuring the Storage Endpoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``swift_store_endpoint=URL``
+``swift_store_endpoint=URL``
+  Optional. Default: ``None``
 
-Optional. Default: ``None``
+  Can only be specified in configuration files.
 
-Can only be specified in configuration files.
-
-Overrides the storage URL returned by auth. The URL should include the
-path up to and excluding the container. The location of an object is
-obtained by appending the container and object to the configured URL.
-e.g. ``https://www.my-domain.com/v1/path_up_to_container``
+  Overrides the storage URL returned by auth. The URL should include the
+  path up to and excluding the container. The location of an object is
+  obtained by appending the container and object to the configured URL.
+  e.g. ``https://www.my-domain.com/v1/path_up_to_container``
 
 Configuring Glance Image Size Limit
 -----------------------------------
@@ -1275,14 +1179,13 @@ Configuring Glance Image Size Limit
 The following configuration option is specified in the
 ``glance-api.conf`` configuration file in the section ``[DEFAULT]``.
 
-* ``image_size_cap=SIZE``
+``image_size_cap=SIZE``
+  Optional. Default: ``1099511627776`` (1 TB)
 
-Optional. Default: ``1099511627776`` (1 TB)
+  Maximum image size, in bytes, which can be uploaded through the Glance API server.
 
-Maximum image size, in bytes, which can be uploaded through the Glance API server.
-
-**IMPORTANT NOTE**: this value should only be increased after careful consideration
-and must be set to a value under 8 EB (9223372036854775808).
+  **IMPORTANT NOTE**: this value should only be increased after careful consideration
+  and must be set to a value under 8 EB (9223372036854775808).
 
 Configuring Glance User Storage Quota
 -------------------------------------
@@ -1290,17 +1193,16 @@ Configuring Glance User Storage Quota
 The following configuration option is specified in the
 ``glance-api.conf`` configuration file in the section ``[DEFAULT]``.
 
-* ``user_storage_quota``
+``user_storage_quota``
+  Optional. Default: 0 (Unlimited).
 
-Optional. Default: 0 (Unlimited).
+  This value specifies the maximum amount of storage that each user can use
+  across all storage systems. Optionally unit can be specified for the value.
+  Values are accepted in B, KB, MB, GB or TB which are for Bytes, KiloBytes,
+  MegaBytes, GigaBytes and TeraBytes respectively. Default unit is Bytes.
 
-This value specifies the maximum amount of storage that each user can use
-across all storage systems. Optionally unit can be specified for the value.
-Values are accepted in B, KB, MB, GB or TB which are for Bytes, KiloBytes,
-MegaBytes, GigaBytes and TeraBytes respectively. Default unit is Bytes.
-
-Example values would be,
-    user_storage_quota=20GB
+  Example values would be,
+      user_storage_quota=20GB
 
 Configuring the Image Cache
 ---------------------------
@@ -1361,57 +1263,53 @@ Configuration Options Affecting the Image Cache
 
 One main configuration file option affects the image cache.
 
- * ``image_cache_dir=PATH``
+``image_cache_dir=PATH``
+  Required when image cache middleware is enabled.
 
-Required when image cache middleware is enabled.
+  Default: ``/var/lib/glance/image-cache``
 
-Default: ``/var/lib/glance/image-cache``
+  This is the base directory the image cache can write files to.
+  Make sure the directory is writable by the user running the
+  ``glance-api`` server
 
-This is the base directory the image cache can write files to.
-Make sure the directory is writable by the user running the
-``glance-api`` server
+``image_cache_driver=DRIVER``
+  Optional. Choice of ``sqlite`` or ``xattr``
 
- * ``image_cache_driver=DRIVER``
+  Default: ``sqlite``
 
-Optional. Choice of ``sqlite`` or ``xattr``
+  The default ``sqlite`` cache driver has no special dependencies, other
+  than the ``python-sqlite3`` library, which is installed on virtually
+  all operating systems with modern versions of Python. It stores
+  information about the cached files in a SQLite database.
 
-Default: ``sqlite``
+  The ``xattr`` cache driver required the ``python-xattr>=0.6.0`` library
+  and requires that the filesystem containing ``image_cache_dir`` have
+  access times tracked for all files (in other words, the noatime option
+  CANNOT be set for that filesystem). In addition, ``user_xattr`` must be
+  set on the filesystem's description line in fstab. Because of these
+  requirements, the ``xattr`` cache driver is not available on Windows.
 
-The default ``sqlite`` cache driver has no special dependencies, other
-than the ``python-sqlite3`` library, which is installed on virtually
-all operating systems with modern versions of Python. It stores
-information about the cached files in a SQLite database.
+``image_cache_sqlite_db=DB_FILE``
+  Optional.
 
-The ``xattr`` cache driver required the ``python-xattr>=0.6.0`` library
-and requires that the filesystem containing ``image_cache_dir`` have
-access times tracked for all files (in other words, the noatime option
-CANNOT be set for that filesystem). In addition, ``user_xattr`` must be
-set on the filesystem's description line in fstab. Because of these
-requirements, the ``xattr`` cache driver is not available on Windows.
+  Default: ``cache.db``
 
- * ``image_cache_sqlite_db=DB_FILE``
+  When using the ``sqlite`` cache driver, you can set the name of the database
+  that will be used to store the cached images information. The database
+  is always contained in the ``image_cache_dir``.
 
-Optional.
+``image_cache_max_size=SIZE``
+  Optional.
 
-Default: ``cache.db``
+  Default: ``10737418240`` (10 GB)
 
-When using the ``sqlite`` cache driver, you can set the name of the database
-that will be used to store the cached images information. The database
-is always contained in the ``image_cache_dir``.
-
- * ``image_cache_max_size=SIZE``
-
-Optional.
-
-Default: ``10737418240`` (10 GB)
-
-Size, in bytes, that the image cache should be constrained to. Images files
-are cached automatically in the local image cache, even if the writing of that
-image file would put the total cache size over this size. The
-``glance-cache-pruner`` executable is what prunes the image cache to be equal
-to or less than this value. The ``glance-cache-pruner`` executable is designed
-to be run via cron on a regular basis. See more about this executable in
-:doc:`Controlling the Growth of the Image Cache <cache>`
+  Size, in bytes, that the image cache should be constrained to. Images files
+  are cached automatically in the local image cache, even if the writing of that
+  image file would put the total cache size over this size. The
+  ``glance-cache-pruner`` executable is what prunes the image cache to be equal
+  to or less than this value. The ``glance-cache-pruner`` executable is designed
+  to be run via cron on a regular basis. See more about this executable in
+  :doc:`Controlling the Growth of the Image Cache <cache>`
 
 .. _configuring-the-glance-registry:
 
@@ -1426,43 +1324,38 @@ this registry server operates. These configuration options are specified in the
 with the glance-api service when clients are using the v1 REST API. See
 `Configuring Glance APIs`_ for more info.
 
-* ``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified
-  on command line)
+``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified
+on command line)
+  Optional. Default: ``None``
 
-Optional. Default: ``None``
+  Can be specified in configuration files. Can also be specified on the
+  command-line for the ``glance-manage`` program.
 
-Can be specified in configuration files. Can also be specified on the
-command-line for the ``glance-manage`` program.
+  Sets the SQLAlchemy connection string to use when connecting to the registry
+  database. Please see the documentation for
+  `SQLAlchemy connection strings <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html>`_
+  online. You must urlencode any special characters in CONNECTION_STRING.
 
-Sets the SQLAlchemy connection string to use when connecting to the registry
-database. Please see the documentation for
-`SQLAlchemy connection strings <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html>`_
-online. You must urlencode any special characters in CONNECTION_STRING.
+``sql_timeout=SECONDS``
+  Optional. Default: ``3600``
 
-* ``sql_timeout=SECONDS``
-  on command line)
+  Can only be specified in configuration files.
 
-Optional. Default: ``3600``
+  Sets the number of seconds after which SQLAlchemy should reconnect to the
+  datastore if no activity has been made on the connection.
 
-Can only be specified in configuration files.
+``enable_v1_registry=<True|False>``
+  Optional. Default: ``True``
 
-Sets the number of seconds after which SQLAlchemy should reconnect to the
-datastore if no activity has been made on the connection.
+``enable_v2_registry=<True|False>``
+  Optional. Default: ``True``
 
-* ``enable_v1_registry=<True|False>``
-
-Optional. Default: ``True``
-
-* ``enable_v2_registry=<True|False>``
-
-Optional. Default: ``True``
-
-Defines which version(s) of the Registry API will be enabled.
-If the Glance API server parameter ``enable_v1_api`` has been set to ``True`` the
-``enable_v1_registry`` has to be ``True`` as well.
-If the Glance API server parameter ``enable_v2_api`` has been
-set to ``True`` and the parameter ``data_api`` has been set to
-``glance.db.registry.api`` the ``enable_v2_registry`` has to be set to ``True``
+  Defines which version(s) of the Registry API will be enabled.
+  If the Glance API server parameter ``enable_v1_api`` has been set to ``True`` the
+  ``enable_v1_registry`` has to be ``True`` as well.
+  If the Glance API server parameter ``enable_v2_api`` has been
+  set to ``True`` and the parameter ``data_api`` has been set to
+  ``glance.db.registry.api`` the ``enable_v2_registry`` has to be set to ``True``
 
 
 Configuring Notifications
@@ -1472,31 +1365,29 @@ Glance can optionally generate notifications to be logged or sent to a message
 queue. The configuration options are specified in the ``glance-api.conf``
 configuration file.
 
-* ``[oslo_messaging_notifications]/driver``
+``[oslo_messaging_notifications]/driver``
+  Optional. Default: ``noop``
 
-Optional. Default: ``noop``
+  Sets the notification driver used by oslo.messaging. Options include
+  ``messaging``, ``messagingv2``, ``log`` and ``routing``.
 
-Sets the notification driver used by oslo.messaging. Options include
-``messaging``, ``messagingv2``, ``log`` and ``routing``.
+  **NOTE**
+  In M release, the``[DEFAULT]/notification_driver`` option has been deprecated in favor
+  of ``[oslo_messaging_notifications]/driver``.
 
-**NOTE**
-In M release, the``[DEFAULT]/notification_driver`` option has been deprecated in favor
-of ``[oslo_messaging_notifications]/driver``.
+  For more information see :doc:`Glance notifications <notifications>` and
+  `oslo.messaging <http://docs.openstack.org/developer/oslo.messaging/>`_.
 
-For more information see :doc:`Glance notifications <notifications>` and
-`oslo.messaging <http://docs.openstack.org/developer/oslo.messaging/>`_.
+``[DEFAULT]/disabled_notifications``
+  Optional. Default: ``[]``
 
-* ``[DEFAULT]/disabled_notifications``
+  List of disabled notifications. A notification can be given either as a
+  notification type to disable a single event, or as a notification group prefix
+  to disable all events within a group.
 
-Optional. Default: ``[]``
-
-List of disabled notifications. A notification can be given either as a
-notification type to disable a single event, or as a notification group prefix
-to disable all events within a group.
-
-Example: if this config option is set to ["image.create", "metadef_namespace"],
-then "image.create" notification will not be sent after image is created and
-none of the notifications for metadefinition namespaces will be sent.
+  Example: if this config option is set to ["image.create", "metadef_namespace"],
+  then "image.create" notification will not be sent after image is created and
+  none of the notifications for metadefinition namespaces will be sent.
 
 Configuring Glance Property Protections
 ---------------------------------------
@@ -1507,16 +1398,14 @@ location for this file can be specified in the ``glance-api.conf``
 configuration file in the section ``[DEFAULT]``. **If an incorrect value is
 specified, glance API service will not start.**
 
-* ``property_protection_file=PATH``
+``property_protection_file=PATH``
+  Optional. Default: not enabled.
 
-Optional. Default: not enabled.
+  If property_protection_file is set, the file may use either roles or policies
+  to specify property protections.
 
-If property_protection_file is set, the file may use either roles or policies
-to specify property protections.
-
-* ``property_protection_rule_format=<roles|policies>``
-
-Optional. Default: ``roles``.
+``property_protection_rule_format=<roles|policies>``
+  Optional. Default: ``roles``.
 
 Configuring Glance APIs
 -----------------------
@@ -1525,16 +1414,14 @@ The glance-api service implements versions 1 and 2 of
 the OpenStack Images API. Disable any version of
 the Images API using the following options:
 
-* ``enable_v1_api=<True|False>``
+``enable_v1_api=<True|False>``
+  Optional. Default: ``True``
 
-Optional. Default: ``True``
+``enable_v2_api=<True|False>``
+  Optional. Default: ``True``
 
-* ``enable_v2_api=<True|False>``
-
-Optional. Default: ``True``
-
-**IMPORTANT NOTE**: To use v2 registry in v2 API, you must set
-``data_api`` to glance.db.registry.api in glance-api.conf.
+  **IMPORTANT NOTE**: To use v2 registry in v2 API, you must set
+  ``data_api`` to glance.db.registry.api in glance-api.conf.
 
 Configuring Glance Tasks
 ------------------------
@@ -1545,29 +1432,27 @@ The config value ``task_time_to_live`` is used to determine how long a task
 would be visible to the user after transitioning to either the ``success`` or
 the ``failure`` state.
 
-* ``task_time_to_live=<Time_in_hours>``
+``task_time_to_live=<Time_in_hours>``
+  Optional. Default: ``48``
 
-Optional. Default: ``48``
+  The config value ``task_executor`` is used to determine which executor
+  should be used by the Glance service to process the task. The currently
+  available implementation is: ``taskflow``.
 
-The config value ``task_executor`` is used to determine which executor
-should be used by the Glance service to process the task. The currently
-available implementation is: ``taskflow``.
+``task_executor=<executor_type>``
+  Optional. Default: ``taskflow``
 
-* ``task_executor=<executor_type>``
+  The ``taskflow`` engine has its own set of configuration options,
+  under the ``taskflow_executor`` section, that can be tuned to improve
+  the task execution process. Among the available options, you may find
+  ``engine_mode`` and ``max_workers``. The former allows for selecting
+  an execution model and the available options are ``serial``,
+  ``parallel`` and ``worker-based``. The ``max_workers`` option,
+  instead, allows for controlling the number of workers that will be
+  instantiated per executor instance.
 
-Optional. Default: ``taskflow``
-
-The ``taskflow`` engine has its own set of configuration options,
-under the ``taskflow_executor`` section, that can be tuned to improve
-the task execution process. Among the available options, you may find
-``engine_mode`` and ``max_workers``. The former allows for selecting
-an execution model and the available options are ``serial``,
-``parallel`` and ``worker-based``. The ``max_workers`` option,
-instead, allows for controlling the number of workers that will be
-instantiated per executor instance.
-
-The default value for the ``engine_mode`` is ``parallel``, whereas
-the default number of ``max_workers`` is ``10``.
+  The default value for the ``engine_mode`` is ``parallel``, whereas
+  the default number of ``max_workers`` is ``10``.
 
 Configuring Glance performance profiling
 ----------------------------------------
@@ -1583,37 +1468,34 @@ module, the more fine-grained trace point is being worked on.
 The config value ``enabled`` is used to determine whether fully enable
 profiling feature for glance-api and glance-registry service.
 
-* ``enabled=<True|False>``
+``enabled=<True|False>``
+  Optional. Default: ``False``
 
-Optional. Default: ``False``
+  There is one more configuration option that needs to be defined to enable
+  Glance services profiling. The config value ``hmac_keys`` is used for
+  encrypting context data for performance profiling.
 
-There is one more configuration option that needs to be defined to enable
-Glance services profiling. The config value ``hmac_keys`` is used for
-encrypting context data for performance profiling.
+``hmac_keys=<secret_key_string>``
+  Optional. Default: ``SECRET_KEY``
 
-* ``hmac_keys=<secret_key_string>``
+  **IMPORTANT NOTE**: in order to make profiling work as designed operator needs
+  to make those values of HMAC key be consistent for all services in their
+  deployment. Without HMAC key the profiling will not be triggered even profiling
+  feature is enabled.
 
-Optional. Default: ``SECRET_KEY``
+  **IMPORTANT NOTE**: previously HMAC keys (as well as enabled parameter) were
+  placed at `/etc/glance/api-paste.ini` and `/etc/glance/registry-paste.ini` files
+  for Glance API and Glance Registry services respectively. Starting with
+  osprofiler 0.3.1 release there is no need to set these arguments in the
+  `*-paste.ini` files. This functionality is still supported, although the
+  config values are having larger priority.
 
-**IMPORTANT NOTE**: in order to make profiling work as designed operator needs
-to make those values of HMAC key be consistent for all services in their
-deployment. Without HMAC key the profiling will not be triggered even profiling
-feature is enabled.
+  The config value ``trace_sqlalchemy`` is used to determine whether fully enable
+  sqlalchemy engine based SQL execution profiling feature for glance-api and
+  glance-registry services.
 
-**IMPORTANT NOTE**: previously HMAC keys (as well as enabled parameter) were
-placed at `/etc/glance/api-paste.ini` and `/etc/glance/registry-paste.ini` files
-for Glance API and Glance Registry services respectively. Starting with
-osprofiler 0.3.1 release there is no need to set these arguments in the
-`*-paste.ini` files. This functionality is still supported, although the
-config values are having larger priority.
-
-The config value ``trace_sqlalchemy`` is used to determine whether fully enable
-sqlalchemy engine based SQL execution profiling feature for glance-api and
-glance-registry services.
-
-* ``trace_sqlalchemy=<True|False>``
-
-Optional. Default: ``False``
+``trace_sqlalchemy=<True|False>``
+  Optional. Default: ``False``
 
 Configuring Glance public endpoint
 ----------------------------------
@@ -1627,9 +1509,8 @@ Glance is being run behind a load balancer, for example, direct access
 to individual hosts running the Glance API may not be allowed, hence the
 load balancer URL would be used for this value.
 
-* ``public_endpoint=<None|URL>``
-
-Optional. Default: ``None``
+``public_endpoint=<None|URL>``
+  Optional. Default: ``None``
 
 Configuring Glance digest algorithm
 -----------------------------------
@@ -1644,20 +1525,18 @@ platform. Examples are "sha1", "sha256", "sha512", etc. If an invalid
 digest algorithm is configured, all digital signature operations will fail and
 return a ValueError exception with "No such digest method" error.
 
-* ``digest_algorithm=<algorithm>``
-
-Optional. Default: ``sha256``
+``digest_algorithm=<algorithm>``
+  Optional. Default: ``sha256``
 
 Configuring http_keepalive option
 ---------------------------------
 
-* ``http_keepalive=<True|False>``
-
-If False, server will return the header "Connection: close", If True, server
-will return "Connection: Keep-Alive" in its responses. In order to close the
-client socket connection explicitly after the response is sent and read
-successfully by the client, you simply have to set this option to False when
-you create a wsgi server.
+``http_keepalive=<True|False>``
+  If False, server will return the header "Connection: close", If True, server
+  will return "Connection: Keep-Alive" in its responses. In order to close the
+  client socket connection explicitly after the response is sent and read
+  successfully by the client, you simply have to set this option to False when
+  you create a wsgi server.
 
 Configuring the Health Check
 ----------------------------
@@ -1699,6 +1578,5 @@ An operator can add or remove disk formats to the supported set.  This is
 done by setting the ``disk_formats`` parameter which is found in the
 ``[image_formats]`` section of ``glance-api.conf``.
 
-* ``disk_formats=<Comma separated list of disk formats>``
-
-Optional. Default: ``ami,ari,aki,vhd,vhdx,vmdk,raw,qcow2,vdi,iso,ploop``
+``disk_formats=<Comma separated list of disk formats>``
+  Optional. Default: ``ami,ari,aki,vhd,vhdx,vmdk,raw,qcow2,vdi,iso,ploop``
