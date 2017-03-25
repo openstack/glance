@@ -65,7 +65,7 @@ def image_update(client, image_id, values, purge_props=False, from_state=None,
     """
     Set the given properties on an image and update it.
 
-    :raises: ImageNotFound if image does not exist.
+    :raises ImageNotFound: if image does not exist.
     """
     return client.image_update(values=values,
                                image_id=image_id,

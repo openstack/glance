@@ -93,7 +93,7 @@ class VersionNegotiationFilter(wsgi.Middleware):
 
         :param subject: The string to check
         :returns: version found in the subject
-        :raises: ValueError if no acceptable version could be found
+        :raises ValueError: if no acceptable version could be found
         """
         if self.allowed_versions is None:
             self.allowed_versions = self._get_allowed_versions()

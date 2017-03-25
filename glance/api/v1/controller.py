@@ -34,7 +34,7 @@ class BaseController(object):
         :param request: The WSGI/Webob Request object
         :param image_id: The opaque image identifier
 
-        :raises: HTTPNotFound if image does not exist
+        :raises HTTPNotFound: if image does not exist
         """
         context = request.context
         try:
