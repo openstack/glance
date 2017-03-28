@@ -157,9 +157,8 @@ class TestStoreTypeStrategyModule(base.IsolatedUnitTest):
     """Test routines in glance.common.location_strategy.store_type"""
 
     def test_get_ordered_locations(self):
-        self.config(store_type_preference=['  rbd', 'sheepdog ', ' filesystem',
-                                           'swift  ', '  http  ',
-                                           'vmware_datastore'],
+        self.config(store_type_preference=['  rbd', 'sheepdog ', ' file',
+                                           'swift  ', '  http  ', 'vmware'],
                     group='store_type_location_strategy')
         locs = [{'url': 'file://image0', 'metadata': {'idx': 3}},
                 {'url': 'rbd://image1', 'metadata': {'idx': 0}},
@@ -186,28 +185,6 @@ class TestStoreTypeStrategyModule(base.IsolatedUnitTest):
                 {'url': 'cinder://image5', 'metadata': {'idx': 6}},
                 {'url': 'file://image6', 'metadata': {'idx': 7}},
                 {'url': 'rbd://image7', 'metadata': {'idx': 1}},
-                {'url': 'sheepdog://image8', 'metadata': {'idx': 2}}]
-        ordered_locs = store_type.get_ordered_locations(copy.deepcopy(locs))
-        locs.sort(key=lambda loc: loc['metadata']['idx'])
-        # The result will ordered by preferred store type order.
-        self.assertEqual(locs, ordered_locs)
-
-    def test_get_ordered_locations_with_consistent_store_names(self):
-        """This test is for the change made with respect to making store names
-        in glance to be consistent with store names used in glance_store.
-        Reference: Bug #1615852
-        """
-        self.config(store_type_preference=['  rbd', 'sheepdog ', 'file',
-                                           'swift  ', ' http  ', 'vmware'],
-                    group='store_type_location_strategy')
-        locs = [{'url': 'file://image0', 'metadata': {'idx': 3}},
-                {'url': 'rbd://image1', 'metadata': {'idx': 0}},
-                {'url': 'file://image3', 'metadata': {'idx': 4}},
-                {'url': 'swift://image4', 'metadata': {'idx': 6}},
-                {'url': 'cinder://image5', 'metadata': {'idx': 9}},
-                {'url': 'file://image6', 'metadata': {'idx': 5}},
-                {'url': 'rbd://image7', 'metadata': {'idx': 1}},
-                {'url': 'vsphere://image9', 'metadata': {'idx': 8}},
                 {'url': 'sheepdog://image8', 'metadata': {'idx': 2}}]
         ordered_locs = store_type.get_ordered_locations(copy.deepcopy(locs))
         locs.sort(key=lambda loc: loc['metadata']['idx'])
