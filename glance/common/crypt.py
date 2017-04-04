@@ -18,10 +18,13 @@ Routines for URL-safe encrypting/decrypting
 """
 
 import base64
+import os
+import random
 
-from Crypto.Cipher import AES
-from Crypto import Random
-from Crypto.Random import random
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import algorithms
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers import modes
 from oslo_utils import encodeutils
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -44,8 +47,10 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
         Pads text to be encrypted
         """
         pad_length = (blocksize - len(text) % blocksize)
-        sr = random.StrongRandom()
-        pad = b''.join(six.int2byte(sr.randint(1, 0xFF))
+        # NOTE(rosmaita): I know this looks stupid, but we can't just
+        # use os.urandom() to get the bytes because we use char(0) as
+        # a delimiter
+        pad = b''.join(six.int2byte(random.SystemRandom().randint(1, 0xFF))
                        for i in range(pad_length - 1))
         # We use chr(0) as a delimiter between text and padding
         return text + b'\0' + pad
@@ -53,9 +58,13 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
     plaintext = encodeutils.to_utf8(plaintext)
     key = encodeutils.to_utf8(key)
     # random initial 16 bytes for CBC
-    init_vector = Random.get_random_bytes(16)
-    cypher = AES.new(key, AES.MODE_CBC, init_vector)
-    padded = cypher.encrypt(pad(six.binary_type(plaintext)))
+    init_vector = os.urandom(16)
+    backend = default_backend()
+    cypher = Cipher(algorithms.AES(key), modes.CBC(init_vector),
+                    backend=backend)
+    encryptor = cypher.encryptor()
+    padded = encryptor.update(
+        pad(six.binary_type(plaintext))) + encryptor.finalize()
     encoded = base64.urlsafe_b64encode(init_vector + padded)
     if six.PY3:
         encoded = encoded.decode('ascii')
@@ -76,8 +85,11 @@ def urlsafe_decrypt(key, ciphertext):
     ciphertext = encodeutils.to_utf8(ciphertext)
     key = encodeutils.to_utf8(key)
     ciphertext = base64.urlsafe_b64decode(ciphertext)
-    cypher = AES.new(key, AES.MODE_CBC, ciphertext[:16])
-    padded = cypher.decrypt(ciphertext[16:])
+    backend = default_backend()
+    cypher = Cipher(algorithms.AES(key), modes.CBC(ciphertext[:16]),
+                    backend=backend)
+    decryptor = cypher.decryptor()
+    padded = decryptor.update(ciphertext[16:]) + decryptor.finalize()
     text = padded[:padded.rfind(b'\0')]
     if six.PY3:
         text = text.decode('utf-8')
