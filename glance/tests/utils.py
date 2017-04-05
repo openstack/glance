@@ -684,3 +684,9 @@ def db_sync(version=None, engine=None):
 
     alembic_config = alembic_migrations.get_alembic_config(engine=engine)
     alembic_command.upgrade(alembic_config, version)
+
+
+def is_sqlite_version_prior_to(major, minor):
+    import sqlite3
+    tup = sqlite3.sqlite_version_info
+    return tup[0] < major or (tup[0] == major and tup[1] < minor)

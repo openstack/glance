@@ -28,6 +28,7 @@ from oslo_config import cfg
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import session
 from oslo_log import log as logging
+from oslo_utils import excutils
 import osprofiler.sqlalchemy
 from retrying import retry
 import six
@@ -53,7 +54,7 @@ from glance.db.sqlalchemy.metadef_api import property as metadef_property_api
 from glance.db.sqlalchemy.metadef_api import tag as metadef_tag_api
 from glance.db.sqlalchemy import models
 from glance.db import utils as db_utils
-from glance.i18n import _, _LW, _LI
+from glance.i18n import _, _LW, _LI, _LE
 
 sa_logger = None
 LOG = logging.getLogger(__name__)
@@ -1297,7 +1298,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             continue
         if hasattr(model_class, 'deleted'):
             tables.append(model_class.__tablename__)
-    # get rid of FX constraints
+    # get rid of FK constraints
     for tbl in ('images', 'tasks'):
         try:
             tables.remove(tbl)
@@ -1323,8 +1324,14 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
 
         delete_statement = DeleteFromSelect(tab, query_delete, column)
 
-        with session.begin():
-            result = session.execute(delete_statement)
+        try:
+            with session.begin():
+                result = session.execute(delete_statement)
+        except db_exception.DBReferenceError as ex:
+            with excutils.save_and_reraise_exception():
+                LOG.error(_LE('DBError detected when purging from '
+                          "%(tablename)s: %(error)s"),
+                          {'tablename': tbl, 'error': six.text_type(ex)})
 
         rows = result.rowcount
         LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),

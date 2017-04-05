@@ -42,6 +42,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 from alembic import command as alembic_command
 
 from oslo_config import cfg
+from oslo_db import exception as db_exc
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 import six
@@ -261,10 +262,14 @@ class DbCommands(object):
         if max_rows < 1:
             sys.exit(_("Minimal rows limit is 1."))
         ctx = context.get_admin_context(show_deleted=True)
+
         try:
             db_api.purge_deleted_rows(ctx, age_in_days, max_rows)
         except exception.Invalid as exc:
             sys.exit(exc.msg)
+        except db_exc.DBReferenceError:
+            sys.exit(_("Purge command failed, check glance-manage"
+                       " logs for more details."))
 
 
 class DbLegacyCommands(object):
