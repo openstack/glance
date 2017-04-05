@@ -145,3 +145,35 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
 class TestOcataMigrate01MySQL(TestOcataMigrate01Mixin,
                               test_base.MySQLOpportunisticTestCase):
     pass
+
+
+class TestOcataMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
+    """This mixin is used to create an initial glance database and upgrade it
+    up to the ocata_expand01 revision.
+    """
+    def _get_revisions(self, config):
+        return test_migrations.AlembicMigrationsMixin._get_revisions(
+            self, config, head='ocata_expand01')
+
+    def _pre_upgrade_ocata_expand01(self, engine):
+        # New/empty database
+        pass
+
+    def _check_ocata_expand01(self, engine, data):
+        images = db_utils.get_table(engine, 'images')
+
+        # check that there are no rows in the images table
+        rows = (images.select()
+                .order_by(images.c.id)
+                .execute()
+                .fetchall())
+        self.assertEqual(0, len(rows))
+
+        # run data migrations
+        data_migrations.migrate(engine)
+
+
+class TestOcataMigrate01_EmptyDBMySQL(TestOcataMigrate01_EmptyDBMixin,
+                                      test_base.MySQLOpportunisticTestCase):
+    """This test runs the Ocata data migrations on an empty databse."""
+    pass

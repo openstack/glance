@@ -27,7 +27,7 @@ from glance.db import migration
 revision = 'ocata_contract01'
 down_revision = 'mitaka02'
 branch_labels = migration.CONTRACT_BRANCH
-depends_on = 'expand'
+depends_on = 'ocata_expand01'
 
 
 MYSQL_DROP_INSERT_TRIGGER = """
