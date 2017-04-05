@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    There was a bug in the **experimental** zero-downtime database upgrade
+    path introduced in the Ocata release that prevented the **experimental**
+    upgrade from working.  This has been fixed in the Pike release.  The
+    bug did not affect the the normal database upgrade operation.
