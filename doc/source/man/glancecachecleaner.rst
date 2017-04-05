@@ -6,12 +6,7 @@ glance-cache-cleaner
 Glance Image Cache Invalid Cache Entry and Stalled Image cleaner
 ----------------------------------------------------------------
 
-:Author: glance@lists.launchpad.net
-:Date:   2016-10-6
-:Copyright: OpenStack Foundation
-:Version: 13.0.0
-:Manual section: 1
-:Manual group: cloud computing
+.. include:: header.rst
 
 SYNOPSIS
 ========

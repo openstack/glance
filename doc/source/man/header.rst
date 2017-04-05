@@ -1,0 +1,6 @@
+:Author: glance@lists.launchpad.net
+:Date: 2017-09-15
+:Copyright: OpenStack Foundation
+:Version: 15.0.0
+:Manual section: 1
+:Manual group: cloud computing
