@@ -25,6 +25,7 @@ import os
 import shutil
 import sys
 import time
+import uuid
 
 import httplib2
 from oslo_serialization import jsonutils
@@ -163,6 +164,7 @@ class BaseCacheMiddlewareTest(object):
         # Verify image now in cache
         image_cached_path = os.path.join(self.api_server.image_cache_dir,
                                          image_id)
+        self.assertTrue(os.path.exists(image_cached_path))
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
@@ -173,6 +175,182 @@ class BaseCacheMiddlewareTest(object):
         self.assertEqual(http_client.NO_CONTENT, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_partially_downloaded_images_are_not_cached_v2_api(self):
+        """
+        Verify that we do not cache images that were downloaded partially
+        using v2 images API.
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # Add an image and verify success
+        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'content-type': 'application/json'}
+        image_entity = {
+            'name': 'Image1',
+            'visibility': 'public',
+            'container_format': 'bare',
+            'disk_format': 'raw',
+        }
+        response, content = http.request(path, 'POST',
+                                         headers=headers,
+                                         body=jsonutils.dumps(image_entity))
+        self.assertEqual(http_client.CREATED, response.status)
+        data = jsonutils.loads(content)
+        image_id = data['id']
+
+        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+                                                   image_id)
+        headers = {'content-type': 'application/octet-stream'}
+        image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        response, content = http.request(path, 'PUT',
+                                         headers=headers,
+                                         body=image_data)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
+
+        # Verify that this image is not in cache
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        # partially download this image and verify status 206
+        http = httplib2.Http()
+        # range download request
+        range_ = 'bytes=3-5'
+        headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': str(uuid.uuid4()),
+            'X-Roles': 'member',
+            'Range': range_
+        }
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
+        self.assertEqual(b'DEF', content)
+
+        # content-range download request
+        # NOTE(dharinic): Glance incorrectly supports Content-Range for partial
+        # image downloads in requests. This test is included to ensure that
+        # we prevent regression.
+        content_range = 'bytes 3-5/*'
+        headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': str(uuid.uuid4()),
+            'X-Roles': 'member',
+            'Content-Range': content_range
+        }
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
+        self.assertEqual(b'DEF', content)
+
+        # verify that we do not cache the partial image
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        self.stop_servers()
+
+    @skip_if_disabled
+    def test_partial_download_of_cached_images_v2_api(self):
+        """
+        Verify that partial download requests for a fully cached image
+        succeeds; we do not serve it from cache.
+        """
+        self.cleanup()
+        self.start_servers(**self.__dict__.copy())
+
+        # Add an image and verify success
+        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        http = httplib2.Http()
+        headers = {'content-type': 'application/json'}
+        image_entity = {
+            'name': 'Image1',
+            'visibility': 'public',
+            'container_format': 'bare',
+            'disk_format': 'raw',
+        }
+        response, content = http.request(path, 'POST',
+                                         headers=headers,
+                                         body=jsonutils.dumps(image_entity))
+        self.assertEqual(http_client.CREATED, response.status)
+        data = jsonutils.loads(content)
+        image_id = data['id']
+
+        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+                                                   image_id)
+        headers = {'content-type': 'application/octet-stream'}
+        image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        response, content = http.request(path, 'PUT',
+                                         headers=headers,
+                                         body=image_data)
+        self.assertEqual(http_client.NO_CONTENT, response.status)
+
+        # Verify that this image is not in cache
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+        self.assertFalse(os.path.exists(image_cached_path))
+
+        # Download the entire image
+        http = httplib2.Http()
+        response, content = http.request(path, 'GET')
+        self.assertEqual(http_client.OK, response.status)
+        self.assertEqual(b'ABCDEFGHIJKLMNOPQRSTUVWXYZ', content)
+
+        # Verify that the image is now in cache
+        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+                                         image_id)
+        self.assertTrue(os.path.exists(image_cached_path))
+        # Modify the data in cache so we can verify the partially downloaded
+        # content was not from cache indeed.
+        with open(image_cached_path, 'w') as cache_file:
+            cache_file.write('0123456789')
+
+        # Partially attempt a download of this image and verify that is not
+        # from cache
+        # range download request
+        range_ = 'bytes=3-5'
+        headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': str(uuid.uuid4()),
+            'X-Roles': 'member',
+            'Range': range_,
+            'content-type': 'application/json'
+        }
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
+        self.assertEqual(b'DEF', content)
+        self.assertNotEqual(b'345', content)
+        self.assertNotEqual(image_data, content)
+
+        # content-range download request
+        # NOTE(dharinic): Glance incorrectly supports Content-Range for partial
+        # image downloads in requests. This test is included to ensure that
+        # we prevent regression.
+        content_range = 'bytes 3-5/*'
+        headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': str(uuid.uuid4()),
+            'X-Roles': 'member',
+            'Content-Range': content_range,
+            'content-type': 'application/json'
+        }
+        response, content = http.request(path, 'GET', headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
+        self.assertEqual(b'DEF', content)
+        self.assertNotEqual(b'345', content)
+        self.assertNotEqual(image_data, content)
 
         self.stop_servers()
 

@@ -149,8 +149,17 @@ class CacheFilter(wsgi.Middleware):
 
         self._stash_request_info(request, image_id, method, version)
 
+        # Partial image download requests shall not be served from cache
+        # Bug: 1664709
+        # TODO(dharinic): If an image is already cached, add support to serve
+        # only the requested bytes (partial image download) from the cache.
+        if (request.headers.get('Content-Range') or
+                request.headers.get('Range')):
+            return None
+
         if request.method != 'GET' or not self.cache.is_cached(image_id):
             return None
+
         method = getattr(self, '_get_%s_image_metadata' % version)
         image_metadata = method(request, image_id)
 
@@ -253,6 +262,10 @@ class CacheFilter(wsgi.Middleware):
         """
         status_code = self.get_status_code(resp)
         if not 200 <= status_code < 300:
+            return resp
+
+        # Note(dharinic): Bug: 1664709: Do not cache partial images.
+        if status_code == http.PARTIAL_CONTENT:
             return resp
 
         try:
