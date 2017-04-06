@@ -743,7 +743,54 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
-    def test_download_random_access(self):
+    def test_download_random_access_w_range_request(self):
+        """
+        Test partial download 'Range' requests for images (random image access)
+        """
+        self.start_servers(**self.__dict__.copy())
+        # Create an image (with two deployer-defined properties)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-2', 'type': 'kernel',
+                                'bar': 'foo', 'disk_format': 'aki',
+                                'container_format': 'aki', 'xyz': 'abc'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        # Upload data to image
+        image_data = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data=image_data)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # test for success on satisfiable Range request.
+        range_ = 'bytes=3-10'
+        headers = self._headers({'Range': range_})
+        path = self._url('/v2/images/%s/file' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.PARTIAL_CONTENT, response.status_code)
+        self.assertEqual('DEFGHIJK', response.text)
+
+        # test for failure on unsatisfiable Range request.
+        range_ = 'bytes=10-5'
+        headers = self._headers({'Range': range_})
+        path = self._url('/v2/images/%s/file' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.REQUESTED_RANGE_NOT_SATISFIABLE,
+                         response.status_code)
+
+        self.stop_servers()
+
+    def test_download_random_access_w_content_range(self):
+        """
+        Even though Content-Range is incorrect on requests, we support it
+        for backward compatibility with clients written for pre-Pike Glance.
+        The following test is for 'Content-Range' requests, which we have
+        to ensure that we prevent regression.
+        """
         self.start_servers(**self.__dict__.copy())
         # Create another image (with two deployer-defined properties)
         path = self._url('/v2/images')
@@ -772,17 +819,18 @@ class TestImages(functional.FunctionalTest):
             headers = self._headers({'Content-Range': content_range})
             path = self._url('/v2/images/%s/file' % image_id)
             response = requests.get(path, headers=headers)
-            self.assertEqual(206, response.status_code)
+            self.assertEqual(http.PARTIAL_CONTENT, response.status_code)
             result_body += response.text
 
         self.assertEqual(result_body, image_data)
 
-        # test for failure on unsatisfiable request range.
+        # test for failure on unsatisfiable request for ContentRange.
         content_range = 'bytes 3-16/15'
         headers = self._headers({'Content-Range': content_range})
         path = self._url('/v2/images/%s/file' % image_id)
         response = requests.get(path, headers=headers)
-        self.assertEqual(416, response.status_code)
+        self.assertEqual(http.REQUESTED_RANGE_NOT_SATISFIABLE,
+                         response.status_code)
 
         self.stop_servers()
 

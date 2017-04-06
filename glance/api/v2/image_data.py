@@ -285,16 +285,43 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def download(self, response, image):
+
         offset, chunk_size = 0, None
-        # NOTE(dharinic): In case of a malformed content range,
+        # NOTE(dharinic): In case of a malformed range header,
         # glance/common/wsgi.py will raise HTTPRequestRangeNotSatisfiable
         # (setting status_code to 416)
-        range_val = response.request.get_content_range(image.size)
+        range_val = response.request.get_range_from_request(image.size)
 
         if range_val:
-            # NOTE(flaper87): if not present, both, start
-            # and stop, will be None.
-            if range_val.start is not None and range_val.stop is not None:
+            if isinstance(range_val, webob.byterange.Range):
+                response_end = image.size - 1
+                # NOTE(dharinic): webob parsing is zero-indexed.
+                # i.e.,to download first 5 bytes of a 10 byte image,
+                # request should be "bytes=0-4" and the response would be
+                # "bytes 0-4/10".
+                # Range if validated, will never have 'start' object as None.
+                if range_val.start >= 0:
+                    offset = range_val.start
+                else:
+                    # NOTE(dharinic): Negative start values needs to be
+                    # processed to allow suffix-length for Range request
+                    # like "bytes=-2" as per rfc7233.
+                    if abs(range_val.start) < image.size:
+                        offset = image.size + range_val.start
+
+                if range_val.end is not None and range_val.end < image.size:
+                    chunk_size = range_val.end - offset
+                    response_end = range_val.end - 1
+                else:
+                    chunk_size = image.size - offset
+
+            # NOTE(dharinic): For backward compatibility reasons, we maintain
+            # support for 'Content-Range' in requests even though it's not
+            # correct to use it in requests.
+            elif isinstance(range_val, webob.byterange.ContentRange):
+                response_end = range_val.stop - 1
+                # NOTE(flaper87): if not present, both, start
+                # and stop, will be None.
                 offset = range_val.start
                 chunk_size = range_val.stop - offset
 
@@ -311,7 +338,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             # NOTE(dharinic): In case of a full image download, when
             # chunk_size was none, reset it to image.size to set the
             # response header's Content-Length.
-            if not chunk_size:
+            if chunk_size is not None:
+                response.headers['Content-Range'] = 'bytes %s-%s/%s'\
+                                                    % (offset,
+                                                       response_end,
+                                                       image.size)
+            else:
                 chunk_size = image.size
         except glance_store.NotFound as e:
             raise webob.exc.HTTPNoContent(explanation=e.msg)

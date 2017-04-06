@@ -63,8 +63,10 @@ class FakeImage(object):
         else:
             self._status = value
 
-    def get_data(self, *args, **kwargs):
-        return self.data
+    def get_data(self, offset=0, chunk_size=None):
+        if chunk_size:
+            return self.data[offset:offset + chunk_size]
+        return self.data[offset:]
 
     def set_data(self, data, size=None):
         self.data = ''.join(data)
@@ -548,40 +550,144 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.assertEqual('application/octet-stream',
                          response.headers['Content-Type'])
 
-    def _test_partial_download_successful(self, d_range):
+    def test_range_requests_for_image_downloads(self):
+        """
+        Test partial download 'Range' requests for images (random image access)
+        """
+        def download_successful_Range(d_range):
+            request = wsgi.Request.blank('/')
+            request.environ = {}
+            request.headers['Range'] = d_range
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=[b'X', b'Y', b'Z'])
+            self.serializer.download(response, image)
+            self.assertEqual(206, response.status_code)
+            self.assertEqual('2', response.headers['Content-Length'])
+            self.assertEqual('bytes 1-2/3', response.headers['Content-Range'])
+            self.assertEqual(b'YZ', response.body)
+
+        download_successful_Range('bytes=1-2')
+        download_successful_Range('bytes=1-')
+        download_successful_Range('bytes=1-3')
+        download_successful_Range('bytes=-2')
+        download_successful_Range('bytes=1-100')
+
+        def full_image_download_w_range(d_range):
+            request = wsgi.Request.blank('/')
+            request.environ = {}
+            request.headers['Range'] = d_range
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=[b'X', b'Y', b'Z'])
+            self.serializer.download(response, image)
+            self.assertEqual(206, response.status_code)
+            self.assertEqual('3', response.headers['Content-Length'])
+            self.assertEqual('bytes 0-2/3', response.headers['Content-Range'])
+            self.assertEqual(b'XYZ', response.body)
+
+        full_image_download_w_range('bytes=0-')
+        full_image_download_w_range('bytes=0-2')
+        full_image_download_w_range('bytes=0-3')
+        full_image_download_w_range('bytes=-3')
+        full_image_download_w_range('bytes=-4')
+        full_image_download_w_range('bytes=0-100')
+        full_image_download_w_range('bytes=-100')
+
+        def download_failures_Range(d_range):
+            request = wsgi.Request.blank('/')
+            request.environ = {}
+            request.headers['Range'] = d_range
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
+            self.assertRaises(webob.exc.HTTPRequestRangeNotSatisfiable,
+                              self.serializer.download,
+                              response, image)
+            return
+
+        download_failures_Range('bytes=4-1')
+        download_failures_Range('bytes=4-')
+        download_failures_Range('bytes=3-')
+        download_failures_Range('bytes=1')
+        download_failures_Range('bytes=100')
+        download_failures_Range('bytes=100-')
+        download_failures_Range('bytes=')
+
+    def test_multi_range_requests_raises_bad_request_error(self):
         request = wsgi.Request.blank('/')
         request.environ = {}
-        request.headers['Content-Range'] = d_range
+        request.headers['Range'] = 'bytes=0-0,-1'
         response = webob.Response()
         response.request = request
         image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
-        self.serializer.download(response, image)
-        self.assertEqual(206, response.status_code)
-        self.assertEqual('2', response.headers['Content-Length'])
-
-    def test_partial_download_successful_with_range(self):
-        self._test_partial_download_successful('bytes 1-2/3')
-        self._test_partial_download_successful('bytes 1-2/*')
-
-    def _test_partial_download_failures(self, d_range):
-        request = wsgi.Request.blank('/')
-        request.environ = {}
-        request.headers['Content-Range'] = d_range
-        response = webob.Response()
-        response.request = request
-        image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
-        self.assertRaises(webob.exc.HTTPRequestRangeNotSatisfiable,
+        self.assertRaises(webob.exc.HTTPBadRequest,
                           self.serializer.download,
                           response, image)
-        return
-
-    def test_partial_download_failure_with_range(self):
-        self._test_partial_download_failures('bytes 1-4/3')
-        self._test_partial_download_failures('bytes 1-4/*')
-        self._test_partial_download_failures('bytes 4-1/3')
-        self._test_partial_download_failures('bytes 4-1/*')
 
     def test_download_failure_with_valid_range(self):
+        with mock.patch.object(glance.api.policy.ImageProxy,
+                               'get_data') as mock_get_data:
+            mock_get_data.side_effect = glance_store.NotFound(image="image")
+        request = wsgi.Request.blank('/')
+        request.environ = {}
+        request.headers['Range'] = 'bytes=1-2'
+        response = webob.Response()
+        response.request = request
+        image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
+        image.get_data = mock_get_data
+        self.assertRaises(webob.exc.HTTPNoContent,
+                          self.serializer.download,
+                          response, image)
+
+    def test_content_range_requests_for_image_downloads(self):
+        """
+        Even though Content-Range is incorrect on requests, we support it
+        for backward compatibility with clients written for pre-Pike
+        Glance.
+        The following test is for 'Content-Range' requests, which we have
+        to ensure that we prevent regression.
+        """
+        def download_successful_ContentRange(d_range):
+            request = wsgi.Request.blank('/')
+            request.environ = {}
+            request.headers['Content-Range'] = d_range
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=[b'X', b'Y', b'Z'])
+            self.serializer.download(response, image)
+            self.assertEqual(206, response.status_code)
+            self.assertEqual('2', response.headers['Content-Length'])
+            self.assertEqual('bytes 1-2/3', response.headers['Content-Range'])
+            self.assertEqual(b'YZ', response.body)
+
+        download_successful_ContentRange('bytes 1-2/3')
+        download_successful_ContentRange('bytes 1-2/*')
+
+        def download_failures_ContentRange(d_range):
+            request = wsgi.Request.blank('/')
+            request.environ = {}
+            request.headers['Content-Range'] = d_range
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=[b'Z', b'Z', b'Z'])
+            self.assertRaises(webob.exc.HTTPRequestRangeNotSatisfiable,
+                              self.serializer.download,
+                              response, image)
+            return
+
+        download_failures_ContentRange('bytes -3/3')
+        download_failures_ContentRange('bytes 1-/3')
+        download_failures_ContentRange('bytes 1-3/3')
+        download_failures_ContentRange('bytes 1-4/3')
+        download_failures_ContentRange('bytes 1-4/*')
+        download_failures_ContentRange('bytes 4-1/3')
+        download_failures_ContentRange('bytes 4-1/*')
+        download_failures_ContentRange('bytes 4-8/*')
+        download_failures_ContentRange('bytes 4-8/10')
+        download_failures_ContentRange('bytes 4-8/3')
+
+    def test_download_failure_with_valid_content_range(self):
         with mock.patch.object(glance.api.policy.ImageProxy,
                                'get_data') as mock_get_data:
             mock_get_data.side_effect = glance_store.NotFound(image="image")

@@ -965,18 +965,55 @@ class Request(webob.Request):
         langs = i18n.get_available_languages('glance')
         return self.accept_language.best_match(langs)
 
-    def get_content_range(self, image_size):
+    def get_range_from_request(self, image_size):
         """Return the `Range` in a request."""
-        range_str = self.headers.get('Content-Range')
+
+        range_str = self.headers.get('Range')
         if range_str is not None:
-            range_ = webob.byterange.ContentRange.parse(range_str)
-            # NOTE(dharinic): Ensure that a range like 1-4/* for an image
-            # size of 3 is invalidated.
-            if range_ is None or (range_.length is None and
-                                  range_.stop > image_size):
-                msg = _('Malformed Content-Range header: %s') % range_str
-                raise webob.exc.HTTPRequestRangeNotSatisfiable(explanation=msg)
+
+            # NOTE(dharinic): We do not support multi range requests.
+            if ',' in range_str:
+                msg = ("Requests with multiple ranges are not supported in "
+                       "Glance. You may make multiple single-range requests "
+                       "instead.")
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
+            range_ = webob.byterange.Range.parse(range_str)
+            if range_ is None:
+                msg = ("Invalid Range header.")
+                raise webob.exc.HTTPRequestRangeNotSatisfiable(msg)
+            # NOTE(dharinic): Ensure that a range like bytes=4- for an image
+            # size of 3 is invalidated as per rfc7233.
+            if range_.start >= image_size:
+                msg = ("Invalid start position in Range header. "
+                       "Start position MUST be in the inclusive range [0, %s]."
+                       % (image_size - 1))
+                raise webob.exc.HTTPRequestRangeNotSatisfiable(msg)
             return range_
+
+        # NOTE(dharinic): For backward compatibility reasons, we maintain
+        # support for 'Content-Range' in requests even though it's not
+        # correct to use it in requests..
+        c_range_str = self.headers.get('Content-Range')
+        if c_range_str is not None:
+            content_range = webob.byterange.ContentRange.parse(c_range_str)
+            # NOTE(dharinic): Ensure that a content range like 1-4/* for an
+            # image size of 3 is invalidated.
+            if content_range is None:
+                msg = ("Invalid Content-Range header.")
+                raise webob.exc.HTTPRequestRangeNotSatisfiable(msg)
+            if (content_range.length is None and
+                    content_range.stop > image_size):
+                msg = ("Invalid stop position in Content-Range header. "
+                       "The stop position MUST be in the inclusive range "
+                       "[0, %s]." % (image_size - 1))
+                raise webob.exc.HTTPRequestRangeNotSatisfiable(msg)
+            if content_range.start >= image_size:
+                msg = ("Invalid start position in Content-Range header. "
+                       "Start position MUST be in the inclusive range [0, %s]."
+                       % (image_size - 1))
+                raise webob.exc.HTTPRequestRangeNotSatisfiable(msg)
+            return content_range
 
 
 class JSONRequestDeserializer(object):

@@ -67,7 +67,7 @@ class RequestTest(test_utils.BaseTestCase):
     def test_content_range(self):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Content-Range"] = 'bytes 10-99/*'
-        range_ = request.get_content_range(120)
+        range_ = request.get_range_from_request(120)
         self.assertEqual(10, range_.start)
         self.assertEqual(100, range_.stop)  # non-inclusive
         self.assertIsNone(range_.length)
@@ -76,7 +76,20 @@ class RequestTest(test_utils.BaseTestCase):
         request = wsgi.Request.blank('/tests/123')
         request.headers["Content-Range"] = 'bytes=0-99'
         self.assertRaises(webob.exc.HTTPRequestRangeNotSatisfiable,
-                          request.get_content_range, 120)
+                          request.get_range_from_request, 120)
+
+    def test_range(self):
+        request = wsgi.Request.blank('/tests/123')
+        request.headers["Range"] = 'bytes=10-99'
+        range_ = request.get_range_from_request(120)
+        self.assertEqual(10, range_.start)
+        self.assertEqual(100, range_.end)  # non-inclusive
+
+    def test_range_invalid(self):
+        request = wsgi.Request.blank('/tests/123')
+        request.headers["Range"] = 'bytes=150-'
+        self.assertRaises(webob.exc.HTTPRequestRangeNotSatisfiable,
+                          request.get_range_from_request, 120)
 
     def test_content_type_missing(self):
         request = wsgi.Request.blank('/tests/123')
