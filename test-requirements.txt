@@ -6,7 +6,7 @@
 hacking!=0.13.0,<0.14,>=0.12.0 # Apache-2.0
 
 # For translations processing
-Babel>=2.3.4 # BSD
+Babel!=2.4.0,>=2.3.4 # BSD
 
 # Needed for testing
 bandit>=1.1.0 # Apache-2.0
