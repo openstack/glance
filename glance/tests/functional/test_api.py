@@ -73,14 +73,14 @@ class TestApiVersions(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
-        versions_json = jsonutils.dumps(versions)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(versions, content)
 
     def test_v2_api_configuration(self):
         self.api_server.enable_v1_api = False
@@ -120,14 +120,14 @@ class TestApiVersions(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '2'}],
             },
         ]}
-        versions_json = jsonutils.dumps(versions)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(versions, content)
 
     def test_v1_api_configuration(self):
         self.api_server.enable_v1_api = True
@@ -147,14 +147,14 @@ class TestApiVersions(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
-        versions_json = jsonutils.dumps(versions)
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(versions, content)
 
 
 class TestApiPaths(functional.FunctionalTest):
@@ -163,7 +163,7 @@ class TestApiPaths(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
-        versions = {'versions': [
+        self.versions = {'versions': [
             {
                 'id': 'v2.5',
                 'status': 'CURRENT',
@@ -205,7 +205,6 @@ class TestApiPaths(functional.FunctionalTest):
                 'links': [{'rel': 'self', 'href': url % '1'}],
             },
         ]}
-        self.versions_json = jsonutils.dumps(versions)
         images = {'images': []}
         self.images_json = jsonutils.dumps(images)
 
@@ -216,9 +215,10 @@ class TestApiPaths(functional.FunctionalTest):
         """
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_images_path(self):
         """Assert GET /images with `no Accept:` header.
@@ -226,9 +226,10 @@ class TestApiPaths(functional.FunctionalTest):
         """
         path = 'http://%s:%d/images' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_v1_images_path(self):
         """GET /v1/images with `no Accept:` header.
@@ -247,9 +248,10 @@ class TestApiPaths(functional.FunctionalTest):
         path = 'http://%s:%d/' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
         headers = {'Accept': 'unknown'}
-        response, content = http.request(path, 'GET', headers=headers)
+        response, content_json = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_root_path_with_openstack_header(self):
         """Assert GET / with an Accept: application/vnd.openstack.images-v1
@@ -260,7 +262,7 @@ class TestApiPaths(functional.FunctionalTest):
         headers = {'Accept': 'application/vnd.openstack.images-v1'}
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual(self.images_json, content)
+        self.assertEqual(self.images_json, content.decode())
 
     def test_get_images_path_with_openstack_header(self):
         """Assert GET /images with a
@@ -271,9 +273,10 @@ class TestApiPaths(functional.FunctionalTest):
         path = 'http://%s:%d/images' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
         headers = {'Accept': 'application/vnd.openstack.compute-v1'}
-        response, content = http.request(path, 'GET', headers=headers)
+        response, content_json = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_v10_images_path(self):
         """Assert GET /v1.0/images with no Accept: header
@@ -299,9 +302,10 @@ class TestApiPaths(functional.FunctionalTest):
         """
         path = 'http://%s:%d/va.1/images' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_versions_path(self):
         """Assert GET /versions with no Accept: header
@@ -309,9 +313,10 @@ class TestApiPaths(functional.FunctionalTest):
         """
         path = 'http://%s:%d/versions' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_versions_path_with_openstack_header(self):
         """Assert GET /versions with the
@@ -321,9 +326,10 @@ class TestApiPaths(functional.FunctionalTest):
         path = 'http://%s:%d/versions' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
         headers = {'Accept': 'application/vnd.openstack.images-v1'}
-        response, content = http.request(path, 'GET', headers=headers)
+        response, content_json = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.OK, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_v1_versions_path(self):
         """Assert GET /v1/versions with `no Accept:` header
@@ -338,9 +344,10 @@ class TestApiPaths(functional.FunctionalTest):
         """Verify version choices returned"""
         path = 'http://%s:%d/v10' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_images_path_with_openstack_v2_header(self):
         """Assert GET /images with a
@@ -351,9 +358,10 @@ class TestApiPaths(functional.FunctionalTest):
         path = 'http://%s:%d/images' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
         headers = {'Accept': 'application/vnd.openstack.images-v10'}
-        response, content = http.request(path, 'GET', headers=headers)
+        response, content_json = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
 
     def test_get_v12_images_path(self):
         """Assert GET /v1.2/images with `no Accept:` header
@@ -361,6 +369,7 @@ class TestApiPaths(functional.FunctionalTest):
         """
         path = 'http://%s:%d/v1.2/images' % ('127.0.0.1', self.api_port)
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content_json = http.request(path, 'GET')
         self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
-        self.assertEqual(self.versions_json, content)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(self.versions, content)
