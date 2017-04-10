@@ -65,6 +65,7 @@ Developer reference
 
    architecture
    database_architecture
+   database_migrations
    domain_model
    domain_implementation
 
