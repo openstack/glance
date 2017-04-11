@@ -89,6 +89,39 @@ class DbCommands(object):
                     '"glance-manage db sync" to place the database under '
                     'alembic migration control.'))
 
+    def check(self):
+        """Report any pending database upgrades.
+
+        An exit code of 3 indicates db expand is needed, see stdout output.
+        An exit code of 4 indicates db migrate is needed, see stdout output.
+        An exit code of 5 indicates db contract is needed, see stdout output.
+        """
+        engine = db_api.get_engine()
+        self._validate_engine(engine)
+
+        curr_heads = alembic_migrations.get_current_alembic_heads()
+
+        expand_heads = alembic_migrations.get_alembic_branch_head(
+            db_migration.EXPAND_BRANCH)
+        contract_heads = alembic_migrations.get_alembic_branch_head(
+            db_migration.CONTRACT_BRANCH)
+
+        if (contract_heads in curr_heads):
+            print(_('Database is up to date. No upgrades needed.'))
+            sys.exit()
+        elif ((not expand_heads) or (expand_heads not in curr_heads)):
+            print(_('Your database is not up to date. '
+                    'Your first step is to run `glance-manage db expand`.'))
+            sys.exit(3)
+        elif data_migrations.has_pending_migrations(db_api.get_engine()):
+            print(_('Your database is not up to date. '
+                    'Your next step is to run `glance-manage db migrate`.'))
+            sys.exit(4)
+        elif ((not contract_heads) or (contract_heads not in curr_heads)):
+            print(_('Your database is not up to date. '
+                    'Your next step is to run `glance-manage db contract`.'))
+            sys.exit(5)
+
     @args('--version', metavar='<version>', help='Database version')
     def upgrade(self, version='heads'):
         """Upgrade the database's migration level"""
@@ -335,6 +368,9 @@ class DbLegacyCommands(object):
     def migrate(self):
         self.command_object.migrate()
 
+    def check(self):
+        self.command_object.check()
+
     def load_metadefs(self, path=None, merge=False,
                       prefer_new=False, overwrite=False):
         self.command_object.load_metadefs(CONF.command.path,
@@ -383,6 +419,10 @@ def add_legacy_command_parsers(command_object, subparsers):
     parser = subparsers.add_parser('db_migrate')
     parser.set_defaults(action_fn=legacy_command_object.migrate)
     parser.set_defaults(action='db_migrate')
+
+    parser = subparsers.add_parser('db_check')
+    parser.set_defaults(action_fn=legacy_command_object.check)
+    parser.set_defaults(action='db_check')
 
     parser = subparsers.add_parser('db_load_metadefs')
     parser.set_defaults(action_fn=legacy_command_object.load_metadefs)

@@ -1,0 +1,27 @@
+---
+features:
+  - |
+    Added a new command ``glance-manage db check``, the command will
+    allow a user to check the status of upgrades in the database.
+
+upgrade:
+  - |
+    Using db check
+
+    In order to check the current state of your database upgrades, you may run the
+    command ``glance-manage db check``. This will inform you of any
+    outstanding actions you have left to take.
+
+    Here is a list of possible return codes:
+
+    - A return code of ``0`` means you are currently up to date with the latest
+      migration script version and all ``db`` upgrades are complete.
+
+    - A return code of ``3`` means that an upgrade from your current database
+      version is available and your first step is to run ``glance-manage db expand``.
+
+    - A return code of ``4`` means that the expansion stage is complete, and the
+      next step is to run ``glance-manage db migrate``.
+
+    - A return code of ``5`` means that the expansion and data migration stages are
+      complete, and the next step is to run ``glance-manage db contract``.
