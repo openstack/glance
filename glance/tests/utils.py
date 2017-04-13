@@ -627,9 +627,12 @@ class Httplib2WsgiAdapter(object):
 
     def request(self, uri, method="GET", body=None, headers=None):
         req = webob.Request.blank(uri, method=method, headers=headers)
-        req.body = body
+        if isinstance(body, str):
+            req.body = body.encode('utf-8')
+        else:
+            req.body = body
         resp = req.get_response(self.app)
-        return Httplib2WebobResponse(resp), resp.body
+        return Httplib2WebobResponse(resp), resp.body.decode('utf-8')
 
 
 class Httplib2WebobResponse(object):

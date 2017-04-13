@@ -46,7 +46,7 @@ class TestApi(base.ApiTest):
 
         # 2. POST /images with public image named Image1
         # attribute and no custom properties. Verify a 200 OK is returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = minimal_headers('Image1')
         path = "/v1/images"
         response, content = self.http.request(path, 'POST', headers=headers,
@@ -100,8 +100,9 @@ class TestApi(base.ApiTest):
                                            expected_value,
                                            response[expected_key]))
 
-        self.assertEqual("*" * FIVE_KB, content)
-        self.assertEqual(hashlib.md5("*" * FIVE_KB).hexdigest(),
+        content = content.encode('utf-8')
+        self.assertEqual(image_data, content)
+        self.assertEqual(hashlib.md5(image_data).hexdigest(),
                          hashlib.md5(content).hexdigest())
 
         # 5. GET /images
@@ -290,7 +291,7 @@ class TestApi(base.ApiTest):
         self.assertEqual(image_id, response['x-image-meta-id'])
 
         # 4. PUT image with image data, verify 200 returned
-        image_data = "*" * FIVE_KB
+        image_data = b"*" * FIVE_KB
         headers = {'Content-Type': 'application/octet-stream'}
         path = "/v1/images/%s" % (image_id)
         response, content = self.http.request(path, 'PUT', headers=headers,
@@ -388,7 +389,7 @@ class TestApi(base.ApiTest):
         # Content-Type to application/octet-stream, verify a
         # 400 returned and that the error is readable.
         with tempfile.NamedTemporaryFile() as test_data_file:
-            test_data_file.write("XXX")
+            test_data_file.write(b"XXX")
             test_data_file.flush()
         path = "/v1/images"
         headers = minimal_headers('Image1')
@@ -1003,7 +1004,7 @@ class TestApi(base.ApiTest):
         headers = minimal_headers('Image1')
         headers['X-Image-Meta-' + format] = 'bad_value'
         with tempfile.NamedTemporaryFile() as test_data_file:
-            test_data_file.write("XXX")
+            test_data_file.write(b"XXX")
             test_data_file.flush()
         response, content = self.http.request(path, 'POST',
                                               headers=headers,
@@ -1054,7 +1055,7 @@ class TestApi(base.ApiTest):
         headers = minimal_headers('Image1')
         del headers['X-Image-Meta-' + format]
         with tempfile.NamedTemporaryFile() as test_data_file:
-            test_data_file.write("XXX")
+            test_data_file.write(b"XXX")
             test_data_file.flush()
         response, content = self.http.request(path, 'PUT',
                                               headers=headers,
