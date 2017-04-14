@@ -16,9 +16,11 @@
 import os
 import re
 import time
+import unittest
 
 import psutil
 import requests
+import six
 from six.moves import http_client as http
 
 from glance.tests import functional
@@ -101,6 +103,7 @@ class TestReload(functional.FunctionalTest):
     def _url(self, protocol, path):
         return '%s://127.0.0.1:%d%s' % (protocol, self.api_port, path)
 
+    @unittest.skipIf(six.PY3, 'SSL handshakes are broken in PY3')
     def test_reload(self):
         """Test SIGHUP picks up new config values"""
         def check_pids(pre, post=None, workers=2):
