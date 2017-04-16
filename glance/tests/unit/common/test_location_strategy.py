@@ -107,13 +107,6 @@ class TestLocationStrategy(base.IsolatedUnitTest):
             self.config(location_strategy=strategy_name)
             location_strategy.verify_location_strategy()
 
-    def test_verify_invalid_location_strategy(self):
-        strategy = 'invalid_strategy'
-        self.config(location_strategy=strategy)
-        self.assertRaises(RuntimeError,
-                          location_strategy.verify_location_strategy,
-                          strategy)
-
     def test_get_ordered_locations_with_none_or_empty_locations(self):
         self.assertEqual([], location_strategy.get_ordered_locations(None))
         self.assertEqual([], location_strategy.get_ordered_locations([]))
