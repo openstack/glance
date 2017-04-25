@@ -1,0 +1,5 @@
+---
+upgrade:
+  - The lock_path config option from oslo.concurrency is now required for using
+    the sql image_cache driver. If one is not specified it will default to
+    the image_cache_dir and emit a warning.
