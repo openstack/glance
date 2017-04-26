@@ -51,7 +51,7 @@ To install Glance, see the Ocata Image service install guide for each distributi
 Newton
 ~~~~~~
 
-To install Glance, see the Ocata Image service install guide for each distribution:
+To install Glance, see the Newton Image service install guide for each distribution:
 
 - `Ubuntu <https://docs.openstack.org/newton/install-guide-ubuntu/glance.html>`_
 - `CentOS and RHEL <https://docs.openstack.org/newton/install-guide-rdo/glance.html>`_
