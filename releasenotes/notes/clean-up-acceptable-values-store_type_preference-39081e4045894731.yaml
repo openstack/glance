@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    Deprecated values are no longer recognized for the configuration option
+    ``store_type_preference``.
+    The two non-standard values 'filesystem' and 'vmware_datastore' were
+    DEPRECATED in Newton and are no longer operable. The correct values
+    for those stores are 'file' and 'vmware'. See the Newton release notes
+    for more information at https://docs.openstack.org/releasenotes/glance/newton.html#upgrade-notes

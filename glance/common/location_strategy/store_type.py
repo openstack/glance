@@ -16,13 +16,10 @@
 """Storage preference based location strategy module"""
 
 from oslo_config import cfg
-from oslo_log import log as logging
 import six
 import six.moves.urllib.parse as urlparse
 
-from glance.i18n import _, _LW
-
-LOG = logging.getLogger(__name__)
+from glance.i18n import _
 
 store_type_opts = [
     cfg.ListOpt('store_type_preference',
@@ -104,27 +101,6 @@ def get_ordered_locations(locations, uri_key='url', **kwargs):
             preferred_store = str(preferred_store).strip()
             if not preferred_store:
                 continue
-            # NOTE(dharinic): The following conversion of ``filesystem`` and
-            # ``vmware_datastore`` to ``file`` and ``vmware`` respectively
-            # are to make store names consistent in Glance and glance_store
-            # and also be backward compatible.
-            # Reference: Bug 1615852
-            if preferred_store == 'filesystem':
-                preferred_store = 'file'
-                msg = _LW('The value ``filesystem`` is DEPRECATED for use '
-                          'with ``store_type_preference``. It will be '
-                          'removed in the Pike release. Please use ``file`` '
-                          'instead. Please see the Glance Newton release '
-                          'notes for more information.')
-                LOG.warn(msg)
-            if preferred_store == 'vmware_datastore':
-                preferred_store = 'vmware'
-                msg = _LW('The value ``vmware_datastore`` is DEPRECATED for '
-                          'use with ``store_type_preference``. It will be '
-                          'removed in the Pike release. Please use ``vmware`` '
-                          'instead. Please see the Glance Newton release '
-                          'notes for more information.')
-                LOG.warn(msg)
             yield preferred_store
 
     if not locations:
