@@ -58,7 +58,8 @@ logging.register_options(CONF)
 
 KNOWN_EXCEPTIONS = (RuntimeError,
                     exception.WorkerCreationFailure,
-                    glance_store.exceptions.BadStoreConfiguration)
+                    glance_store.exceptions.BadStoreConfiguration,
+                    ValueError)
 
 
 def fail(e):
