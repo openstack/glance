@@ -68,12 +68,6 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         self.config(group='glance_store', default_store='file')
         glance.cmd.api.main()
 
-    def test_unsupported_default_store(self):
-        self.stubs.UnsetAll()
-        self.config(group='glance_store', default_store='shouldnotexist')
-        exit = self.assertRaises(SystemExit, glance.cmd.api.main)
-        self.assertEqual(1, exit.code)
-
     def test_worker_creation_failure(self):
         failure = exc.WorkerCreationFailure(reason='test')
         self.stubs.Set(glance.common.wsgi.Server, 'start',
