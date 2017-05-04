@@ -1072,6 +1072,7 @@ def _image_property_delete_all(context, image_id, delete_time=None,
     return props_updated_count
 
 
+@utils.no_4byte_params
 def image_member_create(context, values, session=None):
     """Create an ImageMember object."""
     memb_ref = models.ImageMember()

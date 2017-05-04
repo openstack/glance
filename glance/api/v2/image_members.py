@@ -116,6 +116,8 @@ class ImageMembersController(object):
                                                                member_id)
             member_repo.add(new_member)
             return new_member
+        except exception.Invalid as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden:
             msg = _("Not allowed to create members for image %s.") % image_id
             LOG.warning(msg)
