@@ -21,9 +21,8 @@ from glance.tests.functional.db import base
 
 
 def get_db(config, workers=1):
-    CONF.set_override('data_api', 'glance.db.simple.api',
-                      enforce_type=True)
-    CONF.set_override('workers', workers, enforce_type=True)
+    CONF.set_override('data_api', 'glance.db.simple.api')
+    CONF.set_override('workers', workers)
     db_api = glance.db.get_api()
     return db_api
 

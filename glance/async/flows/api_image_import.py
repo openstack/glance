@@ -101,8 +101,7 @@ class _VerifyStaging(task.Task):
         backend.register_opts(conf)
         conf.set_override('filesystem_store_datadir',
                           CONF.node_staging_uri[7:],
-                          group='glance_store',
-                          enforce_type=True)
+                          group='glance_store')
 
         # NOTE(flaper87): Do not even try to judge me for this... :(
         # With the glance_store refactor, this code will change, until
