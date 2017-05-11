@@ -662,6 +662,56 @@ Relation options:
     * None
 
 """)),
+    cfg.StrOpt('node_staging_uri',
+               default='file:///tmp/staging/',
+               help=_("""
+The location where Glance API node saves staged image data
+
+This option is for Glance internal use only. Glance will save the
+image data uploaded by the user to 'staging' endpoint during the
+image import process.
+
+This option does not change the 'staging' API endpoint by any means.
+
+NOTE: It is discouraged to use same path as [TASKS]/work_dir
+
+NOTE: 'file:///<path>' is the only option api_image_import flow
+will support on this first stage.
+
+NOTE: The staging path must be on shared filesystem between the
+Glance API nodes.
+
+Possible values:
+    * String starting with 'file://' followed by FS path
+
+Related options:
+    * [TASKS]/work_dir
+    * [DEFAULT]/enable_image_import (*deprecated*)
+
+""")),
+    cfg.BoolOpt('enable_image_import',
+                default=False,
+                deprecated_for_removal=True,
+                deprecated_reason=_("""
+This option is deprecated for removal in R.
+
+It was introduced to make sure that the API is not enabled
+before the '[DEFAULT]/node_staging_uri' is defined and is
+long term redundant."""),
+                deprecated_since='Ocata',
+                help=_("""
+Enables the Image Import workflow introduced in Ocata
+
+As '[DEFAULT]/node_staging_uri' is required for the Image
+Import, it's disabled per default in Pike, enabled per
+default in Queens and removed in R. This allows Glance to
+operate with previous version configs upon upgrade.
+
+Setting this option to True will enable the endpoints related
+to Image Import Refactoring work.
+
+Related options:
+    * [DEFUALT]/node_staging_uri""")),
 ]
 
 CONF = cfg.CONF
