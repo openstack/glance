@@ -89,6 +89,12 @@
             "description": "Input devices allow interaction with a graphical framebuffer. For example to provide a graphic tablet for absolute cursor movement. Currently only supported by the KVM/QEMU hypervisor configuration and VNC or SPICE consoles must be enabled.",
             "type": "string",
             "enum": ["usbtablet"]
+        },
+        "img_hide_hypervisor_id": {
+            "title": "Hide hypervisor id",
+            "description": "Enables hiding the host hypervisor signature in the guest OS.",
+            "type": "string",
+            "enum": ["yes", "no"]
         }
     },
     "objects": []
