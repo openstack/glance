@@ -105,6 +105,7 @@ Administration guide
    property-protections
    opts/index
    requirements
+   apache-httpd
 
 Operating Glance
 ~~~~~~~~~~~~~~~~
