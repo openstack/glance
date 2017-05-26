@@ -807,6 +807,11 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = http.CREATED
         self.show(response, image)
         response.location = self._get_image_href(image)
+        # TODO(jokke): make this configurable when swift-local is implemented
+        # and remove the if statement with the config option.
+        if CONF.enable_image_import:
+            import_methods = "OpenStack-image-import-methods: glance-direct"
+            response.headerlist.extend([import_methods])
 
     def show(self, response, image):
         image_view = self._format_image(image)
