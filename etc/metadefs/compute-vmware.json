@@ -10,6 +10,11 @@
         }
     ],
     "properties": {
+        "img_linked_clone":{
+            "title": "Linked Clone",
+            "description": "By default, the VMware compute driver creates linked clones when possible (though this can be turned off by the operator). You can use this image property on a per-image basis to control whether virtual machines booted from the image are treated as full clones (value: false) or linked clones (value: true). Please refer to VMware documentation for information about full vs. linked clones.",
+            "type": "boolean"
+        },
         "vmware_adaptertype": {
             "title": "Disk Adapter Type",
             "description": "The virtual SCSI or IDE controller used by the hypervisor.",
