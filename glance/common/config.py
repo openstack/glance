@@ -665,7 +665,7 @@ Relation options:
     cfg.StrOpt('node_staging_uri',
                default='file:///tmp/staging/',
                help=_("""
-The location where Glance API node saves staged image data
+The URL provides location where the temporary data will be stored
 
 This option is for Glance internal use only. Glance will save the
 image data uploaded by the user to 'staging' endpoint during the
@@ -675,14 +675,14 @@ This option does not change the 'staging' API endpoint by any means.
 
 NOTE: It is discouraged to use same path as [TASKS]/work_dir
 
-NOTE: 'file:///<path>' is the only option api_image_import flow
-will support on this first stage.
+NOTE: 'file://<absolute-directory-path>' is the only option
+api_image_import flow will support for now.
 
-NOTE: The staging path must be on shared filesystem between the
+NOTE: The staging path must be on shared filesystem available to all
 Glance API nodes.
 
 Possible values:
-    * String starting with 'file://' followed by FS path
+    * String starting with 'file://' followed by absolute FS path
 
 Related options:
     * [TASKS]/work_dir
@@ -693,18 +693,18 @@ Related options:
                 default=False,
                 deprecated_for_removal=True,
                 deprecated_reason=_("""
-This option is deprecated for removal in R.
+This option is deprecated for removal in Rocky.
 
 It was introduced to make sure that the API is not enabled
 before the '[DEFAULT]/node_staging_uri' is defined and is
 long term redundant."""),
-                deprecated_since='Ocata',
+                deprecated_since='Pike',
                 help=_("""
-Enables the Image Import workflow introduced in Ocata
+Enables the Image Import workflow introduced in Pike
 
 As '[DEFAULT]/node_staging_uri' is required for the Image
 Import, it's disabled per default in Pike, enabled per
-default in Queens and removed in R. This allows Glance to
+default in Queens and removed in Rocky. This allows Glance to
 operate with previous version configs upon upgrade.
 
 Setting this option to True will enable the endpoints related
