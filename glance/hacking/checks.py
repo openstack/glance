@@ -14,8 +14,6 @@
 
 import re
 
-import pep8
-
 """
 Guidelines for writing new hacking checks
 
@@ -116,30 +114,6 @@ def no_direct_use_of_unicode_function(logical_line):
         yield(0, "G320: Use six.text_type() instead of unicode()")
 
 
-def validate_log_translations(logical_line, physical_line, filename):
-    # Translations are not required in the test directory
-    if pep8.noqa(physical_line):
-        return
-    msg = "G322: LOG.info messages require translations `_LI()`!"
-    if log_translation_info.match(logical_line):
-        yield (0, msg)
-    msg = "G323: LOG.exception messages require translations `_LE()`!"
-    if log_translation_exception.match(logical_line):
-        yield (0, msg)
-    msg = "G324: LOG.error messages require translations `_LE()`!"
-    if log_translation_error.match(logical_line):
-        yield (0, msg)
-    msg = "G325: LOG.critical messages require translations `_LC()`!"
-    if log_translation_critical.match(logical_line):
-        yield (0, msg)
-    msg = "G326: LOG.warning messages require translations `_LW()`!"
-    if log_translation_warning.match(logical_line):
-        yield (0, msg)
-    msg = "G321: Log messages require translations!"
-    if log_translation.match(logical_line):
-        yield (0, msg)
-
-
 def check_no_contextlib_nested(logical_line):
     msg = ("G327: contextlib.nested is deprecated since Python 2.7. See "
            "https://docs.python.org/2/library/contextlib.html#contextlib."
@@ -189,7 +163,6 @@ def factory(register):
     register(assert_equal_none)
     register(no_translate_debug_logs)
     register(no_direct_use_of_unicode_function)
-    register(validate_log_translations)
     register(check_no_contextlib_nested)
     register(dict_constructor_with_list_copy)
     register(check_python3_xrange)
