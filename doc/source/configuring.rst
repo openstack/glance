@@ -395,7 +395,7 @@ stores disk images. These configuration options are specified in the
 
   A comma separated list of enabled glance stores. Some available options for
   this option are (``filesystem``, ``http``, ``rbd``, ``swift``,
-  ``sheepdog``, ``cinder``, ``vmware_datastore``)
+  ``sheepdog``, ``cinder``, ``vmware``)
 
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
