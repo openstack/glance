@@ -40,13 +40,15 @@ class TestLogging(functional.FunctionalTest):
 
         self.assertTrue(os.path.exists(self.api_server.log_file))
 
-        api_log_out = open(self.api_server.log_file, 'r').read()
+        with open(self.api_server.log_file, 'r') as f:
+            api_log_out = f.read()
 
         self.assertIn('DEBUG glance', api_log_out)
 
         self.assertTrue(os.path.exists(self.registry_server.log_file))
 
-        registry_log_out = open(self.registry_server.log_file, 'r').read()
+        with open(self.registry_server.log_file, 'r') as freg:
+            registry_log_out = freg.read()
 
         self.assertIn('DEBUG glance', registry_log_out)
 
@@ -61,13 +63,15 @@ class TestLogging(functional.FunctionalTest):
 
         self.assertTrue(os.path.exists(self.api_server.log_file))
 
-        api_log_out = open(self.api_server.log_file, 'r').read()
+        with open(self.api_server.log_file, 'r') as f:
+            api_log_out = f.read()
 
         self.assertNotIn('DEBUG glance', api_log_out)
 
         self.assertTrue(os.path.exists(self.registry_server.log_file))
 
-        registry_log_out = open(self.registry_server.log_file, 'r').read()
+        with open(self.registry_server.log_file, 'r') as freg:
+            registry_log_out = freg.read()
 
         self.assertNotIn('DEBUG glance', registry_log_out)
 
