@@ -41,18 +41,6 @@ asse_equal_end_with_none_re = re.compile(
 asse_equal_start_with_none_re = re.compile(
     r"(.)*assertEqual\(None, (\w|\.|\'|\"|\[|\])+\)")
 unicode_func_re = re.compile(r"(\s|\W|^)unicode\(")
-log_translation = re.compile(
-    r"(.)*LOG\.(audit)\(\s*('|\")")
-log_translation_info = re.compile(
-    r"(.)*LOG\.(info)\(\s*(_\(|'|\")")
-log_translation_exception = re.compile(
-    r"(.)*LOG\.(exception)\(\s*(_\(|'|\")")
-log_translation_error = re.compile(
-    r"(.)*LOG\.(error)\(\s*(_\(|'|\")")
-log_translation_critical = re.compile(
-    r"(.)*LOG\.(critical)\(\s*(_\(|'|\")")
-log_translation_warning = re.compile(
-    r"(.)*LOG\.(warning)\(\s*(_\(|'|\")")
 dict_constructor_with_list_copy_re = re.compile(r".*\bdict\((\[)?(\(|\[)")
 
 
