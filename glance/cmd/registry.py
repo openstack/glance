@@ -40,9 +40,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from oslo_config import cfg
 from oslo_log import log as logging
-import oslo_messaging
-import osprofiler.notifier
-import osprofiler.web
+import osprofiler.initializer
 
 from glance.common import config
 from glance.common import wsgi
@@ -61,16 +59,14 @@ def main():
         logging.setup(CONF, 'glance')
         notifier.set_defaults()
 
-        if cfg.CONF.profiler.enabled:
-            _notifier = osprofiler.notifier.create("Messaging",
-                                                   oslo_messaging, {},
-                                                   notifier.get_transport(),
-                                                   "glance", "registry",
-                                                   cfg.CONF.bind_host)
-            osprofiler.notifier.set(_notifier)
-            osprofiler.web.enable(cfg.CONF.profiler.hmac_keys)
-        else:
-            osprofiler.web.disable()
+        if CONF.profiler.enabled:
+            osprofiler.initializer.init_from_conf(
+                conf=CONF,
+                context={},
+                project="glance",
+                service="registry",
+                host=CONF.bind_host
+            )
 
         server = wsgi.Server()
         server.start(config.load_paste_app('glance-registry'),
