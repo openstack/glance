@@ -15,6 +15,7 @@
 
 from oslo_log import log as logging
 
+from glance.common.scripts.api_image_import import main as api_image_import
 from glance.common.scripts.image_import import main as image_import
 from glance.i18n import _LE, _LI
 
@@ -33,6 +34,13 @@ def run_task(task_id, task_type, context,
     if task_type == 'import':
         image_import.run(task_id, context, task_repo,
                          image_repo, image_factory)
+
+    elif task_type == 'api_image_import':
+        api_image_import.run(task_id,
+                             context,
+                             task_repo,
+                             image_repo,
+                             image_factory)
 
     else:
         msg = _LE("This task type %(task_type)s is not supported by the "

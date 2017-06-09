@@ -424,6 +424,14 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET, PATCH, DELETE')
+        mapper.connect('/images/{image_id}/import',
+                       controller=images_resource,
+                       action='import_image',
+                       conditions={'method': ['POST']})
+        mapper.connect('/images/{image_id}/import',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='POST')
 
         image_actions_resource = image_actions.create_resource()
         mapper.connect('/images/{image_id}/actions/deactivate',

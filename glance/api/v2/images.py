@@ -25,6 +25,7 @@ from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
+from glance.api import common
 from glance.api import policy
 from glance.common import exception
 from glance.common import location_strategy
@@ -84,6 +85,28 @@ class ImagesController(object):
         except TypeError as e:
             LOG.debug(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPBadRequest(explanation=e)
+
+        return image
+
+    @utils.mutating
+    def import_image(self, req, image):
+        task_factory = self.gateway.get_task_factory(req.context)
+        executor_factory = self.gateway.get_task_executor_factory(req.context)
+        task_repo = self.gateway.get_task_repo(req.context)
+
+        task_input = {}
+
+        try:
+            import_task = task_factory.new_task(task_type='api_image_import',
+                                                owner=req.context.owner,
+                                                task_input=task_input)
+            task_repo.add(import_task)
+            task_executor = executor_factory.new_task_executor(req.context)
+            pool = common.get_thread_pool("tasks_eventlet_pool")
+            pool.spawn_n(import_task.run, task_executor)
+        except exception.Forbidden as e:
+            LOG.debug("User not permitted to create image import task.")
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
         return image
 
