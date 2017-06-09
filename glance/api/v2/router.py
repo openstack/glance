@@ -459,6 +459,14 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET, PUT')
+        mapper.connect('/images/{image_id}/stage',
+                       controller=image_data_resource,
+                       action='stage',
+                       conditions={'method': ['PUT']})
+        mapper.connect('/images/{image_id}/stage',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='PUT')
 
         image_tags_resource = image_tags.create_resource()
         mapper.connect('/images/{image_id}/tags/{tag_value}',
