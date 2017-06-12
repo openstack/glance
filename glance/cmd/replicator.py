@@ -100,7 +100,7 @@ CONF.register_opt(
                      "one. This is the token used for the target.")))
 
 logging.register_options(CONF)
-CONF.set_default(name='use_stderr', default=True, enforce_type=True)
+CONF.set_default(name='use_stderr', default=True)
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...

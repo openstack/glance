@@ -434,7 +434,7 @@ def main():
 
     try:
         logging.register_options(CONF)
-        CONF.set_default(name='use_stderr', default=True, enforce_type=True)
+        CONF.set_default(name='use_stderr', default=True)
         cfg_files = cfg.find_config_files(project='glance',
                                           prog='glance-registry')
         cfg_files.extend(cfg.find_config_files(project='glance',

@@ -115,8 +115,7 @@ class _ImportToFS(task.Task):
         backend.register_opts(conf)
         conf.set_override('filesystem_store_datadir',
                           CONF.task.work_dir,
-                          group='glance_store',
-                          enforce_type=True)
+                          group='glance_store')
 
         # NOTE(flaper87): Do not even try to judge me for this... :(
         # With the glance_store refactor, this code will change, until

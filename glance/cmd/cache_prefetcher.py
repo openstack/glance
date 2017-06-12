@@ -41,7 +41,7 @@ from glance.image_cache import prefetcher
 
 CONF = config.CONF
 logging.register_options(CONF)
-CONF.set_default(name='use_stderr', default=True, enforce_type=True)
+CONF.set_default(name='use_stderr', default=True)
 
 
 def main():
