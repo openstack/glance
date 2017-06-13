@@ -53,7 +53,7 @@ Tests
 
 Occasionally someone proposes a patch that converts instances of
 ``assertEqual(True, whatever)`` to ``assertTrue(whatever)``, or instances of
-``asertEqual(False, w)`` to ``assertFalse(w)`` in tests.  Note that these are
+``assertEqual(False, w)`` to ``assertFalse(w)`` in tests.  Note that these are
 not type safe changes and they weaken the tests.  (See the Python ``unittest``
 docs for details.)  We tend to be very conservative about our tests and don't
 like weakening changes.
