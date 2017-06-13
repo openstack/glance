@@ -281,8 +281,7 @@ class ImageDataController(object):
             backend.register_opts(conf)
             conf.set_override('filesystem_store_datadir',
                               CONF.node_staging_uri[7:],
-                              group='glance_store',
-                              enforce_type=True)
+                              group='glance_store')
             staging_store = backend._load_store(conf, 'file')
 
             try:
