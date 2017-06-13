@@ -264,8 +264,8 @@ class ImageDataController(object):
 
         except Exception as e:
             with excutils.save_and_reraise_exception():
-                LOG.exception(_LE("Failed to upload image data due to "
-                                  "internal error"))
+                LOG.error(_LE("Failed to upload image data due to "
+                              "internal error"))
                 self._restore(image_repo, image)
 
     @utils.mutating
