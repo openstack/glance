@@ -34,7 +34,7 @@ The domain model contains the following layers:
 The schema below shows a stack that contains the Image domain layers and
 their locations:
 
-.. figure:: ./images/glance_layers.png
+.. figure:: ../images/glance_layers.png
    :figwidth: 100%
    :align: center
    :alt: From top to bottom, the stack consists of the Router and REST API,

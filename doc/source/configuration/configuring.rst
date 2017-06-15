@@ -1326,6 +1326,7 @@ with the glance-api service when clients are using the v1 REST API. See
 
 ``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified
 on command line)
+
   Optional. Default: ``None``
 
   Can be specified in configuration files. Can also be specified on the
@@ -1337,6 +1338,7 @@ on command line)
   online. You must urlencode any special characters in CONNECTION_STRING.
 
 ``sql_timeout=SECONDS``
+
   Optional. Default: ``3600``
 
   Can only be specified in configuration files.
@@ -1345,9 +1347,11 @@ on command line)
   datastore if no activity has been made on the connection.
 
 ``enable_v1_registry=<True|False>``
+
   Optional. Default: ``True``
 
 ``enable_v2_registry=<True|False>``
+
   Optional. Default: ``True``
 
   Defines which version(s) of the Registry API will be enabled.
@@ -1366,6 +1370,7 @@ queue. The configuration options are specified in the ``glance-api.conf``
 configuration file.
 
 ``[oslo_messaging_notifications]/driver``
+
   Optional. Default: ``noop``
 
   Sets the notification driver used by oslo.messaging. Options include
@@ -1379,6 +1384,7 @@ configuration file.
   `oslo.messaging <http://docs.openstack.org/developer/oslo.messaging/>`_.
 
 ``[DEFAULT]/disabled_notifications``
+
   Optional. Default: ``[]``
 
   List of disabled notifications. A notification can be given either as a
@@ -1399,12 +1405,14 @@ configuration file in the section ``[DEFAULT]``. **If an incorrect value is
 specified, glance API service will not start.**
 
 ``property_protection_file=PATH``
+
   Optional. Default: not enabled.
 
   If property_protection_file is set, the file may use either roles or policies
   to specify property protections.
 
 ``property_protection_rule_format=<roles|policies>``
+
   Optional. Default: ``roles``.
 
 Configuring Glance APIs
@@ -1415,9 +1423,11 @@ the OpenStack Images API. Disable any version of
 the Images API using the following options:
 
 ``enable_v1_api=<True|False>``
+
   Optional. Default: ``True``
 
 ``enable_v2_api=<True|False>``
+
   Optional. Default: ``True``
 
   **IMPORTANT NOTE**: To use v2 registry in v2 API, you must set
@@ -1433,6 +1443,7 @@ would be visible to the user after transitioning to either the ``success`` or
 the ``failure`` state.
 
 ``task_time_to_live=<Time_in_hours>``
+
   Optional. Default: ``48``
 
   The config value ``task_executor`` is used to determine which executor
@@ -1440,6 +1451,7 @@ the ``failure`` state.
   available implementation is: ``taskflow``.
 
 ``task_executor=<executor_type>``
+
   Optional. Default: ``taskflow``
 
   The ``taskflow`` engine has its own set of configuration options,
@@ -1469,6 +1481,7 @@ The config value ``enabled`` is used to determine whether fully enable
 profiling feature for glance-api and glance-registry service.
 
 ``enabled=<True|False>``
+
   Optional. Default: ``False``
 
   There is one more configuration option that needs to be defined to enable
@@ -1476,6 +1489,7 @@ profiling feature for glance-api and glance-registry service.
   encrypting context data for performance profiling.
 
 ``hmac_keys=<secret_key_string>``
+
   Optional. Default: ``SECRET_KEY``
 
   **IMPORTANT NOTE**: in order to make profiling work as designed operator needs
@@ -1495,6 +1509,7 @@ profiling feature for glance-api and glance-registry service.
   glance-registry services.
 
 ``trace_sqlalchemy=<True|False>``
+
   Optional. Default: ``False``
 
 Configuring Glance public endpoint
@@ -1510,6 +1525,7 @@ to individual hosts running the Glance API may not be allowed, hence the
 load balancer URL would be used for this value.
 
 ``public_endpoint=<None|URL>``
+
   Optional. Default: ``None``
 
 Configuring Glance digest algorithm
@@ -1526,12 +1542,14 @@ digest algorithm is configured, all digital signature operations will fail and
 return a ValueError exception with "No such digest method" error.
 
 ``digest_algorithm=<algorithm>``
+
   Optional. Default: ``sha256``
 
 Configuring http_keepalive option
 ---------------------------------
 
 ``http_keepalive=<True|False>``
+
   If False, server will return the header "Connection: close", If True, server
   will return "Connection: Keep-Alive" in its responses. In order to close the
   client socket connection explicitly after the response is sent and read
@@ -1579,4 +1597,5 @@ done by setting the ``disk_formats`` parameter which is found in the
 ``[image_formats]`` section of ``glance-api.conf``.
 
 ``disk_formats=<Comma separated list of disk formats>``
+
   Optional. Default: ``ami,ari,aki,vhd,vhdx,vmdk,raw,qcow2,vdi,iso,ploop``

@@ -32,12 +32,14 @@ VM images made available through Glance can be stored in a variety of
 locations from simple filesystems to object-storage systems like the
 OpenStack Swift project.
 
-To learn how to contribute to Glance, see:
-
 .. toctree::
    :maxdepth: 2
 
-   contributing/index
+   user/index
+   admin/index
+   install/index
+   configuration/index
+   contributor/index
 
 Ocata
 ~~~~~
@@ -56,69 +58,3 @@ To install Glance, see the Newton Image service install guide for each distribut
 - `Ubuntu <https://docs.openstack.org/newton/install-guide-ubuntu/glance.html>`_
 - `CentOS and RHEL <https://docs.openstack.org/newton/install-guide-rdo/glance.html>`_
 - `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/newton/install-guide-obs/glance.html>`_
-
-Developer reference
-~~~~~~~~~~~~~~~~~~~
-
-.. toctree::
-   :maxdepth: 2
-
-   architecture
-   database_architecture
-   database_migrations
-   domain_model
-   domain_implementation
-
-User guide
-~~~~~~~~~~
-
-.. TODO - move this content to docs.o.o
-
-.. toctree::
-   :maxdepth: 2
-
-   identifiers
-   statuses
-   formats
-   common-image-properties
-   metadefs-concepts
-   glanceapi
-   glanceclient
-   glancemetadefcatalogapi
-   signature
-   api/modules
-
-Administration guide
-~~~~~~~~~~~~~~~~~~~~
-
-.. TODO - move this content to docs.o.o
-
-.. toctree::
-   :maxdepth: 2
-
-   tasks
-   configuring
-   sample-configuration
-   authentication
-   policies
-   flows
-   property-protections
-   opts/index
-   requirements
-   apache-httpd
-
-Operating Glance
-~~~~~~~~~~~~~~~~
-
-.. TODO - move this content to docs.o.o
-
-.. toctree::
-   :maxdepth: 1
-
-   controllingservers
-   db
-   rollingupgrades
-   cache
-   notifications
-
-
