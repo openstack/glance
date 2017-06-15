@@ -5,16 +5,18 @@
 .. toctree::
    :maxdepth: 2
 
-   tasks
    authentication
+   cache
    policies
-   flows
    property-protections
    requirements
    apache-httpd
+   notifications
+   tasks
    controllingservers
+   flows
    db
    db-sqlalchemy-migrate
    rollingupgrades
-   cache
-   notifications
+   troubleshooting
+   requirements
