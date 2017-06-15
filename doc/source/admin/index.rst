@@ -19,4 +19,5 @@
    db-sqlalchemy-migrate
    rollingupgrades
    troubleshooting
+   manage-images
    requirements
