@@ -14,6 +14,8 @@
       License for the specific language governing permissions and limitations
       under the License.
 
+.. _controlling-servers:
+
 Controlling Glance Servers
 ==========================
 
@@ -125,7 +127,7 @@ command line.)
 
 For more information on configuring the server via the ``paste.deploy``
 configuration files, see the section entitled
-:doc:`Configuring Glance servers <configuring>`
+:ref:`Configuring Glance servers <configuring>`
 
 Note that the server `daemonizes` itself by using the standard
 shell backgrounding indicator, ``&``, in the previous example. For most use cases, we recommend

@@ -30,8 +30,9 @@ using "xattr" driver.
 On the other hand, if ``dnspython`` is installed in the environment, Glance
 provides a workaround to make it work with IPV6.
 
-Additionally, some libraries like ``xattr`` are not compatible when using
-Glance on Windows (see :doc:`the documentation on config options affecting the Image Cache <configuring>`).
+Additionally, some libraries like ``xattr`` are not compatible when
+using Glance on Windows (see :ref:`the documentation on config options
+affecting the Image Cache <configuring>`).
 
 
 Guideline to include your requirement in the requirements.txt file

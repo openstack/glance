@@ -122,7 +122,7 @@ Keystone using and send it along with all API requests to Glance through
 the ``X-Auth-Token`` header. Glance will communicate back to Keystone to
 verify the token validity and obtain your identity credentials.
 
-See :doc:`authentication` for more information on integrating with Keystone.
+See :ref:`authentication` for more information on integrating with Keystone.
 
 Using v1.X
 ----------
@@ -221,19 +221,19 @@ list details these query parameters.
 
   Filters images having a ``container_format`` attribute matching ``FORMAT``
 
-  For more information, see :doc:`About Disk and Container Formats <formats>`
+  For more information, see :ref:`formats`
 
 * ``disk_format=FORMAT``
 
   Filters images having a ``disk_format`` attribute matching ``FORMAT``
 
-  For more information, see :doc:`About Disk and Container Formats <formats>`
+  For more information, see :ref:`formats`
 
 * ``status=STATUS``
 
   Filters images having a ``status`` attribute matching ``STATUS``
 
-  For more information, see :doc:`About Image Statuses <statuses>`
+  For more information, see :ref:`image-statuses`
 
 * ``size_min=BYTES``
 
@@ -516,14 +516,14 @@ The list of metadata headers that Glance accepts are listed below.
   ``aki``, ``ari``, ``ami``, ``raw``, ``iso``, ``vhd``, ``vhdx``, ``vdi``,
   ``qcow2``, ``vmdk`` or ``ploop``.
 
-  For more information, see :doc:`About Disk and Container Formats <formats>`.
+  For more information, see :ref:`formats`.
 
 * ``x-image-meta-container_format``
 
   This header is required, unless reserving an image. Valid values are one of
   ``aki``, ``ari``, ``ami``, ``bare``, ``ova``, ``ovf``, or ``docker``.
 
-  For more information, see :doc:`About Disk and Container Formats <formats>`.
+  For more information, see :ref:`formats`.
 
 * ``x-image-meta-size``
 
@@ -619,7 +619,7 @@ exception.
 On success, the ``PUT`` request will return the image metadata encoded as HTTP
 headers.
 
-See more about image statuses here: :doc:`Image Statuses <statuses>`
+See more about image statuses here: :ref:`image-statuses`
 
 
 List Image Memberships
@@ -773,7 +773,7 @@ Images v2 Tasks API
 
 Version 2 of the OpenStack Images API introduces a Task resource that is used
 to create and monitor long-running asynchronous image-related processes.  See
-the :doc:`Tasks <tasks>` section of the Glance documentation for more
+the :ref:`tasks` section of the Glance documentation for more
 information.
 
 The following Task calls are available:
@@ -827,7 +827,7 @@ returned list of tasks.  The following list details these query parameters.
 * ``status={status}``
 
   Filters the list to display only those tasks in the specified status.  See
-  the task schema or the :doc:`Task Statuses <statuses>` section of this
+  the task schema or the :ref:`task-statuses` section of this
   documentation for the legal values to use for ``{status}``.
 
   For example, a request to ``GET /v2/tasks?status=pending`` would return only

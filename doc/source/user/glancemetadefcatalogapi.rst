@@ -51,7 +51,7 @@ Keystone send it along with all API requests to Glance through the
 ``X-Auth-Token`` header. Glance will communicate back to Keystone to verify
 the token validity and obtain your identity credentials.
 
-See :doc:`authentication` for more information on integrating with Keystone.
+See :ref:`authentication` for more information on integrating with Keystone.
 
 Using v2.X
 ----------
