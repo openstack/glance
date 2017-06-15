@@ -30,7 +30,7 @@ Developer reference
    database_migrations
    domain_model
    domain_implementation
-   api/modules
+   api/autoindex
 
 Policies
 --------
