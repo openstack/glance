@@ -26,6 +26,7 @@ subunit.log
 
 # Files created by doc build
 doc/source/api
+doc/source/_static/*.sample
 
 # Files created by releasenotes build
 releasenotes/build
