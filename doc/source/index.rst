@@ -41,6 +41,7 @@ OpenStack Swift project.
    configuration/index
    cli/index
    contributor/index
+   glossary
 
 Ocata
 ~~~~~
