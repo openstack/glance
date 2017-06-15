@@ -1,3 +1,5 @@
+.. -*- mode: rst -*-
+
   **-h, --help**
         Show the help message and exit
 

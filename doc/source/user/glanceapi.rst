@@ -20,7 +20,7 @@ Using Glance's Image Public APIs
 Glance is the reference implementation of the OpenStack Images API.  As such,
 Glance fully implements versions 1 and 2 of the Images API.
 
-.. include:: deprecation-note.inc
+.. include:: ../deprecation-note.inc
 
 There used to be a sentence here saying, "The Images API specification is
 developed alongside Glance, but is not considered part of the Glance project."
@@ -127,7 +127,7 @@ See :doc:`authentication` for more information on integrating with Keystone.
 Using v1.X
 ----------
 
-.. include:: deprecation-note.inc
+.. include:: ../deprecation-note.inc
 
 For the purpose of examples, assume there is a Glance API server running
 at the URL ``http://glance.openstack.example.org`` on the default port 80.

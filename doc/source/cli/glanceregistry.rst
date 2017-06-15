@@ -6,7 +6,7 @@ glance-registry
 Server for the Glance Registry Service
 --------------------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -24,7 +24,7 @@ OPTIONS
 
   **General options**
 
-  .. include:: general_options.rst
+  .. include:: general_options.txt
 
 FILES
 =====
@@ -32,4 +32,4 @@ FILES
   **/etc/glance/glance-registry.conf**
         Default configuration file for Glance Registry
 
-.. include:: footer.rst
+.. include:: footer.txt

@@ -6,7 +6,7 @@ glance-cache-prefetcher
 Glance Image Cache Pre-fetcher
 ------------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -24,7 +24,7 @@ OPTIONS
 
   **General options**
 
-  .. include:: general_options.rst
+  .. include:: general_options.txt
 
 FILES
 =====
@@ -32,4 +32,4 @@ FILES
     **/etc/glance/glance-cache.conf**
         Default configuration file for the Glance Cache
 
-.. include:: footer.rst
+.. include:: footer.txt

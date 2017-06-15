@@ -6,7 +6,7 @@ glance-cache-cleaner
 Glance Image Cache Invalid Cache Entry and Stalled Image cleaner
 ----------------------------------------------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -31,7 +31,7 @@ OPTIONS
 
   **General options**
 
-  .. include:: general_options.rst
+  .. include:: general_options.txt
 
 FILES
 =====
@@ -39,4 +39,4 @@ FILES
   **/etc/glance/glance-cache.conf**
     Default configuration file for the Glance Cache
 
-.. include:: footer.rst
+.. include:: footer.txt
