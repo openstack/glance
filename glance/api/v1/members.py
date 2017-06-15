@@ -64,7 +64,7 @@ class Controller(controller.BaseController):
         :param image_id: The opaque image identifier
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'members': [
                 {'member_id': <MEMBER>,
@@ -133,7 +133,7 @@ class Controller(controller.BaseController):
         Adds a membership to the image, or updates an existing one.
         If a body is present, it is a dict with the following format
 
-        .. code-block:: json
+        ::
 
             {'member': {
                 'can_share': [True|False]
@@ -176,7 +176,7 @@ class Controller(controller.BaseController):
         Replaces the members of the image with those specified in the
         body.  The body is a dict with the following format
 
-        .. code-block:: json
+        ::
 
             {'memberships': [
                 {'member_id': <MEMBER_ID>,
@@ -216,7 +216,7 @@ class Controller(controller.BaseController):
         :param id: the opaque member identifier
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'shared_images': [
                 {'image_id': <IMAGE>,

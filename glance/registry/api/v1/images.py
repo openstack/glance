@@ -146,7 +146,7 @@ class Controller(object):
 
         Where image_list is a sequence of mappings
 
-        .. code-block:: json
+        ::
 
             {
                 'id': <ID>,
@@ -177,7 +177,7 @@ class Controller(object):
         :param req: the Request object coming from the wsgi layer
         :returns: a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'images':
                 [{

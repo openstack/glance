@@ -98,7 +98,7 @@ class ImageMembersController(object):
         :param member_id: the member identifier
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,
@@ -142,7 +142,7 @@ class ImageMembersController(object):
         :param member_id: the member identifier
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,
@@ -177,7 +177,7 @@ class ImageMembersController(object):
         :param image_id: The image identifier
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'members': [
                 {'member_id': <MEMBER>,
@@ -208,7 +208,7 @@ class ImageMembersController(object):
         :param image_id: The image identifier
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'member_id': <MEMBER>,
              'image_id': <IMAGE>,

@@ -101,7 +101,7 @@ class Controller(object):
     This is the base controller for RPC based APIs. Commands
     handled by this controller respect the following form:
 
-    .. code-block:: json
+    ::
 
         [{
             'command': 'method_name',
@@ -238,7 +238,7 @@ class RPCClient(client.BaseClient):
         :param commands: List of commands to send. Commands
             must respect the following form
 
-        .. code-block:: json
+        ::
 
             {
                 'command': 'method_name',
