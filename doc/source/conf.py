@@ -32,6 +32,9 @@ import subprocess
 import sys
 import warnings
 
+import openstackdocstheme
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -47,7 +50,6 @@ sys.path = [
 extensions = ['sphinx.ext.coverage',
               'sphinx.ext.ifconfig',
               'sphinx.ext.graphviz',
-              'oslosphinx',
               'stevedore.sphinxext',
               'oslo_config.sphinxext',
               'sphinx.ext.autodoc',
@@ -67,6 +69,7 @@ config_generator_config_file = [
     ('../../etc/oslo-config-generator/glance-scrubber.conf',
      '_static/glance-scrubber'),
 ]
+
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = []
@@ -176,6 +179,7 @@ man_pages = [
 # Sphinx are currently 'default' and 'sphinxdoc'.
 # html_theme_path = ["."]
 # html_theme = '_theme'
+html_theme = 'openstackdocs'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -184,6 +188,7 @@ man_pages = [
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = ['_theme']
+html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
