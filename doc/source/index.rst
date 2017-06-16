@@ -41,4 +41,8 @@ OpenStack Swift project.
    configuration/index
    cli/index
    contributor/index
+
+.. toctree::
+   :maxdepth: 1
+
    glossary
