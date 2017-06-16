@@ -17,6 +17,9 @@ from oslo_config import cfg
 from oslo_db import options
 
 import glance.db
+# NOTE(smcginnis) Need to make sure registry opts are registered
+from glance import registry  # noqa
+from glance.registry import client  # noqa
 import glance.tests.functional.db as db_tests
 from glance.tests.functional.db import base
 from glance.tests.functional.db import base_metadef
