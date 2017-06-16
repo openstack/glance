@@ -42,21 +42,3 @@ OpenStack Swift project.
    cli/index
    contributor/index
    glossary
-
-Ocata
-~~~~~
-
-To install Glance, see the Ocata Image service install guide for each distribution:
-
-- `Ubuntu <https://docs.openstack.org/ocata/install-guide-ubuntu/glance.html>`__
-- `CentOS and RHEL <https://docs.openstack.org/ocata/install-guide-rdo/glance.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/ocata/install-guide-obs/glance.html>`__
-
-Newton
-~~~~~~
-
-To install Glance, see the Newton Image service install guide for each distribution:
-
-- `Ubuntu <https://docs.openstack.org/newton/install-guide-ubuntu/glance.html>`__
-- `CentOS and RHEL <https://docs.openstack.org/newton/install-guide-rdo/glance.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/newton/install-guide-obs/glance.html>`__
