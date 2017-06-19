@@ -26,6 +26,7 @@ import time
 
 from eventlet import sleep
 from eventlet import timeout
+from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
@@ -119,26 +120,32 @@ class Driver(base.Driver):
     def initialize_db(self):
         db = CONF.image_cache_sqlite_db
         self.db_path = os.path.join(self.base_dir, db)
-        try:
-            conn = sqlite3.connect(self.db_path, check_same_thread=False,
-                                   factory=SqliteConnection)
-            conn.executescript("""
-                CREATE TABLE IF NOT EXISTS cached_images (
-                    image_id TEXT PRIMARY KEY,
-                    last_accessed REAL DEFAULT 0.0,
-                    last_modified REAL DEFAULT 0.0,
-                    size INTEGER DEFAULT 0,
-                    hits INTEGER DEFAULT 0,
-                    checksum TEXT
-                );
-            """)
-            conn.close()
-        except sqlite3.DatabaseError as e:
-            msg = _("Failed to initialize the image cache database. "
-                    "Got error: %s") % e
-            LOG.error(msg)
-            raise exception.BadDriverConfiguration(driver_name='sqlite',
-                                                   reason=msg)
+        lockutils.set_defaults(self.base_dir)
+
+        @lockutils.synchronized('image_cache_db_init', external=True)
+        def create_db():
+            try:
+                conn = sqlite3.connect(self.db_path, check_same_thread=False,
+                                       factory=SqliteConnection)
+                conn.executescript("""
+                    CREATE TABLE IF NOT EXISTS cached_images (
+                        image_id TEXT PRIMARY KEY,
+                        last_accessed REAL DEFAULT 0.0,
+                        last_modified REAL DEFAULT 0.0,
+                        size INTEGER DEFAULT 0,
+                        hits INTEGER DEFAULT 0,
+                        checksum TEXT
+                    );
+                """)
+                conn.close()
+            except sqlite3.DatabaseError as e:
+                msg = _("Failed to initialize the image cache database. "
+                        "Got error: %s") % e
+                LOG.error(msg)
+                raise exception.BadDriverConfiguration(driver_name='sqlite',
+                                                       reason=msg)
+
+        create_db()
 
     def get_cache_size(self):
         """

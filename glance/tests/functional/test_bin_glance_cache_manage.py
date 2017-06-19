@@ -214,6 +214,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
             'image_cache_dir': self.api_server.image_cache_dir,
             'image_cache_driver': self.image_cache_driver,
             'registry_port': self.registry_server.bind_port,
+            'lock_path': self.test_dir,
             'log_file': os.path.join(self.test_dir, 'cache.log'),
             'metadata_encryption_key': "012345678901234567890123456789ab",
             'filesystem_store_datadir': self.test_dir
@@ -221,6 +222,7 @@ class TestBinGlanceCacheManage(functional.FunctionalTest):
         with open(cache_config_filepath, 'w') as cache_file:
             cache_file.write("""[DEFAULT]
 debug = True
+lock_path = %(lock_path)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 registry_host = 127.0.0.1
