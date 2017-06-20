@@ -55,9 +55,6 @@ class TestImageQuota(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageQuota, self).setUp()
 
-    def tearDown(self):
-        super(TestImageQuota, self).tearDown()
-
     def _get_image(self, location_count=1, image_size=10):
         context = FakeContext()
         db_api = unit_test_utils.FakeDB()

@@ -57,9 +57,6 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
         self.set_property_protections()
         self.policy = policy.Enforcer()
 
-    def tearDown(self):
-        super(TestPropertyRulesWithRoles, self).tearDown()
-
     def test_is_property_protections_enabled_true(self):
         self.config(property_protection_file="property-protections.conf")
         self.assertTrue(property_utils.is_property_protection_enabled())
@@ -334,9 +331,6 @@ class TestPropertyRulesWithPolicies(base.IsolatedUnitTest):
         self.set_property_protections(use_policies=True)
         self.policy = policy.Enforcer()
         self.rules_checker = property_utils.PropertyRules(self.policy)
-
-    def tearDown(self):
-        super(TestPropertyRulesWithPolicies, self).tearDown()
 
     def test_check_property_rules_create_permitted_specific_policy(self):
         self.assertTrue(self.rules_checker.check_property_rules(

@@ -34,9 +34,6 @@ class TestUploadUtils(base.StoreClearingUnitTest):
         super(TestUploadUtils, self).setUp()
         self.config(debug=True)
 
-    def tearDown(self):
-        super(TestUploadUtils, self).tearDown()
-
     def test_initiate_delete(self):
         req = unit_test_utils.get_fake_request()
         location = {"url": "file://foo/bar",

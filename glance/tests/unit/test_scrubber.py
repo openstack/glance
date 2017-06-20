@@ -128,9 +128,6 @@ class TestScrubDBQueue(test_utils.BaseTestCase):
     def setUp(self):
         super(TestScrubDBQueue, self).setUp()
 
-    def tearDown(self):
-        super(TestScrubDBQueue, self).tearDown()
-
     def _create_image_list(self, count):
         images = []
         for x in range(count):

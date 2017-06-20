@@ -876,10 +876,6 @@ class TestRegistryV1ClientApi(base.IsolatedUnitTest):
         self.context = context.RequestContext()
         reload_module(rapi)
 
-    def tearDown(self):
-        """Clear the test environment."""
-        super(TestRegistryV1ClientApi, self).tearDown()
-
     def test_get_registry_client(self):
         actual_client = rapi.get_registry_client(self.context)
         self.assertIsNone(actual_client.identity_headers)
@@ -953,9 +949,6 @@ class TestRegistryV1ClientRequests(base.IsolatedUnitTest):
 
     def setUp(self):
         super(TestRegistryV1ClientRequests, self).setUp()
-
-    def tearDown(self):
-        super(TestRegistryV1ClientRequests, self).tearDown()
 
     def test_do_request_with_identity_headers(self):
         identity_headers = {'foo': 'bar'}

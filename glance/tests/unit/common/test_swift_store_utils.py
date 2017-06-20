@@ -28,9 +28,6 @@ class TestSwiftParams(base.IsolatedUnitTest):
         self.swift_config_file = self._copy_data_file(conf_file, test_dir)
         self.config(swift_store_config_file=self.swift_config_file)
 
-    def tearDown(self):
-        super(TestSwiftParams, self).tearDown()
-
     def test_multiple_swift_account_enabled(self):
         self.config(swift_store_config_file="glance-swift.conf")
         self.assertTrue(

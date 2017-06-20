@@ -733,10 +733,6 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
         super(TestRegistryV2ClientApi, self).setUp()
         reload_module(rapi)
 
-    def tearDown(self):
-        """Clear the test environment"""
-        super(TestRegistryV2ClientApi, self).tearDown()
-
     def test_configure_registry_client_not_using_use_user_token(self):
         self.config(use_user_token=False)
         with patch.object(rapi,
