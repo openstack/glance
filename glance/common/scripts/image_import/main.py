@@ -117,13 +117,9 @@ def import_image(image_repo, image_factory, task_input, task_id, uri):
 
 
 def create_image(image_repo, image_factory, image_properties, task_id):
-    _base_properties = []
-    for k, v in v2_api.get_base_properties().items():
-        _base_properties.append(k)
-
     properties = {}
     # NOTE: get the base properties
-    for key in _base_properties:
+    for key in v2_api.get_base_properties():
         try:
             properties[key] = image_properties.pop(key)
         except KeyError:
