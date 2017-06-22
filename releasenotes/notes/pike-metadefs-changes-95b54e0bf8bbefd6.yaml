@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    The following metadata definitions have been modified in the Pike release:
+
+    * The property ``img_hide_hypervisor_id`` has been added to the namespace
+      ``OS::Compute::LibvirtImage``.
+
+    You may upgrade these definitions using:
+
+    ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``
