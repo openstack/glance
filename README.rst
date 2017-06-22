@@ -50,8 +50,8 @@ HACKING.rst file, and pass all unit tests.
 
 Further developer focused documentation is available at:
 
-* `Official Glance documentation <http://docs.openstack.org/developer/glance/>`_
-* `Official Client documentation <http://docs.openstack.org/developer/python-glanceclient/>`_
+* `Official Glance documentation <http://docs.openstack.org/glance/>`_
+* `Official Client documentation <http://docs.openstack.org/python-glanceclient/>`_
 
 Operators
 ---------
@@ -59,7 +59,7 @@ Operators
 To learn how to deploy and configure OpenStack Glance, consult the
 documentation available online at:
 
-* `Openstack Glance <http://docs.openstack.org/>`_
+* `Openstack Glance <http://docs.openstack.org/glance/>`_
 
 In the unfortunate event that bugs are discovered, they should be
 reported to the appropriate bug tracker. You can raise bugs here:
