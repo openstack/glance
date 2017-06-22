@@ -19,7 +19,7 @@
     "name": "image",
     "properties": {
         "architecture": {
-            "description": "Operating system architecture as specified in http://docs.openstack.org/trunk/openstack-compute/admin/content/adding-images.html",
+            "description": "Operating system architecture as specified in https://docs.openstack.org/cli-reference/glance-property-keys.html",
             "is_base": false,
             "type": "string"
         },
@@ -141,7 +141,7 @@
             ]
         },
         "os_distro": {
-            "description": "Common name of operating system distribution as specified in http://docs.openstack.org/trunk/openstack-compute/admin/content/adding-images.html",
+            "description": "Common name of operating system distribution as specified in https://docs.openstack.org/cli-reference/glance-property-keys.html",
             "is_base": false,
             "type": "string"
         },
