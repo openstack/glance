@@ -12,10 +12,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import exceptions as ka_exceptions
 from keystoneauth1.identity import v3
 from keystoneauth1.loading import conf
 from keystoneauth1.loading import session
-from keystoneclient import exceptions as ks_exceptions
 from keystoneclient.v3 import client as ks_client
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -79,7 +79,7 @@ class TokenRefresher(object):
             self.trustee_client = self._refresh_trustee_client()
         try:
             return self.trustee_client.session.get_token()
-        except ks_exceptions.Unauthorized:
+        except ka_exceptions.Unauthorized:
             # in case of Unauthorized exceptions try to refresh client because
             # service user token may expired
             self.trustee_client = self._refresh_trustee_client()
@@ -93,7 +93,7 @@ class TokenRefresher(object):
                 self._refresh_trustee_client().trusts.delete(self.trust_id)
             else:
                 self.trustee_client.trusts.delete(self.trust_id)
-        except ks_exceptions.Unauthorized:
+        except ka_exceptions.Unauthorized:
             # service user token may expire when we are trying to delete token
             # so need to update client to ensure that this is not the reason
             # of failure
