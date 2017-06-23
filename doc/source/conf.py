@@ -55,7 +55,14 @@ extensions = ['sphinx.ext.coverage',
               'sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'oslo_config.sphinxconfiggen',
+              'openstackdocstheme',
               ]
+
+# openstackdocstheme options
+repository_name = 'openstack/glance'
+bug_project = 'glance'
+bug_tag = ''
+html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 config_generator_config_file = [
     ('../../etc/oslo-config-generator/glance-api.conf',
