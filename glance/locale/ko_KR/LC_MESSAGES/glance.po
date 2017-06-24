@@ -7,43 +7,23 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 15.0.0.0b3.dev29\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-23 20:54+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-04 06:26+0000\n"
-"Last-Translator: Ian Y. Choi <ianyrchoi@gmail.com>\n"
+"PO-Revision-Date: 2016-04-12 05:21+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: ko-KR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Korean (South Korea)\n"
 
 #, python-format
 msgid "\t%s"
 msgstr "\t%s"
-
-#, python-format
-msgid "%(attribute)s have to be string"
-msgstr "%(attribute)s 속성은 문자열이어야 함"
-
-#, python-format
-msgid "%(attribute)s is required"
-msgstr "%(attribute)s 속성이 필요함"
-
-#, python-format
-msgid "%(attribute)s may not be longer than %(length)i"
-msgstr "%(attribute)s의 길이는 %(length)i 이하여야 함"
-
-#, python-format
-msgid "%(attribute)s may not be shorter than %(length)i"
-msgstr "%(attribute)s의 길이는 %(length)i 이상이어야 함"
-
-#, python-format
-msgid "%(attribute)s should match pattern %(pattern)s"
-msgstr "%(attribute)s은(는) 패턴 %(pattern)s과(와) 일치해야 함"
 
 #, python-format
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
@@ -124,13 +104,6 @@ msgstr ""
 msgid "A body is not expected with this request."
 msgstr "이 요청에는 본문이 없어야 합니다."
 
-msgid ""
-"A list of artifacts that are allowed in the format name or name-version. "
-"Empty list means that any artifact can be loaded."
-msgstr ""
-"형식 이름 또는 이름-버전에 허용되는 아티팩트 목록입니다.목록이 비어 있으면 모"
-"든 아티팩트를 로드할 수 있습니다."
-
 #, python-format
 msgid ""
 "A metadata definition object with name=%(object_name)s already exists in "
@@ -156,10 +129,6 @@ msgstr ""
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr "외부 저장소에 보관된 이미지 파일에 액세스하기 위한 URL 세트"
-
-#, python-format
-msgid "Allowed values %s are invalid under given validators"
-msgstr "허용되는 값 %s은(는) 지정된 유효성 검증기에서 올바르지 않음"
 
 msgid "Amount of disk space (in GB) required to boot image."
 msgstr "이미지를 부팅하는 데 필요한 디스크 공간의 양(MB)"
@@ -209,80 +178,6 @@ msgstr "알 수 없는 예외가 발생했음"
 
 msgid "An unknown task exception occurred"
 msgstr "알 수 없는 태스크 예외 발생"
-
-#, python-format
-msgid "Array has no element at position %d"
-msgstr "배열의 위치 %d에 요소가 없음"
-
-msgid "Array property can't have item_type=Array"
-msgstr "배열 특성에 item_type=Array를 사용할 수 없음"
-
-#, python-format
-msgid "Artifact %s could not be deleted because it is in use: %s"
-msgstr "사용 중이므로 아티팩트 %s을(를) 삭제할 수 없음: %s"
-
-#, python-format
-msgid "Artifact cannot change state from %(source)s to %(target)s"
-msgstr "아티팩트의 상태를 %(source)s에서 %(target)s(으)로 변경할 수 없음"
-
-#, python-format
-msgid "Artifact exceeds the storage quota: %s"
-msgstr "아티팩트가 스토리지 할당량을 초과함: %s"
-
-#, python-format
-msgid "Artifact has no property %(prop)s"
-msgstr "아티팩트에 특성 %(prop)s이(가) 없음"
-
-#, python-format
-msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
-msgstr "아티팩트 상태를 %(curr)s에서 %(to)s(으)로 변경할 수 없음"
-
-#, python-format
-msgid "Artifact storage media is full: %s"
-msgstr "아티팩트 스토리지 매체가 가득 참: %s"
-
-#, python-format
-msgid ""
-"Artifact type with name '%(name)s' and version '%(version)s' is not known"
-msgstr ""
-"이름이 '%(name)s'(이)며 버전이 '%(version)s'인 아티팩트 유형이 알 수 없는 유"
-"형임"
-
-msgid "Artifact with a circular dependency can not be created"
-msgstr "순환 종속성을 가진 아티팩트를 작성할 수 없음"
-
-#, python-format
-msgid "Artifact with id=%(id)s is not accessible"
-msgstr "ID가 %(id)s인 아티팩트에 액세스할 수 없음"
-
-#, python-format
-msgid "Artifact with id=%(id)s was not found"
-msgstr "ID가 %(id)s인 아티팩트를 찾을 수 없음"
-
-msgid "Artifact with the specified type, name and version already exists"
-msgstr "지정된 유형, 이름, 버전을 사용하는 아티팩트가 이미 있음"
-
-#, python-format
-msgid ""
-"Artifact with the specified type, name and version already has the direct "
-"dependency=%(dep)s"
-msgstr ""
-"지정된 유형, 이름, 버전을 사용하는 아티팩트에 이미 직접  종속성 %(dep)s이"
-"(가) 있음"
-
-#, python-format
-msgid ""
-"Artifact with the specified type, name and version already has the "
-"transitive dependency=%(dep)s"
-msgstr ""
-"지정된 유형, 이름, 버전을 사용하는 아티팩트에 상태 전이 종속성 %(dep)s이(가) "
-"있음"
-
-msgid "Attempt to set readonly property"
-msgstr "읽기 전용 특성 설정 시도"
-
-msgid "Attempt to set value of immutable property"
-msgstr "불변 특성 값 설정 시도"
 
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
@@ -360,21 +255,8 @@ msgstr "Swift URI에 양식이 잘못된 신임 정보 '%(creds)s'"
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI에 양식이 잘못된 신임 정보가 있습니다."
 
-msgid "BinaryObject property cannot be declared mutable"
-msgstr "BinaryObject 특성은 변경 가능으로 선언할 수 없음"
-
-#, python-format
-msgid "Blob %(name)s may not have multiple values"
-msgstr "Blob %(name)s에 값이 여러 개일 수 없음"
-
-msgid "Blob size is not set"
-msgstr "Blob 크기를 설정하지 않음"
-
 msgid "Body expected in request."
 msgstr "요청에 본문이 있어야 합니다."
-
-msgid "Both file and legacy_image_id may not be specified at the same time"
-msgstr "파일 및 legacy_image_id를 동시에 지정할 수 없음"
 
 msgid "Cannot be a negative value"
 msgstr "음수 값일 수 없음"
@@ -386,13 +268,6 @@ msgstr "음수 값이 될 수 없습니다."
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr "이미지 %(key)s '%(value)s'을(를) 정수로 변환할 수 없습니다."
 
-msgid "Cannot declare artifact property with reserved name 'metadata'"
-msgstr "예약된 이름 'metadata'를 사용하는 아티팩트 특성을 선언할 수 없음"
-
-#, python-format
-msgid "Cannot load artifact '%(name)s'"
-msgstr "아티팩트 '%(name)s'을(를) 로드할 수 없음"
-
 msgid "Cannot remove last location in the image."
 msgstr "이미지에서 마지막 위치를 제거할 수 없습니다."
 
@@ -403,18 +278,8 @@ msgstr "이미지 %(image_id)s 에 대한 데이터 저장 불가: %(error)s"
 msgid "Cannot set locations to empty list."
 msgstr "위치를 비어 있는 목록으로 설정할 수 없습니다."
 
-msgid "Cannot specify 'max_size' explicitly"
-msgstr "'max_size'를 명시적으로 지정할 수 없음"
-
-msgid "Cannot specify 'min_size' explicitly"
-msgstr "'min_size'를 명시적으로 지정할 수 없음"
-
 msgid "Cannot upload to an unqueued image"
 msgstr "큐에 들어가지 않은 이미지에 업로드할 수 없음"
-
-#, python-format
-msgid "Cannot use this parameter with the operator %(op)s"
-msgstr "연산자 %(op)s(으)로 이 매개변수를 사용할 수 없음"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -484,10 +349,6 @@ msgstr "이미지를 업데이트할 수 없음: %s"
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "여러 디스크를 포함하는 OVA 패키지는 현재 지원되지 않습니다."
 
-msgid "Custom validators list should contain tuples '(function, message)'"
-msgstr ""
-"사용자 정의 유효성 검증기 목록에 튜플 '(function, message)'을 포함해야 함"
-
 #, python-format
 msgid "Data for image_id not found: %s"
 msgstr "image_id에 대한 데이터를 찾을 수 없음: %s"
@@ -540,13 +401,6 @@ msgstr "이 자원이 업데이트된 Datetime"
 msgid "Datetime when this resource would be subject to removal"
 msgstr "이 자원이 제거되는 Datetime"
 
-msgid "Default value is invalid"
-msgstr "기본값이 올바르지 않음"
-
-#, python-format
-msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
-msgstr "할당량을 초과하기 때문에 아티팩트 업로드를 거부하는 중: %s"
-
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr "할당량을 초과하기 때문에 이미지 업로드를 거부하는 중: %s"
@@ -555,39 +409,17 @@ msgstr "할당량을 초과하기 때문에 이미지 업로드를 거부하는 
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr "%d바이트를 초과하는 이미지의 업로드를 거부하는 중입니다."
 
-#, python-format
-msgid "Dependency property '%s' has to be deleted first"
-msgstr "종속성 특성 '%s'을(를) 먼저 삭제해야 함"
-
-msgid "Dependency relations cannot be mutable"
-msgstr "종속성 관계는 변경할 수 없음"
-
 msgid "Descriptive name for the image"
 msgstr "이미지에 대한 설명식 이름"
 
-msgid "Dictionary contains unexpected key(s)"
-msgstr "사전에 예상치 않은 키가 있음"
-
-msgid "Dictionary size is greater than maximum"
-msgstr "사전 크기가 최대값보다 큼"
-
-msgid "Dictionary size is less than minimum"
-msgstr "사전 크기가 최소값보다 작음"
-
 msgid "Disk format is not specified."
 msgstr "디스크 형식이 지정되지 않았습니다."
-
-msgid "Does not match pattern"
-msgstr "패턴과 일치하지 않음"
 
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
 msgstr ""
 "%(driver_name)s 드라이버가 올바르게 구성되지 않았습니다. 이유: %(reason)s"
-
-msgid "Either a file or a legacy_image_id has to be specified"
-msgstr "파일을 지정하거나 legacy_image_id를 지정해야 함"
 
 msgid ""
 "Error decoding your request. Either the URL or the request body contained "
@@ -599,9 +431,6 @@ msgstr ""
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
 msgstr "이미지 %(image_id)s의 멤버를 페치하는 중에 오류 발생: %(inner_msg)s"
-
-msgid "Error in store configuration. Adding artifacts to store is disabled."
-msgstr "저장소 구성에 오류가 있습니다. 저장소에 아티팩트를 추가할 수 없습니다."
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr "저장소 구성에 오류가 있습니다. 이미지를 저장소에 추가할 수 없습니다."
@@ -626,10 +455,6 @@ msgstr "이미지 활성화에 실패했습니다. 오류 발생: %s"
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "이미지 메타데이터 추가 실패. 오류 발생: %s"
-
-#, python-format
-msgid "Failed to find artifact %(artifact_id)s to delete"
-msgstr "삭제할 아티팩트 %(artifact_id)s을(를) 찾는 데 실패함"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
@@ -693,12 +518,6 @@ msgstr ""
 "파일 기반 가져오기는 허용되지 않습니다. 이미지 데이터의 로컬이 아닌 소스를 사"
 "용하십시오."
 
-msgid "File too large"
-msgstr "파일이 너무 큼"
-
-msgid "File too small"
-msgstr "파일이 너무 작음"
-
 msgid "Forbidden image access"
 msgstr "금지된 이미지 액세스"
 
@@ -745,9 +564,6 @@ msgstr "컨테이너의 형식"
 
 msgid "Format of the disk"
 msgstr "디스크의 형식"
-
-msgid "Glance client not installed"
-msgstr "Glance 클라이언트가 설치되지 않음"
 
 #, python-format
 msgid "Host \"%s\" is not valid."
@@ -884,27 +700,13 @@ msgstr ""
 msgid "Incorrect request: %s"
 msgstr "올바르지 않은 요청: %s"
 
-msgid "Index is out of range"
-msgstr "색인이 범위를 벗어남"
-
-msgid "Index is required"
-msgstr "색인은 필수임"
-
 #, python-format
 msgid "Input does not contain '%(key)s' field"
 msgstr "입력에 '%(key)s' 필드가 포함되어 있지 않음"
 
 #, python-format
-msgid "Insufficient permissions on artifact storage media: %s"
-msgstr "아티팩트 스토리지 매체에 대한 권한이 충분하지 않음: %s"
-
-#, python-format
 msgid "Insufficient permissions on image storage media: %s"
 msgstr "이미지 스토리지 미디어 권한 부족 : %s"
-
-#, python-format
-msgid "Invalid Content-Type for work with %s"
-msgstr "%s과(와) 작업하는 데 올바르지 않은 Content-Type"
 
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
@@ -928,12 +730,6 @@ msgstr "이미지에 대한 컨테이너 형식 '%s'이(가) 올바르지 않습
 msgid "Invalid content type %(content_type)s"
 msgstr "올바르지 않은 컨텐츠 유형 %(content_type)s"
 
-msgid "Invalid dict property type"
-msgstr "올바르지 않은 사전 특성 유형"
-
-msgid "Invalid dict property type specification"
-msgstr "올바르지 않은 사전 특성 유형 스펙"
-
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr "이미지에 대한 디스크 형식 '%s'이(가) 올바르지 않습니다."
@@ -952,22 +748,8 @@ msgid ""
 "Invalid filter value %s. There is no comma before opening quotation mark."
 msgstr "올바르지 않은 필터 값 %s입니다. 열기 따옴표 전에 쉼표가 없습니다."
 
-#, python-format
-msgid "Invalid headers \"Content-Type\": %s"
-msgstr "올바르지 않은 헤더 \"Content-Type\": %s"
-
 msgid "Invalid image id format"
 msgstr "올바르지 않은 이미지 ID 형식"
-
-msgid "Invalid item type specification"
-msgstr "올바르지 않은 항목 유형 스펙"
-
-#, python-format
-msgid "Invalid json body: %s"
-msgstr "올바르지 않은 json 본문: %s"
-
-msgid "Invalid jsonpatch request"
-msgstr "올바르지 않은 jsonpatch 요청"
 
 msgid "Invalid location"
 msgstr "잘못된 위치"
@@ -1025,18 +807,6 @@ msgstr "위치를 추가하기에 올바르지 않은 포지션입니다."
 msgid "Invalid position for removing a location."
 msgstr "위치를 제거하기에 올바르지 않은 포지션입니다."
 
-msgid "Invalid property definition"
-msgstr "올바르지 않은 특성 정의"
-
-msgid "Invalid reference list specification"
-msgstr "올바르지 않은 참조 목록 스펙"
-
-msgid "Invalid referenced type"
-msgstr "올바르지 않은 참조 유형"
-
-msgid "Invalid request PATCH for work with blob"
-msgstr "blob와 작업하는 데 올바르지 않은 요청 PATCH"
-
 msgid "Invalid service catalog json."
 msgstr "올바르지 않은 서비스 카탈로그 json입니다."
 
@@ -1046,22 +816,10 @@ msgstr "올바르지 않은 정렬 방향: %s"
 
 #, python-format
 msgid ""
-"Invalid sort key: %(sort_key)s. If type version is not set it must be one of "
-"the following: %(available)s."
-msgstr ""
-"올바르지 않는 정렬 키: %(sort_key)s. 유형 버전이 설정되지 않은 경우에는 다음 "
-"중 하나여야 합니다. %(available)s."
-
-#, python-format
-msgid ""
 "Invalid sort key: %(sort_key)s. It must be one of the following: "
 "%(available)s."
 msgstr ""
 "올바르지 않은 정렬 키: %(sort_key)s. 다음 중 하나여야 합니다. %(available)s."
-
-#, python-format
-msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
-msgstr "올바르지 않은 정렬 키: %(sort_key)s. 이 특성을 기준으로 정렬할 수 없음"
 
 #, python-format
 msgid "Invalid status value: %s"
@@ -1074,9 +832,6 @@ msgstr "올바르지 않은 상태: %s"
 #, python-format
 msgid "Invalid time format for %s."
 msgstr "%s에 올바르지 않은 시간 형식입니다."
-
-msgid "Invalid type definition"
-msgstr "올바르지 않은 유형 정의"
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -1126,21 +881,6 @@ msgstr "옵션 %(option)s에 올바르지 않은 값: %(value)s"
 msgid "Invalid visibility value: %s"
 msgstr "올바르지 않은 가시성 값: %s"
 
-msgid "Is not allowed value"
-msgstr "허용되는 값이 아님"
-
-#, python-format
-msgid ""
-"It appears that the eventlet module has been imported prior to setting "
-"%s='yes'. It is currently necessary to disable eventlet.greendns if using "
-"ipv6 since eventlet.greendns currently breaks with ipv6 addresses. Please "
-"ensure that eventlet is not imported prior to this being set."
-msgstr ""
-"다음과 같이 설정하기 전에 eventlet 모듈을 가져왔습니다. %s='yes'. eventlet."
-"greendns가 현재 ipv6 주소로 나뉘므로 ipv6를 사용 중인 경우 지금 eventlet."
-"greendns를 사용 안함으로 설정해야 합니다. 이와 같이 설정하기 전에 eventlet을 "
-"가져오지 않아야 합니다."
-
 msgid "It's invalid to provide multiple image sources."
 msgstr "여러 개의 이미지 소스를 제공하면 안 됩니다."
 
@@ -1153,56 +893,11 @@ msgstr "위치가 표시되지 않는 경우 위치를 제거할 수 없습니�
 msgid "It's not allowed to update locations if locations are invisible."
 msgstr "위치가 표시되지 않는 경우 위치를 업데이트할 수 없습니다."
 
-msgid "Items have to be unique"
-msgstr "항목이 고유해야 함"
-
-msgid ""
-"Json path should start with a '/', end with no '/', no 2 subsequent '/' are "
-"allowed."
-msgstr ""
-"Json 경로는 '/'로 시작해야 하며 '/'로 끝나지 않아야 합니다. 두 개의 후속 "
-"'/'는 허용되지 않습니다."
-
-msgid "Legacy image was not found"
-msgstr "레거시 이미지를 찾을 수 없음"
-
-msgid "Length  is greater than maximum"
-msgstr "길이가 최대값보다 큼"
-
-msgid "Length is less than minimum"
-msgstr "길이가 최소값보다 작음"
-
-msgid "Limit param must be an integer"
-msgstr "Limit 매개변수는 정수여야 함"
-
-msgid "Limit param must be positive"
-msgstr "Limit 매개변수는 양수여야 함"
-
-#, python-format
-msgid "Limit param must not be higher than %d"
-msgstr "Limit 매개변수는 %d보다 크지 않아야 함"
-
-msgid "List definitions may hot have defaults"
-msgstr "목록 정의에 기본값을 사용할 수 없음"
-
 msgid "List of strings related to the image"
 msgstr "이미지와 관련된 문자열 목록"
 
-msgid "List size is greater than maximum"
-msgstr "목록 크기가 최대값보다 큼"
-
-msgid "List size is less than minimum"
-msgstr "목록 크기가 최소값보다 작음"
-
-#, python-format
-msgid "Malformed Content-Range header: %s"
-msgstr "잘못된 형식의 컨텐츠 범위 헤더: %s"
-
 msgid "Malformed JSON in request body."
 msgstr "요청 본문에서 JSON의 형식이 올바르지 않습니다."
-
-msgid "Max string length may not exceed 255 characters"
-msgstr "최대 문자열 길이는 255자를 초과할 수 없음"
 
 msgid "Maximal age is count of days since epoch."
 msgstr "최대 기간은 epoch 이후의 일 수입니다."
@@ -1284,9 +979,6 @@ msgstr "메타데이터 정의 태그 %(tag_name)s은(는) 보호되므로 삭�
 msgid "Metadata definition tag not found for id=%s"
 msgstr "id=%s에 대한 메타데이터 정의 태그를 찾을 수 없음"
 
-msgid "Min string length may not be negative"
-msgstr "최소 문자열 길이는 음수일 수 없음"
-
 msgid "Minimal rows limit is 1."
 msgstr "최소 행 제한은 1입니다."
 
@@ -1302,13 +994,6 @@ msgstr ""
 "다중 '이미지' 서비스가 %(region)s 리젼에 일치합니다. 이는 일반적으로 리젼이 "
 "필요하지만 아직 리젼을 제공하지 않은 경우 발생합니다."
 
-msgid "Must supply a positive, non-zero value for age."
-msgstr "기간에 0이 아닌 양수 값을 제공해야 합니다."
-
-#, python-format
-msgid "No artifact found with ID %s"
-msgstr "ID가 %s인 아티팩트를 찾을 수 없음"
-
 msgid "No authenticated user"
 msgstr "인증된 사용자가 없음"
 
@@ -1322,38 +1007,6 @@ msgstr "%(img)s 이미지에서 ID가 %(loc)s인 위치를 찾을 수 없음"
 
 msgid "No permission to share that image"
 msgstr "해당 이미지를 공유한 권한이 없음"
-
-#, python-format
-msgid "No plugin for '%(name)s' has been loaded"
-msgstr "'%(name)s'용 플러그인을 로드하지 않음"
-
-msgid "No property to access"
-msgstr "액세스할 특성이 없음"
-
-#, python-format
-msgid "No such key '%s' in a dict"
-msgstr "사전에 해당 키 '%s'이(가) 없음"
-
-#, python-format
-msgid "Not a blob property '%s'"
-msgstr "blob 특성 '%s'이(가) 아님"
-
-msgid "Not a downloadable entity"
-msgstr "다운로드 가능한 엔티티가 아님"
-
-msgid "Not a list property"
-msgstr "목록 특성이 아님"
-
-#, python-format
-msgid "Not a list property '%s'"
-msgstr "목록 특성 '%s'이(가) 아님"
-
-msgid "Not a valid value type"
-msgstr "올바른 값 유형이 아님"
-
-#, python-format
-msgid "Not all dependencies are in '%s' state"
-msgstr "일부 종속성의 세부 상태가 '%s'임"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1392,10 +1045,6 @@ msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr ""
 "이미지 %(image_id)s에 대한 이미지 데이터의 업로드가 허용되지 않음: %(error)s"
 
-#, python-format
-msgid "Not an array idx '%s'"
-msgstr "배열 idx '%s'이(가) 아님"
-
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr "정렬 디렉토리 수가 정렬 키 수와 일치하지 않음"
 
@@ -1404,9 +1053,6 @@ msgstr "관리자만 OVA를 추출할 수 있음"
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "이전 및 새 저장 구문은 결합할 수 없음"
-
-msgid "Only list indexes are allowed for blob lists"
-msgstr "blob 목록에는 목록 색인만 허용됨"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1430,10 +1076,6 @@ msgid "Operations must be JSON objects."
 msgstr "오퍼레이션은 JSON 오브젝트여야 합니다."
 
 #, python-format
-msgid "Operator %(op)s is not supported"
-msgstr "연산자 %(op)s은(는) 지원되지 않음"
-
-#, python-format
 msgid "Original locations is not empty: %s"
 msgstr "원본 위치가 비어있지 않음: %s"
 
@@ -1451,12 +1093,6 @@ msgstr "네임스페이스의 소유자입니다."
 
 msgid "Param values can't contain 4 byte unicode."
 msgstr "매개변수 값에 4바이트 유니코드를 포함할 수 없습니다."
-
-#, python-format
-msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
-msgstr ""
-"플러그인 이름 '%(plugin)s'은(는) 아티팩트 유형 이름 '%(name)s'과(와) 일치해"
-"야 함"
 
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
@@ -1479,20 +1115,9 @@ msgstr "`%s` 포인터가 \"/\"로 시작하지 않습니다."
 msgid "Pointer `%s` end with \"/\"."
 msgstr "포인터 `%s`이(가) \"/\"로 끝납니다."
 
-msgid ""
-"Pointer contains '~' which is not part of a recognized escape sequence [~0, "
-"~1]."
-msgstr ""
-"포인터에 인식되는 이스케이프 시퀀스 [~0, ~1]의 일부가 아닌 '~'가 포함되어 있"
-"습니다."
-
 #, python-format
 msgid "Port \"%s\" is not valid."
 msgstr "\"%s\" 포트가 올바르지 않습니다."
-
-#, python-format
-msgid "Prerelease numeric component is too large (%d characters max)"
-msgstr "사전 릴리스 숫자 컴포넌트가 너무 큼(최대 %d자)"
 
 #, python-format
 msgid "Process %d not running"
@@ -1527,19 +1152,11 @@ msgid "Property %s must be set prior to saving data."
 msgstr "데이터를 저장하기 전에 %s 특성을 설정해야 합니다."
 
 #, python-format
-msgid "Property '%(name)s' may not have value '%(val)s': %(msg)s"
-msgstr "특성 '%(name)s'에 값 '%(val)s'이(가) 없음: %(msg)s"
-
-#, python-format
 msgid "Property '%s' is protected"
 msgstr "'%s' 특성이 보호됨 "
 
 msgid "Property names can't contain 4 byte unicode."
 msgstr "특성 이름에 4바이트 유니코드를 포함할 수 없습니다."
-
-#, python-format
-msgid "Property's %(prop)s value has not been found"
-msgstr "특성의 %(prop)s 값을 찾지 못함"
 
 #, python-format
 msgid ""
@@ -1564,9 +1181,6 @@ msgstr "제공된 태스크 유형이 지원되지 않음: %(type)s"
 msgid "Provides a user friendly description of the namespace."
 msgstr "사용자에게 익숙한 네임스페이스 설명을 제공합니다."
 
-msgid "Public images do not have members."
-msgstr "공용 이미지에 멤버가 없습니다."
-
 msgid "Received invalid HTTP redirect."
 msgstr "올바르지 않은 HTTP 경로 재지정을 수신했습니다."
 
@@ -1582,10 +1196,6 @@ msgstr "레지스트리 서비스에서 %s을(를) 사용할 수 없음"
 msgid "Registry was not configured correctly on API server. Reason: %(reason)s"
 msgstr ""
 "API 서버에서 레지스트리가 올바르게 구성되지 않았습니다. 이유: %(reason)s"
-
-#, python-format
-msgid "Relation %(name)s may not have multiple values"
-msgstr "관계 %(name)s에 값이 여러 개일 수 없음"
 
 #, python-format
 msgid "Reload of %(serv)s not supported"
@@ -1633,10 +1243,6 @@ msgstr "서버 %(serv)s이(가) 중지됨"
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
 msgstr "서버 작업자 작성에 실패함: %(reason)s."
-
-#, python-format
-msgid "Show level %(shl)s is not supported in this operation"
-msgstr "이 조작에서는 표시 레벨 %(shl)s이(가) 지원되지 않음"
 
 msgid "Signature verification failed"
 msgstr "서명 검증 실패"
@@ -1791,30 +1397,12 @@ msgstr ""
 "디렉터리의 적합한 행에 추가하기 바랍니다."
 
 #, python-format
-msgid "The format of the version %s is not valid. Use semver notation"
-msgstr "버전 %s의 형식이 올바르지 않습니다. semver 표기법을 사용하십시오."
-
-#, python-format
 msgid ""
 "The given uri is not valid. Please specify a valid uri from the following "
 "list of supported uri %(supported)s"
 msgstr ""
 "제공된 uri가 올바르지 않습니다. 다음 지원 uri 목록에서 올바른 uri를 지정하십"
 "시오. %(supported)s"
-
-#, python-format
-msgid ""
-"The image %s is already present on the slave, but our check for it did not "
-"find it. This indicates that we do not have permissions to see all the "
-"images on the slave server."
-msgstr ""
-"이미지 %s이(가) 이미 슬레이브에 존재하지만 해당 이미지를 검색할 때 발견하지 "
-"못했습니다. 슬레이브 서버에 있는 이미지 전체를 볼 수 있는 권한이 없기 때문입"
-"니다."
-
-#, python-format
-msgid "The incoming artifact blob is too large: %s"
-msgstr "수신 아티팩트 blob이 너무 큼: %s"
 
 #, python-format
 msgid "The incoming image is too large: %s"
@@ -1934,16 +1522,8 @@ msgstr ""
 msgid "The parameters required by task, JSON blob"
 msgstr "태스크에서 필요로 하는 매개변수, JSON blob"
 
-#, python-format
-msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
-msgstr "제공된 본문 %(body)s이(가) 지정된 스키마에서 올바르지 않음: %(schema)s"
-
 msgid "The provided image is too large."
 msgstr "제공된 이미지가 너무 큽니다."
-
-#, python-format
-msgid "The provided path '%(path)s' is invalid: %(explanation)s"
-msgstr "제공된 경로 '%(path)s'이(가) 올바르지 않음: %(explanation)s"
 
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not in "
@@ -2136,15 +1716,6 @@ msgstr "이후에 태스크가 활성이 되는 시간(시), 성공 또는 실�
 msgid "Too few arguments."
 msgstr "인수가 너무 적습니다."
 
-msgid "Too few locations"
-msgstr "위치가 너무 적음"
-
-msgid "Too many locations"
-msgstr "위치가 너무 많음"
-
-msgid "Type version has to be a valid semver string"
-msgstr "유형 버전은 올바른 semver 문자열이어야 함"
-
 msgid ""
 "URI cannot contain more than one occurrence of a scheme.If you have "
 "specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
@@ -2158,9 +1729,6 @@ msgstr ""
 
 msgid "URL to access the image file kept in external store"
 msgstr "외부 저장소에 보관된 이미지 파일에 액세스하기 위한 URL"
-
-msgid "Unable to PUT to non-empty collection"
-msgstr "비어 있지 않은 콜렉션에 대해 PUT을 수행할 수 없음"
 
 #, python-format
 msgid ""
@@ -2201,9 +1769,6 @@ msgstr ""
 "JSON 스키마 변경에서 `op`를 찾을 수 없습니다. 다음 중 하나여야 합니다. "
 "%(available)s."
 
-msgid "Unable to get legacy image"
-msgstr "레거시 이미지를 가져올 수 없음"
-
 msgid "Unable to increase file descriptor limit.  Running as non-root?"
 msgstr ""
 "파일 디스크립터 한계를 늘릴 수 없습니다. 비루트로 실행 중인지 확인하십시오."
@@ -2223,21 +1788,6 @@ msgstr "스키마를 로드할 수 없음: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "%s에 대한 붙여넣기 구성 파일을 찾을 수 없습니다."
-
-msgid "Unable to modify collection in immutable or readonly property"
-msgstr "불변 특성 또는 읽기 전용 특성의 콜렉션을 수정할 수 없음"
-
-msgid "Unable to specify artifact type explicitly"
-msgstr "아티팩트 유형을 명시적으로 지정할 수 없음"
-
-msgid "Unable to specify artifact type version explicitly"
-msgstr "아티팩트 유형 버전을 명시적으로 지정할 수 없음"
-
-msgid "Unable to specify version if multiple types are possible"
-msgstr "유형이 여러 개인 경우 버전을 지정할 수 없음"
-
-msgid "Unable to specify version if type is not specified"
-msgstr "유형을 지정하지 않은 경우 버전을 지정할 수 없음"
 
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
@@ -2279,39 +1829,12 @@ msgstr "지원되지 않는 sort_dir. 허용 가능한 값: %s"
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "지원되지 않는 sort_key. 허용 가능한 값: %s"
 
-msgid "Value is greater than maximum"
-msgstr "값이 최대값보다 큼"
-
-msgid "Value is less than minimum"
-msgstr "값이 최소값보다 작음"
-
-msgid "Value is required"
-msgstr "값이 필요함"
-
-#, python-format
-msgid "Version component is too large (%d max)"
-msgstr "버전 컴포넌트가 너무 큼(최대 %d)"
-
-#, python-format
-msgid "Version is invalid: %(reason)s"
-msgstr "버전이 올바르지 않음: %(reason)s"
-
 msgid "Virtual size of image in bytes"
 msgstr "이미지의 가상 크기(바이트)"
-
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "가시성은 \"공용\" 또는 \"개인용\" 중 하나여야 합니다."
 
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "pid %(pid)s(%(file)s)이 종료될 때까지 15초 대기함, 포기하는 중"
-
-msgid ""
-"When false, no artifacts can be loaded regardless of available_plugins. When "
-"true, artifacts can be loaded."
-msgstr ""
-"false이면 available_plugins와 관계 없이 아티팩트를 로드할 수 없습니다.true이"
-"면 아티팩트를 로드할 수 있습니다."
 
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
@@ -2508,10 +2031,6 @@ msgstr "limit 매개변수는 정수여야 함"
 
 msgid "limit param must be positive"
 msgstr "limit 매개변수가 양수여야 함"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "위치: %s 데이터 유실"
 
 msgid "md5 hash of image contents."
 msgstr "이미지 컨텐츠의 md5 해시입니다."

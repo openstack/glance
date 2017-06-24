@@ -7,43 +7,23 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 15.0.0.0b3.dev29\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-23 20:54+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-09-04 12:45+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"PO-Revision-Date: 2016-04-12 05:22+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: tr-TR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Turkish (Turkey)\n"
 
 #, python-format
 msgid "\t%s"
 msgstr "\t%s"
-
-#, python-format
-msgid "%(attribute)s have to be string"
-msgstr "%(attribute)s karakter dizisi olmalıdır"
-
-#, python-format
-msgid "%(attribute)s is required"
-msgstr "%(attribute)s gereklidir"
-
-#, python-format
-msgid "%(attribute)s may not be longer than %(length)i"
-msgstr "%(attribute)s %(length)i'den daha uzun olmayabilir"
-
-#, python-format
-msgid "%(attribute)s may not be shorter than %(length)i"
-msgstr "%(attribute)s %(length)i'den daha kısa olmayabilir"
-
-#, python-format
-msgid "%(attribute)s should match pattern %(pattern)s"
-msgstr "%(attribute)s %(pattern)s şablonu ile eşleşmelidir"
 
 #, python-format
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
@@ -116,13 +96,6 @@ msgstr ""
 "--os_auth_url seçeneği ya da OS_AUTH_URL ortam değişkeni, keystone kimlik "
 "doğrulama stratejisi etkinken gereklidir\n"
 
-msgid ""
-"A list of artifacts that are allowed in the format name or name-version. "
-"Empty list means that any artifact can be loaded."
-msgstr ""
-"Biçim adı ve ad-sürümünde izin verilen ürünlerin listesi. Boş liste her ürün "
-"yüklenebilir anlamına gelir."
-
 #, python-format
 msgid ""
 "A metadata definition object with name=%(object_name)s already exists in "
@@ -148,10 +121,6 @@ msgstr ""
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr "Harici depoda tutulan imaj dosyasına erişilecek URL kümesi"
-
-#, python-format
-msgid "Allowed values %s are invalid under given validators"
-msgstr "İzin verilen değerler %s verilen doğrulayıcılar altında geçersizdir"
 
 msgid "Amount of disk space (in GB) required to boot image."
 msgstr "İmajı ön yüklemek için gereken disk alanı miktarı (GB olarak)."
@@ -189,68 +158,6 @@ msgstr "Bilinmeyen olağandışı bir durum oluştu"
 
 msgid "An unknown task exception occurred"
 msgstr "Bilinmeyen bir görev olağandışı durumu oluştu"
-
-#, python-format
-msgid "Array has no element at position %d"
-msgstr "Dizi %d konumunda öge içermez"
-
-msgid "Array property can't have item_type=Array"
-msgstr "Dizi özelliği item_type=Array olamaz"
-
-#, python-format
-msgid "Artifact %s could not be deleted because it is in use: %s"
-msgstr "Ürün %s kullanımda olduğundan dolayı silinemez: %s"
-
-#, python-format
-msgid "Artifact cannot change state from %(source)s to %(target)s"
-msgstr "Ürün durumunu %(source)s kaynağından %(target)s hedefine değiştiremez"
-
-#, python-format
-msgid "Artifact has no property %(prop)s"
-msgstr "Ürün %(prop)s özelliğine sahip değil"
-
-#, python-format
-msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
-msgstr "Ürün durumu %(curr)s durumundan %(to)s durumuna değiştirilemez"
-
-#, python-format
-msgid ""
-"Artifact type with name '%(name)s' and version '%(version)s' is not known"
-msgstr "'%(name)s' ad ve '%(version)s' sürümdeki ürün bilinmiyor"
-
-msgid "Artifact with a circular dependency can not be created"
-msgstr "Döngüsel bağımlılık ile ürün oluşturulamaz"
-
-#, python-format
-msgid "Artifact with id=%(id)s is not accessible"
-msgstr "id=%(id)s ile ürün erişilebilir değil"
-
-#, python-format
-msgid "Artifact with id=%(id)s was not found"
-msgstr "id=%(id)s ile ürün bulunamadı"
-
-msgid "Artifact with the specified type, name and version already exists"
-msgstr "Belirtilen tür, ad ve sürümde ürün zaten var"
-
-#, python-format
-msgid ""
-"Artifact with the specified type, name and version already has the direct "
-"dependency=%(dep)s"
-msgstr ""
-"Belirtilen tür, ad ve sürümde ürün zaten doğrudan bağımlılığa=%(dep)s sahip"
-
-#, python-format
-msgid ""
-"Artifact with the specified type, name and version already has the "
-"transitive dependency=%(dep)s"
-msgstr ""
-"Belirtilen tür, ad ve sürümdeki ürün, zaten geçişli bağımlılığa=%(dep)s sahip"
-
-msgid "Attempt to set readonly property"
-msgstr "Salt okunur özellik ayarlamayı dene"
-
-msgid "Attempt to set value of immutable property"
-msgstr "Değişmez özelliğin değerini ayarlamaya çalışın"
 
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
@@ -319,18 +226,8 @@ msgstr "Swift URI içinde hatalı oluşturulmuş kimlik bilgileri '%(creds)s'"
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI içinde hatalı oluşturulmuş kimlik bilgileri."
 
-#, python-format
-msgid "Blob %(name)s may not have multiple values"
-msgstr "Blob %(name)s birden çok değeri olmayabilir"
-
-msgid "Blob size is not set"
-msgstr "Blob boyutu ayarlı değil"
-
 msgid "Body expected in request."
 msgstr "İstekte beklenen vücut."
-
-msgid "Both file and legacy_image_id may not be specified at the same time"
-msgstr "Aynı anda hem dosya hem de legacy_image_id belirtilemeyebilir"
 
 msgid "Cannot be a negative value"
 msgstr "Negatif bir değer olamaz"
@@ -342,29 +239,12 @@ msgstr "Negatif bir değer olamaz."
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr "%(key)s '%(value)s' imaj değeri bir tam sayıya dönüştürülemez."
 
-msgid "Cannot declare artifact property with reserved name 'metadata'"
-msgstr "Ayrılmış ad 'metadata' ile ürün özelliği ifade edilemez"
-
-#, python-format
-msgid "Cannot load artifact '%(name)s'"
-msgstr "'%(name)s' ürünü yüklenemez"
-
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "%(image_id)s imajı için veri kaydedilemiyor: %(error)s"
 
-msgid "Cannot specify 'max_size' explicitly"
-msgstr "'max_size' Açıkça belirtilemez"
-
-msgid "Cannot specify 'min_size' explicitly"
-msgstr "'min_size' açıkça belirtilemez"
-
 msgid "Cannot upload to an unqueued image"
 msgstr "Kuyruğa alınmamış imaj yüklenemez"
-
-#, python-format
-msgid "Cannot use this parameter with the operator %(op)s"
-msgstr "%(op)s operatörü ile bu parametreler kullanılamaz"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -433,10 +313,6 @@ msgstr "%s görevi bulunamadı"
 msgid "Could not update image: %s"
 msgstr "İmaj güncellenemiyor: %s"
 
-msgid "Custom validators list should contain tuples '(function, message)'"
-msgstr ""
-"Özel doğrulayıcılar listesi birden çok öge içermelidir '(function, message)'"
-
 msgid "Data supplied was not valid."
 msgstr "Sağlanan veri geçersizdir."
 
@@ -455,13 +331,6 @@ msgstr "Bu kaynak güncellendiğindeki tarih saat"
 msgid "Datetime when this resource would be subject to removal"
 msgstr "Bu kaynağın kaldırılacağı tarih zaman"
 
-msgid "Default value is invalid"
-msgstr "Öntanımlı değer geçersizdir"
-
-#, python-format
-msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
-msgstr "Ürün yükleme girişimi kota aşıldığından dolayı reddediliyor: %s"
-
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr "İmaj yükleme girişimi kotayı aştığından dolayı reddediliyor: %s"
@@ -470,30 +339,11 @@ msgstr "İmaj yükleme girişimi kotayı aştığından dolayı reddediliyor: %s
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr "%d bayttan büyük bir imajın yükleme girişimi reddediliyor."
 
-#, python-format
-msgid "Dependency property '%s' has to be deleted first"
-msgstr "İlk önce '%s' bağımlılık özelliğinin silinmesi gerekir"
-
-msgid "Dependency relations cannot be mutable"
-msgstr "Bağımlılık ilişkileri değişken olamaz"
-
 msgid "Descriptive name for the image"
 msgstr "İmaj için açıklayıcı ad"
 
-msgid "Dictionary contains unexpected key(s)"
-msgstr "Sözlük beklenmeyen anahtar(lar) içerir"
-
-msgid "Dictionary size is greater than maximum"
-msgstr "Sözlük boyutu azami değerden daha büyüktür"
-
-msgid "Dictionary size is less than minimum"
-msgstr "Sözlük boyutu asgari değerden daha azdır"
-
 msgid "Disk format is not specified."
 msgstr "Disk biçimi belirtilmemiş."
-
-msgid "Does not match pattern"
-msgstr "Desen eşleşmez"
 
 #, python-format
 msgid ""
@@ -501,9 +351,6 @@ msgid ""
 msgstr ""
 "%(driver_name)s sürücüsü düzgün bir şekilde yapılandırılamadı. Nedeni: "
 "%(reason)s"
-
-msgid "Either a file or a legacy_image_id has to be specified"
-msgstr "Ya bir dosya ya da legacy_image_id belirtilmesi gerekir"
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
@@ -520,10 +367,6 @@ msgstr "İmaj etkinleştirme işlemi başarısız oldu. Alınan hata: %s"
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "İmaj metadata ekleme işlemi başarısız oldu. Alınan hata: %s"
-
-#, python-format
-msgid "Failed to find artifact %(artifact_id)s to delete"
-msgstr "Silinecek %(artifact_id)s ürünü bulunamadı"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
@@ -583,12 +426,6 @@ msgid ""
 msgstr ""
 "Dosya tabanlı içeri aktarmlara izin verilmez. Lütfen imaj verilerinin yerel "
 "olmayan bir kaynağını kullanın."
-
-msgid "File too large"
-msgstr "Dosya çok büyük"
-
-msgid "File too small"
-msgstr "Dosya çok küçük"
 
 #, python-format
 msgid "Forbidden to delete a %s image."
@@ -755,12 +592,6 @@ msgstr ""
 msgid "Incorrect request: %s"
 msgstr "Hatalı istek: %s"
 
-msgid "Index is out of range"
-msgstr "İndis aralık dışındadır"
-
-msgid "Index is required"
-msgstr "İndis gereklidir"
-
 #, python-format
 msgid "Input does not contain '%(key)s' field"
 msgstr "Girdi '%(key)s' alanı içermez"
@@ -791,28 +622,12 @@ msgstr "İmaj için geçersiz kap biçimi '%s'."
 msgid "Invalid content type %(content_type)s"
 msgstr "Geçersiz içerik türü %(content_type)s"
 
-msgid "Invalid dict property type"
-msgstr "Geçersiz sözlük özellik türü"
-
-msgid "Invalid dict property type specification"
-msgstr "Geçersiz sözlük özellik türü belirtimi"
-
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr "İmaj için geçersiz disk biçimi '%s'."
 
 msgid "Invalid image id format"
 msgstr "Geçersiz imaj id biçimi"
-
-msgid "Invalid item type specification"
-msgstr "Geçersiz öge türü belirtimi"
-
-#, python-format
-msgid "Invalid json body: %s"
-msgstr "Geçersiz json gövdesi: %s"
-
-msgid "Invalid jsonpatch request"
-msgstr "Geçersiz jsonpatch isteği"
 
 msgid "Invalid location"
 msgstr "Geçersiz konum"
@@ -871,29 +686,12 @@ msgstr "Yer eklemek için geçersiz konum."
 msgid "Invalid position for removing a location."
 msgstr "Yer kaldırmak için geçersiz konum."
 
-msgid "Invalid property definition"
-msgstr "Geçersiz özellik tanımı"
-
-msgid "Invalid reference list specification"
-msgstr "Geçersiz kaynak listesi belirtimi"
-
-msgid "Invalid referenced type"
-msgstr "Geçersiz kaynak türü"
-
 msgid "Invalid service catalog json."
 msgstr "Geçersiz json servis katalogu."
 
 #, python-format
 msgid "Invalid sort direction: %s"
 msgstr "Geçersiz sıralama yönü: %s"
-
-#, python-format
-msgid ""
-"Invalid sort key: %(sort_key)s. If type version is not set it must be one of "
-"the following: %(available)s."
-msgstr ""
-"Geçersiz sıralama anahtarı: %(sort_key)s. Eğer tür sürümü ayarlanmazsa, "
-"şunlardan biri olmalıdır: %(available)s."
 
 #, python-format
 msgid ""
@@ -904,21 +702,12 @@ msgstr ""
 "%(available)s."
 
 #, python-format
-msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
-msgstr ""
-"Geçersiz sıralama anahtarı: %(sort_key)s. Bu özelliklere göre "
-"sıralayamazsınız"
-
-#, python-format
 msgid "Invalid status value: %s"
 msgstr "Geçersiz durum değeri: %s"
 
 #, python-format
 msgid "Invalid status: %s"
 msgstr "Geçersiz durum: %s"
-
-msgid "Invalid type definition"
-msgstr "Geçersiz tür tanımı"
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -969,74 +758,14 @@ msgstr "%(option)s seçeneği için geçersiz değer: %(value)s"
 msgid "Invalid visibility value: %s"
 msgstr "Geçersiz görünürlük değeri: %s"
 
-msgid "Is not allowed value"
-msgstr "Değere izin verilmez"
-
-#, python-format
-msgid ""
-"It appears that the eventlet module has been imported prior to setting "
-"%s='yes'. It is currently necessary to disable eventlet.greendns if using "
-"ipv6 since eventlet.greendns currently breaks with ipv6 addresses. Please "
-"ensure that eventlet is not imported prior to this being set."
-msgstr ""
-"Eventlet modülü %s='yes' ayarından önce içeri aktarılmış görünüyor. Eğer "
-"eventlet.greendns ipv6 adresleriyle ilişkiyi kestiğinden beri ipv6 "
-"kullanılıyorsa, şu anda eventlet.greendns'i devre dışı bırakmanız gerekir. "
-"Lütfen eventlet modülünün bu ayardan önce içeri aktarılmadığından emin olun."
-
 msgid "It's invalid to provide multiple image sources."
 msgstr "Birden fazla imaj kaynağı sağlamak için geçersizdir."
-
-msgid "Items have to be unique"
-msgstr "Ögeler eşsiz olmalıdır"
-
-msgid ""
-"Json path should start with a '/', end with no '/', no 2 subsequent '/' are "
-"allowed."
-msgstr ""
-"Json yolu '/' ile başlamalı, '/' ile sonlanmamalıdır, 2 sonraki '/' izin "
-"verilmez."
-
-msgid "Legacy image was not found"
-msgstr "Eski imaj bulunamadı"
-
-msgid "Length  is greater than maximum"
-msgstr "Uzunluk  azami değerden daha büyüktür"
-
-msgid "Length is less than minimum"
-msgstr "Uzunluk asgari değerden daha küçüktür"
-
-msgid "Limit param must be an integer"
-msgstr "Sınır parametresi bir tam sayı olmalıdır"
-
-msgid "Limit param must be positive"
-msgstr "Sınır parametresi pozitif olmalıdır"
-
-#, python-format
-msgid "Limit param must not be higher than %d"
-msgstr "Sınır parametresi %d değerinden daha yüksek olmamalıdır"
-
-msgid "List definitions may hot have defaults"
-msgstr "Liste tanımları öntanımlılar olmayabilir"
 
 msgid "List of strings related to the image"
 msgstr "İmaj ile ilgili karakter dizilerinin listesi"
 
-msgid "List size is greater than maximum"
-msgstr "Liste boyutu azami değerden daha büyüktür"
-
-msgid "List size is less than minimum"
-msgstr "Liste boyutu asgari değerden daha azdır"
-
-#, python-format
-msgid "Malformed Content-Range header: %s"
-msgstr "Bozuk İçerik-Aralık başlığı: %s"
-
 msgid "Malformed JSON in request body."
 msgstr "İstek gövdesinde bozuk JSON."
-
-msgid "Max string length may not exceed 255 characters"
-msgstr "Azami karakter dizisi uzunluğu  255 karakter sınırını aşmayabilir"
 
 #, python-format
 msgid "Maximum redirects (%(redirects)s) was exceeded."
@@ -1110,9 +839,6 @@ msgstr "Metadata tanım etiketi %(tag_name)s korumalıdır ve silinemez."
 msgid "Metadata definition tag not found for id=%s"
 msgstr "id=%s için metadata tanım etiketi bulunamadı"
 
-msgid "Min string length may not be negative"
-msgstr "Asgari karakter dizisi uzunluğu negatif olmayabilir"
-
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "Gerekli olan kimlik eksik: %(required)s"
@@ -1124,10 +850,6 @@ msgid ""
 msgstr ""
 "%(region)s bölgesi için birden fazla 'image' servisi eşleşir. Bu genellikle, "
 "bir bölgenin gerekli olduğu ve sağlamadığınız anlamına gelir."
-
-#, python-format
-msgid "No artifact found with ID %s"
-msgstr "%s ile ürün bulunamadı"
 
 msgid "No authenticated user"
 msgstr "Kimlik denetimi yapılmamış kullanıcı"
@@ -1142,38 +864,6 @@ msgstr "%(img)s imajından %(loc)s bilgisi ile hiçbir konum bulunamadı"
 
 msgid "No permission to share that image"
 msgstr "Bu imajı paylaşma izni yok"
-
-#, python-format
-msgid "No plugin for '%(name)s' has been loaded"
-msgstr "'%(name)s' için hiçbir eklenti yüklenmemişti"
-
-msgid "No property to access"
-msgstr "Erişilecek özellik yok"
-
-#, python-format
-msgid "No such key '%s' in a dict"
-msgstr "Sözlük içinde '%s' anahtarı yoktur"
-
-#, python-format
-msgid "Not a blob property '%s'"
-msgstr "'%s' bir blob özelliği değil"
-
-msgid "Not a downloadable entity"
-msgstr "İndirilebilir bir varlık değil"
-
-msgid "Not a list property"
-msgstr "Bir liste özelliği değil"
-
-#, python-format
-msgid "Not a list property '%s'"
-msgstr "'%s' bir liste özelliği değil"
-
-msgid "Not a valid value type"
-msgstr "Geçerli bir değer türü değildir"
-
-#, python-format
-msgid "Not all dependencies are in '%s' state"
-msgstr "Bütün bağımlılıklar '%s' durumunda değildir"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1212,19 +902,12 @@ msgid "Not allowed to upload image data for image %(image_id)s: %(error)s"
 msgstr ""
 "%(image_id)s imajı için imaj verisi yüklenmesine izin verilmedi: %(error)s"
 
-#, python-format
-msgid "Not an array idx '%s'"
-msgstr "'%s' bir dizi idx değildir"
-
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr ""
 "Sıralama dizinlerinin sayısı, sıralama anahtarlarının sayısıyla eşleşmez"
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "Eski ve yeni sıralama sözdizimi birleştirilemez"
-
-msgid "Only list indexes are allowed for blob lists"
-msgstr "Blob listeleri için sadece liste indislerine izin verilir"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1248,10 +931,6 @@ msgid "Operations must be JSON objects."
 msgstr "İşlemler JSON nesnesi olmalıdır."
 
 #, python-format
-msgid "Operator %(op)s is not supported"
-msgstr "Operatör %(op)s desteklenmiyor"
-
-#, python-format
 msgid "Original locations is not empty: %s"
 msgstr "Özgün konumlar boş değil: %s"
 
@@ -1266,10 +945,6 @@ msgstr "Ad alanı sahibi."
 
 msgid "Param values can't contain 4 byte unicode."
 msgstr "Param değerleri 4 bayt unikod içermez."
-
-#, python-format
-msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
-msgstr "Eklenti adı '%(plugin)s' ile ürün tür adı '%(name)s' eşleşmelidir"
 
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
@@ -1293,18 +968,9 @@ msgstr "`%s` işaretçisi \"/\" ile başlamaz."
 msgid "Pointer `%s` end with \"/\"."
 msgstr "`%s` işaretçisi \"/\" ile sonlanır."
 
-msgid ""
-"Pointer contains '~' which is not part of a recognized escape sequence [~0, "
-"~1]."
-msgstr "İşaretçi tanınmış [~0, ~1]  kaçış dizisi parçası olmayan '~' içerir."
-
 #, python-format
 msgid "Port \"%s\" is not valid."
 msgstr "Bağlantı noktası \"%s\" geçersizdir."
-
-#, python-format
-msgid "Prerelease numeric component is too large (%d characters max)"
-msgstr "Önsürüm sayısal bileşeni çok büyük (en fazla %d karakter)"
 
 #, python-format
 msgid "Process %d not running"
@@ -1339,19 +1005,11 @@ msgid "Property %s must be set prior to saving data."
 msgstr "%s özelliği veri kaydetmeden önce ayarlanmış olmalıdır."
 
 #, python-format
-msgid "Property '%(name)s' may not have value '%(val)s': %(msg)s"
-msgstr "'%(name)s' özelliği '%(val)s' değerine sahip olmayabilir: %(msg)s"
-
-#, python-format
 msgid "Property '%s' is protected"
 msgstr "'%s' özelliği korumalıdır"
 
 msgid "Property names can't contain 4 byte unicode."
 msgstr "Özellik adları 4 bayt unicode içeremez."
-
-#, python-format
-msgid "Property's %(prop)s value has not been found"
-msgstr "Özelliklerin %(prop)s değeri bulunamadı"
 
 #, python-format
 msgid ""
@@ -1376,9 +1034,6 @@ msgstr "Sağlanan görev türü desteklenmiyor: %(type)s"
 msgid "Provides a user friendly description of the namespace."
 msgstr "Ad alanı için kullanıcı dostu bir açıklama sağlar."
 
-msgid "Public images do not have members."
-msgstr "Ortak imajlar üyelere sahip değil."
-
 msgid "Received invalid HTTP redirect."
 msgstr "Geçersiz HTTP yeniden yönlendirme isteği alındı."
 
@@ -1395,10 +1050,6 @@ msgid "Registry was not configured correctly on API server. Reason: %(reason)s"
 msgstr ""
 "Kayıt defteri API sunucusunda doğru bir şekilde yapılandırılamadı. Nedeni: "
 "%(reason)s"
-
-#, python-format
-msgid "Relation %(name)s may not have multiple values"
-msgstr "%(name)s bağlantısının birden çok değeri olmayabilir"
 
 #, python-format
 msgid "Reload of %(serv)s not supported"
@@ -1446,10 +1097,6 @@ msgstr "Sunucu %(serv)s durdurulur"
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
 msgstr "Sunucu işçisi oluşturma işlemi başarısız oldu: %(reason)s."
-
-#, python-format
-msgid "Show level %(shl)s is not supported in this operation"
-msgstr "Bu işlemde %(shl)s seviyesi gösterme desteklenmez"
 
 msgid ""
 "Some resource types allow more than one key / value pair per instance.  For "
@@ -1609,16 +1256,6 @@ msgstr ""
 "geçerli bir uri belirtin"
 
 #, python-format
-msgid ""
-"The image %s is already present on the slave, but our check for it did not "
-"find it. This indicates that we do not have permissions to see all the "
-"images on the slave server."
-msgstr ""
-"%s imajı zaten köle üzerinde mevcut, fakat kontrol ettiğimizde bulamadık. Bu "
-"da, köle sunucular üzerindeki bütün imajları görmeye iznimizin olmadığını "
-"gösterir."
-
-#, python-format
 msgid "The incoming image is too large: %s"
 msgstr "Gelen imaj çok büyük: %s"
 
@@ -1735,16 +1372,8 @@ msgstr ""
 msgid "The parameters required by task, JSON blob"
 msgstr "JSON blob, görev tarafından istenen parameteler"
 
-#, python-format
-msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
-msgstr "Verilen şema altında: %(schema)s sağlanan %(body)s gövdesi geçersizdir"
-
 msgid "The provided image is too large."
 msgstr "Getirilen imaj çok büyük."
-
-#, python-format
-msgid "The provided path '%(path)s' is invalid: %(explanation)s"
-msgstr "Sağlanan yol '%(path)s' geçersizdir: %(explanation)s"
 
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not in "
@@ -1940,15 +1569,6 @@ msgstr ""
 msgid "Too few arguments."
 msgstr "Çok fazla değişken."
 
-msgid "Too few locations"
-msgstr "Çok az konum"
-
-msgid "Too many locations"
-msgstr "Çok fazla konum"
-
-msgid "Type version has to be a valid semver string"
-msgstr "Tür sürümü geçerli bir semver karakter dizisi olmalıdır"
-
 msgid ""
 "URI cannot contain more than one occurrence of a scheme.If you have "
 "specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
@@ -1959,9 +1579,6 @@ msgstr ""
 "pass@http://authurl.com/v1/container/obj gibi belirttiyseniz, swift+http:// "
 "şemasını kullanmak için onu değiştirmeniz gerekir, şu şekilde: swift+http://"
 "user:pass@authurl.com/v1/container/obj"
-
-msgid "Unable to PUT to non-empty collection"
-msgstr "Boş olmayan koleksiyona PUT işlemi yapılamadı"
 
 #, python-format
 msgid ""
@@ -1992,9 +1609,6 @@ msgstr ""
 "JSON Şema değişikliğinde `op` bulunamadı. Şu seçeneklerden biri olmalıdır: "
 "%(available)s."
 
-msgid "Unable to get legacy image"
-msgstr "Eski imaj alınamadı"
-
 msgid "Unable to increase file descriptor limit.  Running as non-root?"
 msgstr "Dosya tanıtıcı sınır arttırılamadı.  Root olmadan çalıştırılsın mı?"
 
@@ -2013,21 +1627,6 @@ msgstr "Şema yüklenemedi: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "%s için yapıştırma yapılandırma dosyası yerleştirilemedi."
-
-msgid "Unable to modify collection in immutable or readonly property"
-msgstr "Değişmez ya da salt okunur özellikteki koleksiyon değiştirilemedi"
-
-msgid "Unable to specify artifact type explicitly"
-msgstr "Ürün türü açıkça belirtilemedi"
-
-msgid "Unable to specify artifact type version explicitly"
-msgstr "Ürün türünün sürümü açıkça belirtilemedi"
-
-msgid "Unable to specify version if multiple types are possible"
-msgstr "Birden fazla tür olduğundan sürüm belirtilemedi"
-
-msgid "Unable to specify version if type is not specified"
-msgstr "Eğer türü belirtilmediyse, sürümü belirlenemez"
 
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
@@ -2065,37 +1664,10 @@ msgstr "Desteklenmeyen sort_dir. Kabul edilen değerler: %s"
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "Desteklenmeyen sort_key. Kabul edilen değerler: %s"
 
-msgid "Value is greater than maximum"
-msgstr "Değer azami değerden daha büyüktür"
-
-msgid "Value is less than minimum"
-msgstr "Değer asgari değerden azdır"
-
-msgid "Value is required"
-msgstr "Değer gereklidir"
-
-#, python-format
-msgid "Version component is too large (%d max)"
-msgstr "Sürüm bileşeni çok büyük (en fazla %d)"
-
-#, python-format
-msgid "Version is invalid: %(reason)s"
-msgstr "Sürüm geçersizdir: %(reason)s"
-
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "Görünürlük ya \"ortak\" ya da \"özel\" olmalıdır"
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
 "%(pid)s (%(file)s) pid'i öldürmek için 15 saniye beklendi; vazgeçiliyor"
-
-msgid ""
-"When false, no artifacts can be loaded regardless of available_plugins. When "
-"true, artifacts can be loaded."
-msgstr ""
-"Yanlışken, hiçbir ürün available_plugins dikkate alınmadan yüklenemez. "
-"Doğruyken, ürünler yüklenebilir."
 
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
@@ -2282,10 +1854,6 @@ msgstr "Sınır parametresi tam sayı olmak zorunda"
 
 msgid "limit param must be positive"
 msgstr "Sınır parametresi pozitif olmak zorunda"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "konum: %s verisi kayıp"
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"

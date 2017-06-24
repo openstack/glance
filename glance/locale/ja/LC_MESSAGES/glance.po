@@ -7,43 +7,23 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 15.0.0.0b3.dev29\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-23 20:54+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-04 06:26+0000\n"
-"Last-Translator: 笹原 昌美 <ebb0de1@jp.ibm.com>\n"
+"PO-Revision-Date: 2016-04-12 05:21+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Japanese\n"
 
 #, python-format
 msgid "\t%s"
 msgstr "\t%s"
-
-#, python-format
-msgid "%(attribute)s have to be string"
-msgstr "%(attribute)s は文字列でなければなりません"
-
-#, python-format
-msgid "%(attribute)s is required"
-msgstr "%(attribute)s は必須です"
-
-#, python-format
-msgid "%(attribute)s may not be longer than %(length)i"
-msgstr "%(attribute)s を %(length)i より長くすることはできません"
-
-#, python-format
-msgid "%(attribute)s may not be shorter than %(length)i"
-msgstr "%(attribute)s を %(length)i より短くすることはできません"
-
-#, python-format
-msgid "%(attribute)s should match pattern %(pattern)s"
-msgstr "%(attribute)s はパターン %(pattern)s に一致していなければなりません"
 
 #, python-format
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
@@ -124,13 +104,6 @@ msgstr ""
 msgid "A body is not expected with this request."
 msgstr "この要求では本文は予期されません。"
 
-msgid ""
-"A list of artifacts that are allowed in the format name or name-version. "
-"Empty list means that any artifact can be loaded."
-msgstr ""
-"形式名または名前-バージョンで許可されていない成果物のリスト。空のリストは、ど"
-"の成果物もロード可能であることを意味します。"
-
 #, python-format
 msgid ""
 "A metadata definition object with name=%(object_name)s already exists in "
@@ -158,10 +131,6 @@ msgstr ""
 msgid "A set of URLs to access the image file kept in external store"
 msgstr ""
 "外部ストアに保持されているイメージファイルにアクセスするための一連の URL"
-
-#, python-format
-msgid "Allowed values %s are invalid under given validators"
-msgstr "許可値 %s は指定されたバリデーター下では無効です"
 
 msgid "Amount of disk space (in GB) required to boot image."
 msgstr "イメージのブートに必要なディスクスペースの量 (GB)"
@@ -211,80 +180,6 @@ msgstr "不明な例外が発生しました"
 
 msgid "An unknown task exception occurred"
 msgstr "不明なタスク例外が発生しました"
-
-#, python-format
-msgid "Array has no element at position %d"
-msgstr "アレイの位置 %d に要素がありません"
-
-msgid "Array property can't have item_type=Array"
-msgstr "配列型のプロパティーには item_type=Array を設定できません"
-
-#, python-format
-msgid "Artifact %s could not be deleted because it is in use: %s"
-msgstr "成果物 %s は使用中のため削除できませんでした: %s"
-
-#, python-format
-msgid "Artifact cannot change state from %(source)s to %(target)s"
-msgstr "成果物は状態を %(source)s から %(target)s に変更できません"
-
-#, python-format
-msgid "Artifact exceeds the storage quota: %s"
-msgstr "成果物がストレージクォータを超えています: %s"
-
-#, python-format
-msgid "Artifact has no property %(prop)s"
-msgstr "成果物にプロパティー %(prop)s がありません"
-
-#, python-format
-msgid "Artifact state cannot be changed from %(curr)s to %(to)s"
-msgstr "成果物状態を %(curr)s から %(to)s に変更できません"
-
-#, python-format
-msgid "Artifact storage media is full: %s"
-msgstr "成果物ストレージのメディアがフルです: %s"
-
-#, python-format
-msgid ""
-"Artifact type with name '%(name)s' and version '%(version)s' is not known"
-msgstr ""
-"名前が「%(name)s」でバージョンが「%(version)s」の成果物タイプは認識されていま"
-"せん"
-
-msgid "Artifact with a circular dependency can not be created"
-msgstr "循環依存関係を持つ成果物は作成できません"
-
-#, python-format
-msgid "Artifact with id=%(id)s is not accessible"
-msgstr "id=%(id)s の成果物はアクセス不可です"
-
-#, python-format
-msgid "Artifact with id=%(id)s was not found"
-msgstr "id=%(id)s の成果物が見つかりませんでした"
-
-msgid "Artifact with the specified type, name and version already exists"
-msgstr "指定されたタイプ、名前、およびバージョンの成果物は既に存在します"
-
-#, python-format
-msgid ""
-"Artifact with the specified type, name and version already has the direct "
-"dependency=%(dep)s"
-msgstr ""
-"指定されたタイプ、名前、およびバージョンの成果物には既に直接依存関係=%(dep)s "
-"があります"
-
-#, python-format
-msgid ""
-"Artifact with the specified type, name and version already has the "
-"transitive dependency=%(dep)s"
-msgstr ""
-"指定されたタイプ、名前、およびバージョンの成果物には既に推移依存関係=%(dep)s "
-"があります"
-
-msgid "Attempt to set readonly property"
-msgstr "読み取りプロパティーを設定しようとしました"
-
-msgid "Attempt to set value of immutable property"
-msgstr "不変プロパティーの値を設定しようとしました"
 
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
@@ -366,21 +261,8 @@ msgstr "Swift URI 内の資格情報 '%(creds)s' の形式が正しくありま�
 msgid "Badly formed credentials in Swift URI."
 msgstr "Swift URI 内の資格情報の形式が正しくありません。"
 
-msgid "BinaryObject property cannot be declared mutable"
-msgstr "BinaryObject プロパティーは変更可能として宣言できません"
-
-#, python-format
-msgid "Blob %(name)s may not have multiple values"
-msgstr "Blob %(name)s には複数の値を設定できません"
-
-msgid "Blob size is not set"
-msgstr "Blob サイズが設定されていません"
-
 msgid "Body expected in request."
 msgstr "要求の本体が必要です。"
-
-msgid "Both file and legacy_image_id may not be specified at the same time"
-msgstr "file および legacy_image_id の両方を同時に指定することはできません"
 
 msgid "Cannot be a negative value"
 msgstr "負の値にすることはできません"
@@ -392,13 +274,6 @@ msgstr "負の値にすることはできません。"
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr "イメージ %(key)s '%(value)s' を整数に変換できません。"
 
-msgid "Cannot declare artifact property with reserved name 'metadata'"
-msgstr "予約名「metadata」で成果物プロパティーを宣言することはできません"
-
-#, python-format
-msgid "Cannot load artifact '%(name)s'"
-msgstr "成果物 %(name)s をロードできません"
-
 msgid "Cannot remove last location in the image."
 msgstr "イメージ内の最後のロケーションは削除できません。"
 
@@ -409,18 +284,8 @@ msgstr "イメージ %(image_id)s のデータを保存できません: %(error)
 msgid "Cannot set locations to empty list."
 msgstr "空のリストにロケーションを設定することはできません。"
 
-msgid "Cannot specify 'max_size' explicitly"
-msgstr "「max_size」を明示的に指定することはできません"
-
-msgid "Cannot specify 'min_size' explicitly"
-msgstr "「min_size」を明示的に指定することはできません"
-
 msgid "Cannot upload to an unqueued image"
 msgstr "キューに入れられていないイメージに対してアップロードできません"
-
-#, python-format
-msgid "Cannot use this parameter with the operator %(op)s"
-msgstr "このパラメーターは演算子 %(op)s と併用できません"
 
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
@@ -492,11 +357,6 @@ msgstr "イメージを更新できませんでした: %s"
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "現在、複数のディスクを含む OVA パッケージはサポートされません。"
 
-msgid "Custom validators list should contain tuples '(function, message)'"
-msgstr ""
-"カスタムバリデーターリストにはタプル '(function, message)' が含まれていなけれ"
-"ばなりません"
-
 #, python-format
 msgid "Data for image_id not found: %s"
 msgstr "image_id のデータが見つかりません: %s"
@@ -549,14 +409,6 @@ msgstr "このリソースが更新された日時"
 msgid "Datetime when this resource would be subject to removal"
 msgstr "このリソースが削除される日時"
 
-msgid "Default value is invalid"
-msgstr "デフォルト値が無効です"
-
-#, python-format
-msgid "Denying attempt to upload artifact because it exceeds the quota: %s"
-msgstr ""
-"成果物のアップロードを試みましたが、クォータを超えるため拒否されます: %s "
-
 #, python-format
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr ""
@@ -567,39 +419,17 @@ msgstr ""
 msgid "Denying attempt to upload image larger than %d bytes."
 msgstr "%d バイトより大きいイメージのアップロード試行を拒否しています。"
 
-#, python-format
-msgid "Dependency property '%s' has to be deleted first"
-msgstr "依存関係のプロパティー '%s' は最初に宣言される必要があります"
-
-msgid "Dependency relations cannot be mutable"
-msgstr "依存関係は変更可能にはできません"
-
 msgid "Descriptive name for the image"
 msgstr "イメージの記述名"
 
-msgid "Dictionary contains unexpected key(s)"
-msgstr "ディクショナリーに予期しないキーが含まれています"
-
-msgid "Dictionary size is greater than maximum"
-msgstr "ディクショナリーサイズが最大を上回っています"
-
-msgid "Dictionary size is less than minimum"
-msgstr "ディクショナリーサイズが最小を下回っています"
-
 msgid "Disk format is not specified."
 msgstr "ディスクフォーマットが指定されていません。"
-
-msgid "Does not match pattern"
-msgstr "パターンに一致しません"
 
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
 msgstr ""
 "ドライバー %(driver_name)s を正しく設定できませんでした。理由: %(reason)s"
-
-msgid "Either a file or a legacy_image_id has to be specified"
-msgstr "file または legacy_image_id のいずれかを指定する必要があります"
 
 msgid ""
 "Error decoding your request. Either the URL or the request body contained "
@@ -611,10 +441,6 @@ msgstr ""
 #, python-format
 msgid "Error fetching members of image %(image_id)s: %(inner_msg)s"
 msgstr "イメージ %(image_id)s のメンバーの取得中のエラー: %(inner_msg)s"
-
-msgid "Error in store configuration. Adding artifacts to store is disabled."
-msgstr ""
-"ストア設定にエラーがあります。ストアへの成果物の追加が無効になっています。"
 
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
@@ -640,10 +466,6 @@ msgstr "イメージのアクティブ化に失敗しました。受け取った
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "イメージメタデータを追加できませんでした。受け取ったエラー: %s"
-
-#, python-format
-msgid "Failed to find artifact %(artifact_id)s to delete"
-msgstr "削除する成果物 %(artifact_id)s が見つかりませんでした"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
@@ -711,12 +533,6 @@ msgstr ""
 "ファイルベースのインポートは許可されません。イメージデータの非ローカルソース"
 "を使用してください。"
 
-msgid "File too large"
-msgstr "ファイルが大きすぎます"
-
-msgid "File too small"
-msgstr "ファイルが小さすぎます"
-
 msgid "Forbidden image access"
 msgstr "イメージにアクセスする権限がありません"
 
@@ -763,9 +579,6 @@ msgstr "コンテナーの形式"
 
 msgid "Format of the disk"
 msgstr "ディスクの形式"
-
-msgid "Glance client not installed"
-msgstr "Glance クライアントがインストールされていません"
 
 #, python-format
 msgid "Host \"%s\" is not valid."
@@ -905,27 +718,13 @@ msgstr ""
 msgid "Incorrect request: %s"
 msgstr "正しくない要求: %s"
 
-msgid "Index is out of range"
-msgstr "インデックスは範囲外です"
-
-msgid "Index is required"
-msgstr "インデックスが必要です"
-
 #, python-format
 msgid "Input does not contain '%(key)s' field"
 msgstr "入力に '%(key)s' フィールドが含まれていません"
 
 #, python-format
-msgid "Insufficient permissions on artifact storage media: %s"
-msgstr "成果物ストレージのメディアに対する許可が不十分です: %s"
-
-#, python-format
 msgid "Insufficient permissions on image storage media: %s"
 msgstr "イメージストレージのメディアに対する許可が不十分です: %s"
-
-#, python-format
-msgid "Invalid Content-Type for work with %s"
-msgstr "%s の作業に対して無効な Content-Type"
 
 #, python-format
 msgid "Invalid JSON pointer for this resource: '/%s'"
@@ -949,12 +748,6 @@ msgstr "コンテナー形式 '%s' はイメージには無効です。"
 msgid "Invalid content type %(content_type)s"
 msgstr "コンテンツタイプ %(content_type)s が無効です"
 
-msgid "Invalid dict property type"
-msgstr "ディクショナリープロパティータイプが無効です"
-
-msgid "Invalid dict property type specification"
-msgstr "ディクショナリープロパティータイプ指定が無効です"
-
 #, python-format
 msgid "Invalid disk format '%s' for image."
 msgstr "ディスク形式 '%s' はイメージには無効です。"
@@ -973,22 +766,8 @@ msgid ""
 "Invalid filter value %s. There is no comma before opening quotation mark."
 msgstr "無効なフィルター値 %s。開始引用符の前にコンマがありません。"
 
-#, python-format
-msgid "Invalid headers \"Content-Type\": %s"
-msgstr "無効なヘッダー \"Content-Type\": %s"
-
 msgid "Invalid image id format"
 msgstr "イメージ ID の形式が無効です"
-
-msgid "Invalid item type specification"
-msgstr "項目タイプ指定が無効です"
-
-#, python-format
-msgid "Invalid json body: %s"
-msgstr "無効な JSON 本文: %s"
-
-msgid "Invalid jsonpatch request"
-msgstr "jsonpatch 要求が無効です"
 
 #, fuzzy
 msgid "Invalid location"
@@ -1049,18 +828,6 @@ msgstr "ロケーションの追加位置が無効です。"
 msgid "Invalid position for removing a location."
 msgstr "ロケーション削除位置が無効です。"
 
-msgid "Invalid property definition"
-msgstr "プロパティー定義が無効です"
-
-msgid "Invalid reference list specification"
-msgstr "参照リスト指定が無効です"
-
-msgid "Invalid referenced type"
-msgstr "参照されたタイプが無効です"
-
-msgid "Invalid request PATCH for work with blob"
-msgstr "blob の作業に対して無効な要求 PATCH"
-
 msgid "Invalid service catalog json."
 msgstr "無効なサービスカタログ JSON ファイル。"
 
@@ -1070,24 +837,11 @@ msgstr "無効なソート方向: %s"
 
 #, python-format
 msgid ""
-"Invalid sort key: %(sort_key)s. If type version is not set it must be one of "
-"the following: %(available)s."
-msgstr ""
-"無効なソートキー: %(sort_key)s。タイプのバージョンが設定されていない場合、以"
-"下のいずれでなければなりません: %(available)s。"
-
-#, python-format
-msgid ""
 "Invalid sort key: %(sort_key)s. It must be one of the following: "
 "%(available)s."
 msgstr ""
 "ソートキー %(sort_key)s は無効です。 %(available)s のいずれかでなければなりま"
 "せん。"
-
-#, python-format
-msgid "Invalid sort key: %(sort_key)s. You cannot sort by this property"
-msgstr ""
-"無効なソートキー: %(sort_key)s。このプロパティーによるソートはできません"
 
 #, python-format
 msgid "Invalid status value: %s"
@@ -1100,9 +854,6 @@ msgstr "無効な状況: %s"
 #, python-format
 msgid "Invalid time format for %s."
 msgstr "%s に対する無効な時刻フォーマット。"
-
-msgid "Invalid type definition"
-msgstr "タイプ定義が無効です"
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -1152,21 +903,6 @@ msgstr "オプション %(option)s の値が無効です: %(value)s"
 msgid "Invalid visibility value: %s"
 msgstr "無効な可視性の値: %s"
 
-msgid "Is not allowed value"
-msgstr "許可値ではありません"
-
-#, python-format
-msgid ""
-"It appears that the eventlet module has been imported prior to setting "
-"%s='yes'. It is currently necessary to disable eventlet.greendns if using "
-"ipv6 since eventlet.greendns currently breaks with ipv6 addresses. Please "
-"ensure that eventlet is not imported prior to this being set."
-msgstr ""
-"%s='yes' を設定する前に eventlet モジュールがインポートされた可能性がありま"
-"す。eventlet.greendns は現在 IPv6 アドレスに準拠していないため、ipv6 を使用し"
-"ている場合は eventlet.greendns を無効にする必要があります。この設定を行う前"
-"に eventlet をインポートしないようにしてください。"
-
 msgid "It's invalid to provide multiple image sources."
 msgstr "イメージソースの複数指定は無効です。"
 
@@ -1179,56 +915,11 @@ msgstr "ロケーションが表示されない場合、ロケーションを削
 msgid "It's not allowed to update locations if locations are invisible."
 msgstr "ロケーションが表示されない場合、ロケーションを更新できません。"
 
-msgid "Items have to be unique"
-msgstr "項目は固有でなければなりません"
-
-msgid ""
-"Json path should start with a '/', end with no '/', no 2 subsequent '/' are "
-"allowed."
-msgstr ""
-"Json パスの先頭は「/」でなければならず、末尾は「/」であってはなりません。後続"
-"の 2 つの「/」は使用できません。"
-
-msgid "Legacy image was not found"
-msgstr "レガシーイメージが見つかりませんでした"
-
-msgid "Length  is greater than maximum"
-msgstr "長さが最大値を超えています"
-
-msgid "Length is less than minimum"
-msgstr "長さが最小値を下回っています"
-
-msgid "Limit param must be an integer"
-msgstr "Limit パラメーターは整数でなければなりません"
-
-msgid "Limit param must be positive"
-msgstr "Limit パラメーターは正の値でなければなりません"
-
-#, python-format
-msgid "Limit param must not be higher than %d"
-msgstr "Limit パラメーターは %d 以上であってはなりません"
-
-msgid "List definitions may hot have defaults"
-msgstr "リスト定義にデフォルトがない可能性があります"
-
 msgid "List of strings related to the image"
 msgstr "イメージに関連する文字列のリスト"
 
-msgid "List size is greater than maximum"
-msgstr "リストサイズが最大を上回っています"
-
-msgid "List size is less than minimum"
-msgstr "リストサイズが最小を下回っています"
-
-#, python-format
-msgid "Malformed Content-Range header: %s"
-msgstr "コンテンツ範囲ヘッダーの形式が正しくありません: %s"
-
 msgid "Malformed JSON in request body."
 msgstr "要求本体の JSON の形式が誤りです。"
-
-msgid "Max string length may not exceed 255 characters"
-msgstr "最大文字列長を 255 文字より大きくすることはできません"
 
 msgid "Maximal age is count of days since epoch."
 msgstr "最長存続時間は、エポック以降の日数です。"
@@ -1309,9 +1000,6 @@ msgstr "メタデータ定義タグ %(tag_name)s は保護されており、削�
 msgid "Metadata definition tag not found for id=%s"
 msgstr "id=%s のメタデータ定義タグが見つかりません"
 
-msgid "Min string length may not be negative"
-msgstr "最小文字列長は負にはできません"
-
 msgid "Minimal rows limit is 1."
 msgstr "最少行数制限は 1 です。"
 
@@ -1327,13 +1015,6 @@ msgstr ""
 "領域 %(region)s に対して複数の「イメージ」サービスが一致します。これは一般"
 "に、領域が必要であるのに、領域を指定していないことを意味します。"
 
-msgid "Must supply a positive, non-zero value for age."
-msgstr "存続期間にはゼロ以外の正の値を指定してください。"
-
-#, python-format
-msgid "No artifact found with ID %s"
-msgstr "ID が %s の成果物が見つかりません"
-
 msgid "No authenticated user"
 msgstr "認証されていないユーザー"
 
@@ -1347,38 +1028,6 @@ msgstr "イメージ %(img)s 内で ID が %(loc)s のロケーションは見�
 
 msgid "No permission to share that image"
 msgstr "そのイメージを共有する許可がありません"
-
-#, python-format
-msgid "No plugin for '%(name)s' has been loaded"
-msgstr "「%(name)s」のプラグインがロードされませんでした"
-
-msgid "No property to access"
-msgstr "アクセスするプロパティーがありません"
-
-#, python-format
-msgid "No such key '%s' in a dict"
-msgstr "辞書にはそのような鍵 '%s' はありません"
-
-#, python-format
-msgid "Not a blob property '%s'"
-msgstr "blob プロパティー '%s' ではありません"
-
-msgid "Not a downloadable entity"
-msgstr "ダウンロード可能なエンティティーではありません"
-
-msgid "Not a list property"
-msgstr "リストプロパティーではありません"
-
-#, python-format
-msgid "Not a list property '%s'"
-msgstr "リストプロパティー '%s' ではありません"
-
-msgid "Not a valid value type"
-msgstr "有効な値タイプではありません"
-
-#, python-format
-msgid "Not all dependencies are in '%s' state"
-msgstr "一部の依存関係が '%s' 状態にあります"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1418,10 +1067,6 @@ msgstr ""
 "イメージ %(image_id)s ではイメージデータのアップロードは許可されません: "
 "%(error)s"
 
-#, python-format
-msgid "Not an array idx '%s'"
-msgstr "アレイインデックス '%s' ではありません"
-
 msgid "Number of sort dirs does not match the number of sort keys"
 msgstr "ソート方向の数がソートキーの数に一致しません"
 
@@ -1430,9 +1075,6 @@ msgstr "OVA 抽出が実行できるのは管理者のみです"
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "新旧のソート構文を結合することはできません"
-
-msgid "Only list indexes are allowed for blob lists"
-msgstr "blob リストで許可されるのはリストインデックスのみです"
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1455,10 +1097,6 @@ msgstr ""
 msgid "Operations must be JSON objects."
 msgstr "操作は JSON オブジェクトでなければなりません。"
 
-#, python-format
-msgid "Operator %(op)s is not supported"
-msgstr "演算子 %(op)s はサポートされていません"
-
 #, fuzzy, python-format
 msgid "Original locations is not empty: %s"
 msgstr "元のロケーションは空ではありません: %s"
@@ -1477,12 +1115,6 @@ msgstr "名前空間の所有者。"
 
 msgid "Param values can't contain 4 byte unicode."
 msgstr "Param 値に 4 バイトの Unicode が含まれていてはなりません。"
-
-#, python-format
-msgid "Plugin name '%(plugin)s' should match artifact typename '%(name)s'"
-msgstr ""
-"プラグイン名「%(plugin)s」は成果物タイプ名「%(name)s」に一致している必要があ"
-"ります"
 
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
@@ -1506,20 +1138,9 @@ msgstr "ポインター `%s` の先頭が \"/\" ではありません。"
 msgid "Pointer `%s` end with \"/\"."
 msgstr "ポインター `%s` の末尾が \"/\" です。"
 
-msgid ""
-"Pointer contains '~' which is not part of a recognized escape sequence [~0, "
-"~1]."
-msgstr ""
-"ポインターに、認識されているエスケープシーケンス [~0, ~1] の一部ではない「~」"
-"が含まれています。"
-
 #, python-format
 msgid "Port \"%s\" is not valid."
 msgstr "ポート \"%s\" が無効です。"
-
-#, python-format
-msgid "Prerelease numeric component is too large (%d characters max)"
-msgstr "プレリリース数値コンポーネントが大きすぎます (最大文字数 %d)"
 
 #, python-format
 msgid "Process %d not running"
@@ -1554,19 +1175,11 @@ msgid "Property %s must be set prior to saving data."
 msgstr "データの保存前にプロパティー %s を設定する必要があります。"
 
 #, python-format
-msgid "Property '%(name)s' may not have value '%(val)s': %(msg)s"
-msgstr "プロパティー「%(name)s」に値「%(val)s」がない可能性があります: %(msg)s"
-
-#, python-format
 msgid "Property '%s' is protected"
 msgstr "プロパティー '%s' は保護されています"
 
 msgid "Property names can't contain 4 byte unicode."
 msgstr "プロパティー名に 4 バイトの Unicode が含まれていてはなりません。"
-
-#, python-format
-msgid "Property's %(prop)s value has not been found"
-msgstr "プロパティーの %(prop)s 値が見つかりませんでした"
 
 #, python-format
 msgid ""
@@ -1592,9 +1205,6 @@ msgstr "指定されたタスクタイプはサポートされていません: %
 msgid "Provides a user friendly description of the namespace."
 msgstr "分かりやすい名前空間の説明が提供されます。"
 
-msgid "Public images do not have members."
-msgstr "パブリックイメージにはメンバーがありません。"
-
 msgid "Received invalid HTTP redirect."
 msgstr "無効な HTTP リダイレクトを受け取りました。"
 
@@ -1610,10 +1220,6 @@ msgstr "レジストリーサービスでは %s を使用できません"
 msgid "Registry was not configured correctly on API server. Reason: %(reason)s"
 msgstr ""
 "レジストリーが API サーバーで正しく設定されていませんでした。理由: %(reason)s"
-
-#, python-format
-msgid "Relation %(name)s may not have multiple values"
-msgstr "関係 %(name)s には複数の値を設定できません"
 
 #, python-format
 msgid "Reload of %(serv)s not supported"
@@ -1661,10 +1267,6 @@ msgstr "サーバー %(serv)s は停止しています"
 #, python-format
 msgid "Server worker creation failed: %(reason)s."
 msgstr "サーバーワーカーの作成に失敗しました: %(reason)s"
-
-#, python-format
-msgid "Show level %(shl)s is not supported in this operation"
-msgstr "表示レベル %(shl)s はこの操作ではサポートされていません"
 
 msgid "Signature verification failed"
 msgstr "シグニチャーの検証が失敗しました"
@@ -1823,30 +1425,12 @@ msgstr ""
 "らない可能性があります。"
 
 #, python-format
-msgid "The format of the version %s is not valid. Use semver notation"
-msgstr "バージョン %s の形式が無効です。semver 表記を使用してください"
-
-#, python-format
 msgid ""
 "The given uri is not valid. Please specify a valid uri from the following "
 "list of supported uri %(supported)s"
 msgstr ""
 "指定した URI が無効です。次のサポートされている URI のリストから、有効な URI "
 "を指定してください: %(supported)s"
-
-#, python-format
-msgid ""
-"The image %s is already present on the slave, but our check for it did not "
-"find it. This indicates that we do not have permissions to see all the "
-"images on the slave server."
-msgstr ""
-"イメージ %s は既にスレーブ上にありますが、検査では見つかりませんでした。これ"
-"は、スレーブサーバー上のすべてのイメージを表示する許可を持っていないことを示"
-"します。"
-
-#, python-format
-msgid "The incoming artifact blob is too large: %s"
-msgstr "入力成果物の blob が大きすぎます: %s"
 
 #, python-format
 msgid "The incoming image is too large: %s"
@@ -1967,16 +1551,8 @@ msgstr ""
 msgid "The parameters required by task, JSON blob"
 msgstr "タスクによって要求されるパラメーター、JSON blob"
 
-#, python-format
-msgid "The provided body %(body)s is invalid under given schema: %(schema)s"
-msgstr "指定された本体 %(body)s は指定のスキーマ %(schema)s 下では無効です"
-
 msgid "The provided image is too large."
 msgstr "指定されたイメージが大きすぎます。"
-
-#, python-format
-msgid "The provided path '%(path)s' is invalid: %(explanation)s"
-msgstr "指定されたパス「%(path)s」は無効です: %(explanation)s"
 
 msgid ""
 "The region for the authentication service. If \"use_user_token\" is not in "
@@ -2171,15 +1747,6 @@ msgstr "成功または失敗の後でタスクが存続する時間 (時)"
 msgid "Too few arguments."
 msgstr "引数が少なすぎます。"
 
-msgid "Too few locations"
-msgstr "ロケーションが少なすぎます"
-
-msgid "Too many locations"
-msgstr "ロケーションが多すぎます"
-
-msgid "Type version has to be a valid semver string"
-msgstr "タイプバージョンは有効な semver 文字列でなければなりません"
-
 msgid ""
 "URI cannot contain more than one occurrence of a scheme.If you have "
 "specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
@@ -2193,9 +1760,6 @@ msgstr ""
 
 msgid "URL to access the image file kept in external store"
 msgstr "外部ストアに保持されているイメージファイルにアクセスするための URL"
-
-msgid "Unable to PUT to non-empty collection"
-msgstr "空でないコレクションに PUT することができません"
 
 #, python-format
 msgid ""
@@ -2235,9 +1799,6 @@ msgstr ""
 "JSON スキーマの変更で `op` が見つかりません。以下のいずれかでなければなりませ"
 "ん: %(available)s。"
 
-msgid "Unable to get legacy image"
-msgstr "レガシーイメージを取得できません"
-
 msgid "Unable to increase file descriptor limit.  Running as non-root?"
 msgstr "ファイル記述子制限を増加できません。非ルートとして実行しますか?"
 
@@ -2256,23 +1817,6 @@ msgstr "スキーマをロードできません: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "%s の paste 設定ファイルが見つかりません。"
-
-msgid "Unable to modify collection in immutable or readonly property"
-msgstr ""
-"不変プロパティーまたは読み取り専用プロパティー内のコレクションは変更できませ"
-"ん"
-
-msgid "Unable to specify artifact type explicitly"
-msgstr "アーティファクトタイプは、明示的には指定できません"
-
-msgid "Unable to specify artifact type version explicitly"
-msgstr "アーティファクトタイプのバージョンは、明示的には指定できません"
-
-msgid "Unable to specify version if multiple types are possible"
-msgstr "複数のタイプが指定可能な場合はバージョンを指定できません"
-
-msgid "Unable to specify version if type is not specified"
-msgstr "タイプが指定されていない場合はバージョンを指定できません"
 
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
@@ -2314,39 +1858,12 @@ msgstr "サポートされない sort_dir です。許容値: %s"
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "サポートされない sort_key です。許容値: %s"
 
-msgid "Value is greater than maximum"
-msgstr "値が最大値を超えています"
-
-msgid "Value is less than minimum"
-msgstr "値が最小値を下回っています"
-
-msgid "Value is required"
-msgstr "値が必要です"
-
-#, python-format
-msgid "Version component is too large (%d max)"
-msgstr "バージョンコンポーネントが大きすぎます (最大 %d)"
-
-#, python-format
-msgid "Version is invalid: %(reason)s"
-msgstr "バージョンが無効です: %(reason)s"
-
 msgid "Virtual size of image in bytes"
 msgstr "イメージの仮想サイズ (バイト)"
-
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "可視性は「public」または「private」のいずれかでなければなりません"
 
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "pid %(pid)s (%(file)s) が停止するまで 15 秒お待ちください。中断中です"
-
-msgid ""
-"When false, no artifacts can be loaded regardless of available_plugins. When "
-"true, artifacts can be loaded."
-msgstr ""
-"False の場合、available_plugins とは無関係に、成果物はロードできません。True "
-"の場合、成果物はロード可能です。"
 
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
@@ -2546,10 +2063,6 @@ msgstr "limit パラメーターは整数でなければなりません"
 
 msgid "limit param must be positive"
 msgstr "limit パラメーターは正でなければなりません"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "ロケーション: %s データが失われました"
 
 msgid "md5 hash of image contents."
 msgstr "イメージコンテンツの MD5 ハッシュ。"
