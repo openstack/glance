@@ -28,7 +28,6 @@ import signal
 import sys
 import time
 
-import eventlet
 from eventlet.green import socket
 from eventlet.green import ssl
 import eventlet.greenio
@@ -41,7 +40,6 @@ from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import strutils
 from osprofiler import opts as profiler_opts
-import routes
 import routes.middleware
 import six
 import webob.dec

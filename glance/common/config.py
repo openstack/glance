@@ -18,8 +18,6 @@ Routines for configuring Glance
 """
 
 import logging
-import logging.config
-import logging.handlers
 import os
 
 from oslo_config import cfg
