@@ -652,7 +652,7 @@ def evaluate_filter_op(value, operator, threshold):
     :param operator: any supported filter operation
     :param threshold: to compare value against, as right side of expression
 
-    :raises: InvalidFilterOperatorValue if an unknown operator is provided
+    :raises InvalidFilterOperatorValue: if an unknown operator is provided
 
     :returns: boolean result of applied comparison
 
