@@ -11,6 +11,8 @@
       License for the specific language governing permissions and limitations
       under the License.
 
+.. _database-management:
+
 Database Management
 ===================
 
@@ -30,7 +32,7 @@ The commands should be executed as a subcommand of 'db':
    more recent releases is incompatible with the "legacy" tool.  If you are
    consulting these documents for information about the ``glance-manage`` tool
    in the Newton or earlier releases, please see the
-   :doc:`db-sqlalchemy-migrate` page.
+   :ref:`legacy-database-management` page.
 
 .. _`SQLAlchemy`: http://www.sqlalchemy.org/
 
@@ -142,7 +144,7 @@ rotation, allow them to drain, and then take them out of service permanently,
 leaving all Glance nodes in your cloud at release *n*.
 
 That's a rough sketch of how a rolling upgrade would work.  For full details,
-see :doc:`rollingupgrades`.
+see :ref:`rolling-upgrades`.
 
 .. note::
    Downgrading a database is not supported.  See :ref:`downgrades` for more

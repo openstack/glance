@@ -14,12 +14,14 @@
       License for the specific language governing permissions and limitations
       under the License.
 
+.. _legacy-database-management:
+
 Legacy Database Management
 ==========================
 
 .. note::
    This page applies only to Glance releases prior to Ocata.  From Ocata
-   onward, please see :doc:`db`.
+   onward, please see :ref:`database-management`.
 
 The default metadata driver for Glance uses sqlalchemy, which implies there
 exists a backend database which must be managed. The ``glance-manage`` binary

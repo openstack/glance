@@ -1,3 +1,5 @@
+.. _sample-configuration:
+
 ===========================
 Glance Sample Configuration
 ===========================

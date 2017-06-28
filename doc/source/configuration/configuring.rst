@@ -14,6 +14,8 @@
       License for the specific language governing permissions and limitations
       under the License.
 
+.. _basic-configuration:
+
 Basic Configuration
 ===================
 
@@ -25,7 +27,7 @@ Most configuration is done via configuration files, with the Glance API
 server and Glance Registry server using separate configuration files.
 
 When starting up a Glance server, you can specify the configuration file to
-use (see :doc:`the documentation on controller Glance servers <controllingservers>`).
+use (see :ref:`the documentation on controller Glance servers <controlling-servers>`).
 If you do **not** specify a configuration file, Glance will look in the following
 directories for a configuration file, in order:
 
@@ -43,7 +45,7 @@ is likely that you will have sample configuration files installed in
 ``/etc/glance``.
 
 In addition, sample configuration files for each server application with
-detailed comments are available in the :doc:`Glance Sample Configuration
+detailed comments are available in the :ref:`Glance Sample Configuration
 <sample-configuration>` section.
 
 The PasteDeploy configuration (controlling the deployment of the WSGI
@@ -1309,7 +1311,7 @@ One main configuration file option affects the image cache.
   ``glance-cache-pruner`` executable is what prunes the image cache to be equal
   to or less than this value. The ``glance-cache-pruner`` executable is designed
   to be run via cron on a regular basis. See more about this executable in
-  :doc:`Controlling the Growth of the Image Cache <cache>`
+  :ref:`Controlling the Growth of the Image Cache <image-cache>`
 
 .. _configuring-the-glance-registry:
 
@@ -1380,7 +1382,7 @@ configuration file.
   In M release, the``[DEFAULT]/notification_driver`` option has been deprecated in favor
   of ``[oslo_messaging_notifications]/driver``.
 
-  For more information see :doc:`Glance notifications <notifications>` and
+  For more information see :ref:`Glance notifications <notifications>` and
   `oslo.messaging <http://docs.openstack.org/developer/oslo.messaging/>`_.
 
 ``[DEFAULT]/disabled_notifications``
@@ -1399,7 +1401,7 @@ Configuring Glance Property Protections
 ---------------------------------------
 
 Access to image meta properties may be configured using a
-:doc:`Property Protections Configuration file <property-protections>`.  The
+:ref:`Property Protections Configuration file <property-protections>`.  The
 location for this file can be specified in the ``glance-api.conf``
 configuration file in the section ``[DEFAULT]``. **If an incorrect value is
 specified, glance API service will not start.**
