@@ -1,3 +1,5 @@
+.. -*- mode: rst -*-
+
 :Author: glance@lists.launchpad.net
 :Date: 2017-09-15
 :Copyright: OpenStack Foundation

@@ -6,7 +6,7 @@ glance-cache-manage
 Cache management utility
 ------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -78,6 +78,6 @@ OPTIONS
   **-S STRATEGY, --os-auth-strategy=STRATEGY**
         Authentication strategy (keystone or noauth)
 
-  .. include:: openstack_options.rst
+  .. include:: openstack_options.txt
 
-.. include:: footer.rst
+.. include:: footer.txt

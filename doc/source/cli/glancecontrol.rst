@@ -6,7 +6,7 @@ glance-control
 Glance daemon start/stop/reload helper
 --------------------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -28,7 +28,7 @@ OPTIONS
 
   **General Options**
 
-  .. include:: general_options.rst
+  .. include:: general_options.txt
 
   **--pid-file=PATH**
         File to use as pid file. Default:
@@ -50,4 +50,4 @@ OPTIONS
   **--respawn**
         Restart service on unexpected death
 
-.. include:: footer.rst
+.. include:: footer.txt

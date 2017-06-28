@@ -6,7 +6,7 @@ glance-replicator
 Replicate images across multiple data centers
 ---------------------------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -82,4 +82,4 @@ OPTIONS
   **-v, --verbose**
          Print more verbose output
 
-.. include:: footer.rst
+.. include:: footer.txt

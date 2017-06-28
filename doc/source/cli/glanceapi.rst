@@ -6,7 +6,7 @@ glance-api
 Server for the Glance Image Service API
 ---------------------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -23,7 +23,7 @@ OPTIONS
 
   **General options**
 
-  .. include:: general_options.rst
+  .. include:: general_options.txt
 
 FILES
 =====
@@ -31,4 +31,4 @@ FILES
   **/etc/glance/glance-api.conf**
         Default configuration file for Glance API
 
-.. include:: footer.rst
+.. include:: footer.txt

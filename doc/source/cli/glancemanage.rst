@@ -6,7 +6,7 @@ glance-manage
 Glance Management Utility
 -------------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -85,9 +85,9 @@ OPTIONS
 
   **General Options**
 
-  .. include:: general_options.rst
+  .. include:: general_options.txt
 
-.. include:: footer.rst
+.. include:: footer.txt
 
 CONFIGURATION
 =============

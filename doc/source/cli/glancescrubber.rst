@@ -6,7 +6,7 @@ glance-scrubber
 Glance scrub service
 --------------------
 
-.. include:: header.rst
+.. include:: header.txt
 
 SYNOPSIS
 ========
@@ -37,7 +37,7 @@ OPTIONS
 
   **General options**
 
-  .. include:: general_options.rst
+  .. include:: general_options.txt
 
   **-D, --daemon**
         Run as a long-running process. When not specified (the
@@ -55,4 +55,4 @@ FILES
   **/etc/glance/glance-scrubber.conf**
       Default configuration file for the Glance Scrubber
 
-.. include:: footer.rst
+.. include:: footer.txt
