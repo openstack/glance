@@ -181,7 +181,7 @@ of an *Image* object.
 
 **Glance database schema**
 
-.. figure:: ./images/glance_db.png
+.. figure:: ../images/glance_db.png
    :figwidth: 100%
    :align: center
    :alt: The glance database schema is depicted by 5 tables.

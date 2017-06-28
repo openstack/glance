@@ -340,8 +340,8 @@ References
 ==========
 .. [GSPEC1] `Database Strategy for Rolling Upgrades
             <https://specs.openstack.org/openstack/glance-specs/specs/ocata/implemented/glance/database-strategy-for-rolling-upgrades.html>`_
-.. [GSPEC2] `Glance Alembic Migrations
+.. [GSPEC2] `Glance Alembic Migrations Spec
             <https://specs.openstack.org/openstack/glance-specs/specs/ocata/implemented/glance/alembic-migrations.html>`_
-.. [GMIGS1] `Glance Alembic Migrations
+.. [GMIGS1] `Glance Alembic Migrations Implementation
             <http://git.openstack.org/cgit/openstack/glance/tree/glance/db/sqlalchemy/alembic_migrations/versions>`_
 .. [ALMBC] `Alembic Operations <http://alembic.zzzcomputing.com/en/latest/ops.html>`_
