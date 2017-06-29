@@ -1086,24 +1086,8 @@ Configuring the VMware Storage Backend
 
   Password for authenticating with VMware ESX/ESXi or vCenter Server.
 
-``vmware_datacenter_path=DC_PATH``
-  Optional. Default: ``ha-datacenter``
-
-  Can only be specified in configuration files.
-
-  Inventory path to a datacenter. If the ``vmware_server_host`` specified
-  is an ESX/ESXi, the ``vmware_datacenter_path`` is optional. If specified,
-  it should be ``ha-datacenter``.
-
-``vmware_datastore_name=DS_NAME``
-  Required when using the VMware storage backend.
-
-  Can only be specified in configuration files.
-
-  Datastore name associated with the ``vmware_datacenter_path``
-
 ``vmware_datastores``
-  Optional. Default: Not set.
+  Required when using the VMware storage backend.
 
   This option can only be specified in configuration file and is specific
   to the VMware storage backend.
