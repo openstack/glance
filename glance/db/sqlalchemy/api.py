@@ -783,7 +783,7 @@ def _image_update(context, values, image_id, purge_props=False,
 
         location_data = values.pop('locations', None)
 
-        new_status = values.get('status', None)
+        new_status = values.get('status')
         if image_id:
             image_ref = _image_get(context, image_id, session=session)
             current = image_ref.status

@@ -234,11 +234,11 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
             continue
 
         values = {
-            'namespace': metadata.get('namespace', None),
-            'display_name': metadata.get('display_name', None),
-            'description': metadata.get('description', None),
-            'visibility': metadata.get('visibility', None),
-            'protected': metadata.get('protected', None),
+            'namespace': metadata.get('namespace'),
+            'display_name': metadata.get('display_name'),
+            'description': metadata.get('description'),
+            'visibility': metadata.get('visibility'),
+            'protected': metadata.get('protected'),
             'owner': metadata.get('owner', 'admin')
         }
 
@@ -296,8 +296,8 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
                 'namespace_id': namespace_id,
                 'resource_type_id': rt_id,
                 'properties_target': resource_type.get(
-                    'properties_target', None),
-                'prefix': resource_type.get('prefix', None)
+                    'properties_target'),
+                'prefix': resource_type.get('prefix')
             }
             namespace_resource_type = _get_namespace_resource_type_by_ids(
                 meta, namespace_id, rt_id)
@@ -329,10 +329,10 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
         for object in metadata.get('objects', []):
             values = {
                 'name': object['name'],
-                'description': object.get('description', None),
+                'description': object.get('description'),
                 'namespace_id': namespace_id,
                 'json_schema': json.dumps(
-                    object.get('properties', None))
+                    object.get('properties'))
             }
             object_id = _get_resource_id(objects_table, namespace_id,
                                          object['name'])

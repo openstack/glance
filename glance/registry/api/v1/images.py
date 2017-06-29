@@ -295,7 +295,7 @@ class Controller(object):
 
     def _get_marker(self, req):
         """Parse a marker query param into something usable."""
-        marker = req.params.get('marker', None)
+        marker = req.params.get('marker')
 
         if marker and not uuidutils.is_uuid_like(marker):
             msg = _('Invalid marker format')
@@ -332,7 +332,7 @@ class Controller(object):
 
     def _get_is_public(self, req):
         """Parse is_public into something usable."""
-        is_public = req.params.get('is_public', None)
+        is_public = req.params.get('is_public')
 
         if is_public is None:
             # NOTE(vish): This preserves the default value of showing only
@@ -468,7 +468,7 @@ class Controller(object):
         :returns: Returns the updated image information as a mapping,
         """
         image_data = body['image']
-        from_state = body.get('from_state', None)
+        from_state = body.get('from_state')
 
         # Prohibit modification of 'owner'
         if not req.context.is_admin and 'owner' in image_data:
