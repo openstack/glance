@@ -900,7 +900,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         return msg if expect_launch else None
 
-    def stop_server(self, server, name):
+    def stop_server(self, server):
         """
         Called to stop a single server in a normal fashion using the
         glance-control stop method to gracefully shut the server down.
@@ -921,10 +921,10 @@ class FunctionalTest(test_utils.BaseTestCase):
         """
 
         # Spin down the API and default registry server
-        self.stop_server(self.api_server, 'API server')
-        self.stop_server(self.registry_server, 'Registry server')
+        self.stop_server(self.api_server)
+        self.stop_server(self.registry_server)
         if self.include_scrubber:
-            self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
+            self.stop_server(self.scrubber_daemon)
 
         self._reset_database(self.registry_server.sql_connection)
 
