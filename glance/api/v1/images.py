@@ -334,7 +334,7 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'images': [
                 {'id': <ID>,
@@ -362,7 +362,7 @@ class Controller(controller.BaseController):
         :param req: The WSGI/Webob Request object
         :returns: The response body is a mapping of the following form
 
-        .. code-block:: json
+        ::
 
             {'images':
                 [{
