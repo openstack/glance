@@ -299,7 +299,7 @@ class TestScrubber(functional.FunctionalTest):
         self.assertEqual(1, exitcode)
         self.assertIn('Can not get scrub jobs from queue', str(err))
 
-        self.stop_server(self.scrubber_daemon, 'Scrubber daemon')
+        self.stop_server(self.scrubber_daemon)
 
     def wait_for_scrub(self, path, headers=None):
         """
