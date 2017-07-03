@@ -30,6 +30,7 @@ from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
+from oslo_utils import fileutils
 
 from glance.common import exception
 from glance.i18n import _, _LE, _LI, _LW
@@ -260,7 +261,7 @@ class Driver(base.Driver):
         """
         files = [f for f in self.get_cache_files(self.queue_dir)]
         for file in files:
-            os.unlink(file)
+            fileutils.delete_if_exists(file)
         return len(files)
 
     def delete_queued_image(self, image_id):
@@ -270,8 +271,7 @@ class Driver(base.Driver):
         :param image_id: Image ID
         """
         path = self.get_image_filepath(image_id, 'queue')
-        if os.path.exists(path):
-            os.unlink(path)
+        fileutils.delete_if_exists(path)
 
     def clean(self, stall_time=None):
         """
@@ -331,7 +331,8 @@ class Driver(base.Driver):
 
                 # Make sure that we "pop" the image from the queue...
                 if self.is_queued(image_id):
-                    os.unlink(self.get_image_filepath(image_id, 'queue'))
+                    fileutils.delete_if_exists(
+                        self.get_image_filepath(image_id, 'queue'))
 
                 filesize = os.path.getsize(final_path)
                 now = time.time()
@@ -453,7 +454,7 @@ class Driver(base.Driver):
         Removes any invalid cache entries
         """
         for path in self.get_cache_files(self.invalid_dir):
-            os.unlink(path)
+            fileutils.delete_if_exists(path)
             LOG.info(_LI("Removed invalid cache file %s"), path)
 
     def delete_stalled_files(self, older_than):
@@ -467,7 +468,7 @@ class Driver(base.Driver):
         for path in self.get_cache_files(self.incomplete_dir):
             if os.path.getmtime(path) < older_than:
                 try:
-                    os.unlink(path)
+                    fileutils.delete_if_exists(path)
                     LOG.info(_LI("Removed stalled cache file %s"), path)
                 except Exception as e:
                     msg = (_LW("Failed to delete file %(path)s. "
@@ -503,9 +504,5 @@ class Driver(base.Driver):
 
 
 def delete_cached_file(path):
-    if os.path.exists(path):
-        LOG.debug("Deleting image cache file '%s'", path)
-        os.unlink(path)
-    else:
-        LOG.warn(_LW("Cached image file '%s' doesn't exist, unable to"
-                     " delete") % path)
+    LOG.debug("Deleting image cache file '%s'", path)
+    fileutils.delete_if_exists(path)
