@@ -2030,7 +2030,7 @@ class TestGlanceAPI(base.IsolatedUnitTest):
 
         def mock_update_image_metadata(*args, **kwargs):
 
-            if args[2].get('size', None) == len(data):
+            if args[2].get('size') == len(data):
                 path = "/images/%s" % image_id
                 req = unit_test_utils.get_fake_request(path=path,
                                                        method='DELETE',

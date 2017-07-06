@@ -171,7 +171,7 @@ def stub_out_registry_and_store_server(stubs, base_dir, **kwargs):
             return FakeGlanceConnection
         elif (client.port == DEFAULT_REGISTRY_PORT and
               client.host == '0.0.0.0'):
-            rserver = kwargs.get("registry", None)
+            rserver = kwargs.get("registry")
             return FakeRegistryConnection(registry=rserver)
 
     def fake_image_iter(self):

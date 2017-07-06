@@ -1220,7 +1220,7 @@ def metadef_namespace_get_all(context,
                               filters=None):
     """Get a namespaces list"""
     resource_types = filters.get('resource_types', []) if filters else []
-    visibility = filters.get('visibility', None) if filters else None
+    visibility = filters.get('visibility') if filters else None
 
     namespaces = []
     for namespace in DATA['metadef_namespaces']:

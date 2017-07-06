@@ -73,13 +73,13 @@ def _domain_fixture(task_id, **kwargs):
         'task_id': task_id,
         'status': kwargs.get('status', 'pending'),
         'task_type': kwargs.get('type', 'import'),
-        'owner': kwargs.get('owner', None),
-        'expires_at': kwargs.get('expires_at', None),
+        'owner': kwargs.get('owner'),
+        'expires_at': kwargs.get('expires_at'),
         'created_at': kwargs.get('created_at', default_datetime),
         'updated_at': kwargs.get('updated_at', default_datetime),
         'task_input': kwargs.get('task_input', {}),
-        'message': kwargs.get('message', None),
-        'result': kwargs.get('result', None)
+        'message': kwargs.get('message'),
+        'result': kwargs.get('result')
     }
     task = glance.domain.Task(**task_properties)
     return task

@@ -652,7 +652,7 @@ def replication_compare(options, args):
                     del headers[key]
 
             for key in image:
-                if image[key] != headers.get(key, None):
+                if image[key] != headers.get(key):
                     LOG.warn(_LW('%(image_id)s: field %(key)s differs '
                                  '(source is %(source_value)s, destination '
                                  'is %(target_value)s)')

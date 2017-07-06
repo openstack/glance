@@ -658,7 +658,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             if visibility not in ['community', 'public', 'private', 'shared']:
                 msg = _('Invalid visibility value: %s') % visibility
                 raise webob.exc.HTTPBadRequest(explanation=msg)
-        changes_since = filters.get('changes-since', None)
+        changes_since = filters.get('changes-since')
         if changes_since:
             msg = _('The "changes-since" filter is no longer available on v2.')
             raise webob.exc.HTTPBadRequest(explanation=msg)
