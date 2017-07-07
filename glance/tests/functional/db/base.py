@@ -118,6 +118,7 @@ class TestDriver(test_utils.BaseTestCase):
                 'created_at': dt1,
                 'updated_at': dt1,
                 'properties': {'foo': 'bar', 'far': 'boo'},
+                'protected': True,
                 'size': 13,
             },
             {
@@ -494,6 +495,16 @@ class DriverTests(object):
         images = self.db_api.image_get_all(self.context,
                                            filters={'poo': 'bear'})
         self.assertEqual(0, len(images))
+
+    def test_image_get_all_with_filter_protected(self):
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'protected':
+                                                    True})
+        self.assertEqual(1, len(images))
+        images = self.db_api.image_get_all(self.context,
+                                           filters={'protected':
+                                                    False})
+        self.assertEqual(2, len(images))
 
     def test_image_get_all_with_filter_comparative_created_at(self):
         anchor = timeutils.isotime(self.fixtures[0]['created_at'])
