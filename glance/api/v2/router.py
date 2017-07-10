@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glance.api.v2 import discovery
 from glance.api.v2 import image_actions
 from glance.api.v2 import image_data
 from glance.api.v2 import image_members
@@ -552,5 +553,17 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET, DELETE')
+
+        # Discovery API
+        info_resource = discovery.create_resource()
+        mapper.connect('info/import',
+                       controller=info_resource,
+                       action='get_image_import',
+                       conditions={'method': ['GET']},
+                       body_reject=True)
+        mapper.connect('info/import',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET')
 
         super(API, self).__init__(mapper)
