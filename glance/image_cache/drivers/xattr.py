@@ -62,11 +62,12 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
+from oslo_utils import fileutils
 import six
 import xattr
 
 from glance.common import exception
-from glance.i18n import _, _LI, _LW
+from glance.i18n import _, _LI
 from glance.image_cache.drivers import base
 
 LOG = logging.getLogger(__name__)
@@ -115,8 +116,7 @@ class Driver(base.Driver):
                                                        reason=msg)
         else:
             # Cleanup after ourselves...
-            if os.path.exists(fake_image_filepath):
-                os.unlink(fake_image_filepath)
+            fileutils.delete_if_exists(fake_image_filepath)
 
     def get_cache_size(self):
         """
@@ -221,7 +221,7 @@ class Driver(base.Driver):
         """
         files = [f for f in get_all_regular_files(self.queue_dir)]
         for file in files:
-            os.unlink(file)
+            fileutils.delete_if_exists(file)
         return len(files)
 
     def delete_queued_image(self, image_id):
@@ -231,8 +231,7 @@ class Driver(base.Driver):
         :param image_id: Image ID
         """
         path = self.get_image_filepath(image_id, 'queue')
-        if os.path.exists(path):
-            os.unlink(path)
+        fileutils.delete_if_exists(path)
 
     def get_least_recently_accessed(self):
         """
@@ -279,7 +278,8 @@ class Driver(base.Driver):
             if self.is_queued(image_id):
                 LOG.debug("Removing image '%s' from queue after "
                           "caching it.", image_id)
-                os.unlink(self.get_image_filepath(image_id, 'queue'))
+                fileutils.delete_if_exists(
+                    self.get_image_filepath(image_id, 'queue'))
 
         def rollback(e):
             set_attr('error', encodeutils.exception_to_unicode(e))
@@ -431,12 +431,8 @@ def get_all_regular_files(basepath):
 
 
 def delete_cached_file(path):
-    if os.path.exists(path):
-        LOG.debug("Deleting image cache file '%s'", path)
-        os.unlink(path)
-    else:
-        LOG.warn(_LW("Cached image file '%s' doesn't exist, unable to"
-                     " delete") % path)
+    LOG.debug("Deleting image cache file '%s'", path)
+    fileutils.delete_if_exists(path)
 
 
 def _make_namespaced_xattr_key(key, namespace='user'):
