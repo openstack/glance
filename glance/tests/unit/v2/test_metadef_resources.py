@@ -2064,3 +2064,16 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           self.tag_controller.update, request, tag,
                           NAMESPACE4, TAG1)
         self.assertNotificationsLog([])
+
+
+class TestMetadefNamespaceResponseSerializers(base.IsolatedUnitTest):
+
+    def setUp(self):
+        super(TestMetadefNamespaceResponseSerializers, self).setUp()
+        self.serializer = namespaces.ResponseSerializer(schema={})
+        self.response = mock.Mock()
+        self.result = mock.Mock()
+
+    def test_delete_tags(self):
+        self.serializer.delete_tags(self.response, self.result)
+        self.assertEqual(204, self.response.status_int)
