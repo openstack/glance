@@ -18,10 +18,10 @@ Bugs should be filed on Launchpad, not GitHub:
 Additionally, specific guidelines for contributing to Glance may be found in
 Glance's Documentation:
 
-   http://docs.openstack.org/developer/glance/contributing
+   https://docs.openstack.org/glance/latest/contributor/index.html
 
 Please read and follow these Glance-specific guidelines, particularly the
 section on `Disallowed Minor Code Changes
-<http://docs.openstack.org/developer/glance/contributing/minor-code-changes.html>`_.
+<https://docs.openstack.org/glance/latest/contributor/minor-code-changes.html>`_.
 You will thereby prevent your friendly review team from pulling out whatever
 hair they have left. Thank you for your cooperation.
