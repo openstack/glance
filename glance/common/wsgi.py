@@ -934,6 +934,26 @@ class Request(webob.Request):
                 environ['wsgi.url_scheme'] = scheme
         super(Request, self).__init__(environ, *args, **kwargs)
 
+    @property
+    def params(self):
+        """Override params property of webob.request.BaseRequest.
+
+        Added an 'encoded_params' attribute in case of PY2 to avoid
+        encoding values in next subsequent calls to the params property.
+        """
+        if six.PY2:
+            encoded_params = getattr(self, 'encoded_params', None)
+            if encoded_params is None:
+                params = super(Request, self).params
+                params_dict = multidict.MultiDict()
+                for key, value in params.items():
+                    params_dict.add(key, encodeutils.safe_encode(value))
+
+                setattr(self, 'encoded_params',
+                        multidict.NestedMultiDict(params_dict))
+            return self.encoded_params
+        return super(Request, self).params
+
     def best_match_content_type(self):
         """Determine the requested response content-type."""
         supported = ('application/json',)
