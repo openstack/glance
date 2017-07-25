@@ -72,7 +72,12 @@ class CacheFilter(wsgi.Middleware):
         if not image_meta['size']:
             # override image size metadata with the actual cached
             # file size, see LP Bug #900959
-            image_meta['size'] = self.cache.get_image_size(image_meta['id'])
+            if not isinstance(image_meta, policy.ImageTarget):
+                image_meta['size'] = self.cache.get_image_size(
+                    image_meta['id'])
+            else:
+                image_meta.target.size = self.cache.get_image_size(
+                    image_meta['id'])
 
     @staticmethod
     def _match_request(request):

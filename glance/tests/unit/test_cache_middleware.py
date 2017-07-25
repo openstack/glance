@@ -12,7 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+from mock import patch
 from oslo_policy import policy
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import http_client as http
@@ -322,24 +322,38 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         self.assertRaises(exception.NotFound,
                           cache_filter._verify_metadata, image_meta)
 
+    def _test_verify_metadata_zero_size(self, image_meta):
+        """
+        Test verify_metadata updates metadata with cached image size for images
+        with 0 size.
+
+        :param image_meta: Image metadata, which may be either an ImageTarget
+                           instance or a legacy v1 dict.
+        """
+        image_size = 1
+        cache_filter = ProcessRequestTestCacheFilter()
+        with patch.object(cache_filter.cache, 'get_image_size',
+                          return_value=image_size):
+            cache_filter._verify_metadata(image_meta)
+        self.assertEqual(image_size, image_meta['size'])
+
     def test_verify_metadata_zero_size(self):
         """
         Test verify_metadata updates metadata with cached image size for images
         with 0 size
         """
-        image_size = 1
-
-        def fake_get_image_size(image_id):
-            return image_size
-
-        image_id = 'test1'
-        image_meta = {'size': 0, 'deleted': False, 'id': image_id,
+        image_meta = {'size': 0, 'deleted': False, 'id': 'test1',
                       'status': 'active'}
-        cache_filter = ProcessRequestTestCacheFilter()
-        self.stubs.Set(cache_filter.cache, 'get_image_size',
-                       fake_get_image_size)
-        cache_filter._verify_metadata(image_meta)
-        self.assertEqual(image_size, image_meta['size'])
+        self._test_verify_metadata_zero_size(image_meta)
+
+    def test_verify_metadata_is_image_target_instance_with_zero_size(self):
+        """
+        Test verify_metadata updates metadata which is ImageTarget instance
+        """
+        image = ImageStub('test1')
+        image.size = 0
+        image_meta = glance.api.policy.ImageTarget(image)
+        self._test_verify_metadata_zero_size(image_meta)
 
     def test_v2_process_request_response_headers(self):
         def dummy_img_iterator():
