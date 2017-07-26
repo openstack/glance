@@ -556,12 +556,12 @@ class API(wsgi.Router):
 
         # Discovery API
         info_resource = discovery.create_resource()
-        mapper.connect('info/import',
+        mapper.connect('/info/import',
                        controller=info_resource,
                        action='get_image_import',
                        conditions={'method': ['GET']},
                        body_reject=True)
-        mapper.connect('info/import',
+        mapper.connect('/info/import',
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET')
