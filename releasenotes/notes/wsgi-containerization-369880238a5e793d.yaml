@@ -1,0 +1,44 @@
+---
+features:
+  - |
+    Glance is now packaged with a WSGI script entrypoint, enabling it to be
+    run as a WSGI application hosted by a performant web server.  See `Running
+    Glance in HTTPD
+    <https://docs.openstack.org/glance/latest/admin/apache-httpd.html>`_
+    in the Glance documentation for details.
+
+    There are some limitations with this method of deploying Glance and we
+    do not recommend its use in production environments at this time.  See
+    the `Known Issues`_ section of this document for more information.
+
+issues:
+  - |
+    Although support has been added for Glance to be run as a WSGI application
+    hosted by a web server, the atypical nature of the Images APIs provided by
+    Glance, which enable transfer of copious amounts of image data, makes it
+    difficult for this approach to work without careful configuration.  Glance
+    relies on the use of chunked transfer encoding for image uploads, and
+    the support of chunked transfer encoding is not required by the
+    `WSGI specification`_.
+
+    The Glance documentation section `Running Glance in HTTPD`_ outlines some
+    approaches to use (and not to use) Glance with the Apache httpd server. This
+    is the way Glance is configured as a WSGI application in devstack, so it's
+    the method with which we've had the most experience.  If you try deploying
+    Glance using a different web server, please consider contributing your
+    findings to the Glance documentation.
+
+    Currently, we are experiencing some problems in the gate when Glance is
+    configured to run in devstack following the guidelines recommended in the
+    documentation.  You can follow `Bug 1703856`_ to learn more.
+
+    As far as the Glance team can determine, the difficulties running Glance
+    as a WSGI application are caused by issues external to Glance.  Thus
+    the Glance team recommends that Glance be run in its normal standalone
+    configuration, particularly in production environments.  If you choose
+    to run Glance as a WSGI application in a web server, be sure to test
+    your installation carefully with realistic usage scenarios.
+
+    .. _`WSGI specification`: https://www.python.org/dev/peps/pep-0333/
+    .. _`Running Glance in HTTPD`: https://docs.openstack.org/glance/latest/admin/apache-httpd.html
+    .. _`Bug 1703856`: https://bugs.launchpad.net/glance/+bug/1703856
