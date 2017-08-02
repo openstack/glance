@@ -47,13 +47,10 @@ sys.path = [
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.coverage',
-              'sphinx.ext.ifconfig',
-              'sphinx.ext.graphviz',
-              'stevedore.sphinxext',
-              'oslo_config.sphinxext',
+extensions = ['stevedore.sphinxext',
               'sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
+              'oslo_config.sphinxext',
               'oslo_config.sphinxconfiggen',
               'openstackdocstheme',
               ]
@@ -126,9 +123,9 @@ exclude_patterns = [
     # in other documents during the build but that should not be
     # included in the toctree themselves, so tell Sphinx to ignore
     # them when scanning for input files.
-    'man/footer.rst',
-    'man/general_options.rst',
-    'man/openstack_options.rst',
+    'cli/footer.txt',
+    'cli/general_options.txt',
+    'cli/openstack_options.txt',
 ]
 
 # The reST default role (for this markup: `text`) to use for all documents.
@@ -157,25 +154,25 @@ modindex_common_prefix = ['glance.']
 # List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
 
 man_pages = [
-    ('man/glanceapi', 'glance-api', u'Glance API Server',
+    ('cli/glanceapi', 'glance-api', u'Glance API Server',
      [u'OpenStack'], 1),
-    ('man/glancecachecleaner', 'glance-cache-cleaner', u'Glance Cache Cleaner',
+    ('cli/glancecachecleaner', 'glance-cache-cleaner', u'Glance Cache Cleaner',
      [u'OpenStack'], 1),
-    ('man/glancecachemanage', 'glance-cache-manage', u'Glance Cache Manager',
+    ('cli/glancecachemanage', 'glance-cache-manage', u'Glance Cache Manager',
      [u'OpenStack'], 1),
-    ('man/glancecacheprefetcher', 'glance-cache-prefetcher',
+    ('cli/glancecacheprefetcher', 'glance-cache-prefetcher',
      u'Glance Cache Pre-fetcher', [u'OpenStack'], 1),
-    ('man/glancecachepruner', 'glance-cache-pruner', u'Glance Cache Pruner',
+    ('cli/glancecachepruner', 'glance-cache-pruner', u'Glance Cache Pruner',
      [u'OpenStack'], 1),
-    ('man/glancecontrol', 'glance-control', u'Glance Daemon Control Helper ',
+    ('cli/glancecontrol', 'glance-control', u'Glance Daemon Control Helper ',
      [u'OpenStack'], 1),
-    ('man/glancemanage', 'glance-manage', u'Glance Management Utility',
+    ('cli/glancemanage', 'glance-manage', u'Glance Management Utility',
      [u'OpenStack'], 1),
-    ('man/glanceregistry', 'glance-registry', u'Glance Registry Server',
+    ('cli/glanceregistry', 'glance-registry', u'Glance Registry Server',
      [u'OpenStack'], 1),
-    ('man/glancereplicator', 'glance-replicator', u'Glance Replicator',
+    ('cli/glancereplicator', 'glance-replicator', u'Glance Replicator',
      [u'OpenStack'], 1),
-    ('man/glancescrubber', 'glance-scrubber', u'Glance Scrubber Service',
+    ('cli/glancescrubber', 'glance-scrubber', u'Glance Scrubber Service',
      [u'OpenStack'], 1)
 ]
 
