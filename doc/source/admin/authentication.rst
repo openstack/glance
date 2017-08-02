@@ -64,7 +64,7 @@ The actual values for these variables will need to be set depending on
 your situation.  For more information, please refer to the Keystone
 `documentation`_ on the ``auth_token`` middleware.
 
-.. _`documentation`: http://docs.openstack.org/developer/keystonemiddleware/middlewarearchitecture.html#configuration
+.. _`documentation`: https://docs.openstack.org/keystonemiddleware/latest/middlewarearchitecture.html#configuration
 
 In short:
 

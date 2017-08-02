@@ -1,4 +1,4 @@
-..
+
       Copyright 2011 OpenStack Foundation
       All Rights Reserved.
 
@@ -475,7 +475,7 @@ Configuring the Swift Storage Backend
 
   Sets the authentication URL supplied to Swift when making calls to its storage
   system. For more information about the Swift authentication system, please
-  see the `Swift auth <http://docs.openstack.org/developer/swift/overview_auth.html>`_
+  see the `Swift auth <https://docs.openstack.org/swift/latest/overview_auth.html>`_
   documentation.
 
   **IMPORTANT NOTE**: Swift authentication addresses use HTTPS by default. This
@@ -622,7 +622,7 @@ Configuring the Swift Storage Backend
 
   A string indicating which version of Swift OpenStack authentication
   to use. See the project
-  `python-swiftclient <http://docs.openstack.org/developer/python-swiftclient/>`_
+  `python-swiftclient <https://docs.openstack.org/python-swiftclient/latest/>`_
   for more details.
 
 ``swift_store_service_type``
@@ -1383,7 +1383,7 @@ configuration file.
   of ``[oslo_messaging_notifications]/driver``.
 
   For more information see :ref:`Glance notifications <notifications>` and
-  `oslo.messaging <http://docs.openstack.org/developer/oslo.messaging/>`_.
+  `oslo.messaging <https://docs.openstack.org/oslo.messaging/latest/>`_.
 
 ``[DEFAULT]/disabled_notifications``
 
@@ -1585,7 +1585,7 @@ the ``glance-api-paste.ini`` file, looking like so::
   pipeline = healthcheck versionnegotiation osprofiler unauthenticated-context rootapp
 
 For more information see
-`oslo.middleware <http://docs.openstack.org/developer/oslo.middleware/api.html#oslo_middleware.Healthcheck>`_.
+`oslo.middleware <https://docs.openstack.org/oslo.middleware/latest/reference/api.html#oslo_middleware.Healthcheck>`_.
 
 Configuring supported disk formats
 ----------------------------------
