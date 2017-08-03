@@ -256,17 +256,13 @@ checksum:
   type: string
 container_format:
   description: |
-    Format of the image container. A valid value is one of
-    ``ami``, ``ari``, ``aki``, ``bare``, ``ovf``, ``ova``, or
-    ``docker``.  The value might be ``null`` (JSON null data type).
+    |container_format_description|
   in: body
   required: true
   type: enum
 container_format-in-request:
   description: |
-    Format of the image container. A valid value is one of
-    ``ami``, ``ari``, ``aki``, ``bare``, ``ovf``, ``ova``, or
-    ``docker``.
+    |container_format_description|
   in: body
   required: false
   type: enum
