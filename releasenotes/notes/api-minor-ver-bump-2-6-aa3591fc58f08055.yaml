@@ -1,0 +1,26 @@
+---
+prelude: >
+  - The *minor* version of the Images API v2 is bumped to **2.6**
+    to introduce an EXPERIMENTAL version of the API that includes
+    the new calls introduced for the Minimal Viable Product delivery
+    of the `refactored image import`_ functionality.  Version **2.5**
+    remains the CURRENT version of the Images API.
+upgrade:
+  - |
+    An **EXPERIMENTAL** version of the Images API supplied by Glance
+    is introduced as **2.6**.  It includes the new API calls introduced
+    for the `refactored image import`_ functionality.  This functionality
+    is **not** enabled by default, so the CURRENT version of the Images
+    API remains at 2.5.  There are no changes to the version 2.5 API in
+    this release, so all version 2.5 calls will work whether or not the
+    new import functionality is enabled or not.
+
+    The version 2.6 API is being introduced as EXPERIMENTAL because it
+    is a Minimal Viable Product delivery of the functionality described
+    in the `refactored image import`_ specification.  As an MVP, the
+    responses described in that specification are abbreviated in version
+    2.6.  It is expected that version 2.6 will be completed in Queens,
+    but at this time, we encourage operators to try out the new
+    functionality, but keep in mind its EXPERIMENTAL nature.
+
+    .. _`refactored image import`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
