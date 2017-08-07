@@ -37,6 +37,12 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
+                'id': 'v2.6',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self',
+                           'href': 'http://127.0.0.1:9292/v2/'}],
+            },
+            {
                 'id': 'v2.5',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self',
@@ -98,6 +104,12 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = [
             {
+                'id': 'v2.6',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self',
+                           'href': 'https://example.com:9292/v2/'}],
+            },
+            {
                 'id': 'v2.5',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self',
@@ -157,6 +169,12 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [
+            {
+                'id': 'v2.6',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self',
+                           'href': 'http://localhost:9292/v2/'}],
+            },
             {
                 'id': 'v2.5',
                 'status': 'CURRENT',
@@ -218,6 +236,12 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = [
+            {
+                'id': 'v2.6',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self',
+                           'href': 'https://localhost:9292/v2/'}],
+            },
             {
                 'id': 'v2.5',
                 'status': 'CURRENT',
@@ -332,13 +356,18 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v2_6_unsupported(self):
+    def test_request_url_v2_6(self):
         request = webob.Request.blank('/v2.6/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    def test_request_url_v2_7_unsupported(self):
+        request = webob.Request.blank('/v2.7/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v4_unsupported(self):
-        request = webob.Request.blank('/v4/images')
+    def test_request_url_v3_unsupported(self):
+        request = webob.Request.blank('/v3/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
@@ -379,5 +408,10 @@ class VersionsAndNegotiationTest(VersionNegotiationTest, VersionsTest):
 
     def test_deprecated_is_negotiated(self):
         to_check = self._get_list_of_version_ids('DEPRECATED')
+        for version_id in to_check:
+            self._assert_version_is_negotiated(version_id)
+
+    def test_experimental_is_negotiated(self):
+        to_check = self._get_list_of_version_ids('EXPERIMENTAL')
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)

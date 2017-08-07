@@ -33,6 +33,11 @@ class TestApiVersions(functional.FunctionalTest):
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
         versions = {'versions': [
             {
+                'id': 'v2.6',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self', 'href': url % '2'}],
+            },
+            {
                 'id': 'v2.5',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self', 'href': url % '2'}],
@@ -89,6 +94,11 @@ class TestApiVersions(functional.FunctionalTest):
 
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
         versions = {'versions': [
+            {
+                'id': 'v2.6',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self', 'href': url % '2'}],
+            },
             {
                 'id': 'v2.5',
                 'status': 'CURRENT',
@@ -164,6 +174,11 @@ class TestApiPaths(functional.FunctionalTest):
 
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
         self.versions = {'versions': [
+            {
+                'id': 'v2.6',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self', 'href': url % '2'}],
+            },
             {
                 'id': 'v2.5',
                 'status': 'CURRENT',

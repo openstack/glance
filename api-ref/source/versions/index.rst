@@ -24,6 +24,10 @@ Image Service Versions
 Version History
 ***************
 
+**Pike changes**
+
+- version 2.6 is EXPERIMENTAL
+
 **Ocata changes**
 
 - version 2.5 is CURRENT
