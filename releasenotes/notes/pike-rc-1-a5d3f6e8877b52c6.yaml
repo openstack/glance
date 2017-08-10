@@ -1,0 +1,57 @@
+---
+features:
+  - |
+    The image-list call to the Images v2 API now recognizes a ``protected``
+    query-string parameter.  This parameter accepts only two values: either
+    ``true`` or ``false``.  The filter is case-sensitive.  Any other value
+    will result in a 400 response to the request.  See the `protected filter
+    specification`_ document for details.
+
+    .. _`protected filter specification`: https://specs.openstack.org/openstack/glance-specs/specs/pike/implemented/glance/add-protected-filter.html
+
+upgrade:
+  - |
+    You may set the ``timeout`` option in the ``keystone_authtoken`` group
+    in the **glance-api.conf** file.
+
+fixes:
+  - |
+    The following are some highlights of the bug fixes included in this
+    release.
+
+    * Bug 1655727_: Invoke monkey_patching early enough for eventlet 0.20.1
+    * Bug 1657459_: Fix incompatibilities with WebOb 1.7
+    * Bug 1554412_: Provide user friendly message for FK failure
+    * Bug 1664709_: Do not serve partial image download requests from cache
+    * Bug 1482129_: Remove duplicate key from dictionary
+    * Bug 1229823_: Handle file delete races in image cache
+    * Bug 1686488_: Fix glance image-download error
+    * Bug 1516706_: Prevent v1_api from making requests to v2_registry
+    * Bug 1701346_: Fix trust auth mechanism
+
+    .. _1655727: https://code.launchpad.net/bugs/1655727
+    .. _1657459: https://code.launchpad.net/bugs/1657459
+    .. _1554412: https://code.launchpad.net/bugs/1554412
+    .. _1664709: https://code.launchpad.net/bugs/1664709
+    .. _1482129: https://code.launchpad.net/bugs/1482129
+    .. _1229823: https://code.launchpad.net/bugs/1229823
+    .. _1686488: https://code.launchpad.net/bugs/1686488
+    .. _1516706: https://code.launchpad.net/bugs/1516706
+    .. _1701346: https://code.launchpad.net/bugs/1701346
+
+other:
+  - |
+    The `documentation was reorganized`_ in accord with the new standard
+    layout for OpenStack projects.
+
+  - |
+    Glance now uses the `python 'cryptography' module`_ instead of
+    the 'pycrypto' module.
+
+  - |
+    In accord with current OpenStack policy, Glance log messages are
+    `no longer translated`_.
+
+    .. _`documentation was reorganized`: http://specs.openstack.org/openstack/docs-specs/specs/pike/os-manuals-migration.html
+    .. _`python 'cryptography' module`: https://git.openstack.org/cgit/openstack/glance/commit/?id=5ebde9079b34544cc6642a73b40ec865bcef8580
+    .. _`no longer translated`: https://git.openstack.org/cgit/openstack/glance/commit/?id=87a56ce5c78952c5cccf8c6c280ec1e9a60b0b6c
