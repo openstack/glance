@@ -13,14 +13,13 @@
 #    under the License.
 
 from keystoneauth1 import exceptions as ka_exceptions
-from keystoneauth1.identity import v3
-from keystoneauth1.loading import conf
-from keystoneauth1.loading import session
+from keystoneauth1 import loading as ka_loading
 from keystoneclient.v3 import client as ks_client
 from oslo_config import cfg
 from oslo_log import log as logging
 
 CONF = cfg.CONF
+CONF.register_opt(cfg.IntOpt('timeout'), group='keystone_authtoken')
 
 LOG = logging.getLogger(__name__)
 
@@ -30,32 +29,19 @@ class TokenRefresher(object):
 
     def __init__(self, user_plugin, user_project, user_roles):
         """Prepare all parameters and clients required to refresh token"""
-
-        # step 1: Prepare parameters required to connect to keystone
-        self.auth_url = CONF.keystone_authtoken.auth_uri
-        if not self.auth_url.endswith('/v3'):
-            self.auth_url += '/v3'
-
-        self.ssl_settings = {
-            'cacert': CONF.keystone_authtoken.cafile,
-            'insecure': CONF.keystone_authtoken.insecure,
-            'cert': CONF.keystone_authtoken.certfile,
-            'key': CONF.keystone_authtoken.keyfile,
-        }
-
-        # step 2: create trust to ensure that we can always update token
+        # step 1: create trust to ensure that we can always update token
 
         # trustor = user who made the request
-        trustor_client = self._load_client(user_plugin, self.ssl_settings)
+        trustor_client = self._load_client(user_plugin)
         trustor_id = trustor_client.session.get_user_id()
 
         # get trustee user client that impersonates main user
-        trustee_user_auth = conf.load_from_conf_options(CONF,
-                                                        'keystone_authtoken')
+        trustee_user_auth = ka_loading.load_auth_from_conf_options(
+            CONF, 'keystone_authtoken')
         # save service user client because we need new service token
         # to refresh trust-scoped client later
-        self.trustee_user_client = self._load_client(trustee_user_auth,
-                                                     self.ssl_settings)
+        self.trustee_user_client = self._load_client(trustee_user_auth)
+
         trustee_id = self.trustee_user_client.session.get_user_id()
 
         self.trust_id = trustor_client.trusts.create(trustor_user=trustor_id,
@@ -65,7 +51,7 @@ class TokenRefresher(object):
                                                      project=user_project).id
         LOG.debug("Trust %s has been created.", self.trust_id)
 
-        # step 3: postpone trust-scoped client initialization
+        # step 2: postpone trust-scoped client initialization
         # until we need to refresh the token
         self.trustee_client = None
 
@@ -101,17 +87,23 @@ class TokenRefresher(object):
             self.trustee_client.trusts.delete(self.trust_id)
 
     def _refresh_trustee_client(self):
-        trustee_token = self.trustee_user_client.session.get_token()
-        trustee_auth = v3.Token(
-            trust_id=self.trust_id,
-            token=trustee_token,
-            auth_url=self.auth_url
-        )
-        return self._load_client(trustee_auth, self.ssl_settings)
+        # Remove project_name and project_id, since we need a trust scoped
+        # auth object
+        kwargs = {
+            'project_name': None,
+            'project_domain_name': None,
+            'project_id': None,
+            'trust_id': self.trust_id
+        }
+
+        trustee_auth = ka_loading.load_auth_from_conf_options(
+            CONF, 'keystone_authtoken', **kwargs)
+
+        return self._load_client(trustee_auth)
 
     @staticmethod
-    def _load_client(plugin, ssl_settings):
+    def _load_client(plugin):
         # load client from auth settings and user plugin
-        sess = session.Session().load_from_options(
-            auth=plugin, **ssl_settings)
+        sess = ka_loading.load_session_from_conf_options(
+            CONF, 'keystone_authtoken', auth=plugin)
         return ks_client.Client(session=sess)
