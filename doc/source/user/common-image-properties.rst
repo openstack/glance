@@ -23,13 +23,13 @@ that may prove useful to consumers of your image.
 This document explains the names of these properties and the expected values.
 
 The common image properties are also described in a JSON schema, found in
-etc/schema-image.json in the Glance source code.
+/etc/glance/schema-image.json in the Glance source code.
 
 **architecture**
 ----------------
 
 Operating system architecture as specified in
-http://docs.openstack.org/cli-reference/glance-property-keys.html
+https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html
 
 
 **instance_uuid**
@@ -54,7 +54,7 @@ booting an AMI-style image.
 -------------
 
 The common name of the operating system distribution as specified in
-http://docs.openstack.org/cli-reference/glance-property-keys.html
+https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html
 
 **os_version**
 --------------

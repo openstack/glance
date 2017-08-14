@@ -14,11 +14,11 @@
         "description": "Metadata which can be used to record which instance this image is associated with. (Informational only, does not create an instance snapshot.)"
     },
     "architecture": {
-        "description": "Operating system architecture as specified in https://docs.openstack.org/cli-reference/glance-property-keys.html",
+        "description": "Operating system architecture as specified in https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html",
         "type": "string"
     },
     "os_distro": {
-        "description": "Common name of operating system distribution as specified in https://docs.openstack.org/cli-reference/glance-property-keys.html",
+        "description": "Common name of operating system distribution as specified in https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html",
         "type": "string"
     },
     "os_version": {
