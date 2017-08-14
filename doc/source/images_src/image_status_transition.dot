@@ -31,12 +31,21 @@ digraph {
 
   "queued" -> "active" [label="add location*"];
   "queued" -> "saving" [label="upload"];
+  "queued" -> "uploading" [label="stage upload"];
   "queued" -> "deleted" [label="delete"];
 
   "saving" -> "active" [label="upload succeed"];
   "saving" -> "killed" [label="[v1] upload fail"];
   "saving" -> "queued" [label="[v2] upload fail"];
   "saving" -> "deleted" [label="delete"];
+
+  "uploading" -> "importing" [label="import"];
+  "uploading" -> "queued" [label="stage upload fail"];
+  "uploading" -> "deleted" [label="delete"];
+
+  "importing" -> "active" [label="import succeed"];
+  "importing" -> "queued" [label="import fail"];
+  "importing" -> "deleted" [label="delete"];
 
   "active" -> "pending_delete" [label="delayed delete"];
   "active" -> "deleted" [label="delete"];

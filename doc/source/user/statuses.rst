@@ -19,7 +19,7 @@
 Image Statuses
 ==============
 
-Images in Glance can be in one the following statuses:
+Images in Glance can be in one of the following statuses:
 
 * ``queued``
 
@@ -34,6 +34,19 @@ Images in Glance can be in one the following statuses:
   is an `x-image-meta-location` header present, that image will never be in
   the `saving` status (as the image data is already available in some other
   location).
+
+* ``uploading``
+
+  Denotes that an import data-put call has been made. While in this status, a
+  call to `PUT /file` is disallowed. (Note that a call to `PUT /file` on a
+  queued image puts the image into saving status. Calls to `PUT /stage` are
+  disallowed while an image is in saving status. Thus it’s not possible to use
+  both upload methods on the same image.)
+
+* ``importing``
+
+  Denotes that an import call has been made but that the image is not yet ready
+  for use.
 
 * ``active``
 
@@ -69,13 +82,15 @@ Images in Glance can be in one the following statuses:
    :align: center
    :alt: The states consist of:
          "queued", "saving", "active", "pending_delete", "deactivated",
-         "killed", and "deleted".
+         "uploading", "importing", "killed", and "deleted".
          The transitions consist of:
          An initial transition to the "queued" state called "create image".
          A transition from the "queued" state to the "active" state
          called "add location".
          A transition from the "queued" state to the "saving" state
          called "upload".
+         A transition from the "queued" state to the "uploading" state
+         called "stage upload".
          A transition from the "queued" state to the "deleted" state
          called "delete".
          A transition from the "saving" state to the "active" state
@@ -86,6 +101,18 @@ Images in Glance can be in one the following statuses:
          called "[v1] upload fail".
          A transition from the "saving" state to the "queued" state
          called "[v2] upload fail".
+         A transition from the "uploading" state to the "importing" state
+         called "import".
+         A transition from the "uploading" state to the "queued" state
+         called "stage upload fail".
+         A transition from the "uploading" state to the "deleted" state
+         called "delete".
+         A transition from the "importing" state to the "active" state
+         called "import succeed".
+         A transition from the "importing" state to the "queued" state
+         called "import fail".
+         A transition from the "importing" state to the "deleted" state
+         called "delete".
          A transition from the "active" state to the "deleted" state
          called "delete".
          A transition from the "active" state to the "pending_delete" state
@@ -112,7 +139,7 @@ Images in Glance can be in one the following statuses:
 Task Statuses
 =============
 
-Tasks in Glance can be in one the following statuses:
+Tasks in Glance can be in one of the following statuses:
 
 * ``pending``
 
