@@ -61,7 +61,7 @@ LOG = logging.getLogger(__name__)
 
 
 STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
-            'deleted', 'deactivated']
+            'deleted', 'deactivated', 'importing', 'uploading']
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
