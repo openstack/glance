@@ -67,6 +67,8 @@ class TasksController(object):
 
     @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def create(self, req, task):
+        # NOTE(rosmaita): access to this call is enforced in the deserializer
+
         task_factory = self.gateway.get_task_factory(req.context)
         executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
@@ -88,6 +90,8 @@ class TasksController(object):
     @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def index(self, req, marker=None, limit=None, sort_key='created_at',
               sort_dir='desc', filters=None):
+        # NOTE(rosmaita): access to this call is enforced in the deserializer
+
         result = {}
         if filters is None:
             filters = {}
@@ -115,6 +119,7 @@ class TasksController(object):
 
     @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def get(self, req, task_id):
+        _enforce_access_policy(self.policy, req)
         try:
             task_repo = self.gateway.get_task_repo(req.context)
             task = task_repo.get(task_id)
@@ -135,6 +140,7 @@ class TasksController(object):
 
     @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)
     def delete(self, req, task_id):
+        _enforce_access_policy(self.policy, req)
         msg = (_("This operation is currently not permitted on Glance Tasks. "
                  "They are auto deleted after reaching the time based on "
                  "their expires_at property."))
@@ -201,11 +207,14 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                 msg = _("Task '%s' is required") % param
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
-    def __init__(self, schema=None):
+    def __init__(self, schema=None, policy_engine=None):
         super(RequestDeserializer, self).__init__()
         self.schema = schema or get_task_schema()
+        # want to enforce the access policy as early as possible
+        self.policy_engine = policy_engine or policy.Enforcer()
 
     def create(self, request):
+        _enforce_access_policy(self.policy_engine, request)
         body = self._get_request_body(request)
         self._validate_create_body(body)
         try:
@@ -222,6 +231,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return dict(task=task)
 
     def index(self, request):
+        _enforce_access_policy(self.policy_engine, request)
         params = request.params.copy()
         limit = params.pop('limit', None)
         marker = params.pop('marker', None)
@@ -334,6 +344,7 @@ _TASK_SCHEMA = {
         "description": _("The type of task represented by this content"),
         "enum": [
             "import",
+            "api_image_import"
         ],
         "type": "string"
     },
@@ -386,6 +397,14 @@ _TASK_SCHEMA = {
         'type': 'string'
     }
 }
+
+
+def _enforce_access_policy(policy_engine, request):
+    try:
+        policy_engine.enforce(request.context, 'tasks_api_access', {})
+    except exception.Forbidden:
+        LOG.debug("User does not have permission to access the Tasks API")
+        raise webob.exc.HTTPForbidden()
 
 
 def get_task_schema():
