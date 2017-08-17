@@ -7,6 +7,14 @@ enables you to run it with a real web server like Apache HTTPD or nginx. To
 deploy this there are several patterns. This doc shows two common ways of
 deploying Glance with Apache HTTPD.
 
+.. NOTE::
+
+    We are experiencing some problems in the gate when the Pike release of
+    Glance is configured to run in devstack following the guidelines
+    recommended in this documentation. You can follow `Bug #1703856
+    <https://bugs.launchpad.net/glance/+bug/1703856>`__ to learn more.
+
+
 uwsgi
 -----
 
@@ -55,6 +63,14 @@ Install uwsgi and start the glance-api server using uwsgi::
     In the sample configs port 60999 is used, but this doesn't matter and is
     just a randomly selected number. This is not a contract on the port used
     for the local uwsgi daemon.
+
+.. NOTE::
+
+    In the sample apache config proxy-sendcl is set. This is to workaround
+    glance not leveraging uwsgi's chunked_read() api in the Pike release.
+    Using this option means apache buffers the input chunked data in the
+    configured TEMPDIR (which defaults to /tmp) before giving the data to
+    glance. This can also be quite slow and might require increasing timeouts.
 
 
 mod_proxy_uwsgi
