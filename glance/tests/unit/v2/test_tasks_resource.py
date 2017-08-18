@@ -475,6 +475,14 @@ class TestTasksControllerPolicies(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.get,
                           request, task_id=UUID2)
 
+    def test_access_get_unauthorized(self):
+        rules = {"tasks_api_access": False,
+                 "get_task": True}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.get,
+                          request, task_id=UUID2)
+
     def test_create_task_unauthorized(self):
         rules = {"add_task": False}
         self.policy.set_rules(rules)
@@ -489,6 +497,72 @@ class TestTasksControllerPolicies(base.IsolatedUnitTest):
                           self.controller.delete,
                           request,
                           'fake_id')
+
+    def test_access_delete_unauthorized(self):
+        rules = {"tasks_api_access": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.delete,
+                          request,
+                          'fake_id')
+
+
+class TestTasksDeserializerPolicies(test_utils.BaseTestCase):
+
+    # NOTE(rosmaita): this is a bit weird, but we check the access
+    # policy in the RequestDeserializer for calls that take bodies
+    # or query strings because we want to make sure the failure is
+    # a 403, not a 400 due to bad request format
+    def setUp(self):
+        super(TestTasksDeserializerPolicies, self).setUp()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.deserializer = glance.api.v2.tasks.RequestDeserializer(
+            schema=None, policy_engine=self.policy)
+
+    bad_path = '/tasks?limit=NaN'
+
+    def test_access_index_authorized_bad_query_string(self):
+        """Allow access, fail with 400"""
+        rules = {"tasks_api_access": True,
+                 "get_tasks": True}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request(self.bad_path)
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.index,
+                          request)
+
+    def test_access_index_unauthorized(self):
+        """Disallow access with bad request, fail with 403"""
+        rules = {"tasks_api_access": False,
+                 "get_tasks": True}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request(self.bad_path)
+        self.assertRaises(webob.exc.HTTPForbidden, self.deserializer.index,
+                          request)
+
+    bad_task = {'typo': 'import', 'input': {"import_from": "fake"}}
+
+    def test_access_create_authorized_bad_format(self):
+        """Allow access, fail with 400"""
+        rules = {"tasks_api_access": True,
+                 "add_task": True}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        request.body = jsonutils.dump_as_bytes(self.bad_task)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.create,
+                          request)
+
+    def test_access_create_unauthorized(self):
+        """Disallow access with bad request, fail with 403"""
+        rules = {"tasks_api_access": False,
+                 "add_task": True}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        request.body = jsonutils.dump_as_bytes(self.bad_task)
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.deserializer.create,
+                          request)
 
 
 class TestTasksDeserializer(test_utils.BaseTestCase):
