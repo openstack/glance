@@ -89,7 +89,7 @@ class ImagesController(object):
         return image
 
     @utils.mutating
-    def import_image(self, req, image):
+    def import_image(self, req, image_id, body):
         task_factory = self.gateway.get_task_factory(req.context)
         executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
@@ -108,7 +108,7 @@ class ImagesController(object):
             LOG.debug("User not permitted to create image import task.")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
 
-        return image
+        return image_id
 
     def index(self, req, marker=None, limit=None, sort_key=None,
               sort_dir=None, filters=None, member_status='accepted'):
@@ -767,6 +767,31 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return query_params
 
+    def _validate_import_body(self, body):
+        # TODO(rosmaita): do schema validation of body instead
+        # of this ad-hoc stuff
+        try:
+            method = body['method']
+        except KeyError:
+            msg = _("Import request requires a 'method' field.")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        try:
+            method_name = method['name']
+        except KeyError:
+            msg = _("Import request requires a 'name' field.")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+        if method_name != 'glance-direct':
+            msg = _("Unknown import method name '%s'.") % method_name
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+    def import_image(self, request):
+        if not CONF.enable_image_import:
+            msg = _("Image import is not supported at this site.")
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        body = self._get_request_body(request)
+        self._validate_import_body(body)
+        return {'body': body}
+
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     def __init__(self, schema=None):
@@ -879,6 +904,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def delete(self, response, result):
         response.status_int = http.NO_CONTENT
+
+    def import_image(self, response, result):
+        response.status_int = http.ACCEPTED
 
 
 def get_base_properties():
