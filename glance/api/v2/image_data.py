@@ -276,7 +276,7 @@ class ImageDataController(object):
         # NOTE(jokke): this is horrible way to do it but as long as
         # glance_store is in a shape it is, the only way. Don't hold me
         # accountable for it.
-        def _build_staging_store(self):
+        def _build_staging_store():
             conf = cfg.ConfigOpts()
             backend.register_opts(conf)
             conf.set_override('filesystem_store_datadir',
@@ -374,6 +374,21 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         image_size = request.content_length or None
         return {'size': image_size, 'data': request.body_file}
 
+    def stage(self, request):
+        if not CONF.enable_image_import:
+            msg = _("Image import is not supported at this site.")
+            raise webob.exc.HTTPNotFound(explanation=msg)
+        try:
+            request.get_content_type(('application/octet-stream',))
+        except exception.InvalidContentType as e:
+            raise webob.exc.HTTPUnsupportedMediaType(explanation=e.msg)
+
+        if self.is_valid_encoding(request) and self.is_valid_method(request):
+            request.is_body_readable = True
+
+        image_size = request.content_length or None
+        return {'size': image_size, 'data': request.body_file}
+
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
 
@@ -458,6 +473,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.headers['Content-Length'] = six.text_type(chunk_size)
 
     def upload(self, response, result):
+        response.status_int = 204
+
+    def stage(self, response, result):
         response.status_int = 204
 
 

@@ -101,8 +101,9 @@ class Image(object):
         # NOTE(flwang): In v2, we are deprecating the 'killed' status, so it's
         # allowed to restore image from 'saving' to 'queued' so that upload
         # can be retried.
-        'queued': ('saving', 'importing', 'active', 'deleted'),
+        'queued': ('saving', 'uploading', 'importing', 'active', 'deleted'),
         'saving': ('active', 'killed', 'deleted', 'queued'),
+        'uploading': ('importing', 'queued', 'deleted'),
         'importing': ('active', 'deleted', 'queued'),
         'active': ('pending_delete', 'deleted', 'deactivated'),
         'killed': ('deleted',),
