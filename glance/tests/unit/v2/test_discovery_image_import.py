@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import webob.exc
+
 import glance.api.v2.discovery
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
@@ -24,8 +26,21 @@ class TestInfoControllers(test_utils.BaseTestCase):
         super(TestInfoControllers, self).setUp()
         self.controller = glance.api.v2.discovery.InfoController()
 
-    def test_get_image_import(self):
+    def test_get_import_info_when_import_not_enabled(self):
+        """When import not enabled, should return 404 just like v2.5"""
+        self.config(enable_image_import=False)
+        req = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.get_image_import,
+                          req)
+
+    def test_get_import_info(self):
+        # TODO(rosmaita): change this when import methods are
+        # listed in the config file
+        import_method = 'glance-direct'
+
+        self.config(enable_image_import=True)
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_image_import(req)
         self.assertIn('import-methods', output)
-        self.assertEqual([], output['import-methods']['value'])
+        self.assertEqual([import_method], output['import-methods']['value'])
