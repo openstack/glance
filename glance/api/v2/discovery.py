@@ -14,14 +14,23 @@
 # limitations under the License.
 
 from oslo_config import cfg
+import webob.exc
 
 from glance.common import wsgi
+from glance.i18n import _
+
 
 CONF = cfg.CONF
 
 
 class InfoController(object):
     def get_image_import(self, req):
+        # TODO(jokke): Will be removed after the config option
+        # is removed. (deprecated)
+        if not CONF.enable_image_import:
+            msg = _("Image import is not supported at this site.")
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
         # TODO(jokke): All the rest of the boundaries should be implemented.
         # TODO(jokke): Once we have the rest of the methods implemented
         # the value should be inherited from the CONF rather than hard-
@@ -31,11 +40,6 @@ class InfoController(object):
             'type': 'array',
             'value': ['glance-direct']
         }
-
-        # TODO(jokke): Will be removed after the config option
-        # is removed. (deprecated)
-        if not CONF.enable_image_import:
-            import_methods['value'] = []
 
         return {
             'import-methods': import_methods
