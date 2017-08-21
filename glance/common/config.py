@@ -671,7 +671,7 @@ image import process.
 
 This option does not change the 'staging' API endpoint by any means.
 
-NOTE: It is discouraged to use same path as [TASKS]/work_dir
+NOTE: It is discouraged to use same path as [task]/work_dir
 
 NOTE: 'file://<absolute-directory-path>' is the only option
 api_image_import flow will support for now.
@@ -683,7 +683,7 @@ Possible values:
     * String starting with 'file://' followed by absolute FS path
 
 Related options:
-    * [TASKS]/work_dir
+    * [task]/work_dir
     * [DEFAULT]/enable_image_import (*deprecated*)
 
 """)),
