@@ -1,0 +1,89 @@
+---
+features:
+  - |
+    A new policy, ``tasks_api_access`` has been introduced so that ordinary
+    user credentials may be used by Glance to manage the tasks that accomplish
+    the interoperable image import process without requiring that operators
+    expose the Tasks API to end users.
+upgrade:
+  - |
+    If you wish to enable the EXPERIMENTAL version 2.6 API that contains the
+    new interoperable image import functionality, set the configuration option
+    ``enable_image_import`` to True in the glance-api.conf file.  The default
+    value for this option is False.
+
+    The interoperable image import functionality uses the Glance tasks
+    engine.  This is transparent to end users, as they do *not* use the
+    Tasks API for the interoperable image import workflow.  The operator,
+    however, must make sure that the following configuration options
+    are set correctly.
+
+    - ``enable_image_import``
+    - ``node_staging_uri``
+    - the options in the ``[task]`` group
+    - the options in the ``[taskflow_executor]`` group
+
+    See the documentation in the sample glance-api.conf file for more
+    information.
+
+    Additionally, you will need to verify that the task-related policies
+    in the Glance policy.json file are set correctly.  These settings are
+    described below.
+
+  - |
+    A new policy, ``tasks_api_access`` has been introduced so that ordinary
+    user credentials may be used by Glance to manage the tasks that accomplish
+    the interoperable image import process without requiring that operators
+    expose the Tasks API to end users.
+
+    The `Tasks API`_ was made admin-only by default in Mitaka by restricting
+    the following policy targets to **role:admin**: **get_task**,
+    **get_tasks**, **add_task**, and **modify_task**.
+
+    The new ``tasks_api_access`` policy target directly controls access to the
+    Tasks API, whereas targets just mentioned indirectly affect what can be
+    manipulated via the API by controlling what operations can be performed
+    on Glance's internal task objects.  The key point is that if you want to
+    expose the new interoperable image import process to end users while
+    keeping the Tasks API admin-only, you can accomplish this by using the
+    following settings:
+
+    .. code-block:: none
+
+       "get_task": "",
+       "get_tasks": "",
+       "add_task": "",
+       "modify_task": "",
+       "tasks_api_access": "role:admin",
+
+    To summarize: end users do **not** need access to the Tasks API in
+    order to use the new interoperable image import process.  They do,
+    however, need permission to access internal Glance task objects.
+
+    We recommend that all operators adopt the policy settings just
+    described independently of the decision whether to expose the
+    EXPERIMENTAL version 2.6 API.
+
+    .. _`Tasks API`: https://developer.openstack.org/api-ref/image/v2/index.html#tasks
+
+security:
+  - |
+    A new policy, ``tasks_api_access`` has been introduced so that ordinary
+    user credentials may be used by Glance to manage the tasks that accomplish
+    the interoperable image import process without requiring that operators
+    expose the Tasks API to end users.
+
+    This is a good time to review your Glance ``policy.json`` file to make
+    sure that if it contains a ``default`` target, the rule is fairly
+    restrictive ("role:admin" or "!" are good choices).  The ``default``
+    target is used when the policy engine cannot find the target it's
+    looking for.  This can happen when a new policy is introduced but the
+    policy file in use is from a prior release.
+other:
+  - |
+    The Image Service API Reference has been updated with a section on the
+    `Interoperable image import`_ process (also known as "image import
+    refactored") and the API calls that are exposed to implement it in
+    the EXPERIMENTAL v2.6 of the API.
+
+    .. _`Interoperable image import`: https://developer.openstack.org/api-ref/image/v2/index.html#interoperable-image-import
