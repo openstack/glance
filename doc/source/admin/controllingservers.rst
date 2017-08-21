@@ -182,7 +182,7 @@ a configuration file when starting the server.
 
 
 In order for your launched glance service to be monitored for unexpected death
-and respawned if necessary, use the following option:
+and respawned if necessary, use the following option::
 
 
   $ sudo glance-control [service] start --respawn ...
@@ -194,7 +194,7 @@ services (where process death occurred within one second of the last launch).
 
 
 By default, output from glance services is discarded when launched with ``glance-control``.
-In order to capture such output via syslog, use the following option:
+In order to capture such output via syslog, use the following option::
 
 
   $ sudo glance-control --capture-output ...

@@ -79,13 +79,13 @@ Following is the process to upgrade Glance with zero downtime:
    accordingly.  **DO NOT** start the Glance services on the NEW NODE at
    this time.
 
-4. Using the NEW NODE, expand the database using the command
+4. Using the NEW NODE, expand the database using the command::
 
-   ``glance-manage db expand``.
+    glance-manage db expand
 
-5. Then, also on the NEW NODE, perform the data migrations using the command
+5. Then, also on the NEW NODE, perform the data migrations using the command::
 
-   ``glance-manage db migrate``.
+    glance-manage db migrate
 
    *The data migrations must be completed before you proceed to the next step.*
 
@@ -104,9 +104,7 @@ Following is the process to upgrade Glance with zero downtime:
 
 8. After **ALL** of the nodes have been upgraded to run the new Glance
    services, and there are **NO** nodes running any old Glance services,
-   contract the database by running the command
+   contract the database by running the command from any one of the upgraded
+   nodes::
 
-   ``glance manage db contract``
-
-   from any one of the upgraded nodes.
-
+    glance manage db contract

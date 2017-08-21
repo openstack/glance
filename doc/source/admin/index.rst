@@ -9,7 +9,6 @@
    cache
    policies
    property-protections
-   requirements
    apache-httpd
    notifications
    tasks
