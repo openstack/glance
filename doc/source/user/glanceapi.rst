@@ -37,13 +37,13 @@ independent, the OpenStack Images APIs are intimately associated with Glance.
 
 **References**
 
-* `Designated sections (definition) <http://git.openstack.org/cgit/openstack/defcore/tree/doc/source/process/Lexicon.rst#n54>`_
+* `Designated sections (definition) <https://github.com/openstack/interop/blob/master/doc/source/process/Lexicon.rst>`_
 
 * `2014-04-02 DefCore Designated Sections Guidelines <https://governance.openstack.org/resolutions/20140402-defcore-designated-sections-guidelines.html>`_
 
-* `OpenStack Core Definition <https://github.com/openstack/defcore/blob/master/doc/source/process/CoreDefinition.rst>`_
+* `OpenStack Core Definition <https://github.com/openstack/interop/blob/master/doc/source/process/CoreDefinition.rst>`_
 
-* `DefCore Guidelines Repository <https://github.com/openstack/defcore>`_
+* `DefCore Guidelines Repository <https://github.com/openstack/interop>`_
 
 Glance and the Images APIs: Past, Present, and Future
 -----------------------------------------------------

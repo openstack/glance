@@ -150,7 +150,7 @@ objects, properties, and tags may be used for images, snapshots, volumes, and
 flavors. Or a namespace may only apply to images.
 
 Resource types should be aligned with Heat resource types whenever possible.
-http://docs.openstack.org/developer/heat/template_guide/openstack.html
+https://docs.openstack.org/heat/latest/template_guide/openstack.html
 
 It is important to note that the same base property key can require different
 prefixes depending on the target resource type. The API provides a way to
