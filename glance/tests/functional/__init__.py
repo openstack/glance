@@ -77,6 +77,9 @@ class Server(object):
         self.property_protection_file = ''
         self.enable_v1_api = True
         self.enable_v2_api = True
+        # TODO(rosmaita): remove in Queens when the option is removed
+        # also, don't forget to remove it from ApiServer.conf_base
+        self.enable_image_import = False
         self.enable_v1_registry = True
         self.enable_v2_registry = True
         self.needs_database = False
@@ -348,6 +351,7 @@ show_multiple_locations = %(show_multiple_locations)s
 user_storage_quota = %(user_storage_quota)s
 enable_v1_api = %(enable_v1_api)s
 enable_v2_api = %(enable_v2_api)s
+enable_image_import = %(enable_image_import)s
 lock_path = %(lock_path)s
 property_protection_file = %(property_protection_file)s
 property_protection_rule_format = %(property_protection_rule_format)s
