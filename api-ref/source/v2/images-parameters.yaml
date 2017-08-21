@@ -49,6 +49,14 @@ Content-Type-patch:
   in: header
   required: true
   type: string
+import-header:
+  description: |
+    A comma separated list of import method identifiers.  Included
+    only if image import is enabled in your cloud.  *Introduced
+    in the EXPERIMENTAL Image API v2.6*
+  in: header
+  required: false
+  type: string
 Location:
   description: |
     The URL to access the image file from the
@@ -372,6 +380,14 @@ images:
   in: body
   required: true
   type: array
+import-methods:
+  description: |
+    A JSON object containing a ``value`` element, which is an array of
+    string identifiers indicating what import methods are available in
+    the cloud in which the call is made.  This list may be empty.
+  in: body
+  required: true
+  type: object
 locations:
   description: |
     A list of objects, each of which describes an image location.  Each object
@@ -407,6 +423,16 @@ members:
   in: body
   required: true
   type: array
+method-in-request:
+  description: |
+    A JSON object indicating what import method you wish to use to import
+    your image.  The content of this JSON object is another JSON object
+    with a ``name`` field whose value is the identifier for the import
+    method.  *(Note: In the EXPERIMENTAL Image API v2.6, the only supported
+    import method is glance-direct.*
+  in: body
+  required: true
+  type: object
 min_disk:
   description: |
     Amount of disk space in GB that is required to boot the image.
