@@ -95,6 +95,13 @@ class TestPasteApp(test_utils.BaseTestCase):
         self._do_test_load_paste_app(expected_middleware,
                                      paste_config_file=paste_config_file)
 
+    def test_load_paste_app_with_paste_config_file_but_not_exist(self):
+        paste_config_file = os.path.abspath("glance-registry-paste.ini")
+        expected_middleware = oslo_middleware.Healthcheck
+        self.assertRaises(RuntimeError, self._do_test_load_paste_app,
+                          expected_middleware,
+                          paste_config_file=paste_config_file)
+
     def test_get_path_non_exist(self):
         self.assertRaises(RuntimeError, config._get_deployment_config_file)
 
