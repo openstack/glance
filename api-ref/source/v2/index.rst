@@ -28,5 +28,6 @@ Image Service API v2 (CURRENT)
 .. include:: images-tags.inc
 .. include:: images-schemas.inc
 .. include:: images-data.inc
+.. include:: images-import.inc
 .. include:: tasks.inc
 .. include:: tasks-schemas.inc

@@ -129,6 +129,7 @@ image data payload.  Further, in order to promise image immutability, the Image
 service will allow even the owner (or an administrator) only write-once
 permissions to specific image properties and the image data payload.
 
+.. _image-create:
 
 Create an image
 ~~~~~~~~~~~~~~~
@@ -183,6 +184,7 @@ Response Parameters
 .. rest_parameters:: images-parameters.yaml
 
    - Location: Location
+   - OpenStack-image-import-methods: import-header
    - checksum: checksum
    - container_format: container_format
    - created_at: created_at

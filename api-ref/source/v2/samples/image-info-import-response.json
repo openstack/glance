@@ -1,0 +1,9 @@
+{
+    "import-methods": {
+        "description": "Import methods available.",
+        "type": "array",
+        "value": [
+            "glance-direct"
+        ]
+    }
+}

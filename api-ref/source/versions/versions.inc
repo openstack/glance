@@ -1,5 +1,7 @@
 .. -*- rst -*-
 
+.. _versions-call:
+
 API versions
 ************
 
