@@ -30,7 +30,10 @@ Developer reference
    database_migrations
    domain_model
    domain_implementation
-   api/autoindex
+.. toctree::
+   :maxdepth: 1
+
+   modules
 
 Policies
 --------
