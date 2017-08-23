@@ -94,7 +94,7 @@ class ImagesController(object):
         executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
 
-        task_input = {}
+        task_input = {'image_id': image_id}
 
         try:
             import_task = task_factory.new_task(task_type='api_image_import',

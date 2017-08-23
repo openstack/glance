@@ -56,8 +56,11 @@ def unpack_task_input(task):
     task_input = task.task_input
 
     if task_type == 'api_image_import':
-        if 'import_method' not in task_input:
-            msg = _("Input does not contain 'import_method'")
+        if not task_input:
+            msg = _("Input to api_image_import task is empty.")
+            raise exception.Invalid(msg)
+        if 'image_id' not in task_input:
+            msg = _("Missing required 'image_id' field")
             raise exception.Invalid(msg)
     else:
         for key in ["import_from", "import_from_format", "image_properties"]:
