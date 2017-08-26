@@ -452,6 +452,7 @@ Request
    - marker: marker
    - name: name-in-query
    - owner: owner-in-query
+   - protected: protected-in-query
    - status: status-in-query
    - tag: tag-in-query
    - visibility: visibility-in-query

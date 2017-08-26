@@ -156,6 +156,14 @@ owner-in-query:
   in: query
   required: false
   type: string
+protected-in-query:
+  description: |
+    Filters the response by the 'protected' image property.  A valid value is
+    one of 'true', 'false' (must be all lowercase).  Any other value will
+    result in a 400 response.
+  in: query
+  required: false
+  type: boolean
 size_max:
   description: |
     Filters the response by a maximum image size, in
