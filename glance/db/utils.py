@@ -11,6 +11,7 @@
 #    under the License.
 
 from glance.common import exception
+from glance.i18n import _
 
 
 def mutate_image_dict_to_v1(image):
