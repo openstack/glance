@@ -21,9 +21,11 @@ from six.moves import StringIO
 
 from glance.cmd import manage
 from glance.common import exception
+from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import metadata as db_metadata
 from glance.tests import utils as test_utils
+from sqlalchemy.engine.url import make_url as sqlalchemy_make_url
 
 
 class TestManageBase(test_utils.BaseTestCase):
@@ -165,6 +167,17 @@ class TestManage(TestManageBase):
         self.db = manage.DbCommands()
         self.output = StringIO()
         self.useFixture(fixtures.MonkeyPatch('sys.stdout', self.output))
+
+    def test_db_complex_password(self):
+        engine = mock.Mock()
+        # See comments in get_alembic_config; make an engine url with
+        # password characters that will be escaped, to ensure the
+        # resulting value makes it into alembic unaltered.
+        engine.url = sqlalchemy_make_url(
+            'mysql+pymysql://username:pw@%/!#$()@host:1234/dbname')
+        alembic_config = alembic_migrations.get_alembic_config(engine)
+        self.assertEqual(str(engine.url),
+                         alembic_config.get_main_option('sqlalchemy.url'))
 
     @mock.patch('glance.db.sqlalchemy.api.get_engine')
     @mock.patch(

@@ -35,7 +35,15 @@ def get_alembic_config(engine=None):
     config = alembic_config.Config(os.path.abspath(ini_path))
     if engine is None:
         engine = db_api.get_engine()
-    config.set_main_option('sqlalchemy.url', str(engine.url))
+    # str(sqlalchemy.engine.url.URL) returns a RFC-1738 quoted URL.
+    # This means that a password like "foo@" will be turned into
+    # "foo%40".  This causes a problem for set_main_option() here
+    # because that uses ConfigParser.set, which (by design) uses
+    # *python* interpolation to write the string out ... where "%" is
+    # the special python interpolation character!  Avoid this
+    # mis-match by quoting all %'s for the set below.
+    quoted_engine_url = str(engine.url).replace('%', '%%')
+    config.set_main_option('sqlalchemy.url', quoted_engine_url)
     return config
 
 
