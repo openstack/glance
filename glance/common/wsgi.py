@@ -491,6 +491,7 @@ class Server(object):
         """Kills the entire process group."""
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
         signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         self.running = False
         os.killpg(self.pgid, signal.SIGTERM)
 
