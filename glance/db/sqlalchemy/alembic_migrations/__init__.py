@@ -52,7 +52,7 @@ def get_current_legacy_head():
         legacy_head = sqla_migration.db_version(db_api.get_engine(),
                                                 db_migration.MIGRATE_REPO_PATH,
                                                 db_migration.INIT_VERSION)
-    except db_exception.DbMigrationError:
+    except db_exception.DBMigrationError:
         legacy_head = None
     return legacy_head
 
