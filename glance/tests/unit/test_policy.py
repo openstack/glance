@@ -189,7 +189,6 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
         enforcer = glance.api.policy.Enforcer()
 
         context = glance.context.RequestContext(roles=[])
-        enforcer.enforce(context, 'get_image', {})
         self.assertRaises(exception.Forbidden,
                           enforcer.enforce, context, 'manage_image_cache', {})
 
@@ -207,7 +206,6 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
         enforcer = glance.api.policy.Enforcer()
 
         context = glance.context.RequestContext(roles=[])
-        enforcer.enforce(context, 'get_image', {})
         self.assertRaises(exception.Forbidden,
                           enforcer.enforce, context, 'manage_image_cache', {})
 

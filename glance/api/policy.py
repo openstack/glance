@@ -32,7 +32,7 @@ CONF = cfg.CONF
 
 DEFAULT_RULES = policy.Rules.from_dict({
     'context_is_admin': 'role:admin',
-    'default': '@',
+    'default': 'role:admin',
     'manage_image_cache': 'role:admin',
 })
 
