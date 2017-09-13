@@ -17,6 +17,7 @@
    flows
    db
    db-sqlalchemy-migrate
+   zero-downtime-db-upgrade
    rollingupgrades
    troubleshooting
    manage-images
