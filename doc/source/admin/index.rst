@@ -15,6 +15,7 @@
    tasks
    controllingservers
    flows
+   interoperable-image-import
    db
    db-sqlalchemy-migrate
    rollingupgrades
