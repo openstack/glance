@@ -30,8 +30,7 @@ flavors that you can edit or add to.
       Guide <https://docs.openstack.org/image-guide/>`__.
 
    -  For more information about image configuration options, see the
-      `Image services
-      <https://docs.openstack.org/ocata/config-reference/image.html>`__
+      `Image services <../configuration/index.html>`__
       section of the OpenStack Configuration Reference.
 
 
@@ -219,8 +218,8 @@ can also be used to set policies for Image service actions.
    .. code-block:: json
 
       {
-      "download_image":
-      "upload_image":
+          "download_image":
+          "upload_image":
       }
 
 #. Define which roles or policies can manage which properties in a property
@@ -267,8 +266,7 @@ can also be used to set policies for Image service actions.
    ``glance-api`` service does not start.
 
    To view a sample configuration file, see
-   `glance-api.conf
-   <https://docs.openstack.org/ocata/config-reference/image/glance-api.conf.html>`__.
+   `glance-api.conf <../configuration/glance_api.html>`__.
 
 #. Optionally, in the ``glance-api.conf`` file, specify whether roles or
    policies are used in the property protections configuration file
@@ -280,8 +278,7 @@ can also be used to set policies for Image service actions.
    The default is ``roles``.
 
    To view a sample configuration file, see
-   `glance-api.conf
-   <https://docs.openstack.org/ocata/config-reference/image/glance-api.conf.html>`__.
+   `glance-api.conf <../configuration/glance_api.html>`__.
 
 Image download: how it works
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -317,7 +314,7 @@ Compute nodes also implement caching of images, meaning that if an image
 has been used before it won't necessarily be downloaded every time.
 Information on the configuration options for caching on compute nodes
 can be found in the `Configuration
-Reference <https://docs.openstack.org/ocata/config-reference/>`__.
+Reference <../configuration/>`__.
 
 Instance building blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -404,15 +401,14 @@ or you can install the latest version using the pip python package installer:
    # pip install python-openstackclient
 
 For more information about python-openstackclient and other command-line
-tools, see the `OpenStack End User
-Guide <https://docs.openstack.org/user-guide/cli.html>`__.
+tools, see the `OpenStack End User Guide <../cli/index.html>`__.
 
 
 Control where instances run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The `Scheduling section
-<https://docs.openstack.org/ocata/config-reference/compute/schedulers.html>`__
+<https://docs.openstack.org/nova/latest/user/filter-scheduler.html>`__
 of OpenStack Configuration Reference
 provides detailed information on controlling where your instances run,
 including ensuring a set of instances run on different compute nodes for
