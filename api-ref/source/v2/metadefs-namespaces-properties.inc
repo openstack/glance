@@ -19,7 +19,7 @@ The schema is a subset of the JSON property definition schema.
 
 Normal response codes: 201
 
-Error response codes: 404
+Error response codes: 400, 404
 
 
 Request

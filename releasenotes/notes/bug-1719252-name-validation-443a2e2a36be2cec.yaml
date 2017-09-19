@@ -1,0 +1,9 @@
+---
+other:
+  - |
+    The metadefs schemas for 'property', 'properties', 'tag', 'tags',
+    'object', and 'objects' previously specified a 'name' element of maximum
+    255 characters.  Any attempt to add a name of greater than 80 characters
+    in length, however, resulted in a 500 response. The schemas have been
+    corrected to specify a maximum length of 80 characters for the 'name'
+    field.

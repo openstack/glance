@@ -16,7 +16,7 @@ Location:
 # variables in path
 name:
   description: |
-    Name of the resource type.
+    Name of the resource type. A Name is limited to 80 chars in length.
   in: path
   required: true
   type: string
@@ -47,7 +47,7 @@ resource_type_name:
   type: string
 tag_name:
   description: |
-    The name of the tag.
+    The name of the tag. A Name is limited to 80 chars in length.
   in: path
   required: true
   type: string
@@ -253,7 +253,7 @@ minLength:
   type: string
 name-property:
   description: |
-    The name of the property.
+    The name of the property. A Name is limited to 80 chars in length.
   in: body
   required: true
   type: string
@@ -265,7 +265,7 @@ name-resource-type:
   type: string
 name-tag:
   description: |
-    The name of the tag.
+    The name of the tag. A Name is limited to 80 chars in length.
   in: body
   required: true
   type: string
@@ -303,7 +303,8 @@ object-description-in-request:
   type: string
 object-name:
   description: |
-    The name of the object, suitable for use as an identifier.
+    The name of the object, suitable for use as an identifier. A Name is
+    limited to 80 chars in length.
   in: body
   required: true
   type: string

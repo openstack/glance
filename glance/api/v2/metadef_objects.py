@@ -179,7 +179,7 @@ def _get_base_properties():
     return {
         "name": {
             "type": "string",
-            "maxLength": 255
+            "maxLength": 80
         },
         "description": {
             "type": "string"
