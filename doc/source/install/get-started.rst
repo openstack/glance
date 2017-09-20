@@ -23,8 +23,7 @@ systems to object-storage systems like OpenStack Object Storage.
    node, it is not typically suitable for a multi-node glance deployment.
 
    For information on requirements for other back ends, see
-   `Configuration Reference
-   <https://docs.openstack.org/ocata/config-reference/image.html>`__.
+   `Configuration Reference <../configuration/index.html>`__.
 
 The OpenStack Image service is central to Infrastructure-as-a-Service
 (IaaS). It accepts API requests for disk or server images, and
