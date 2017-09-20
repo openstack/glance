@@ -47,7 +47,7 @@ def get_backend():
 # Migration-related constants
 EXPAND_BRANCH = 'expand'
 CONTRACT_BRANCH = 'contract'
-CURRENT_RELEASE = 'pike'
+CURRENT_RELEASE = 'queens'
 ALEMBIC_INIT_VERSION = 'liberty'
 LATEST_REVISION = 'pike01'
 INIT_VERSION = 0
