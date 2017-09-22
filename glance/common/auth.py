@@ -29,7 +29,7 @@ Keystone (an identity management system).
     http://service_endpoint/
 """
 import httplib2
-from keystoneclient import service_catalog as ks_service_catalog
+from keystoneauth1.access import service_catalog as ks_service_catalog
 from oslo_serialization import jsonutils
 from six.moves import http_client as http
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -267,11 +267,10 @@ def get_endpoint(service_catalog, service_type='image', endpoint_region=None,
     otherwise we will raise an exception.
     """
     endpoints = ks_service_catalog.ServiceCatalogV2(
-        {'serviceCatalog': service_catalog}
-    ).get_urls(service_type=service_type,
-               region_name=endpoint_region,
-               endpoint_type=endpoint_type)
-    if endpoints is None:
+        service_catalog).get_urls(interface=endpoint_type,
+                                  service_type=service_type,
+                                  region_name=endpoint_region)
+    if len(endpoints) == 0:
         raise exception.NoServiceEndpoint()
     elif len(endpoints) == 1:
         return endpoints[0]
