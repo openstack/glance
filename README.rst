@@ -10,6 +10,7 @@ Team and repository tags
           "stable:follows-policy",
           "tc:starter-kit:compute",
           "vulnerability:managed",
+          "team:diverse-affiliation",
           "assert:supports-upgrade",
           "assert:follows-standard-deprecation".
           Follow the link for an explanation of these tags.
