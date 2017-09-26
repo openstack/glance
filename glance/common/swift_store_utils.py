@@ -74,7 +74,7 @@ database.
 
 Possible values:
     * None
-    * String value representing a vaid configuration file path
+    * String value representing a valid configuration file path
 
 Related options:
     * None
