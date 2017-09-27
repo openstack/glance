@@ -18,10 +18,12 @@
 Image Service APIs
 ==================
 
+API content can be searched using the :ref:`search`.
+
 .. toctree::
    :maxdepth: 2
 
    versions/index
-   v1/index
    v2/index
    v2/metadefs-index
+   v1/index
