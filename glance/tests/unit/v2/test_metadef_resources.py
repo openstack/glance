@@ -1038,11 +1038,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request('/metadefs/namespaces/'
                                                    'Namespace3/'
                                                    'properties')
-        request.body = jsonutils.dump_as_bytes({'name': 'a' * 256})
+        request.body = jsonutils.dump_as_bytes({
+            'name': 'a' * 256, 'type': 'string', 'title': 'fake'})
 
-        self.assertRaises(webob.exc.HTTPBadRequest,
-                          self.property_deserializer.create,
-                          request)
+        exc = self.assertRaises(webob.exc.HTTPBadRequest,
+                                self.property_deserializer.create,
+                                request)
+        self.assertIn("Failed validating 'maxLength' in "
+                      "schema['properties']['name']", exc.explanation)
 
     def test_property_create_with_4byte_character(self):
         request = unit_test_utils.get_fake_request()
