@@ -20,9 +20,10 @@ A simple cache management utility for Glance.
 """
 from __future__ import print_function
 
+import argparse
+import collections
 import datetime
 import functools
-import optparse
 import os
 import sys
 import time
@@ -80,12 +81,12 @@ def catch_error(action):
 
 
 @catch_error('show cached images')
-def list_cached(options, args):
+def list_cached(args):
     """%(prog)s list-cached [options]
 
-List all images currently cached.
+    List all images currently cached.
     """
-    client = get_client(options)
+    client = get_client(args)
     images = client.get_cached_images()
     if not images:
         print("No cached images.")
@@ -118,15 +119,16 @@ List all images currently cached.
             image['hits']))
 
     print(pretty_table.get_string())
+    return SUCCESS
 
 
 @catch_error('show queued images')
-def list_queued(options, args):
+def list_queued(args):
     """%(prog)s list-queued [options]
 
-List all images currently queued for caching.
+    List all images currently queued for caching.
     """
-    client = get_client(options)
+    client = get_client(args)
     images = client.get_queued_images()
     if not images:
         print("No queued images.")
@@ -143,27 +145,27 @@ List all images currently queued for caching.
 
 
 @catch_error('queue the specified image for caching')
-def queue_image(options, args):
+def queue_image(args):
     """%(prog)s queue-image <IMAGE_ID> [options]
 
-Queues an image for caching
-"""
-    if len(args) == 1:
-        image_id = args.pop()
+    Queues an image for caching.
+    """
+    if len(args.command) == 2:
+        image_id = args.command[1]
     else:
         print("Please specify one and only ID of the image you wish to ")
         print("queue from the cache as the first argument")
         return FAILURE
 
-    if (not options.force and
+    if (not args.force and
         not user_confirm("Queue image %(image_id)s for caching?" %
                          {'image_id': image_id}, default=False)):
         return SUCCESS
 
-    client = get_client(options)
+    client = get_client(args)
     client.queue_image_for_caching(image_id)
 
-    if options.verbose:
+    if args.verbose:
         print("Queued image %(image_id)s for caching" %
               {'image_id': image_id})
 
@@ -171,47 +173,46 @@ Queues an image for caching
 
 
 @catch_error('delete the specified cached image')
-def delete_cached_image(options, args):
-    """
-%(prog)s delete-cached-image <IMAGE_ID> [options]
+def delete_cached_image(args):
+    """%(prog)s delete-cached-image <IMAGE_ID> [options]
 
-Deletes an image from the cache
+    Deletes an image from the cache.
     """
-    if len(args) == 1:
-        image_id = args.pop()
+    if len(args.command) == 2:
+        image_id = args.command[1]
     else:
         print("Please specify one and only ID of the image you wish to ")
         print("delete from the cache as the first argument")
         return FAILURE
 
-    if (not options.force and
+    if (not args.force and
         not user_confirm("Delete cached image %(image_id)s?" %
                          {'image_id': image_id}, default=False)):
         return SUCCESS
 
-    client = get_client(options)
+    client = get_client(args)
     client.delete_cached_image(image_id)
 
-    if options.verbose:
+    if args.verbose:
         print("Deleted cached image %(image_id)s" % {'image_id': image_id})
 
     return SUCCESS
 
 
 @catch_error('Delete all cached images')
-def delete_all_cached_images(options, args):
+def delete_all_cached_images(args):
     """%(prog)s delete-all-cached-images [options]
 
-Remove all images from the cache.
+    Remove all images from the cache.
     """
-    if (not options.force and
+    if (not args.force and
             not user_confirm("Delete all cached images?", default=False)):
         return SUCCESS
 
-    client = get_client(options)
+    client = get_client(args)
     num_deleted = client.delete_all_cached_images()
 
-    if options.verbose:
+    if args.verbose:
         print("Deleted %(num_deleted)s cached images" %
               {'num_deleted': num_deleted})
 
@@ -219,47 +220,46 @@ Remove all images from the cache.
 
 
 @catch_error('delete the specified queued image')
-def delete_queued_image(options, args):
-    """
-%(prog)s delete-queued-image <IMAGE_ID> [options]
+def delete_queued_image(args):
+    """%(prog)s delete-queued-image <IMAGE_ID> [options]
 
-Deletes an image from the cache
+    Deletes an image from the cache.
     """
-    if len(args) == 1:
-        image_id = args.pop()
+    if len(args.command) == 2:
+        image_id = args.command[1]
     else:
         print("Please specify one and only ID of the image you wish to ")
         print("delete from the cache as the first argument")
         return FAILURE
 
-    if (not options.force and
+    if (not args.force and
         not user_confirm("Delete queued image %(image_id)s?" %
                          {'image_id': image_id}, default=False)):
         return SUCCESS
 
-    client = get_client(options)
+    client = get_client(args)
     client.delete_queued_image(image_id)
 
-    if options.verbose:
+    if args.verbose:
         print("Deleted queued image %(image_id)s" % {'image_id': image_id})
 
     return SUCCESS
 
 
 @catch_error('Delete all queued images')
-def delete_all_queued_images(options, args):
+def delete_all_queued_images(args):
     """%(prog)s delete-all-queued-images [options]
 
-Remove all images from the cache queue.
+    Remove all images from the cache queue.
     """
-    if (not options.force and
+    if (not args.force and
             not user_confirm("Delete all queued images?", default=False)):
         return SUCCESS
 
-    client = get_client(options)
+    client = get_client(args)
     num_deleted = client.delete_all_queued_images()
 
-    if options.verbose:
+    if args.verbose:
         print("Deleted %(num_deleted)s queued images" %
               {'num_deleted': num_deleted})
 
@@ -298,164 +298,148 @@ def env(*vars, **kwargs):
     return kwargs.get('default', '')
 
 
-def create_options(parser):
+def print_help(args):
+    """
+    Print help specific to a command
+    """
+    command = lookup_command(args.command[1])
+    print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
+
+
+def parse_args(parser):
     """Set up the CLI and config-file options that may be
     parsed and program commands.
 
     :param parser: The option parser
     """
-    parser.add_option('-v', '--verbose', default=False, action="store_true",
-                      help="Print more verbose output.")
-    parser.add_option('-d', '--debug', default=False, action="store_true",
-                      help="Print debugging output.")
-    parser.add_option('-H', '--host', metavar="ADDRESS", default="0.0.0.0",
-                      help="Address of Glance API host. "
-                           "Default: %default.")
-    parser.add_option('-p', '--port', dest="port", metavar="PORT",
-                      type=int, default=9292,
-                      help="Port the Glance API host listens on. "
-                           "Default: %default.")
-    parser.add_option('-k', '--insecure', dest="insecure",
-                      default=False, action="store_true",
-                      help="Explicitly allow glance to perform \"insecure\" "
-                      "SSL (https) requests. The server's certificate will "
-                      "not be verified against any certificate authorities. "
-                      "This option should be used with caution.")
-    parser.add_option('-f', '--force', dest="force", metavar="FORCE",
-                      default=False, action="store_true",
-                      help="Prevent select actions from requesting "
-                           "user confirmation.")
+    parser.add_argument('command', default='help', nargs='*',
+                        help='The command to execute')
+    parser.add_argument('-v', '--verbose', default=False, action="store_true",
+                        help="Print more verbose output.")
+    parser.add_argument('-d', '--debug', default=False, action="store_true",
+                        help="Print debugging output.")
+    parser.add_argument('-H', '--host', metavar="ADDRESS", default="0.0.0.0",
+                        help="Address of Glance API host.")
+    parser.add_argument('-p', '--port', dest="port", metavar="PORT",
+                        type=int, default=9292,
+                        help="Port the Glance API host listens on.")
+    parser.add_argument('-k', '--insecure', dest="insecure",
+                        default=False, action="store_true",
+                        help='Explicitly allow glance to perform "insecure" '
+                             "SSL (https) requests. The server's certificate "
+                             "will not be verified against any certificate "
+                             "authorities. This option should be used with "
+                             "caution.")
+    parser.add_argument('-f', '--force', dest="force",
+                        default=False, action="store_true",
+                        help="Prevent select actions from requesting "
+                             "user confirmation.")
 
-    parser.add_option('--os-auth-token',
-                      dest='os_auth_token',
-                      default=env('OS_AUTH_TOKEN'),
-                      help='Defaults to env[OS_AUTH_TOKEN].')
-    parser.add_option('-A', '--os_auth_token', '--auth_token',
-                      dest='os_auth_token',
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_argument('--os-auth-token',
+                        dest='os_auth_token',
+                        default=env('OS_AUTH_TOKEN'),
+                        help='Defaults to env[OS_AUTH_TOKEN].')
+    parser.add_argument('-A', '--os_auth_token', '--auth_token',
+                        dest='os_auth_token',
+                        help=argparse.SUPPRESS)
 
-    parser.add_option('--os-username',
-                      dest='os_username',
-                      default=env('OS_USERNAME'),
-                      help='Defaults to env[OS_USERNAME].')
-    parser.add_option('-I', '--os_username',
-                      dest='os_username',
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_argument('--os-username',
+                        dest='os_username',
+                        default=env('OS_USERNAME'),
+                        help='Defaults to env[OS_USERNAME].')
+    parser.add_argument('-I', '--os_username',
+                        dest='os_username',
+                        help=argparse.SUPPRESS)
 
-    parser.add_option('--os-password',
-                      dest='os_password',
-                      default=env('OS_PASSWORD'),
-                      help='Defaults to env[OS_PASSWORD].')
-    parser.add_option('-K', '--os_password',
-                      dest='os_password',
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_argument('--os-password',
+                        dest='os_password',
+                        default=env('OS_PASSWORD'),
+                        help='Defaults to env[OS_PASSWORD].')
+    parser.add_argument('-K', '--os_password',
+                        dest='os_password',
+                        help=argparse.SUPPRESS)
 
-    parser.add_option('--os-region-name',
-                      dest='os_region_name',
-                      default=env('OS_REGION_NAME'),
-                      help='Defaults to env[OS_REGION_NAME].')
-    parser.add_option('-R', '--os_region_name',
-                      dest='os_region_name',
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_argument('--os-region-name',
+                        dest='os_region_name',
+                        default=env('OS_REGION_NAME'),
+                        help='Defaults to env[OS_REGION_NAME].')
+    parser.add_argument('-R', '--os_region_name',
+                        dest='os_region_name',
+                        help=argparse.SUPPRESS)
 
-    parser.add_option('--os-tenant-id',
-                      dest='os_tenant_id',
-                      default=env('OS_TENANT_ID'),
-                      help='Defaults to env[OS_TENANT_ID].')
-    parser.add_option('--os_tenant_id',
-                      dest='os_tenant_id',
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_argument('--os-tenant-id',
+                        dest='os_tenant_id',
+                        default=env('OS_TENANT_ID'),
+                        help='Defaults to env[OS_TENANT_ID].')
+    parser.add_argument('--os_tenant_id',
+                        dest='os_tenant_id',
+                        help=argparse.SUPPRESS)
 
-    parser.add_option('--os-tenant-name',
-                      dest='os_tenant_name',
-                      default=env('OS_TENANT_NAME'),
-                      help='Defaults to env[OS_TENANT_NAME].')
-    parser.add_option('-T', '--os_tenant_name',
-                      dest='os_tenant_name',
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_argument('--os-tenant-name',
+                        dest='os_tenant_name',
+                        default=env('OS_TENANT_NAME'),
+                        help='Defaults to env[OS_TENANT_NAME].')
+    parser.add_argument('-T', '--os_tenant_name',
+                        dest='os_tenant_name',
+                        help=argparse.SUPPRESS)
 
-    parser.add_option('--os-auth-url',
-                      default=env('OS_AUTH_URL'),
-                      help='Defaults to env[OS_AUTH_URL].')
-    parser.add_option('-N', '--os_auth_url',
-                      dest='os_auth_url',
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_argument('--os-auth-url',
+                        default=env('OS_AUTH_URL'),
+                        help='Defaults to env[OS_AUTH_URL].')
+    parser.add_argument('-N', '--os_auth_url',
+                        dest='os_auth_url',
+                        help=argparse.SUPPRESS)
 
-    parser.add_option('-S', '--os_auth_strategy', dest="os_auth_strategy",
-                      metavar="STRATEGY",
-                      help="Authentication strategy (keystone or noauth).")
+    parser.add_argument('-S', '--os_auth_strategy', dest="os_auth_strategy",
+                        metavar="STRATEGY",
+                        help="Authentication strategy (keystone or noauth).")
 
+    version_string = version.cached_version_string()
+    parser.add_argument('--version', action='version',
+                        version=version_string)
 
-def parse_options(parser, cli_args):
-    """
-    Returns the parsed CLI options, command to run and its arguments, merged
-    with any same-named options found in a configuration file
-
-    :param parser: The option parser
-    """
-    if not cli_args:
-        cli_args.append('-h')  # Show options in usage output...
-
-    (options, args) = parser.parse_args(cli_args)
-
-    # HACK(sirp): Make the parser available to the print_help method
-    # print_help is a command, so it only accepts (options, args); we could
-    # one-off have it take (parser, options, args), however, for now, I think
-    # this little hack will suffice
-    options.__parser = parser
-
-    if not args:
-        parser.print_usage()
-        sys.exit(0)
-
-    command_name = args.pop(0)
-    command = lookup_command(parser, command_name)
-
-    return (options, command, args)
+    return parser.parse_args()
 
 
-def print_help(options, args):
-    """
-    Print help specific to a command
-    """
-    parser = options.__parser
+CACHE_COMMANDS = collections.OrderedDict()
+CACHE_COMMANDS['help'] = (
+    print_help, 'Output help for one of the commands below')
+CACHE_COMMANDS['list-cached'] = (
+    list_cached, 'List all images currently cached')
+CACHE_COMMANDS['list-queued'] = (
+    list_queued, 'List all images currently queued for caching')
+CACHE_COMMANDS['queue-image'] = (
+    queue_image, 'Queue an image for caching')
+CACHE_COMMANDS['delete-cached-image'] = (
+    delete_cached_image, 'Purges an image from the cache')
+CACHE_COMMANDS['delete-all-cached-images'] = (
+    delete_all_cached_images, 'Removes all images from the cache')
+CACHE_COMMANDS['delete-queued-image'] = (
+    delete_queued_image, 'Deletes an image from the cache queue')
+CACHE_COMMANDS['delete-all-queued-images'] = (
+    delete_all_queued_images, 'Deletes all images from the cache queue')
 
-    if not args:
-        parser.print_help()
-    else:
-        number_of_commands = len(args)
-        if number_of_commands == 1:
-            command_name = args.pop()
-            command = lookup_command(parser, command_name)
-            print(command.__doc__ % {'prog': os.path.basename(sys.argv[0])})
-        else:
-            sys.exit("Please specify one command")
+
+def _format_command_help():
+    """Formats the help string for subcommands."""
+    help_msg = "Commands:\n\n"
+
+    for command, info in CACHE_COMMANDS.items():
+        if command == 'help':
+            command = 'help <command>'
+        help_msg += "    %-28s%s\n\n" % (command, info[1])
+
+    return help_msg
 
 
-def lookup_command(parser, command_name):
-    BASE_COMMANDS = {'help': print_help}
-
-    CACHE_COMMANDS = {
-        'list-cached': list_cached,
-        'list-queued': list_queued,
-        'queue-image': queue_image,
-        'delete-cached-image': delete_cached_image,
-        'delete-all-cached-images': delete_all_cached_images,
-        'delete-queued-image': delete_queued_image,
-        'delete-all-queued-images': delete_all_queued_images,
-    }
-
-    commands = {}
-    for command_set in (BASE_COMMANDS, CACHE_COMMANDS):
-        commands.update(command_set)
-
+def lookup_command(command_name):
     try:
-        command = commands[command_name]
+        command = CACHE_COMMANDS[command_name]
+        return command[0]
     except KeyError:
-        parser.print_usage()
+        print('\nError: "%s" is not a valid command.\n' % command_name)
+        print(_format_command_help())
         sys.exit("Unknown command: %(cmd_name)s" % {'cmd_name': command_name})
-
-    return command
 
 
 def user_confirm(prompt, default=False):
@@ -480,39 +464,23 @@ def user_confirm(prompt, default=False):
 
 
 def main():
-    usage = """
-%prog <command> [options] [args]
+    parser = argparse.ArgumentParser(
+        description=_format_command_help(),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    args = parse_args(parser)
 
-Commands:
+    if args.command[0] == 'help' and len(args.command) == 1:
+        parser.print_help()
+        return
 
-    help <command> Output help for one of the commands below
-
-    list-cached                 List all images currently cached
-
-    list-queued                 List all images currently queued for caching
-
-    queue-image                 Queue an image for caching
-
-    delete-cached-image         Purges an image from the cache
-
-    delete-all-cached-images    Removes all images from the cache
-
-    delete-queued-image         Deletes an image from the cache queue
-
-    delete-all-queued-images    Deletes all images from the cache queue
-"""
-
-    version_string = version.cached_version_string()
-    oparser = optparse.OptionParser(version=version_string,
-                                    usage=usage.strip())
-    create_options(oparser)
-    (options, command, args) = parse_options(oparser, sys.argv[1:])
+    # Look up the command to run
+    command = lookup_command(args.command[0])
 
     try:
         start_time = time.time()
-        result = command(options, args)
+        result = command(args)
         end_time = time.time()
-        if options.verbose:
+        if args.verbose:
             print("Completed in %-0.4f sec." % (end_time - start_time))
         sys.exit(result)
     except (RuntimeError, NotImplementedError) as e:
