@@ -41,37 +41,20 @@ resources available and cycle priorities.
 Glance Spec Lite
 ----------------
 
-In Mitaka the team introduced the concept of lite specs. Lite specs
-are small features tracked as Launchpad bugs, with status `wishlist`
-and tagged with the new 'spec-lite' tag, and allow for the submission
-and review of these feature requests before code is submitted.
+In addition to the heavy-duty design documents described above, we've made a
+provision for lightweight design documents for developers who have an idea for
+a small, uncontroversial change.  In such a case, you can propose a *spec
+lite*, which is a quick description of what you want to do.
 
-This allows for small features that don't warrant a detailed spec to
-be proposed, evaluated, and worked on. The team evaluates these
-requests as it evaluates specs. Once a bug has been approved as a
-Request for Enhancement (RFE), it'll be targeted for a release.
-
-In Newton the team refined lite specs process away from wishlist bugs
-and lite specs are hosted in the glance-specs repository in git.
-
-Dedicated lite-specs.rst is provided for each deliverable under the
-release.
-
-For example Newton glance_store spec lite file can be found from:
-glance-specs/specs/newton/approved/glance_store/lite-specs.rst
-
-This file includes template section and new lite-specs should be
-included to the same file under the template. So do not copy the lite-
-specs.rst to a new file like you would do with full spec, but just
-propose change to that file itself filling the parts of the template
-you need.
-
-Existing WISHLIST 'spec-lite' tagged bug will be honored as lite spec,
-new ones will not be considered unless filed in glance-spec repo.
+You propose a spec-lite in the same way you propose a full spec: copy
+the `spec-lite template
+<http://git.openstack.org/cgit/openstack/glance-specs/tree/specs/spec-lite-template.rst>`_
+in the **approved** directory for the release cycle in which you're proposing
+the change, fill out the appropriate sections, and put up a patch in gerrit.
 
 
 Lite spec Submission Guidelines
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Before we dive into the guidelines for writing a good lite spec, it is
 worth mentioning that depending on your level of engagement with the
