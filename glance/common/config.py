@@ -249,6 +249,14 @@ Related options:
     # glance/tests/functional/v2/test_images.py
     cfg.StrOpt('data_api',
                default='glance.db.sqlalchemy.api',
+                       deprecated_for_removal=True,
+                       deprecated_since="Queens",
+                       deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                help=_("""
 Python module path of data access API.
 
@@ -558,6 +566,14 @@ Related options:
 """)),
     cfg.BoolOpt('enable_v2_registry',
                 default=True,
+                deprecated_for_removal=True,
+                deprecated_since="Queens",
+                deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                 help=_("""
 Deploy the v2 API Registry service.
 

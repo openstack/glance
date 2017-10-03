@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import debtcollector
 from oslo_config import cfg
 
 from glance.common import wsgi
@@ -32,6 +33,8 @@ class API(wsgi.Router):
         if CONF.enable_v1_registry:
             v1.init(mapper)
         if CONF.enable_v2_registry:
+            debtcollector.deprecate("Glance Registry service has been "
+                                    "deprecated for removal.")
             v2.init(mapper)
 
         super(API, self).__init__(mapper)

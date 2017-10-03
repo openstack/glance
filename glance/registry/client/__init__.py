@@ -22,6 +22,14 @@ registry_client_opts = [
     cfg.StrOpt('registry_client_protocol',
                default='http',
                choices=('http', 'https'),
+               deprecated_for_removal=True,
+               deprecated_since="Queens",
+               deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                help=_("""
 Protocol to use for communication with the registry server.
 
@@ -48,6 +56,14 @@ Related options:
 """)),
     cfg.StrOpt('registry_client_key_file',
                sample_default='/etc/ssl/key/key-file.pem',
+               deprecated_for_removal=True,
+               deprecated_since="Queens",
+               deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                help=_("""
 Absolute path to the private key file.
 
@@ -69,6 +85,14 @@ Related options:
 """)),
     cfg.StrOpt('registry_client_cert_file',
                sample_default='/etc/ssl/certs/file.crt',
+               deprecated_for_removal=True,
+               deprecated_since="Queens",
+               deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                help=_("""
 Absolute path to the certificate file.
 
@@ -91,6 +115,14 @@ Related options:
 """)),
     cfg.StrOpt('registry_client_ca_file',
                sample_default='/etc/ssl/cafile/file.ca',
+               deprecated_for_removal=True,
+               deprecated_since="Queens",
+               deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                help=_("""
 Absolute path to the Certificate Authority file.
 
@@ -115,6 +147,14 @@ Related options:
 """)),
     cfg.BoolOpt('registry_client_insecure',
                 default=False,
+                deprecated_for_removal=True,
+                deprecated_since="Queens",
+                deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                 help=_("""
 Set verification of the registry server certificate.
 
@@ -140,6 +180,14 @@ Related options:
     cfg.IntOpt('registry_client_timeout',
                default=600,
                min=0,
+               deprecated_for_removal=True,
+               deprecated_since="Queens",
+               deprecated_reason=_("""
+Glance registry service is deprecated for removal.
+
+More information can be found from the spec:
+http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
+"""),
                help=_("""
 Timeout value for registry requests.
 
