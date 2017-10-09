@@ -1,10 +1,11 @@
 *.pyc
 *.log
 .glance-venv
-.venv
+.stestr/*
 .testrepository/
 .tox
 .coverage*
+.venv
 cover/*
 covhtml
 nosetests.xml
