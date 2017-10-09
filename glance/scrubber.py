@@ -21,14 +21,13 @@ from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
-import six
 
 from glance.common import crypt
 from glance.common import exception
+from glance.common import timeutils
 from glance import context
 import glance.db as db_api
 from glance.i18n import _, _LC, _LE, _LI, _LW
-import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
 
@@ -101,63 +100,6 @@ Related options:
     * ``scrub_pool_size``
 
 """)),
-
-    # Note: Though the conf option admin_role is used by other Glance
-    # service and their usage differs requiring us to have a differing
-    # help text here, oslo.config generator treats them as the same
-    # config option and would throw a DuplicateError exception in case
-    # of differing help texts. Hence we have the same help text for
-    # admin_role here and in context.py.
-
-    cfg.StrOpt('admin_role', default='admin',
-               help=_("""
-Role used to identify an authenticated user as administrator.
-
-Provide a string value representing a Keystone role to identify an
-administrative user. Users with this role will be granted
-administrative privileges. The default value for this option is
-'admin'.
-
-Possible values:
-    * A string value which is a valid Keystone role
-
-Related options:
-    * None
-
-""")),
-    cfg.BoolOpt('send_identity_headers',
-                default=False,
-                help=_("""
-Send headers received from identity when making requests to
-registry.
-
-Typically, Glance registry can be deployed in multiple flavors,
-which may or may not include authentication. For example,
-``trusted-auth`` is a flavor that does not require the registry
-service to authenticate the requests it receives. However, the
-registry service may still need a user context to be populated to
-serve the requests. This can be achieved by the caller
-(the Glance API usually) passing through the headers it received
-from authenticating with identity for the same request. The typical
-headers sent are ``X-User-Id``, ``X-Tenant-Id``, ``X-Roles``,
-``X-Identity-Status`` and ``X-Service-Catalog``.
-
-Provide a boolean value to determine whether to send the identity
-headers to provide tenant and user information along with the
-requests to registry service. By default, this option is set to
-``False``, which means that user and tenant information is not
-available readily. It must be obtained by authenticating. Hence, if
-this is set to ``False``, ``flavor`` must be set to value that
-either includes authentication or authenticated user context.
-
-Possible values:
-    * True
-    * False
-
-Related options:
-    * flavor
-
-""")),
 ]
 
 scrubber_cmd_opts = [
@@ -214,6 +156,7 @@ Related options:
 CONF = cfg.CONF
 CONF.register_opts(scrubber_opts)
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
+REASONABLE_DB_PAGE_SIZE = 1000
 
 
 class ScrubDBQueue(object):
@@ -221,26 +164,7 @@ class ScrubDBQueue(object):
     def __init__(self):
         self.scrub_time = CONF.scrub_time
         self.metadata_encryption_key = CONF.metadata_encryption_key
-        registry.configure_registry_client()
-        registry.configure_registry_admin_creds()
-        admin_user = CONF.admin_user
-        admin_tenant = CONF.admin_tenant_name
-
-        if CONF.send_identity_headers:
-            # When registry is operating in trusted-auth mode
-            roles = [CONF.admin_role]
-            self.admin_context = context.RequestContext(user=admin_user,
-                                                        tenant=admin_tenant,
-                                                        auth_token=None,
-                                                        roles=roles)
-            self.registry = registry.get_registry_client(self.admin_context)
-        else:
-            ctxt = context.RequestContext()
-            self.registry = registry.get_registry_client(ctxt)
-            admin_token = self.registry.auth_token
-            self.admin_context = context.RequestContext(user=admin_user,
-                                                        tenant=admin_tenant,
-                                                        auth_token=admin_token)
+        self.admin_context = context.get_admin_context(show_deleted=True)
 
     def add_location(self, image_id, location):
         """Adding image location to scrub queue.
@@ -261,14 +185,12 @@ class ScrubDBQueue(object):
 
     def _get_images_page(self, marker):
         filters = {'deleted': True,
-                   'is_public': 'none',
                    'status': 'pending_delete'}
 
-        if marker:
-            return self.registry.get_images_detailed(filters=filters,
-                                                     marker=marker)
-        else:
-            return self.registry.get_images_detailed(filters=filters)
+        return db_api.get_api().image_get_all(self.admin_context,
+                                              filters=filters,
+                                              marker=marker,
+                                              limit=REASONABLE_DB_PAGE_SIZE)
 
     def _get_all_images(self):
         """Generator to fetch all appropriate images, paging as needed."""
@@ -296,23 +218,23 @@ class ScrubDBQueue(object):
             deleted_at = image.get('deleted_at')
             if not deleted_at:
                 continue
-
             # NOTE: Strip off microseconds which may occur after the last '.,'
             # Example: 2012-07-07T19:14:34.974216
+            deleted_at = timeutils.isotime(deleted_at)
             date_str = deleted_at.rsplit('.', 1)[0].rsplit(',', 1)[0]
             delete_time = calendar.timegm(time.strptime(date_str,
-                                                        "%Y-%m-%dT%H:%M:%S"))
+                                                        "%Y-%m-%dT%H:%M:%SZ"))
 
             if delete_time + self.scrub_time > time.time():
                 continue
 
-            for loc in image['location_data']:
+            for loc in image['locations']:
                 if loc['status'] != 'pending_delete':
                     continue
 
                 if self.metadata_encryption_key:
-                    uri = crypt.urlsafe_encrypt(self.metadata_encryption_key,
-                                                loc['url'], 64)
+                    uri = crypt.urlsafe_decrypt(self.metadata_encryption_key,
+                                                loc['url'])
                 else:
                     uri = loc['url']
 
@@ -327,7 +249,7 @@ class ScrubDBQueue(object):
         :returns: a boolean value to inform including or not
         """
         try:
-            image = self.registry.get_image(image_id)
+            image = db_api.get_api().image_get(self.admin_context, image_id)
             return image['status'] == 'pending_delete'
         except exception.NotFound:
             return False
@@ -372,36 +294,9 @@ class Daemon(object):
 
 class Scrubber(object):
     def __init__(self, store_api):
-        LOG.info(_LI("Initializing scrubber with configuration: %s"),
-                 six.text_type({'registry_host': CONF.registry_host,
-                                'registry_port': CONF.registry_port}))
-
+        LOG.info(_LI("Initializing scrubber"))
         self.store_api = store_api
-
-        registry.configure_registry_client()
-        registry.configure_registry_admin_creds()
-
-        # Here we create a request context with credentials to support
-        # delayed delete when using multi-tenant backend storage
-        admin_user = CONF.admin_user
-        admin_tenant = CONF.admin_tenant_name
-
-        if CONF.send_identity_headers:
-            # When registry is operating in trusted-auth mode
-            roles = [CONF.admin_role]
-            self.admin_context = context.RequestContext(user=admin_user,
-                                                        tenant=admin_tenant,
-                                                        auth_token=None,
-                                                        roles=roles)
-            self.registry = registry.get_registry_client(self.admin_context)
-        else:
-            ctxt = context.RequestContext()
-            self.registry = registry.get_registry_client(ctxt)
-            auth_token = self.registry.auth_token
-            self.admin_context = context.RequestContext(user=admin_user,
-                                                        tenant=admin_tenant,
-                                                        auth_token=auth_token)
-
+        self.admin_context = context.get_admin_context(show_deleted=True)
         self.db_queue = get_scrub_queue()
         self.pool = eventlet.greenpool.GreenPool(CONF.scrub_pool_size)
 
@@ -444,9 +339,10 @@ class Scrubber(object):
                 success = False
 
         if success:
-            image = self.registry.get_image(image_id)
+            image = db_api.get_api().image_get(self.admin_context, image_id)
             if image['status'] == 'pending_delete':
-                self.registry.update_image(image_id, {'status': 'deleted'})
+                db_api.get_api().image_update(self.admin_context, image_id,
+                                              {'status': 'deleted'})
             LOG.info(_LI("Image %s has been scrubbed successfully"), image_id)
         else:
             LOG.warn(_LW("One or more image locations couldn't be scrubbed "
@@ -454,8 +350,6 @@ class Scrubber(object):
                          " status") % image_id)
 
     def _delete_image_location_from_backend(self, image_id, loc_id, uri):
-        if CONF.metadata_encryption_key:
-            uri = crypt.urlsafe_decrypt(CONF.metadata_encryption_key, uri)
         try:
             LOG.debug("Scrubbing image %s from a location.", image_id)
             try:

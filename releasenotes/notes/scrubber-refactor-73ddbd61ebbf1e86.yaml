@@ -1,0 +1,8 @@
+others:
+  - |
+    The ``glance-scrubber`` utility, which is used to perfom offline deletion
+    of images when the Glance ``delayed_delete`` option is enabled, has been
+    refactored so that it no longer uses the Glance Registry API (and hence no
+    longer has a dependency on the Registry v1 Client).  Configuration options
+    associated with connecting to the Glance registry are no longer required,
+    and operators may remove them from the glance-scrubber.conf file.
