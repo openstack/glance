@@ -16,6 +16,7 @@
 
 """Policy Engine For Glance"""
 
+import collections
 import copy
 
 from oslo_config import cfg
@@ -106,7 +107,8 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
             self.policy.enforce(self.context, 'get_image', {})
             raise
         else:
-            self.policy.enforce(self.context, 'get_image', ImageTarget(image))
+            self.policy.enforce(self.context, 'get_image',
+                                dict(ImageTarget(image)))
         return image
 
     def list(self, *args, **kwargs):
@@ -114,11 +116,11 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         return super(ImageRepoProxy, self).list(*args, **kwargs)
 
     def save(self, image, from_state=None):
-        self.policy.enforce(self.context, 'modify_image', image.target)
+        self.policy.enforce(self.context, 'modify_image', dict(image.target))
         return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
-        self.policy.enforce(self.context, 'add_image', image.target)
+        self.policy.enforce(self.context, 'add_image', dict(image.target))
         return super(ImageRepoProxy, self).add(image)
 
 
@@ -166,7 +168,7 @@ class ImageProxy(glance.domain.proxy.Image):
         self.image.locations = new_locations
 
     def delete(self):
-        self.policy.enforce(self.context, 'delete_image', self.target)
+        self.policy.enforce(self.context, 'delete_image', dict(self.target))
         return self.image.delete()
 
     def deactivate(self):
@@ -378,7 +380,7 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
             task_proxy_kwargs=proxy_kwargs)
 
 
-class ImageTarget(object):
+class ImageTarget(collections.Mapping):
     SENTINEL = object()
 
     def __init__(self, target):
@@ -387,6 +389,9 @@ class ImageTarget(object):
         :param target: Object being targeted
         """
         self.target = target
+        self._target_keys = [k for k in dir(ImageProxy)
+                             if not k.startswith('__')
+                             if not callable(getattr(ImageProxy, k))]
 
     def __getitem__(self, key):
         """Return the value of 'key' from the target.
@@ -405,6 +410,23 @@ class ImageTarget(object):
             else:
                 value = None
         return value
+
+    def get(self, key, default=None):
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return default
+
+    def __len__(self):
+        length = len(self._target_keys)
+        length += len(getattr(self.target, 'extra_properties', {}))
+        return length
+
+    def __iter__(self):
+        for key in self._target_keys:
+            yield key
+        for key in getattr(self.target, 'extra_properties', {}).keys():
+            yield key
 
     def key_transforms(self, key):
         if key == 'id':

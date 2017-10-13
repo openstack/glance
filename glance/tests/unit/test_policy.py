@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import collections
 import os.path
 
 import mock
@@ -27,6 +28,12 @@ import glance.tests.unit.utils as unit_test_utils
 from glance.tests import utils as test_utils
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
+
+
+class IterableMock(mock.Mock, collections.Iterable):
+    def __iter__(self):
+        while False:
+            yield None
 
 
 class ImageRepoStub(object):
@@ -57,6 +64,18 @@ class ImageStub(object):
         self.disk_format = disk_format
         self.status = status
         self.extra_properties = extra_properties
+        self.checksum = 'c2e5db72bd7fd153f53ede5da5a06de3'
+        self.created_at = '2013-09-28T15:27:36Z'
+        self.updated_at = '2013-09-28T15:27:37Z'
+        self.locations = []
+        self.min_disk = 0
+        self.min_ram = 0
+        self.name = 'image_name'
+        self.owner = 'tenant1'
+        self.protected = False
+        self.size = 0
+        self.virtual_size = 0
+        self.tags = []
 
     def delete(self):
         self.status = 'deleted'
@@ -266,24 +285,24 @@ class TestImagePolicy(test_utils.BaseTestCase):
 
     def test_delete_image_allowed(self):
         image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
+        args = dict(image.target)
         image.delete()
         self.assertEqual('deleted', image.status)
-        self.policy.enforce.assert_called_once_with({}, "delete_image",
-                                                    image.target)
+        self.policy.enforce.assert_called_once_with({}, "delete_image", args)
 
     def test_get_image_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
-        image_target = mock.Mock()
+        image_target = IterableMock()
         with mock.patch.object(glance.api.policy, 'ImageTarget') as target:
             target.return_value = image_target
             image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
                                                           {}, self.policy)
             self.assertRaises(exception.Forbidden, image_repo.get, UUID1)
         self.policy.enforce.assert_called_once_with({}, "get_image",
-                                                    image_target)
+                                                    dict(image_target))
 
     def test_get_image_allowed(self):
-        image_target = mock.Mock()
+        image_target = IterableMock()
         with mock.patch.object(glance.api.policy, 'ImageTarget') as target:
             target.return_value = image_target
             image_repo = glance.api.policy.ImageRepoProxy(self.image_repo_stub,
@@ -292,7 +311,7 @@ class TestImagePolicy(test_utils.BaseTestCase):
         self.assertIsInstance(output, glance.api.policy.ImageProxy)
         self.assertEqual('image_from_get', output.image)
         self.policy.enforce.assert_called_once_with({}, "get_image",
-                                                    image_target)
+                                                    dict(image_target))
 
     def test_get_images_not_allowed(self):
         self.policy.enforce.side_effect = exception.Forbidden
