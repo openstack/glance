@@ -17,7 +17,8 @@ from __future__ import with_statement
 from logging import config as log_config
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from oslo_config import cfg
+from oslo_db.sqlalchemy import enginefacade
 
 from glance.db.sqlalchemy import models
 from glance.db.sqlalchemy import models_metadef
@@ -25,6 +26,7 @@ from glance.db.sqlalchemy import models_metadef
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+CONF = cfg.CONF
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -54,7 +56,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = CONF.database.connection
     context.configure(
         url=url, target_metadata=target_metadata, literal_binds=True)
 
@@ -69,12 +71,9 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix='sqlalchemy.',
-        poolclass=pool.NullPool)
+    engine = enginefacade.writer.get_engine()
 
-    with connectable.connect() as connection:
+    with engine.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata
