@@ -320,6 +320,14 @@ profiler_opts.set_defaults(CONF)
 
 ASYNC_EVENTLET_THREAD_POOL_LIST = []
 
+# Detect if we're running under the uwsgi server
+try:
+    import uwsgi
+    LOG.debug('Detected running under uwsgi')
+except ImportError:
+    LOG.debug('Detected not running under uwsgi')
+    uwsgi = None
+
 
 def get_num_workers():
     """Return the configured number of workers."""
@@ -925,6 +933,31 @@ class Router(object):
         return app
 
 
+class _UWSGIChunkFile(object):
+
+    def read(self, length=None):
+        position = 0
+        if length == 0:
+            return b""
+
+        if length and length < 0:
+            length = None
+
+        response = []
+        while True:
+            data = uwsgi.chunked_read()
+            # Return everything if we reached the end of the file
+            if not data:
+                break
+            response.append(data)
+            # Return the data if we've reached the length
+            if length is not None:
+                position += len(data)
+                if position >= length:
+                    break
+        return b''.join(response)
+
+
 class Request(webob.Request):
     """Add some OpenStack API-specific logic to the base webob.Request."""
 
@@ -934,6 +967,19 @@ class Request(webob.Request):
             if scheme:
                 environ['wsgi.url_scheme'] = scheme
         super(Request, self).__init__(environ, *args, **kwargs)
+
+    @property
+    def body_file(self):
+        if uwsgi:
+            if self.headers.get('transfer-encoding', '').lower() == 'chunked':
+                return _UWSGIChunkFile()
+        return super(Request, self).body_file
+
+    @body_file.setter
+    def body_file(self, value):
+        # NOTE(cdent): If you have a property setter in a superclass, it will
+        # not be inherited.
+        webob.Request.body_file.fset(self, value)
 
     @property
     def params(self):

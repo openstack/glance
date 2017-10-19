@@ -738,3 +738,68 @@ class GetSocketTestCase(test_utils.BaseTestCase):
             'glance.common.wsgi.ssl.wrap_socket',
             lambda *x, **y: None))
         self.assertRaises(wsgi.socket.error, wsgi.get_socket, 1234)
+
+
+def _cleanup_uwsgi():
+    wsgi.uwsgi = None
+
+
+class Test_UwsgiChunkedFile(test_utils.BaseTestCase):
+
+    def test_read_no_data(self):
+        reader = wsgi._UWSGIChunkFile()
+        wsgi.uwsgi = mock.MagicMock()
+        self.addCleanup(_cleanup_uwsgi)
+
+        def fake_read():
+            return None
+
+        wsgi.uwsgi.chunked_read = fake_read
+        out = reader.read()
+        self.assertEqual(out, b'')
+
+    def test_read_data_no_length(self):
+        reader = wsgi._UWSGIChunkFile()
+        wsgi.uwsgi = mock.MagicMock()
+        self.addCleanup(_cleanup_uwsgi)
+
+        values = iter([b'a', b'b', b'c', None])
+
+        def fake_read():
+            return next(values)
+
+        wsgi.uwsgi.chunked_read = fake_read
+        out = reader.read()
+        self.assertEqual(out, b'abc')
+
+    def test_read_zero_length(self):
+        reader = wsgi._UWSGIChunkFile()
+        self.assertEqual(b'', reader.read(length=0))
+
+    def test_read_data_length(self):
+        reader = wsgi._UWSGIChunkFile()
+        wsgi.uwsgi = mock.MagicMock()
+        self.addCleanup(_cleanup_uwsgi)
+
+        values = iter([b'a', b'b', b'c', None])
+
+        def fake_read():
+            return next(values)
+
+        wsgi.uwsgi.chunked_read = fake_read
+        out = reader.read(length=2)
+        self.assertEqual(out, b'ab')
+
+    def test_read_data_negative_length(self):
+        reader = wsgi._UWSGIChunkFile()
+        wsgi.uwsgi = mock.MagicMock()
+        self.addCleanup(_cleanup_uwsgi)
+
+        values = iter([b'a', b'b', b'c', None])
+
+        def fake_read():
+            return next(values)
+
+        wsgi.uwsgi.chunked_read = fake_read
+        out = reader.read(length=-2)
+        self.assertEqual(out, b'abc')
