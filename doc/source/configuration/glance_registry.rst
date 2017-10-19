@@ -4,6 +4,8 @@
 glance-registry.conf
 --------------------
 
+.. include:: ../deprecate-registry.inc
+
 This configuration file controls how the register server operates. More
 information can be found in :ref:`configuring-the-glance-registry`.
 

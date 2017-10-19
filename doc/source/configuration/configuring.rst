@@ -23,6 +23,8 @@ Glance has a number of options that you can use to configure the Glance API
 server, the Glance Registry server, and the various storage backends that
 Glance can use to store images.
 
+.. include:: ../deprecate-registry.inc
+
 Most configuration is done via configuration files, with the Glance API
 server and Glance Registry server using separate configuration files.
 
@@ -146,6 +148,8 @@ You can put the following options in the ``glance-api.conf`` and
 ``glance-registry.conf`` files, under the ``[DEFAULT]`` section. They enable
 startup and binding behaviour for the API and registry servers, respectively.
 
+.. include:: ../deprecate-registry.inc
+
 ``bind_host=ADDRESS``
   The address of the host to bind to.
 
@@ -218,6 +222,8 @@ Configuring Registry Access
 
 There are a number of configuration options in Glance that control how
 the API server accesses the registry server.
+
+.. include:: ../deprecate-registry.inc
 
 ``registry_client_protocol=PROTOCOL``
   If you run a secure Registry server, you need to set this value to ``https``
@@ -1334,11 +1340,13 @@ on command line)
 
 ``enable_v1_registry=<True|False>``
 
-  Optional. Default: ``True``
+  Optional and DEPRECATED. Default: ``True``
 
 ``enable_v2_registry=<True|False>``
 
-  Optional. Default: ``True``
+  Optional and DEPRECATED. Default: ``True``
+
+  .. include:: ../deprecate-registry.inc
 
   Defines which version(s) of the Registry API will be enabled.
   If the Glance API server parameter ``enable_v1_api`` has been set to ``True`` the
@@ -1346,7 +1354,6 @@ on command line)
   If the Glance API server parameter ``enable_v2_api`` has been
   set to ``True`` and the parameter ``data_api`` has been set to
   ``glance.db.registry.api`` the ``enable_v2_registry`` has to be set to ``True``
-
 
 Configuring Notifications
 -------------------------
