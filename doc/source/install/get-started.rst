@@ -50,6 +50,8 @@ glance-registry
      The registry is a private internal service meant for use by
      OpenStack Image service. Do not expose this service to users.
 
+  .. include:: ../deprecate-registry.inc
+
 Database
   Stores image metadata and you can choose your database depending on
   your preference. Most deployments use MySQL or SQLite.

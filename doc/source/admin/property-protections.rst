@@ -101,6 +101,8 @@ permitted to perform the requested action, ``403 Forbidden`` will be returned.
 V1 API X-glance-registry-Purge-props
 ------------------------------------
 
+.. include:: ../deprecate-registry.inc
+
 Property protections will still be honoured if
 ``X-glance-registry-Purge-props`` is set to ``True``. That is, if you request
 to modify properties with this header set to ``True``, you will not be able to

@@ -42,6 +42,8 @@ information. In order to configure Glance to use Keystone, the
 the authentication token validation and retrieves actual user authentication
 information. It can be found in the Keystone distribution.
 
+.. include:: ../deprecate-registry.inc
+
 
 Configuring Glance API to use Keystone
 --------------------------------------
@@ -92,6 +94,8 @@ with ``authtoken`` and ``context``::
 
 Configuring Glance Registry to use Keystone
 -------------------------------------------
+
+.. include:: ../deprecate-registry.inc
 
 Configuring Glance Registry to use Keystone is also relatively
 straight forward.  The same middleware needs to be added

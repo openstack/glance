@@ -8,6 +8,9 @@ Server for the Glance Registry Service
 
 .. include:: header.txt
 
+.. include:: ../deprecate-registry.inc
+
+
 SYNOPSIS
 ========
 

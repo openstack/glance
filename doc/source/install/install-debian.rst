@@ -250,6 +250,8 @@ Install and configure components
 3. Edit the ``/etc/glance/glance-registry.conf`` file and complete
    the following actions:
 
+   .. include:: ../deprecate-registry.inc
+
    * In the ``[database]`` section, configure database access:
 
      .. path /etc/glance/glance-registry.conf

@@ -22,6 +22,9 @@ Controlling Glance Servers
 This section describes the ways to start, stop, and reload Glance's server
 programs.
 
+.. include:: ../deprecate-registry.inc
+
+
 Starting a server
 -----------------
 
