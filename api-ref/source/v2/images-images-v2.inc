@@ -531,6 +531,9 @@ fail with a 403 (Forbidden) response code:
   protections are configured in the OpenStack cloud in which you are making the
   call.  Consult your cloud's documentation for details.
 
+- An attempt to delete the only image location, or to replace the image
+  locations with an empty list *(since Image API v2.4)*.
+
 Attempting to add a location path to an image that is not in ``queued`` or
 ``active`` state will result in a 409 (Conflict) response code
 *(since Image API v2.4)*.
