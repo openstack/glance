@@ -22,6 +22,29 @@ easy to find answers to.
 
     http://glance.openstack.example.org/v2/images
 
+* URLs for OpenStack project documentation
+
+  Each project's documentation is published to the following URLs:
+
+  - ``https://docs.openstack.org/$project-name/latest`` - built from master
+  - ``https://docs.openstack.org/$project-name/$series`` - built from stable
+
+  For example, the Glance documentation is published to:
+
+  - ``https://docs.openstack.org/glance/latest`` - built from master
+  - ``https://docs.openstack.org/glance/ocata`` - built from stable/ocata
+
+* URLs for OpenStack API Reference Guides
+
+  Each project's API Reference Guide is published to:
+
+  - ``https://developer.openstack.org/api-ref/$service-type``
+
+  For example, the Glance Image Service API Reference guide is
+  published to:
+
+  - ``https://developer.openstack.org/api-ref/image``
+
 Where to Contribute
 -------------------
 
