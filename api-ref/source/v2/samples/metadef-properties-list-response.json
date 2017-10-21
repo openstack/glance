@@ -8,7 +8,9 @@
                 "uml",
                 "xen",
                 "ide",
-                "usb"
+                "usb",
+                "fdc",
+                "sata"
             ],
             "title": "Disk Bus",
             "type": "string"

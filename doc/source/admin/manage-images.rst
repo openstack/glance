@@ -176,11 +176,17 @@ in the following tables.
 +-------------------------+--------------------------+
 | libvirt\_type setting   | Supported model values   |
 +=========================+==========================+
-| qemu or kvm             | *  ide                   |
+| qemu or kvm             | *  fdc                   |
+|                         |                          |
+|                         | *  ide                   |
 |                         |                          |
 |                         | *  scsi                  |
 |                         |                          |
+|                         | *  sata                  |
+|                         |                          |
 |                         | *  virtio                |
+|                         |                          |
+|                         | *  usb                   |
 +-------------------------+--------------------------+
 | xen                     | *  ide                   |
 |                         |                          |
