@@ -56,16 +56,19 @@ CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 logging.register_options(CONF)
 
-KNOWN_EXCEPTIONS = (RuntimeError,
-                    exception.WorkerCreationFailure,
-                    glance_store.exceptions.BadStoreConfiguration,
-                    ValueError)
+# NOTE(rosmaita): Any new exceptions added should preserve the current
+# error codes for backward compatibility.  The value 99 is returned
+# for errors not listed in this map.
+ERROR_CODE_MAP = {RuntimeError: 1,
+                  exception.WorkerCreationFailure: 2,
+                  glance_store.exceptions.BadStoreConfiguration: 3,
+                  ValueError: 4,
+                  cfg.ConfigFileValueError: 5}
 
 
 def fail(e):
-    global KNOWN_EXCEPTIONS
-    return_code = KNOWN_EXCEPTIONS.index(type(e)) + 1
     sys.stderr.write("ERROR: %s\n" % encodeutils.exception_to_unicode(e))
+    return_code = ERROR_CODE_MAP.get(type(e), 99)
     sys.exit(return_code)
 
 
@@ -89,7 +92,7 @@ def main():
         server = wsgi.Server(initialize_glance_store=True)
         server.start(config.load_paste_app('glance-api'), default_port=9292)
         server.wait()
-    except KNOWN_EXCEPTIONS as e:
+    except Exception as e:
         fail(e)
 
 
