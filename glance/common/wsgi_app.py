@@ -24,14 +24,26 @@ CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 logging.register_options(CONF)
 
-CONFIG_FILES = ['glance-api-paste.ini', 'glance-api.conf']
+CONFIG_FILES = ['glance-api-paste.ini',
+                'glance-image-import.conf',
+                'glance-api.conf']
 
 
 def _get_config_files(env=None):
     if env is None:
         env = os.environ
     dirname = env.get('OS_GLANCE_CONFIG_DIR', '/etc/glance').strip()
-    return [os.path.join(dirname, config_file) for config_file in CONFIG_FILES]
+    config_files = []
+    for config_file in CONFIG_FILES:
+        cfg_file = os.path.join(dirname, config_file)
+        # As 'glance-image-import.conf' is optional conf file
+        # so include it only if it's existing.
+        if config_file == 'glance-image-import.conf' and (
+                not os.path.exists(cfg_file)):
+            continue
+        config_files.append(cfg_file)
+
+    return config_files
 
 
 def _setup_os_profiler():

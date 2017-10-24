@@ -97,6 +97,21 @@ def fake_get_verifier(context, img_signature_certificate_uuid,
     return verifier
 
 
+def get_fake_context(user=USER1, tenant=TENANT1, roles=None, is_admin=False):
+    if roles is None:
+        roles = ['member']
+
+    kwargs = {
+        'user': user,
+        'tenant': tenant,
+        'roles': roles,
+        'is_admin': is_admin,
+    }
+
+    context = glance.context.RequestContext(**kwargs)
+    return context
+
+
 class FakeDB(object):
 
     def __init__(self, initialize=True):

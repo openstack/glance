@@ -1,0 +1,72 @@
+---
+features:
+  - |
+    Made provision to inject image metadata properties to non-admin
+    images during creation of image using 'image-import' API.
+
+upgrade:
+  - |
+    - There are two methods to create images:
+
+      - Method A:
+
+         .. code-block:: none
+
+            POST /v2/images
+            PUT /v2/images/{image_id}/file
+
+      - Method B:
+
+         .. code-block:: none
+
+            POST /v2/images
+            PUT /v2/images/{image_id}/stage
+            POST /v2/images/{image_id}/import
+
+      The long term goal is to make end-users use Method B to create images
+      and cross-services like Nova to use Method A until changes are made to
+      use Method B. To restrict end-users from using Method A to create
+      images, you will need to allow only admin or service users to call
+      "upload_image" API as shown below.
+
+      .. code-block:: none
+
+         upload_image": "role:admin or (service_user_id:<uuid of nova user>) or
+         (service_roles:<service user role>)"
+
+      "service_role" is the role which is created for the service user
+      and assigned to the trusted services.
+
+    - To use this feature below configurations are required:
+
+      You will need to configure 'glance-image-import.conf' file as shown
+      below:
+
+      .. code-block:: none
+
+         [image_import_opts]
+         image_import_plugins = [inject_image_metadata]
+
+         [inject_metadata_properties]
+         ignore_user_roles = admin,...
+         inject = "property1":"value",...
+
+      The first section "image_import_opts" is used to enable/plug the task
+      using `image_import_plugins` parameter by giving plugin name.
+      Plugin name is nothing but the module name under
+      glance/async/flows/plugins/
+
+      You don't want to allow end-users to create metadata properties
+      you want to be injected automatically during creation of images.
+      So, you will need to protect such metadata properties using
+      property protection configuration file as shown below.
+      Only admin or service user will be able to create metadata
+      property 'property1'.
+
+      .. code-block:: none
+
+         [property1]
+         create = admin,service_role
+         read = admin,service_role,member,_member_
+         update = admin
+         delete = admin
