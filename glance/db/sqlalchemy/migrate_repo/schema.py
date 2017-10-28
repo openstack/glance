@@ -26,32 +26,40 @@ from glance.i18n import _LI
 LOG = logging.getLogger(__name__)
 
 
-String = lambda length: sqlalchemy.types.String(
-    length=length, convert_unicode=False,
-    unicode_error=None, _warn_on_bytestring=False)
+def String(length):
+    return sqlalchemy.types.String(
+        length=length, convert_unicode=False,
+        unicode_error=None, _warn_on_bytestring=False)
 
 
-Text = lambda: sqlalchemy.types.Text(
-    length=None, convert_unicode=False,
-    unicode_error=None, _warn_on_bytestring=False)
+def Text():
+    return sqlalchemy.types.Text(
+        length=None, convert_unicode=False,
+        unicode_error=None, _warn_on_bytestring=False)
 
 
-Boolean = lambda: sqlalchemy.types.Boolean(create_constraint=True, name=None)
+def Boolean():
+    return sqlalchemy.types.Boolean(create_constraint=True, name=None)
 
 
-DateTime = lambda: sqlalchemy.types.DateTime(timezone=False)
+def DateTime():
+    return sqlalchemy.types.DateTime(timezone=False)
 
 
-Integer = lambda: sqlalchemy.types.Integer()
+def Integer():
+    return sqlalchemy.types.Integer()
 
 
-BigInteger = lambda: sqlalchemy.types.BigInteger()
+def BigInteger():
+    return sqlalchemy.types.BigInteger()
 
 
-PickleType = lambda: sqlalchemy.types.PickleType()
+def PickleType():
+    return sqlalchemy.types.PickleType()
 
 
-Numeric = lambda: sqlalchemy.types.Numeric()
+def Numeric():
+    return sqlalchemy.types.Numeric()
 
 
 def from_migration_import(module_name, fromlist):

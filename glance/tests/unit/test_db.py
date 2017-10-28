@@ -61,6 +61,7 @@ class TestDbUtilities(test_utils.BaseTestCase):
         import_module.assert_called_once_with('glance.db.sqlalchemy.api')
         api.configure.assert_called_once_with()
 
+
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'
 UUID3 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'

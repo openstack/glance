@@ -1383,7 +1383,9 @@ class DriverTests(object):
             return
 
         def _assertMemberListMatch(list1, list2):
-            _simple = lambda x: set([(o['member'], o['image_id']) for o in x])
+            def _simple(x):
+                return set([(o['member'], o['image_id']) for o in x])
+
             self.assertEqual(_simple(list1), _simple(list2))
 
         # NOTE(flaper87): Update auth token, otherwise

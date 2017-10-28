@@ -84,6 +84,7 @@ def _domain_fixture(task_id, **kwargs):
     task = glance.domain.Task(**task_properties)
     return task
 
+
 CONF = cfg.CONF
 CONF.import_opt('task_time_to_live', 'glance.common.config', group='task')
 

@@ -1056,8 +1056,11 @@ def _sort_tasks(tasks, sort_key, sort_dir):
     reverse = False
     if tasks and not (sort_key in tasks[0]):
         raise exception.InvalidSortKey()
-    keyfn = lambda x: (x[sort_key] if x[sort_key] is not None else '',
-                       x['created_at'], x['id'])
+
+    def keyfn(x):
+        return (x[sort_key] if x[sort_key] is not None else '',
+                x['created_at'], x['id'])
+
     reverse = sort_dir == 'desc'
     tasks.sort(key=keyfn, reverse=reverse)
     return tasks

@@ -136,7 +136,7 @@ class SwiftParams(object):
                 reference['user'] = CONFIG.get(ref, 'user')
                 reference['key'] = CONFIG.get(ref, 'key')
                 account_params[ref] = reference
-            except (ValueError, SyntaxError, configparser.NoOptionError) as e:
+            except (ValueError, SyntaxError, configparser.NoOptionError):
                 LOG.exception(_LE("Invalid format of swift store config "
                                   "cfg"))
         return account_params

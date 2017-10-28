@@ -182,7 +182,7 @@ def _get_all_by_resource_types(context, session, filters, marker=None,
     for name, namespace_id in db_recs:
         namespace_id_list.append(namespace_id)
 
-    if len(namespace_id_list) is 0:
+    if len(namespace_id_list) == 0:
         return []
 
     filters2 = filters

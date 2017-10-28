@@ -13,12 +13,26 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_i18n import *  # noqa
+import oslo_i18n as i18n
 
-_translators = TranslatorFactory(domain='glance')
+DOMAIN = 'glance'
+
+_translators = i18n.TranslatorFactory(domain=DOMAIN)
 
 # The primary translation function using the well-known name "_"
 _ = _translators.primary
+
+
+def enable_lazy(enable=True):
+    return i18n.enable_lazy(enable)
+
+
+def translate(value, user_locale=None):
+    return i18n.translate(value, user_locale)
+
+
+def get_available_languages(domain=DOMAIN):
+    return i18n.get_available_languages(domain)
 
 
 # i18n log translation functions are deprecated. While removing the invocations
