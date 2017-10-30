@@ -838,8 +838,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                     # image.locations is None to indicate it's allowed to show
                     # locations but it's just non-existent.
                     image_view['locations'] = []
-                    LOG.debug("There is not available location "
-                              "for image %s", image.image_id)
+                    LOG.debug("The 'locations' list of image %s is empty",
+                              image.image_id)
 
             if CONF.show_image_direct_url:
                 locations = _get_image_locations(image)
@@ -848,8 +848,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                     l = location_strategy.choose_best_location(locations)
                     image_view['direct_url'] = l['url']
                 else:
-                    LOG.debug("There is not available location "
-                              "for image %s", image.image_id)
+                    LOG.debug("The 'locations' list of image %s is empty, "
+                              "not including 'direct_url' in response",
+                              image.image_id)
 
             image_view['tags'] = list(image.tags)
             image_view['self'] = self._get_image_href(image)
