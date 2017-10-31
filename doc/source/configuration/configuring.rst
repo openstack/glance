@@ -1,4 +1,4 @@
-
+..
       Copyright 2011 OpenStack Foundation
       All Rights Reserved.
 
@@ -106,22 +106,22 @@ Glance has a few command-line options that are common to all Glance programs:
   Specified on the command line only.
 
   Takes a path to a configuration directory from which all \*.conf fragments
-  are loaded. This provides an alternative to multiple --config-file options
+  are loaded. This provides an alternative to multiple ``--config-file`` options
   when it is inconvenient to explicitly enumerate all the configuration files,
   for example when an unknown number of config fragments are being generated
   by a deployment framework.
 
-  If --config-dir is set, then --config-file is ignored.
+  If ``--config-dir`` is set, then ``--config-file`` is ignored.
 
-  An example usage would be:
+  An example usage would be::
 
     $ glance-api --config-dir=/etc/glance/glance-api.d
 
     $ ls /etc/glance/glance-api.d
-     00-core.conf
-     01-swift.conf
-     02-ssl.conf
-     ... etc.
+      00-core.conf
+      01-swift.conf
+      02-ssl.conf
+      ... etc.
 
   The numeric prefixes in the example above are only necessary if a specific
   parse ordering is required (i.e. if an individual config option set in an
@@ -1113,15 +1113,15 @@ Configuring the VMware Storage Backend
 
   **NOTE**:
 
-    - This option can be specified multiple times to specify multiple datastores.
-    - Either vmware_datastore_name or vmware_datastores option must be specified
-      in glance-api.conf
-    - Datastore with weight 200 has precedence over datastore with weight 100.
-    - If no weight is specified, default weight '0' is associated with it.
-    - If two datastores have same weight, the datastore with maximum free space
-      will be chosen to store the image.
-    - If the datacenter path or datastore name contains a colon (:) symbol, it
-      must be escaped with a backslash.
+  * This option can be specified multiple times to specify multiple datastores.
+  * Either vmware_datastore_name or vmware_datastores option must be specified
+    in glance-api.conf
+  * Datastore with weight 200 has precedence over datastore with weight 100.
+  * If no weight is specified, default weight '0' is associated with it.
+  * If two datastores have same weight, the datastore with maximum free space
+    will be chosen to store the image.
+  * If the datacenter path or datastore name contains a colon (:) symbol, it
+    must be escaped with a backslash.
 
 ``vmware_api_retry_count=TIMES``
   Optional. Default: ``10``
@@ -1330,7 +1330,6 @@ on command line)
   online. You must urlencode any special characters in CONNECTION_STRING.
 
 ``sql_timeout=SECONDS``
-
   Optional. Default: ``3600``
 
   Can only be specified in configuration files.
@@ -1339,11 +1338,9 @@ on command line)
   datastore if no activity has been made on the connection.
 
 ``enable_v1_registry=<True|False>``
-
   Optional and DEPRECATED. Default: ``True``
 
 ``enable_v2_registry=<True|False>``
-
   Optional and DEPRECATED. Default: ``True``
 
   .. include:: ../deprecate-registry.inc
@@ -1363,7 +1360,6 @@ queue. The configuration options are specified in the ``glance-api.conf``
 configuration file.
 
 ``[oslo_messaging_notifications]/driver``
-
   Optional. Default: ``noop``
 
   Sets the notification driver used by oslo.messaging. Options include
@@ -1377,7 +1373,6 @@ configuration file.
   `oslo.messaging <https://docs.openstack.org/oslo.messaging/latest/>`_.
 
 ``[DEFAULT]/disabled_notifications``
-
   Optional. Default: ``[]``
 
   List of disabled notifications. A notification can be given either as a
@@ -1398,14 +1393,12 @@ configuration file in the section ``[DEFAULT]``. **If an incorrect value is
 specified, glance API service will not start.**
 
 ``property_protection_file=PATH``
-
   Optional. Default: not enabled.
 
   If property_protection_file is set, the file may use either roles or policies
   to specify property protections.
 
 ``property_protection_rule_format=<roles|policies>``
-
   Optional. Default: ``roles``.
 
 Configuring Glance APIs
@@ -1416,11 +1409,9 @@ the OpenStack Images API. Disable any version of
 the Images API using the following options:
 
 ``enable_v1_api=<True|False>``
-
   Optional. Default: ``True``
 
 ``enable_v2_api=<True|False>``
-
   Optional. Default: ``True``
 
   **IMPORTANT NOTE**: To use v2 registry in v2 API, you must set
@@ -1436,7 +1427,6 @@ would be visible to the user after transitioning to either the ``success`` or
 the ``failure`` state.
 
 ``task_time_to_live=<Time_in_hours>``
-
   Optional. Default: ``48``
 
   The config value ``task_executor`` is used to determine which executor
@@ -1444,7 +1434,6 @@ the ``failure`` state.
   available implementation is: ``taskflow``.
 
 ``task_executor=<executor_type>``
-
   Optional. Default: ``taskflow``
 
   The ``taskflow`` engine has its own set of configuration options,
@@ -1474,7 +1463,6 @@ The config value ``enabled`` is used to determine whether fully enable
 profiling feature for glance-api and glance-registry service.
 
 ``enabled=<True|False>``
-
   Optional. Default: ``False``
 
   There is one more configuration option that needs to be defined to enable
@@ -1482,7 +1470,6 @@ profiling feature for glance-api and glance-registry service.
   encrypting context data for performance profiling.
 
 ``hmac_keys=<secret_key_string>``
-
   Optional. Default: ``SECRET_KEY``
 
   **IMPORTANT NOTE**: in order to make profiling work as designed operator needs
@@ -1502,7 +1489,6 @@ profiling feature for glance-api and glance-registry service.
   glance-registry services.
 
 ``trace_sqlalchemy=<True|False>``
-
   Optional. Default: ``False``
 
 Configuring Glance public endpoint
@@ -1518,7 +1504,6 @@ to individual hosts running the Glance API may not be allowed, hence the
 load balancer URL would be used for this value.
 
 ``public_endpoint=<None|URL>``
-
   Optional. Default: ``None``
 
 Configuring Glance digest algorithm
@@ -1535,14 +1520,12 @@ digest algorithm is configured, all digital signature operations will fail and
 return a ValueError exception with "No such digest method" error.
 
 ``digest_algorithm=<algorithm>``
-
   Optional. Default: ``sha256``
 
 Configuring http_keepalive option
 ---------------------------------
 
 ``http_keepalive=<True|False>``
-
   If False, server will return the header "Connection: close", If True, server
   will return "Connection: Keep-Alive" in its responses. In order to close the
   client socket connection explicitly after the response is sent and read
@@ -1590,5 +1573,4 @@ done by setting the ``disk_formats`` parameter which is found in the
 ``[image_formats]`` section of ``glance-api.conf``.
 
 ``disk_formats=<Comma separated list of disk formats>``
-
   Optional. Default: ``ami,ari,aki,vhd,vhdx,vmdk,raw,qcow2,vdi,iso,ploop``
