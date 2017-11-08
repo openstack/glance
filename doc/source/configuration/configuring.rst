@@ -1326,7 +1326,7 @@ on command line)
 
   Sets the SQLAlchemy connection string to use when connecting to the registry
   database. Please see the documentation for
-  `SQLAlchemy connection strings <http://www.sqlalchemy.org/docs/05/reference/sqlalchemy/connections.html>`_
+  `SQLAlchemy connection strings <http://docs.sqlalchemy.org/en/latest/core/connections.html>`_
   online. You must urlencode any special characters in CONNECTION_STRING.
 
 ``sql_timeout=SECONDS``
