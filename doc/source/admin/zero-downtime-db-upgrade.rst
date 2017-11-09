@@ -106,6 +106,7 @@ following operations.
 
 Expanding the Database
 ----------------------
+::
 
     glance-manage db expand
 
@@ -116,6 +117,7 @@ any new services are started.
 
 Migrating the Data
 ------------------
+::
 
     glance-manage db migrate
 
@@ -126,6 +128,7 @@ are started.
 
 Contracting the Database
 ------------------------
+::
 
     glance-manage db contract
 

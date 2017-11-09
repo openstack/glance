@@ -20,7 +20,7 @@ The default metadata driver for Glance uses `SQLAlchemy`_, which implies there
 exists a backend database which must be managed. The ``glance-manage`` binary
 provides a set of commands for making this easier.
 
-The commands should be executed as a subcommand of 'db':
+The commands should be executed as a subcommand of 'db'::
 
     glance-manage db <cmd> <args>
 
@@ -77,6 +77,7 @@ migrations:
 
 Sync the Database
 -----------------
+::
 
     glance-manage db sync [VERSION]
 
@@ -100,6 +101,7 @@ specified VERSION or to the latest migration level if VERSION is not specified.
 
 Determining the Database Version
 --------------------------------
+::
 
     glance-manage db version
 
@@ -108,6 +110,7 @@ This will print the current migration level of a Glance database.
 
 Upgrading an Existing Database
 ------------------------------
+::
 
     glance-manage db upgrade [VERSION]
 

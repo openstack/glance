@@ -1,4 +1,3 @@
-.. -*- mode: rst -*-
 
   **-os-auth-token=OS_AUTH_TOKEN**
         Defaults to env[OS_AUTH_TOKEN]

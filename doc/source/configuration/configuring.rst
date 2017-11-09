@@ -1,4 +1,4 @@
-
+..
       Copyright 2011 OpenStack Foundation
       All Rights Reserved.
 
@@ -113,7 +113,7 @@ Glance has a few command-line options that are common to all Glance programs:
 
   If --config-dir is set, then --config-file is ignored.
 
-  An example usage would be:
+  An example usage would be::
 
     $ glance-api --config-dir=/etc/glance/glance-api.d
 

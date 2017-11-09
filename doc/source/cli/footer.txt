@@ -1,4 +1,3 @@
-.. -*- mode: rst -*-
 
 SEE ALSO
 ========
