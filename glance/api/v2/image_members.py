@@ -136,10 +136,11 @@ class ImageMembersController(object):
     @utils.mutating
     def update(self, req, image_id, member_id, status):
         """
-        Adds a membership to the image.
+        Update the status of a member for a given image.
         :param req: the Request object coming from the wsgi layer
         :param image_id: the image identifier
         :param member_id: the member identifier
+        :param status: the status of a member
         :returns: The response body is a mapping of the following form
 
         ::
