@@ -303,7 +303,6 @@ class ImageDataController(object):
             except glance_store.Duplicate as e:
                 msg = _("The image %s has data on staging") % image_id
                 raise webob.exc.HTTPConflict(explanation=msg)
-                self._restore(image_repo, image)
 
         except glance_store.StorageFull as e:
             msg = _("Image storage media "
