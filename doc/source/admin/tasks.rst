@@ -120,8 +120,8 @@ the endpoint to which it belongs. The id is used as a token in request URIs to
 interact with that specific task.
 
 In addition to the usual properties you'd expect (for example, ``created_at``,
-``self``, ``type``, ``status``, ``updated_at``, etc.), tasks have these properties of
-interest:
+``self``, ``type``, ``status``, ``updated_at``, etc.),
+tasks have these properties of interest:
 
 * ``input``: this is defined to be a JSON blob, the exact content of which will
   depend upon the requirements set by the specific cloud deployer.  The intent

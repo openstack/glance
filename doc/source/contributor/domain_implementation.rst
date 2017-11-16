@@ -45,7 +45,7 @@ their locations:
          implementation.  Further, the Client block calls the Router;
          the Location block calls the Glance Store, and the Data Access
          layer calls the DBMS.
-         Additional information conveyed in the image is the location in 
+         Additional information conveyed in the image is the location in
          the Glance code of the various components:
          Router: api/v2/router.py
          REST API: api/v2/*

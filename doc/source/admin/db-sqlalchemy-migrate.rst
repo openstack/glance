@@ -38,7 +38,8 @@ Sync the Database
 
     glance-manage db sync <version> <current_version>
 
-Place a database under migration control and upgrade, creating it first if necessary.
+Place a database under migration control and upgrade,
+creating it first if necessary.
 
 
 Determining the Database Version

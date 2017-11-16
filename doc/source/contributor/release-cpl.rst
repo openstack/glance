@@ -224,9 +224,10 @@ following:
 - Write `release notes`_
 
 - Announce that any non-release-critical changes won't be accepted from this
-  point onwards until the final Glance release is made. Consider adding -2 on such
-  reviews  with good description to prevent further updates. This also helps in
-  keeping the gate relatively free to process the release-critical changes.
+  point onwards until the final Glance release is made. Consider adding -2 on
+  such reviews  with good description to prevent further updates.
+  This also helps in keeping the gate relatively free to process
+  the release-critical changes.
 
 
 Final Releases
@@ -238,9 +239,9 @@ things in Glance need to be updated immediately.
 
 - Right after cutting the stable branch, Glance release version (not the API
   version) must be bumped so that all further development is attributed to the
-  next release version. This could be done by adding an empty commit with commit
-  message containing the flag ``Sem-Ver: api-break`` to indicate a version. Here
-  is a sample commit attempting to `bump the release version`_.
+  next release version. This could be done by adding an empty commit with
+  commit message containing the flag ``Sem-Ver: api-break`` to indicate
+  a version. Here is a sample commit attempting to `bump the release version`_.
 - The migration tooling that Glance uses relies on some constants defined in
   `glance/db/migration.py`_. Post final release, those need *immediate*
   updating.

@@ -142,7 +142,8 @@ GET resource also accepts additional query parameters:
 
 * ``limit=LIMIT``
 
-  When present the maximum number of results returned will not exceed ``LIMIT``.
+  When present the maximum number of results returned will not
+  exceed ``LIMIT``.
 
 .. note::
 

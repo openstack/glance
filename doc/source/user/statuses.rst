@@ -40,8 +40,8 @@ Images in Glance can be in one of the following statuses:
   Denotes that an import data-put call has been made. While in this status, a
   call to `PUT /file` is disallowed. (Note that a call to `PUT /file` on a
   queued image puts the image into saving status. Calls to `PUT /stage` are
-  disallowed while an image is in saving status. Thus it’s not possible to use
-  both upload methods on the same image.)
+  disallowed while an image is in saving status. Thus it’s not possible to
+  use both upload methods on the same image.)
 
 * ``importing``
 

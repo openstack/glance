@@ -265,7 +265,8 @@ These two resources also accept additional query parameters:
 
 * ``limit=LIMIT``
 
-  When present, the maximum number of results returned will not exceed ``LIMIT``.
+  When present, the maximum number of results returned will not
+  exceed ``LIMIT``.
 
 .. note::
 
@@ -277,12 +278,13 @@ These two resources also accept additional query parameters:
   An admin user may use the `is_public` parameter to control which results are
   returned.
 
-  When the `is_public` parameter is absent or set to `True` the following images
-  will be listed: Images whose `is_public` field is `True`, owned images and
-  shared images.
+  When the `is_public` parameter is absent or set to `True` the following
+  images will be listed: Images whose `is_public` field is `True`,
+  owned images and shared images.
 
-  When the `is_public` parameter is set to `False` the following images will be
-  listed: Images (owned, shared, or non-owned) whose `is_public` field is `False`.
+  When the `is_public` parameter is set to `False` the following images will
+  be listed: Images (owned, shared, or non-owned) whose `is_public`
+  field is `False`.
 
   When the `is_public` parameter is set to `None` all images will be listed
   irrespective of owner, shared status or the `is_public` field.
@@ -507,8 +509,8 @@ The list of metadata headers that Glance accepts are listed below.
   does not support the backing store, Glance will return a **400 Bad Request**.
 
   When not present, Glance will store the disk image data in the backing
-  store that is marked as default. See the configuration option ``default_store``
-  for more information.
+  store that is marked as default. See the configuration option
+  ``default_store`` for more information.
 
 * ``x-image-meta-disk_format``
 
@@ -550,8 +552,8 @@ The list of metadata headers that Glance accepts are listed below.
 
   This header is optional.
 
-  When Glance finds the string "true" (case-insensitive), the image is marked as
-  a public one, meaning that any user may view its metadata and may read
+  When Glance finds the string "true" (case-insensitive), the image is marked
+  as a public one, meaning that any user may view its metadata and may read
   the disk image from Glance.
 
   When not present, the image is assumed to be *not public* and owned by
@@ -562,7 +564,8 @@ The list of metadata headers that Glance accepts are listed below.
   This header is optional. When present, it specifies the minimum amount of
   RAM in megabytes required to run this image on a server.
 
-  When not present, the image is assumed to have a minimum RAM requirement of 0.
+  When not present, the image is assumed to have a minimum RAM
+  requirement of 0.
 
 * ``x-image-meta-min_disk``
 
@@ -587,8 +590,8 @@ The list of metadata headers that Glance accepts are listed below.
   When Glance receives any HTTP header whose key begins with the string prefix
   ``x-image-meta-property-``, Glance adds the key and value to a set of custom,
   free-form image properties stored with the image. The key is a
-  lower-cased string following the prefix ``x-image-meta-property-`` with dashes
-  and punctuation replaced with underscores.
+  lower-cased string following the prefix ``x-image-meta-property-`` with
+  dashes and punctuation replaced with underscores.
 
   For example, if the following HTTP header were sent::
 
