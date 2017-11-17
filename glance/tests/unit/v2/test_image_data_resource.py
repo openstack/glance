@@ -16,6 +16,7 @@ import uuid
 
 from cursive import exception as cursive_exception
 import glance_store
+from glance_store._drivers import filesystem
 import mock
 import six
 from six.moves import http_client as http
@@ -458,6 +459,18 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPServiceUnavailable,
                           self.controller.upload,
                           request, unit_test_utils.UUID2, 'ZZZ', 3)
+        self.assertEqual('queued', self.image_repo.saved_image.status)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_restore_image_when_staging_failed(self, mock_store_add):
+        mock_store_add.side_effect = glance_store.StorageWriteDenied()
+        request = unit_test_utils.get_fake_request()
+        image_id = str(uuid.uuid4())
+        image = FakeImage('fake')
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                          self.controller.stage,
+                          request, image_id, 'YYYYYYY', 7)
         self.assertEqual('queued', self.image_repo.saved_image.status)
 
 
