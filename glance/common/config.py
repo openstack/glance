@@ -725,7 +725,7 @@ Setting this option to True will enable the endpoints related
 to Image Import Refactoring work.
 
 Related options:
-    * [DEFUALT]/node_staging_uri""")),
+    * [DEFAULT]/node_staging_uri""")),
 ]
 
 CONF = cfg.CONF
