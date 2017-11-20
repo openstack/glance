@@ -341,6 +341,11 @@ class ImageDataController(object):
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
+        except exception.InvalidImageStatusTransition as e:
+            msg = encodeutils.exception_to_unicode(e)
+            LOG.debug(msg)
+            raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
+
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 LOG.exception(_LE("Failed to stage image data due to "

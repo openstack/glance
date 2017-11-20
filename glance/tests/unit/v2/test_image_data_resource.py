@@ -491,6 +491,21 @@ class TestImagesController(base.StoreClearingUnitTest):
                               self.controller.stage,
                               request, image_id, 'YYYYYYY', 7)
 
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_image_stage_invalid_image_transition(self, mock_store_add):
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        self.controller.stage(request, image_id, 'YYYY', 4)
+        self.assertEqual('uploading', image.status)
+        self.assertEqual(0, image.size)
+        # try staging again
+        mock_store_add.side_effect = exception.InvalidImageStatusTransition(
+            cur_status='uploading', new_status='uploading')
+        self.assertRaises(webob.exc.HTTPConflict, self.controller.stage,
+                          request, image_id, 'YYYY', 4)
+
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
 
