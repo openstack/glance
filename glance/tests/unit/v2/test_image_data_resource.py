@@ -479,6 +479,18 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPNotFound, self.controller.stage,
                           request, str(uuid.uuid4()), 'ABC', 3)
 
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_image_stage_raises_image_size_exceeded(self, mock_store_add):
+        mock_store_add.side_effect = exception.ImageSizeLimitExceeded()
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(self.controller, "_unstage"):
+            self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                              self.controller.stage,
+                              request, image_id, 'YYYYYYY', 7)
+
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
 
