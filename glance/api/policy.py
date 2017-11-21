@@ -190,7 +190,6 @@ class ImageProxy(glance.domain.proxy.Image):
         return self.image.get_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
-        self.policy.enforce(self.context, 'upload_image', self.target)
         return self.image.set_data(*args, **kwargs)
 
 

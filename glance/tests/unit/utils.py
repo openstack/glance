@@ -109,8 +109,10 @@ class FakeDB(object):
         images = [
             {'id': UUID1, 'owner': TENANT1, 'status': 'queued',
              'locations': [{'url': '%s/%s' % (BASE_URI, UUID1),
-                            'metadata': {}, 'status': 'queued'}]},
-            {'id': UUID2, 'owner': TENANT1, 'status': 'queued'},
+                            'metadata': {}, 'status': 'queued'}],
+             'disk_format': 'raw', 'container_format': 'bare'},
+            {'id': UUID2, 'owner': TENANT1, 'status': 'queued',
+             'disk_format': 'raw', 'container_format': 'bare'},
         ]
         [simple_db.image_create(None, image) for image in images]
 
