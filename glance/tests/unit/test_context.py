@@ -113,7 +113,7 @@ class TestContext(utils.BaseTestCase):
         Tests that an authenticated context (with is_admin set to
         False) can access an image with is_public set to True.
         """
-        self.do_visible(True, None, True, tenant='froggy')
+        self.do_visible(True, None, True, project_id='froggy')
 
     def test_auth_public_unowned(self):
         """
@@ -121,7 +121,7 @@ class TestContext(utils.BaseTestCase):
         False) can access an image (which it does not own) with
         is_public set to True.
         """
-        self.do_visible(True, 'pattieblack', True, tenant='froggy')
+        self.do_visible(True, 'pattieblack', True, project_id='froggy')
 
     def test_auth_public_owned(self):
         """
@@ -129,14 +129,14 @@ class TestContext(utils.BaseTestCase):
         False) can access an image (which it does own) with is_public
         set to True.
         """
-        self.do_visible(True, 'pattieblack', True, tenant='pattieblack')
+        self.do_visible(True, 'pattieblack', True, project_id='pattieblack')
 
     def test_auth_private(self):
         """
         Tests that an authenticated context (with is_admin set to
         False) can access an image with is_public set to False.
         """
-        self.do_visible(True, None, False, tenant='froggy')
+        self.do_visible(True, None, False, project_id='froggy')
 
     def test_auth_private_unowned(self):
         """
@@ -144,7 +144,7 @@ class TestContext(utils.BaseTestCase):
         False) cannot access an image (which it does not own) with
         is_public set to False.
         """
-        self.do_visible(False, 'pattieblack', False, tenant='froggy')
+        self.do_visible(False, 'pattieblack', False, project_id='froggy')
 
     def test_auth_private_owned(self):
         """
@@ -152,7 +152,7 @@ class TestContext(utils.BaseTestCase):
         False) can access an image (which it does own) with is_public
         set to False.
         """
-        self.do_visible(True, 'pattieblack', False, tenant='pattieblack')
+        self.do_visible(True, 'pattieblack', False, project_id='pattieblack')
 
     def test_request_id(self):
         contexts = [context.RequestContext().request_id for _ in range(5)]
@@ -164,10 +164,10 @@ class TestContext(utils.BaseTestCase):
         self.assertEqual(['foo'], ctx.service_catalog)
 
     def test_user_identity(self):
-        ctx = context.RequestContext(user="user",
-                                     tenant="tenant",
-                                     domain="domain",
-                                     user_domain="user-domain",
-                                     project_domain="project-domain")
+        ctx = context.RequestContext(user_id="user",
+                                     project_id="tenant",
+                                     domain_id="domain",
+                                     user_domain_id="user-domain",
+                                     project_domain_id="project-domain")
         self.assertEqual('user tenant domain user-domain project-domain',
                          ctx.to_dict()["user_identity"])
