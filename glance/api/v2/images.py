@@ -107,6 +107,8 @@ class ImagesController(object):
         except exception.Forbidden as e:
             LOG.debug("User not permitted to create image import task.")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.Conflict as e:
+            raise webob.exc.HTTPConflict(explanation=e.msg)
 
         return image_id
 

@@ -14,6 +14,7 @@
 #    under the License.
 
 import datetime
+import eventlet
 import uuid
 
 import glance_store as store
@@ -598,6 +599,18 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(TENANT1, request.context.tenant)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, UUID4)
+
+    def test_image_import_raises_conflict(self):
+        request = unit_test_utils.get_fake_request()
+        # NOTE(abhishekk): Due to
+        # https://bugs.launchpad.net/glance/+bug/1712463 taskflow is not
+        # executing. Once it is fixed instead of mocking spawn_n method
+        # we should mock execute method of _ImportToStore task.
+        with mock.patch.object(eventlet.GreenPool, 'spawn_n',
+                               side_effect=exception.Conflict):
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID4,
+                              {})
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
