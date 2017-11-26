@@ -492,6 +492,81 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, image_id, 'YYYYYYY', 7)
         self.assertEqual('queued', self.image_repo.saved_image.status)
 
+    def test_stage(self):
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(filesystem.Store, 'add'):
+            self.controller.stage(request, image_id, 'YYYY', 4)
+        self.assertEqual('uploading', image.status)
+        self.assertEqual(0, image.size)
+
+    def test_image_already_on_staging(self):
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(filesystem.Store, 'add') as mock_store_add:
+            self.controller.stage(request, image_id, 'YYYY', 4)
+            self.assertEqual('uploading', image.status)
+            mock_store_add.side_effect = glance_store.Duplicate()
+            self.assertEqual(0, image.size)
+            self.assertRaises(webob.exc.HTTPConflict, self.controller.stage,
+                              request, image_id, 'YYYY', 4)
+
+    @mock.patch.object(glance_store.driver.Store, 'configure')
+    def test_image_stage_raises_bad_store_uri(self, mock_store_configure):
+        mock_store_configure.side_effect = AttributeError()
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(exception.BadStoreUri, self.controller.stage,
+                          request, image_id, 'YYYY', 4)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_image_stage_raises_storage_full(self, mock_store_add):
+        mock_store_add.side_effect = glance_store.StorageFull()
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(self.controller, "_unstage"):
+            self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                              self.controller.stage,
+                              request, image_id, 'YYYYYYY', 7)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_image_stage_raises_storage_quota_full(self, mock_store_add):
+        mock_store_add.side_effect = exception.StorageQuotaFull("message")
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(self.controller, "_unstage"):
+            self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                              self.controller.stage,
+                              request, image_id, 'YYYYYYY', 7)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_image_stage_raises_storage_write_denied(self, mock_store_add):
+        mock_store_add.side_effect = glance_store.StorageWriteDenied()
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(self.controller, "_unstage"):
+            self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                              self.controller.stage,
+                              request, image_id, 'YYYYYYY', 7)
+
+    def test_image_stage_raises_internal_error(self):
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request()
+        self.image_repo.result = exception.ServerError()
+        self.assertRaises(exception.ServerError,
+                          self.controller.stage,
+                          request, image_id, 'YYYYYYY', 7)
+
     def test_image_stage_non_existent_image(self):
         request = unit_test_utils.get_fake_request()
         self.image_repo.result = exception.NotFound()
@@ -594,6 +669,33 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.body = b'YYYYY'
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
                           self.deserializer.upload, request)
+
+    def test_stage(self):
+        self.config(enable_image_import=True)
+        req = unit_test_utils.get_fake_request()
+        req.headers['Content-Type'] = 'application/octet-stream'
+        req.headers['Content-Length'] = 4
+        req.body_file = six.BytesIO(b'YYYY')
+        output = self.deserializer.stage(req)
+        data = output.pop('data')
+        self.assertEqual(b'YYYY', data.read())
+
+    def test_stage_if_image_import_is_disabled(self):
+        self.config(enable_image_import=False)
+        req = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.deserializer.stage,
+                          req)
+
+    def test_stage_raises_invalid_content_type(self):
+        # TODO(abhishekk): change this when import methods are
+        # listed in the config file
+        self.config(enable_image_import=True)
+        req = unit_test_utils.get_fake_request()
+        req.headers['Content-Type'] = 'application/json'
+        self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
+                          self.deserializer.stage,
+                          req)
 
 
 class TestImageDataSerializer(test_utils.BaseTestCase):
@@ -882,5 +984,14 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         response = webob.Response()
         response.request = request
         self.serializer.upload(response, {})
+        self.assertEqual(http.NO_CONTENT, response.status_int)
+        self.assertEqual('0', response.headers['Content-Length'])
+
+    def test_stage(self):
+        request = webob.Request.blank('/')
+        request.environ = {}
+        response = webob.Response()
+        response.request = request
+        self.serializer.stage(response, {})
         self.assertEqual(http.NO_CONTENT, response.status_int)
         self.assertEqual('0', response.headers['Content-Length'])
