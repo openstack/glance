@@ -224,6 +224,9 @@ class FakeStoreAPI(object):
     def check_location_metadata(self, val, key=''):
         store.check_location_metadata(val)
 
+    def delete_from_backend(self, uri, context=None):
+        pass
+
 
 class FakePolicyEnforcer(object):
     def __init__(self, *_args, **kwargs):

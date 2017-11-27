@@ -2175,6 +2175,24 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.delete,
                           request, UUID1)
 
+    def test_delete_uploading_status_image(self):
+        """Ensure status of uploading image is updated (LP bug #1733289)"""
+        self.config(enable_image_import=True)
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        image = self.db.image_create(request.context, {'status': 'uploading'})
+        image_id = image['id']
+        with mock.patch.object(self.store,
+                               'delete_from_backend') as mock_store:
+            self.controller.delete(request, image_id)
+
+        # Ensure delete_from_backend is called
+        self.assertEqual(1, mock_store.call_count)
+
+        image = self.db.image_get(request.context, image_id,
+                                  force_show_deleted=True)
+        self.assertTrue(image['deleted'])
+        self.assertEqual('deleted', image['status'])
+
     def test_index_with_invalid_marker(self):
         fake_uuid = str(uuid.uuid4())
         request = unit_test_utils.get_fake_request()

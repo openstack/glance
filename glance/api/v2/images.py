@@ -265,6 +265,13 @@ class ImagesController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
+
+            # NOTE(abhishekk): If 'image-import' is supported and image status
+            # is uploading then delete image data from the staging area.
+            if CONF.enable_image_import and image.status == 'uploading':
+                file_path = str(CONF.node_staging_uri + '/' + image.image_id)
+                self.store_api.delete_from_backend(file_path)
+
             image.delete()
             image_repo.remove(image)
         except (glance_store.Forbidden, exception.Forbidden) as e:
