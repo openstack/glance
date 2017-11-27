@@ -109,6 +109,8 @@ class ImagesController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.Conflict as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
+        except exception.InvalidImageStatusTransition as e:
+            raise webob.exc.HTTPConflict(explanation=e.msg)
 
         return image_id
 
