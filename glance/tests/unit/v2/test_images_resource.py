@@ -2225,6 +2225,21 @@ class TestImagesController(base.IsolatedUnitTest):
         pos = self.controller._get_locations_op_pos('1', None, True)
         self.assertIsNone(pos)
 
+    def test_image_import(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.import_image(request, UUID4,
+                                              {})
+        self.assertEqual(UUID4, output)
+
+    def test_image_import_not_allowed(self):
+        request = unit_test_utils.get_fake_request()
+        # NOTE(abhishekk): For coverage purpose setting tenant to
+        # None. It is not expected to do in normal scenarios.
+        request.context.tenant = None
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.import_image,
+                          request, UUID4, {})
+
 
 class TestImagesControllerPolicies(base.IsolatedUnitTest):
 
@@ -3104,6 +3119,65 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         self.assertEqual(sorted(['x86', '64bit']),
                          sorted(output['filters']['tags']))
 
+    def test_image_import(self):
+        self.config(enable_image_import=True)
+        request = unit_test_utils.get_fake_request()
+        import_body = {
+            "method": {
+                "name": "glance-direct"
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(import_body)
+        output = self.deserializer.import_image(request)
+        expected = {"body": import_body}
+        self.assertEqual(expected, output)
+
+    def test_import_image_disabled(self):
+        self.config(enable_image_import=False)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.deserializer.import_image,
+                          request)
+
+    def test_import_image_invalid_body(self):
+        self.config(enable_image_import=True)
+        request = unit_test_utils.get_fake_request()
+        import_body = {
+            "method1": {
+                "name": "glance-direct"
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(import_body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.import_image,
+                          request)
+
+    def test_import_image_invalid_input(self):
+        self.config(enable_image_import=True)
+        request = unit_test_utils.get_fake_request()
+        import_body = {
+            "method": {
+                "abcd": "glance-direct"
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(import_body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.import_image,
+                          request)
+
+    def test_import_image_invalid_import_method(self):
+        self.config(enable_image_import=True)
+        request = unit_test_utils.get_fake_request()
+        import_body = {
+            "method": {
+                "name": "abcd"
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(import_body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.import_image,
+                          request)
+
 
 class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
@@ -3486,6 +3560,12 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         actual['tags'] = set(actual['tags'])
         self.assertEqual(expected, actual)
         self.assertEqual('application/json', response.content_type)
+
+    def test_import_image(self):
+        response = webob.Response()
+        self.serializer.import_image(response, {})
+        self.assertEqual(http.ACCEPTED, response.status_int)
+        self.assertEqual('0', response.headers['Content-Length'])
 
 
 class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
