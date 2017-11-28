@@ -33,7 +33,7 @@ from Glance.
 
 Requirements
 ------------
-Barbican key manager - See http://docs.openstack.org/developer/barbican/setup/devstack.html
+Barbican key manager - See https://docs.openstack.org/barbican/latest/contributor/devstack.html
 
 Configuration
 -------------
@@ -181,4 +181,4 @@ Create the image::
 Other Links
 -----------
 * https://etherpad.openstack.org/p/mitaka-glance-image-signing-instructions
-* http://docs.openstack.org/ops-guide/ops_user_facing_operations.html
+* https://wiki.openstack.org/wiki/OpsGuide/User-Facing_Operations

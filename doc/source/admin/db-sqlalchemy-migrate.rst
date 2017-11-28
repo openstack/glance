@@ -67,4 +67,4 @@ upgrade, you should make a full database backup of your production data. As of
 Kilo, database downgrades are not supported, and the only method available to
 get back to a prior database version is to restore from backup[1].
 
-[1]: http://docs.openstack.org/ops-guide/ops-upgrades.html#perform-a-backup
+[1]: https://wiki.openstack.org/wiki/OpsGuide/Operational_Upgrades#perform-a-backup
