@@ -27,6 +27,7 @@ from alembic import command as alembic_command
 import fixtures
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslotest import moxstubout
@@ -86,6 +87,10 @@ class BaseTestCase(testtools.TestCase):
 
         # Limit the amount of DeprecationWarning messages in the unit test logs
         self.useFixture(glance_fixtures.WarningsFixture())
+
+        # Make sure logging output is limited but still test debug formatting
+        self.useFixture(log_fixture.get_logging_handle_error_fixture())
+        self.useFixture(glance_fixtures.StandardLogging())
 
     def set_policy(self):
         conf_file = "policy.json"
