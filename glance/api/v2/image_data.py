@@ -332,7 +332,7 @@ class ImageDataController(object):
             msg = _("Insufficient permissions on image "
                     "storage media: %s") % encodeutils.exception_to_unicode(e)
             LOG.error(msg)
-            self._unstage(image_repo, image)
+            self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
