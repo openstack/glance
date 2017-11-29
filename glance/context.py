@@ -45,8 +45,8 @@ class RequestContext(context.RequestContext):
 
     def to_policy_values(self):
         pdict = super(RequestContext, self).to_policy_values()
-        pdict['user'] = self.user
-        pdict['tenant'] = self.tenant
+        pdict['user'] = self.user_id
+        pdict['tenant'] = self.project_id
         return pdict
 
     @classmethod
@@ -56,7 +56,7 @@ class RequestContext(context.RequestContext):
     @property
     def owner(self):
         """Return the owner to correlate with an image."""
-        return self.tenant if self.owner_is_tenant else self.user
+        return self.project_id if self.owner_is_tenant else self.user_id
 
     @property
     def can_see_deleted(self):
@@ -67,7 +67,7 @@ class RequestContext(context.RequestContext):
 def get_admin_context(show_deleted=False):
     """Create an administrator context."""
     return RequestContext(auth_token=None,
-                          tenant=None,
+                          project_id=None,
                           is_admin=True,
                           show_deleted=show_deleted,
                           overwrite=False)
