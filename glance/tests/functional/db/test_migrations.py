@@ -19,8 +19,8 @@ import os
 
 from alembic import command as alembic_command
 from alembic import script as alembic_script
-from oslo_db.sqlalchemy import test_base
 from oslo_db.sqlalchemy import test_migrations
+from oslo_db.tests.sqlalchemy import base as test_base
 import sqlalchemy.types as types
 
 from glance.db import migration as db_migration
