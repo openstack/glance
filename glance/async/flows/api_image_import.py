@@ -194,7 +194,7 @@ class _ImportToStore(task.Task):
         # implementation
         image = self.image_repo.get(self.image_id)
         image.status = 'importing'
-        self.image_repo.save(image)
+        self.image_repo.save(image, from_state='uploading')
 
         # NOTE(flaper87): Let's dance... and fall
         #
