@@ -473,6 +473,12 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, image_id, 'YYYYYYY', 7)
         self.assertEqual('queued', self.image_repo.saved_image.status)
 
+    def test_image_stage_non_existent_image(self):
+        request = unit_test_utils.get_fake_request()
+        self.image_repo.result = exception.NotFound()
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.stage,
+                          request, str(uuid.uuid4()), 'ABC', 3)
+
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
 

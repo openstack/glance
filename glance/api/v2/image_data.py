@@ -304,6 +304,9 @@ class ImageDataController(object):
                 msg = _("The image %s has data on staging") % image_id
                 raise webob.exc.HTTPConflict(explanation=msg)
 
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
+
         except glance_store.StorageFull as e:
             msg = _("Image storage media "
                     "is full: %s") % encodeutils.exception_to_unicode(e)
