@@ -10,12 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import optparse
+import argparse
 import sys
 
 import mock
 import prettytable
-from six.moves import StringIO
 
 from glance.cmd import cache_manage
 from glance.common import exception
@@ -27,39 +26,40 @@ from glance.tests import utils as test_utils
 @mock.patch('sys.stdout', mock.Mock())
 class TestGlanceCmdManage(test_utils.BaseTestCase):
 
-    @mock.patch.object(optparse.OptionParser, 'print_help')
-    @mock.patch.object(optparse.OptionParser, 'parse_args')
-    def test_help(self, mock_parse_args, mock_print_help):
-        mock_parse_args.return_value = (optparse.Values(), ['help'])
-        oparser = optparse.OptionParser()
-        (options, command, args) = cache_manage.parse_options(oparser,
-                                                              ['help'])
-        command(options, args)
+    def _run_command(self, cmd_args, return_code=None):
+        """Runs the cache-manage command.
+
+        :param cmd_args: The command line arguments.
+        :param return_code: The expected return code of the command.
+        """
+        testargs = ['cache_manage']
+        testargs.extend(cmd_args)
+        with mock.patch.object(sys, 'exit') as mock_exit:
+            with mock.patch.object(sys, 'argv', testargs):
+                try:
+                    cache_manage.main()
+                except Exception:
+                    # See if we expected this failure
+                    if return_code is None:
+                        raise
+
+            if return_code is not None:
+                mock_exit.called_with(return_code)
+
+    @mock.patch.object(argparse.ArgumentParser, 'print_help')
+    def test_help(self, mock_print_help):
+        self._run_command(['help'])
         self.assertEqual(1, mock_print_help.call_count)
 
-    @mock.patch.object(optparse.OptionParser, 'parse_args')
-    def test_help_with_command(self, mock_parse_args):
-        mock_parse_args.return_value = (optparse.Values(), ['help',
-                                                            'list-cached'])
-        oparser = optparse.OptionParser()
-        (options, command, args) = cache_manage.parse_options(oparser,
-                                                              ['help',
-                                                               'list-cached'])
-        command(options, args)
+    @mock.patch.object(cache_manage, 'lookup_command')
+    def test_help_with_command(self, mock_lookup_command):
+        mock_lookup_command.return_value = cache_manage.print_help
+        self._run_command(['help', 'list-cached'])
+        mock_lookup_command.assert_any_call('help')
+        mock_lookup_command.assert_any_call('list-cached')
 
-    @mock.patch.object(sys, 'exit')
-    @mock.patch.object(optparse.OptionParser, 'parse_args')
-    def test_help_with_redundant_command(self, mock_parse_args, mock_exit):
-        mock_parse_args.return_value = (optparse.Values(), ['help',
-                                                            'list-cached',
-                                                            "1"])
-        oparser = optparse.OptionParser()
-        (options, command, args) = cache_manage.parse_options(oparser,
-                                                              ['help',
-                                                               'list-cached',
-                                                               "1"])
-        command(options, args)
-        self.assertEqual(1, mock_exit.call_count)
+    def test_help_with_redundant_command(self):
+        self._run_command(['help', 'list-cached', '1'], cache_manage.FAILURE)
 
     @mock.patch.object(glance.image_cache.client.CacheClient,
                        'get_cached_images')
@@ -69,7 +69,6 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
         Verify that list_cached() method correctly processes images with all
         filled data and images with not filled 'last_accessed' field.
         """
-
         mock_images.return_value = [
             {'last_accessed': float(0),
              'last_modified': float(1378985797.124511),
@@ -77,8 +76,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
             {'last_accessed': float(1378985797.124511),
              'last_modified': float(1378985797.124511),
              'image_id': '2', 'size': '255', 'hits': '2'}]
-        cache_manage.list_cached(mock.Mock(), '')
-
+        self._run_command(['list-cached'], cache_manage.SUCCESS)
         self.assertEqual(len(mock_images.return_value),
                          mock_row_create.call_count)
 
@@ -89,10 +87,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
         Verify that list_cached() method handles a case when no images are
         cached without errors.
         """
-
-        mock_images.return_value = []
-        self.assertEqual(cache_manage.SUCCESS,
-                         cache_manage.list_cached(mock.Mock(), ''))
+        self._run_command(['list-cached'], cache_manage.SUCCESS)
 
     @mock.patch.object(glance.image_cache.client.CacheClient,
                        'get_queued_images')
@@ -102,8 +97,8 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
 
         mock_images.return_value = [
             {'image_id': '1'}, {'image_id': '2'}]
-        cache_manage.list_queued(mock.Mock(), '')
-
+        # cache_manage.list_queued(mock.Mock())
+        self._run_command(['list-queued'], cache_manage.SUCCESS)
         self.assertEqual(len(mock_images.return_value),
                          mock_row_create.call_count)
 
@@ -114,212 +109,161 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
         Verify that list_queued() method handles a case when no images were
         queued without errors.
         """
-
         mock_images.return_value = []
-
-        self.assertEqual(cache_manage.SUCCESS,
-                         cache_manage.list_queued(mock.Mock(), ''))
+        self._run_command(['list-queued'], cache_manage.SUCCESS)
 
     def test_queue_image_without_index(self):
-        self.assertEqual(cache_manage.FAILURE,
-                         cache_manage.queue_image(mock.Mock(), []))
+        self._run_command(['queue-image'], cache_manage.FAILURE)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_queue_image_not_forced_not_confirmed(self,
                                                   mock_client, mock_confirm):
-        # options.forced set to False and queue confirmation set to False.
-
+        # --force not set and queue confirmation return False.
         mock_confirm.return_value = False
-        mock_options = mock.Mock()
-        mock_options.force = False
-        self.assertEqual(cache_manage.SUCCESS,
-                         cache_manage.queue_image(mock_options, ['img_id']))
+        self._run_command(['queue-image', 'fakeimageid'], cache_manage.SUCCESS)
         self.assertFalse(mock_client.called)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
-    def test_queue_image_not_forced_confirmed(self, mock_client, mock_confirm):
-        # options.forced set to False and queue confirmation set to True.
-
+    def test_queue_image_not_forced_confirmed(self, mock_get_client,
+                                              mock_confirm):
+        # --force not set and confirmation return True.
         mock_confirm.return_value = True
-        mock_options = mock.Mock()
-        mock_options.force = False
-        mock_options.verbose = True  # to cover additional condition and line
-        manager = mock.MagicMock()
-        manager.attach_mock(mock_client, 'mock_client')
+        mock_client = mock.MagicMock()
+        mock_get_client.return_value = mock_client
 
-        self.assertEqual(cache_manage.SUCCESS,
-                         cache_manage.queue_image(mock_options, ['img_id']))
-        self.assertTrue(mock_client.called)
-        self.assertIn(
-            mock.call.mock_client().queue_image_for_caching('img_id'),
-            manager.mock_calls)
+        # verbose to cover additional condition and line
+        self._run_command(['queue-image', 'fakeimageid', '-v'],
+                          cache_manage.SUCCESS)
+
+        self.assertTrue(mock_get_client.called)
+        mock_client.queue_image_for_caching.assert_called_with('fakeimageid')
 
     def test_delete_cached_image_without_index(self):
-        self.assertEqual(cache_manage.FAILURE,
-                         cache_manage.delete_cached_image(mock.Mock(), []))
+        self._run_command(['delete-cached-image'], cache_manage.FAILURE)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_cached_image_not_forced_not_confirmed(self,
                                                           mock_client,
                                                           mock_confirm):
-        # options.forced set to False and delete confirmation set to False.
-
+        # --force not set and confirmation return False.
         mock_confirm.return_value = False
-        mock_options = mock.Mock()
-        mock_options.force = False
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_cached_image(mock_options, ['img_id']))
+        self._run_command(['delete-cached-image', 'fakeimageid'],
+                          cache_manage.SUCCESS)
         self.assertFalse(mock_client.called)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
-    def test_delete_cached_image_not_forced_confirmed(self, mock_client,
+    def test_delete_cached_image_not_forced_confirmed(self, mock_get_client,
                                                       mock_confirm):
-        # options.forced set to False and delete confirmation set to True.
-
+        # --force not set and confirmation return True.
         mock_confirm.return_value = True
-        mock_options = mock.Mock()
-        mock_options.force = False
-        mock_options.verbose = True  # to cover additional condition and line
-        manager = mock.MagicMock()
-        manager.attach_mock(mock_client, 'mock_client')
+        mock_client = mock.MagicMock()
+        mock_get_client.return_value = mock_client
 
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_cached_image(mock_options, ['img_id']))
+        # verbose to cover additional condition and line
+        self._run_command(['delete-cached-image', 'fakeimageid', '-v'],
+                          cache_manage.SUCCESS)
 
-        self.assertIn(
-            mock.call.mock_client().delete_cached_image('img_id'),
-            manager.mock_calls)
+        self.assertTrue(mock_get_client.called)
+        mock_client.delete_cached_image.assert_called_with('fakeimageid')
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_cached_images_not_forced_not_confirmed(self,
                                                            mock_client,
                                                            mock_confirm):
-        # options.forced set to False and delete confirmation set to False.
-
+        # --force not set and confirmation return False.
         mock_confirm.return_value = False
-        mock_options = mock.Mock()
-        mock_options.force = False
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_all_cached_images(mock_options, None))
+        self._run_command(['delete-all-cached-images'], cache_manage.SUCCESS)
         self.assertFalse(mock_client.called)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
-    def test_delete_cached_images_not_forced_confirmed(self, mock_client,
+    def test_delete_cached_images_not_forced_confirmed(self, mock_get_client,
                                                        mock_confirm):
-        # options.forced set to False and delete confirmation set to True.
-
+        # --force not set and confirmation return True.
         mock_confirm.return_value = True
-        mock_options = mock.Mock()
-        mock_options.force = False
-        mock_options.verbose = True  # to cover additional condition and line
-        manager = mock.MagicMock()
-        manager.attach_mock(mock_client, 'mock_client')
+        mock_client = mock.MagicMock()
+        mock_get_client.return_value = mock_client
 
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_all_cached_images(mock_options, None))
-        self.assertTrue(mock_client.called)
-        self.assertIn(
-            mock.call.mock_client().delete_all_cached_images(),
-            manager.mock_calls)
+        # verbose to cover additional condition and line
+        self._run_command(['delete-all-cached-images', '-v'],
+                          cache_manage.SUCCESS)
+
+        self.assertTrue(mock_get_client.called)
+        mock_client.delete_all_cached_images.assert_called()
 
     def test_delete_queued_image_without_index(self):
-        self.assertEqual(cache_manage.FAILURE,
-                         cache_manage.delete_queued_image(mock.Mock(), []))
+        self._run_command(['delete-queued-image'], cache_manage.FAILURE)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_queued_image_not_forced_not_confirmed(self,
                                                           mock_client,
                                                           mock_confirm):
-        # options.forced set to False and delete confirmation set to False.
-
+        # --force not set and confirmation set to False.
         mock_confirm.return_value = False
-        mock_options = mock.Mock()
-        mock_options.force = False
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_queued_image(mock_options, ['img_id']))
+        self._run_command(['delete-queued-image', 'img_id'],
+                          cache_manage.SUCCESS)
         self.assertFalse(mock_client.called)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
-    def test_delete_queued_image_not_forced_confirmed(self, mock_client,
+    def test_delete_queued_image_not_forced_confirmed(self, mock_get_client,
                                                       mock_confirm):
-        # options.forced set to False and delete confirmation set to True.
-
+        # --force not set and confirmation set to True.
         mock_confirm.return_value = True
-        mock_options = mock.Mock()
-        mock_options.force = False
-        mock_options.verbose = True  # to cover additional condition and line
-        manager = mock.MagicMock()
-        manager.attach_mock(mock_client, 'mock_client')
+        mock_client = mock.MagicMock()
+        mock_get_client.return_value = mock_client
 
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_queued_image(mock_options, ['img_id']))
-        self.assertTrue(mock_client.called)
-        self.assertIn(
-            mock.call.mock_client().delete_queued_image('img_id'),
-            manager.mock_calls)
+        self._run_command(['delete-queued-image', 'img_id', '-v'],
+                          cache_manage.SUCCESS)
+
+        self.assertTrue(mock_get_client.called)
+        mock_client.delete_queued_image.assert_called_with('img_id')
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_delete_queued_images_not_forced_not_confirmed(self,
                                                            mock_client,
                                                            mock_confirm):
-        # options.forced set to False and delete confirmation set to False.
-
+        # --force not set and confirmation set to False.
         mock_confirm.return_value = False
-        mock_options = mock.Mock()
-        mock_options.force = False
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_all_queued_images(mock_options, None))
+        self._run_command(['delete-all-queued-images'],
+                          cache_manage.SUCCESS)
         self.assertFalse(mock_client.called)
 
     @mock.patch.object(glance.cmd.cache_manage, 'user_confirm')
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
-    def test_delete_queued_images_not_forced_confirmed(self, mock_client,
+    def test_delete_queued_images_not_forced_confirmed(self, mock_get_client,
                                                        mock_confirm):
-        # options.forced set to False and delete confirmation set to True.
+        # --force not set and confirmation set to True.
         mock_confirm.return_value = True
-        mock_options = mock.Mock()
-        mock_options.force = False
-        mock_options.verbose = True  # to cover additional condition and line
-        manager = mock.MagicMock()
-        manager.attach_mock(mock_client, 'mock_client')
+        mock_client = mock.MagicMock()
+        mock_get_client.return_value = mock_client
 
-        self.assertEqual(
-            cache_manage.SUCCESS,
-            cache_manage.delete_all_queued_images(mock_options, None))
-        self.assertTrue(mock_client.called)
-        self.assertIn(
-            mock.call.mock_client().delete_all_queued_images(),
-            manager.mock_calls)
+        self._run_command(['delete-all-queued-images', '-v'],
+                          cache_manage.SUCCESS)
+
+        self.assertTrue(mock_get_client.called)
+        mock_client.delete_all_queued_images.assert_called()
 
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_catch_error_not_found(self, mock_function):
         mock_function.side_effect = exception.NotFound()
 
         self.assertEqual(cache_manage.FAILURE,
-                         cache_manage.list_cached(mock.Mock(), None))
+                         cache_manage.list_cached(mock.Mock()))
 
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_catch_error_forbidden(self, mock_function):
         mock_function.side_effect = exception.Forbidden()
 
         self.assertEqual(cache_manage.FAILURE,
-                         cache_manage.list_cached(mock.Mock(), None))
+                         cache_manage.list_cached(mock.Mock()))
 
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_catch_error_unhandled(self, mock_function):
@@ -328,7 +272,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
         my_mock.debug = False
 
         self.assertEqual(cache_manage.FAILURE,
-                         cache_manage.list_cached(my_mock, None))
+                         cache_manage.list_cached(my_mock))
 
     @mock.patch.object(glance.cmd.cache_manage, 'get_client')
     def test_catch_error_unhandled_debug_mode(self, mock_function):
@@ -337,7 +281,7 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
         my_mock.debug = True
 
         self.assertRaises(exception.Duplicate,
-                          cache_manage.list_cached, my_mock, None)
+                          cache_manage.list_cached, my_mock)
 
     def test_cache_manage_env(self):
         def_value = 'sometext12345678900987654321'
@@ -350,47 +294,5 @@ class TestGlanceCmdManage(test_utils.BaseTestCase):
                          cache_manage.env('TMPVALUE1234567890',
                                           default=def_value))
 
-    def test_create_option(self):
-        oparser = optparse.OptionParser()
-        cache_manage.create_options(oparser)
-        self.assertGreater(len(oparser.option_list), 0)
-
-    @mock.patch.object(glance.cmd.cache_manage, 'lookup_command')
-    def test_parse_options_no_parameters(self, mock_lookup):
-        with mock.patch('sys.stdout', new_callable=StringIO):
-            oparser = optparse.OptionParser()
-            cache_manage.create_options(oparser)
-
-            result = self.assertRaises(SystemExit, cache_manage.parse_options,
-                                       oparser, [])
-            self.assertEqual(0, result.code)
-            self.assertFalse(mock_lookup.called)
-
-    @mock.patch.object(optparse.OptionParser, 'print_usage')
-    def test_parse_options_no_arguments(self, mock_printout):
-        oparser = optparse.OptionParser()
-        cache_manage.create_options(oparser)
-
-        result = self.assertRaises(SystemExit, cache_manage.parse_options,
-                                   oparser, ['-p', '1212'])
-        self.assertEqual(0, result.code)
-        self.assertTrue(mock_printout.called)
-
-    @mock.patch.object(glance.cmd.cache_manage, 'lookup_command')
-    def test_parse_options_retrieve_command(self, mock_lookup):
-        mock_lookup.return_value = True
-        oparser = optparse.OptionParser()
-        cache_manage.create_options(oparser)
-        (options, command, args) = cache_manage.parse_options(oparser,
-                                                              ['-p', '1212',
-                                                               'list-cached'])
-
-        self.assertTrue(command)
-
     def test_lookup_command_unsupported_command(self):
-        self.assertRaises(SystemExit, cache_manage.lookup_command, mock.Mock(),
-                          'unsupported_command')
-
-    def test_lookup_command_supported_command(self):
-        command = cache_manage.lookup_command(mock.Mock(), 'list-cached')
-        self.assertEqual(cache_manage.list_cached, command)
+        self._run_command(['unsupported_command'], cache_manage.FAILURE)
