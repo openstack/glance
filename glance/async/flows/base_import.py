@@ -71,13 +71,16 @@ class _CreateImage(task.Task):
         return image.image_id
 
     def revert(self, *args, **kwargs):
-        # TODO(flaper87): Define the revert rules for images on failures.
-        # Deleting the image may not be what we want since users could upload
-        # the image data in a separate step. However, it really depends on
-        # when the failure happened. I guess we should check if data has been
-        # written, although at that point failures are (should be) unexpected,
-        # at least image-workflow wise.
-        pass
+        # TODO(NiallBunting): Deleting the image like this could be considered
+        # a brute force way of reverting images. It may be worth checking if
+        # data has been written.
+        result = kwargs.get('result', None)
+        if result is not None:
+            if kwargs.get('flow_failures', None) is not None:
+                image = self.image_repo.get(result)
+                LOG.debug("Deleting image whilst reverting.")
+                image.delete()
+                self.image_repo.remove(image)
 
 
 class _ImportToFS(task.Task):
@@ -306,9 +309,14 @@ class _ImportToStore(task.Task):
         #     os.rename(file_path, image_path)
         #
         # image_import.set_image_data(image, image_path, None)
-
-        image_import.set_image_data(image, file_path or self.uri, self.task_id)
-
+        try:
+            image_import.set_image_data(image,
+                                        file_path or self.uri, self.task_id)
+        except IOError as e:
+            msg = (_('Uploading the image failed due to: %(exc)s') %
+                   {'exc': encodeutils.exception_to_unicode(e)})
+            LOG.error(msg)
+            raise exception.UploadException(message=msg)
         # NOTE(flaper87): We need to save the image again after the locations
         # have been set in the image.
         self.image_repo.save(image)
