@@ -283,12 +283,13 @@ def _get_base_properties():
     return base_def['property']['additionalProperties']['properties']
 
 
-def get_schema():
+def get_schema(require_name=True):
     definitions = _get_base_definitions()
     properties = _get_base_properties()
     mandatory_attrs = PropertyType.get_mandatory_attrs()
-    # name is required attribute when use as single property type
-    mandatory_attrs.append('name')
+    if require_name:
+        # name is required attribute when use as single property type
+        mandatory_attrs.append('name')
     schema = glance.schema.Schema(
         'property',
         properties,

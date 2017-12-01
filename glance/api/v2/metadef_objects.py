@@ -23,6 +23,7 @@ from wsme.rest import json
 
 from glance.api import policy
 from glance.api.v2 import metadef_namespaces as namespaces
+import glance.api.v2.metadef_properties as properties
 from glance.api.v2.model.metadef_object import MetadefObject
 from glance.api.v2.model.metadef_object import MetadefObjects
 from glance.common import exception
@@ -250,6 +251,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         self._check_allowed(body)
         try:
             self.schema.validate(body)
+            if 'properties' in body:
+                for propertyname in body['properties']:
+                    schema = properties.get_schema(require_name=False)
+                    schema.validate(body['properties'][propertyname])
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         metadata_object = json.fromjson(MetadefObject, body)
