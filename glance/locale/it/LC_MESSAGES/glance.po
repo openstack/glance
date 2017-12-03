@@ -7,9 +7,9 @@
 # KATO Tomoyuki <kato.tomoyuki@jp.fujitsu.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 14.0.1.dev6\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-02 13:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Italian\n"
 
 #, python-format
@@ -1371,9 +1371,6 @@ msgstr ""
 "in genere significa che una regione è obbligatoria e non ne è stata fornita "
 "una."
 
-msgid "Must supply a positive, non-zero value for age."
-msgstr "È necessario fornire un valore positivo, diverso da zero per l'età."
-
 #, python-format
 msgid "No artifact found with ID %s"
 msgstr "Nessuna risorsa trovata con ID %s"
@@ -1638,9 +1635,6 @@ msgstr "Il tipo dell'attività fornito non è supportato: %(type)s"
 
 msgid "Provides a user friendly description of the namespace."
 msgstr "Fornisce una semplice descrizione utente dello spazio dei nomi."
-
-msgid "Public images do not have members."
-msgstr "Le immagini pubblica non hanno membri."
 
 msgid "Received invalid HTTP redirect."
 msgstr "Ricevuto un reindirizzamento HTTP non valido."
@@ -2410,9 +2404,6 @@ msgstr "La versione non è valida: %(reason)s"
 msgid "Virtual size of image in bytes"
 msgstr "Dimensione virtuale dell'immagine in byte"
 
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "La visibilità deve essere \"public\" o \"private\""
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "Entro 15 secondi il pid %(pid)s (%(file)s) verrà interrotto; terminato"
@@ -2645,10 +2636,6 @@ msgstr "parametro limite deve essere un numero intero"
 
 msgid "limit param must be positive"
 msgstr "parametro limite deve essere positivo"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "ubicazione: %s dati persi"
 
 msgid "md5 hash of image contents."
 msgstr "hash md5 del contenuto dell'immagine. "

@@ -1,19 +1,19 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 14.0.1.dev6\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-02 13:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-10 08:54+0000\n"
-"Last-Translator: Grigory Mokhin <mokhin@gmail.com>\n"
+"PO-Revision-Date: 2016-04-12 05:21+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: ru\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Russian\n"
 
 #, python-format
@@ -1326,10 +1326,6 @@ msgstr ""
 "Несколько соответствий службы 'image' для региона %(region)s. Обычно это "
 "означает, что регион обязателен, но вы его не указали."
 
-msgid "Must supply a positive, non-zero value for age."
-msgstr ""
-"В качестве возраста необходимо указать положительное число, не равное 0."
-
 #, python-format
 msgid "No artifact found with ID %s"
 msgstr "Не найдены артефакты с ИД %s"
@@ -1591,9 +1587,6 @@ msgstr "Указан неподдерживаемый тип задачи: %(typ
 
 msgid "Provides a user friendly description of the namespace."
 msgstr "Описание пространства имен для пользователя."
-
-msgid "Public images do not have members."
-msgstr "У общедоступных образов нет участников."
 
 msgid "Received invalid HTTP redirect."
 msgstr "Получено недопустимое перенаправление HTTP."
@@ -2336,9 +2329,6 @@ msgstr "Недопустимая версия: %(reason)s"
 msgid "Virtual size of image in bytes"
 msgstr "Виртуальный размер образа в байтах"
 
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "Видимость должна быть \"public\" или \"private\""
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
@@ -2554,10 +2544,6 @@ msgstr "Параметр limit должен быть целым числом"
 
 msgid "limit param must be positive"
 msgstr "Параметр limit должен быть положительным"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "Расположение: данные %s утеряны"
 
 msgid "md5 hash of image contents."
 msgstr "Хэш md5 содержимого образа."

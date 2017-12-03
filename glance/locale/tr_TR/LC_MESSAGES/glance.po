@@ -7,18 +7,18 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 14.0.1.dev6\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-02 13:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-09-04 12:45+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"PO-Revision-Date: 2016-04-12 05:22+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: tr-TR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Turkish (Turkey)\n"
 
 #, python-format
@@ -1376,9 +1376,6 @@ msgstr "Sağlanan görev türü desteklenmiyor: %(type)s"
 msgid "Provides a user friendly description of the namespace."
 msgstr "Ad alanı için kullanıcı dostu bir açıklama sağlar."
 
-msgid "Public images do not have members."
-msgstr "Ortak imajlar üyelere sahip değil."
-
 msgid "Received invalid HTTP redirect."
 msgstr "Geçersiz HTTP yeniden yönlendirme isteği alındı."
 
@@ -2082,9 +2079,6 @@ msgstr "Sürüm bileşeni çok büyük (en fazla %d)"
 msgid "Version is invalid: %(reason)s"
 msgstr "Sürüm geçersizdir: %(reason)s"
 
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "Görünürlük ya \"ortak\" ya da \"özel\" olmalıdır"
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
@@ -2282,10 +2276,6 @@ msgstr "Sınır parametresi tam sayı olmak zorunda"
 
 msgid "limit param must be positive"
 msgstr "Sınır parametresi pozitif olmak zorunda"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "konum: %s verisi kayıp"
 
 #, python-format
 msgid "new_image() got unexpected keywords %s"

@@ -7,18 +7,18 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 14.0.1.dev6\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-02 13:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-04 06:26+0000\n"
-"Last-Translator: 笹原 昌美 <ebb0de1@jp.ibm.com>\n"
+"PO-Revision-Date: 2016-04-12 05:21+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Japanese\n"
 
 #, python-format
@@ -1327,9 +1327,6 @@ msgstr ""
 "領域 %(region)s に対して複数の「イメージ」サービスが一致します。これは一般"
 "に、領域が必要であるのに、領域を指定していないことを意味します。"
 
-msgid "Must supply a positive, non-zero value for age."
-msgstr "存続期間にはゼロ以外の正の値を指定してください。"
-
 #, python-format
 msgid "No artifact found with ID %s"
 msgstr "ID が %s の成果物が見つかりません"
@@ -1591,9 +1588,6 @@ msgstr "指定されたタスクタイプはサポートされていません: %
 
 msgid "Provides a user friendly description of the namespace."
 msgstr "分かりやすい名前空間の説明が提供されます。"
-
-msgid "Public images do not have members."
-msgstr "パブリックイメージにはメンバーがありません。"
 
 msgid "Received invalid HTTP redirect."
 msgstr "無効な HTTP リダイレクトを受け取りました。"
@@ -2334,9 +2328,6 @@ msgstr "バージョンが無効です: %(reason)s"
 msgid "Virtual size of image in bytes"
 msgstr "イメージの仮想サイズ (バイト)"
 
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "可視性は「public」または「private」のいずれかでなければなりません"
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "pid %(pid)s (%(file)s) が停止するまで 15 秒お待ちください。中断中です"
@@ -2546,10 +2537,6 @@ msgstr "limit パラメーターは整数でなければなりません"
 
 msgid "limit param must be positive"
 msgstr "limit パラメーターは正でなければなりません"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "ロケーション: %s データが失われました"
 
 msgid "md5 hash of image contents."
 msgstr "イメージコンテンツの MD5 ハッシュ。"

@@ -10,18 +10,18 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev36\n"
+"Project-Id-Version: glance 14.0.1.dev6\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-06 15:52+0000\n"
+"POT-Creation-Date: 2017-06-02 13:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-03-24 07:54+0000\n"
-"Last-Translator: Eugènia Torrella <tester03@es.ibm.com>\n"
+"PO-Revision-Date: 2016-04-12 05:20+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Spanish\n"
 
 #, python-format
@@ -1358,9 +1358,6 @@ msgstr ""
 "generalmente significa que es necesaria una región y que no se ha "
 "proporcionado ninguna."
 
-msgid "Must supply a positive, non-zero value for age."
-msgstr "Debe proporcionar un valor positivo distinto de cero para la edad."
-
 #, python-format
 msgid "No artifact found with ID %s"
 msgstr "No se encontró artefacto con ID %s"
@@ -1626,9 +1623,6 @@ msgstr "No se soporta el tipo de tarea proporcionado: %(type)s"
 
 msgid "Provides a user friendly description of the namespace."
 msgstr "Proporciona una descripción sencilla del espacio de nombre."
-
-msgid "Public images do not have members."
-msgstr "Las imágenes públicas no tienen miembros."
 
 msgid "Received invalid HTTP redirect."
 msgstr "Se ha recibido redirección HTTP no válida. "
@@ -2390,9 +2384,6 @@ msgstr "Versión no válida: %(reason)s"
 msgid "Virtual size of image in bytes"
 msgstr "Tamaño virtual de la imagen en bytes"
 
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "La visibilidad debe ser  \"pública\" o \"privada\""
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
@@ -2609,10 +2600,6 @@ msgstr "el parámetro de límite debe ser un entero"
 
 msgid "limit param must be positive"
 msgstr "el parámetro de límite debe ser positivo"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "se han perdido los datos de ubicación: %s"
 
 msgid "md5 hash of image contents."
 msgstr "md5 hash de contenidos de imagen."

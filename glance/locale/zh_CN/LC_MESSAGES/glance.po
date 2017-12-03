@@ -12,9 +12,9 @@
 # howard lee <howard@mail.ustc.edu.cn>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 13.0.0.0rc2.dev51\n"
+"Project-Id-Version: glance 14.0.1.dev6\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2016-10-13 13:29+0000\n"
+"POT-Creation-Date: 2017-06-02 13:06+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Language: zh-CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.7.3\n"
+"X-Generator: Zanata 3.9.6\n"
 "Language-Team: Chinese (China)\n"
 
 #, python-format
@@ -1304,9 +1304,6 @@ msgstr ""
 "对于区域 %(region)s，存在多个“映像”服务匹配项。这通常意味着需要区域并且尚未提"
 "供一个区域。"
 
-msgid "Must supply a positive, non-zero value for age."
-msgstr "必须提供非零正值来表示年龄。"
-
 #, python-format
 msgid "No artifact found with ID %s"
 msgstr "找不到标识为 %s 的工件"
@@ -1553,9 +1550,6 @@ msgstr "不支持任务的所提供类型：%(type)s"
 
 msgid "Provides a user friendly description of the namespace."
 msgstr "提供名称空间的用户友好描述。"
-
-msgid "Public images do not have members."
-msgstr "公共映像没有成员。"
 
 msgid "Received invalid HTTP redirect."
 msgstr "接收到无效 HTTP 重定向。"
@@ -2257,9 +2251,6 @@ msgstr "版本无效：%(reason)s"
 msgid "Virtual size of image in bytes"
 msgstr "映像的虚拟大小，以字节计"
 
-msgid "Visibility must be either \"public\" or \"private\""
-msgstr "可视性必须为“public”或“private”"
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "用来等待 pid %(pid)s (%(file)s) 终止的时间已达到 15 秒；正在放弃"
@@ -2464,10 +2455,6 @@ msgstr "limit 参数必须为整数"
 
 msgid "limit param must be positive"
 msgstr "limit 参数必须为正数"
-
-#, python-format
-msgid "location: %s data lost"
-msgstr "位置：%s 数据已丢失"
 
 msgid "md5 hash of image contents."
 msgstr "映像内容的 md5 散列。"
