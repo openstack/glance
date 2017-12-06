@@ -299,7 +299,9 @@ class ImageDataController(object):
             image.status = 'uploading'
             image_repo.save(image, from_state='queued')
             try:
-                staging_store.add(image_id, data, 0)
+                staging_store.add(
+                    image_id, utils.LimitingReader(
+                        utils.CooperativeReader(data), CONF.image_size_cap), 0)
             except glance_store.Duplicate as e:
                 msg = _("The image %s has data on staging") % image_id
                 raise webob.exc.HTTPConflict(explanation=msg)
