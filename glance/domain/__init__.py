@@ -150,9 +150,8 @@ class Image(object):
                 LOG.debug(e)
                 raise e
 
-            if self._status == 'queued' and status in ('saving',
-                                                       'active',
-                                                       'importing'):
+            if self._status in ('queued', 'uploading') and status in (
+                    'saving', 'active', 'importing'):
                 missing = [k for k in ['disk_format', 'container_format']
                            if not getattr(self, k)]
                 if len(missing) > 0:
