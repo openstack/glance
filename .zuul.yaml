@@ -1,3 +1,15 @@
+- job:
+    name: glance-dsvm-grenade-multinode
+    parent: legacy-dsvm-base-multinode
+    run: playbooks/legacy/glance-dsvm-grenade-multinode/run.yaml
+    post-run: playbooks/legacy/glance-dsvm-grenade-multinode/post.yaml
+    timeout: 10800
+    required-projects:
+      - openstack-dev/grenade
+      - openstack-infra/devstack-gate
+      - openstack/glance
+    nodeset: legacy-ubuntu-xenial-2-node
+
 - project:
     check:
       jobs:
@@ -12,3 +24,4 @@
     experimental:
       jobs:
         - barbican-simple-crypto-devstack-tempest
+        - glance-dsvm-grenade-multinode
