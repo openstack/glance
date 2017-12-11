@@ -90,7 +90,12 @@ class FakeImageRepo(object):
 
 
 class FakeGateway(object):
-    def __init__(self, repo):
+    def __init__(self, db=None, store=None, notifier=None,
+                 policy=None, repo=None):
+        self.db = db
+        self.store = store
+        self.notifier = notifier
+        self.policy = policy
         self.repo = repo
 
     def get_repo(self, context):
@@ -103,9 +108,13 @@ class TestImagesController(base.StoreClearingUnitTest):
 
         self.config(debug=True)
         self.image_repo = FakeImageRepo()
-        self.gateway = FakeGateway(self.image_repo)
-        self.controller = glance.api.v2.image_data.ImageDataController(
-            gateway=self.gateway)
+        db = unit_test_utils.FakeDB()
+        policy = unit_test_utils.FakePolicyEnforcer()
+        notifier = unit_test_utils.FakeNotifier()
+        store = unit_test_utils.FakeStoreAPI()
+        self.controller = glance.api.v2.image_data.ImageDataController()
+        self.controller.gateway = FakeGateway(db, store, notifier, policy,
+                                              self.image_repo)
 
     def test_download(self):
         request = unit_test_utils.get_fake_request()
@@ -190,6 +199,16 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
         self.assertEqual('YYYY', image.data)
         self.assertIsNone(image.size)
+
+    @mock.patch.object(glance.api.policy.Enforcer, 'enforce')
+    def test_upload_image_forbidden(self, mock_enforce):
+        request = unit_test_utils.get_fake_request()
+        mock_enforce.side_effect = exception.Forbidden
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.upload,
+                          request, unit_test_utils.UUID2, 'YYYY', 4)
+        mock_enforce.assert_called_once_with(request.context,
+                                             "upload_image",
+                                             {})
 
     def test_upload_invalid(self):
         request = unit_test_utils.get_fake_request()

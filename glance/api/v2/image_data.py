@@ -40,16 +40,13 @@ CONF = cfg.CONF
 
 class ImageDataController(object):
     def __init__(self, db_api=None, store_api=None,
-                 policy_enforcer=None, notifier=None,
-                 gateway=None):
-        if gateway is None:
-            db_api = db_api or glance.db.get_api()
-            store_api = store_api or glance_store
-            policy = policy_enforcer or glance.api.policy.Enforcer()
-            notifier = notifier or glance.notifier.Notifier()
-            gateway = glance.gateway.Gateway(db_api, store_api,
-                                             notifier, policy)
-        self.gateway = gateway
+                 policy_enforcer=None, notifier=None):
+        db_api = db_api or glance.db.get_api()
+        store_api = store_api or glance_store
+        notifier = notifier or glance.notifier.Notifier()
+        self.policy = policy_enforcer or glance.api.policy.Enforcer()
+        self.gateway = glance.gateway.Gateway(db_api, store_api,
+                                              notifier, self.policy)
 
     def _restore(self, image_repo, image):
         """
@@ -108,6 +105,7 @@ class ImageDataController(object):
         refresher = None
         cxt = req.context
         try:
+            self.policy.enforce(cxt, 'upload_image', {})
             image = image_repo.get(image_id)
             image.status = 'saving'
             try:

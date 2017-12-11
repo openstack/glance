@@ -407,13 +407,6 @@ class TestImagePolicy(test_utils.BaseTestCase):
         self.policy.enforce.assert_called_once_with({}, "download_image",
                                                     target)
 
-    def test_image_set_data(self):
-        self.policy.enforce.side_effect = exception.Forbidden
-        image = glance.api.policy.ImageProxy(self.image_stub, {}, self.policy)
-        self.assertRaises(exception.Forbidden, image.set_data)
-        self.policy.enforce.assert_called_once_with({}, "upload_image",
-                                                    image.target)
-
 
 class TestMemberPolicy(test_utils.BaseTestCase):
     def setUp(self):
