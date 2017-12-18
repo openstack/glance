@@ -18,6 +18,7 @@ __all__ = [
     'list_scrubber_opts',
     'list_cache_opts',
     'list_manage_opts',
+    'list_image_import_opts',
 ]
 
 import copy
@@ -27,6 +28,7 @@ from osprofiler import opts as profiler
 
 import glance.api.middleware.context
 import glance.api.versions
+import glance.async.flows.api_image_import
 import glance.async.flows.convert
 import glance.async.taskflow_executor
 import glance.common.config
@@ -107,6 +109,9 @@ _cache_opts = [
 _manage_opts = [
     (None, [])
 ]
+_image_import_opts = [
+    ('image_import_opts', glance.async.flows.api_image_import.api_import_opts)
+]
 
 
 def list_api_opts():
@@ -153,3 +158,8 @@ def list_cache_opts():
 def list_manage_opts():
     """Return a list of oslo_config options available in Glance manage."""
     return [(g, copy.deepcopy(o)) for g, o in _manage_opts]
+
+
+def list_image_import_opts():
+    """Return a list of oslo_config options available for Image Import"""
+    return [(g, copy.deepcopy(o)) for g, o in _image_import_opts]

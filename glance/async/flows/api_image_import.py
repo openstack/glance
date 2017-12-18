@@ -23,6 +23,7 @@ from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
 
+import glance.async.flows.plugins as import_plugins
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
@@ -35,8 +36,41 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
+api_import_opts = [
+    cfg.ListOpt('image_import_plugins',
+                item_type=cfg.types.String(quotes=True),
+                bounds=True,
+                sample_default='[no_op]',
+                default=[],
+                help=_("""
+Image import plugins to be enabled for task processing.
+
+Provide list of strings reflecting to the task Objects
+that should be included to the Image Import flow. The
+task objects needs to be defined in the 'glance/async/
+flows/plugins/*' and may be implemented by OpenStack
+Glance project team, deployer or 3rd party.
+
+By default no plugins are enabled and to take advantage
+of the plugin model the list of plugins must be set
+explicitly in the glance-image-import.conf file.
+
+The allowed values for this option is comma separated
+list of object names in between ``[`` and ``]``.
+
+Possible values:
+    * no_op (only logs debug level message that the
+      plugin has been executed)
+    * Any provided Task object name to be included
+      in to the flow.
+""")),
+]
+
+CONF.register_opts(api_import_opts, group='image_import_opts')
+
 # TODO(jokke): We should refactor the task implementations so that we do not
 # need to duplicate what we have already for example in base_import.py.
+
 
 class _DeleteFromFS(task.Task):
 
@@ -336,8 +370,8 @@ def get_flow(**kwargs):
     flow = lf.Flow(task_type, retry=retry.AlwaysRevert())
     flow.add(_VerifyStaging(task_id, task_type, task_repo, uri))
 
-    # TODO(jokke): For the pluggable tasks like image verification or
-    # image conversion we need to implement the plugin logic here.
+    for plugin in import_plugins.get_import_plugins(**kwargs):
+        flow.add(plugin)
 
     import_to_store = _ImportToStore(task_id,
                                      task_type,
