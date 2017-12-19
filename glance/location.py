@@ -445,6 +445,8 @@ class ImageProxy(glance.domain.proxy.Image):
                 LOG.info(_LI("Successfully verified signature for image %s"),
                          self.image.image_id)
             except crypto_exception.InvalidSignature:
+                self.store_api.delete_from_backend(location,
+                                                   context=self.context)
                 raise cursive_exception.SignatureVerificationError(
                     _('Signature verification failed')
                 )

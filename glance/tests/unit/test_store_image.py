@@ -224,9 +224,12 @@ class TestStoreImage(utils.BaseTestCase):
                        unit_test_utils.fake_get_verifier)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
-        self.assertRaises(cursive_exception.SignatureVerificationError,
-                          image.set_data,
-                          'YYYY', 4)
+        with mock.patch.object(self.store_api,
+                               'delete_from_backend') as mock_delete:
+            self.assertRaises(cursive_exception.SignatureVerificationError,
+                              image.set_data,
+                              'YYYY', 4)
+            mock_delete.assert_called()
 
     def test_image_set_data_invalid_signature_missing_metadata(self):
         context = glance.context.RequestContext(user=USER1)
