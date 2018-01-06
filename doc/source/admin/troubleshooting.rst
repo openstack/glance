@@ -354,13 +354,8 @@ The displayed image attributes are:
     Free form, human-readable name for the image.
 
 ``Status``
-    The status of the image. Images marked ``ACTIVE`` are available for
+    The status of the image. Images marked ``active`` are available for
     use.
-
-``Server``
-    For images that are created as snapshots of running instances, this
-    is the UUID of the instance the snapshot derives from. For uploaded
-    images, this field is blank.
 
 Virtual hardware templates are called ``flavors``, and are defined by
 administrators. Prior to the Newton release, a default installation also
