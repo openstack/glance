@@ -17,9 +17,7 @@ import testtools
 import webob
 
 import glance.api.common
-from glance.common import config
 from glance.common import exception
-from glance.tests import utils as test_utils
 
 
 class SimpleIterator(object):
@@ -126,20 +124,3 @@ class TestSizeCheckedIter(testtools.TestCase):
         self.assertEqual('CD', next(checked_image))
         self.assertEqual('E', next(checked_image))
         self.assertRaises(exception.GlanceException, next, checked_image)
-
-
-class TestMalformedRequest(test_utils.BaseTestCase):
-    def setUp(self):
-        """Establish a clean test environment"""
-        super(TestMalformedRequest, self).setUp()
-        self.config(flavor='',
-                    group='paste_deploy',
-                    config_file='etc/glance-api-paste.ini')
-        self.api = config.load_paste_app('glance-api')
-
-    def test_redirect_incomplete_url(self):
-        """Test Glance redirects /v# to /v#/ with correct Location header"""
-        req = webob.Request.blank('/v1.1')
-        res = req.get_response(self.api)
-        self.assertEqual(webob.exc.HTTPFound.code, res.status_int)
-        self.assertEqual('http://localhost/v1/', res.location)

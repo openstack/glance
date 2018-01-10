@@ -455,50 +455,6 @@ Related options:
     * None
 
 """)),
-    # NOTE(nikhil): Even though deprecated, the configuration option
-    # ``enable_v1_api`` is set to True by default on purpose. Having it enabled
-    # helps the projects that haven't been able to fully move to v2 yet by
-    # keeping the devstack setup to use glance v1 as well. We need to switch it
-    # to False by default soon after Newton is cut so that we can identify the
-    # projects that haven't moved to v2 yet and start having some interesting
-    # conversations with them. Switching to False in Newton may result into
-    # destabilizing the gate and affect the release.
-    cfg.BoolOpt('enable_v1_api',
-                default=True,
-                deprecated_reason=_DEPRECATE_GLANCE_V1_MSG,
-                deprecated_since='Newton',
-                help=_("""
-Deploy the v1 OpenStack Images API.
-
-When this option is set to ``True``, Glance service will respond to
-requests on registered endpoints conforming to the v1 OpenStack
-Images API.
-
-NOTES:
-    * If this option is enabled, then ``enable_v1_registry`` must
-      also be set to ``True`` to enable mandatory usage of Registry
-      service with v1 API.
-
-    * If this option is disabled, then the ``enable_v1_registry``
-      option, which is enabled by default, is also recommended
-      to be disabled.
-
-    * This option is separate from ``enable_v2_api``, both v1 and v2
-      OpenStack Images API can be deployed independent of each
-      other.
-
-    * If deploying only the v2 Images API, this option, which is
-      enabled by default, should be disabled.
-
-Possible values:
-    * True
-    * False
-
-Related options:
-    * enable_v1_registry
-    * enable_v2_api
-
-""")),
     cfg.BoolOpt('enable_v2_api',
                 default=True,
                 deprecated_reason=_('The Images (Glance) version 1 API has '
@@ -523,20 +479,12 @@ NOTES:
       option, which is enabled by default, is also recommended
       to be disabled.
 
-    * This option is separate from ``enable_v1_api``, both v1 and v2
-      OpenStack Images API can be deployed independent of each
-      other.
-
-    * If deploying only the v1 Images API, this option, which is
-      enabled by default, should be disabled.
-
 Possible values:
     * True
     * False
 
 Related options:
     * enable_v2_registry
-    * enable_v1_api
 
 """)),
     cfg.BoolOpt('enable_v1_registry',
@@ -544,25 +492,7 @@ Related options:
                 deprecated_reason=_DEPRECATE_GLANCE_V1_MSG,
                 deprecated_since='Newton',
                 help=_("""
-Deploy the v1 API Registry service.
-
-When this option is set to ``True``, the Registry service
-will be enabled in Glance for v1 API requests.
-
-NOTES:
-    * Use of Registry is mandatory in v1 API, so this option must
-      be set to ``True`` if the ``enable_v1_api`` option is enabled.
-
-    * If deploying only the v2 OpenStack Images API, this option,
-      which is enabled by default, should be disabled.
-
-Possible values:
-    * True
-    * False
-
-Related options:
-    * enable_v1_api
-
+                    DEPRECATED FOR REMOVAL
 """)),
     cfg.BoolOpt('enable_v2_registry',
                 default=True,

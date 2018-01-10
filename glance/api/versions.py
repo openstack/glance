@@ -20,7 +20,7 @@ from six.moves import http_client
 import webob.dec
 
 from glance.common import wsgi
-from glance.i18n import _, _LW
+from glance.i18n import _
 
 
 versions_opts = [
@@ -81,20 +81,6 @@ class Controller(object):
                 build_version_object(2.2, 'v2', 'SUPPORTED'),
                 build_version_object(2.1, 'v2', 'SUPPORTED'),
                 build_version_object(2.0, 'v2', 'SUPPORTED'),
-            ])
-        if CONF.enable_v1_api:
-            LOG.warn(_LW('The Images (Glance) v1 API is deprecated and will '
-                         'be removed on or after the Pike release, following '
-                         'the standard OpenStack deprecation policy. '
-                         'Currently, the solution is to set '
-                         'enable_v1_api=False and enable_v2_api=True in your '
-                         'glance-api.conf file. Once those options are '
-                         'removed from the code, Images (Glance) v2 API will '
-                         'be switched on by default and will be the only '
-                         'option to deploy and use.'))
-            version_objs.extend([
-                build_version_object(1.1, 'v1', 'DEPRECATED'),
-                build_version_object(1.0, 'v1', 'DEPRECATED'),
             ])
 
         status = explicit and http_client.OK or http_client.MULTIPLE_CHOICES

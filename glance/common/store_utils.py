@@ -27,6 +27,7 @@ from glance import scrubber
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
+CONF.import_opt('use_user_token', 'glance.registry.client')
 
 RESTRICTED_URI_SCHEMAS = frozenset(['file', 'filesystem', 'swift+config'])
 

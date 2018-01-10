@@ -78,8 +78,10 @@ class TestScrubber(functional.FunctionalTest):
         scrubs them
         """
         self.cleanup()
+        kwargs = self.__dict__.copy()
+        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=True,
-                           metadata_encryption_key='')
+                           metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
         self.assertEqual(http_client.CREATED, response.status)
@@ -112,8 +114,10 @@ class TestScrubber(functional.FunctionalTest):
         daemon mode
         """
         self.cleanup()
+        kwargs = self.__dict__.copy()
+        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=False,
-                           metadata_encryption_key='')
+                           metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
         self.assertEqual(http_client.CREATED, response.status)
@@ -159,8 +163,10 @@ class TestScrubber(functional.FunctionalTest):
 
         # Start servers.
         self.cleanup()
+        kwargs = self.__dict__.copy()
+        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=False,
-                           default_store='file')
+                           default_store='file', **kwargs)
 
         # Check that we are using a file backend.
         self.assertEqual(self.api_server.default_store, 'file')
@@ -235,8 +241,10 @@ class TestScrubber(functional.FunctionalTest):
 
     def test_scrubber_restore_image(self):
         self.cleanup()
+        kwargs = self.__dict__.copy()
+        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=False,
-                           metadata_encryption_key='')
+                           metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
         self.assertEqual(http_client.CREATED, response.status)
