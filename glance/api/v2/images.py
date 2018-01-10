@@ -94,7 +94,8 @@ class ImagesController(object):
         executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
 
-        task_input = {'image_id': image_id}
+        task_input = {'image_id': image_id,
+                      'import_req': body}
 
         try:
             import_task = task_factory.new_task(task_type='api_image_import',
@@ -799,7 +800,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         except KeyError:
             msg = _("Import request requires a 'name' field.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
-        if method_name != 'glance-direct':
+        if method_name not in ['glance-direct', 'web-download']:
             msg = _("Unknown import method name '%s'.") % method_name
             raise webob.exc.HTTPBadRequest(explanation=msg)
 

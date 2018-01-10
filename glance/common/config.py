@@ -726,6 +726,18 @@ to Image Import Refactoring work.
 
 Related options:
     * [DEFAULT]/node_staging_uri""")),
+    cfg.ListOpt('enabled_import_methods',
+                item_type=cfg.types.String(quotes=True),
+                bounds=True,
+                default=['glance-direct', 'web-download'],
+                help=_("""
+List of enabled Image Import Methods
+
+Both 'glance-direct' and 'web-download' are enabled by default.
+
+Related options:
+    * [DEFAULT]/node_staging_uri
+    * [DEFAULT]/enable_image_import""")),
 ]
 
 CONF = cfg.CONF
