@@ -2441,6 +2441,23 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                     'tags': ['one', 'two']}
         self.assertEqual(expected, output)
 
+    def test_create_invalid_property_key(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = jsonutils.dump_as_bytes({
+            'id': UUID3,
+            'name': 'image-1',
+            'visibility': 'public',
+            'tags': ['one', 'two'],
+            'container_format': 'ami',
+            'disk_format': 'ami',
+            'min_ram': 128,
+            'min_disk': 10,
+            'f' * 256: 'bar',
+            'protected': True,
+        })
+        self.assertRaises(webob.exc.HTTPBadRequest, self.deserializer.create,
+                          request)
+
     def test_create_readonly_attributes_forbidden(self):
         bodies = [
             {'direct_url': 'http://example.com'},

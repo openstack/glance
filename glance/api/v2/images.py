@@ -453,6 +453,15 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                     image[key] = properties.pop(key)
             except KeyError:
                 pass
+
+        # NOTE(abhishekk): Check if custom property key name is less than 255
+        # characters. Reference LP #1737952
+        for key in properties:
+            if len(key) > 255:
+                msg = (_("Custom property should not be greater than 255 "
+                         "characters."))
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
         return dict(image=image, extra_properties=properties, tags=tags)
 
     def _get_change_operation_d10(self, raw_change):
