@@ -90,9 +90,9 @@ class DbCommands(object):
                     'alembic migration control.'))
 
     @args('--version', metavar='<version>', help='Database version')
-    def upgrade(self, version=db_migration.LATEST_REVISION):
+    def upgrade(self, version='heads'):
         """Upgrade the database's migration level"""
-        self.sync(version)
+        self._sync(version)
 
     @args('--version', metavar='<version>', help='Database version')
     def version_control(self, version=db_migration.ALEMBIC_INIT_VERSION):
@@ -107,12 +107,26 @@ class DbCommands(object):
                 "revision:"), version)
 
     @args('--version', metavar='<version>', help='Database version')
-    def sync(self, version=db_migration.LATEST_REVISION):
+    def sync(self, version=None):
+        curr_heads = alembic_migrations.get_current_alembic_heads()
+        contract = alembic_migrations.get_alembic_branch_head(
+            db_migration.CONTRACT_BRANCH)
+
+        if (contract in curr_heads):
+            sys.exit(_('Database is up to date. No migrations needed.'))
+
+        try:
+            self.expand()
+            self.migrate()
+            self.contract()
+            print(_('Database is synced successfully.'))
+        except exception.GlanceException as e:
+            sys.exit(_('Failed to sync database: ERROR: %s') % e)
+
+    def _sync(self, version):
         """
         Place an existing database under migration control and upgrade it.
         """
-        if version is None:
-            version = db_migration.LATEST_REVISION
 
         alembic_migrations.place_database_under_alembic_control()
 
@@ -128,20 +142,35 @@ class DbCommands(object):
             print(_('Upgraded database to: %(v)s, current revision(s): %(r)s')
                   % {'v': version, 'r': revs})
 
+    def _validate_engine(self, engine):
+        """Check engine is valid or not.
+
+        MySql is only supported for Glance EMC.
+        Adding sqlite as engine to support existing functional test cases.
+
+        :param engine: database engine name
+        """
+        if engine.engine.name not in ['mysql', 'sqlite']:
+            sys.exit(_('Rolling upgrades are currently supported only for '
+                       'MySQL and Sqlite'))
+
     def expand(self):
         """Run the expansion phase of a rolling upgrade procedure."""
-        engine = db_api.get_engine()
-        if engine.engine.name != 'mysql':
-            sys.exit(_('Rolling upgrades are currently supported only for '
-                       'MySQL'))
+        self._validate_engine(db_api.get_engine())
 
+        curr_heads = alembic_migrations.get_current_alembic_heads()
         expand_head = alembic_migrations.get_alembic_branch_head(
             db_migration.EXPAND_BRANCH)
+        contract_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.CONTRACT_BRANCH)
+
         if not expand_head:
             sys.exit(_('Database expansion failed. Couldn\'t find head '
                        'revision of expand branch.'))
+        elif (contract_head in curr_heads):
+            sys.exit(_('Database is up to date. No migrations needed.'))
 
-        self.sync(version=expand_head)
+        self._sync(version=expand_head)
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         if expand_head not in curr_heads:
@@ -152,18 +181,18 @@ class DbCommands(object):
 
     def contract(self):
         """Run the contraction phase of a rolling upgrade procedure."""
-        engine = db_api.get_engine()
-        if engine.engine.name != 'mysql':
-            sys.exit(_('Rolling upgrades are currently supported only for '
-                       'MySQL'))
+        self._validate_engine(db_api.get_engine())
 
+        curr_heads = alembic_migrations.get_current_alembic_heads()
         contract_head = alembic_migrations.get_alembic_branch_head(
             db_migration.CONTRACT_BRANCH)
+
         if not contract_head:
             sys.exit(_('Database contraction failed. Couldn\'t find head '
                        'revision of contract branch.'))
+        elif (contract_head in curr_heads):
+            sys.exit(_('Database is up to date. No migrations needed.'))
 
-        curr_heads = alembic_migrations.get_current_alembic_heads()
         expand_head = alembic_migrations.get_alembic_branch_head(
             db_migration.EXPAND_BRANCH)
         if expand_head not in curr_heads:
@@ -178,7 +207,7 @@ class DbCommands(object):
                        'complete. Run data migration using "glance-manage db '
                        'migrate".'))
 
-        self.sync(version=contract_head)
+        self._sync(version=contract_head)
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         if contract_head not in curr_heads:
@@ -189,12 +218,15 @@ class DbCommands(object):
                                             'curr_revs': curr_heads})
 
     def migrate(self):
-        engine = db_api.get_engine()
-        if engine.engine.name != 'mysql':
-            sys.exit(_('Rolling upgrades are currently supported only for '
-                       'MySQL'))
+        self._validate_engine(db_api.get_engine())
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
+        contract_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.CONTRACT_BRANCH)
+
+        if (contract_head in curr_heads):
+            sys.exit(_('Database is up to date. No migrations needed.'))
+
         expand_head = alembic_migrations.get_alembic_branch_head(
             db_migration.EXPAND_BRANCH)
         if expand_head not in curr_heads:
@@ -281,13 +313,13 @@ class DbLegacyCommands(object):
     def version(self):
         self.command_object.version()
 
-    def upgrade(self, version=db_migration.LATEST_REVISION):
+    def upgrade(self, version='heads'):
         self.command_object.upgrade(CONF.command.version)
 
     def version_control(self, version=db_migration.ALEMBIC_INIT_VERSION):
         self.command_object.version_control(CONF.command.version)
 
-    def sync(self, version=db_migration.LATEST_REVISION):
+    def sync(self, version=None):
         self.command_object.sync(CONF.command.version)
 
     def expand(self):

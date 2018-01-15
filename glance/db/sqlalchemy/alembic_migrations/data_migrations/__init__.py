@@ -51,20 +51,20 @@ def _run_migrations(engine, migrations):
     return rows_migrated
 
 
-def has_pending_migrations(engine=None):
+def has_pending_migrations(engine=None, release=db_migrations.CURRENT_RELEASE):
     if not engine:
         engine = db_api.get_engine()
 
-    migrations = _find_migration_modules(db_migrations.CURRENT_RELEASE)
+    migrations = _find_migration_modules(release)
     if not migrations:
         return False
     return any([x.has_migrations(engine) for x in migrations])
 
 
-def migrate(engine=None):
+def migrate(engine=None, release=db_migrations.CURRENT_RELEASE):
     if not engine:
         engine = db_api.get_engine()
 
-    migrations = _find_migration_modules(db_migrations.CURRENT_RELEASE)
+    migrations = _find_migration_modules(release)
     rows_migrated = _run_migrations(engine, migrations)
     return rows_migrated

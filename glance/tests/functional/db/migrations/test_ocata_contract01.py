@@ -15,6 +15,7 @@ import datetime
 from oslo_db.sqlalchemy import test_base
 from oslo_db.sqlalchemy import utils as db_utils
 
+from glance.db.sqlalchemy.alembic_migrations import data_migrations
 from glance.tests.functional.db import test_migrations
 
 
@@ -51,6 +52,8 @@ class TestOcataContract01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_ram=0,
                            id='private_id_before_expand')
         images.insert().values(shared_temp).execute()
+
+        data_migrations.migrate(engine=engine, release='ocata')
 
     def _check_ocata_contract01(self, engine, data):
         # check that after contract 'is_public' column is dropped

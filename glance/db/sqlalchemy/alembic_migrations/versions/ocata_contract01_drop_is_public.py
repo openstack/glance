@@ -19,14 +19,14 @@ Create Date: 2017-01-27 12:58:16.647499
 """
 
 from alembic import op
-from sqlalchemy import MetaData, Table
+from sqlalchemy import MetaData, Enum
 
 from glance.db import migration
 
 # revision identifiers, used by Alembic.
 revision = 'ocata_contract01'
 down_revision = 'mitaka02'
-branch_labels = migration.CONTRACT_BRANCH
+branch_labels = ('ocata01', migration.CONTRACT_BRANCH)
 depends_on = 'ocata_expand01'
 
 
@@ -40,8 +40,9 @@ DROP TRIGGER update_visibility;
 
 
 def _drop_column():
-    op.drop_index('ix_images_is_public', 'images')
-    op.drop_column('images', 'is_public')
+    with op.batch_alter_table('images') as batch_op:
+        batch_op.drop_index('ix_images_is_public')
+        batch_op.drop_column('is_public')
 
 
 def _drop_triggers(engine):
@@ -54,8 +55,14 @@ def _drop_triggers(engine):
 def _set_nullability_and_default_on_visibility(meta):
     # NOTE(hemanthm): setting the default on 'visibility' column
     # to 'shared'. Also, marking it as non-nullable.
-    images = Table('images', meta, autoload=True)
-    images.c.visibility.alter(nullable=False, server_default='shared')
+    # images = Table('images', meta, autoload=True)
+    existing_type = Enum('private', 'public', 'shared', 'community',
+                         metadata=meta, name='image_visibility')
+    with op.batch_alter_table('images') as batch_op:
+        batch_op.alter_column('visibility',
+                              nullable=False,
+                              server_default='shared',
+                              existing_type=existing_type)
 
 
 def upgrade():

@@ -1,3 +1,6 @@
+# Copyright (C) 2018 NTT DATA
+# All Rights Reserved.
+#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -10,32 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""drop glare artifacts tables
-
-Revision ID: pike01
-Revises: ocata01
-Create Date: 2017-02-08 20:32:51.200867
-
-"""
-
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'pike01'
-down_revision = 'ocata01'
+revision = 'queens_contract01'
+down_revision = 'pike_contract01'
 branch_labels = None
-depends_on = None
+depends_on = 'queens_expand01'
 
 
 def upgrade():
-    # create list of artifact tables in reverse order of their creation
-    table_names = []
-    table_names.append('artifact_blob_locations')
-    table_names.append('artifact_properties')
-    table_names.append('artifact_blobs')
-    table_names.append('artifact_dependencies')
-    table_names.append('artifact_tags')
-    table_names.append('artifacts')
-
-    for table_name in table_names:
-        op.drop_table(table_name=table_name)
+    pass

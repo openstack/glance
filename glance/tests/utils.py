@@ -43,7 +43,6 @@ from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
 from glance import context
-from glance.db import migration as db_migration
 from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models as db_models
@@ -682,10 +681,8 @@ class HttplibWsgiAdapter(object):
                                 response.body)
 
 
-def db_sync(version=None, engine=None):
+def db_sync(version='heads', engine=None):
     """Migrate the database to `version` or the most recent version."""
-    if version is None:
-        version = db_migration.LATEST_REVISION
     if engine is None:
         engine = db_api.get_engine()
 

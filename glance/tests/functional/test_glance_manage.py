@@ -18,11 +18,18 @@
 import os
 import sys
 
+from oslo_config import cfg
+from oslo_db import options as db_options
+
 from glance.common import utils
+from glance.db import migration as db_migration
+from glance.db.sqlalchemy import alembic_migrations
 from glance.tests import functional
 from glance.tests.utils import depends_on_exe
 from glance.tests.utils import execute
 from glance.tests.utils import skip_if_disabled
+
+CONF = cfg.CONF
 
 
 class TestGlanceManage(functional.FunctionalTest):
@@ -36,6 +43,8 @@ class TestGlanceManage(functional.FunctionalTest):
         self.db_filepath = os.path.join(self.test_dir, 'tests.sqlite')
         self.connection = ('sql_connection = sqlite:///%s' %
                            self.db_filepath)
+        db_options.set_defaults(CONF, connection='sqlite:///%s' %
+                                                 self.db_filepath)
 
     def _sync_db(self):
         with open(self.conf_filepath, 'w') as conf_file:
@@ -64,3 +73,16 @@ class TestGlanceManage(functional.FunctionalTest):
         for table in ['images', 'image_tags', 'image_locations',
                       'image_members', 'image_properties']:
             self._assert_table_exists(table)
+
+    @depends_on_exe('sqlite3')
+    @skip_if_disabled
+    def test_sync(self):
+        """Test DB sync which internally calls EMC"""
+        self._sync_db()
+        contract_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.CONTRACT_BRANCH)
+
+        cmd = ("sqlite3 {0} \"SELECT version_num FROM alembic_version\""
+               ).format(self.db_filepath)
+        exitcode, out, err = execute(cmd, raise_error=True)
+        self.assertEqual(contract_head, out.rstrip().decode("utf-8"))

@@ -197,7 +197,7 @@ class TestDataMigrationFramework(test_utils.BaseTestCase):
         mock_import.side_effect = fake_imported_modules
 
         engine = mock.Mock()
-        actual = data_migrations.migrate(engine)
+        actual = data_migrations.migrate(engine, 'zebra')
         self.assertEqual(150, actual)
         zebra1.has_migrations.assert_called_once_with(engine)
         zebra1.migrate.assert_called_once_with(engine)

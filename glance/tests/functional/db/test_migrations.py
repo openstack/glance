@@ -23,7 +23,6 @@ from oslo_db.sqlalchemy import test_migrations
 from oslo_db.tests.sqlalchemy import base as test_base
 import sqlalchemy.types as types
 
-from glance.db import migration as db_migration
 from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy.alembic_migrations import versions
 from glance.db.sqlalchemy import models
@@ -34,7 +33,7 @@ import glance.tests.utils as test_utils
 class AlembicMigrationsMixin(object):
 
     def _get_revisions(self, config, head=None):
-        head = head or db_migration.LATEST_REVISION
+        head = head or 'heads'
         scripts_dir = alembic_script.ScriptDirectory.from_config(config)
         revisions = list(scripts_dir.walk_revisions(base='base',
                                                     head=head))
