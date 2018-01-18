@@ -1235,6 +1235,10 @@ class Resource(object):
             response = webob.exc.HTTPInternalServerError()
             return response
 
+        # We cannot serialize an Exception, so return the action_result
+        if isinstance(action_result, Exception):
+            return action_result
+
         try:
             response = webob.Response(request=request)
             self.dispatch(self.serializer, action, response, action_result)
