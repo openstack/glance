@@ -58,7 +58,7 @@ key manager interface, which is currently the Barbican key manager.
 In glance-api.conf find the following lines::
 
   [key_manager]
-  api_class = castellan.key_manager.barbican_key_manager.BarbicanKeyManager
+  backend = barbican
 
 Then replace the value with the desired key manager class.
 
