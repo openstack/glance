@@ -59,7 +59,7 @@ task policies unrestricted while not exposing the Tasks API to end
 users.  Thus, the following is the recommended configuration for the
 task-related policies:
 
-.. code-block:: none
+.. code-block:: ini
 
    "get_task": "",
    "get_tasks": "",

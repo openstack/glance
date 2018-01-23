@@ -23,6 +23,7 @@ testtools>=2.2.0 # MIT
 psutil>=3.2.2 # BSD
 oslotest>=3.2.0 # Apache-2.0
 os-testr>=1.0.0 # Apache-2.0
+doc8>=0.6.0 # Apache-2.0
 
 # Optional packages that should be installed when testing
 PyMySQL>=0.7.6 # MIT License

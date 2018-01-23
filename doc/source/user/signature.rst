@@ -51,9 +51,10 @@ Then replace http://localhost:5000/v3 with the URL of keystone, also adding /v3
 to the end of it. For example, 'https://192.168.245.9:5000/v3'.
 
 
-Another option in etc/glance-api.conf which can be configured is which key manager
-to use. By default Glance will use the default key manager defined by the Castellan
-key manager interface, which is currently the Barbican key manager.
+Another option in etc/glance-api.conf which can be configured is which key
+manager to use. By default Glance will use the default key manager defined by
+the Castellan key manager interface, which is currently the Barbican
+key manager.
 
 In glance-api.conf find the following lines::
 
@@ -148,7 +149,9 @@ Follow these instructions to create your keys::
   Getting Private key
 
 Upload your certificate. This only has to be done once as you can use
-the same ``Secret href`` for many images until it expires::
+the same ``Secret href`` for many images until it expires.
+
+.. code-block:: console
 
   $ openstack secret store --name test --algorithm RSA --expiration 2016-06-29 --secret-type certificate --payload-content-type "application/octet-stream" --payload-content-encoding base64 --payload "$(base64 new_cert.crt)"
   +---------------+-----------------------------------------------------------------------+

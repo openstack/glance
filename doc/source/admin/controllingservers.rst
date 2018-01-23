@@ -69,7 +69,8 @@ If no configuration file is found, you will see an error, like::
   $> glance-api
   ERROR: Unable to locate any configuration file. Cannot load application glance-api
 
-Here is an example showing how you can manually start the ``glance-api`` server and ``glance-registry`` in a shell.::
+Here is an example showing how you can manually start the ``glance-api`` server
+and ``glance-registry`` in a shell.::
 
   $ sudo glance-api --config-file glance-api.conf --debug &
   jsuh@mc-ats1:~$ 2011-04-13 14:50:12    DEBUG [glance-api] ********************************************************************************
@@ -120,9 +121,9 @@ Here is an example showing how you can manually start the ``glance-api`` server 
   root     20012  2.0  0.1  25188 13356 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-registry glance-registry.conf
   jsuh     20017  0.0  0.0   3368   744 pts/1    S+   12:47   0:00 grep glance
 
-Simply supply the configuration file as the parameter to the ``--config-file`` option
-(the ``etc/glance-api.conf`` and  ``etc/glance-registry.conf`` sample configuration
-files were used in the above example) and then any other options
+Simply supply the configuration file as the parameter to the ``--config-file``
+option (the ``etc/glance-api.conf`` and  ``etc/glance-registry.conf`` sample
+configuration files were used in the above example) and then any other options
 you want to use. (``--debug`` was used above to show some of the debugging
 output that the server shows when starting up. Call the server program
 with ``--help`` to see all available options you can specify on the
@@ -133,9 +134,10 @@ configuration files, see the section entitled
 :ref:`Configuring Glance servers <configuring>`
 
 Note that the server `daemonizes` itself by using the standard
-shell backgrounding indicator, ``&``, in the previous example. For most use cases, we recommend
-using the ``glance-control`` server daemon wrapper for daemonizing. See below
-for more details on daemonization with ``glance-control``.
+shell backgrounding indicator, ``&``, in the previous example.
+For most use cases, we recommend using the ``glance-control`` server daemon
+wrapper for daemonizing. See below for more details on daemonization
+with ``glance-control``.
 
 Using the ``glance-control`` program to start the server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,8 +152,8 @@ meaning that the server program process runs in the background.
 
 To start a Glance server with ``glance-control``, simply call
 ``glance-control`` with a server and the word "start", followed by
-any command-line options you wish to provide. Start the server with ``glance-control``
-in the following way::
+any command-line options you wish to provide. Start the server
+with ``glance-control`` in the following way::
 
   $> sudo glance-control [OPTIONS] <SERVER> start [CONFPATH]
 
@@ -188,13 +190,15 @@ and respawned if necessary, use the following option::
   $ sudo glance-control [service] start --respawn ...
 
 
-Note that this will cause ``glance-control`` itself to remain running. Also note
-that deliberately stopped services are not respawned, neither are rapidly bouncing
-services (where process death occurred within one second of the last launch).
+Note that this will cause ``glance-control`` itself to remain running.
+Also note that deliberately stopped services are not respawned,
+neither are rapidly bouncing services (where process death occurred within
+one second of the last launch).
 
 
-By default, output from glance services is discarded when launched with ``glance-control``.
-In order to capture such output via syslog, use the following option::
+By default, output from glance services is discarded when launched
+with ``glance-control``. In order to capture such output via syslog,
+use the following option::
 
 
   $ sudo glance-control --capture-output ...
@@ -236,6 +240,6 @@ here::
   $> sudo glance-control api reload
   Reloading glance-api (pid 18506) with signal(1)
 
-A reload sends a SIGHUP signal to the master process and causes new configuration
-settings to be picked up without any interruption to the running service (provided
-neither bind_host or bind_port has changed).
+A reload sends a SIGHUP signal to the master process and causes new
+configuration settings to be picked up without any interruption to the
+running service (provided neither bind_host or bind_port has changed).

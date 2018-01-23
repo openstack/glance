@@ -44,15 +44,15 @@ expression matching a set of properties to be protected.
 
 .. note::
 
-  Section headers must compile to a valid regular expression, otherwise 
+  Section headers must compile to a valid regular expression, otherwise
   glance api service will not start. Regular expressions
   will be handled by python's re module which is PERL like.
 
 Each section describes four key-value pairs, where the key is one of
 ``create/read/update/delete``, and the value is a comma separated list of user
-roles that are permitted to perform that operation in the Glance API. **If any of
-the keys are not specified, then the glance api service will not start
-successfully.**
+roles that are permitted to perform that operation in the Glance API.
+**If any of the keys are not specified, then the glance api service will
+not start successfully.**
 
 In the list of user roles, ``@`` means all roles and ``!`` means no role.
 **If both @ and ! are specified for the same rule then the glance api service
@@ -93,7 +93,8 @@ disabled for all roles.
 If an operation is misspelled or omitted, that operation will be disabled for
 all roles.
 
-Disallowing ``read`` operations will also disallow ``update/delete`` operations.
+Disallowing ``read`` operations will also disallow ``update/delete``
+operations.
 
 A successful HTTP request will return status ``200 OK``. If the user is not
 permitted to perform the requested action, ``403 Forbidden`` will be returned.
