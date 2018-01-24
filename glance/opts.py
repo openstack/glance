@@ -30,6 +30,7 @@ import glance.api.middleware.context
 import glance.api.versions
 import glance.async.flows.api_image_import
 import glance.async.flows.convert
+import glance.async.flows.plugins.inject_image_metadata
 import glance.async.taskflow_executor
 import glance.common.config
 import glance.common.location_strategy
@@ -107,7 +108,9 @@ _manage_opts = [
     (None, [])
 ]
 _image_import_opts = [
-    ('image_import_opts', glance.async.flows.api_image_import.api_import_opts)
+    ('image_import_opts', glance.async.flows.api_image_import.api_import_opts),
+    ('inject_metadata_properties',
+     glance.async.flows.plugins.inject_image_metadata.inject_metadata_opts)
 ]
 
 

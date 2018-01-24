@@ -1,0 +1,62 @@
+[DEFAULT]
+
+
+[image_import_opts]
+
+#
+# From glance
+#
+
+#
+# Image import plugins to be enabled for task processing.
+#
+# Provide list of strings reflecting to the task Objects
+# that should be included to the Image Import flow. The
+# task objects needs to be defined in the 'glance/async/
+# flows/plugins/*' and may be implemented by OpenStack
+# Glance project team, deployer or 3rd party.
+#
+# By default no plugins are enabled and to take advantage
+# of the plugin model the list of plugins must be set
+# explicitly in the glance-image-import.conf file.
+#
+# The allowed values for this option is comma separated
+# list of object names in between ``[`` and ``]``.
+#
+# Possible values:
+#     * no_op (only logs debug level message that the
+#       plugin has been executed)
+#     * Any provided Task object name to be included
+#       in to the flow.
+#  (list value)
+#image_import_plugins = [no_op]
+
+
+[inject_metadata_properties]
+
+#
+# From glance
+#
+
+#
+# Specify name of user roles to be ignored for injecting metadata
+# properties in the image.
+#
+# Specify name of the user roles
+#
+# Possible values:
+#     * List containing user roles. For example: [admin,member]
+#
+#  (list value)
+#ignore_user_roles = admin
+
+#
+# Dictionary contains metadata properties to be injected in image.
+#
+# Possible values:
+#     * Dictionary containing key/value pairs. Key characters
+#     length should be <= 255. For example: k1:v1,k2:v2
+#
+#
+#  (dict value)
+#inject =

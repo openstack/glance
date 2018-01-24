@@ -216,6 +216,11 @@ class PropertyRules(object):
 
     def check_property_rules(self, property_name, action, context):
         roles = context.roles
+
+        # Include service roles to check if an action can be
+        # performed on the property or not
+        if context.service_roles:
+            roles.extend(context.service_roles)
         if not self.rules:
             return True
 
