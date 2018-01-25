@@ -21,6 +21,10 @@ and Registry server, grabbing the logs of each, cleaning up pidfiles,
 and spinning down the servers.
 """
 
+# NOTE(rosmaita): mriedem says this is needed for importing from fixtures,
+# and he's right!
+from __future__ import absolute_import
+
 import atexit
 import datetime
 import errno
