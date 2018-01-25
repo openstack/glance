@@ -28,6 +28,12 @@ import eventlet
 from oslo_utils import encodeutils
 
 # Monkey patch socket and time
+# NOTE(jokke): As per the eventlet commit
+# b756447bab51046dfc6f1e0e299cc997ab343701 there's circular import happening
+# which can be solved making sure the hubs are properly and fully imported
+# before calling monkey_patch(). This is solved in eventlet 0.22.0 but we
+# need to address it before that is widely used around.
+eventlet.hubs.get_hub()
 eventlet.patcher.monkey_patch(all=False, socket=True, time=True, thread=True)
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
