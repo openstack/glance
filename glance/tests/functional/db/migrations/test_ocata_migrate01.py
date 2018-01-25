@@ -11,6 +11,7 @@
 #    under the License.
 
 import datetime
+import unittest
 
 from oslo_db.sqlalchemy import test_base
 from oslo_db.sqlalchemy import utils as db_utils
@@ -142,6 +143,7 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
         self.assertEqual('shared', rows[3]['visibility'])
 
 
+@unittest.skip("Bug #1745003")
 class TestOcataMigrate01MySQL(TestOcataMigrate01Mixin,
                               test_base.MySQLOpportunisticTestCase):
     pass
