@@ -20,9 +20,9 @@ import tempfile
 
 import mock
 try:
-    from xml.etree.cElementTree import ParseError
+    from defusedxml.cElementTree import ParseError
 except ImportError:
-    from xml.etree.ElementTree import ParseError
+    from defusedxml.ElementTree import ParseError
 
 from glance.async.flows import ovf_process
 import glance.tests.utils as test_utils

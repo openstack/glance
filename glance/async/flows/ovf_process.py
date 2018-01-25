@@ -19,9 +19,9 @@ import shutil
 import tarfile
 
 try:
-    import xml.etree.cElementTree as ET
+    from defusedxml import cElementTree as ET
 except ImportError:
-    import xml.etree.ElementTree as ET
+    from defusedxml import ElementTree as ET
 
 from oslo_config import cfg
 from oslo_log import log as logging
