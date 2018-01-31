@@ -1,0 +1,9 @@
+- project:
+    check:
+      jobs:
+        - openstack-tox-functional
+        - openstack-tox-functional-py35
+    gate:
+      jobs:
+        - openstack-tox-functional
+        - openstack-tox-functional-py35
