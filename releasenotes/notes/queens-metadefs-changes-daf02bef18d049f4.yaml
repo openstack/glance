@@ -1,0 +1,18 @@
+---
+upgrade:
+  - |
+    The following metadata definitions have been modified in the Queens
+    release:
+
+    * The property img_linked_clone_ has been added to the namespace
+      ``OS::Compute::VMware``.
+
+    * An enumeration of values was added for the `vmware:hw_version`_
+      property in the ``OS::Compute::VMwareFlavor`` namespace.
+
+    You may upgrade these definitions using:
+
+    ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``
+
+    .. _img_linked_clone: https://git.openstack.org/cgit/openstack/glance/commit/?id=5704ba6305b8aec380f90c3a35cbc4031f54f112
+    .. _`vmware:hw_version`: https://git.openstack.org/cgit/openstack/glance/commit/?id=c1a845d5532ae43248dd4b9714ffa0a403737cf7
