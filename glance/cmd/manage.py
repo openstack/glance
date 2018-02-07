@@ -113,7 +113,8 @@ class DbCommands(object):
             db_migration.CONTRACT_BRANCH)
 
         if (contract in curr_heads):
-            sys.exit(_('Database is up to date. No migrations needed.'))
+            print(_('Database is up to date. No migrations needed.'))
+            sys.exit()
 
         try:
             self.expand()
@@ -168,7 +169,8 @@ class DbCommands(object):
             sys.exit(_('Database expansion failed. Couldn\'t find head '
                        'revision of expand branch.'))
         elif (contract_head in curr_heads):
-            sys.exit(_('Database is up to date. No migrations needed.'))
+            print(_('Database is up to date. No migrations needed.'))
+            sys.exit()
 
         self._sync(version=expand_head)
 
@@ -191,7 +193,8 @@ class DbCommands(object):
             sys.exit(_('Database contraction failed. Couldn\'t find head '
                        'revision of contract branch.'))
         elif (contract_head in curr_heads):
-            sys.exit(_('Database is up to date. No migrations needed.'))
+            print(_('Database is up to date. No migrations needed.'))
+            sys.exit()
 
         expand_head = alembic_migrations.get_alembic_branch_head(
             db_migration.EXPAND_BRANCH)
@@ -225,7 +228,8 @@ class DbCommands(object):
             db_migration.CONTRACT_BRANCH)
 
         if (contract_head in curr_heads):
-            sys.exit(_('Database is up to date. No migrations needed.'))
+            print(_('Database is up to date. No migrations needed.'))
+            sys.exit()
 
         expand_head = alembic_migrations.get_alembic_branch_head(
             db_migration.EXPAND_BRANCH)
