@@ -23,6 +23,7 @@ from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
 
+import glance.async.flows._internal_plugins as internal_plugins
 import glance.async.flows.plugins as import_plugins
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
@@ -359,16 +360,23 @@ def get_flow(**kwargs):
     task_repo = kwargs.get('task_repo')
     image_repo = kwargs.get('image_repo')
     image_id = kwargs.get('image_id')
-    uri = kwargs.get('uri')
+    import_method = kwargs.get('import_req')['method']['name']
+    uri = kwargs.get('import_req')['method'].get('uri')
 
-    if not uri:
+    if not uri and import_method == 'glance-direct':
         separator = ''
         if not CONF.node_staging_uri.endswith('/'):
             separator = '/'
         uri = separator.join((CONF.node_staging_uri, str(image_id)))
 
     flow = lf.Flow(task_type, retry=retry.AlwaysRevert())
-    flow.add(_VerifyStaging(task_id, task_type, task_repo, uri))
+
+    if uri.startswith("http") and import_method == 'web-download':
+        downloadToStaging = internal_plugins.get_import_plugin(**kwargs)
+        flow.add(downloadToStaging)
+    else:
+        file_uri = uri
+    flow.add(_VerifyStaging(task_id, task_type, task_repo, file_uri))
 
     for plugin in import_plugins.get_import_plugins(**kwargs):
         flow.add(plugin)
@@ -376,7 +384,7 @@ def get_flow(**kwargs):
     import_to_store = _ImportToStore(task_id,
                                      task_type,
                                      image_repo,
-                                     uri,
+                                     file_uri,
                                      image_id)
     flow.add(import_to_store)
 

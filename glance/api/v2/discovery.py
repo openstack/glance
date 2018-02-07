@@ -32,13 +32,10 @@ class InfoController(object):
             raise webob.exc.HTTPNotFound(explanation=msg)
 
         # TODO(jokke): All the rest of the boundaries should be implemented.
-        # TODO(jokke): Once we have the rest of the methods implemented
-        # the value should be inherited from the CONF rather than hard-
-        # coded.
         import_methods = {
             'description': 'Import methods available.',
             'type': 'array',
-            'value': ['glance-direct']
+            'value': CONF.get('enabled_import_methods')
         }
 
         return {
