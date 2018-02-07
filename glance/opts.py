@@ -30,7 +30,7 @@ import glance.api.middleware.context
 import glance.api.versions
 import glance.async.flows.api_image_import
 import glance.async.flows.convert
-import glance.async.flows.plugins.inject_image_metadata
+from glance.async.flows.plugins import plugin_opts
 import glance.async.taskflow_executor
 import glance.common.config
 import glance.common.location_strategy
@@ -109,8 +109,6 @@ _manage_opts = [
 ]
 _image_import_opts = [
     ('image_import_opts', glance.async.flows.api_image_import.api_import_opts),
-    ('inject_metadata_properties',
-     glance.async.flows.plugins.inject_image_metadata.inject_metadata_opts)
 ]
 
 
@@ -162,4 +160,6 @@ def list_manage_opts():
 
 def list_image_import_opts():
     """Return a list of oslo_config options available for Image Import"""
-    return [(g, copy.deepcopy(o)) for g, o in _image_import_opts]
+
+    opts = _image_import_opts.extend(plugin_opts.get_plugin_opts())
+    return [(g, copy.deepcopy(o)) for g, o in opts]
