@@ -704,7 +704,7 @@ Related options:
 
 """)),
     cfg.BoolOpt('enable_image_import',
-                default=False,
+                default=True,
                 deprecated_for_removal=True,
                 deprecated_reason=_("""
 This option is deprecated for removal in Rocky.
@@ -721,7 +721,7 @@ Import, it's disabled per default in Pike, enabled per
 default in Queens and removed in Rocky. This allows Glance to
 operate with previous version configs upon upgrade.
 
-Setting this option to True will enable the endpoints related
+Setting this option to False will disable the endpoints related
 to Image Import Refactoring work.
 
 Related options:

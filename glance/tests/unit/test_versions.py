@@ -23,9 +23,6 @@ from glance.common.wsgi import Request as WsgiRequest
 from glance.tests.unit import base
 
 
-# NOTE(rosmaita): rip out all the EXPERIMENTAL stuff when 2.6 becomes
-# CURRENT in Queens (or figure out a better way to write these tests!)
-
 class VersionsTest(base.IsolatedUnitTest):
 
     """Test the version information returned from the API service."""
@@ -33,8 +30,14 @@ class VersionsTest(base.IsolatedUnitTest):
     def _get_versions_list(self, url):
         versions = [
             {
-                'id': 'v2.5',
+                'id': 'v2.6',
                 'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': '%s/v2/' % url}],
+            },
+            {
+                'id': 'v2.5',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
@@ -83,16 +86,6 @@ class VersionsTest(base.IsolatedUnitTest):
         ]
         return versions
 
-    def _get_versions_list_experimental(self, url):
-        vplus = [
-            {
-                'id': 'v2.6',
-                'status': 'EXPERIMENTAL',
-                'links': [{'rel': 'self',
-                           'href': '%s/v2/' % url}],
-            }] + self._get_versions_list(url)
-        return vplus
-
     def test_get_version_list(self):
         req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
         req.accept = 'application/json'
@@ -102,19 +95,6 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = self._get_versions_list('http://127.0.0.1:9292')
-        self.assertEqual(expected, results)
-
-    def test_get_version_list_EXPERIMENTAL(self):
-        req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
-        req.accept = 'application/json'
-        self.config(bind_host='127.0.0.1', bind_port=9292,
-                    enable_image_import=True)
-        res = versions.Controller().index(req)
-        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
-        self.assertEqual('application/json', res.content_type)
-        results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list_experimental(
-            'http://127.0.0.1:9292')
         self.assertEqual(expected, results)
 
     def test_get_version_list_public_endpoint(self):
@@ -129,20 +109,6 @@ class VersionsTest(base.IsolatedUnitTest):
         expected = self._get_versions_list('https://example.com:9292')
         self.assertEqual(expected, results)
 
-    def test_get_version_list_public_endpoint_EXPERIMENTAL(self):
-        req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
-        req.accept = 'application/json'
-        self.config(bind_host='127.0.0.1', bind_port=9292,
-                    public_endpoint='https://example.com:9292',
-                    enable_image_import=True)
-        res = versions.Controller().index(req)
-        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
-        self.assertEqual('application/json', res.content_type)
-        results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list_experimental(
-            'https://example.com:9292')
-        self.assertEqual(expected, results)
-
     def test_get_version_list_secure_proxy_ssl_header(self):
         self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO')
         url = 'http://localhost:9292'
@@ -153,19 +119,6 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = self._get_versions_list(url)
-        self.assertEqual(expected, results)
-
-    def test_get_version_list_secure_proxy_ssl_header_EXPERIMENTAL(self):
-        self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO',
-                    enable_image_import=True)
-        url = 'http://localhost:9292'
-        environ = webob.request.environ_from_url(url)
-        req = WsgiRequest(environ)
-        res = versions.Controller().index(req)
-        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
-        self.assertEqual('application/json', res.content_type)
-        results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list_experimental(url)
         self.assertEqual(expected, results)
 
     def test_get_version_list_secure_proxy_ssl_header_https(self):
@@ -180,21 +133,6 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
         expected = self._get_versions_list(ssl_url)
-        self.assertEqual(expected, results)
-
-    def test_get_version_list_secure_proxy_ssl_header_https_EXPERIMENTAL(self):
-        self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO',
-                    enable_image_import=True)
-        url = 'http://localhost:9292'
-        ssl_url = 'https://localhost:9292'
-        environ = webob.request.environ_from_url(url)
-        environ['HTTP_X_FORWARDED_PROTO'] = "https"
-        req = WsgiRequest(environ)
-        res = versions.Controller().index(req)
-        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
-        self.assertEqual('application/json', res.content_type)
-        results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list_experimental(ssl_url)
         self.assertEqual(expected, results)
 
 
@@ -260,14 +198,8 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v2_6_unsupported(self):
+    def test_request_url_v2_6(self):
         request = webob.Request.blank('/v2.6/images')
-        resp = self.middleware.process_request(request)
-        self.assertIsInstance(resp, versions.Controller)
-
-    def test_request_url_v2_6_EXPERIMENTAL(self):
-        request = webob.Request.blank('/v2.6/images')
-        self.config(enable_image_import=True)
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
@@ -278,17 +210,6 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
 
     def test_request_url_v2_7_unsupported_EXPERIMENTAL(self):
         request = webob.Request.blank('/v2.7/images')
-        self.config(enable_image_import=True)
-        resp = self.middleware.process_request(request)
-        self.assertIsInstance(resp, versions.Controller)
-
-    def test_request_url_v3_unsupported(self):
-        request = webob.Request.blank('/v3/images')
-        resp = self.middleware.process_request(request)
-        self.assertIsInstance(resp, versions.Controller)
-
-    def test_request_url_v3_unsupported_EXPERIMENTAL(self):
-        request = webob.Request.blank('/v3/images')
         self.config(enable_image_import=True)
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
@@ -304,16 +225,12 @@ class VersionsAndNegotiationTest(VersionNegotiationTest, VersionsTest):
     def _get_list_of_version_ids(self, status):
         request = webob.Request.blank('/')
         request.accept = 'application/json'
-        # TODO(rosmaita): remove in Queens when option is removed
-        self.config(enable_image_import=True)
         response = versions.Controller().index(request)
         v_list = jsonutils.loads(response.body)['versions']
         return [v['id'] for v in v_list if v['status'] == status]
 
     def _assert_version_is_negotiated(self, version_id):
         request = webob.Request.blank("/%s/images" % version_id)
-        # TODO(rosmaita): remove in Queens when option is removed
-        self.config(enable_image_import=True)
         self.middleware.process_request(request)
         major = version_id.split('.', 1)[0]
         expected = "/%s/images" % major
