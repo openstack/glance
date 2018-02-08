@@ -1,0 +1,59 @@
+---
+prelude: >
+  - The CURRENT version of the Images API v2 is bumped to **2.6**.
+    The 2.6 API was available in the previous (Pike) release as an
+    experimental API to introduce the calls necessary for the `interoperable
+    image import functionality`_.
+  - A new interoperable image import method, ``web-download`` is
+    introduced.
+features:
+  - |
+    A new interoperable image import method, ``web-download`` is
+    introduced.  This method allows an end user to import an image from
+    a remote URL.  The image data is retrieved from the URL and stored
+    in the Glance backend.  (In other words, this is a **copy-from**
+    operation.)
+
+    This feature is enabled by default, but it is optional.  Whether
+    it is offered at your installation depends on the value of the
+    ``enabled_import_methods`` configuration option in the ``glance-api.conf``
+    file (assuming, of course, that you have not disabled image import at
+    your site).
+upgrade:
+  - |
+    The **CURRENT** version of the Images API supplied by Glance
+    is introduced as **2.6**.  It includes the new API calls introduced
+    on an experimental basis in the Pike release.
+
+    While the 2.6 API is CURRENT, whether the interoperable image import
+    functionality it makes available is exposed to end users is controlled by a
+    configuration option, ``enable_image_import``.  Although this option
+    existed in the previous release, its effect is slightly different in
+    Queens.
+
+    * ``enable_image_import`` is **True** by default (in Pike it was False)
+
+    * When ``enable_image_import`` is **True**, a new import-method,
+      ``web-download`` is available.  (In Pike, only ``glance-direct`` was
+      offered.)  Which import-methods you offer can be configured using
+      the ``enabled_import_methods`` option in the ``glance-api.conf``
+      file.
+
+    * If ``enable_image_import`` is set **False**, requests to the v2 endpoint
+      for URIs defined only in v2.6 will return 404 (Not Found) with a message
+      in the response body stating "Image import is not supported at this
+      site."  Additionally, the image-create response will not contain the
+      "OpenStack-image-import-methods" header.
+
+    The ``enable_image_import`` configuration option was introduced as
+    DEPRECATED in Pike and will be removed in Rocky.
+
+    The discovery calls defined in the `refactored image import spec`_
+    remain in an abbreviated form in this release.
+
+    Finally, there are no changes to the version 2.5 API in this release.  All
+    version 2.5 calls will work whether the new import functionality is enabled
+    or not.
+
+    .. _`interoperable image import functionality`: https://developer.openstack.org/api-ref/image/v2/#interoperable-image-import
+    .. _`refactored image import spec`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
