@@ -17,6 +17,7 @@ from __future__ import absolute_import
 
 import fixtures
 import mock
+from six.moves import StringIO
 
 from glance.cmd import manage
 from glance.db.sqlalchemy import api as db_api
@@ -158,10 +159,79 @@ class TestLegacyManage(TestManageBase):
 
 class TestManage(TestManageBase):
 
+    def setUp(self):
+        super(TestManage, self).setUp()
+        self.db = manage.DbCommands()
+        self.output = StringIO()
+        self.useFixture(fixtures.MonkeyPatch('sys.stdout', self.output))
+
+    @mock.patch('glance.db.sqlalchemy.api.get_engine')
+    @mock.patch(
+        'glance.db.sqlalchemy.alembic_migrations.data_migrations.'
+        'has_pending_migrations')
+    @mock.patch(
+        'glance.db.sqlalchemy.alembic_migrations.get_current_alembic_heads')
+    @mock.patch(
+        'glance.db.sqlalchemy.alembic_migrations.get_alembic_branch_head')
+    def test_db_check_result(self, mock_get_alembic_branch_head,
+                             mock_get_current_alembic_heads,
+                             mock_has_pending_migrations,
+                             get_mock_engine):
+
+        get_mock_engine.return_value = mock.Mock()
+        engine = get_mock_engine.return_value
+        engine.engine.name = 'postgresql'
+        exit = self.assertRaises(SystemExit, self.db.check)
+        self.assertIn('Rolling upgrades are currently supported only for '
+                      'MySQL and Sqlite', exit.code)
+
+        engine = get_mock_engine.return_value
+        engine.engine.name = 'mysql'
+
+        mock_get_current_alembic_heads.return_value = ['ocata_contract01']
+        mock_get_alembic_branch_head.return_value = 'pike_expand01'
+        exit = self.assertRaises(SystemExit, self.db.check)
+        self.assertEqual(3, exit.code)
+        self.assertIn('Your database is not up to date. '
+                      'Your first step is to run `glance-manage db expand`.',
+                      self.output.getvalue())
+
+        mock_get_current_alembic_heads.return_value = ['pike_expand01']
+        mock_get_alembic_branch_head.side_effect = ['pike_expand01', None]
+        mock_has_pending_migrations.return_value = [mock.Mock()]
+        exit = self.assertRaises(SystemExit, self.db.check)
+        self.assertEqual(4, exit.code)
+        self.assertIn('Your database is not up to date. '
+                      'Your next step is to run `glance-manage db migrate`.',
+                      self.output.getvalue())
+
+        mock_get_current_alembic_heads.return_value = ['pike_expand01']
+        mock_get_alembic_branch_head.side_effect = ['pike_expand01',
+                                                    'pike_contract01']
+        mock_has_pending_migrations.return_value = None
+        exit = self.assertRaises(SystemExit, self.db.check)
+        self.assertEqual(5, exit.code)
+        self.assertIn('Your database is not up to date. '
+                      'Your next step is to run `glance-manage db contract`.',
+                      self.output.getvalue())
+
+        mock_get_current_alembic_heads.return_value = ['pike_contract01']
+        mock_get_alembic_branch_head.side_effect = ['pike_expand01',
+                                                    'pike_contract01']
+        mock_has_pending_migrations.return_value = None
+        self.assertRaises(SystemExit, self.db.check)
+        self.assertIn('Database is up to date. No upgrades needed.',
+                      self.output.getvalue())
+
     @mock.patch.object(manage.DbCommands, 'version')
     def test_db_version(self, version):
         self._main_test_helper(['glance.cmd.manage', 'db', 'version'],
                                manage.DbCommands.version)
+
+    @mock.patch.object(manage.DbCommands, 'check')
+    def test_db_check(self, check):
+        self._main_test_helper(['glance.cmd.manage', 'db', 'check'],
+                               manage.DbCommands.check)
 
     @mock.patch.object(manage.DbCommands, 'sync')
     def test_db_sync(self, sync):

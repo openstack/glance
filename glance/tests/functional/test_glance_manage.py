@@ -24,6 +24,8 @@ from oslo_db import options as db_options
 from glance.common import utils
 from glance.db import migration as db_migration
 from glance.db.sqlalchemy import alembic_migrations
+from glance.db.sqlalchemy.alembic_migrations import data_migrations
+from glance.db.sqlalchemy import api as db_api
 from glance.tests import functional
 from glance.tests.utils import depends_on_exe
 from glance.tests.utils import execute
@@ -46,15 +48,27 @@ class TestGlanceManage(functional.FunctionalTest):
         db_options.set_defaults(CONF, connection='sqlite:///%s' %
                                                  self.db_filepath)
 
-    def _sync_db(self):
+    def _db_command(self, db_method):
         with open(self.conf_filepath, 'w') as conf_file:
             conf_file.write('[DEFAULT]\n')
             conf_file.write(self.connection)
             conf_file.flush()
 
-        cmd = ('%s -m glance.cmd.manage --config-file %s db sync' %
-               (sys.executable, self.conf_filepath))
+        cmd = ('%s -m glance.cmd.manage --config-file %s db %s' %
+               (sys.executable, self.conf_filepath, db_method))
         execute(cmd, raise_error=True)
+
+    def _check_db(self, expected_exitcode):
+        with open(self.conf_filepath, 'w') as conf_file:
+            conf_file.write('[DEFAULT]\n')
+            conf_file.write(self.connection)
+            conf_file.flush()
+
+        cmd = ('%s -m glance.cmd.manage --config-file %s db check' %
+               (sys.executable, self.conf_filepath))
+        exitcode, out, err = execute(cmd, raise_error=True,
+                                     expected_exitcode=expected_exitcode)
+        return exitcode, out
 
     def _assert_table_exists(self, db_table):
         cmd = ("sqlite3 {0} \"SELECT name FROM sqlite_master WHERE "
@@ -68,7 +82,7 @@ class TestGlanceManage(functional.FunctionalTest):
     @skip_if_disabled
     def test_db_creation(self):
         """Test schema creation by db_sync on a fresh DB"""
-        self._sync_db()
+        self._db_command(db_method='sync')
 
         for table in ['images', 'image_tags', 'image_locations',
                       'image_members', 'image_properties']:
@@ -78,7 +92,7 @@ class TestGlanceManage(functional.FunctionalTest):
     @skip_if_disabled
     def test_sync(self):
         """Test DB sync which internally calls EMC"""
-        self._sync_db()
+        self._db_command(db_method='sync')
         contract_head = alembic_migrations.get_alembic_branch_head(
             db_migration.CONTRACT_BRANCH)
 
@@ -86,3 +100,22 @@ class TestGlanceManage(functional.FunctionalTest):
                ).format(self.db_filepath)
         exitcode, out, err = execute(cmd, raise_error=True)
         self.assertEqual(contract_head, out.rstrip().decode("utf-8"))
+
+    @depends_on_exe('sqlite3')
+    @skip_if_disabled
+    def test_check(self):
+        exitcode, out = self._check_db(3)
+        self.assertEqual(3, exitcode)
+
+        self._db_command(db_method='expand')
+        if data_migrations.has_pending_migrations(db_api.get_engine()):
+            exitcode, out = self._check_db(4)
+            self.assertEqual(4, exitcode)
+
+        self._db_command(db_method='migrate')
+        exitcode, out = self._check_db(5)
+        self.assertEqual(5, exitcode)
+
+        self._db_command(db_method='contract')
+        exitcode, out = self._check_db(0)
+        self.assertEqual(0, exitcode)
