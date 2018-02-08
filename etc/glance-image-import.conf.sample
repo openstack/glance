@@ -42,8 +42,6 @@
 # Specify name of user roles to be ignored for injecting metadata
 # properties in the image.
 #
-# Specify name of the user roles
-#
 # Possible values:
 #     * List containing user roles. For example: [admin,member]
 #
