@@ -20,7 +20,9 @@
                 "uml",
                 "xen",
                 "ide",
-                "usb"
+                "usb",
+                "fdc",
+                "sata"
             ]
         },
         "hw_rng_model": {
