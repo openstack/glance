@@ -24,6 +24,11 @@ Image Service Versions
 Version History
 ***************
 
+**Queens changes**
+
+- version 2.6 is CURRENT
+- version 2.5 is SUPPORTED
+
 **Pike changes**
 
 - version 2.6 is EXPERIMENTAL
