@@ -52,8 +52,7 @@ Content-Type-patch:
 import-header:
   description: |
     A comma separated list of import method identifiers.  Included
-    only if image import is enabled in your cloud.  *Introduced
-    in the EXPERIMENTAL Image API v2.6*
+    only if image import is enabled in your cloud.  *Since Image API v2.6*
   in: header
   required: false
   type: string
@@ -436,8 +435,7 @@ method-in-request:
     A JSON object indicating what import method you wish to use to import
     your image.  The content of this JSON object is another JSON object
     with a ``name`` field whose value is the identifier for the import
-    method.  *(Note: In the EXPERIMENTAL Image API v2.6, the only supported
-    import method is glance-direct.*
+    method.
   in: body
   required: true
   type: object

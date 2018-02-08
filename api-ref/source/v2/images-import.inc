@@ -5,27 +5,10 @@
 Interoperable image import
 **************************
 
-An interoperable image import process is introduced in the Pike release
-as part of the EXPERIMENTAL Image API v2.6.
+An interoperable image import process is introduced in the Image API v2.6.
 
-*This EXPERIMENTAL API is optional and may not be enabled in your
-cloud.  Consult your cloud operator's documentation for details.*
-
-In version 2.5 of the API, these calls return a 404 (Not Found).
-Use the :ref:`API versions call <versions-call>` to determine
-what API verisons are available in your cloud.
-
-.. note::
-   This EXPERIMENTAL API is subject to change.  It is a partial implementation
-   of what's described in the Glance design document `Image Import Refactor`_.
-   We expect any changes to be expansive and to be in accord with what's
-   described in that document, but we are releasing version 2.6 in
-   EXPERIMENTAL status in the Pike release so that we can reserve the right to
-   make backward-incompatible changes in light of feedback from users and
-   operators.  Our intent is that these calls will be finalized before the
-   Queens release and the EXPERIMENTAL status will be lifted at that time.
-
-   .. _`Image Import Refactor`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
+Use the :ref:`API versions call <versions-call>` to determine what API verisons
+are available in your cloud.
 
 General information
 ~~~~~~~~~~~~~~~~~~~
@@ -35,9 +18,14 @@ the import methods available in the cloud in which you want to import
 an image.  Each of these methods is well defined (which is what makes
 this process interoperable among different OpenStack clouds).
 
+Two import methods are defined, ``glance-direct`` and ``web-download``.
+
 .. note::
-   In the EXPERIMENTAL Image API v2.6, the only import method available
-   is ``glance-direct``.
+
+   Use the :ref:`Import Method Discovery <import-discovery-call>` call
+   to determine what import methods are available in the cloud to which
+   you wish to import an image.
+
 
 The ``glance-direct`` workflow has three parts:
 
@@ -59,10 +47,7 @@ The ``glance-direct`` workflow has three parts:
 3.  Issue the :ref:`Image Import <image-import-call>` call to complete
     the import process.
 
-Additionally, there is an :ref:`Import Method Discovery
-<import-discovery-call>` call that allows you to determine what import
-methods are available in the cloud to which you wish to import an image.
-
+.. TODO(rosmaita): describe the web-download workflow
 
 .. _image-stage-call:
 
@@ -74,7 +59,7 @@ Stage binary image data
 Places the binary image data in a staging area.  It is not stored in
 the storage backend and is not accessible for download until after
 the :ref:`Image Import <image-import-call>` call is made.
-*(EXPERIMENTAL in Image API v2.6)*
+*(Since Image API v2.6)*
 
 Set the ``Content-Type`` request header to ``application/octet-stream``.
 
@@ -84,7 +69,7 @@ Example call:
 
    curl -i -X PUT -H "X-Auth-Token: $token" \
       -H "Content-Type: application/octet-stream" \
-      -d @/home/glance/experimental.qcow2 \
+      -d @/home/glance/my.to-import.qcow2 \
       $image_url/v2/images/{image_id}/stage
 
 **Preconditions**
@@ -142,14 +127,15 @@ Import an image
 
 Signals the Image Service to complete the image import workflow
 by processing the previously staged image data.
-*(EXPERIMENTAL in Image API v2.6)*
+*(Since Image API v2.6)*
 
 Example call: ``curl -i -X POST -H "X-Auth-Token: $token"
 $image_url/v2/images/{image_id}/import``
 
 The JSON request body specifies what import method you wish to use
-for this image request.  *Note: In the EXPERIMENTAL Image API v2.6,
-the only method available is glance-direct.*
+for this image request.
+
+.. TODO(rosmaita): rewrite to include web-download info
 
 Before you can complete the ``glance-direct`` image import workflow, you
 must meet the following preconditions:
@@ -210,10 +196,10 @@ formats, supported disk formats, maximum image size, etc.  This call
 contains a ``import-methods`` field consisting of an array of string
 identifiers indicating what import methods are supported in the cloud
 in which the call is made.
-*(EXPERIMENTAL in Image API v2.6)*
+*(Since Image API v2.6)*
 
 .. note::
-   In the EXPERIMENTAL Image API v2.6, this discovery call contains
+   In the Image API v2.6, this discovery call contains
    **only** the ``import-methods`` field.
 
 Normal response codes: 200
