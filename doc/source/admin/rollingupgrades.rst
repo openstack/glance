@@ -107,4 +107,4 @@ Following is the process to upgrade Glance with zero downtime:
    contract the database by running the command from any one of the upgraded
    nodes::
 
-    glance manage db contract
+    glance-manage db contract
