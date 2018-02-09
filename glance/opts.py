@@ -161,5 +161,5 @@ def list_manage_opts():
 def list_image_import_opts():
     """Return a list of oslo_config options available for Image Import"""
 
-    opts = _image_import_opts.extend(plugin_opts.get_plugin_opts())
-    return [(g, copy.deepcopy(o)) for g, o in opts]
+    _image_import_opts.extend(plugin_opts.get_plugin_opts())
+    return [(g, copy.deepcopy(o)) for g, o in _image_import_opts]
