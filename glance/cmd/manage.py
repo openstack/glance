@@ -141,6 +141,13 @@ class DbCommands(object):
 
     @args('--version', metavar='<version>', help='Database version')
     def sync(self, version=None):
+        engine = db_api.get_engine().engine
+        if engine.name == 'postgresql':
+            if version is None:
+                version = db_migration.LATEST_REVISION
+                self._sync(version)
+                return
+
         curr_heads = alembic_migrations.get_current_alembic_heads()
         contract = alembic_migrations.get_alembic_branch_head(
             db_migration.CONTRACT_BRANCH)
