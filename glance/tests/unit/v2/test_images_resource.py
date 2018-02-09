@@ -610,7 +610,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                side_effect=exception.Conflict):
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
-                              {})
+                              {'method': {'name': 'glance-direct'}})
 
     def test_image_import_raises_conflict_for_invalid_status_change(self):
         request = unit_test_utils.get_fake_request()
@@ -623,7 +623,7 @@ class TestImagesController(base.IsolatedUnitTest):
                 side_effect=exception.InvalidImageStatusTransition):
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
-                              {})
+                              {'method': {'name': 'glance-direct'}})
 
     def test_image_import_raises_bad_request(self):
         request = unit_test_utils.get_fake_request()
@@ -635,7 +635,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                side_effect=ValueError):
             self.assertRaises(webob.exc.HTTPBadRequest,
                               self.controller.import_image, request, UUID4,
-                              {})
+                              {'method': {'name': 'glance-direct'}})
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
@@ -2246,7 +2246,8 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_image_import(self):
         request = unit_test_utils.get_fake_request()
         output = self.controller.import_image(request, UUID4,
-                                              {})
+                                              {'method': {'name':
+                                                          'glance-direct'}})
         self.assertEqual(UUID4, output)
 
     def test_image_import_not_allowed(self):
@@ -2256,7 +2257,8 @@ class TestImagesController(base.IsolatedUnitTest):
         request.context.tenant = None
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.controller.import_image,
-                          request, UUID4, {})
+                          request, UUID4, {'method': {'name':
+                                                      'glance-direct'}})
 
 
 class TestImagesControllerPolicies(base.IsolatedUnitTest):
