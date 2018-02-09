@@ -56,7 +56,7 @@ class TestGlanceManage(functional.FunctionalTest):
 
         cmd = ('%s -m glance.cmd.manage --config-file %s db %s' %
                (sys.executable, self.conf_filepath, db_method))
-        execute(cmd, raise_error=True)
+        return execute(cmd, raise_error=True)
 
     def _check_db(self, expected_exitcode):
         with open(self.conf_filepath, 'w') as conf_file:
@@ -119,3 +119,58 @@ class TestGlanceManage(functional.FunctionalTest):
         self._db_command(db_method='contract')
         exitcode, out = self._check_db(0)
         self.assertEqual(0, exitcode)
+
+    @depends_on_exe('sqlite3')
+    @skip_if_disabled
+    def test_expand(self):
+        """Test DB expand"""
+        self._db_command(db_method='expand')
+        expand_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.EXPAND_BRANCH)
+
+        cmd = ("sqlite3 {0} \"SELECT version_num FROM alembic_version\""
+               ).format(self.db_filepath)
+        exitcode, out, err = execute(cmd, raise_error=True)
+        self.assertEqual(expand_head, out.rstrip().decode("utf-8"))
+        exitcode, out, err = self._db_command(db_method='expand')
+        self.assertIn('Database expansion is up to date. '
+                      'No expansion needed.', out)
+
+    @depends_on_exe('sqlite3')
+    @skip_if_disabled
+    def test_migrate(self):
+        """Test DB migrate"""
+        self._db_command(db_method='expand')
+        if data_migrations.has_pending_migrations(db_api.get_engine()):
+            self._db_command(db_method='migrate')
+        expand_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.EXPAND_BRANCH)
+
+        cmd = ("sqlite3 {0} \"SELECT version_num FROM alembic_version\""
+               ).format(self.db_filepath)
+        exitcode, out, err = execute(cmd, raise_error=True)
+        self.assertEqual(expand_head, out.rstrip().decode("utf-8"))
+        self.assertEqual(False, data_migrations.has_pending_migrations(
+            db_api.get_engine()))
+        if data_migrations.has_pending_migrations(db_api.get_engine()):
+            exitcode, out, err = self._db_command(db_method='migrate')
+            self.assertIn('Database migration is up to date. No migration '
+                          'needed.', out)
+
+    @depends_on_exe('sqlite3')
+    @skip_if_disabled
+    def test_contract(self):
+        """Test DB contract"""
+        self._db_command(db_method='expand')
+        if data_migrations.has_pending_migrations(db_api.get_engine()):
+            self._db_command(db_method='migrate')
+        self._db_command(db_method='contract')
+        contract_head = alembic_migrations.get_alembic_branch_head(
+            db_migration.CONTRACT_BRANCH)
+
+        cmd = ("sqlite3 {0} \"SELECT version_num FROM alembic_version\""
+               ).format(self.db_filepath)
+        exitcode, out, err = execute(cmd, raise_error=True)
+        self.assertEqual(contract_head, out.rstrip().decode("utf-8"))
+        exitcode, out, err = self._db_command(db_method='contract')
+        self.assertIn('Database is up to date. No migrations needed.', out)
