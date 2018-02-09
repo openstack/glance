@@ -3567,6 +3567,51 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         self.assertEqual('application/json', response.content_type)
         self.assertEqual('/v2/images/%s' % UUID1, response.location)
 
+    def test_create_has_import_methods_header(self):
+        # NOTE(rosmaita): enabled_import_methods is defined as type
+        # oslo.config.cfg.ListOpt, so it is stored internally as a list
+        # but is converted to a string for output in the HTTP header
+
+        header_name = 'OpenStack-image-import-methods'
+
+        # check multiple methods
+        enabled_methods = ['one', 'two', 'three']
+        self.config(enabled_import_methods=enabled_methods)
+        response = webob.Response()
+        self.serializer.create(response, self.fixtures[0])
+        self.assertEqual(http.CREATED, response.status_int)
+        header_value = response.headers.get(header_name)
+        self.assertIsNotNone(header_value)
+        self.assertItemsEqual(enabled_methods, header_value.split(','))
+
+        # check single method
+        self.config(enabled_import_methods=['swift-party-time'])
+        response = webob.Response()
+        self.serializer.create(response, self.fixtures[0])
+        self.assertEqual(http.CREATED, response.status_int)
+        header_value = response.headers.get(header_name)
+        self.assertIsNotNone(header_value)
+        self.assertEqual('swift-party-time', header_value)
+
+        # no header for empty config value
+        self.config(enabled_import_methods=[])
+        response = webob.Response()
+        self.serializer.create(response, self.fixtures[0])
+        self.assertEqual(http.CREATED, response.status_int)
+        headers = response.headers.keys()
+        self.assertNotIn(header_name, headers)
+
+    # TODO(rosmaita): remove this test when the enable_image_import
+    # option is removed
+    def test_create_has_no_import_methods_header(self):
+        header_name = 'OpenStack-image-import-methods'
+        self.config(enable_image_import=False)
+        response = webob.Response()
+        self.serializer.create(response, self.fixtures[0])
+        self.assertEqual(http.CREATED, response.status_int)
+        headers = response.headers.keys()
+        self.assertNotIn(header_name, headers)
+
     def test_update(self):
         expected = {
             'id': UUID1,

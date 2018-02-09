@@ -892,12 +892,15 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = http.CREATED
         self.show(response, image)
         response.location = self._get_image_href(image)
-        # TODO(jokke): make this configurable when swift-local is implemented
-        # and remove the if statement with the config option.
+        # TODO(rosmaita): remove the outer 'if' statement when the
+        # enable_image_import config option is removed
         if CONF.enable_image_import:
-            import_methods = ("OpenStack-image-import-methods",
-                              "glance-direct")
-            response.headerlist.append(import_methods)
+            # according to RFC7230, headers should not have empty fields
+            # see http://httpwg.org/specs/rfc7230.html#field.components
+            if CONF.enabled_import_methods:
+                import_methods = ("OpenStack-image-import-methods",
+                                  ','.join(CONF.enabled_import_methods))
+                response.headerlist.append(import_methods)
 
     def show(self, response, image):
         image_view = self._format_image(image)
