@@ -1,0 +1,12 @@
+---
+prelude: >
+    This point release contains minor changes to keep the Pike release
+    of Glance stable with respect to current operating system packages.
+fixes:
+  - |
+    Changes in Python 2.7 distribution packages affected Glance's use
+    of eventlet.  As a result, the team backported a fix from eventlet
+    0.22.0 to the Glance code.  (The Pike release of OpenStack uses
+    eventlet 0.20.0.)  See Bug 1747304_ for details.
+
+    .. _1747304: https://code.launchpad.net/bugs/1747304
