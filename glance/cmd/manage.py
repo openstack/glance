@@ -212,14 +212,18 @@ class DbCommands(object):
             print(_('Database is up to date. No migrations needed.'))
             sys.exit()
 
-        self._sync(version=expand_head)
-
-        curr_heads = alembic_migrations.get_current_alembic_heads()
         if expand_head not in curr_heads:
-            sys.exit(_('Database expansion failed. Database expansion should '
-                       'have brought the database version up to "%(e_rev)s" '
-                       'revision. But, current revisions are: %(curr_revs)s ')
-                     % {'e_rev': expand_head, 'curr_revs': curr_heads})
+            self._sync(version=expand_head)
+
+            curr_heads = alembic_migrations.get_current_alembic_heads()
+            if expand_head not in curr_heads:
+                sys.exit(_('Database expansion failed. Database expansion '
+                           'should have brought the database version up to '
+                           '"%(e_rev)s" revision. But, current revisions are'
+                           ': %(curr_revs)s ') % {'e_rev': expand_head,
+                                                  'curr_revs': curr_heads})
+        else:
+            print(_('Database expansion is up to date. No expansion needed.'))
 
     def contract(self):
         """Run the contraction phase of a rolling upgrade procedure."""
@@ -278,8 +282,11 @@ class DbCommands(object):
                        'run before database expansion. Run database '
                        'expansion first using "glance-manage db expand"'))
 
-        rows_migrated = data_migrations.migrate(db_api.get_engine())
-        print(_('Migrated %s rows') % rows_migrated)
+        if data_migrations.has_pending_migrations(db_api.get_engine()):
+            rows_migrated = data_migrations.migrate(db_api.get_engine())
+            print(_('Migrated %s rows') % rows_migrated)
+        else:
+            print(_('Database migration is up to date. No migration needed.'))
 
     @args('--path', metavar='<path>', help='Path to the directory or file '
                                            'where json metadata is stored')
