@@ -5,16 +5,17 @@
 # Translators:
 # Tomoyuki KATO <tomo@dream.daynight.jp>, 2013
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# Shu Muto <shu-mutou@rf.jp.nec.com>, 2018. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 15.0.0.0b3.dev29\n"
+"Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2017-06-23 20:54+0000\n"
+"POT-Creation-Date: 2018-02-09 19:32+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-12 05:21+0000\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
+"PO-Revision-Date: 2018-02-09 10:00+0000\n"
+"Last-Translator: Shu Muto <shu-mutou@rf.jp.nec.com>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -94,6 +95,11 @@ msgstr "%s は既に停止しています"
 msgid "%s is stopped"
 msgstr "%s は停止しています"
 
+msgid "'node_staging_uri' is not set correctly. Could not load staging store."
+msgstr ""
+"'node_staging_uri' が正しく設定されていません。ステージングストアをロードでき"
+"ませんでした。"
+
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
 "keystone authentication strategy is enabled\n"
@@ -127,6 +133,15 @@ msgid ""
 msgstr ""
 "name=%(resource_type_name)s のメタデータ定義リソースタイプは、既に存在しま"
 "す。"
+
+#, python-format
+msgid ""
+"A metadata tag with name=%(name)s already exists in namespace="
+"%(namespace_name)s. (Please note that metadata tag names are case "
+"insensitive)."
+msgstr ""
+"name=%(name)s のメタデータタグは既に namespace=%(namespace_name)s に存在しま"
+"す。（メタデータのタグ名は大文字小文字を区別しないことに注意してください。）"
 
 msgid "A set of URLs to access the image file kept in external store"
 msgstr ""
@@ -187,8 +202,7 @@ msgstr "重複したイメージのアップロードを試行します: %s"
 
 msgid "Attempted to update Location field for an image not in queued status."
 msgstr ""
-"待機状況になっていないイメージの「ロケーション」フィールドを更新しようとしま"
-"した。"
+"待機状況になっていないイメージの「場所」フィールドを更新しようとしました。"
 
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
@@ -275,14 +289,14 @@ msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr "イメージ %(key)s '%(value)s' を整数に変換できません。"
 
 msgid "Cannot remove last location in the image."
-msgstr "イメージ内の最後のロケーションは削除できません。"
+msgstr "イメージ内の最後の場所は削除できません。"
 
 #, python-format
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "イメージ %(image_id)s のデータを保存できません: %(error)s"
 
 msgid "Cannot set locations to empty list."
-msgstr "空のリストにロケーションを設定することはできません。"
+msgstr "空のリストに場所を設定することはできません。"
 
 msgid "Cannot upload to an unqueued image"
 msgstr "キューに入れられていないイメージに対してアップロードできません"
@@ -354,8 +368,43 @@ msgstr "タスク %s が見つかりませんでした"
 msgid "Could not update image: %s"
 msgstr "イメージを更新できませんでした: %s"
 
+#, python-format
+msgid "Couldn't create metadata namespace: %s"
+msgstr "メタデータ名前空間 %s を作成できませんでした"
+
+#, python-format
+msgid "Couldn't create metadata object: %s"
+msgstr "メタデータオブジェクト %s を作成できませんでした"
+
+#, python-format
+msgid "Couldn't create metadata property: %s"
+msgstr "メタデータプロパティ %s を作成できませんでした"
+
+#, python-format
+msgid "Couldn't create metadata tag: %s"
+msgstr "メタデータタグ %s を作成できませんでした"
+
+#, python-format
+msgid "Couldn't update metadata namespace: %s"
+msgstr "メタデータ名前空間 %s を更新できませんでした"
+
+#, python-format
+msgid "Couldn't update metadata object: %s"
+msgstr "メタデータオブジェクト %s を更新できませんでした"
+
+#, python-format
+msgid "Couldn't update metadata property: %s"
+msgstr "メタデータプロパティ %s を更新できませんでした"
+
+#, python-format
+msgid "Couldn't update metadata tag: %s"
+msgstr "メタデータタグ %s を更新できませんでした"
+
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "現在、複数のディスクを含む OVA パッケージはサポートされません。"
+
+msgid "Custom property should not be greater than 255 characters."
+msgstr "カスタムプロパティは 255 文字より大きくてはいけません。"
 
 #, python-format
 msgid "Data for image_id not found: %s"
@@ -363,6 +412,63 @@ msgstr "image_id のデータが見つかりません: %s"
 
 msgid "Data supplied was not valid."
 msgstr "指定されたデータが無効でした。"
+
+msgid ""
+"Database contraction did not run. Database contraction cannot be run before "
+"data migration is complete. Run data migration using \"glance-manage db "
+"migrate\"."
+msgstr ""
+"データベースの締結が実行されていません。データベースの締結はデータの移行が完"
+"了する前には実行できません。まず、\"glance-manage db migrate\" を使用してデー"
+"タの移行を実行してください。"
+
+msgid ""
+"Database contraction did not run. Database contraction cannot be run before "
+"database expansion. Run database expansion first using \"glance-manage db "
+"expand\""
+msgstr ""
+"データベースの締結が実行されていません。データベースの締結はデータベースの展"
+"開の前には実行できません。まず、\"glance-manage db expand\" を使用してデータ"
+"ベースの展開を実行してください。"
+
+msgid ""
+"Database contraction failed. Couldn't find head revision of contract branch."
+msgstr ""
+"データベースの締結に失敗しました。締結ブランチのヘッドリビジョンが見つかりま"
+"せん。"
+
+msgid ""
+"Database expansion failed. Couldn't find head revision of expand branch."
+msgstr ""
+"データベースの展開に失敗しました。展開ブランチのヘッドリビジョンが見つかりま"
+"せん。"
+
+#, python-format
+msgid ""
+"Database expansion failed. Database expansion should have brought the "
+"database version up to \"%(e_rev)s\" revision. But, current revisions are: "
+"%(curr_revs)s "
+msgstr ""
+"データベースの展開に失敗しました。データベースの展開によって、データベースの"
+"バージョンがリビジョン \"%(e_rev)s\" になっているはずです。 しかし、現在のリ"
+"ビジョンは %(curr_revs)s です。"
+
+msgid ""
+"Database is either not under migration control or under legacy migration "
+"control, please run \"glance-manage db sync\" to place the database under "
+"alembic migration control."
+msgstr ""
+"データベースは移行制御下にも従来の移行制御下にもないため、\"glance-manage db "
+"sync\" を実行して移行制御下に置いてください。"
+
+msgid "Database is synced successfully."
+msgstr "データベースの同期に成功しました。"
+
+msgid "Database is up to date. No migrations needed."
+msgstr "データベースは最新です。移行は必要ありません。"
+
+msgid "Database is up to date. No upgrades needed."
+msgstr "データベースは最新です。アップグレードは必要ありません。"
 
 msgid "Date and time of image member creation"
 msgstr "イメージメンバーの作成日時"
@@ -495,6 +601,10 @@ msgstr "設定から %s を読み取ることができませんでした"
 #, python-format
 msgid "Failed to reserve image. Got error: %s"
 msgstr "イメージを予約できませんでした。受け取ったエラー: %s"
+
+#, python-format
+msgid "Failed to sync database: ERROR: %s"
+msgstr "データベースの同期に失敗しました: エラー: %s"
 
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
@@ -657,6 +767,9 @@ msgstr "イメージがストレージクォータを超えています: %s"
 msgid "Image id is required."
 msgstr "イメージ ID が必要です。"
 
+msgid "Image import is not supported at this site."
+msgstr "このサイトではイメージのインポートはサポートされていません。"
+
 msgid "Image is protected"
 msgstr "イメージは保護されています"
 
@@ -705,6 +818,12 @@ msgstr "ID %s のイメージが見つかりません"
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
 msgstr "指定された ID %(image_id)s を持つイメージが見つかりませんでした"
+
+msgid "Import request requires a 'method' field."
+msgstr "インポートリクエストは、'method' フィールドが必要です。"
+
+msgid "Import request requires a 'name' field."
+msgstr "インポートリクエストは、'name' フィールドが必要です。"
 
 #, python-format
 msgid ""
@@ -769,17 +888,20 @@ msgstr "無効なフィルター値 %s。開始引用符の前にコンマがあ
 msgid "Invalid image id format"
 msgstr "イメージ ID の形式が無効です"
 
-#, fuzzy
+#, python-format
+msgid "Invalid int value for max_rows: %(max_rows)s"
+msgstr "max_rows の整数値 %(max_rows)s は無効です。"
+
 msgid "Invalid location"
-msgstr "無効なロケーション"
+msgstr "無効な場所"
 
 #, python-format
 msgid "Invalid location %s"
-msgstr "無効なロケーション %s"
+msgstr "無効な場所 %s"
 
 #, python-format
 msgid "Invalid location: %s"
-msgstr "無効なロケーション: %s"
+msgstr "無効な場所: %s"
 
 #, python-format
 msgid ""
@@ -789,13 +911,12 @@ msgstr ""
 "location_strategy オプションが無効です: %(name)s。有効なストラテジーオプショ"
 "ン: %(strategies)s"
 
-#, fuzzy
 msgid "Invalid locations"
-msgstr "無効なロケーション"
+msgstr "無効な場所"
 
 #, python-format
 msgid "Invalid locations: %s"
-msgstr "無効なロケーション: %s"
+msgstr "無効な場所: %s"
 
 msgid "Invalid marker format"
 msgstr "マーカーフォーマットが無効です"
@@ -823,10 +944,10 @@ msgstr ""
 "無効な操作: `%(op)s`。以下のいずれかでなければなりません: %(available)s。"
 
 msgid "Invalid position for adding a location."
-msgstr "ロケーションの追加位置が無効です。"
+msgstr "場所の追加位置が無効です。"
 
 msgid "Invalid position for removing a location."
-msgstr "ロケーション削除位置が無効です。"
+msgstr "場所の削除位置が無効です。"
 
 msgid "Invalid service catalog json."
 msgstr "無効なサービスカタログ JSON ファイル。"
@@ -896,6 +1017,14 @@ msgid "Invalid value '%(value)s' for parameter '%(param)s': %(extra_msg)s"
 msgstr "パラメーター '%(param)s' の値 '%(value)s' が無効です: %(extra_msg)s"
 
 #, python-format
+msgid ""
+"Invalid value '%s' for 'protected' filter. Valid values are 'true' or "
+"'false'."
+msgstr ""
+"'protected' フィルターの値 '%s' が無効です。許容される値は 'true' または "
+"'false' です。"
+
+#, python-format
 msgid "Invalid value for option %(option)s: %(value)s"
 msgstr "オプション %(option)s の値が無効です: %(value)s"
 
@@ -906,14 +1035,26 @@ msgstr "無効な可視性の値: %s"
 msgid "It's invalid to provide multiple image sources."
 msgstr "イメージソースの複数指定は無効です。"
 
+#, python-format
+msgid "It's not allowed to add locations if image status is %s."
+msgstr "イメージの状態が %s の場合、場所を追加できません。"
+
 msgid "It's not allowed to add locations if locations are invisible."
-msgstr "ロケーションが表示されない場合、ロケーションを追加できません。"
+msgstr "場所が表示されない場合、場所を追加できません。"
+
+#, python-format
+msgid "It's not allowed to remove locations if image status is %s."
+msgstr "イメージの状態が %s の場合、場所を削除できません。"
 
 msgid "It's not allowed to remove locations if locations are invisible."
-msgstr "ロケーションが表示されない場合、ロケーションを削除できません。"
+msgstr "場所が表示されない場合、場所を削除できません。"
+
+#, python-format
+msgid "It's not allowed to replace locations if image status is %s."
+msgstr "イメージの状態が %s の場合、場所を変更できません。"
 
 msgid "It's not allowed to update locations if locations are invisible."
-msgstr "ロケーションが表示されない場合、ロケーションを更新できません。"
+msgstr "場所が表示されない場合、場所を更新できません。"
 
 msgid "List of strings related to the image"
 msgstr "イメージに関連する文字列のリスト"
@@ -951,6 +1092,11 @@ msgstr ""
 #, python-format
 msgid "Metadata definition namespace not found for id=%s"
 msgstr "id=%s のメタデータ定義名前空間が見つかりません"
+
+#, python-format
+msgid "Metadata definition namespace=%(namespace_name)s was not found."
+msgstr ""
+"namespace=%(namespace_name)s のメタデータ定義名前空間が見つかりませんでした。"
 
 #, python-format
 msgid ""
@@ -1015,6 +1161,9 @@ msgstr ""
 "領域 %(region)s に対して複数の「イメージ」サービスが一致します。これは一般"
 "に、領域が必要であるのに、領域を指定していないことを意味します。"
 
+msgid "Must supply a non-negative value for age."
+msgstr "存続期間には負ではない値を指定してください。"
+
 msgid "No authenticated user"
 msgstr "認証されていないユーザー"
 
@@ -1024,7 +1173,7 @@ msgstr "ID が %s であるイメージは見つかりません"
 
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
-msgstr "イメージ %(img)s 内で ID が %(loc)s のロケーションは見つかりません"
+msgstr "イメージ %(img)s 内で ID が %(loc)s の場所は見つかりません"
 
 msgid "No permission to share that image"
 msgstr "そのイメージを共有する許可がありません"
@@ -1076,6 +1225,9 @@ msgstr "OVA 抽出が実行できるのは管理者のみです"
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "新旧のソート構文を結合することはできません"
 
+msgid "Only shared images have members."
+msgstr "共有イメージのみがメンバーを持ちます。"
+
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
 msgstr "操作 \"%s\" には \"value\" という名前のメンバーが必要です。"
@@ -1097,9 +1249,9 @@ msgstr ""
 msgid "Operations must be JSON objects."
 msgstr "操作は JSON オブジェクトでなければなりません。"
 
-#, fuzzy, python-format
+#, python-format
 msgid "Original locations is not empty: %s"
-msgstr "元のロケーションは空ではありません: %s"
+msgstr "元の場所は空ではありません: %s"
 
 msgid "Owner can't be updated by non admin."
 msgstr "管理者以外は所有者を更新できません。"
@@ -1115,6 +1267,9 @@ msgstr "名前空間の所有者。"
 
 msgid "Param values can't contain 4 byte unicode."
 msgstr "Param 値に 4 バイトの Unicode が含まれていてはなりません。"
+
+msgid "Placed database under migration control at revision:"
+msgstr "移行制御下にある配置されたデータベースはリビジョン:"
 
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
@@ -1205,6 +1360,10 @@ msgstr "指定されたタスクタイプはサポートされていません: %
 msgid "Provides a user friendly description of the namespace."
 msgstr "分かりやすい名前空間の説明が提供されます。"
 
+msgid "Purge command failed, check glance-manage logs for more details."
+msgstr ""
+"Purge コマンドが失敗しました。詳細は glance-manage のログを確認して下さい。"
+
 msgid "Received invalid HTTP redirect."
 msgstr "無効な HTTP リダイレクトを受け取りました。"
 
@@ -1254,11 +1413,18 @@ msgstr ""
 msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "Keystone からの応答に Glance エンドポイントが含まれていません。"
 
+msgid "Rolling upgrades are currently supported only for MySQL and Sqlite"
+msgstr ""
+"ローリングアップグレードは現在 MySQL と Sqlite のみがサポートされています。"
+
 msgid "Scope of image accessibility"
 msgstr "イメージのアクセス可能性の範囲"
 
 msgid "Scope of namespace accessibility."
 msgstr "名前空間アクセシビリティーの範囲。"
+
+msgid "Scrubber encountered an error while trying to fetch scrub jobs."
+msgstr "スクラブジョブの取得を試行中にエラーが発生しました。"
 
 #, python-format
 msgid "Server %(serv)s is stopped"
@@ -1433,6 +1599,20 @@ msgstr ""
 "を指定してください: %(supported)s"
 
 #, python-format
+msgid "The image %s has data on staging"
+msgstr "イメージ %s はステージングにデータがあります"
+
+#, python-format
+msgid ""
+"The image %s is already present on the target, but our check for it did not "
+"find it. This indicates that we do not have permissions to see all the "
+"images on the target server."
+msgstr ""
+"イメージ %s は既にターゲット上にありますが、検査では見つかりませんでした。こ"
+"れは、ターゲットサーバー上のすべてのイメージを表示する許可を持っていないこと"
+"を示します。"
+
+#, python-format
 msgid "The incoming image is too large: %s"
 msgstr "入力イメージが大きすぎます: %s"
 
@@ -1445,8 +1625,8 @@ msgid ""
 "The limit has been exceeded on the number of allowed image locations. "
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
-"許可されるイメージロケーション数の制限を超えました。試行: %(attempted)s、最"
-"大: %(maximum)s"
+"許可されるイメージの場所の数の制限を超えました。試行: %(attempted)s、最大: "
+"%(maximum)s"
 
 #, python-format
 msgid ""
@@ -1482,11 +1662,11 @@ msgstr ""
 
 #, python-format
 msgid "The location %(location)s already exists"
-msgstr "ロケーション %(location)s は既に存在します"
+msgstr "場所 %(location)s は既に存在します"
 
 #, python-format
 msgid "The location data has an invalid ID: %d"
-msgstr "ロケーションデータの ID が無効です: %d"
+msgstr "場所データの ID が無効です: %d"
 
 #, python-format
 msgid ""
@@ -1656,15 +1836,15 @@ msgid ""
 "The status of deleted image location can only be set to 'pending_delete' or "
 "'deleted'"
 msgstr ""
-"削除されたイメージロケーションの状況は「pending_delete」または「deleted」にの"
-"み設定できます"
+"削除されたイメージの場所の状況は「pending_delete」または「deleted」にのみ設定"
+"できます"
 
 msgid ""
 "The status of deleted image location can only be set to 'pending_delete' or "
 "'deleted'."
 msgstr ""
-"削除されたイメージロケーションの状況は「pending_delete」または「deleted」にの"
-"み設定できます。"
+"削除されたイメージの場所の状況は「pending_delete」または「deleted」にのみ設定"
+"できます。"
 
 msgid "The status of this image member"
 msgstr "このイメージメンバーの状況"
@@ -1746,6 +1926,13 @@ msgstr "成功または失敗の後でタスクが存続する時間 (時)"
 
 msgid "Too few arguments."
 msgstr "引数が少なすぎます。"
+
+#, python-format
+msgid ""
+"Total size is %(size)d bytes (%(human_size)s) across %(img_count)d images"
+msgstr ""
+"合計サイズは、%(img_count)d) 個のイメージで %(size)d バイト (%(human_size)s) "
+"です"
 
 msgid ""
 "URI cannot contain more than one occurrence of a scheme.If you have "
@@ -1841,6 +2028,10 @@ msgstr "不明な認証ストラテジー '%s'"
 msgid "Unknown command: %s"
 msgstr "不明なコマンド: %s"
 
+#, python-format
+msgid "Unknown import method name '%s'."
+msgstr "不明なインポートメソッド名 '%s' です。"
+
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "ソート方向が不明です。'desc' または 'asc' でなければなりません"
 
@@ -1857,6 +2048,14 @@ msgstr "サポートされない sort_dir です。許容値: %s"
 #, python-format
 msgid "Unsupported sort_key. Acceptable values: %s"
 msgstr "サポートされない sort_key です。許容値: %s"
+
+#, python-format
+msgid "Upgraded database to: %(v)s, current revision(s): %(r)s"
+msgstr ""
+"データベースが %(v)s にアップグレードされました。現在のリビジョン: %(r)s"
+
+msgid "Upgraded database, current revision(s):"
+msgstr "データベースがアップグレードされました。現在のリビジョン:"
 
 msgid "Virtual size of image in bytes"
 msgstr "イメージの仮想サイズ (バイト)"
@@ -1890,6 +2089,10 @@ msgstr "正しくないコマンド構造: %s"
 
 msgid "You are not authenticated."
 msgstr "認証されていません。"
+
+#, python-format
+msgid "You are not authorized to complete %(action)s action."
+msgstr "%(action)s アクションの実行を許可されていません。"
 
 msgid "You are not authorized to complete this action."
 msgstr "このアクションの実行を許可されていません。"
@@ -1963,7 +2166,7 @@ msgid "You are not permitted to modify '%s' on this image."
 msgstr "このイメージ上の '%s' の変更は許可されません。"
 
 msgid "You are not permitted to modify locations for this image."
-msgstr "このイメージのロケーションの変更は許可されていません。"
+msgstr "このイメージの場所の変更は許可されていません。"
 
 msgid "You are not permitted to modify tags on this image."
 msgstr "このイメージ上のタグの変更は許可されていません。"
@@ -2026,6 +2229,27 @@ msgid ""
 msgstr ""
 "接続時に SSL を使用するよう選択し、鍵を指定しましたが、cert_file パラメーター"
 "を指定しなかったか、GLANCE_CLIENT_CERT_FILE 環境変数を設定しませんでした"
+
+msgid ""
+"Your database is not up to date. Your first step is to run `glance-manage db "
+"expand`."
+msgstr ""
+"データベースが最新ではありません。最初のステップは、`glance-manage db "
+"expand` です。"
+
+msgid ""
+"Your database is not up to date. Your next step is to run `glance-manage db "
+"contract`."
+msgstr ""
+"データベースが最新ではありません。次のステップは、`glance-manage db "
+"contract` です。"
+
+msgid ""
+"Your database is not up to date. Your next step is to run `glance-manage db "
+"migrate`."
+msgstr ""
+"データベースが最新ではありません。次のステップは、`glance-manage db migrate` "
+"です。"
 
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
