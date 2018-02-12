@@ -207,7 +207,10 @@ Number of Glance worker processes to start.
 
 Provide a non-negative integer value to set the number of child
 process workers to service requests. By default, the number of CPUs
-available is set as the value for ``workers``.
+available is set as the value for ``workers`` limited to 8. For
+example if the processor count is 6, 6 workers will be used, if the
+processor count is 24 only 8 workers will be used. The limit will only
+apply to the default value, if 24 workers is configured, 24 is used.
 
 Each worker process is made to listen on the port set in the
 configuration file and contains a greenthread pool of size 1000.
@@ -332,8 +335,10 @@ except ImportError:
 def get_num_workers():
     """Return the configured number of workers."""
     if CONF.workers is None:
-        # None implies the number of CPUs
-        return processutils.get_worker_count()
+        # None implies the number of CPUs limited to 8
+        # See Launchpad bug #1748916 and the config help text
+        workers = processutils.get_worker_count()
+        return workers if workers < 8 else 8
     return CONF.workers
 
 

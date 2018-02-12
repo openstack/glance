@@ -604,7 +604,7 @@ class ServerTest(test_utils.BaseTestCase):
                                                 socket_timeout=900)
 
     def test_number_of_workers(self):
-        """Ensure the default number of workers matches num cpus."""
+        """Ensure the number of workers matches num cpus limited to 8."""
         def pid():
             i = 1
             while True:
@@ -612,12 +612,30 @@ class ServerTest(test_utils.BaseTestCase):
                 yield i
 
         with mock.patch.object(os, 'fork') as mock_fork:
+            with mock.patch('oslo_concurrency.processutils.get_worker_count',
+                            return_value=4):
+                mock_fork.side_effect = pid
+                server = wsgi.Server()
+                server.configure = mock.Mock()
+                fake_application = "fake-application"
+                server.start(fake_application, None)
+                self.assertEqual(4, len(server.children))
+            with mock.patch('oslo_concurrency.processutils.get_worker_count',
+                            return_value=24):
+                mock_fork.side_effect = pid
+                server = wsgi.Server()
+                server.configure = mock.Mock()
+                fake_application = "fake-application"
+                server.start(fake_application, None)
+                self.assertEqual(8, len(server.children))
             mock_fork.side_effect = pid
             server = wsgi.Server()
             server.configure = mock.Mock()
             fake_application = "fake-application"
             server.start(fake_application, None)
-            self.assertEqual(processutils.get_worker_count(),
+            cpus = processutils.get_worker_count()
+            expected_workers = cpus if cpus < 8 else 8
+            self.assertEqual(expected_workers,
                              len(server.children))
 
 
