@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-10 21:19+0000\n"
+"POT-Creation-Date: 2018-02-13 01:32+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -85,14 +85,8 @@ msgstr "13.0.0"
 msgid "14.0.0"
 msgstr "14.0.0"
 
-msgid "14.0.0-8"
-msgstr "14.0.0-8"
-
 msgid "15.0.0"
 msgstr "15.0.0"
-
-msgid "15.0.0-4"
-msgstr "15.0.0-4"
 
 msgid "16.0.0.0b1"
 msgstr "16.0.0.0b1"
