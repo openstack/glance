@@ -1469,9 +1469,9 @@ def _task_soft_delete(context, session=None):
     query = session.query(models.Task)
 
     query = (query.filter(models.Task.owner == context.owner)
-                  .filter_by(deleted=0)
+                  .filter_by(deleted=False)
                   .filter(expires_at <= timeutils.utcnow()))
-    values = {'deleted': 1, 'deleted_at': timeutils.utcnow()}
+    values = {'deleted': True, 'deleted_at': timeutils.utcnow()}
 
     with session.begin():
         query.update(values)
