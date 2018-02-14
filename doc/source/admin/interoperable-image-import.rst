@@ -67,6 +67,92 @@ task-related policies:
    "modify_task": "",
    "tasks_api_access": "role:admin",
 
+Image Import Methods
+--------------------
+
+Glance provides two import methods that you can make available to your
+users: ``glance-direct`` and ``web-download``.
+
+.. TODO(rosmaita): quick description of what they are
+
+Configuring the web-download method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Depending on the nature of your cloud and the sophistication of your users,
+you may wish to restrict what URIs they may use for the web-download import
+method.  You can do this by configuring options in the
+``[import_filtering_opts]`` section of the **glance-image-import.conf** file.
+
+.. note::
+   The **glance-image-import.conf** is an optional file.  (See below for a
+   discussion of the default settings if you don't include this file.)
+
+   You can find an example file named glance-image-import.conf.sample_ in
+   the **etc/** subdirectory of the Glance source code tree.  Make sure that
+   you are looking in the correct branch for the OpenStack release you are
+   working with.
+
+   .. _glance-image-import.conf.sample: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-image-import.conf.sample
+
+You can whitelist ("allow *only* these") or blacklist ("do *not* allow these")
+at three levels:
+
+* scheme (``allowed_schemes``, ``disallowed_schemes``)
+* host (``allowed_hosts``, ``disallowed_hosts``)
+* port (``allowed_ports``, ``disallowed_ports``)
+
+There are six configuration options, but the way it works is that if you
+specify both at any level, the whitelist is honored and the blacklist is
+ignored.  (So why have both? Well, you may want to whitelist a scheme, but
+blacklist a host, and whitelist a particular port.)
+
+Validation of a URI happens as follows:
+
+1. The scheme is checked.
+
+   a. missing scheme: reject
+   b. If there's a whitelist, and the scheme is not in it: reject.  Otherwise,
+      skip c and continue on to 2.
+   c. If there's a blacklist, and the scheme is in it: reject.
+
+2. The hostname is checked.
+
+   a. missing hostname: reject
+   b. If there's a whitelist, and the host is not in it: reject.  Otherwise,
+      skip c and continue on to 3.
+   c. If there's a blacklist, and the host is in it: reject.
+
+3. If there's a port in the URI, the port is checked.
+
+   a. If there's a whitelist, and the port is not in it: reject.  Otherwise,
+      skip b and continue on to 4.
+   b. If there's a blacklist, and the port is in it: reject.
+
+4. The URI is accepted as valid.
+
+Note that if you allow a scheme, either by whitelisting it or by not
+blacklisting it, any URI that uses the default port for that scheme by not
+including a port in the URI is allowed.  If it does include a port in the URI,
+the URI will be validated according to the above rules.
+
+Default settings
+++++++++++++++++
+
+The **glance-image-import.conf** is an optional file.  Here are the default
+settings for these options:
+
+* ``allowed_schemes`` - ``['http', 'https']``
+* ``disallowed_schemes`` - empty list
+* ``allowed_hosts`` - empty list
+* ``disallowed_hosts`` - empty list
+* ``allowed_ports`` - ``[80, 443]``
+* ``disallowed_ports`` - empty list
+
+Thus if you use the defaults, end users will only be able to access URIs
+using the http or https scheme.  The only ports users will be able to specify
+are 80 and 443.  (Users do not have to specify a port, but if they do, it must
+be either 80 or 443.)
+
 Customizing the image import process
 ------------------------------------
 
