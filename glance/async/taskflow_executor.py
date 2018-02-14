@@ -128,6 +128,7 @@ class TaskExecutor(glance.async.TaskExecutor):
                 kwds['uri'] = uri
             if task.type == 'api_image_import':
                 kwds['image_id'] = task_input['image_id']
+                kwds['import_req'] = task_input['import_req']
             return driver.DriverManager('glance.flows', task.type,
                                         invoke_on_load=True,
                                         invoke_kwds=kwds).driver

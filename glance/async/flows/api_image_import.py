@@ -371,11 +371,15 @@ def get_flow(**kwargs):
 
     flow = lf.Flow(task_type, retry=retry.AlwaysRevert())
 
-    if uri.startswith("http") and import_method == 'web-download':
+    if import_method == 'web-download':
         downloadToStaging = internal_plugins.get_import_plugin(**kwargs)
         flow.add(downloadToStaging)
+        if not CONF.node_staging_uri.endswith('/'):
+            separator = '/'
+        file_uri = separator.join((CONF.node_staging_uri, str(image_id)))
     else:
         file_uri = uri
+
     flow.add(_VerifyStaging(task_id, task_type, task_repo, file_uri))
 
     for plugin in import_plugins.get_import_plugins(**kwargs):

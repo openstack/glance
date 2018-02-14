@@ -33,10 +33,10 @@ class _WebDownload(task.Task):
 
     default_provides = 'file_uri'
 
-    def __init__(self, task_id, task_type, task_repo, image_id, uri):
+    def __init__(self, task_id, task_type, image_repo, image_id, uri):
         self.task_id = task_id
         self.task_type = task_type
-        self.task_repo = task_repo
+        self.image_repo = image_repo
         self.image_id = image_id
         self.uri = uri
         super(_WebDownload, self).__init__(
