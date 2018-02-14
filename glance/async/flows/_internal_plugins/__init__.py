@@ -22,9 +22,9 @@ CONF = cfg.CONF
 
 def get_import_plugin(**kwargs):
     method_list = CONF.enabled_import_methods
-    import_method = kwargs.get('import_req')['method']['name'].replace("-",
-                                                                       "_")
+    import_method = kwargs.get('import_req')['method']['name']
     if import_method in method_list:
+        import_method = import_method.replace("-", "_")
         task_list = [import_method]
         # TODO(jokke): Implement error handling of non-listed methods.
     extensions = named.NamedExtensionManager(
