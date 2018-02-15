@@ -174,63 +174,6 @@ class _ImportToStore(task.Task):
         :param image_id: Glance Image ID
         :param file_path: path to the image file
         """
-        # NOTE(flaper87): There are a couple of interesting bits in the
-        # interaction between this task and the `_ImportToFS` one. I'll try
-        # to cover them in this comment.
-        #
-        # NOTE(jokke): We do not have _ImportToFS currently in this flow but
-        # I will leave Flavio's comments here as we will utilize it or fork
-        # of it after MVP.
-        #
-        # NOTE(flaper87):
-        # `_ImportToFS` downloads the image to a dedicated `work_dir` which
-        # needs to be configured in advance (please refer to the config option
-        # docs for more info). The motivation behind this is also explained in
-        # the `_ImportToFS.execute` method.
-        #
-        # Due to the fact that we have an `_ImportToFS` task which downloads
-        # the image data already, we need to be as smart as we can in this task
-        # to avoid downloading the data several times and reducing the copy or
-        # write times. There are several scenarios where the interaction
-        # between this task and `_ImportToFS` could be improved. All these
-        # scenarios assume the `_ImportToFS` task has been executed before
-        # and/or in a more abstract scenario, that `file_path` is being
-        # provided.
-        #
-        # Scenario 1: FS Store is Remote, introspection enabled,
-        # conversion disabled
-        #
-        # In this scenario, the user would benefit from having the scratch path
-        # being the same path as the fs store. Only one write would happen and
-        # an extra read will happen in order to introspect the image. Note that
-        # this read is just for the image headers and not the entire file.
-        #
-        # Scenario 2: FS Store is remote, introspection enabled,
-        # conversion enabled
-        #
-        # In this scenario, the user would benefit from having a *local* store
-        # into which the image can be converted. This will require downloading
-        # the image locally, converting it and then copying the converted image
-        # to the remote store.
-        #
-        # Scenario 3: FS Store is local, introspection enabled,
-        # conversion disabled
-        # Scenario 4: FS Store is local, introspection enabled,
-        # conversion enabled
-        #
-        # In both these scenarios the user shouldn't care if the FS
-        # store path and the work dir are the same, therefore probably
-        # benefit, about the scratch path and the FS store being the
-        # same from a performance perspective. Space wise, regardless
-        # of the scenario, the user will have to account for it in
-        # advance.
-        #
-        # Lets get to it and identify the different scenarios in the
-        # implementation
-        image = self.image_repo.get(self.image_id)
-        image.status = 'importing'
-        self.image_repo.save(image, from_state='uploading')
-
         # NOTE(flaper87): Let's dance... and fall
         #
         # Unfortunatelly, because of the way our domain layers work and
@@ -271,6 +214,7 @@ class _ImportToStore(task.Task):
         # NOTE(jokke): The different options here are kind of pointless as we
         # will need the file path anyways for our delete workflow for now.
         # For future proofing keeping this as is.
+        image = self.image_repo.get(self.image_id)
         image_import.set_image_data(image, file_path or self.uri, self.task_id)
 
         # NOTE(flaper87): We need to save the image again after the locations
@@ -406,5 +350,10 @@ def get_flow(**kwargs):
                                   task_repo,
                                   image_id)
     flow.add(complete_task)
+
+    image = image_repo.get(image_id)
+    from_state = image.status
+    image.status = 'importing'
+    image_repo.save(image, from_state=from_state)
 
     return flow
