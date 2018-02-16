@@ -7,6 +7,15 @@ enables you to run it with a real web server like Apache HTTPD or nginx. To
 deploy this there are several patterns. This doc shows two common ways of
 deploying Glance with Apache HTTPD.
 
+.. warning::
+   As pointed out in the Pike and Queens release notes (see the "Known Issues"
+   section of each), the Glance project team recommends that Glance be run in
+   its normal standalone configuration, particularly in production
+   environments.  The full functionality of Glance is not available when Glance
+   is deployed in the manner described in this document.  In particular, the
+   interoperable image import functionality does not work under such
+   configuration.  See the release notes for details.
+
 uWSGI Server HTTP Mode
 ----------------------
 
