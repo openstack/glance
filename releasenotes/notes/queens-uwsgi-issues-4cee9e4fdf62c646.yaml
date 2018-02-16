@@ -1,0 +1,31 @@
+---
+issues:
+  - |
+    The Pike release notes pointed out that although support had been added to
+    run Glance as a WSGI application hosted by a web server, the Glance team
+    recommended that Glance be run in its normal standalone configuration,
+    particularly in production environments.
+
+    We renew that recommendation for the Queens release.  In particular, Glance
+    tasks (which are required for the interoperable image import functionality)
+    do not execute when Glance is run under uWSGI (which is the OpenStack
+    recommended way to run WSGI applications hosted by a web server).
+
+    This is in addition to the chunked transfer encoding problems addressed by
+    `Bug 1703856`_ and will be more difficult to fix.  (Additionally, as far as
+    we are aware, the fix for `Bug 1703856`_ has never been tested at scale.)
+    Briefly, Glance tasks are run by the API service and would have to be split
+    out into a different service so that API alone would run under uWSGI.  The
+    Glance project team did not have sufficient testing and development
+    resources during the Queens cycle to attempt this (or even to discuss
+    whether this is in fact a good idea).
+
+    The Glance project team is committed to the stability of Glance.  As part
+    of OpenStack, we are committed to `The Four Opens`_.  If the ability to run
+    Glance under uWSGI is important to you, feel free to participate in the
+    Glance community to help coordinate and drive such an effort.  (We gently
+    remind you that "participation" includes providing testing and development
+    resources.)
+
+    .. _`Bug 1703856`: https://bugs.launchpad.net/glance/+bug/1703856
+    .. _`The Four Opens`: https://governance.openstack.org/tc/reference/opens.html
