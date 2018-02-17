@@ -1,0 +1,31 @@
+===============
+Heading level 1
+===============
+
+ReStructured Text doesn't care what markers you use for headings,
+but it does require you to be consistent.  Here's what we are using
+in the Image API reference documents.
+
+Level 1 is mostly used in the .rst files.  For the .inc files,
+the top-level heading will most likely be a Level 2.
+
+Heading level 2
+***************
+
+Heading level 3
+~~~~~~~~~~~~~~~
+
+Heading level 4
+---------------
+
+Heading level 5
++++++++++++++++
+
+Heading level 6
+###############
+
+Heading level 7
+"""""""""""""""
+
+Heading level 8
+'''''''''''''''

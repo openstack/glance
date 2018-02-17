@@ -7,7 +7,7 @@ Interoperable image import
 
 An interoperable image import process is introduced in the Image API v2.6.
 
-Use the :ref:`API versions call <versions-call>` to determine what API verisons
+Use the :ref:`API versions call <versions-call>` to determine what API versions
 are available in your cloud.
 
 General information
@@ -26,8 +26,12 @@ Two import methods are defined, ``glance-direct`` and ``web-download``.
    to determine what import methods are available in the cloud to which
    you wish to import an image.
 
+The first step in each interoperable image import method is the same: you must
+create an image record.  This will give you an image id to work with.  This
+image id is how the OpenStack Image service will understand that the other
+calls you make are referring to this particular image.
 
-The ``glance-direct`` workflow has three parts:
+Thus, the first step is:
 
 1.  Create an image record using the :ref:`Image Create <image-create>`
     API call.  You must do this first so that you have an image id to
@@ -40,14 +44,31 @@ The ``glance-direct`` workflow has three parts:
     methods may be determined independently of creating an image by making
     the :ref:`Import Method Discovery <import-discovery-call>` call.
 
+The glance-direct import method
+-------------------------------
+
+The ``glance-direct`` workflow has **three** parts:
+
+1.  Create an image record as described above.
+
 2.  Upload the image data to a staging area using the :ref:`Image Stage
     <image-stage-call>` API call.  Note that this image data is not
     accessible until after the third step has successfully completed.
 
 3.  Issue the :ref:`Image Import <image-import-call>` call to complete
-    the import process.
+    the import process.  You will specify that you are using the
+    ``glance-direct`` import method in the body of the import call.
 
-.. TODO(rosmaita): describe the web-download workflow
+The web-download import method
+------------------------------
+
+The ``web-download`` workflow has **two** parts:
+
+1.  Create an image record as described above.
+
+2.  Issue the :ref:`Image Import <image-import-call>` call to complete
+    the import process.  You will specify that you are using the
+    ``web-download`` import method in the body of the import call.
 
 .. _image-stage-call:
 
@@ -126,8 +147,16 @@ Import an image
 .. rest_method::  POST /v2/images/{image_id}/import
 
 Signals the Image Service to complete the image import workflow
-by processing the previously staged image data.
+by processing data that has been made available to the OpenStack
+image service.
 *(Since Image API v2.6)*
+
+In the ``glance-direct`` workflow, the data has been made available to the
+Image service via the :ref:`Stage binary image data <image-stage-call>` API
+call.
+
+In the ``web-download`` workflow, the data is made available to the Image
+service by being posted to an accessible location with a URL that you know.
 
 Example call: ``curl -i -X POST -H "X-Auth-Token: $token"
 $image_url/v2/images/{image_id}/import``
@@ -135,22 +164,45 @@ $image_url/v2/images/{image_id}/import``
 The JSON request body specifies what import method you wish to use
 for this image request.
 
-.. TODO(rosmaita): rewrite to include web-download info
+**Preconditions**
 
-Before you can complete the ``glance-direct`` image import workflow, you
-must meet the following preconditions:
+Before you can complete the interoperable image import workflow, you must meet
+the following preconditions:
 
 - The image record must exist.
 
-- You must set the disk and container formats in the image.
-
-- The image status must be ``uploading``.  (This indicates that the image
-  data has been uploaded to the stage.)
+- You must set the disk and container formats in the image record.  (This can
+  be done at the time of image creation, or you can make the :ref:`Image Update
+  <v2-image-update>` API call.
 
 - Your image storage quota must be sufficient.
 
 - The size of the data that you want to store must not exceed the
   size that the OpenStack Image service allows.
+
+**Additional Preconditions**
+
+If you are using the ``glance-direct`` import method:
+
+- The image status must be ``uploading``.  (This indicates that the image
+  data has been uploaded to the stage.)
+
+- The body of your request must indicate that you are using the
+  ``glance-direct`` import method.
+
+If you are using the ``web-download`` import method:
+
+- The image status must be ``queued``.  (This indicates that no image data
+  has yet been associated with the image.)
+
+- The body of your request must indicate that you are using the
+  ``web-download`` import method, and it must contain the URL at which the data
+  is to be found.
+
+  .. note::
+     The acceptable set of URLs for the ``web-download`` import method may be
+     restricted in a particular cloud.  Consult the cloud's local documentation
+     for details.
 
 **Synchronous Postconditions**
 
@@ -172,14 +224,20 @@ Request
 
 .. rest_parameters:: images-parameters.yaml
 
-   - Content-type: Content-Type-data
+   - Content-type: Content-Type-json
    - image_id: image_id-in-path
    - method: method-in-request
 
-Request Example
-----------------
+Request Example - glance-direct import method
+---------------------------------------------
 
-.. literalinclude:: samples/image-import-request.json
+.. literalinclude:: samples/image-import-g-d-request.json
+   :language: json
+
+Request Example - web-download import method
+--------------------------------------------
+
+.. literalinclude:: samples/image-import-w-d-request.json
    :language: json
 
 
