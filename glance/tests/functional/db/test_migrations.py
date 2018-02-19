@@ -19,8 +19,9 @@ import os
 
 from alembic import command as alembic_command
 from alembic import script as alembic_script
+from oslo_db.sqlalchemy import enginefacade
+from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import test_migrations
-from oslo_db.tests.sqlalchemy import base as test_base
 import sqlalchemy.types as types
 
 from glance.db.sqlalchemy import alembic_migrations
@@ -31,6 +32,11 @@ import glance.tests.utils as test_utils
 
 
 class AlembicMigrationsMixin(object):
+
+    def setUp(self):
+        super(AlembicMigrationsMixin, self).setUp()
+
+        self.engine = enginefacade.writer.get_engine()
 
     def _get_revisions(self, config, head=None):
         head = head or 'heads'
@@ -62,8 +68,10 @@ class AlembicMigrationsMixin(object):
                              with_data=True)
 
 
-class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
-                          AlembicMigrationsMixin):
+class TestMysqlMigrations(test_fixtures.OpportunisticDBTestMixin,
+                          AlembicMigrationsMixin,
+                          test_utils.BaseTestCase):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
     def test_mysql_innodb_tables(self):
         test_utils.db_sync(engine=self.engine)
@@ -86,16 +94,20 @@ class TestMysqlMigrations(test_base.MySQLOpportunisticTestCase,
         self.assertEqual(0, count, "%d non InnoDB tables created" % count)
 
 
-class TestPostgresqlMigrations(test_base.PostgreSQLOpportunisticTestCase,
-                               AlembicMigrationsMixin):
+class TestPostgresqlMigrations(test_fixtures.OpportunisticDBTestMixin,
+                               AlembicMigrationsMixin,
+                               test_utils.BaseTestCase):
+    FIXTURE = test_fixtures.PostgresqlOpportunisticFixture
+
+
+class TestSqliteMigrations(test_fixtures.OpportunisticDBTestMixin,
+                           AlembicMigrationsMixin,
+                           test_utils.BaseTestCase):
     pass
 
 
-class TestSqliteMigrations(test_base.DbTestCase, AlembicMigrationsMixin):
-    pass
-
-
-class TestMigrations(test_base.DbTestCase, test_utils.BaseTestCase):
+class TestMigrations(test_fixtures.OpportunisticDBTestMixin,
+                     test_utils.BaseTestCase):
 
     def test_no_downgrade(self):
         migrate_file = versions.__path__[0]
@@ -114,6 +126,9 @@ class TestMigrations(test_base.DbTestCase, test_utils.BaseTestCase):
 
 
 class ModelsMigrationSyncMixin(object):
+    def setUp(self):
+        super(ModelsMigrationSyncMixin, self).setUp()
+        self.engine = enginefacade.writer.get_engine()
 
     def get_metadata(self):
         for table in models_metadef.BASE_DICT.metadata.sorted_tables:
@@ -156,17 +171,20 @@ class ModelsMigrationSyncMixin(object):
 
 class ModelsMigrationsSyncMysql(ModelsMigrationSyncMixin,
                                 test_migrations.ModelsMigrationsSync,
-                                test_base.MySQLOpportunisticTestCase):
-    pass
+                                test_fixtures.OpportunisticDBTestMixin,
+                                test_utils.BaseTestCase):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
 class ModelsMigrationsSyncPostgres(ModelsMigrationSyncMixin,
                                    test_migrations.ModelsMigrationsSync,
-                                   test_base.PostgreSQLOpportunisticTestCase):
-    pass
+                                   test_fixtures.OpportunisticDBTestMixin,
+                                   test_utils.BaseTestCase):
+    FIXTURE = test_fixtures.PostgresqlOpportunisticFixture
 
 
 class ModelsMigrationsSyncSqlite(ModelsMigrationSyncMixin,
                                  test_migrations.ModelsMigrationsSync,
-                                 test_base.DbTestCase):
+                                 test_fixtures.OpportunisticDBTestMixin,
+                                 test_utils.BaseTestCase):
     pass
