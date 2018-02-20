@@ -141,12 +141,7 @@ class DbCommands(object):
 
     @args('--version', metavar='<version>', help='Database version')
     def sync(self, version=None):
-        engine = db_api.get_engine().engine
-        if engine.name == 'postgresql':
-            if version is None:
-                version = db_migration.LATEST_REVISION
-                self._sync(version)
-                return
+        """Perform a complete (offline) database migration"""
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         contract = alembic_migrations.get_alembic_branch_head(
@@ -157,9 +152,11 @@ class DbCommands(object):
             sys.exit()
 
         try:
-            self.expand()
-            self.migrate()
-            self.contract()
+            # NOTE(abhishekk): db_sync should not be used for online
+            # migrations.
+            self.expand(online_migration=False)
+            self.migrate(online_migration=False)
+            self.contract(online_migration=False)
             print(_('Database is synced successfully.'))
         except exception.GlanceException as e:
             sys.exit(_('Failed to sync database: ERROR: %s') % e)
@@ -186,7 +183,7 @@ class DbCommands(object):
     def _validate_engine(self, engine):
         """Check engine is valid or not.
 
-        MySql is only supported for Glance EMC.
+        MySql is only supported for online upgrade.
         Adding sqlite as engine to support existing functional test cases.
 
         :param engine: database engine name
@@ -195,9 +192,10 @@ class DbCommands(object):
             sys.exit(_('Rolling upgrades are currently supported only for '
                        'MySQL and Sqlite'))
 
-    def expand(self):
-        """Run the expansion phase of a rolling upgrade procedure."""
-        self._validate_engine(db_api.get_engine())
+    def expand(self, online_migration=True):
+        """Run the expansion phase of a database migration."""
+        if online_migration:
+            self._validate_engine(db_api.get_engine())
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         expand_head = alembic_migrations.get_alembic_branch_head(
@@ -225,9 +223,10 @@ class DbCommands(object):
         else:
             print(_('Database expansion is up to date. No expansion needed.'))
 
-    def contract(self):
-        """Run the contraction phase of a rolling upgrade procedure."""
-        self._validate_engine(db_api.get_engine())
+    def contract(self, online_migration=True):
+        """Run the contraction phase of a database migration."""
+        if online_migration:
+            self._validate_engine(db_api.get_engine())
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         contract_head = alembic_migrations.get_alembic_branch_head(
@@ -264,8 +263,10 @@ class DbCommands(object):
                        '%(curr_revs)s ') % {'e_rev': expand_head,
                                             'curr_revs': curr_heads})
 
-    def migrate(self):
-        self._validate_engine(db_api.get_engine())
+    def migrate(self, online_migration=True):
+        """Run the data migration phase of a database migration."""
+        if online_migration:
+            self._validate_engine(db_api.get_engine())
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         contract_head = alembic_migrations.get_alembic_branch_head(
