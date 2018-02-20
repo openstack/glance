@@ -28,19 +28,21 @@ import_filtering_opts = [
                 bounds=True,
                 default=['http', 'https'],
                 help=_("""
-Specify the allowed url schemes for web-download.
+Specify the "whitelist" of allowed url schemes for web-download.
 
-This option provides whitelisting for uri schemes that web-download import
-method will be using. Whitelisting is always priority and ignores any
-blacklisting of the schemes but obeys host and port filtering.
+This option provides whitelisting of uri schemes that will be allowed when
+an end user imports an image using the web-download import method. The
+whitelist has priority such that if there is also a blacklist defined for
+schemes, the blacklist will be ignored.  Host and port filtering, however,
+will be applied.
 
-For example: If scheme blacklisting contains 'http' and whitelist contains
-['http', 'https'] the whitelist is obeyed on http://example.com but any
-other scheme like ftp://example.com is blocked even it's not blacklisted.
+See the Glance Administration Guide for more information.
 
 Possible values:
     * List containing normalized url schemes as they are returned from
-    urllib.parse. For example ['ftp','https']
+      urllib.parse. For example ['ftp','https']
+    * Hint: leave the whitelist empty if you want the disallowed_schemes
+      blacklist to be processed
 
 Related options:
     * disallowed_schemes
@@ -55,21 +57,19 @@ Related options:
                 bounds=True,
                 default=[],
                 help=_("""
-Specify the blacklisted url schemes for web-download.
+Specify the "blacklist" of uri schemes disallowed for web-download.
 
-This option provides blacklisting for uri schemes that web-download import
-method will be using. Whitelisting is always priority and ignores any
-blacklisting of the schemes but obeys host and port filtering. Blacklisting
-can be used to prevent specific scheme to be used when whitelisting is not
-in use.
+This option provides blacklisting of uri schemes that will be rejected when
+an end user imports an image using the web-download import method.  Note
+that if a scheme whitelist is defined using the 'allowed_schemes' option,
+*this option will be ignored*.  Host and port filtering, however, will be
+applied.
 
-For example: If scheme blacklisting contains 'http' and whitelist contains
-['http', 'https'] the whitelist is obeyed on http://example.com but any
-other scheme like ftp://example.com is blocked even it's not blacklisted.
+See the Glance Administration Guide for more information.
 
 Possible values:
     * List containing normalized url schemes as they are returned from
-    urllib.parse. For example ['ftp','https']
+      urllib.parse. For example ['ftp','https']
     * By default the list is empty
 
 Related options:
@@ -85,23 +85,23 @@ Related options:
                 bounds=True,
                 default=[],
                 help=_("""
-Specify the allowed target hosts for web-download.
+Specify the "whitelist" of allowed target hosts for web-download.
 
-This option provides whitelisting for hosts that web-download import
-method will be using. Whitelisting is always priority and ignores any
-blacklisting of the hosts but obeys scheme and port filtering.
+This option provides whitelisting of hosts that will be allowed when an end
+user imports an image using the web-download import method. The whitelist
+has priority such that if there is also a blacklist defined for hosts, the
+blacklist will be ignored.  The uri must have already passed scheme
+filtering before this host filter will be applied.  If the uri passes, port
+filtering will then be applied.
 
-For example: If scheme blacklisting contains 'http' and whitelist contains
-['http', 'https'] the whitelist is obeyed on http://example.com but any
-other scheme like ftp://example.com is blocked even it's not blacklisted.
-Same way the whitelisted example.com is only obeyed on the allowed schemes
-and or ports. Whitelisting of the host does not allow all schemes and ports
-accessed.
+See the Glance Administration Guide for more information.
 
 Possible values:
     * List containing normalized hostname or ip like it would be returned
-    in the urllib.parse netloc without the port
+      in the urllib.parse netloc without the port
     * By default the list is empty
+    * Hint: leave the whitelist empty if you want the disallowed_hosts
+      blacklist to be processed
 
 Related options:
     * allowed_schemes
@@ -116,21 +116,21 @@ Related options:
                 bounds=True,
                 default=[],
                 help=_("""
-Specify the blacklisted hosts for web-download.
+Specify the "blacklist" of hosts disallowed for web-download.
 
-This option provides blacklisting for hosts that web-download import
-method will be using. Whitelisting is always priority and ignores any
-blacklisting but obeys scheme and port filtering.
+This option provides blacklisting of hosts that will be rejected when an end
+user imports an image using the web-download import method.  Note that if a
+host whitelist is defined using the 'allowed_hosts' option, *this option
+will be ignored*.
 
-For example: If scheme blacklisting contains 'http' and whitelist contains
-['http', 'https'] the whitelist is obeyed on http://example.com but any
-other scheme like ftp://example.com is blocked even it's not blacklisted.
-The blacklisted example.com is obeyed on any url pointing to that host
-regardless of what their scheme or port is.
+The uri must have already passed scheme filtering before this host filter
+will be applied.  If the uri passes, port filtering will then be applied.
+
+See the Glance Administration Guide for more information.
 
 Possible values:
     * List containing normalized hostname or ip like it would be returned
-    in the urllib.parse netloc without the port
+      in the urllib.parse netloc without the port
     * By default the list is empty
 
 Related options:
@@ -146,19 +146,22 @@ Related options:
                 bounds=True,
                 default=[80, 443],
                 help=_("""
-Specify the allowed ports for web-download.
+Specify the "whitelist" of allowed ports for web-download.
 
-This option provides whitelisting for uri ports that web-download import
-method will be using. Whitelisting is always priority and ignores any
-blacklisting of the ports but obeys host and scheme filtering.
+This option provides whitelisting of ports that will be allowed when an end
+user imports an image using the web-download import method.  The whitelist
+has priority such that if there is also a blacklist defined for ports, the
+blacklist will be ignored.  Note that scheme and host filtering have already
+been applied by the time a uri hits the port filter.
 
-For example: If scheme blacklisting contains '80' and whitelist contains
-['80', '443'] the whitelist is obeyed on http://example.com:80 but any
-other port like ftp://example.com:21 is blocked even it's not blacklisted.
+See the Glance Administration Guide for more information.
 
 Possible values:
     * List containing ports as they are returned from urllib.parse netloc
-    field. For example ['80','443']
+      field.  Thus the value is a list of integer values, for example
+      [80, 443]
+    * Hint: leave the whitelist empty if you want the disallowed_ports
+      blacklist to be processed
 
 Related options:
     * allowed_schemes
@@ -172,22 +175,21 @@ Related options:
                 bounds=True,
                 default=[],
                 help=_("""
-Specify the disallowed ports for web-download.
+Specify the "blacklist" of disallowed ports for web-download.
 
-This option provides blacklisting for uri ports that web-download import
-method will be using. Whitelisting is always priority and ignores any
-blacklisting of the ports but obeys host and scheme filtering.
+This option provides blacklisting of target ports that will be rejected when
+an end user imports an image using the web-download import method.  Note
+that if a port whitelist is defined using the 'allowed_ports' option, *this
+option will be ignored*.  Note that scheme and host filtering have already
+been applied by the time a uri hits the port filter.
 
-For example: If scheme blacklisting contains '80' and whitelist contains
-['80', '443'] the whitelist is obeyed on http://example.com:80 but any
-other port like ftp://example.com:21 is blocked even it's not blacklisted.
-If no whitelisting is defined any scheme and host combination is disallowed
-for the blacklisted port.
+See the Glance Administration Guide for more information.
 
 Possible values:
     * List containing ports as they are returned from urllib.parse netloc
-    field. For example ['80','443']
-    * By default this list is empty.
+      field.  Thus the value is a list of integer values, for example
+      [22, 88]
+    * By default this list is empty
 
 Related options:
     * allowed_schemes

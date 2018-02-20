@@ -154,15 +154,15 @@ def validate_import_uri(uri):
     # logging it to inform only allowed will be obeyed.
     if wl_schemes and bl_schemes:
         bl_schemes = []
-        LOG.debug("Both allowed and disallowed schemes has been configured."
+        LOG.debug("Both allowed and disallowed schemes has been configured. "
                   "Will only process allowed list.")
     if wl_hosts and bl_hosts:
         bl_hosts = []
-        LOG.debug("Both allowed and disallowed hosts has been configured."
+        LOG.debug("Both allowed and disallowed hosts has been configured. "
                   "Will only process allowed list.")
     if wl_ports and bl_ports:
         bl_ports = []
-        LOG.debug("Both allowed and disallowed ports has been configured."
+        LOG.debug("Both allowed and disallowed ports has been configured. "
                   "Will only process allowed list.")
 
     if not scheme or ((wl_schemes and scheme not in wl_schemes) or
