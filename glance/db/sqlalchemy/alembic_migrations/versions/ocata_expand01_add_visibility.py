@@ -21,6 +21,7 @@ Create Date: 2017-01-27 12:58:16.647499
 from alembic import op
 from sqlalchemy import Column, Enum, MetaData, Table
 
+from glance.cmd import manage
 from glance.db import migration
 
 # revision identifiers, used by Alembic.
@@ -148,4 +149,5 @@ def upgrade():
 
     _add_visibility_column(meta)
     _change_nullability_and_default_on_is_public(meta)
-    _add_triggers(migrate_engine)
+    if manage.USE_TRIGGERS:
+        _add_triggers(migrate_engine)

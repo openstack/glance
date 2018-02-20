@@ -59,6 +59,7 @@ from glance.i18n import _
 
 
 CONF = cfg.CONF
+USE_TRIGGERS = True
 
 
 # Decorators for actions
@@ -142,6 +143,13 @@ class DbCommands(object):
     @args('--version', metavar='<version>', help='Database version')
     def sync(self, version=None):
         """Perform a complete (offline) database migration"""
+        global USE_TRIGGERS
+
+        # This flags let's us bypass trigger setup & teardown for non-rolling
+        # upgrades. We set this as a global variable immediately before handing
+        # off to sqlalchemy-migrate, because we can't pass arguments directly
+        # to migrations that depend on it.
+        USE_TRIGGERS = False
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         contract = alembic_migrations.get_alembic_branch_head(
