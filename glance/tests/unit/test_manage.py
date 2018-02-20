@@ -237,9 +237,9 @@ class TestManage(TestManageBase):
         mock_get_current_alembic_heads.return_value = ['ocata_contract01']
         mock_get_alembic_branch_head.return_value = ['pike_contract01']
         self.db.sync()
-        mock_expand.assert_called_once_with()
-        mock_migrate.assert_called_once_with()
-        mock_contract.assert_called_once_with()
+        mock_expand.assert_called_once_with(online_migration=False)
+        mock_migrate.assert_called_once_with(online_migration=False)
+        mock_contract.assert_called_once_with(online_migration=False)
         self.assertIn('Database is synced successfully.',
                       self.output.getvalue())
 
@@ -247,7 +247,12 @@ class TestManage(TestManageBase):
         'glance.db.sqlalchemy.alembic_migrations.get_current_alembic_heads')
     @mock.patch(
         'glance.db.sqlalchemy.alembic_migrations.get_alembic_branch_head')
-    def test_sync_db_is_already_sync(self, mock_get_alembic_branch_head,
+    @mock.patch('glance.db.sqlalchemy.alembic_migrations.'
+                'place_database_under_alembic_control')
+    @mock.patch('alembic.command.upgrade')
+    def test_sync_db_is_already_sync(self, mock_upgrade,
+                                     mock_db_under_alembic_control,
+                                     mock_get_alembic_branch_head,
                                      mock_get_current_alembic_heads):
         mock_get_current_alembic_heads.return_value = ['pike_contract01']
         mock_get_alembic_branch_head.return_value = ['pike_contract01']
