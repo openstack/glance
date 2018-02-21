@@ -19,6 +19,23 @@ Rolling Upgrades
 .. note:: The Rolling Upgrades feature is EXPERIMENTAL and its use in
           production systems is currently **not supported**.
 
+          This statement remains true for the Queens release of Glance.  What
+          is the holdup, you ask?  Before asserting that the feature is fully
+          supported, the Glance team needs to have automated tests that perform
+          rolling upgrades in the OpenStack Continuous Integration gates.  The
+          Glance project team has not had sufficient testing and development
+          resources in recent cycles to prioritize this work.
+
+          The Glance project team is committed to the stability of Glance.  As
+          part of OpenStack, we are committed to `The Four Opens`_.  If the
+          ability to perform rolling upgrades in production systems is
+          important to you, feel free to participate in the Glance community to
+          help coordinate and drive such an effort.  (We gently remind you that
+          "participation" includes providing testing and development
+          resources.)
+
+          .. _`The Four Opens`: https://governance.openstack.org/tc/reference/opens.html
+
 Scope of this document
 ----------------------
 
@@ -82,6 +99,12 @@ Following is the process to upgrade Glance with zero downtime:
 4. Using the NEW NODE, expand the database using the command::
 
     glance-manage db expand
+
+    .. warning::
+
+     For MySQL, using the ``glance-manage db_expand`` command requires that
+     you either grant your glance user ``SUPER`` privileges, or run
+     ``set global log_bin_trust_function_creators=1;`` in mysql beforehand.
 
 5. Then, also on the NEW NODE, perform the data migrations using the command::
 
