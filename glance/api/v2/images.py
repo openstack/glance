@@ -101,7 +101,7 @@ class ImagesController(object):
         uri = body.get('method').get('uri')
         if (import_method == 'web-download' and
            not utils.validate_import_uri(uri)):
-                LOG.debug("URI for web-download does not pass filtering: %s" %
+                LOG.debug("URI for web-download does not pass filtering: %s",
                           uri)
                 msg = (_("URI for web-download does not pass filtering: %s") %
                        uri)
