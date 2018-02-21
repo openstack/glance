@@ -168,7 +168,7 @@ Request
    - visibility: visibility-in-request
 
 Additionally, you may include additional properties specified as key:value
-pairs, where the value must be a string data type.  Keys and values are limited
+pairs, where the value must be a string data type.  Keys are limited
 to 255 chars in length.  Available key names may be limited by the cloud's
 property protection configuration.
 
