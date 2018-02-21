@@ -282,10 +282,21 @@ Data Migrations
 NOTES
 -----
 
-* Starting in Ocata, Glance needs every database migration to include both
-  monolithic and Expand-Migrate-Contract (E-M-C) style migrations. At some
-  point in Pike, E-M-C migrations will be made default. At that point, it
-  would be no longer required to include monolithic migration script.
+* In Ocata and Pike, Glance required every database migration to include
+  both monolithic and Expand-Migrate-Contract (E-M-C) style migrations.  In
+  Queens, E-M-C migrations became the default and a monolithic migration
+  script is no longer required.
+
+  In Queens, the glance-manage tool was refactored so that the ``glance-manage
+  db sync`` command runs the expand, migrate, and contract scripts "under
+  the hood".  From the viewpoint of the operator, there is no difference
+  between having a single monolithic script and having three scripts.
+
+  Since we are using the same scripts for offline and online (zero-downtime)
+  database upgrades, as a developer you have to pay attention in your scripts
+  to determine whether you need to add/remove triggers in the expand/contract
+  scripts.  See the changes to the ocata scripts in
+  https://review.openstack.org/#/c/544792/ for an example of how to do this.
 
 * Alembic is a database migration engine written for SQLAlchemy. So, any
   migration script written for SQLAlchemy Migrate should work with Alembic as
