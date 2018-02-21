@@ -21,6 +21,7 @@ Create Date: 2017-01-27 12:58:16.647499
 from alembic import op
 from sqlalchemy import MetaData, Enum
 
+from glance.cmd import manage
 from glance.db import migration
 
 # revision identifiers, used by Alembic.
@@ -70,5 +71,6 @@ def upgrade():
     meta = MetaData(bind=migrate_engine)
 
     _drop_column()
-    _drop_triggers(migrate_engine)
+    if manage.USE_TRIGGERS:
+        _drop_triggers(migrate_engine)
     _set_nullability_and_default_on_visibility(meta)
