@@ -16,12 +16,12 @@
 Interoperable Image Import
 ==========================
 
-The EXPERIMENTAL version 2.6 of the Image Service API introduces a Minimal
-Viable Product of the interoperable image import process described in the
-Glance design document `Image Import Refactor`_.  The API calls available
-in the current implementation are described in the `Interoperable Image
-Import`_ section of the Image Service API reference.  Here's how to configure
-Glance to enable the interoperable image import process.
+Version 2.6 of the Image Service API introduces new API calls that implement an
+interoperable image import process.  These API calls, and the workflow for
+using them, are described in the `Interoperable Image Import`_ section of the
+`Image Service API reference`_.  That documentation explains the end user's
+view of interoperable image import.  In this section, we discuss what
+configuration options are available to operators.
 
 The interoperable image import process uses Glance tasks, but does *not*
 require that the Tasks API be exposed to end users.  Further, it requires
@@ -39,16 +39,35 @@ be set:
     descriptions in the sample **glance-api.conf** file to see what
     options are available.
 
+    .. note::
+       You can find an example glance-api.conf_ file in the **etc/**
+       subdirectory of the Glance source code tree.  Make sure that you are
+       looking in the correct branch for the OpenStack release you are working
+       with.
+
 * in the default options group:
 
-  * ``enable_image_import`` must be set to **True** (the default is
-    False).  When False, the **/versions** API response does not
-    include the v2.6 API and calls to the import URIs will behave
-    like they do in v2.5, that is, they'll return a 404 response.
+  * ``enable_image_import`` must be either absent or set to **True** (the
+    default).
+
+    .. note ::
+       In the Pike release, the default value for this option was **False**.
+       This option is DEPRECATED and will be removed in the Rocky release.
+
+    If ``enable_image_import`` is set **False**, requests to the v2 endpoint
+    for URIs defined only in v2.6 will return 404 (Not Found) with a message in
+    the response body stating "Image import is not supported at this site."
+    Additionally, the image-create response will not contain the
+    "OpenStack-image-import-methods" header.
 
   * ``node_staging_uri`` must specify a location writable by the glance
     user.  If you have multiple Glance API nodes, this should be a
     reference to a shared filesystem available to all the nodes.
+
+  * ``enabled_import_methods`` must specify the import methods you are exposing
+    at your installation.  The default value for this setting is
+    ``['glance-direct','web-download']``.  See the next section for a
+    description of these import methods.
 
 Additionally, your policies must be such that an ordinary end user
 can manipulate tasks.  In releases prior to Pike, we recommended that
@@ -71,16 +90,61 @@ Image Import Methods
 --------------------
 
 Glance provides two import methods that you can make available to your
-users: ``glance-direct`` and ``web-download``.
+users: ``glance-direct`` and ``web-download``.  By default, both methods
+are enabled.
 
-.. TODO(rosmaita): quick description of what they are
+* The ``glance-direct`` import method allows your users to upload image data
+  directly to Glance.
+
+* The ``web-download`` method allows an end user to import an image from a
+  remote URL.  The image data is retrieved from the URL and stored in the
+  Glance backend.  (In other words, this is a *copy-from* operation.)
+
+  .. note::
+     The ``web-download`` import method replaces the copy-from functionality
+     that was available in the Image API v1 but previously absent from v2.
+     This note is a gentle reminder that the Image API v1 is DEPRECATED and
+     will be removed from Glance during the Rocky development cycle.  The
+     Queens release of Glance (16.x.x) is the final version in which you can
+     expect to find the Image API v1.
+
+You control which methods are available to API users by the
+``enabled_import_methods`` configuration option in the default section of the
+**glance-api.conf** file.
+
+Configuring the glance-direct method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For the ``glance-direct`` method, make sure that ``glance-direct`` is included
+in the list specified by your ``enabled_import_methods`` setting, and that all
+the options described above are set properly.
 
 Configuring the web-download method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+To enable the ``web-download`` import method, make sure that it is included in
+the list of methods in the ``enabled_import_methods`` option, and that all the
+options described above are set properly.
+
+.. note::
+   You must configure the ``node_staging_uri`` for the ``web-download`` import
+   method because that is where Glance will store the downloaded content.
+   This gives you the opportunity to have the image data be processed by the
+   same plugin chain for each of the import methods.  See :ref:`iir_plugins`
+   for more information.
+
+Additionally, you have the following configuration available.
+
 Depending on the nature of your cloud and the sophistication of your users,
 you may wish to restrict what URIs they may use for the web-download import
-method.  You can do this by configuring options in the
+method.
+
+.. note::
+   You should be aware of OSSN-0078_, "copy_from in Image Service API v1 allows
+   network port scan".  The v1 copy_from feature does not have the
+   configurability described here.
+
+You can do this by configuring options in the
 ``[import_filtering_opts]`` section of the **glance-image-import.conf** file.
 
 .. note::
@@ -91,8 +155,6 @@ method.  You can do this by configuring options in the
    the **etc/** subdirectory of the Glance source code tree.  Make sure that
    you are looking in the correct branch for the OpenStack release you are
    working with.
-
-   .. _glance-image-import.conf.sample: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-image-import.conf.sample
 
 You can whitelist ("allow *only* these") or blacklist ("do *not* allow these")
 at three levels:
@@ -153,6 +215,14 @@ using the http or https scheme.  The only ports users will be able to specify
 are 80 and 443.  (Users do not have to specify a port, but if they do, it must
 be either 80 or 443.)
 
+.. note::
+   The **glance-image-import.conf** is an optional file.  You can find an
+   example file named glance-image-import.conf.sample_ in the **etc/**
+   subdirectory of the Glance source code tree.  Make sure that you are looking
+   in the correct branch for the OpenStack release you are working with.
+
+.. _iir_plugins:
+
 Customizing the image import process
 ------------------------------------
 
@@ -207,12 +277,6 @@ Third, the plugin must be listed in the ``glance-image-import.conf`` file as
 one of the plugin names in the list providing the value for the
 ``image_import_plugins`` option.  Plugins are executed in the order they are
 specified in this list.
-
-.. _`Image Import Refactor`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
-.. _`Interoperable Image Import`: https://developer.openstack.org/api-ref/image/v2/index.html#interoperable-image-import
-.. _`Stevedore`: https://docs.openstack.org/stevedore
-.. _`Taskflow`: https://docs.openstack.org/taskflow
-.. _`Taskflow "Task" object`: https://docs.openstack.org/taskflow/latest/user/atoms.html#task
 
 The Image Property Injection Plugin
 -----------------------------------
@@ -313,4 +377,14 @@ required.
    See the :ref:`property-protections` section of this Guide for more
    information.
 
+.. _glance-api.conf: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-api.conf
+.. _glance-image-import.conf.sample: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-image-import.conf.sample
+.. _`Image Import Refactor`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
+.. _`Image Service API reference`: https://developer.openstack.org/api-ref/image/
 .. _`Inject metadata properties automatically to non-admin images`: https://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/inject-automatic-metadata.html
+.. _`Interoperable Image Import`: https://developer.openstack.org/api-ref/image/v2/index.html#interoperable-image-import
+.. _OSSN-0078: https://wiki.openstack.org/wiki/OSSN/OSSN-0078
+.. _`Stevedore`: https://docs.openstack.org/stevedore
+.. _`Taskflow`: https://docs.openstack.org/taskflow
+.. _`Taskflow "Task" object`: https://docs.openstack.org/taskflow/latest/user/atoms.html#task
+
