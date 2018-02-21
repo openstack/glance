@@ -28,7 +28,7 @@ from osprofiler import opts as profiler
 
 import glance.api.middleware.context
 import glance.api.versions
-import glance.async.flows._internal_plugins.web_download
+import glance.async.flows._internal_plugins
 import glance.async.flows.api_image_import
 import glance.async.flows.convert
 from glance.async.flows.plugins import plugin_opts
@@ -111,7 +111,7 @@ _manage_opts = [
 _image_import_opts = [
     ('image_import_opts', glance.async.flows.api_image_import.api_import_opts),
     ('import_filtering_opts',
-     glance.async.flows._internal_plugins.web_download.import_filtering_opts),
+     glance.async.flows._internal_plugins.import_filtering_opts),
 ]
 
 
