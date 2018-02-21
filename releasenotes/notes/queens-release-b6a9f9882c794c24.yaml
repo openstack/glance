@@ -1,0 +1,87 @@
+---
+prelude: >
+  - A plugin framework for customizing the processing of imported images
+    before they become active is introduced in this release, along with
+    a new plugin that injects image metadata properties into imported
+    images.
+
+fixes:
+  - |
+    The following are some highlights of the bug fixes included in this
+    release.
+
+    * Bug 1714240_: Avoid restarting a child when terminating
+    * Bug 1719252_: Metadefs: Fix 500 for name with more than 80 chars
+    * Bug 1720354_: Correctly send auth request to oslo.policy
+    * Bug 1733813_: Fix 500 from image-import on queued images
+    * Bug 1688189_: Fix member create to handle unicode characters
+    * Bug 1737952_: Fix 500 if custom property name is greater than 255
+    * Bug 1744824_: Fix py27 eventlet issue <0.22.0
+    * Bug 1748916_: Glance default workers total overkill for modern servers
+    * Bug 1749297_: Fix 500 from list-tasks call with postgresql
+
+    .. _1749297: https://code.launchpad.net/bugs/1749297
+    .. _1748916: https://code.launchpad.net/bugs/1748916
+    .. _1744824: https://code.launchpad.net/bugs/1744824
+    .. _1737952: https://code.launchpad.net/bugs/1737952
+    .. _1688189: https://code.launchpad.net/bugs/1688189
+    .. _1733813: https://code.launchpad.net/bugs/1733813
+    .. _1720354: https://code.launchpad.net/bugs/1720354
+    .. _1719252: https://code.launchpad.net/bugs/1719252
+    .. _1714240: https://code.launchpad.net/bugs/1714240
+
+upgrade:
+  - |
+    The default value for the API configuration option ``workers`` was
+    previously the number of CPUs available.  It has been changed to be
+    the min of {number of CPUs, 8}.  Any value set for that option, of
+    course, is honored.  See Bug 1748916_ for details.
+
+  - |
+    Some configuration is required in order to make the Interoperable
+    Image Import functionality work correctly.  In particular, the
+    ``node_staging_uri`` value in the glance-api.conf file must be
+    set.  See the section on Interoperable Image Import in the `Glance
+    Administration Guide`_ for more information.
+
+other:
+  - |
+    The Interoperable Image Import section of the `Image Service API v2
+    Reference Guide`_ was updated to include the new ``web-download``
+    import method.
+
+  - |
+    The section on Interoperable Image Import in the `Glance Administration
+    Guide`_ has been updated.  Please see that section of the Guide for
+    information about the configuration required to make the import
+    functionality work correctly.
+
+  - |
+    The Database Management sections of the `Glance Administration Guide`_
+    have been revised and updated.  This includes information about the
+    current experimental status of rolling upgrades and zero-downtime
+    database upgrades.
+
+    .. _`Image Service API v2 Reference Guide`: https://developer.openstack.org/api-ref/image/v2/
+    .. _`Glance Administration Guide`: https://docs.openstack.org/glance/queens/admin/index.html
+
+security:
+  - |
+    The ``web-download`` import-method, intended to be a replacement for
+    the popular Image Service API v1 "copy-from" functionality, is configurable
+    so that you can avoid the vulnerabilty described in `OSSN-0078`_.  See
+    the Interoperable Image Import section of the `Glance Administration
+    Guide`_ for details.
+
+    .. _`OSSN-0078`: https://wiki.openstack.org/wiki/OSSN/OSSN-0078
+
+deprecations:
+  - |
+    With the introduction of the ``web-download`` import method, we consider
+    the Image Service v2 API to have reached feature parity with the DEPRECATED
+    v1 API in all important respects.  Support for the Image Service API v1
+    ends with the Queens release.  The `v1 API was deprecated in Newton`_ and
+    will be removed from the codebase at the beginning of the Rocky development
+    cycle.  Please plan appropriately.
+
+    .. _`v1 API was deprecated in Newton`: http://git.openstack.org/cgit/openstack/glance/commit/?id=63e6dbb1eb006758fbcf7cae83e1d2eacf46b4ab
