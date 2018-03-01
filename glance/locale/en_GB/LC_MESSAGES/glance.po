@@ -12,16 +12,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-02-16 17:15+0000\n"
+"POT-Creation-Date: 2018-02-22 09:19+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-02-16 02:04+0000\n"
+"PO-Revision-Date: 2018-02-22 05:11+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
-"Language: en-GB\n"
+"Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.9.6\n"
+"X-Generator: Zanata 4.3.3\n"
 "Language-Team: English (United Kingdom)\n"
 
 #, python-format
@@ -3834,6 +3834,9 @@ msgstr ""
 "database version up to \"%(e_rev)s\" revision. But, current revisions are: "
 "%(curr_revs)s "
 
+msgid "Database expansion is up to date. No expansion needed."
+msgstr "Database expansion is up to date. No expansion needed."
+
 msgid "Database is currently not under Alembic's migration control."
 msgstr "Database is currently not under Alembic's migration control."
 
@@ -3854,6 +3857,9 @@ msgstr "Database is up to date. No migrations needed."
 
 msgid "Database is up to date. No upgrades needed."
 msgstr "Database is up to date. No upgrades needed."
+
+msgid "Database migration is up to date. No migration needed."
+msgstr "Database migration is up to date. No migration needed."
 
 msgid "Date and time of image member creation"
 msgstr "Date and time of image member creation"
