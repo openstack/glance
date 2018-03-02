@@ -11,7 +11,9 @@ Replicate images across multiple data centers
 SYNOPSIS
 ========
 
-glance-replicator <command> [options] [args]
+::
+
+  glance-replicator <command> [options] [args]
 
 DESCRIPTION
 ===========
@@ -24,62 +26,62 @@ data from the original.
 COMMANDS
 ========
 
-  **help <command>**
-        Output help for one of the commands below
+``help <command>``
+      Output help for one of the commands below
 
-  **compare**
-        What is missing from the slave glance?
+``compare``
+      What is missing from the slave glance?
 
-  **dump**
-        Dump the contents of a glance instance to local disk.
+``dump``
+      Dump the contents of a glance instance to local disk.
 
-  **livecopy**
-       Load the contents of one glance instance into another.
+``livecopy``
+      Load the contents of one glance instance into another.
 
-  **load**
-        Load the contents of a local directory into glance.
+``load``
+      Load the contents of a local directory into glance.
 
-  **size**
-        Determine the size of a glance instance if dumped to disk.
+``size``
+      Determine the size of a glance instance if dumped to disk.
 
 OPTIONS
 =======
 
-  **-h, --help**
-        Show this help message and exit
+``-h, --help``
+      Show this help message and exit
 
-  **-c CHUNKSIZE, --chunksize=CHUNKSIZE**
-        Amount of data to transfer per HTTP write
+``-c CHUNKSIZE, --chunksize=CHUNKSIZE``
+      Amount of data to transfer per HTTP write
 
-  **-d, --debug**
-        Print debugging information
+``-d, --debug``
+      Print debugging information
 
-  **-D DONTREPLICATE, --dontreplicate=DONTREPLICATE**
-        List of fields to not replicate
+``-D DONTREPLICATE, --dontreplicate=DONTREPLICATE``
+      List of fields to not replicate
 
-  **-m, --metaonly**
-        Only replicate metadata, not images
+``-m, --metaonly``
+      Only replicate metadata, not images
 
-  **-l LOGFILE, --logfile=LOGFILE**
-        Path of file to log to
+``-l LOGFILE, --logfile=LOGFILE``
+      Path of file to log to
 
-  **-s, --syslog**
-        Log to syslog instead of a file
+``-s, --syslog``
+      Log to syslog instead of a file
 
-  **-t TOKEN, --token=TOKEN**
-        Pass in your authentication token if you have one. If
-        you use this option the same token is used for both
-        the master and the slave.
+``-t TOKEN, --token=TOKEN``
+      Pass in your authentication token if you have one. If
+      you use this option the same token is used for both
+      the master and the slave.
 
-  **-M MASTERTOKEN, --mastertoken=MASTERTOKEN**
-        Pass in your authentication token if you have one.
-        This is the token used for the master.
+``-M MASTERTOKEN, --mastertoken=MASTERTOKEN``
+      Pass in your authentication token if you have one.
+      This is the token used for the master.
 
-  **-S SLAVETOKEN, --slavetoken=SLAVETOKEN**
-        Pass in your authentication token if you have one.
-        This is the token used for the slave.
+``-S SLAVETOKEN, --slavetoken=SLAVETOKEN``
+      Pass in your authentication token if you have one.
+      This is the token used for the slave.
 
-  **-v, --verbose**
-         Print more verbose output
+``-v, --verbose``
+      Print more verbose output
 
 .. include:: footer.txt

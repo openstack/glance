@@ -11,6 +11,8 @@ Glance Image Cache Pre-fetcher
 SYNOPSIS
 ========
 
+::
+
   glance-cache-prefetcher [options]
 
 DESCRIPTION
@@ -22,14 +24,14 @@ images to be pretched.
 OPTIONS
 =======
 
-  **General options**
+**General options**
 
-  .. include:: general_options.txt
+.. include:: general_options.txt
 
 FILES
 =====
 
-    **/etc/glance/glance-cache.conf**
-        Default configuration file for the Glance Cache
+**/etc/glance/glance-cache.conf**
+    Default configuration file for the Glance Cache
 
 .. include:: footer.txt

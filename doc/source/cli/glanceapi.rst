@@ -11,7 +11,9 @@ Server for the Glance Image Service API
 SYNOPSIS
 ========
 
-glance-api [options]
+::
+
+  glance-api [options]
 
 DESCRIPTION
 ===========
@@ -21,14 +23,14 @@ glance-api is a server daemon that serves the Glance API
 OPTIONS
 =======
 
-  **General options**
+**General options**
 
-  .. include:: general_options.txt
+.. include:: general_options.txt
 
 FILES
 =====
 
-  **/etc/glance/glance-api.conf**
-        Default configuration file for Glance API
+**/etc/glance/glance-api.conf**
+      Default configuration file for Glance API
 
 .. include:: footer.txt

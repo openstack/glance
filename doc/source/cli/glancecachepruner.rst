@@ -11,6 +11,8 @@ Glance cache pruner
 SYNOPSIS
 ========
 
+::
+
   glance-cache-pruner [options]
 
 DESCRIPTION
@@ -23,14 +25,14 @@ to be run as a periodic task, perhaps every half-hour.
 OPTIONS
 =======
 
-  **General options**
+**General options**
 
-  .. include:: general_options.txt
+.. include:: general_options.txt
 
 FILES
 =====
 
-  **/etc/glance/glance-cache.conf**
-        Default configuration file for the Glance Cache
+**/etc/glance/glance-cache.conf**
+      Default configuration file for the Glance Cache
 
 .. include:: footer.txt
