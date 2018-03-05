@@ -24,6 +24,11 @@ Image Service Versions
 Version History
 ***************
 
+**Rocky changes**
+
+- version 1.1 is DELETED
+- version 1.0 is DELETED
+
 **Queens changes**
 
 - version 2.6 is CURRENT
