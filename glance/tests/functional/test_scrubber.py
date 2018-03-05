@@ -233,6 +233,133 @@ class TestScrubber(functional.FunctionalTest):
 
         self.stop_server(self.scrubber_daemon)
 
+    def test_scrubber_restore_image(self):
+        self.cleanup()
+        self.start_servers(delayed_delete=True, daemon=False,
+                           metadata_encryption_key='')
+        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
+        response, content = self._send_create_image_http_request(path)
+        self.assertEqual(http_client.CREATED, response.status)
+        image = jsonutils.loads(content)
+        self.assertEqual('queued', image['status'])
+
+        file_path = "%s/%s/file" % (path, image['id'])
+        response, content = self._send_upload_image_http_request(file_path,
+                                                                 body='XXX')
+        self.assertEqual(http_client.NO_CONTENT, response.status)
+
+        path = "%s/%s" % (path, image['id'])
+        response, content = self._send_http_request(path, 'GET')
+        image = jsonutils.loads(content)
+        self.assertEqual('active', image['status'])
+
+        response, content = self._send_http_request(path, 'DELETE')
+        self.assertEqual(http_client.NO_CONTENT, response.status)
+
+        image = self._get_pending_delete_image(image['id'])
+        self.assertEqual('pending_delete', image['status'])
+
+        def _test_content():
+            exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
+            cmd = ("%s --config-file %s --restore %s" %
+                   (exe_cmd, self.scrubber_daemon.conf_file_name, image['id']))
+            exitcode, out, err = execute(cmd, raise_error=False)
+            self.assertEqual(0, exitcode)
+        self.wait_for_scrubber_shutdown(_test_content)
+
+        response, content = self._send_http_request(path, 'GET')
+        image = jsonutils.loads(content)
+        self.assertEqual('active', image['status'])
+
+        self.stop_servers()
+
+    def test_scrubber_restore_active_image_raise_error(self):
+        self.cleanup()
+        self.start_servers(delayed_delete=True, daemon=False,
+                           metadata_encryption_key='')
+
+        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
+        response, content = self._send_create_image_http_request(path)
+        self.assertEqual(http_client.CREATED, response.status)
+        image = jsonutils.loads(content)
+        self.assertEqual('queued', image['status'])
+
+        file_path = "%s/%s/file" % (path, image['id'])
+        response, content = self._send_upload_image_http_request(file_path,
+                                                                 body='XXX')
+        self.assertEqual(http_client.NO_CONTENT, response.status)
+
+        path = "%s/%s" % (path, image['id'])
+        response, content = self._send_http_request(path, 'GET')
+        image = jsonutils.loads(content)
+        self.assertEqual('active', image['status'])
+
+        def _test_content():
+            exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
+            cmd = ("%s --config-file %s --restore %s" %
+                   (exe_cmd, self.scrubber_daemon.conf_file_name, image['id']))
+            exitcode, out, err = execute(cmd, raise_error=False)
+            self.assertEqual(1, exitcode)
+            self.assertIn('cannot restore the image from active to active '
+                          '(wanted from_state=pending_delete)', str(err))
+        self.wait_for_scrubber_shutdown(_test_content)
+
+        self.stop_servers()
+
+    def test_scrubber_restore_image_non_exist(self):
+
+        def _test_content():
+            scrubber = functional.ScrubberDaemon(self.test_dir,
+                                                 self.policy_file)
+            scrubber.write_conf(daemon=False)
+            scrubber.needs_database = True
+            scrubber.create_database()
+            exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
+            cmd = ("%s --config-file %s --restore fake_image_id" %
+                   (exe_cmd, scrubber.conf_file_name))
+            exitcode, out, err = execute(cmd, raise_error=False)
+            self.assertEqual(1, exitcode)
+            self.assertIn('No image found with ID fake_image_id', str(err))
+
+        self.wait_for_scrubber_shutdown(_test_content)
+
+    def test_scrubber_restore_image_with_daemon_raise_error(self):
+
+        exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
+        cmd = ("%s --daemon --restore fake_image_id" % exe_cmd)
+        exitcode, out, err = execute(cmd, raise_error=False)
+
+        self.assertEqual(1, exitcode)
+        self.assertIn('The restore and daemon options should not be set '
+                      'together', str(err))
+
+    def test_scrubber_restore_image_with_daemon_running(self):
+        self.cleanup()
+        self.scrubber_daemon.start(daemon=True)
+
+        exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
+        cmd = ("%s --restore fake_image_id" % exe_cmd)
+        exitcode, out, err = execute(cmd, raise_error=False)
+        self.assertEqual(1, exitcode)
+        self.assertIn('The glance-scrubber process is running under daemon',
+                      str(err))
+
+        self.stop_server(self.scrubber_daemon)
+
+    def wait_for_scrubber_shutdown(self, func):
+        # NOTE: sometimes the glance-scrubber process which is setup by the
+        # previous test can't be shutdown immediately, we need wait a second to
+        # make sure it's down.
+        for _ in range(15):
+            try:
+                func()
+                break
+            except AssertionError:
+                time.sleep(1)
+                continue
+        else:
+            self.fail('unexpected error occurred in glance-scrubber')
+
     def wait_for_scrub(self, image_id):
         """
         NOTE(jkoelker) The build servers sometimes take longer than 15 seconds

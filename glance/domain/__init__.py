@@ -107,7 +107,7 @@ class Image(object):
         'importing': ('active', 'deleted', 'queued'),
         'active': ('pending_delete', 'deleted', 'deactivated'),
         'killed': ('deleted',),
-        'pending_delete': ('deleted',),
+        'pending_delete': ('deleted', 'active'),
         'deleted': (),
         'deactivated': ('active', 'deleted'),
     }

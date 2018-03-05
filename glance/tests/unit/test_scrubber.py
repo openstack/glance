@@ -104,6 +104,21 @@ class TestScrubber(test_utils.BaseTestCase):
         self.assertRaises(exception.FailedToGetScrubberJobs,
                           scrub._get_delete_jobs)
 
+    @mock.patch.object(db_api, "image_restore")
+    def test_scrubber_revert_image_status(self, mock_image_restore):
+        scrub = scrubber.Scrubber(glance_store)
+        scrub.revert_image_status('fake_id')
+
+        mock_image_restore.side_effect = exception.ImageNotFound
+        self.assertRaises(exception.ImageNotFound,
+                          scrub.revert_image_status,
+                          'fake_id')
+
+        mock_image_restore.side_effect = exception.Conflict
+        self.assertRaises(exception.Conflict,
+                          scrub.revert_image_status,
+                          'fake_id')
+
 
 class TestScrubDBQueue(test_utils.BaseTestCase):
 

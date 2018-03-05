@@ -150,6 +150,21 @@ Possible values:
 Related options:
     * ``wakeup_time``
 
+""")),
+    cfg.StrOpt('restore',
+               metavar='<IMAGE_ID>',
+               help=_("""
+Restore the image status from 'pending_delete' to 'active'.
+
+This option is used by administrator to reset the image's status from
+'pending_delete' to 'active' when the image is deleted by mistake and
+'pending delete' feature is enabled in Glance. Please make sure the
+glance-scrubber daemon is stopped before restoring the image to avoid image
+data inconsistency.
+
+Possible values:
+    * image's uuid
+
 """))
 ]
 
@@ -371,3 +386,6 @@ class Scrubber(object):
                       {'id': image_id,
                        'exc': encodeutils.exception_to_unicode(e)})
             raise
+
+    def revert_image_status(self, image_id):
+        db_api.get_api().image_restore(self.admin_context, image_id)

@@ -19,9 +19,10 @@ DESCRIPTION
 ===========
 
 glance-scrubber is a utility that allows an operator to configure Glance for
-the asynchronous deletion of images.  Whether this makes sense for your
-deployment depends upon the storage backend you are using and the size of
-typical images handled by your Glance installation.
+the asynchronous deletion of images or to revert the image's status from
+`pending_delete` to `active`.  Whether this makes sense for your deployment
+depends upon the storage backend you are using and the size of typical images
+handled by your Glance installation.
 
 An image in glance is really a combination of an image record (stored in the
 database) and a file of image data (stored in a storage backend).  Under normal
@@ -49,6 +50,11 @@ with ``delayed_delete`` enabled, you *must* run the glance-scrubber
 occasionally or your storage backend will eventually fill up with "deleted"
 image data.
 
+The glance-scrubber can also revert a image to `active` if operators delete
+the image by mistake and the pending-delete is enabled in Glance. Please make
+sure the ``glance-scrubber`` is not running before restoring the image to avoid
+image data inconsistency.
+
 Configuration of glance-scrubber is done in the **glance-scrubber.conf** file.
 Options are explained in detail in comments in the sample configuration file,
 so we only point out a few of them here.
@@ -74,6 +80,10 @@ so we only point out a few of them here.
     leave it unset), you must include the same setting in your
     **glance-scrubber.conf** or the scrubber won't be able to determine the
     locations of your image data.
+
+``restore``
+    reset the specified image's status from'pending_delete' to 'active' when
+    the image is deleted by mistake.
 
 ``[database]``
     As of the Queens release of Glance (16.0.0), the glance-scrubber does not
@@ -110,6 +120,9 @@ OPTIONS
 **--nodaemon**
       The inverse of --daemon. Runs the scrub operation once and
       then exits. This is the default.
+
+  **--restore <IMAGE_ID>**
+        Restore the specified image status from 'pending_delete' to 'active'.
 
 FILES
 =====

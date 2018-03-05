@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    ``glance-scrubber`` now support to restore the image's status from
+    `pending_delete` to `active`. The usage is
+    `glance-scrubber --restore <image-id>`. Please make sure the
+    ``glance-scrubber`` daemon is stopped before restoring the image to avoid
+    image data inconsistency.

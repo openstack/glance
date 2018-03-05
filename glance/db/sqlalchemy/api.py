@@ -164,6 +164,21 @@ def image_update(context, image_id, values, purge_props=False,
     return image
 
 
+def image_restore(context, image_id):
+    """Restore the pending-delete image to active."""
+    session = get_session()
+    with session.begin():
+        image_ref = _image_get(context, image_id, session=session)
+        if image_ref.status != 'pending_delete':
+            msg = (_('cannot restore the image from %s to active (wanted '
+                     'from_state=pending_delete)') % image_ref.status)
+            raise exception.Conflict(msg)
+
+        query = session.query(models.Image).filter_by(id=image_id)
+        values = {'status': 'active', 'deleted': 0}
+        query.update(values, synchronize_session='fetch')
+
+
 @retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
        stop_max_attempt_number=50)
 def image_destroy(context, image_id):

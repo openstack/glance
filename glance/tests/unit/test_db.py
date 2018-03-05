@@ -402,6 +402,32 @@ class TestImageRepo(test_utils.BaseTestCase):
             exception.ImageNotFound, self.image_repo.remove, image)
         self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
 
+    def test_restore_image_status(self):
+        image_id = uuid.uuid4()
+        image = _db_fixture(image_id, name='restore_test', size=256,
+                            is_public=True, status='pending_delete')
+        self.db.image_create(self.context, image)
+        self.db.image_restore(self.context, image_id)
+        image = self.db.image_get(self.context, image_id)
+        self.assertEqual(image['status'], 'active')
+
+    def test_restore_image_status_not_found(self):
+        image_id = uuid.uuid4()
+        self.assertRaises(exception.ImageNotFound,
+                          self.db.image_restore,
+                          self.context,
+                          image_id)
+
+    def test_restore_image_status_not_pending_delete(self):
+        image_id = uuid.uuid4()
+        image = _db_fixture(image_id, name='restore_test', size=256,
+                            is_public=True, status='deleted')
+        self.db.image_create(self.context, image)
+        self.assertRaises(exception.Conflict,
+                          self.db.image_restore,
+                          self.context,
+                          image_id)
+
 
 class TestEncryptedLocations(test_utils.BaseTestCase):
     def setUp(self):

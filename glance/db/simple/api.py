@@ -474,6 +474,17 @@ def image_get_all(context, filters=None, marker=None, limit=None,
     return res
 
 
+def image_restore(context, image_id):
+    """Restore the pending-delete image to active."""
+    image = _image_get(context, image_id)
+    if image['status'] != 'pending_delete':
+        msg = (_('cannot restore the image from %s to active (wanted '
+                 'from_state=pending_delete)') % image['status'])
+        raise exception.Conflict(msg)
+    values = {'status': 'active', 'deleted': 0}
+    image_update(context, image_id, values)
+
+
 @log_call
 def image_property_create(context, values):
     image = _image_get(context, values['image_id'])
