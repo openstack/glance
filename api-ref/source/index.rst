@@ -26,4 +26,3 @@ API content can be searched using the :ref:`search`.
    versions/index
    v2/index
    v2/metadefs-index
-   v1/index

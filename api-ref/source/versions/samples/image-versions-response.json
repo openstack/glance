@@ -69,26 +69,6 @@
                 }
             ],
             "status": "SUPPORTED"
-        },
-        {
-            "id": "v1.1",
-            "links": [
-                {
-                    "href": "http://glance.openstack.example.org/v1/",
-                    "rel": "self"
-                }
-            ],
-            "status": "DEPRECATED"
-        },
-        {
-            "id": "v1.0",
-            "links": [
-                {
-                    "href": "http://glance.openstack.example.org/v1/",
-                    "rel": "self"
-                }
-            ],
-            "status": "DEPRECATED"
         }
     ]
 }
