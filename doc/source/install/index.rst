@@ -24,22 +24,33 @@
    install.rst
    verify.rst
 
-Ocata
-~~~~~
 
-To install Glance, see the Ocata Image service install guide for
+Supported Releases
+==================
+
+Queens (Latest Release)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To install Glance, see the Queens Image service install guide for
 each distribution:
 
-- `Ubuntu <https://docs.openstack.org/ocata/install-guide-ubuntu/glance.html>`__
-- `CentOS and RHEL <https://docs.openstack.org/ocata/install-guide-rdo/glance.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/ocata/install-guide-obs/glance.html>`__
+- `Ubuntu <https://docs.openstack.org/glance/queens/install/install-debian.html>`__
+- `CentOS and RHEL <https://docs.openstack.org/glance/queens/install/install-rdo.html>`__
+- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/glance/queens/install/install-obs.html>`__
 
-Newton
-~~~~~~
+Pike (Maintained Release)
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install Glance, see the Newton Image service install guide for
+To install Glance, see the Pike Image service install guide for
 each distribution:
 
-- `Ubuntu <https://docs.openstack.org/newton/install-guide-ubuntu/glance.html>`__
-- `CentOS and RHEL <https://docs.openstack.org/newton/install-guide-rdo/glance.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/newton/install-guide-obs/glance.html>`__
+- `Ubuntu <https://docs.openstack.org/glance/pike/install/install-debian.html>`__
+- `CentOS and RHEL <https://docs.openstack.org/glance/pike/install/install-rdo.html>`__
+- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/glance/pike/install/install-obs.html>`__
+
+Ocata (Legacy Release)
+~~~~~~~~~~~~~~~~~~~~~~
+
+To install Glance, see the `Ocata Image service install guide`_.
+
+.. _`Ocata Image service install guide`: https://docs.openstack.org/glance/ocata/installing.html

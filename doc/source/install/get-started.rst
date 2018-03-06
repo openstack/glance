@@ -41,6 +41,18 @@ The OpenStack Image service includes the following components:
 glance-api
   Accepts Image API calls for image discovery, retrieval, and storage.
 
+  .. note::
+
+     An OpenStack Community Goal in the Pike release was `Control Plane API
+     endpoints deployment via WSGI`_.  As currently constituted, however,
+     glance-api is **not suitable** to be run in such a configuration.  Instead
+     we recommend that Glance be run in the traditional manner as a standalone
+     server.  See the "Known Issues" section of the `Glance Release Notes`_ for
+     the Pike and Queens releases for more information.
+
+     .. _`Control Plane API endpoints deployment via WSGI`: https://governance.openstack.org/tc/goals/pike/deploy-api-in-wsgi.html
+     .. _`Glance Release Notes`: https://docs.openstack.org/releasenotes/glance/index.html
+
 glance-registry
   Stores, processes, and retrieves metadata about images. Metadata
   includes items such as size and type.
