@@ -65,7 +65,7 @@ Version History
 - version 2.1 is CURRENT
 - version 2.0 is SUPPORTED
 
-**Folson changes**
+**Folsom changes**
 
 - version 2.0 is CURRENT
 
