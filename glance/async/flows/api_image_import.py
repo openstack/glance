@@ -307,10 +307,11 @@ def get_flow(**kwargs):
     import_method = kwargs.get('import_req')['method']['name']
     uri = kwargs.get('import_req')['method'].get('uri')
 
+    separator = ''
+    if not CONF.node_staging_uri.endswith('/'):
+        separator = '/'
+
     if not uri and import_method == 'glance-direct':
-        separator = ''
-        if not CONF.node_staging_uri.endswith('/'):
-            separator = '/'
         uri = separator.join((CONF.node_staging_uri, str(image_id)))
 
     flow = lf.Flow(task_type, retry=retry.AlwaysRevert())
@@ -318,8 +319,6 @@ def get_flow(**kwargs):
     if import_method == 'web-download':
         downloadToStaging = internal_plugins.get_import_plugin(**kwargs)
         flow.add(downloadToStaging)
-        if not CONF.node_staging_uri.endswith('/'):
-            separator = '/'
         file_uri = separator.join((CONF.node_staging_uri, str(image_id)))
     else:
         file_uri = uri
