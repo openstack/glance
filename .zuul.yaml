@@ -7,3 +7,6 @@
       jobs:
         - openstack-tox-functional
         - openstack-tox-functional-py35
+    experimental:
+      jobs:
+        - barbican-simple-crypto-devstack-tempest
