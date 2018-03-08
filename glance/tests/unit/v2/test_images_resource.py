@@ -637,6 +637,13 @@ class TestImagesController(base.IsolatedUnitTest):
                               self.controller.import_image, request, UUID4,
                               {'method': {'name': 'glance-direct'}})
 
+    def test_image_import_invalid_uri_filtering(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.controller.import_image, request, UUID4,
+                          {'method': {'name': 'web-download',
+                                      'uri': 'fake_uri'}})
+
     def test_create(self):
         request = unit_test_utils.get_fake_request()
         image = {'name': 'image-1'}
