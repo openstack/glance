@@ -117,17 +117,17 @@ from a local cache.
 
 To queue an image for prefetching, you can use one of the following methods:
 
- * If the ``cache_manage`` middleware is enabled in the application pipeline,
-   you may call ``PUT /queued-images/<IMAGE_ID>`` to queue the image with
-   identifier ``<IMAGE_ID>``
+* If the ``cache_manage`` middleware is enabled in the application pipeline,
+  you may call ``PUT /queued-images/<IMAGE_ID>`` to queue the image with
+  identifier ``<IMAGE_ID>``
 
-   Alternately, you can use the ``glance-cache-manage`` program to queue the
-   image. This program may be run from a different host than the host
-   containing the image cache. Example usage::
+* Alternately, you can use the ``glance-cache-manage`` program to queue the
+  image. This program may be run from a different host than the host
+  containing the image cache. Example usage::
 
-     $> glance-cache-manage --host=<HOST> queue-image <IMAGE_ID>
+    $> glance-cache-manage --host=<HOST> queue-image <IMAGE_ID>
 
-   This will queue the image with identifier ``<IMAGE_ID>`` for prefetching
+  This will queue the image with identifier ``<IMAGE_ID>`` for prefetching
 
 Once you have queued the images you wish to prefetch, call the
 ``glance-cache-prefetcher`` executable, which will prefetch all queued images
@@ -139,26 +139,26 @@ Finding Which Images are in the Image Cache
 You can find out which images are in the image cache using one of the
 following methods:
 
-  * If the ``cachemanage`` middleware is enabled in the application pipeline,
-    you may call ``GET /cached-images`` to see a JSON-serialized list of
-    mappings that show cached images, the number of cache hits on each image,
-    the size of the image, and the times they were last accessed.
+* If the ``cachemanage`` middleware is enabled in the application pipeline,
+  you may call ``GET /cached-images`` to see a JSON-serialized list of
+  mappings that show cached images, the number of cache hits on each image,
+  the size of the image, and the times they were last accessed.
 
-    Alternately, you can use the ``glance-cache-manage`` program. This program
-    may be run from a different host than the host containing the image cache.
-    Example usage::
+* Alternately, you can use the ``glance-cache-manage`` program. This program
+  may be run from a different host than the host containing the image cache.
+  Example usage::
 
-    $> glance-cache-manage --host=<HOST> list-cached
+   $> glance-cache-manage --host=<HOST> list-cached
 
-  * You can issue the following call on \*nix systems (on the host that contains
-    the image cache)::
+* You can issue the following call on \*nix systems (on the host that contains
+  the image cache)::
 
-      $> ls -lhR $IMAGE_CACHE_DIR
+    $> ls -lhR $IMAGE_CACHE_DIR
 
-    where ``$IMAGE_CACHE_DIR`` is the value of the ``image_cache_dir``
-    configuration variable.
+  where ``$IMAGE_CACHE_DIR`` is the value of the ``image_cache_dir``
+  configuration variable.
 
-    Note that the image's cache hit is not shown using this method.
+  Note that the image's cache hit is not shown using this method.
 
 Manually Removing Images from the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
