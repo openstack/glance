@@ -66,7 +66,7 @@ otherwise ``glance-registry.conf``.
 
 If no configuration file is found, you will see an error, like::
 
-  $> glance-api
+  $ glance-api
   ERROR: Unable to locate any configuration file. Cannot load application glance-api
 
 Here is an example showing how you can manually start the ``glance-api`` server
@@ -155,7 +155,7 @@ To start a Glance server with ``glance-control``, simply call
 any command-line options you wish to provide. Start the server
 with ``glance-control`` in the following way::
 
-  $> sudo glance-control [OPTIONS] <SERVER> start [CONFPATH]
+  $ sudo glance-control [OPTIONS] <SERVER> start [CONFPATH]
 
 .. note::
 
@@ -214,11 +214,11 @@ function, simply send a terminate signal to the server process by typing
 If you started the Glance server using the ``glance-control`` program, you can
 use the ``glance-control`` program to stop it. Simply do the following::
 
-  $> sudo glance-control <SERVER> stop
+  $ sudo glance-control <SERVER> stop
 
 as this example shows::
 
-  $> sudo glance-control registry stop
+  $ sudo glance-control registry stop
   Stopping glance-registry  pid: 17602  signal: 15
 
 Restarting a server
@@ -227,17 +227,17 @@ Restarting a server
 You can restart a server with the ``glance-control`` program, as demonstrated
 here::
 
-  $> sudo glance-control registry restart etc/glance-registry.conf
+  $ sudo glance-control registry restart etc/glance-registry.conf
   Stopping glance-registry  pid: 17611  signal: 15
   Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance-registry.conf
 
 Reloading a server
--------------------
+------------------
 
 You can reload a server with the ``glance-control`` program, as demonstrated
 here::
 
-  $> sudo glance-control api reload
+  $ sudo glance-control api reload
   Reloading glance-api (pid 18506) with signal(1)
 
 A reload sends a SIGHUP signal to the master process and causes new
