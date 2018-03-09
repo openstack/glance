@@ -125,7 +125,7 @@ To queue an image for prefetching, you can use one of the following methods:
   image. This program may be run from a different host than the host
   containing the image cache. Example usage::
 
-    $> glance-cache-manage --host=<HOST> queue-image <IMAGE_ID>
+    $ glance-cache-manage --host=<HOST> queue-image <IMAGE_ID>
 
   This will queue the image with identifier ``<IMAGE_ID>`` for prefetching
 
@@ -148,12 +148,12 @@ following methods:
   may be run from a different host than the host containing the image cache.
   Example usage::
 
-   $> glance-cache-manage --host=<HOST> list-cached
+   $ glance-cache-manage --host=<HOST> list-cached
 
 * You can issue the following call on \*nix systems (on the host that contains
   the image cache)::
 
-    $> ls -lhR $IMAGE_CACHE_DIR
+    $ ls -lhR $IMAGE_CACHE_DIR
 
   where ``$IMAGE_CACHE_DIR`` is the value of the ``image_cache_dir``
   configuration variable.
@@ -169,4 +169,5 @@ with identifier ``<IMAGE_ID>`` from the cache.
 
 Alternately, you can use the ``glance-cache-manage`` program. Example usage::
 
-  $> glance-cache-manage --host=<HOST> delete-cached-image <IMAGE_ID>
+  $ glance-cache-manage --host=<HOST> delete-cached-image <IMAGE_ID>
+
