@@ -1,0 +1,14 @@
+{
+    "resource_type_associations": [
+        {
+            "created_at": "2018-03-05T18:20:44Z",
+            "name": "OS::Nova::Flavor",
+            "prefix": "hw:"
+        },
+        {
+            "created_at": "2018-03-05T18:20:44Z",
+            "name": "OS::Glance::Image",
+            "prefix": "hw_"
+        }
+    ]
+}

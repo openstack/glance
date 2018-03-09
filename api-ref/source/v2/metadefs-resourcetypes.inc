@@ -129,7 +129,7 @@ Response Parameters
 Response Example
 ----------------
 
-.. literalinclude:: samples/metadef-resource-types-list-response.json
+.. literalinclude:: samples/metadef-resource-type-assoc-list-response.json
    :language: json
 
 
