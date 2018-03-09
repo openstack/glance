@@ -496,3 +496,42 @@ class EvaluateFilterOpTestCase(test_utils.BaseTestCase):
     def test_invalid_operator(self):
         self.assertRaises(exception.InvalidFilterOperatorValue,
                           utils.evaluate_filter_op, '10', 'bar', '8')
+
+
+class ImportURITestCase(test_utils.BaseTestCase):
+
+    def test_validate_import_uri(self):
+        self.assertTrue(utils.validate_import_uri("http://foo.com"))
+        self.config(allowed_schemes=['http'],
+                    group='import_filtering_opts')
+        self.config(disallowed_schemes=['ftp'],
+                    group='import_filtering_opts')
+
+        self.config(allowed_hosts=['example.com'],
+                    group='import_filtering_opts')
+        self.config(disallowed_hosts=['foo.com'],
+                    group='import_filtering_opts')
+
+        self.assertTrue(utils.validate_import_uri("http://example.com"))
+
+        self.config(allowed_ports=['8080'],
+                    group='import_filtering_opts')
+        self.config(disallowed_ports=['8484'],
+                    group='import_filtering_opts')
+        self.assertTrue(utils.validate_import_uri("http://example.com:8080"))
+
+    def test_invalid_import_uri(self):
+        self.assertFalse(utils.validate_import_uri(""))
+
+        self.assertFalse(utils.validate_import_uri("fake_uri"))
+        self.config(disallowed_schemes=['ftp'],
+                    group='import_filtering_opts')
+        self.assertFalse(utils.validate_import_uri("ftp://example.com"))
+
+        self.config(disallowed_hosts=['foo.com'],
+                    group='import_filtering_opts')
+        self.assertFalse(utils.validate_import_uri("ftp://foo.com"))
+
+        self.config(disallowed_ports=['8484'],
+                    group='import_filtering_opts')
+        self.assertFalse(utils.validate_import_uri("http://localhost:8484"))
