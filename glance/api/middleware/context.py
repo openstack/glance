@@ -25,7 +25,18 @@ from glance.i18n import _, _LW
 
 
 context_opts = [
-    cfg.BoolOpt('owner_is_tenant', default=True,
+    cfg.BoolOpt('owner_is_tenant',
+                default=True,
+                deprecated_for_removal=True,
+                deprecated_since="Rocky",
+                deprecated_reason=_("""
+The non-default setting for this option misaligns Glance with other
+OpenStack services with respect to resource ownership.  Further, surveys
+indicate that this option is not used by operators.  The option will be
+removed early in the 'S' development cycle following the standard OpenStack
+deprecation policy.  As the option is not in wide use, no migration path is
+proposed.
+"""),
                 help=_("""
 Set the image owner to tenant or the authenticated user.
 
