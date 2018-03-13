@@ -11,6 +11,8 @@ Glance Management Utility
 SYNOPSIS
 ========
 
+::
+
   glance-manage [options]
 
 DESCRIPTION
@@ -34,58 +36,58 @@ or with the db commands concatenated, like this::
 COMMANDS
 ========
 
-  **db**
-        This is the prefix for the commands below when used with a space
-        rather than a _. For example "db version".
+``db``
+      This is the prefix for the commands below when used with a space
+      rather than a _. For example "db version".
 
-  **db_version**
-        This will print the current migration level of a glance database.
+``db_version``
+      This will print the current migration level of a glance database.
 
-  **db_upgrade [VERSION]**
-        This will take an existing database and upgrade it to the
-        specified VERSION.
+``db_upgrade [VERSION]``
+      This will take an existing database and upgrade it to the
+      specified VERSION.
 
-  **db_version_control**
-        Place the database under migration control.
+``db_version_control``
+      Place the database under migration control.
 
-  **db_sync [VERSION]**
-        Place an existing database under migration control and upgrade it to
-        the specified VERSION.
+``db_sync [VERSION]``
+      Place an existing database under migration control and upgrade it to
+      the specified VERSION.
 
-  **db_expand**
-        Run this command to expand the database as the first step of a rolling
-        upgrade process.
+``db_expand``
+      Run this command to expand the database as the first step of a rolling
+      upgrade process.
 
-  **db_migrate**
-        Run this command to migrate the database as the second step of a
-        rolling upgrade process.
+``db_migrate``
+      Run this command to migrate the database as the second step of a
+      rolling upgrade process.
 
-  **db_contract**
-        Run this command to contract the database as the last step of a rolling
-        upgrade process.
+``db_contract``
+      Run this command to contract the database as the last step of a rolling
+      upgrade process.
 
-  **db_export_metadefs [PATH | PREFIX]**
-        Export the metadata definitions into json format. By default the
-        definitions are exported to /etc/glance/metadefs directory.
-        **Note: this command will overwrite existing files in the supplied or
-        default path.**
+``db_export_metadefs [PATH | PREFIX]``
+      Export the metadata definitions into json format. By default the
+      definitions are exported to /etc/glance/metadefs directory.
+      ``Note: this command will overwrite existing files in the supplied or
+      default path.``
 
-  **db_load_metadefs [PATH]**
-        Load the metadata definitions into glance database. By default the
-        definitions are imported from /etc/glance/metadefs directory.
+``db_load_metadefs [PATH]``
+      Load the metadata definitions into glance database. By default the
+      definitions are imported from /etc/glance/metadefs directory.
 
-  **db_unload_metadefs**
-        Unload the metadata definitions. Clears the contents of all the glance
-        db tables including metadef_namespace_resource_types, metadef_tags,
-        metadef_objects, metadef_resource_types, metadef_namespaces and
-        metadef_properties.
+``db_unload_metadefs``
+      Unload the metadata definitions. Clears the contents of all the glance
+      db tables including metadef_namespace_resource_types, metadef_tags,
+      metadef_objects, metadef_resource_types, metadef_namespaces and
+      metadef_properties.
 
 OPTIONS
 =======
 
-  **General Options**
+**General Options**
 
-  .. include:: general_options.txt
+.. include:: general_options.txt
 
 .. include:: footer.txt
 

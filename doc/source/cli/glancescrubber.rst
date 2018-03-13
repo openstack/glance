@@ -11,7 +11,9 @@ Glance scrub service
 SYNOPSIS
 ========
 
-glance-scrubber [options]
+::
+
+  glance-scrubber [options]
 
 DESCRIPTION
 ===========
@@ -95,24 +97,24 @@ information so it can delete the image data.
 OPTIONS
 =======
 
-  **General options**
+**General options**
 
-  .. include:: general_options.txt
+.. include:: general_options.txt
 
-  **-D, --daemon**
-        Run as a long-running process. When not specified (the
-        default) run the scrub operation once and then exits.
-        When specified do not exit and run scrub on
-        wakeup_time interval as specified in the config.
+**-D, --daemon**
+      Run as a long-running process. When not specified (the
+      default) run the scrub operation once and then exits.
+      When specified do not exit and run scrub on
+      wakeup_time interval as specified in the config.
 
-  **--nodaemon**
-        The inverse of --daemon. Runs the scrub operation once and
-        then exits. This is the default.
+**--nodaemon**
+      The inverse of --daemon. Runs the scrub operation once and
+      then exits. This is the default.
 
 FILES
 =====
 
-  **/etc/glance/glance-scrubber.conf**
-      Default configuration file for the Glance Scrubber
+**/etc/glance/glance-scrubber.conf**
+    Default configuration file for the Glance Scrubber
 
 .. include:: footer.txt

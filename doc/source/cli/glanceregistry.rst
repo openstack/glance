@@ -14,7 +14,9 @@ Server for the Glance Registry Service
 SYNOPSIS
 ========
 
-glance-registry [options]
+::
+
+  glance-registry [options]
 
 DESCRIPTION
 ===========
@@ -25,14 +27,14 @@ REST-like API.
 OPTIONS
 =======
 
-  **General options**
+**General options**
 
-  .. include:: general_options.txt
+.. include:: general_options.txt
 
 FILES
 =====
 
-  **/etc/glance/glance-registry.conf**
-        Default configuration file for Glance Registry
+**/etc/glance/glance-registry.conf**
+      Default configuration file for Glance Registry
 
 .. include:: footer.txt
