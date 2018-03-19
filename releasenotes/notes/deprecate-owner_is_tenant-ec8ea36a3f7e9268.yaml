@@ -1,0 +1,7 @@
+---
+deprecations:
+  - |
+    The Glance API configuration option ``owner_is_tenant`` is deprecated
+    in this release and is subject to removal at the beginning of the 'S'
+    development cycle, following the `OpenStack standard deprecation policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
