@@ -3165,10 +3165,13 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
 
     def test_image_import(self):
         self.config(enable_image_import=True)
+        # Bug 1754634: make sure that what's considered valid
+        # is determined by the config option
+        self.config(enabled_import_methods=['party-time'])
         request = unit_test_utils.get_fake_request()
         import_body = {
             "method": {
-                "name": "glance-direct"
+                "name": "party-time"
             }
         }
         request.body = jsonutils.dump_as_bytes(import_body)
@@ -3209,18 +3212,29 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                           self.deserializer.import_image,
                           request)
 
-    def test_import_image_invalid_import_method(self):
-        self.config(enable_image_import=True)
+    def _get_request_for_method(self, method_name):
         request = unit_test_utils.get_fake_request()
         import_body = {
             "method": {
-                "name": "abcd"
+                "name": method_name
             }
         }
         request.body = jsonutils.dump_as_bytes(import_body)
-        self.assertRaises(webob.exc.HTTPBadRequest,
-                          self.deserializer.import_image,
-                          request)
+        return request
+
+    KNOWN_IMPORT_METHODS = ['glance-direct', 'web-download']
+
+    def test_import_image_invalid_import_method(self):
+        self.config(enable_image_import=True)
+        # Bug 1754634: make sure that what's considered valid
+        # is determined by the config option.  So put known bad
+        # name in config, and known good name in request
+        self.config(enabled_import_methods=['bad-method-name'])
+        for m in self.KNOWN_IMPORT_METHODS:
+            request = self._get_request_for_method(m)
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.deserializer.import_image,
+                              request)
 
 
 class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):

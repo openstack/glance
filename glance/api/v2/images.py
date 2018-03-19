@@ -817,7 +817,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         except KeyError:
             msg = _("Import request requires a 'name' field.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
-        if method_name not in ['glance-direct', 'web-download']:
+        if method_name not in CONF.enabled_import_methods:
             msg = _("Unknown import method name '%s'.") % method_name
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
