@@ -237,11 +237,6 @@ The release team usually proposes all of the projects' final releases in one
 patch based off the final release candidate. After those are created, some
 things in Glance need to be updated immediately.
 
-- Right after cutting the stable branch, Glance release version (not the API
-  version) must be bumped so that all further development is attributed to the
-  next release version. This could be done by adding an empty commit with
-  commit message containing the flag ``Sem-Ver: api-break`` to indicate
-  a version. Here is a sample commit attempting to `bump the release version`_.
 - The migration tooling that Glance uses relies on some constants defined in
   `glance/db/migration.py`_. Post final release, those need *immediate*
   updating.
@@ -254,7 +249,8 @@ revised by the Glance Release CPLs:
 
 - Ian Cordasco, Release CPL for Ocata
 - Hemanth Makkapati, Release CPL for Pike
-
+- Erno Kuvaja, Release CPL for Queens
+- Brian Rosmaita, Release CPL for Rocky
 
 .. links
 .. _weekly meeting:
@@ -275,5 +271,3 @@ revised by the Glance Release CPLs:
     https://bugs.launchpad.net/glance
 .. _release notes:
     https://docs.openstack.org/project-team-guide/release-management.html#managing-release-notes
-.. _bump the release version:
-    https://review.openstack.org/#q,I21480e186a2aab6c54f7ea798c215660bddf9e4c,n,z
