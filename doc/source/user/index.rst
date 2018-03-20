@@ -1,6 +1,6 @@
-============
- User guide
-============
+=================
+Glance User Guide
+=================
 
 .. toctree::
    :maxdepth: 2
