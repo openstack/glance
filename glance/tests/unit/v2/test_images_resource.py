@@ -112,6 +112,15 @@ def _db_image_member_fixture(image_id, member_id, **kwargs):
     return obj
 
 
+class FakeImage(object):
+    def __init__(self, status='active', container_format='ami',
+                 disk_format='ami'):
+        self.id = UUID4
+        self.status = status
+        self.container_format = container_format
+        self.disk_format = disk_format
+
+
 class TestImagesController(base.IsolatedUnitTest):
 
     def setUp(self):
@@ -600,42 +609,70 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, UUID4)
 
-    def test_image_import_raises_conflict(self):
+    def test_image_import_raises_conflict_if_container_format_is_none(self):
         request = unit_test_utils.get_fake_request()
-        # NOTE(abhishekk): Due to
-        # https://bugs.launchpad.net/glance/+bug/1712463 taskflow is not
-        # executing. Once it is fixed instead of mocking spawn_n method
-        # we should mock execute method of _ImportToStore task.
-        with mock.patch.object(eventlet.GreenPool, 'spawn_n',
-                               side_effect=exception.Conflict):
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(container_format=None)
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
                               {'method': {'name': 'glance-direct'}})
 
+    def test_image_import_raises_conflict_if_disk_format_is_none(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(disk_format=None)
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'glance-direct'}})
+
+    def test_image_import_raises_conflict(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='queued')
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'glance-direct'}})
+
+    def test_image_import_raises_conflict_for_web_download(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage()
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'web-download'}})
+
     def test_image_import_raises_conflict_for_invalid_status_change(self):
         request = unit_test_utils.get_fake_request()
-        # NOTE(abhishekk): Due to
-        # https://bugs.launchpad.net/glance/+bug/1712463 taskflow is not
-        # executing. Once it is fixed instead of mocking spawn_n method
-        # we should mock execute method of _ImportToStore task.
+
         with mock.patch.object(
-                eventlet.GreenPool, 'spawn_n',
-                side_effect=exception.InvalidImageStatusTransition):
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage()
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
                               {'method': {'name': 'glance-direct'}})
 
     def test_image_import_raises_bad_request(self):
         request = unit_test_utils.get_fake_request()
-        # NOTE(abhishekk): Due to
-        # https://bugs.launchpad.net/glance/+bug/1712463 taskflow is not
-        # executing. Once it is fixed instead of mocking spawn_n method
-        # we should mock execute method of _ImportToStore task.
-        with mock.patch.object(eventlet.GreenPool, 'spawn_n',
-                               side_effect=ValueError):
-            self.assertRaises(webob.exc.HTTPBadRequest,
-                              self.controller.import_image, request, UUID4,
-                              {'method': {'name': 'glance-direct'}})
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            # NOTE(abhishekk): Due to
+            # https://bugs.launchpad.net/glance/+bug/1712463 taskflow is not
+            # executing. Once it is fixed instead of mocking spawn_n method
+            # we should mock execute method of _ImportToStore task.
+            with mock.patch.object(eventlet.GreenPool, 'spawn_n',
+                                   side_effect=ValueError):
+                self.assertRaises(webob.exc.HTTPBadRequest,
+                                  self.controller.import_image, request, UUID4,
+                                  {'method': {'name': 'glance-direct'}})
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
@@ -2245,9 +2282,12 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_image_import(self):
         request = unit_test_utils.get_fake_request()
-        output = self.controller.import_image(request, UUID4,
-                                              {'method': {'name':
-                                                          'glance-direct'}})
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            output = self.controller.import_image(
+                request, UUID4, {'method': {'name': 'glance-direct'}})
+
         self.assertEqual(UUID4, output)
 
     def test_image_import_not_allowed(self):
@@ -2255,10 +2295,13 @@ class TestImagesController(base.IsolatedUnitTest):
         # NOTE(abhishekk): For coverage purpose setting tenant to
         # None. It is not expected to do in normal scenarios.
         request.context.tenant = None
-        self.assertRaises(webob.exc.HTTPForbidden,
-                          self.controller.import_image,
-                          request, UUID4, {'method': {'name':
-                                                      'glance-direct'}})
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.controller.import_image,
+                              request, UUID4, {'method': {'name':
+                                                          'glance-direct'}})
 
 
 class TestImagesControllerPolicies(base.IsolatedUnitTest):
