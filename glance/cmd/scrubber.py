@@ -18,6 +18,14 @@
 """
 Glance Scrub Service
 """
+import eventlet
+# NOTE(jokke): As per the eventlet commit
+# b756447bab51046dfc6f1e0e299cc997ab343701 there's circular import happening
+# which can be solved making sure the hubs are properly and fully imported
+# before calling monkey_patch(). This is solved in eventlet 0.22.0 but we
+# need to address it before that is widely used around.
+eventlet.hubs.get_hub()
+eventlet.patcher.monkey_patch()
 
 import os
 import sys
@@ -29,7 +37,6 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                    os.pardir))
 if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
-import eventlet
 
 import glance_store
 from oslo_config import cfg
@@ -38,14 +45,6 @@ from oslo_log import log as logging
 from glance.common import config
 from glance import scrubber
 
-# NOTE(jokke): As per the eventlet commit
-# b756447bab51046dfc6f1e0e299cc997ab343701 there's circular import happening
-# which can be solved making sure the hubs are properly and fully imported
-# before calling monkey_patch(). This is solved in eventlet 0.22.0 but we
-# need to address it before that is widely used around.
-eventlet.hubs.get_hub()
-eventlet.patcher.monkey_patch(all=False, socket=True, time=True, select=True,
-                              thread=True, os=True)
 
 CONF = cfg.CONF
 logging.register_options(CONF)
