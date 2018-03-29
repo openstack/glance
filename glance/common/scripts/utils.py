@@ -136,6 +136,6 @@ def get_image_data_iter(uri):
         #
         # We're not using StringIO or other tools to avoid reading everything
         # into memory. Some images may be quite heavy.
-        return open(uri, "r")
+        return open(uri, "rb")
 
     return urllib.request.urlopen(uri)
