@@ -1,6 +1,6 @@
-======================
- Administration guide
-======================
+===========================
+Glance Administration Guide
+===========================
 
 .. toctree::
    :maxdepth: 2

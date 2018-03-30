@@ -1,6 +1,6 @@
-========================
- Command Line Interface
-========================
+=======================
+Glance Utility Programs
+=======================
 
 .. toctree::
    :glob:
