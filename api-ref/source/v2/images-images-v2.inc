@@ -82,6 +82,14 @@ The possible status values for images are presented in the following table.
         recoverable.
     * - deactivated
       - The image data is not available for use.
+    * - uploading
+      - Data has been staged as part of the interoperable image import process.
+        It is not yet available for use.
+        *(Since Image API 2.6)*
+    * - importing
+      - The image data is being processed as part of the interoperable image
+        import process, but is not yet available for use.
+        *(Since Image API 2.6)*
 
 **Image visibility**
 

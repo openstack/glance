@@ -968,7 +968,8 @@ def get_base_properties():
             'readOnly': True,
             'description': _('Status of the image'),
             'enum': ['queued', 'saving', 'active', 'killed',
-                     'deleted', 'pending_delete', 'deactivated'],
+                     'deleted', 'uploading', 'importing',
+                     'pending_delete', 'deactivated'],
         },
         'visibility': {
             'type': 'string',
