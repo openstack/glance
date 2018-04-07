@@ -213,8 +213,8 @@ Install and configure components
         auth_url = http://controller:5000
         memcached_servers = controller:11211
         auth_type = password
-        project_domain_name = default
-        user_domain_name = default
+        project_domain_name = Default
+        user_domain_name = Default
         project_name = service
         username = glance
         password = GLANCE_PASS
@@ -278,8 +278,8 @@ Install and configure components
         auth_url = http://controller:5000
         memcached_servers = controller:11211
         auth_type = password
-        project_domain_name = default
-        user_domain_name = default
+        project_domain_name = Default
+        user_domain_name = Default
         project_name = service
         username = glance
         password = GLANCE_PASS
