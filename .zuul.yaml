@@ -3,10 +3,12 @@
       jobs:
         - openstack-tox-functional
         - openstack-tox-functional-py35
+        - openstack-tox-lower-constraints
     gate:
       jobs:
         - openstack-tox-functional
         - openstack-tox-functional-py35
+        - openstack-tox-lower-constraints
     experimental:
       jobs:
         - barbican-simple-crypto-devstack-tempest
