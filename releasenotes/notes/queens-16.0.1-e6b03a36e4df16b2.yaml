@@ -1,0 +1,33 @@
+---
+issues:
+  - |
+    'enabled_import_methods' is ListOpt type config option. If only one method
+    is enabled, the format needs to be ['method'] this is not obvious as even
+    the example does not have the '[' and ']' boundaries around the default
+    value.
+  - |
+    If signature verification fails upon creation, the image data will stay
+    in the backend even though the image goes to 'killed' state. The data
+    remains even if a user deletes the killed image record.
+critical:
+  - |
+    Image Import API failure with PY35 has been fixed.
+  - |
+    Image Import method 'web-download' failure when 'node_staging_uri' ends
+    with '/' has been fixed.
+  - |
+    Image Import call accepting all implemented methods instead of configured
+    ones has been rectified. It only accepts import calls for the methods
+    listed in the config option 'enabled_import_methods'
+fixes:
+  - |
+    Some documentation and test issues have been addressed in this release on
+    top of the following bugfixes:
+
+    * Bug 1753964_: web-download fails with default node_staging_uri
+    * Bug 1759510_: Image Import fails with Python 3.5
+    * Bug 1754634_: Image Import call does not honour enabled methods
+
+    .. _1753964: https://code.launchpad.net/bugs/1753964
+    .. _1759510: https://code.launchpad.net/bugs/1759510
+    .. _1754634: https://code.launchpad.net/bugs/1754634
