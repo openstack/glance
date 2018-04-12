@@ -77,3 +77,46 @@ Version History
 **Bexar changes**
 
 - version 1.0 is CURRENT
+
+What happened to the v1 API?
+****************************
+
+The Image Service API version 1 was DEPRECATED in the OpenStack Newton release
+and removed during the development cycle for the Rocky release.  The last
+OpenStack release containing the Image Service API v1 was the Queens release.
+
+The source files for the Image Service API Reference are contained in the
+OpenStack Glance source code repository.  The files for the version 1 reference
+are no longer in the current development branch, but they may still be found
+in the stable branches in the repository.
+
+If you would like to consult the Image Service API version 1 Reference, you can
+check out a stable branch from the repository, build it locally, and use a web
+browser to read the generated HTML files.
+
+Building the API Reference
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You'll need to have the following installed on your system:
+
+* python
+* git
+* tox
+
+Then:
+
+1. Go to the Glance repository mirror on GitHub:
+   https://github.com/openstack/glance
+
+2. Clone the repository to your local system.
+
+3. Checkout the **stable/queens** branch of glance.
+
+4. From the root directory, use tox to build the api-reference:
+
+   ``tox -e api-ref``
+
+5. The HTML version of the Image Service API Reference will be located in the
+   ``api-ref/build/html`` directory.  Use your browser to open the
+   ``index.html`` file in that directory and you'll be able to browse the API
+   Reference.
