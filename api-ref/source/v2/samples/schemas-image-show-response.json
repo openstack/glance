@@ -198,7 +198,9 @@
                 "killed",
                 "deleted",
                 "pending_delete",
-                "deactivated"
+                "deactivated",
+                "uploading",
+                "importing"
             ],
             "readOnly": true,
             "type": "string"
