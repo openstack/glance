@@ -42,10 +42,8 @@ Developer Reference
    database_architecture
    domain_model
    domain_implementation
-.. toctree::
-   :maxdepth: 1
 
-   modules
+   Module Reference <api/modules>
 
 Development Roles
 -----------------
