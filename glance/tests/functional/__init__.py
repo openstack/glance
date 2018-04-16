@@ -565,14 +565,10 @@ log_file = %(log_file)s
 daemon = %(daemon)s
 wakeup_time = 2
 scrub_time = %(scrub_time)s
-registry_host = %(registry_host)s
-registry_port = %(registry_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
 lock_path = %(lock_path)s
 sql_connection = %(sql_connection)s
 sql_idle_timeout = 3600
-send_identity_headers = %(send_identity_headers)s
-admin_role = %(admin_role)s
 [glance_store]
 filesystem_store_datadir=%(image_dir)s
 [oslo_policy]
