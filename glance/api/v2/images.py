@@ -228,10 +228,10 @@ class ImagesController(object):
         path = change['path']
         path_root = path[0]
         value = change['value']
-        if path_root == 'locations' and value == []:
+        if path_root == 'locations' and not value:
             msg = _("Cannot set locations to empty list.")
             raise webob.exc.HTTPForbidden(msg)
-        elif path_root == 'locations' and value != []:
+        elif path_root == 'locations' and value:
             self._do_replace_locations(image, value)
         elif path_root == 'owner' and req.context.is_admin == False:
             msg = _("Owner can't be updated by non admin.")

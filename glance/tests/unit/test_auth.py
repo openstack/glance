@@ -72,7 +72,7 @@ class V2Token(object):
         service = catalog[-1]
         endpoint_list = []
 
-        if region_list == []:
+        if not region_list:
             endpoint_list.append(self.base_endpoint)
         else:
             for region in region_list:
