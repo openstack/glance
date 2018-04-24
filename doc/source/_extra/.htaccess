@@ -1,0 +1,45 @@
+# Documentation redirects
+#
+# NOTE(rosmaita): the web server is already doing a rewrite of the
+# pre-pike-url-format ^/developer/glance/(.*) to /glance/latest/$1
+# so the only URLs we will see should be of the form /glance/release/whatever
+
+# Redirects for the new directory structure introduced by commit
+# 1c7f556d4f77d2dd7f282f2b41bdfb2abb6e5740
+# to: admin
+RedirectMatch 301 ^/glance/([^/]+)/apache-httpd.html$ /glance/$1/admin/apache-httpd.html
+RedirectMatch 301 ^/glance/([^/]+)/authentication.html$ /glance/$1/admin/authentication.html
+RedirectMatch 301 ^/glance/([^/]+)/cache.html$ /glance/$1/admin/cache.html
+RedirectMatch 301 ^/glance/([^/]+)/controllingservers.html$ /glance/$1/admin/controllingservers.html
+RedirectMatch 301 ^/glance/([^/]+)/db-sqlalchemy-migrate.html$ /glance/$1/admin/db-sqlalchemy-migrate.html
+RedirectMatch 301 ^/glance/([^/]+)/db.html$ /glance/$1/admin/db.html
+RedirectMatch 301 ^/glance/([^/]+)/flows.html$ /glance/$1/admin/flows.html
+RedirectMatch 301 ^/glance/([^/]+)/notifications.html$ /glance/$1/admin/notifications.html
+RedirectMatch 301 ^/glance/([^/]+)/policies.html$ /glance/$1/admin/policies.html
+RedirectMatch 301 ^/glance/([^/]+)/property-protections.html$ /glance/$1/admin/property-protections.html
+RedirectMatch 301 ^/glance/([^/]+)/requirements.html$ /glance/$1/admin/requirements.html
+RedirectMatch 301 ^/glance/([^/]+)/rollingupgrades.html$ /glance/$1/admin/rollingupgrades.html
+RedirectMatch 301 ^/glance/([^/]+)/tasks.html$ /glance/$1/admin/tasks.html
+# to: configuration
+RedirectMatch 301 ^/glance/([^/]+)/configuring.html$ /glance/$1/configuration/configuring.html
+RedirectMatch 301 ^/glance/([^/]+)/sample-configuration.html$ /glance/$1/configuration/sample-configuration.html
+RedirectMatch 301 ^/glance/([^/]+)/opts/(.*) /glance/$1/configuration/$2
+# to: contributor
+RedirectMatch 301 ^/glance/([^/]+)/architecture.html$ /glance/$1/contributor/architecture.html
+RedirectMatch 301 ^/glance/([^/]+)/database_architecture.html$ /glance/$1/contributor/database_architecture.html
+RedirectMatch 301 ^/glance/([^/]+)/database_migrations.html$ /glance/$1/contributor/database_migrations.html
+RedirectMatch 301 ^/glance/([^/]+)/domain_implementation.html$ /glance/$1/contributor/domain_implementation.html
+RedirectMatch 301 ^/glance/([^/]+)/domain_model.html$ /glance/$1/contributor/domain_model.html
+RedirectMatch 301 ^/glance/([^/]+)/contributing/(.*) /glance/$1/contributor/$2
+# to: user
+RedirectMatch 301 ^/glance/([^/]+)/common-image-properties.html$ /glance/$1/user/common-image-properties.html
+RedirectMatch 301 ^/glance/([^/]+)/formats.html$ /glance/$1/user/formats.html
+RedirectMatch 301 ^/glance/([^/]+)/glanceapi.html$ /glance/$1/user/glanceapi.html
+RedirectMatch 301 ^/glance/([^/]+)/glanceclient.html$ /glance/$1/user/glanceclient.html
+RedirectMatch 301 ^/glance/([^/]+)/glancemetadefcatalogapi.html$ /glance/$1/user/glancemetadefcatalogapi.html
+RedirectMatch 301 ^/glance/([^/]+)/identifiers.html$ /glance/$1/user/identifiers.html
+RedirectMatch 301 ^/glance/([^/]+)/metadefs-concepts.html$ /glance/$1/user/metadefs-concepts.html
+RedirectMatch 301 ^/glance/([^/]+)/signature.html$ /glance/$1/user/signature.html
+RedirectMatch 301 ^/glance/([^/]+)/statuses.html$ /glance/$1/user/statuses.html
+# to: cli
+RedirectMatch 301 ^/glance/([^/]+)/man/(.*) /glance/$1/cli/$2
