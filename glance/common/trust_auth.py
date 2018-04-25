@@ -14,7 +14,6 @@
 
 from keystoneauth1 import exceptions as ka_exceptions
 from keystoneauth1 import loading as ka_loading
-from keystoneclient.v3 import client as ks_client
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -32,17 +31,17 @@ class TokenRefresher(object):
         # step 1: create trust to ensure that we can always update token
 
         # trustor = user who made the request
-        trustor_client = self._load_client(user_plugin)
-        trustor_id = trustor_client.session.get_user_id()
+        trustor_client = self._load_session(user_plugin)
+        trustor_id = trustor_client.get_user_id()
 
         # get trustee user client that impersonates main user
         trustee_user_auth = ka_loading.load_auth_from_conf_options(
             CONF, 'keystone_authtoken')
         # save service user client because we need new service token
         # to refresh trust-scoped client later
-        self.trustee_user_client = self._load_client(trustee_user_auth)
+        self.trustee_user_client = self._load_session(trustee_user_auth)
 
-        trustee_id = self.trustee_user_client.session.get_user_id()
+        trustee_id = self.trustee_user_client.get_user_id()
 
         self.trust_id = trustor_client.trusts.create(trustor_user=trustor_id,
                                                      trustee_user=trustee_id,
@@ -64,12 +63,12 @@ class TokenRefresher(object):
         if self.trustee_client is None:
             self.trustee_client = self._refresh_trustee_client()
         try:
-            return self.trustee_client.session.get_token()
+            return self.trustee_client.get_token()
         except ka_exceptions.Unauthorized:
             # in case of Unauthorized exceptions try to refresh client because
             # service user token may expired
             self.trustee_client = self._refresh_trustee_client()
-            return self.trustee_client.session.get_token()
+            return self.trustee_client.get_token()
 
     def release_resources(self):
         """Release keystone resources required for refreshing"""
@@ -99,11 +98,11 @@ class TokenRefresher(object):
         trustee_auth = ka_loading.load_auth_from_conf_options(
             CONF, 'keystone_authtoken', **kwargs)
 
-        return self._load_client(trustee_auth)
+        return self._load_session(trustee_auth)
 
     @staticmethod
-    def _load_client(plugin):
-        # load client from auth settings and user plugin
+    def _load_session(plugin):
+        # load ksa session from auth settings and user plugin
         sess = ka_loading.load_session_from_conf_options(
             CONF, 'keystone_authtoken', auth=plugin)
-        return ks_client.Client(session=sess)
+        return sess
