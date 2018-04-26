@@ -15,7 +15,6 @@
 
 import os
 import signal
-import time
 import uuid
 
 from oslo_serialization import jsonutils
@@ -27,6 +26,7 @@ from six.moves import range
 from six.moves import urllib
 
 from glance.tests import functional
+from glance.tests.functional import ft_utils as func_utils
 from glance.tests import utils as test_utils
 
 
@@ -247,7 +247,12 @@ class TestImages(functional.FunctionalTest):
         # Verify image is in active state and checksum is set
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
-        time.sleep(0.5)
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=2,
+                                   delay_sec=0.2)
         _verify_image_checksum_and_status(
             checksum='8f113e38d28a79a5a451b16048cc2b72',
             status='active')
@@ -380,7 +385,13 @@ class TestImages(functional.FunctionalTest):
         # Verify image is in active state and checksum is set
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
-        time.sleep(5)
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=20,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
         _verify_image_checksum_and_status(
             checksum='bcd65f8922f61a9e6a20572ad7aa2bdd',
             status='active')
