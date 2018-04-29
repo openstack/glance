@@ -1,0 +1,61 @@
+# This file contains tests for redirects to handle existing URLs for docs that
+# have been moved. See https://docs.openstack.org/whereto/latest/ for details.
+
+### test files moved by commit 1c7f556d4f77d2dd7f282f2b41bdfb2abb6e5740
+# to: admin
+/glance/austin/apache-httpd.html 301 /glance/austin/admin/apache-httpd.html
+/glance/bexar/authentication.html 301 /glance/bexar/admin/authentication.html
+/glance/cactus/cache.html 301 /glance/cactus/admin/cache.html
+/glance/diablo/controllingservers.html 301 /glance/diablo/admin/controllingservers.html
+/glance/essex/db-sqlalchemy-migrate.html 301 /glance/essex/admin/db-sqlalchemy-migrate.html
+/glance/folsom/db.html 301 /glance/folsom/admin/db.html
+/glance/grizzly/flows.html 301 /glance/grizzly/admin/flows.html
+/glance/havana/notifications.html 301 /glance/havana/admin/notifications.html
+/glance/icehouse/policies.html 301 /glance/icehouse/admin/policies.html
+/glance/juno/property-protections.html 301 /glance/juno/admin/property-protections.html
+/glance/kilo/requirements.html 301 /glance/kilo/admin/requirements.html
+/glance/liberty/rollingupgrades.html 301 /glance/liberty/admin/rollingupgrades.html
+/glance/mitaka/tasks.html 301 /glance/mitaka/admin/tasks.html
+# to: configuration
+/glance/newton/configuring.html 301 /glance/newton/configuration/configuring.html
+/glance/ocata/opts/glance_api.html 301 /glance/ocata/configuration/glance_api.html
+/glance/pike/opts/glance_cache.html 301 /glance/pike/configuration/glance_cache.html
+/glance/queens/opts/glance_manage.html 301 /glance/queens/configuration/glance_manage.html
+/glance/rocky/opts/glance_registry.html 301 /glance/rocky/configuration/glance_registry.html
+/glance/stein/opts/glance_scrubber.html 301 /glance/stein/configuration/glance_scrubber.html
+/glance/thompson/opts/index.html 301 /glance/thompson/configuration/index.html
+/glance/uvula/sample-configuration.html 301 /glance/uvula/configuration/sample-configuration.html
+# to: contributor
+/glance/violin/architecture.html 301 /glance/violin/contributor/architecture.html
+/glance/watt/contributing/blueprints.html 301 /glance/watt/contributor/blueprints.html
+/glance/xylophone/database_architecture.html 301 /glance/xylophone/contributor/database_architecture.html
+/glance/yaml/database_migrations.html 301 /glance/yaml/contributor/database_migrations.html
+/glance/zero/contributing/documentation.html 301 /glance/zero/contributor/documentation.html
+/glance/latest/domain_implementation.html 301 /glance/latest/contributor/domain_implementation.html
+/glance/latest/domain_model.html 301 /glance/latest/contributor/domain_model.html
+/glance/latest/contributing/index.html 301 /glance/latest/contributor/index.html
+/glance/latest/contributing/minor-code-changes.html 301 /glance/latest/contributor/minor-code-changes.html
+/glance/latest/contributing/refreshing-configs.html 301 /glance/latest/contributor/refreshing-configs.html
+/glance/latest/contributing/release-cpl.html 301 /glance/latest/contributor/release-cpl.html
+# to: user
+/glance/latest/common-image-properties.html 301 /glance/latest/user/common-image-properties.html
+/glance/latest/formats.html 301 /glance/latest/user/formats.html
+/glance/latest/glanceapi.html 301 /glance/latest/user/glanceapi.html
+/glance/latest/glanceclient.html 301 /glance/latest/user/glanceclient.html
+/glance/latest/glancemetadefcatalogapi.html 301 /glance/latest/user/glancemetadefcatalogapi.html
+/glance/latest/identifiers.html 301 /glance/latest/user/identifiers.html
+/glance/latest/metadefs-concepts.html 301 /glance/latest/user/metadefs-concepts.html
+/glance/latest/signature.html 301 /glance/latest/user/signature.html
+/glance/latest/statuses.html 301 /glance/latest/user/statuses.html
+# to: cli
+/glance/latest/man/glanceapi.html 301 /glance/latest/cli/glanceapi.html
+/glance/latest/man/glancecachecleaner.html 301 /glance/latest/cli/glancecachecleaner.html
+/glance/latest/man/glancecachemanage.html 301 /glance/latest/cli/glancecachemanage.html
+/glance/latest/man/glancecacheprefetcher.html 301 /glance/latest/cli/glancecacheprefetcher.html
+/glance/latest/man/glancecachepruner.html 301 /glance/latest/cli/glancecachepruner.html
+/glance/latest/man/glancecontrol.html 301 /glance/latest/cli/glancecontrol.html
+/glance/latest/man/glancemanage.html 301 /glance/latest/cli/glancemanage.html
+/glance/latest/man/glanceregistry.html 301 /glance/latest/cli/glanceregistry.html
+/glance/latest/man/glancereplicator.html 301 /glance/latest/cli/glancereplicator.html
+/glance/latest/man/glancescrubber.html 301 /glance/latest/cli/glancescrubber.html
+### end: test files moved by commit 1c7f556d4f77d2dd7f282f2b41bdfb2abb6e5740

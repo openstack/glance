@@ -248,6 +248,10 @@ except Exception:
 # template names.
 #html_additional_pages = {}
 
+# Add any paths that contain "extra" files, such as .htaccess or
+# robots.txt.
+html_extra_path = ['_extra']
+
 # If false, no module index is generated.
 html_use_modindex = True
 
