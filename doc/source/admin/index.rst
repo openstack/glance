@@ -21,4 +21,5 @@ Glance Administration Guide
    rollingupgrades
    troubleshooting
    manage-images
+   useful-image-properties
    requirements
