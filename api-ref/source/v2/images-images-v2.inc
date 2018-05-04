@@ -139,8 +139,8 @@ permissions to specific image properties and the image data payload.
 
 .. _image-create:
 
-Create an image
-~~~~~~~~~~~~~~~
+Create image
+~~~~~~~~~~~~
 
 .. rest_method::  POST /v2/images
 
@@ -225,8 +225,8 @@ Response Example
    :language: json
 
 
-Show image details
-~~~~~~~~~~~~~~~~~~
+Show image
+~~~~~~~~~~
 
 .. rest_method::  GET /v2/images/{image_id}
 
@@ -290,7 +290,7 @@ Response Example
    :language: json
 
 
-Show images
+List images
 ~~~~~~~~~~~
 
 .. rest_method::  GET /v2/images
@@ -495,8 +495,8 @@ Response Example
 
 .. _v2-image-update:
 
-Update an image
-~~~~~~~~~~~~~~~
+Update image
+~~~~~~~~~~~~
 
 .. rest_method::  PATCH /v2/images/{image_id}
 
@@ -606,8 +606,8 @@ Response Example
    :language: json
 
 
-Delete an image
-~~~~~~~~~~~~~~~
+Delete image
+~~~~~~~~~~~~
 
 .. rest_method::  DELETE /v2/images/{image_id}
 
