@@ -253,7 +253,13 @@ class ScrubDBQueue(object):
                 else:
                     uri = loc['url']
 
-                ret.append((image['id'], loc['id'], uri))
+                # if multi-store is enabled then we need to pass backend
+                # to delete the image.
+                backend = loc['metadata'].get('backend')
+                if CONF.enabled_backends:
+                    ret.append((image['id'], loc['id'], uri, backend))
+                else:
+                    ret.append((image['id'], loc['id'], uri))
         return ret
 
     def has_image(self, image_id):
@@ -327,10 +333,18 @@ class Scrubber(object):
             raise exception.FailedToGetScrubberJobs()
 
         delete_jobs = {}
-        for image_id, loc_id, loc_uri in records:
-            if image_id not in delete_jobs:
-                delete_jobs[image_id] = []
-            delete_jobs[image_id].append((image_id, loc_id, loc_uri))
+        if CONF.enabled_backends:
+            for image_id, loc_id, loc_uri, backend in records:
+                if image_id not in delete_jobs:
+                    delete_jobs[image_id] = []
+                delete_jobs[image_id].append((image_id, loc_id,
+                                              loc_uri, backend))
+        else:
+            for image_id, loc_id, loc_uri in records:
+                if image_id not in delete_jobs:
+                    delete_jobs[image_id] = []
+                delete_jobs[image_id].append((image_id, loc_id, loc_uri))
+
         return delete_jobs
 
     def run(self, event=None):
@@ -347,11 +361,21 @@ class Scrubber(object):
                  {'id': image_id, 'count': len(delete_jobs)})
 
         success = True
-        for img_id, loc_id, uri in delete_jobs:
-            try:
-                self._delete_image_location_from_backend(img_id, loc_id, uri)
-            except Exception:
-                success = False
+        if CONF.enabled_backends:
+            for img_id, loc_id, uri, backend in delete_jobs:
+                try:
+                    self._delete_image_location_from_backend(img_id, loc_id,
+                                                             uri,
+                                                             backend=backend)
+                except Exception:
+                    success = False
+        else:
+            for img_id, loc_id, uri in delete_jobs:
+                try:
+                    self._delete_image_location_from_backend(img_id, loc_id,
+                                                             uri)
+                except Exception:
+                    success = False
 
         if success:
             image = db_api.get_api().image_get(self.admin_context, image_id)
@@ -364,11 +388,15 @@ class Scrubber(object):
                          "from backend. Leaving image '%s' in 'pending_delete'"
                          " status") % image_id)
 
-    def _delete_image_location_from_backend(self, image_id, loc_id, uri):
+    def _delete_image_location_from_backend(self, image_id, loc_id, uri,
+                                            backend=None):
         try:
             LOG.debug("Scrubbing image %s from a location.", image_id)
             try:
-                self.store_api.delete_from_backend(uri, self.admin_context)
+                if CONF.enabled_backends:
+                    self.store_api.delete(uri, backend, self.admin_context)
+                else:
+                    self.store_api.delete_from_backend(uri, self.admin_context)
             except store_exceptions.NotFound:
                 LOG.info(_LI("Image location for image '%s' not found in "
                              "backend; Marking image location deleted in "

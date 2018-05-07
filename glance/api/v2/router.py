@@ -565,5 +565,14 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET')
+        mapper.connect('/info/stores',
+                       controller=info_resource,
+                       action='get_stores',
+                       conditions={'method': ['GET']},
+                       body_reject=True)
+        mapper.connect('/info/stores',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET')
 
         super(API, self).__init__(mapper)

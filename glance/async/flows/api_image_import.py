@@ -86,7 +86,10 @@ class _DeleteFromFS(task.Task):
 
         :param file_path: path to the file being deleted
         """
-        store_api.delete_from_backend(file_path)
+        if CONF.enabled_backends:
+            store_api.delete(file_path, None)
+        else:
+            store_api.delete_from_backend(file_path)
 
 
 class _VerifyStaging(task.Task):
@@ -122,6 +125,8 @@ class _VerifyStaging(task.Task):
         self._build_store()
 
     def _build_store(self):
+        # TODO(abhishekk): After removal of backend module from glance_store
+        # need to change this to use multi_backend module.
         # NOTE(jokke): If we want to use some other store for staging, we can
         # implement the logic more general here. For now this should do.
         # NOTE(flaper87): Due to the nice glance_store api (#sarcasm), we're
@@ -133,7 +138,10 @@ class _VerifyStaging(task.Task):
         # under our team's management and it gates on Glance so changes to
         # this API will (should?) break task's tests.
         conf = cfg.ConfigOpts()
-        backend.register_opts(conf)
+        try:
+            backend.register_opts(conf)
+        except cfg.DuplicateOptError:
+            pass
         conf.set_override('filesystem_store_datadir',
                           CONF.node_staging_uri[7:],
                           group='glance_store')
@@ -159,12 +167,13 @@ class _VerifyStaging(task.Task):
 
 class _ImportToStore(task.Task):
 
-    def __init__(self, task_id, task_type, image_repo, uri, image_id):
+    def __init__(self, task_id, task_type, image_repo, uri, image_id, backend):
         self.task_id = task_id
         self.task_type = task_type
         self.image_repo = image_repo
         self.uri = uri
         self.image_id = image_id
+        self.backend = backend
         super(_ImportToStore, self).__init__(
             name='%s-ImportToStore-%s' % (task_type, task_id))
 
@@ -215,7 +224,8 @@ class _ImportToStore(task.Task):
         # will need the file path anyways for our delete workflow for now.
         # For future proofing keeping this as is.
         image = self.image_repo.get(self.image_id)
-        image_import.set_image_data(image, file_path or self.uri, self.task_id)
+        image_import.set_image_data(image, file_path or self.uri, self.task_id,
+                                    backend=self.backend)
 
         # NOTE(flaper87): We need to save the image again after the locations
         # have been set in the image.
@@ -306,6 +316,7 @@ def get_flow(**kwargs):
     image_id = kwargs.get('image_id')
     import_method = kwargs.get('import_req')['method']['name']
     uri = kwargs.get('import_req')['method'].get('uri')
+    backend = kwargs.get('backend')
 
     separator = ''
     if not CONF.node_staging_uri.endswith('/'):
@@ -332,7 +343,8 @@ def get_flow(**kwargs):
                                      task_type,
                                      image_repo,
                                      file_uri,
-                                     image_id)
+                                     image_id,
+                                     backend)
     flow.add(import_to_store)
 
     delete_task = lf.Flow(task_type).add(_DeleteFromFS(task_id, task_type))

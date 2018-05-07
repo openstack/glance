@@ -94,10 +94,6 @@ class ImagesController(object):
         task_factory = self.gateway.get_task_factory(req.context)
         executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
-
-        task_input = {'image_id': image_id,
-                      'import_req': body}
-
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
 
@@ -121,10 +117,25 @@ class ImagesController(object):
             if not getattr(image, 'disk_format', None):
                 msg = _("'disk_format' needs to be set before import")
                 raise exception.Conflict(msg)
+
+            backend = None
+            if CONF.enabled_backends:
+                backend = req.headers.get('x-image-meta-store',
+                                          CONF.glance_store.default_backend)
+                try:
+                    glance_store.get_store_from_store_identifier(backend)
+                except glance_store.UnknownScheme:
+                    msg = _("Store for scheme %s not found") % backend
+                    LOG.warn(msg)
+                    raise exception.Conflict(msg)
         except exception.Conflict as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
+
+        task_input = {'image_id': image_id,
+                      'import_req': body,
+                      'backend': backend}
 
         if (import_method == 'web-download' and
            not utils.validate_import_uri(uri)):
@@ -324,7 +335,10 @@ class ImagesController(object):
 
             if image.status == 'uploading':
                 file_path = str(CONF.node_staging_uri + '/' + image.image_id)
-                self.store_api.delete_from_backend(file_path)
+                if CONF.enabled_backends:
+                    self.store_api.delete(file_path, None)
+                else:
+                    self.store_api.delete_from_backend(file_path)
 
             image.delete()
             image_repo.remove(image)
@@ -926,6 +940,20 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             image_view['file'] = self._get_image_href(image, 'file')
             image_view['schema'] = '/v2/schemas/image'
             image_view = self.schema.filter(image_view)  # domain
+
+            # add store information to image
+            if CONF.enabled_backends:
+                locations = _get_image_locations(image)
+                if locations:
+                    stores = []
+                    for loc in locations:
+                        backend = loc['metadata'].get('backend')
+                        if backend:
+                            stores.append(backend)
+
+                    if stores:
+                        image_view['stores'] = ",".join(stores)
+
             return image_view
         except exception.Forbidden as e:
             raise webob.exc.HTTPForbidden(explanation=e.msg)
@@ -940,6 +968,11 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             import_methods = ("OpenStack-image-import-methods",
                               ','.join(CONF.enabled_import_methods))
             response.headerlist.append(import_methods)
+
+        if CONF.enabled_backends:
+            enabled_backends = ("OpenStack-image-store-ids",
+                                ','.join(CONF.enabled_backends.keys()))
+            response.headerlist.append(enabled_backends)
 
     def show(self, response, image):
         image_view = self._format_image(image)
@@ -1106,6 +1139,11 @@ def get_base_properties():
             'type': 'string',
             'readOnly': True,
             'description': _('An image file url'),
+        },
+        'backend': {
+            'type': 'string',
+            'readOnly': True,
+            'description': _('Backend store to upload image to'),
         },
         'schema': {
             'type': 'string',

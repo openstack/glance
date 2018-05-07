@@ -100,6 +100,18 @@ class ImageDataController(object):
 
     @utils.mutating
     def upload(self, req, image_id, data, size):
+        backend = None
+        if CONF.enabled_backends:
+            backend = req.headers.get('x-image-meta-store',
+                                      CONF.glance_store.default_backend)
+
+            try:
+                glance_store.get_store_from_store_identifier(backend)
+            except glance_store.UnknownScheme as exc:
+                raise webob.exc.HTTPBadRequest(explanation=exc.msg,
+                                               request=req,
+                                               content_type='text/plain')
+
         image_repo = self.gateway.get_repo(req.context)
         image = None
         refresher = None
@@ -129,7 +141,7 @@ class ImageDataController(object):
                                  encodeutils.exception_to_unicode(e))
 
                 image_repo.save(image, from_state='queued')
-                image.set_data(data, size)
+                image.set_data(data, size, backend=backend)
 
                 try:
                     image_repo.save(image, from_state='saving')
@@ -274,9 +286,16 @@ class ImageDataController(object):
         # NOTE(jokke): this is horrible way to do it but as long as
         # glance_store is in a shape it is, the only way. Don't hold me
         # accountable for it.
+        # TODO(abhishekk): After removal of backend module from glance_store
+        # need to change this to use multi_backend module.
         def _build_staging_store():
             conf = cfg.ConfigOpts()
-            backend.register_opts(conf)
+
+            try:
+                backend.register_opts(conf)
+            except cfg.DuplicateOptError:
+                pass
+
             conf.set_override('filesystem_store_datadir',
                               CONF.node_staging_uri[7:],
                               group='glance_store')
