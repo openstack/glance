@@ -53,6 +53,12 @@ from glance import i18n
 from glance.i18n import _, _LE, _LI, _LW
 
 
+try:
+    from webob.acceptparse import AcceptLanguageValidHeader  # noqa
+    USING_WEBOB_1_8 = True
+except ImportError:
+    USING_WEBOB_1_8 = False
+
 bind_opts = [
     cfg.HostAddressOpt('bind_host',
                        default='0.0.0.0',
@@ -1024,7 +1030,7 @@ class Request(webob.Request):
         else:
             return content_type
 
-    def best_match_language(self):
+    def _best_match_language_1_7(self):
         """Determines best available locale from the Accept-Language header.
 
         :returns: the best language match or None if the 'Accept-Language'
@@ -1034,6 +1040,29 @@ class Request(webob.Request):
             return None
         langs = i18n.get_available_languages('glance')
         return self.accept_language.best_match(langs)
+
+    def _best_match_language_1_8(self):
+        """Determines best available locale from the Accept-Language header.
+
+        :returns: the best language match or None if the 'Accept-Language'
+                  header was not available in the request.
+        """
+        if not self.accept_language:
+            return None
+        langs = i18n.get_available_languages('glance')
+        # NOTE(rosmaita): give the webob lookup() function a sentinal value
+        # for default so we can preserve the behavior of this function as
+        # indicated by the current unit tests.  See Launchpad bug #1765748.
+        best_match = self.accept_language.lookup(langs, default='fake_LANG')
+        if best_match == 'fake_LANG':
+            best_match = None
+        return best_match
+
+    def best_match_language(self):
+        if USING_WEBOB_1_8:
+            return self._best_match_language_1_8()
+        else:
+            return self._best_match_language_1_7()
 
     def get_range_from_request(self, image_size):
         """Return the `Range` in a request."""
