@@ -10,6 +10,166 @@
       - openstack/glance
     nodeset: legacy-ubuntu-xenial-2-node
 
+- job:
+    name: glance-tox-oslo-tips-base
+    parent: tox
+    description: Abstract job for Glance vs. oslo libraries
+    # NOTE(rosmaita): only need functional test jobs, oslo is
+    # already running periodic jobs using our unit tests
+    required-projects:
+      - name: openstack/debtcollector
+      - name: openstack/futurist
+      - name: openstack/oslo.concurrency
+      - name: openstack/oslo.config
+      - name: openstack/oslo.context
+      - name: openstack/oslo.db
+      - name: openstack/oslo.i18n
+      - name: openstack/oslo.log
+      - name: openstack/oslo.messaging
+      - name: openstack/oslo.middleware
+      - name: openstack/oslo.policy
+      - name: openstack/oslo.utils
+      - name: openstack/osprofiler
+      - name: openstack/stevedore
+      - name: openstack/taskflow
+
+- job:
+    name: glance-tox-functional-oslo-tips
+    parent: glance-tox-oslo-tips-base
+    description: |
+      Glance py27 functional tests vs. oslo libraries masters
+    vars:
+      tox_envlist: functional
+
+- job:
+    name: glance-tox-functional-py35-oslo-tips
+    parent: glance-tox-oslo-tips-base
+    description: |
+      Glance py35 functional tests vs. oslo libraries masters
+    vars:
+      tox_envlist: functional-py35
+
+- job:
+    name: glance-tox-keystone-tips-base
+    parent: tox
+    description: Abstract job for Glance vs. keystone
+    required-projects:
+      - name: openstack/keystoneauth
+      - name: openstack/keystonemiddleware
+      - name: openstack/python-keystoneclient
+
+- job:
+    name: glance-tox-py27-keystone-tips
+    parent: glance-tox-keystone-tips-base
+    description: |
+      Glance py27 unit tests vs. keystone masters
+    vars:
+      tox_envlist: py27
+
+- job:
+    name: glance-tox-py35-keystone-tips
+    parent: glance-tox-keystone-tips-base
+    description: |
+      Glance py35 unit tests vs. keystone masters
+    vars:
+      tox_envlist: py35
+
+- job:
+    name: glance-tox-functional-keystone-tips
+    parent: glance-tox-keystone-tips-base
+    description: |
+      Glance py27 functional tests vs. keystone masters
+    vars:
+      tox_envlist: functional
+
+- job:
+    name: glance-tox-functional-py35-keystone-tips
+    parent: glance-tox-keystone-tips-base
+    description: |
+      Glance py35 functional tests vs. keystone masters
+    vars:
+      tox_envlist: functional-py35
+
+- job:
+    name: glance-tox-glance_store-tips-base
+    parent: tox
+    description: Abstract job for Glance vs. glance_store
+    required-projects:
+      - name: openstack/glance_store
+
+- job:
+    name: glance-tox-py27-glance_store-tips
+    parent: glance-tox-glance_store-tips-base
+    description: |
+      Glance py27 unit tests vs. glance_store master
+    vars:
+      tox_envlist: py27
+
+- job:
+    name: glance-tox-py35-glance_store-tips
+    parent: glance-tox-glance_store-tips-base
+    description: |
+      Glance py35 unit tests vs. glance_store master
+    vars:
+      tox_envlist: py35
+
+- job:
+    name: glance-tox-functional-glance_store-tips
+    parent: glance-tox-glance_store-tips-base
+    description: |
+      Glance py27 functional tests vs. glance_store master
+    vars:
+      tox_envlist: functional
+
+- job:
+    name: glance-tox-functional-py35-glance_store-tips
+    parent: glance-tox-glance_store-tips-base
+    description: |
+      Glance py35 functional tests vs. glance_store master
+    vars:
+      tox_envlist: functional-py35
+
+- job:
+    name: glance-tox-cursive-tips-base
+    parent: tox
+    description: Abstract job for Glance vs. cursive and related libs
+    required-projects:
+      - name: openstack/cursive
+      - name: openstack/python-barbicanclient
+      - name: openstack/castellan
+
+- job:
+    name: glance-tox-py27-cursive-tips
+    parent: glance-tox-cursive-tips-base
+    description: |
+      Glance py27 unit tests vs. cursive (and related libs) master
+    vars:
+      tox_envlist: py27
+
+- job:
+    name: glance-tox-py35-cursive-tips
+    parent: glance-tox-cursive-tips-base
+    description: |
+      Glance py35 unit tests vs. cursive (and related libs) master
+    vars:
+      tox_envlist: py35
+
+- job:
+    name: glance-tox-functional-cursive-tips
+    parent: glance-tox-cursive-tips-base
+    description: |
+      Glance py27 functional tests vs. cursive (and related libs) master
+    vars:
+      tox_envlist: functional
+
+- job:
+    name: glance-tox-functional-py35-cursive-tips
+    parent: glance-tox-cursive-tips-base
+    description: |
+      Glance py35 functional tests vs. cursive (and related libs) master
+    vars:
+      tox_envlist: functional-py35
+
 - project:
     check:
       jobs:
@@ -25,3 +185,19 @@
       jobs:
         - barbican-simple-crypto-devstack-tempest
         - glance-dsvm-grenade-multinode
+    periodic:
+      jobs:
+        - glance-tox-functional-oslo-tips
+        - glance-tox-functional-py35-oslo-tips
+        - glance-tox-py27-keystone-tips
+        - glance-tox-py35-keystone-tips
+        - glance-tox-functional-keystone-tips
+        - glance-tox-functional-py35-keystone-tips
+        - glance-tox-py27-glance_store-tips
+        - glance-tox-py35-glance_store-tips
+        - glance-tox-functional-glance_store-tips
+        - glance-tox-functional-py35-glance_store-tips
+        - glance-tox-py27-cursive-tips
+        - glance-tox-py35-cursive-tips
+        - glance-tox-functional-cursive-tips
+        - glance-tox-functional-py35-cursive-tips
