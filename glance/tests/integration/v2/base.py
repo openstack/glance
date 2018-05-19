@@ -117,6 +117,7 @@ CONF = cfg.CONF
 
 
 class ApiTest(test_utils.BaseTestCase):
+
     def setUp(self):
         super(ApiTest, self).setUp()
         self.test_dir = self.useFixture(fixtures.TempDir()).path
@@ -209,8 +210,8 @@ class ApiTest(test_utils.BaseTestCase):
                 return test_utils.HttplibWsgiAdapter(self.glance_registry_app)
             return wrapped
 
-        self.stubs.Set(glance.common.client.BaseClient,
-                       'get_connection_type', get_connection_type)
+        self.mock_object(glance.common.client.BaseClient,
+                         'get_connection_type', get_connection_type)
 
     def tearDown(self):
         glance.db.sqlalchemy.api.clear_db_env()

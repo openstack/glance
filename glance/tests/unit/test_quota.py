@@ -52,6 +52,7 @@ class FakeImage(object):
 
 
 class TestImageQuota(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestImageQuota, self).setUp()
 
@@ -283,8 +284,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(store_api, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
+        self.mock_object(store_api, 'get_size_from_backend',
+                         unit_test_utils.fake_get_size_from_backend)
         image.locations.append({'url': 'file:///fake.img.tar.gz',
                                 'metadata': {}})
         self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
@@ -300,8 +301,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(store_api, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
+        self.mock_object(store_api, 'get_size_from_backend',
+                         unit_test_utils.fake_get_size_from_backend)
         image.locations.insert(0,
                                {'url': 'file:///fake.img.tar.gz',
                                 'metadata': {}})
@@ -318,8 +319,8 @@ class TestImageQuota(test_utils.BaseTestCase):
         image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(store_api, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
+        self.mock_object(store_api, 'get_size_from_backend',
+                         unit_test_utils.fake_get_size_from_backend)
         image.locations = [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
         self.assertEqual([{'url': 'file:///fake.img.tar.gz', 'metadata': {}}],
                          image.locations)
@@ -334,14 +335,15 @@ class TestImageQuota(test_utils.BaseTestCase):
         image = glance.quota.ImageProxy(base_image, context, db_api, store)
         self.assertIsNone(image.size)
 
-        self.stubs.Set(store_api, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
+        self.mock_object(store_api, 'get_size_from_backend',
+                         unit_test_utils.fake_get_size_from_backend)
         image.locations += [{'url': 'file:///fake.img.tar.gz', 'metadata': {}}]
         self.assertIn({'url': 'file:///fake.img.tar.gz', 'metadata': {}},
                       image.locations)
 
 
 class TestImagePropertyQuotas(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestImagePropertyQuotas, self).setUp()
         self.base_image = FakeImage()
@@ -485,6 +487,7 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
 
 
 class TestImageTagQuotas(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestImageTagQuotas, self).setUp()
         self.base_image = mock.Mock()
@@ -549,6 +552,7 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
 
 
 class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestQuotaImageTagsProxy, self).setUp()
 
@@ -594,6 +598,7 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
 
 
 class TestImageMemberQuotas(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestImageMemberQuotas, self).setUp()
         db_api = unit_test_utils.FakeDB()
@@ -631,6 +636,7 @@ class TestImageMemberQuotas(test_utils.BaseTestCase):
 
 
 class TestImageLocationQuotas(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestImageLocationQuotas, self).setUp()
         self.base_image = mock.Mock()

@@ -43,8 +43,8 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         def fake_get_size_from_backend(uri, context=None):
             return 1
 
-        self.stubs.Set(glance_store, 'get_size_from_backend',
-                       fake_get_size_from_backend)
+        self.mock_object(glance_store, 'get_size_from_backend',
+                         fake_get_size_from_backend)
 
         with mock.patch('glance.location._check_image_location'):
             loc1 = {'url': 'file:///fake1.img.tar.gz', 'metadata': {}}

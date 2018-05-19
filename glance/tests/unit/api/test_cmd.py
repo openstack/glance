@@ -52,19 +52,12 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
 
         store.register_opts(CONF)
 
-        self.config_patcher = mock.patch(
-            'glance.common.config.load_paste_app',
-            side_effect=self._do_nothing)
-        self.start_patcher = mock.patch('glance.common.wsgi.Server.start',
-                                        side_effect=self._do_nothing)
-        self.wait_patcher = mock.patch('glance.common.wsgi.Server.wait',
-                                       side_effect=self._do_nothing)
-
-        self.addCleanup(mock.patch.stopall)
-
-        self.config_patcher.start()
-        self.start_patcher.start()
-        self.wait_patcher.start()
+        self.mock_object(glance.common.config, 'load_paste_app',
+                         self._do_nothing)
+        self.mock_object(glance.common.wsgi.Server, 'start',
+                         self._do_nothing)
+        self.mock_object(glance.common.wsgi.Server, 'wait',
+                         self._do_nothing)
 
     def tearDown(self):
         sys.stderr = sys.__stderr__
@@ -77,10 +70,10 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
 
     def test_worker_creation_failure(self):
         failure = exc.WorkerCreationFailure(reason='test')
-        with mock.patch('glance.common.wsgi.Server.start',
-                        side_effect=self._raise(failure)):
-            exit = self.assertRaises(SystemExit, glance.cmd.api.main)
-            self.assertEqual(2, exit.code)
+        self.mock_object(glance.common.wsgi.Server, 'start',
+                         self._raise(failure))
+        exit = self.assertRaises(SystemExit, glance.cmd.api.main)
+        self.assertEqual(2, exit.code)
 
     @mock.patch.object(glance.common.config, 'parse_cache_args')
     @mock.patch.object(logging, 'setup')
@@ -103,12 +96,11 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
                                   mock.call.mock_cache_clean()]
         self.assertEqual(expected_call_sequence, manager.mock_calls)
 
-    @mock.patch.object(glance.image_cache.cleaner.Cleaner, 'run')
     @mock.patch.object(glance.image_cache.base.CacheApp, '__init__')
-    def test_cache_cleaner_main_runtime_exception_handling(self, mock_cache,
-                                                           mock_run):
+    def test_cache_cleaner_main_runtime_exception_handling(self, mock_cache):
         mock_cache.return_value = None
-        mock_run.side_effect = self._raise(RuntimeError)
+        self.mock_object(glance.image_cache.cleaner.Cleaner, 'run',
+                         self._raise(RuntimeError))
         exit = self.assertRaises(SystemExit, glance.cmd.cache_cleaner.main)
         self.assertEqual('ERROR: ', exit.code)
 
@@ -133,12 +125,11 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
                                   mock.call.mock_cache_prune()]
         self.assertEqual(expected_call_sequence, manager.mock_calls)
 
-    @mock.patch.object(glance.image_cache.pruner.Pruner, 'run')
     @mock.patch.object(glance.image_cache.base.CacheApp, '__init__')
-    def test_cache_pruner_main_runtime_exception_handling(self, mock_cache,
-                                                          mock_run):
+    def test_cache_pruner_main_runtime_exception_handling(self, mock_cache):
         mock_cache.return_value = None
-        mock_run.side_effect = self._raise(RuntimeError)
+        self.mock_object(glance.image_cache.pruner.Pruner, 'run',
+                         self._raise(RuntimeError))
         exit = self.assertRaises(SystemExit, glance.cmd.cache_pruner.main)
         self.assertEqual('ERROR: ', exit.code)
 

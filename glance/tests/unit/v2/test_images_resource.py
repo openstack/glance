@@ -1973,8 +1973,8 @@ class TestImagesController(base.IsolatedUnitTest):
         as long as the image has fewer than the limited number of image
         locations after the transaction.
         """
-        self.stubs.Set(store, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
+        self.mock_object(store, 'get_size_from_backend',
+                         unit_test_utils.fake_get_size_from_backend)
         self.config(show_multiple_locations=True)
         request = unit_test_utils.get_fake_request()
 
@@ -2039,8 +2039,8 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_update_remove_location(self):
         self.config(show_multiple_locations=True)
-        self.stubs.Set(store, 'get_size_from_backend',
-                       unit_test_utils.fake_get_size_from_backend)
+        self.mock_object(store, 'get_size_from_backend',
+                         unit_test_utils.fake_get_size_from_backend)
 
         request = unit_test_utils.get_fake_request()
         new_location = {'url': '%s/fake_location' % BASE_URI, 'metadata': {}}
@@ -2080,8 +2080,9 @@ class TestImagesController(base.IsolatedUnitTest):
         def fake_delete_image_location_from_backend(self, *args, **kwargs):
             raise Exception('fake_backend_exception')
 
-        self.stubs.Set(self.store_utils, 'delete_image_location_from_backend',
-                       fake_delete_image_location_from_backend)
+        self.mock_object(self.store_utils,
+                         'delete_image_location_from_backend',
+                         fake_delete_image_location_from_backend)
 
         request = unit_test_utils.get_fake_request()
         changes = [
@@ -2288,8 +2289,8 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_delete_in_use(self):
         def fake_safe_delete_from_backend(self, *args, **kwargs):
             raise store.exceptions.InUseByStore()
-        self.stubs.Set(self.store_utils, 'safe_delete_from_backend',
-                       fake_safe_delete_from_backend)
+        self.mock_object(self.store_utils, 'safe_delete_from_backend',
+                         fake_safe_delete_from_backend)
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPConflict, self.controller.delete,
                           request, UUID1)
@@ -2297,8 +2298,8 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_delete_has_snapshot(self):
         def fake_safe_delete_from_backend(self, *args, **kwargs):
             raise store.exceptions.HasSnapshot()
-        self.stubs.Set(self.store_utils, 'safe_delete_from_backend',
-                       fake_safe_delete_from_backend)
+        self.mock_object(self.store_utils, 'safe_delete_from_backend',
+                         fake_safe_delete_from_backend)
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPConflict, self.controller.delete,
                           request, UUID1)
@@ -3584,6 +3585,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
 
         """
         class ImageLocations(object):
+
             def __len__(self):
                 raise exception.Forbidden()
 
@@ -4140,6 +4142,7 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
 
 
 class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
+
     def setUp(self):
         super(TestImagesSerializerDirectUrl, self).setUp()
         self.serializer = glance.api.v2.images.ResponseSerializer()
@@ -4225,6 +4228,7 @@ class TestImagesSerializerDirectUrl(test_utils.BaseTestCase):
 
 
 class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
+
     def test_default_disk_formats(self):
         schema = glance.api.v2.images.get_schema()
         expected = [None, 'ami', 'ari', 'aki', 'vhd', 'vhdx', 'vmdk',
@@ -4254,6 +4258,7 @@ class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
 
 
 class TestImageSchemaDeterminePropertyBasis(test_utils.BaseTestCase):
+
     def test_custom_property_marked_as_non_base(self):
         self.config(allow_additional_image_properties=False)
         custom_image_properties = {

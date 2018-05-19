@@ -32,6 +32,7 @@ import glance.tests.utils as test_utils
 
 
 class Raise(object):
+
     def __init__(self, exc):
         self.exc = exc
 
@@ -40,6 +41,7 @@ class Raise(object):
 
 
 class FakeImage(object):
+
     def __init__(self, image_id=None, data=None, checksum=None, size=0,
                  virtual_size=0, locations=None, container_format='bear',
                  disk_format='rawr', status=None):
@@ -76,6 +78,7 @@ class FakeImage(object):
 
 
 class FakeImageRepo(object):
+
     def __init__(self, result=None):
         self.result = result
 
@@ -90,6 +93,7 @@ class FakeImageRepo(object):
 
 
 class FakeGateway(object):
+
     def __init__(self, db=None, store=None, notifier=None,
                  policy=None, repo=None):
         self.db = db
@@ -103,6 +107,7 @@ class FakeGateway(object):
 
 
 class TestImagesController(base.StoreClearingUnitTest):
+
     def setUp(self):
         super(TestImagesController, self).setUp()
 
@@ -157,6 +162,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_download_ok_when_get_image_location_forbidden(self):
         class ImageLocations(object):
+
             def __len__(self):
                 raise exception.Forbidden()
 
@@ -888,9 +894,9 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         def get_data(*args, **kwargs):
             raise exception.Forbidden()
 
-        self.stubs.Set(glance.api.policy.ImageProxy,
-                       'get_data',
-                       get_data)
+        self.mock_object(glance.api.policy.ImageProxy,
+                         'get_data',
+                         get_data)
         request = wsgi.Request.blank('/')
         request.environ = {}
         response = webob.Response()

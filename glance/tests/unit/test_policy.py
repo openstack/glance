@@ -32,12 +32,14 @@ UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 
 
 class IterableMock(mock.Mock, collections.Iterable):
+
     def __iter__(self):
         while False:
             yield None
 
 
 class ImageRepoStub(object):
+
     def get(self, *args, **kwargs):
         return 'image_from_get'
 
@@ -52,6 +54,7 @@ class ImageRepoStub(object):
 
 
 class ImageStub(object):
+
     def __init__(self, image_id=None, visibility='private',
                  container_format='bear', disk_format='raw',
                  status='active', extra_properties=None,
@@ -87,6 +90,7 @@ class ImageStub(object):
 
 
 class ImageFactoryStub(object):
+
     def new_image(self, image_id=None, name=None, visibility='private',
                   min_disk=0, min_ram=0, protected=False, owner=None,
                   disk_format=None, container_format=None,
@@ -117,11 +121,13 @@ class MemberRepoStub(object):
 
 
 class ImageMembershipStub(object):
+
     def __init__(self, output=None):
         self.output = output
 
 
 class TaskRepoStub(object):
+
     def get(self, *args, **kwargs):
         return 'task_from_get'
 
@@ -133,6 +139,7 @@ class TaskRepoStub(object):
 
 
 class TaskStub(object):
+
     def __init__(self, task_id):
         self.task_id = task_id
         self.status = 'pending'
@@ -142,11 +149,13 @@ class TaskStub(object):
 
 
 class TaskFactoryStub(object):
+
     def new_task(self, *args):
         return 'new_task'
 
 
 class TestPolicyEnforcer(base.IsolatedUnitTest):
+
     def test_policy_file_default_rules_default_location(self):
         enforcer = glance.api.policy.Enforcer()
 
@@ -209,6 +218,7 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
 
 
 class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
+
     def test_policy_file_specified_but_not_found(self):
         """Missing defined policy file should result in a default ruleset"""
         self.config(policy_file='gobble.gobble', group='oslo_policy')
@@ -223,11 +233,12 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
 
     def test_policy_file_default_not_found(self):
         """Missing default policy file should result in a default ruleset"""
+
         def fake_find_file(self, name):
             return None
 
-        self.stubs.Set(oslo_config.cfg.ConfigOpts, 'find_file',
-                       fake_find_file)
+        self.mock_object(oslo_config.cfg.ConfigOpts, 'find_file',
+                         fake_find_file)
 
         enforcer = glance.api.policy.Enforcer()
 
@@ -240,6 +251,7 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
 
 
 class TestImagePolicy(test_utils.BaseTestCase):
+
     def setUp(self):
         self.image_stub = ImageStub(UUID1)
         self.image_repo_stub = ImageRepoStub()
@@ -416,6 +428,7 @@ class TestImagePolicy(test_utils.BaseTestCase):
 
 
 class TestMemberPolicy(test_utils.BaseTestCase):
+
     def setUp(self):
         self.policy = mock.Mock()
         self.policy.enforce = mock.Mock()
@@ -491,6 +504,7 @@ class TestMemberPolicy(test_utils.BaseTestCase):
 
 
 class TestTaskPolicy(test_utils.BaseTestCase):
+
     def setUp(self):
         self.task_stub = TaskStub(UUID1)
         self.task_repo_stub = TaskRepoStub()
@@ -569,6 +583,7 @@ class TestTaskPolicy(test_utils.BaseTestCase):
 
 
 class TestContextPolicyEnforcer(base.IsolatedUnitTest):
+
     def _do_test_policy_influence_context_admin(self,
                                                 policy_admin_role,
                                                 context_role,
