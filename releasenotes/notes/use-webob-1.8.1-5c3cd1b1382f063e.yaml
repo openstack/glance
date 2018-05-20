@@ -1,0 +1,12 @@
+---
+other:
+  - |
+    Negotiation of the 'Accept-Language' header now follows the "Lookup"
+    matching scheme described in `RFC 4647, section 3.4
+    <https://tools.ietf.org/html/rfc4647.html#section-3.4>`_. The
+    "Lookup" scheme is one of the algorithms suggested in `RFC 7231,
+    section 5.3.5
+    <https://tools.ietf.org/html/rfc7231.html#section-5.3.5>`_. (This is
+    due to a change in an underlying library, which previously used a
+    matching scheme that did not conform to `RFC 7231
+    <https://tools.ietf.org/html/rfc7231.html>`_.)

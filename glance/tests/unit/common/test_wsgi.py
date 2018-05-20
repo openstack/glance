@@ -184,31 +184,20 @@ class RequestTest(test_utils.BaseTestCase):
         req = wsgi.Request.blank('/', headers={'Accept-Language': 'unknown'})
         self.assertIsNone(req.best_match_language())
 
-    def test_best_match_language_unknown(self):
-        # Test that we are actually invoking language negotiation by webop
+    @mock.patch.object(webob.acceptparse.AcceptLanguageValidHeader, 'lookup')
+    def test_best_match_language_unknown(self, mock_lookup):
+        # Test that we are actually invoking language negotiation by WebOb
         request = wsgi.Request.blank('/')
         accepted = 'unknown-lang'
         request.headers = {'Accept-Language': accepted}
 
-        # TODO(rosmaita): simplify when lower_constraints has webob >= 1.8.1
-        try:
-            from webob.acceptparse import AcceptLanguageValidHeader  # noqa
-            cls = webob.acceptparse.AcceptLanguageValidHeader
-            funcname = 'lookup'
-            # Bug #1765748: see comment in code in the function under test
-            # to understand why this is the correct return value for the
-            # webob 1.8.x mock
-            retval = 'fake_LANG'
-        except ImportError:
-            cls = webob.acceptparse.AcceptLanguage
-            funcname = 'best_match'
-            retval = None
+        # Bug #1765748: see comment in code in the function under test
+        # to understand why this is the correct return value for the
+        # webob 1.8.x mock
+        mock_lookup.return_value = 'fake_LANG'
 
-        with mock.patch.object(cls, funcname) as mocked_function:
-            mocked_function.return_value = retval
-
-            self.assertIsNone(request.best_match_language())
-            mocked_function.assert_called_once()
+        self.assertIsNone(request.best_match_language())
+        mock_lookup.assert_called_once()
 
         # If Accept-Language is missing or empty, match should be None
         request.headers = {'Accept-Language': ''}
@@ -389,27 +378,18 @@ class ResourceTest(test_utils.BaseTestCase):
                               resource, request)
         self.assertEqual(message_es, str(e))
 
+    @mock.patch.object(webob.acceptparse.AcceptLanguageValidHeader, 'lookup')
     @mock.patch.object(i18n, 'translate')
-    def test_translate_exception(self, mock_translate):
-        # TODO(rosmaita): simplify when lower_constraints has webob >= 1.8.1
-        try:
-            from webob.acceptparse import AcceptLanguageValidHeader  # noqa
-            cls = webob.acceptparse.AcceptLanguageValidHeader
-            funcname = 'lookup'
-        except ImportError:
-            cls = webob.acceptparse.AcceptLanguage
-            funcname = 'best_match'
+    def test_translate_exception(self, mock_translate, mock_lookup):
+        mock_translate.return_value = 'No Encontrado'
+        mock_lookup.return_value = 'de'
 
-        with mock.patch.object(cls, funcname) as mocked_function:
-            mock_translate.return_value = 'No Encontrado'
-            mocked_function.return_value = 'de'
+        req = wsgi.Request.blank('/tests/123')
+        req.headers["Accept-Language"] = "de"
 
-            req = wsgi.Request.blank('/tests/123')
-            req.headers["Accept-Language"] = "de"
-
-            e = webob.exc.HTTPNotFound(explanation='Not Found')
-            e = wsgi.translate_exception(req, e)
-            self.assertEqual('No Encontrado', e.explanation)
+        e = webob.exc.HTTPNotFound(explanation='Not Found')
+        e = wsgi.translate_exception(req, e)
+        self.assertEqual('No Encontrado', e.explanation)
 
     def test_response_headers_encoded(self):
         # prepare environment
