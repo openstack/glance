@@ -120,7 +120,7 @@ blacklist_calls:
             level: "LOW"
 
         # Most of this is based off of Christian Heimes' work on defusedxml:
-        #   https://pypi.python.org/pypi/defusedxml/#defusedxml-sax
+        #   https://pypi.org/project/defusedxml/#defusedxml-sax
 
         # TODO(jaegerandi): Enable once defusedxml is in global requirements.
         #- xml_bad_cElementTree:
@@ -191,7 +191,7 @@ blacklist_imports:
             message: "Consider possible security implications associated with {module} module."
 
         # Most of this is based off of Christian Heimes' work on defusedxml:
-        #   https://pypi.python.org/pypi/defusedxml/#defusedxml-sax
+        #   https://pypi.org/project/defusedxml/#defusedxml-sax
 
         - xml_libs:
             imports: [xml.etree.cElementTree,

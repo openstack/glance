@@ -146,7 +146,7 @@ Glossary
 
     https://uwsgi-docs.readthedocs.io/en/latest/index.html
 
-    https://pypi.python.org/pypi/uWSGI
+    https://pypi.org/project/uWSGI/
 
     https://github.com/unbit/uwsgi
 
