@@ -14,10 +14,8 @@
 #    under the License.
 
 import os
-import unittest
 
 import httplib2
-import six
 from six.moves import http_client as http
 
 from glance.tests import functional
@@ -74,7 +72,6 @@ class TestSSL(functional.FunctionalTest):
         if getattr(self, 'inited', False):
             return
 
-    @unittest.skipIf(six.PY3, 'SSL handshakes are broken in PY3')
     def test_ssl_ok(self):
         """Make sure the public API works with HTTPS."""
         self.cleanup()

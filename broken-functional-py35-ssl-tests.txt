@@ -1,0 +1,2 @@
+^glance\.tests\.functional\.test_reload\.TestReload\.test_reload$
+^glance\.tests\.functional\.test_ssl\.TestSSL\.test_ssl_ok$

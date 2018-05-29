@@ -11,6 +11,14 @@
     nodeset: legacy-ubuntu-xenial-2-node
 
 - job:
+    name: glance-eventlet-ssl-handshake-broken-py35
+    parent: tox
+    description: |
+      See https://bugs.launchpad.net/glance/+bug/1482633
+    vars:
+      tox_envlist: broken-py35-ssl-tests
+
+- job:
     name: glance-tox-oslo-tips-base
     parent: tox
     description: Abstract job for Glance vs. oslo libraries
@@ -176,6 +184,8 @@
         - openstack-tox-functional
         - openstack-tox-functional-py35
         - openstack-tox-lower-constraints
+        - glance-eventlet-ssl-handshake-broken-py35:
+            voting: false
     gate:
       jobs:
         - openstack-tox-functional
