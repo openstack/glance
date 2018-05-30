@@ -82,3 +82,21 @@ Metadata definition service
   flavors, and aggregates. A definition includes the new property's key,
   description, constraints, and the resource types which it can be
   associated with.
+
+Running Glance Under Python3
+============================
+
+You should always run Glance under whatever version of Python your
+distribution of OpenStack specifies.
+
+If you are building OpenStack yourself from source, Glance is currently
+supported to run under Python2 (specifically, Python 2.7 or later).
+
+Some deployment configuration is required if you wish to run Glance
+under Python3.  Glance is tested with unit and functional tests running
+Python 3.5.  The eventlet-based server that Glance runs, however, is
+currently affected by a bug that prevents SSL handshakes from completing
+(see `Bug #1482633 <https://bugs.launchpad.net/glance/+bug/1482633>`_).
+Thus if you wish to run Glance under Python 3.5, you must deploy Glance in
+such a way that SSL termination is handled by something like HAProxy before
+calls reach Glance.
