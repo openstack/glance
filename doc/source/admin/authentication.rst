@@ -55,7 +55,7 @@ an example for ``authtoken``::
 
   [filter:authtoken]
   paste.filter_factory = keystonemiddleware.auth_token:filter_factory
-  auth_url = http://localhost:35357
+  auth_url = http://localhost:5000
   project_domain_id = default
   project_name = service_admins
   user_domain_id = default
