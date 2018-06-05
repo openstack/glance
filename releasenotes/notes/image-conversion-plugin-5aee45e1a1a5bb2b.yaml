@@ -1,0 +1,14 @@
+---
+prelude: >
+  Automatic image conversion plugin for Interoperable Image Import. This
+  release introduces a new plugin that can be used to convert images to
+  specific format automatically upon image import.
+features:
+  - |
+    Automatic image conversion plugin for Interoperable Image Import. With
+    this release operators can specify target image format and get all images
+    created via the Image Import methods introduced in the Images API v2.6
+    converted automatically to that format. The feautre uses qemu-img under
+    the hood which limits the source image formats that users can upload. Any
+    image that fails the conversion when this plugin is enabled will fail the
+    image creation.
