@@ -299,12 +299,10 @@ class ImageProxy(glance.domain.proxy.Image):
         if remaining is not None:
             # NOTE(jbresnah) we are trying to enforce a quota, put a limit
             # reader on the data
-            data = utils.LimitingReader(data, remaining)
-        try:
-            self.image.set_data(data, size=size)
-        except exception.ImageSizeLimitExceeded:
-            raise exception.StorageQuotaFull(image_size=size,
-                                             remaining=remaining)
+            data = utils.LimitingReader(
+                data, remaining, exception_class=exception.StorageQuotaFull)
+
+        self.image.set_data(data, size=size)
 
         # NOTE(jbresnah) If two uploads happen at the same time and neither
         # properly sets the size attribute[1] then there is a race condition
