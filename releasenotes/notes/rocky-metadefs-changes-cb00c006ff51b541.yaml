@@ -1,0 +1,14 @@
+---
+upgrade:
+  - |
+    The following metadata definitions have been modified in the Rocky
+    release:
+
+    * There was a typographical error in the properties target for the
+      ``OS:::Nova::Server`` resource type association in the
+      ``CIM::ProcessorAllocationSettingData`` namespace.  It has been
+      been corrected to ``scheduler_hints``.
+
+    You may upgrade these definitions using:
+
+    ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``

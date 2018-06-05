@@ -24,7 +24,7 @@
         },
         {
             "name": "OS::Nova::Server",
-            "properties_target": "scheduler_hint"
+            "properties_target": "scheduler_hints"
         }
     ],
     "properties": {
