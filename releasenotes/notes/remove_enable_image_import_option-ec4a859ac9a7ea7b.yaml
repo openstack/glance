@@ -1,0 +1,9 @@
+---
+prelude: >
+    Removed the deprecated 'enable_image_import' config option. Image import
+    will be always enabled from this release onwards as designed.
+upgrade:
+  - |
+    As Image Import will be always enabled, care needs to be taken that it is
+    configured properly from this release forward. The 'enable_image_import'
+    option is silently ignored.

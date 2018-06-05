@@ -382,8 +382,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         return {'size': image_size, 'data': request.body_file}
 
     def stage(self, request):
-        if not CONF.enable_image_import:
-            msg = _("Image import is not supported at this site.")
+        if "glance-direct" not in CONF.enabled_import_methods:
+            msg = _("'glance-direct' method is not available at this site.")
             raise webob.exc.HTTPNotFound(explanation=msg)
         try:
             request.get_content_type(('application/octet-stream',))
