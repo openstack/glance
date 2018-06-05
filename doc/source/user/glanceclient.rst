@@ -22,5 +22,5 @@ through the python-glanceclient project. Explore the following resources
 for more information:
 
 * `Official Docs <http://docs.openstack.org/developer/python-glanceclient/>`_
-* `Pypi Page <http://pypi.python.org/pypi/python-glanceclient>`_
+* `Pypi Page <https://pypi.org/project/python-glanceclient/>`_
 * `GitHub Project <http://github.com/openstack/python-glanceclient>`_
