@@ -29,7 +29,7 @@ For information about how to manage images, see the
 
    .. code-block:: console
 
-      $ wget http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
+      $ wget http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
 
    .. end
 
@@ -44,7 +44,7 @@ For information about how to manage images, see the
    .. code-block:: console
 
       $ openstack image create "cirros" \
-        --file cirros-0.3.5-x86_64-disk.img \
+        --file cirros-0.4.0-x86_64-disk.img \
         --disk-format qcow2 --container-format bare \
         --public
 
