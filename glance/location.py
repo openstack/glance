@@ -15,6 +15,7 @@
 
 import collections
 import copy
+import functools
 
 from cryptography import exceptions as crypto_exception
 from cursive import exception as cursive_exception
@@ -158,6 +159,7 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
         return super(ImageFactoryProxy, self).new_image(**kwargs)
 
 
+@functools.total_ordering
 class StoreLocations(collections.MutableSequence):
     """
     The proxy for store location property. It takes responsibility for::
@@ -297,14 +299,11 @@ class StoreLocations(collections.MutableSequence):
         else:
             return other
 
-    def __cmp__(self, other):
-        return cmp(self.value, self.__cast(other))
-
     def __eq__(self, other):
         return self.value == self.__cast(other)
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    def __lt__(self, other):
+        return self.value < self.__cast(other)
 
     def __iter__(self):
         return iter(self.value)
