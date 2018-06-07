@@ -14,10 +14,8 @@
 # limitations under the License.
 
 from oslo_config import cfg
-import webob.exc
 
 from glance.common import wsgi
-from glance.i18n import _
 
 
 CONF = cfg.CONF
@@ -25,12 +23,6 @@ CONF = cfg.CONF
 
 class InfoController(object):
     def get_image_import(self, req):
-        # TODO(jokke): Will be removed after the config option
-        # is removed. (deprecated)
-        if not CONF.enable_image_import:
-            msg = _("Image import is not supported at this site.")
-            raise webob.exc.HTTPNotFound(explanation=msg)
-
         # TODO(jokke): All the rest of the boundaries should be implemented.
         import_methods = {
             'description': 'Import methods available.',

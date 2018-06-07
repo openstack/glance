@@ -208,12 +208,6 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v2_7_unsupported_EXPERIMENTAL(self):
-        request = webob.Request.blank('/v2.7/images')
-        self.config(enable_image_import=True)
-        resp = self.middleware.process_request(request)
-        self.assertIsInstance(resp, versions.Controller)
-
 
 class VersionsAndNegotiationTest(VersionNegotiationTest, VersionsTest):
 

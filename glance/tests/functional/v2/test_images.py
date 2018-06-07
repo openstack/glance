@@ -137,7 +137,6 @@ class TestImages(functional.FunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_glance_direct(self):
-        self.api_server.enable_image_import = True
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -278,7 +277,6 @@ class TestImages(functional.FunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
-        self.api_server.enable_image_import = True
         self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 

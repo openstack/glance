@@ -2222,7 +2222,6 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_delete_uploading_status_image(self):
         """Ensure status of uploading image is updated (LP bug #1733289)"""
-        self.config(enable_image_import=True)
         request = unit_test_utils.get_fake_request(is_admin=True)
         image = self.db.image_create(request.context, {'status': 'uploading'})
         image_id = image['id']
@@ -3164,7 +3163,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                          sorted(output['filters']['tags']))
 
     def test_image_import(self):
-        self.config(enable_image_import=True)
         # Bug 1754634: make sure that what's considered valid
         # is determined by the config option
         self.config(enabled_import_methods=['party-time'])
@@ -3179,15 +3177,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         expected = {"body": import_body}
         self.assertEqual(expected, output)
 
-    def test_import_image_disabled(self):
-        self.config(enable_image_import=False)
-        request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPNotFound,
-                          self.deserializer.import_image,
-                          request)
-
     def test_import_image_invalid_body(self):
-        self.config(enable_image_import=True)
         request = unit_test_utils.get_fake_request()
         import_body = {
             "method1": {
@@ -3200,7 +3190,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                           request)
 
     def test_import_image_invalid_input(self):
-        self.config(enable_image_import=True)
         request = unit_test_utils.get_fake_request()
         import_body = {
             "method": {
@@ -3225,7 +3214,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
     KNOWN_IMPORT_METHODS = ['glance-direct', 'web-download']
 
     def test_import_image_invalid_import_method(self):
-        self.config(enable_image_import=True)
         # Bug 1754634: make sure that what's considered valid
         # is determined by the config option.  So put known bad
         # name in config, and known good name in request
@@ -3618,17 +3606,6 @@ class TestImagesSerializer(test_utils.BaseTestCase):
 
         # no header for empty config value
         self.config(enabled_import_methods=[])
-        response = webob.Response()
-        self.serializer.create(response, self.fixtures[0])
-        self.assertEqual(http.CREATED, response.status_int)
-        headers = response.headers.keys()
-        self.assertNotIn(header_name, headers)
-
-    # TODO(rosmaita): remove this test when the enable_image_import
-    # option is removed
-    def test_create_has_no_import_methods_header(self):
-        header_name = 'OpenStack-image-import-methods'
-        self.config(enable_image_import=False)
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(http.CREATED, response.status_int)

@@ -671,7 +671,6 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
                           self.deserializer.upload, request)
 
     def test_stage(self):
-        self.config(enable_image_import=True)
         req = unit_test_utils.get_fake_request()
         req.headers['Content-Type'] = 'application/octet-stream'
         req.headers['Content-Length'] = 4
@@ -680,8 +679,8 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         data = output.pop('data')
         self.assertEqual(b'YYYY', data.read())
 
-    def test_stage_if_image_import_is_disabled(self):
-        self.config(enable_image_import=False)
+    def test_stage_without_glance_direct(self):
+        self.config(enabled_import_methods=['web-download'])
         req = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.deserializer.stage,
@@ -690,7 +689,6 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
     def test_stage_raises_invalid_content_type(self):
         # TODO(abhishekk): change this when import methods are
         # listed in the config file
-        self.config(enable_image_import=True)
         req = unit_test_utils.get_fake_request()
         req.headers['Content-Type'] = 'application/json'
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,

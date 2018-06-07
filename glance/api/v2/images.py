@@ -287,9 +287,7 @@ class ImagesController(object):
         try:
             image = image_repo.get(image_id)
 
-            # NOTE(abhishekk): If 'image-import' is supported and image status
-            # is uploading then delete image data from the staging area.
-            if CONF.enable_image_import and image.status == 'uploading':
+            if image.status == 'uploading':
                 file_path = str(CONF.node_staging_uri + '/' + image.image_id)
                 self.store_api.delete_from_backend(file_path)
 
@@ -822,9 +820,6 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
     def import_image(self, request):
-        if not CONF.enable_image_import:
-            msg = _("Image import is not supported at this site.")
-            raise webob.exc.HTTPNotFound(explanation=msg)
         body = self._get_request_body(request)
         self._validate_import_body(body)
         return {'body': body}
@@ -902,15 +897,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = http.CREATED
         self.show(response, image)
         response.location = self._get_image_href(image)
-        # TODO(rosmaita): remove the outer 'if' statement when the
-        # enable_image_import config option is removed
-        if CONF.enable_image_import:
-            # according to RFC7230, headers should not have empty fields
-            # see http://httpwg.org/specs/rfc7230.html#field.components
-            if CONF.enabled_import_methods:
-                import_methods = ("OpenStack-image-import-methods",
-                                  ','.join(CONF.enabled_import_methods))
-                response.headerlist.append(import_methods)
+        # according to RFC7230, headers should not have empty fields
+        # see http://httpwg.org/specs/rfc7230.html#field.components
+        if CONF.enabled_import_methods:
+            import_methods = ("OpenStack-image-import-methods",
+                              ','.join(CONF.enabled_import_methods))
+            response.headerlist.append(import_methods)
 
     def show(self, response, image):
         image_view = self._format_image(image)

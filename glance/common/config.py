@@ -700,32 +700,8 @@ Possible values:
 
 Related options:
     * [task]/work_dir
-    * [DEFAULT]/enable_image_import (*deprecated*)
 
 """)),
-    cfg.BoolOpt('enable_image_import',
-                default=True,
-                deprecated_for_removal=True,
-                deprecated_reason=_("""
-This option is deprecated for removal in Rocky.
-
-It was introduced to make sure that the API is not enabled
-before the '[DEFAULT]/node_staging_uri' is defined and is
-long term redundant."""),
-                deprecated_since='Pike',
-                help=_("""
-Enables the Image Import workflow introduced in Pike
-
-As '[DEFAULT]/node_staging_uri' is required for the Image
-Import, it's disabled per default in Pike, enabled per
-default in Queens and removed in Rocky. This allows Glance to
-operate with previous version configs upon upgrade.
-
-Setting this option to False will disable the endpoints related
-to Image Import Refactoring work.
-
-Related options:
-    * [DEFAULT]/node_staging_uri""")),
     cfg.ListOpt('enabled_import_methods',
                 item_type=cfg.types.String(quotes=True),
                 bounds=True,
@@ -736,8 +712,7 @@ List of enabled Image Import Methods
 Both 'glance-direct' and 'web-download' are enabled by default.
 
 Related options:
-    * [DEFAULT]/node_staging_uri
-    * [DEFAULT]/enable_image_import""")),
+    * [DEFAULT]/node_staging_uri""")),
 ]
 
 CONF = cfg.CONF
