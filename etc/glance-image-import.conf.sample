@@ -63,7 +63,7 @@
 #     * disallowed_ports
 #
 #  (list value)
-#allowed_schemes = http,https
+#allowed_schemes = [http,https]
 
 #
 # Specify the "blacklist" of uri schemes disallowed for web-download.
@@ -89,7 +89,7 @@
 #     * disallowed_ports
 #
 #  (list value)
-#disallowed_schemes =
+#disallowed_schemes = []
 
 #
 # Specify the "whitelist" of allowed target hosts for web-download.
@@ -118,7 +118,7 @@
 #     * disallowed_ports
 #
 #  (list value)
-#allowed_hosts =
+#allowed_hosts = []
 
 #
 # Specify the "blacklist" of hosts disallowed for web-download.
@@ -146,7 +146,7 @@
 #     * disallowed_ports
 #
 #  (list value)
-#disallowed_hosts =
+#disallowed_hosts = []
 
 #
 # Specify the "whitelist" of allowed ports for web-download.
@@ -173,7 +173,7 @@
 #     * disallowed_hosts
 #     * disallowed_ports
 #  (list value)
-#allowed_ports = 80,443
+#allowed_ports = [80,443]
 
 #
 # Specify the "blacklist" of disallowed ports for web-download.
@@ -200,7 +200,7 @@
 #     * allowed_ports
 #
 #  (list value)
-#disallowed_ports =
+#disallowed_ports = []
 
 
 [inject_metadata_properties]
