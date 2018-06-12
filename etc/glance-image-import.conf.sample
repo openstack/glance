@@ -1,6 +1,34 @@
 [DEFAULT]
 
 
+[image_conversion]
+
+#
+# From glance
+#
+
+#
+# Desired output format for image conversion plugin.
+#
+# Provide a valid image format to which the conversion plugin
+# will convert the image before storing it to the back-end.
+#
+# Note, if the Image Conversion plugin for image import is defined, users
+# should only upload disk formats that are supported by `quemu-img` otherwise
+# the conversion and import will fail.
+#
+# Possible values:
+#     * qcow2
+#     * raw
+#     * vdmk
+#
+# Related Options:
+#     * disk_formats
+#  (string value)
+# Allowed values: qcow2, raw, vdmk
+#output_format = raw
+
+
 [image_import_opts]
 
 #

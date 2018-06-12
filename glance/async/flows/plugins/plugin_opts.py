@@ -14,6 +14,7 @@
 # under the License.
 
 
+import glance.async.flows.plugins.image_conversion
 import glance.async.flows.plugins.inject_image_metadata
 
 
@@ -27,6 +28,8 @@ import glance.async.flows.plugins.inject_image_metadata
 PLUGIN_OPTS = [
     ('inject_metadata_properties',
      glance.async.flows.plugins.inject_image_metadata.inject_metadata_opts),
+    ('image_conversion',
+     glance.async.flows.plugins.image_conversion.conversion_plugin_opts),
 ]
 
 

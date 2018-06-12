@@ -194,7 +194,8 @@ class Image(object):
 
     @container_format.setter
     def container_format(self, value):
-        if hasattr(self, '_container_format') and self.status != 'queued':
+        if (hasattr(self, '_container_format') and
+                self.status not in ('queued', 'importing')):
             msg = _("Attribute container_format can be only replaced "
                     "for a queued image.")
             raise exception.Forbidden(message=msg)
@@ -206,7 +207,8 @@ class Image(object):
 
     @disk_format.setter
     def disk_format(self, value):
-        if hasattr(self, '_disk_format') and self.status != 'queued':
+        if (hasattr(self, '_disk_format') and
+                self.status not in ('queued', 'importing')):
             msg = _("Attribute disk_format can be only replaced "
                     "for a queued image.")
             raise exception.Forbidden(message=msg)

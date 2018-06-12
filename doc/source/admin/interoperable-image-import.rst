@@ -377,6 +377,87 @@ required.
    See the :ref:`property-protections` section of this Guide for more
    information.
 
+The Image Conversion
+--------------------
+.. list-table::
+
+   * - release introduced
+     - Rocky (Glance 17.0.0)
+   * - configuration file
+     - ``glance-image-import.conf``
+   * - configuration file section
+     - ``[image_conversion]``
+
+This plugin implements automated image conversion for Interoperable Image
+Import. One use case for this plugin would be environments where Ceph is used
+as image back-end and operators want to optimize the back-end capabilities by
+ensuring that all images will be in raw format while not putting the burden of
+converting the images to their end users.
+
+.. note::
+
+   This plugin may only be used as part of the interoperable image import
+   workflow (``POST v2/images/{image_id}/import``).  *It has no effect on the
+   image data upload call* (``PUT v2/images/{image_id}/file``).
+
+   You can guarantee that your end users must use interoperable image import by
+   restricting the ``upload_image`` policy appropriately in the Glance
+   ``policy.json`` file.  By default, this policy is unrestricted (that is,
+   any authorized user may make the image upload call).
+
+   For example, to allow only admin or service users to make the image upload
+   call, the policy could be restricted as follows:
+
+   .. code-block:: text
+
+      "upload_image": "role:admin or (service_user_id:<uuid of nova user>) or
+         (service_roles:<service user role>)"
+
+   where "service_role" is the role which is created for the service user
+   and assigned to trusted services.
+
+To use the Image Conversion Plugin, the following configuration is
+required.
+
+You will need to configure 'glance-image-import.conf' file as shown below:
+
+   .. code-block:: ini
+
+       [image_import_opts]
+       image_import_plugins = ['image_conversion']
+
+       [image_conversion]
+       output_format = raw
+
+.. note::
+
+  The default output format is raw in which case there is no need to have
+  'image_conversion' section and its 'output_format' defined in the config
+  file.
+
+  The input format needs to be one of the `qemu-img supported ones`_ for this
+  feature to work. In case of qemu-img call failing on the source image the
+  import process will fail if 'image_conversion' plugin is enabled.
+
+.. note::
+
+  ``image_import_plugins`` config option is a list and multiple plugins can be
+  enabled for the import flow. The plugins are not run in parallel. One can
+  enable multiple plugins by configuring them in the
+  ``glance-image-import.conf`` for example as following:
+
+  .. code-block:: ini
+
+       [image_import_opts]
+       image_import_plugins = ['inject_image_metadata', 'image_conversion']
+
+       [inject_metadata_properties]
+       ignore_user_roles = admin,...
+       inject = "property1":"value1","property2":"value2",...
+
+       [image_conversion]
+       output_format = raw
+
 .. _glance-api.conf: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-api.conf
 .. _glance-image-import.conf.sample: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-image-import.conf.sample
 .. _`Image Import Refactor`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
@@ -387,4 +468,4 @@ required.
 .. _`Stevedore`: https://docs.openstack.org/stevedore
 .. _`Taskflow`: https://docs.openstack.org/taskflow
 .. _`Taskflow "Task" object`: https://docs.openstack.org/taskflow/latest/user/atoms.html#task
-
+.. _`qemu-img supported ones`: https://github.com/qemu/qemu/blob/master/qemu-img.texi#L599-L725
