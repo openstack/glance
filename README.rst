@@ -80,3 +80,7 @@ to focus on for the upcoming release. You can see image service plans:
 For more information about the Glance project please see:
 
 * `Glance Project <https://launchpad.net/glance/>`_
+
+Release notes for the project can be found at:
+
+* `Glance Release Notes <https://docs.openstack.org/releasenotes/glance/>`_
