@@ -143,6 +143,24 @@ ship a better product. You can also then focus on bug fixing reviews in the
 interim between your project priorities deadline and the actual release
 deadline.
 
+There are periodic "tips" test jobs set up for each of glance, glance_store,
+and python-glanceclient.  These jobs test our current masters (which use
+the released versions of dependencies) against the master branches of our
+dependencies.  This way we can get a heads-up if a dependency merges a change
+that will break us.  In order for this to work, someone has to keep an eye
+on these jobs ... and that person is you.  Part of your job is to report on
+the status of the periodic jobs at the weekly glance meeting.
+
+You can see the output of these jobs by going to the Zuul Builds Page,
+``http://zuul.openstack.org/builds.html``.  (Note: it takes a minute or so
+for the page to populate.)  You can filter the results by Pipeline (you
+want ``periodic``) and Project (use ``openstack/glance``,
+``openstack/glance_store``, or ``openstack/python-glanceclient``).  You
+can find a link to the logs of each job from that page.  (Note: your
+responsibility as Release CPL is limited to monitoring and notifying the
+team about the status of the jobs.  But feel free to fix them if you want
+to!)
+
 
 Checklist
 =========
