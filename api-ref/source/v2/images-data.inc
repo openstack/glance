@@ -21,11 +21,39 @@ Uploads binary image data.
 
 Set the ``Content-Type`` request header to ``application/octet-stream``.
 
+A multiple store backend support is introduced in the Rocky release
+as a part of the EXPERIMENTAL Image API v2.8.
+
+Beginning with API version 2.8, an optional ``X-Image-Meta-Store``
+header may be added to the request.  When present, the image data will be
+placed into the backing store whose identifier is the value of this
+header.  If the store identifier specified is not recognized, a 400 (Bad
+Request) response is returned.  When the header is not present, the image
+data is placed into the default backing store.
+
+.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
+          its use in production systems is currently **not supported**.
+          However we encourage people to use this feature for testing
+          purposes and report the issues so that we can make it stable and
+          fully supported in Stein release.
+
+* Store identifiers are site-specific.  Use the :ref:`Store
+  Discovery <store-discovery-call>` call to determine what
+  stores are available in a particular cloud.
+* The default store may be determined from the :ref:`Store
+  Discovery <store-discovery-call>` response.
+* A default store is always defined, so if you do not have a need
+  to use a particular store, simply omit this header and the default store
+  will be used.
+* For API versions before version 2.8, this header is silently
+  ignored.
+
 Example call:
 
 ::
 
    curl -i -X PUT -H "X-Auth-Token: $token" \
+      -H "X-Image-Meta-Store: {store_identifier}" \
       -H "Content-Type: application/octet-stream" \
       -d @/home/glance/ubuntu-12.10.qcow2 \
       $image_url/v2/images/{image_id}/file
@@ -75,6 +103,7 @@ Request
 .. rest_parameters:: images-parameters.yaml
 
    - Content-type: Content-Type-data
+   - X-Image-Meta-Store: store-header
    - image_id: image_id-in-path
 
 

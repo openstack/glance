@@ -1,0 +1,17 @@
+{
+    "stores": [
+        {
+            "id":"reliable",
+            "description": "Reliable filesystem store"
+        },
+        {
+            "id":"fast",
+            "description": "Fast access to rbd store",
+            "default": true
+        },
+        {
+            "id":"cheap",
+            "description": "Less expensive rbd store"
+        }
+    ]
+}

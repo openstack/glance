@@ -72,6 +72,23 @@ Range:
   in: header
   required: false
   type: string
+store-header:
+  description: |
+    A store identifier to upload or import image data.  Should only be included
+    when making a request to a cloud that supports multiple backing stores. Use
+    the :ref:`Store Discovery <store-discovery-call>` call to determine an
+    appropriate store identifier. Simply omit this header to use the default
+    store. *(Since Image API v2.8)*
+  in: header
+  required: false
+  type: string
+stores-header:
+  description: |
+    A comma separated list of available store identifiers.  If this header
+    is missing the cloud does not support multiple backend stores.
+  in: header
+  required: false
+  type: string
 
 # variables in path
 image_id-in-path:
