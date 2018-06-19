@@ -263,9 +263,10 @@ class TestScrubber(functional.FunctionalTest):
             exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
             cmd = ("%s --config-file %s --restore %s" %
                    (exe_cmd, self.scrubber_daemon.conf_file_name, image['id']))
-            exitcode, out, err = execute(cmd, raise_error=False)
-            self.assertEqual(0, exitcode)
-        self.wait_for_scrubber_shutdown(_test_content)
+            return execute(cmd, raise_error=False)
+
+        exitcode, out, err = self.wait_for_scrubber_shutdown(_test_content)
+        self.assertEqual(0, exitcode)
 
         response, content = self._send_http_request(path, 'GET')
         image = jsonutils.loads(content)
@@ -298,11 +299,12 @@ class TestScrubber(functional.FunctionalTest):
             exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
             cmd = ("%s --config-file %s --restore %s" %
                    (exe_cmd, self.scrubber_daemon.conf_file_name, image['id']))
-            exitcode, out, err = execute(cmd, raise_error=False)
-            self.assertEqual(1, exitcode)
-            self.assertIn('cannot restore the image from active to active '
-                          '(wanted from_state=pending_delete)', str(err))
-        self.wait_for_scrubber_shutdown(_test_content)
+            return execute(cmd, raise_error=False)
+
+        exitcode, out, err = self.wait_for_scrubber_shutdown(_test_content)
+        self.assertEqual(1, exitcode)
+        self.assertIn('cannot restore the image from active to active '
+                      '(wanted from_state=pending_delete)', str(err))
 
         self.stop_servers()
 
@@ -317,11 +319,11 @@ class TestScrubber(functional.FunctionalTest):
             exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
             cmd = ("%s --config-file %s --restore fake_image_id" %
                    (exe_cmd, scrubber.conf_file_name))
-            exitcode, out, err = execute(cmd, raise_error=False)
-            self.assertEqual(1, exitcode)
-            self.assertIn('No image found with ID fake_image_id', str(err))
+            return execute(cmd, raise_error=False)
 
-        self.wait_for_scrubber_shutdown(_test_content)
+        exitcode, out, err = self.wait_for_scrubber_shutdown(_test_content)
+        self.assertEqual(1, exitcode)
+        self.assertIn('No image found with ID fake_image_id', str(err))
 
     def test_scrubber_restore_image_with_daemon_raise_error(self):
 
@@ -347,18 +349,23 @@ class TestScrubber(functional.FunctionalTest):
         self.stop_server(self.scrubber_daemon)
 
     def wait_for_scrubber_shutdown(self, func):
-        # NOTE: sometimes the glance-scrubber process which is setup by the
-        # previous test can't be shutdown immediately, we need wait a second to
-        # make sure it's down.
-        for _ in range(15):
-            try:
-                func()
-                break
-            except AssertionError:
+        # NOTE(wangxiyuan, rosmaita): The image-restore functionality contains
+        # a check to make sure the scrubber isn't also running in daemon mode
+        # to prevent a race condition between a delete and a restore.
+        # Sometimes the glance-scrubber process which is setup by the
+        # previous test can't be shutdown immediately, so if we get the "daemon
+        # running" message we sleep and try again.
+        not_down_msg = 'The glance-scrubber process is running under daemon'
+        total_wait = 15
+        for _ in range(total_wait):
+            exitcode, out, err = func()
+            if exitcode == 1 and not_down_msg in str(err):
                 time.sleep(1)
                 continue
+            return exitcode, out, err
         else:
-            self.fail('unexpected error occurred in glance-scrubber')
+            self.fail('Scrubber did not shut down within {} sec'.format(
+                total_wait))
 
     def wait_for_scrub(self, image_id):
         """
