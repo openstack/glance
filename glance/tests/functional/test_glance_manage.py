@@ -134,7 +134,7 @@ class TestGlanceManage(functional.FunctionalTest):
         self.assertEqual(expand_head, out.rstrip().decode("utf-8"))
         exitcode, out, err = self._db_command(db_method='expand')
         self.assertIn('Database expansion is up to date. '
-                      'No expansion needed.', out)
+                      'No expansion needed.', str(out))
 
     @depends_on_exe('sqlite3')
     @skip_if_disabled
@@ -155,7 +155,7 @@ class TestGlanceManage(functional.FunctionalTest):
         if data_migrations.has_pending_migrations(db_api.get_engine()):
             exitcode, out, err = self._db_command(db_method='migrate')
             self.assertIn('Database migration is up to date. No migration '
-                          'needed.', out)
+                          'needed.', str(out))
 
     @depends_on_exe('sqlite3')
     @skip_if_disabled
@@ -173,4 +173,5 @@ class TestGlanceManage(functional.FunctionalTest):
         exitcode, out, err = execute(cmd, raise_error=True)
         self.assertEqual(contract_head, out.rstrip().decode("utf-8"))
         exitcode, out, err = self._db_command(db_method='contract')
-        self.assertIn('Database is up to date. No migrations needed.', out)
+        self.assertIn('Database is up to date. No migrations needed.',
+                      str(out))
