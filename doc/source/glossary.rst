@@ -2926,7 +2926,7 @@ P
 
    project
 
-      Projects represent the base unit of “ownership” in OpenStack,
+      Projects represent the base unit of "ownership" in OpenStack,
       in that all resources in OpenStack should be owned by a specific project.
       In OpenStack Identity, a project must be owned by a specific domain.
 

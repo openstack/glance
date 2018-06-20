@@ -49,7 +49,7 @@ the metadata facilities provided by the appropriate API.  (For example, the
 Images API would be used to put specific key:value pairs on a virtual machine
 image.)
 
-A metadefs definition includes a property’s key, its description, its
+A metadefs definition includes a property's key, its description, its
 constraints, and the resource types to which it can be associated.  See
 `Metadata Definition Concepts
 <http://docs.openstack.org/developer/glance/metadefs-concepts.html>`_ in the

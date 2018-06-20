@@ -31,7 +31,7 @@ model object as with a common object.
 Inner architecture
 ~~~~~~~~~~~~~~~~~~
 
-Each layer defines its own operations’ implementation through a
+Each layer defines its own operations' implementation through a
 special ``proxy`` class. At first, operations are performed on the
 upper layer, then they successively pass the control to the underlying
 layers.

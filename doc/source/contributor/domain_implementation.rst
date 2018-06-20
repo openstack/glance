@@ -86,7 +86,7 @@ There are two types of image properties in Glance:
   to an image
 
 The property protection layer manages access to the meta properties
-through Glance’s public API calls. You can restrict the access in the
+through Glance's public API calls. You can restrict the access in the
 property protection configuration file.
 
 .. _notifier:
