@@ -54,6 +54,34 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
         store.create_stores(CONF)
 
 
+class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(MultiStoreClearingUnitTest, self).setUp()
+        # Ensure stores + locations cleared
+        location.SCHEME_TO_CLS_BACKEND_MAP = {}
+
+        self._create_multi_stores()
+        self.addCleanup(setattr, location, 'SCHEME_TO_CLS_MAP', dict())
+
+    def _create_multi_stores(self, passing_config=True):
+        """Create known stores. Mock out sheepdog's subprocess dependency
+        on collie.
+
+        :param passing_config: making store driver passes basic configurations.
+        :returns: the number of how many store drivers been loaded.
+        """
+        self.config(enabled_backends={'file1': 'file', 'ceph1': 'rbd'})
+        store.register_store_opts(CONF)
+
+        self.config(default_backend='file1',
+                    group='glance_store')
+
+        self.config(filesystem_store_datadir=self.test_dir,
+                    group='file1')
+        store.create_multi_stores(CONF)
+
+
 class IsolatedUnitTest(StoreClearingUnitTest):
 
     """
@@ -74,6 +102,30 @@ class IsolatedUnitTest(StoreClearingUnitTest):
                     group="glance_store")
 
         store.create_stores()
+        stubs.stub_out_registry_and_store_server(self.stubs,
+                                                 self.test_dir,
+                                                 registry=self.registry)
+
+    def set_policy_rules(self, rules):
+        fap = open(CONF.oslo_policy.policy_file, 'w')
+        fap.write(jsonutils.dumps(rules))
+        fap.close()
+
+
+class MultiIsolatedUnitTest(MultiStoreClearingUnitTest):
+
+    """
+    Unit test case that establishes a mock environment within
+    a testing directory (in isolation)
+    """
+    registry = None
+
+    def setUp(self):
+        super(MultiIsolatedUnitTest, self).setUp()
+        options.set_defaults(CONF, connection='sqlite://')
+        lockutils.set_defaults(os.path.join(self.test_dir))
+
+        self.config(debug=False)
         stubs.stub_out_registry_and_store_server(self.stubs,
                                                  self.test_dir,
                                                  registry=self.registry)

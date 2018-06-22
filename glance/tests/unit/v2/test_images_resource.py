@@ -4267,3 +4267,112 @@ class TestImageSchemaDeterminePropertyBasis(test_utils.BaseTestCase):
     def test_base_property_marked_as_base(self):
         schema = glance.api.v2.images.get_schema()
         self.assertTrue(schema.properties['disk_format'].get('is_base', True))
+
+
+class TestMultiImagesController(base.MultiIsolatedUnitTest):
+
+    def setUp(self):
+        super(TestMultiImagesController, self).setUp()
+        self.db = unit_test_utils.FakeDB(initialize=False)
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.notifier = unit_test_utils.FakeNotifier()
+        self.store = store
+        self._create_images()
+        self._create_image_members()
+        self.controller = glance.api.v2.images.ImagesController(self.db,
+                                                                self.policy,
+                                                                self.notifier,
+                                                                self.store)
+
+    def _create_images(self):
+        self.images = [
+            _db_fixture(UUID1, owner=TENANT1, checksum=CHKSUM,
+                        name='1', size=256, virtual_size=1024,
+                        visibility='public',
+                        locations=[{'url': '%s/%s' % (BASE_URI, UUID1),
+                                    'metadata': {}, 'status': 'active'}],
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active'),
+            _db_fixture(UUID2, owner=TENANT1, checksum=CHKSUM1,
+                        name='2', size=512, virtual_size=2048,
+                        visibility='public',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        tags=['redhat', '64bit', 'power'],
+                        properties={'hypervisor_type': 'kvm', 'foo': 'bar',
+                                    'bar': 'foo'}),
+            _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
+                        name='3', size=512, virtual_size=2048,
+                        visibility='public', tags=['windows', '64bit', 'x86']),
+            _db_fixture(UUID4, owner=TENANT4, name='4',
+                        size=1024, virtual_size=3072),
+        ]
+        [self.db.image_create(None, image) for image in self.images]
+
+        self.db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
+
+    def _create_image_members(self):
+        self.image_members = [
+            _db_image_member_fixture(UUID4, TENANT2),
+            _db_image_member_fixture(UUID4, TENANT3,
+                                     status='accepted'),
+        ]
+        [self.db.image_member_create(None, image_member)
+            for image_member in self.image_members]
+
+    def test_image_import_image_not_exist(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.import_image,
+                          request, 'invalid_image',
+                          {'method': {'name': 'glance-direct'}})
+
+    def test_image_import_with_active_image(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.import_image,
+                          request, UUID1,
+                          {'method': {'name': 'glance-direct'}})
+
+    def test_image_import_invalid_backend_in_request_header(self):
+        request = unit_test_utils.get_fake_request()
+        request.headers['x-image-meta-store'] = 'dummy'
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image,
+                              request, UUID4,
+                              {'method': {'name': 'glance-direct'}})
+
+    def test_image_import_raises_conflict_if_disk_format_is_none(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(disk_format=None)
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'glance-direct'}})
+
+    def test_image_import_raises_conflict(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='queued')
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'glance-direct'}})
+
+    def test_image_import_raises_conflict_for_web_download(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage()
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'web-download'}})

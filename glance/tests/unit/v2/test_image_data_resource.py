@@ -993,3 +993,35 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         self.serializer.stage(response, {})
         self.assertEqual(http.NO_CONTENT, response.status_int)
         self.assertEqual('0', response.headers['Content-Length'])
+
+
+class TestMultiBackendImagesController(base.MultiStoreClearingUnitTest):
+
+    def setUp(self):
+        super(TestMultiBackendImagesController, self).setUp()
+
+        self.config(debug=True)
+        self.image_repo = FakeImageRepo()
+        db = unit_test_utils.FakeDB()
+        policy = unit_test_utils.FakePolicyEnforcer()
+        notifier = unit_test_utils.FakeNotifier()
+        store = unit_test_utils.FakeStoreAPI()
+        self.controller = glance.api.v2.image_data.ImageDataController()
+        self.controller.gateway = FakeGateway(db, store, notifier, policy,
+                                              self.image_repo)
+
+    def test_upload(self):
+        request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        self.assertEqual('YYYY', image.data)
+        self.assertEqual(4, image.size)
+
+    def test_upload_invalid_backend_in_request_header(self):
+        request = unit_test_utils.get_fake_request()
+        request.headers['x-image-meta-store'] = 'dummy'
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
+                          request, unit_test_utils.UUID2, 'YYYY', 4)
