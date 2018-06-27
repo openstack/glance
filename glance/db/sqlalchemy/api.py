@@ -460,6 +460,10 @@ def _make_conditions_from_filters(filters, is_public=None):
         else:
             image_conditions.append(models.Image.visibility != 'public')
 
+    if 'os_hidden' in filters:
+        os_hidden = filters.pop('os_hidden')
+        image_conditions.append(models.Image.os_hidden == os_hidden)
+
     if 'checksum' in filters:
         checksum = filters.pop('checksum')
         image_conditions.append(models.Image.checksum == checksum)

@@ -230,6 +230,7 @@ def _image_format(image_id, **values):
         'updated_at': dt,
         'deleted_at': None,
         'deleted': False,
+        'os_hidden': False
     }
 
     locations = values.pop('locations', None)
@@ -258,6 +259,7 @@ def _filter_images(images, filters, context,
         status = None
 
     visibility = filters.pop('visibility', None)
+    os_hidden = filters.pop('os_hidden', False)
 
     for image in images:
         member = image_member_find(context, image_id=image['id'],
@@ -267,6 +269,7 @@ def _filter_images(images, filters, context,
         image_is_public = image['visibility'] == 'public'
         image_is_community = image['visibility'] == 'community'
         image_is_shared = image['visibility'] == 'shared'
+        image_is_hidden = image['os_hidden'] == True
         acts_as_admin = context.is_admin and not admin_as_user
         can_see = (image_is_public
                    or image_is_community
@@ -297,6 +300,10 @@ def _filter_images(images, filters, context,
 
         if is_public is not None:
             if not image_is_public == is_public:
+                continue
+
+        if os_hidden:
+            if image_is_hidden:
                 continue
 
         to_add = True
@@ -727,7 +734,8 @@ def image_create(context, image_values, v1_mode=False):
                         'virtual_size', 'checksum', 'locations', 'owner',
                         'protected', 'is_public', 'container_format',
                         'disk_format', 'created_at', 'updated_at', 'deleted',
-                        'deleted_at', 'properties', 'tags', 'visibility'])
+                        'deleted_at', 'properties', 'tags', 'visibility',
+                        'os_hidden'])
 
     incorrect_keys = set(image_values.keys()) - allowed_keys
     if incorrect_keys:

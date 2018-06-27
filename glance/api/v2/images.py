@@ -169,6 +169,14 @@ class ImagesController(object):
             filters = {}
         filters['deleted'] = False
 
+        os_hidden = filters.get('os_hidden', 'false').lower()
+        if os_hidden not in ['true', 'false']:
+            message = _("Invalid value '%s' for 'os_hidden' filter."
+                        " Valid values are 'true' or 'false'.") % os_hidden
+            raise webob.exc.HTTPBadRequest(explanation=message)
+        # ensure the type of os_hidden is boolean
+        filters['os_hidden'] = os_hidden == 'true'
+
         protected = filters.get('protected')
         if protected is not None:
             if protected not in ['true', 'false']:
@@ -443,7 +451,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'virtual_size', 'status', 'tags', 'owner',
-                        'updated_at', 'visibility', 'protected')
+                        'updated_at', 'visibility', 'protected', 'os_hidden')
     _available_sort_keys = ('name', 'status', 'container_format',
                             'disk_format', 'size', 'id', 'created_at',
                             'updated_at')
@@ -876,7 +884,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             attributes = ['name', 'disk_format', 'container_format',
                           'visibility', 'size', 'virtual_size', 'status',
                           'checksum', 'protected', 'min_ram', 'min_disk',
-                          'owner']
+                          'owner', 'os_hidden']
             for key in attributes:
                 image_view[key] = getattr(image, key)
             image_view['id'] = image.image_id
@@ -998,6 +1006,11 @@ def get_base_properties():
         'protected': {
             'type': 'boolean',
             'description': _('If true, image will not be deletable.'),
+        },
+        'os_hidden': {
+            'type': 'boolean',
+            'description': _('If true, image will not appear in default '
+                             'image list response.'),
         },
         'checksum': {
             'type': ['null', 'string'],

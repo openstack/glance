@@ -71,7 +71,8 @@ class ImageFactory(object):
     def new_image(self, image_id=None, name=None, visibility='shared',
                   min_disk=0, min_ram=0, protected=False, owner=None,
                   disk_format=None, container_format=None,
-                  extra_properties=None, tags=None, **other_args):
+                  extra_properties=None, tags=None, os_hidden=False,
+                  **other_args):
         extra_properties = extra_properties or {}
         self._check_readonly(other_args)
         self._check_unexpected(other_args)
@@ -89,6 +90,7 @@ class ImageFactory(object):
                      min_ram=min_ram, protected=protected,
                      owner=owner, disk_format=disk_format,
                      container_format=container_format,
+                     os_hidden=os_hidden,
                      extra_properties=extra_properties, tags=tags or [])
 
 
@@ -119,6 +121,7 @@ class Image(object):
         self.updated_at = updated_at
         self.name = kwargs.pop('name', None)
         self.visibility = kwargs.pop('visibility', 'shared')
+        self.os_hidden = kwargs.pop('os_hidden', False)
         self.min_disk = kwargs.pop('min_disk', 0)
         self.min_ram = kwargs.pop('min_ram', 0)
         self.protected = kwargs.pop('protected', False)

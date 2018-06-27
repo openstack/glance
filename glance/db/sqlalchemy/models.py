@@ -119,7 +119,8 @@ class Image(BASE, GlanceBase):
                       Index('ix_images_deleted', 'deleted'),
                       Index('owner_image_idx', 'owner'),
                       Index('created_at_image_idx', 'created_at'),
-                      Index('updated_at_image_idx', 'updated_at'))
+                      Index('updated_at_image_idx', 'updated_at'),
+                      Index('os_hidden_image_idx', 'os_hidden'))
 
     id = Column(String(36), primary_key=True,
                 default=lambda: str(uuid.uuid4()))
@@ -137,6 +138,8 @@ class Image(BASE, GlanceBase):
     min_ram = Column(Integer, nullable=False, default=0)
     owner = Column(String(255))
     protected = Column(Boolean, nullable=False, default=False,
+                       server_default=sql.expression.false())
+    os_hidden = Column(Boolean, nullable=False, default=False,
                        server_default=sql.expression.false())
 
 

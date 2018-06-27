@@ -175,6 +175,7 @@ class TestImages(functional.FunctionalTest):
             u'visibility',
             u'self',
             u'protected',
+            u'os_hidden',
             u'id',
             u'file',
             u'min_disk',
@@ -316,6 +317,7 @@ class TestImages(functional.FunctionalTest):
             u'visibility',
             u'self',
             u'protected',
+            u'os_hidden',
             u'id',
             u'file',
             u'min_disk',
@@ -441,6 +443,7 @@ class TestImages(functional.FunctionalTest):
             u'visibility',
             u'self',
             u'protected',
+            u'os_hidden',
             u'id',
             u'file',
             u'min_disk',
@@ -505,6 +508,7 @@ class TestImages(functional.FunctionalTest):
             u'visibility',
             u'self',
             u'protected',
+            u'os_hidden',
             u'id',
             u'file',
             u'min_disk',
@@ -922,6 +926,269 @@ class TestImages(functional.FunctionalTest):
         data = '123'
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.BAD_REQUEST, response.status_code)
+
+        self.stop_servers()
+
+    def test_hidden_images(self):
+        # Image list should be empty
+        self.api_server.show_multiple_locations = True
+        self.start_servers(**self.__dict__.copy())
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
+                                'disk_format': 'aki',
+                                'container_format': 'aki',
+                                'protected': False})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'os_hidden',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'locations',
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+
+        # Returned image entity should have os_hidden as False
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'os_hidden': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Create another image wiht hidden true
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-2', 'type': 'kernel',
+                                'disk_format': 'aki',
+                                'container_format': 'aki',
+                                'os_hidden': True})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image2_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'os_hidden',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'locations',
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+
+        # Returned image entity should have os_hidden as True
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-2',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image2_id,
+            'protected': False,
+            'os_hidden': True,
+            'file': '/v2/images/%s/file' % image2_id,
+            'min_disk': 0,
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entries
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Image list should list should show one image based on the filter
+        # 'hidden=false'
+        path = self._url('/v2/images?os_hidden=false')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Image list should list should show one image based on the filter
+        # 'hidden=true'
+        path = self._url('/v2/images?os_hidden=true')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
+
+        # Image list should return 400 based on the filter
+        # 'hidden=abcd'
+        path = self._url('/v2/images?os_hidden=abcd')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
+
+        def _verify_image_checksum_and_status(checksum, status):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(http.OK, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
+        # Upload some image data to image-1
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
+        _verify_image_checksum_and_status(expected_checksum, 'active')
+
+        # Upload some image data to image-2
+        path = self._url('/v2/images/%s/file' % image2_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
+        _verify_image_checksum_and_status(expected_checksum, 'active')
+
+        # Hide image-1
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = jsonutils.dumps([
+            {'op': 'replace', 'path': '/os_hidden', 'value': True},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(http.OK, response.status_code, response.text)
+
+        # Returned image entity should reflect the changes
+        image = jsonutils.loads(response.text)
+        self.assertTrue(image['os_hidden'])
+
+        # Image list should now have 0 entries
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # Image list should list should show image-1, and image-2 based
+        # on the filter 'hidden=true'
+        path = self._url('/v2/images?os_hidden=true')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(2, len(images))
+        self.assertEqual(image2_id, images[0]['id'])
+        self.assertEqual(image_id, images[1]['id'])
+
+        # Un-Hide image-1
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = jsonutils.dumps([
+            {'op': 'replace', 'path': '/os_hidden', 'value': False},
+        ])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(http.OK, response.status_code, response.text)
+
+        # Returned image entity should reflect the changes
+        image = jsonutils.loads(response.text)
+        self.assertFalse(image['os_hidden'])
+
+        # Image list should now have 1 entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Deleting image-1 should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Deleting image-2 should work
+        path = self._url('/v2/images/%s' % image2_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Image list should now be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
 
         self.stop_servers()
 

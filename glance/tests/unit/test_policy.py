@@ -53,7 +53,8 @@ class ImageRepoStub(object):
 class ImageStub(object):
     def __init__(self, image_id=None, visibility='private',
                  container_format='bear', disk_format='raw',
-                 status='active', extra_properties=None):
+                 status='active', extra_properties=None,
+                 os_hidden=False):
 
         if extra_properties is None:
             extra_properties = {}
@@ -76,6 +77,7 @@ class ImageStub(object):
         self.size = 0
         self.virtual_size = 0
         self.tags = []
+        self.os_hidden = os_hidden
 
     def delete(self):
         self.status = 'deleted'
@@ -85,8 +87,10 @@ class ImageFactoryStub(object):
     def new_image(self, image_id=None, name=None, visibility='private',
                   min_disk=0, min_ram=0, protected=False, owner=None,
                   disk_format=None, container_format=None,
-                  extra_properties=None, tags=None, **other_args):
+                  extra_properties=None, hidden=False, tags=None,
+                  **other_args):
         self.visibility = visibility
+        self.hidden = hidden
         return 'new_image'
 
 

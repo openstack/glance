@@ -172,6 +172,7 @@ class Image(object):
     min_disk = _proxy('base', 'min_disk')
     min_ram = _proxy('base', 'min_ram')
     protected = _proxy('base', 'protected')
+    os_hidden = _proxy('base', 'os_hidden')
     locations = _proxy('base', 'locations')
     checksum = _proxy('base', 'checksum')
     owner = _proxy('base', 'owner')

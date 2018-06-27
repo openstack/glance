@@ -136,7 +136,8 @@ class ImageRepo(object):
             size=db_image['size'],
             virtual_size=db_image['virtual_size'],
             extra_properties=properties,
-            tags=db_tags
+            tags=db_tags,
+            os_hidden=db_image['os_hidden'],
         )
 
     def _format_image_to_db(self, image):
@@ -168,6 +169,7 @@ class ImageRepo(object):
             'virtual_size': image.virtual_size,
             'visibility': image.visibility,
             'properties': dict(image.extra_properties),
+            'os_hidden': image.os_hidden
         }
 
     def add(self, image):
