@@ -2,15 +2,14 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/tc/badges/glance.svg
-    :target: http://governance.openstack.org/tc/reference/tags/index.html
+.. image:: https://governance.openstack.org/tc/badges/glance.svg
+    :target: https://governance.openstack.org/tc/reference/tags/index.html
     :alt: The following tags have been asserted for the Glance project:
           "project:official",
           "tc:approved-release",
           "stable:follows-policy",
           "tc:starter-kit:compute",
           "vulnerability:managed",
-          "team:diverse-affiliation",
           "assert:supports-upgrade",
           "assert:follows-standard-deprecation".
           Follow the link for an explanation of these tags.
@@ -37,7 +36,7 @@ API
 To learn how to use Glance's API, consult the documentation available
 online at:
 
-* `Image Service APIs <http://developer.openstack.org/api-ref/image/>`_
+* `Image Service APIs <https://developer.openstack.org/api-ref/image/>`_
 
 Developers
 ----------
@@ -50,8 +49,8 @@ HACKING.rst file, and pass all unit tests.
 
 Further developer focused documentation is available at:
 
-* `Official Glance documentation <http://docs.openstack.org/glance/>`_
-* `Official Client documentation <http://docs.openstack.org/python-glanceclient/>`_
+* `Official Glance documentation <https://docs.openstack.org/glance/latest/>`_
+* `Official Client documentation <https://docs.openstack.org/python-glanceclient/latest/>`_
 
 Operators
 ---------
@@ -59,12 +58,20 @@ Operators
 To learn how to deploy and configure OpenStack Glance, consult the
 documentation available online at:
 
-* `Openstack Glance <http://docs.openstack.org/glance/>`_
+* `Openstack Glance <https://docs.openstack.org/glance/latest/>`_
 
 In the unfortunate event that bugs are discovered, they should be
 reported to the appropriate bug tracker. You can raise bugs here:
 
 * `Bug Tracker <https://bugs.launchpad.net/glance/>`_
+
+Release notes
+-----------------
+
+To learn more about Glance's new features, optimizations, and changes
+between versions, consult the release notes online at:
+
+* `Release Notes <https://docs.openstack.org/releasenotes/glance/>`_
 
 Other Information
 -----------------
@@ -72,7 +79,7 @@ Other Information
 During each design summit, we agree on what the whole community wants
 to focus on for the upcoming release. You can see image service plans:
 
-* `Image Service Plans <http://specs.openstack.org/openstack/glance-specs/>`_
+* `Image Service Plans <https://specs.openstack.org/openstack/glance-specs/>`_
 
 For more information about the Glance project please see:
 
