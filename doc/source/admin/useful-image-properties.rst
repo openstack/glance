@@ -268,9 +268,9 @@ Here is a list of useful image properties and the values they expect.
        configuring the instance's flavor. By default:
 
        * The generator device is disabled.
-       * ``/dev/random`` is used as the default entropy source. To specify a
-         physical HW RNG device, use the following option in the nova.conf
-         file:
+       * ``/dev/urandom`` is used as the default entropy source. To
+         specify a physical HW RNG device, use the following option in
+         the nova.conf file:
 
        .. code-block:: ini
 
