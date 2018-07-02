@@ -1990,11 +1990,27 @@ class DBPurgeTests(test_utils.BaseTestCase):
     def test_db_purge(self):
         self.db_api.purge_deleted_rows(self.adm_context, 1, 5)
         images = self.db_api.image_get_all(self.adm_context)
+
+        # Verify that no records from images have been deleted
+        # as images table will be purged using 'purge_images_table'
+        # command.
+        self.assertEqual(len(images), 3)
+        tasks = self.db_api.task_get_all(self.adm_context)
+        self.assertEqual(len(tasks), 2)
+
+    def test_db_purge_images_table(self):
+        # purge records from images_tags table
+        self.db_api.purge_deleted_rows(self.adm_context, 1, 5)
+
+        # purge records from images table
+        self.db_api.purge_deleted_rows_from_images(self.adm_context, 1, 5)
+        images = self.db_api.image_get_all(self.adm_context)
+
         self.assertEqual(len(images), 2)
         tasks = self.db_api.task_get_all(self.adm_context)
         self.assertEqual(len(tasks), 2)
 
-    def test_purge_fk_constraint_failure(self):
+    def test_purge_images_table_fk_constraint_failure(self):
         """Test foreign key constraint failure
 
         Test whether foreign key constraint failure during purge
@@ -2053,7 +2069,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
 
         # Purge all records deleted at least 10 days ago
         self.assertRaises(db_exception.DBReferenceError,
-                          db_api.purge_deleted_rows,
+                          db_api.purge_deleted_rows_from_images,
                           self.adm_context,
                           age_in_days=10,
                           max_rows=50)
