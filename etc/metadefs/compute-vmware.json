@@ -193,7 +193,7 @@
         },
         "hw_vif_model": {
             "title": "Virtual Network Interface",
-            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor. VMware driver supported options: e1000, e1000e, VirtualE1000, VirtualE1000e, VirtualPCNet32, VirtualSriovEthernetCard, and VirtualVmxnet.",
+            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor. VMware driver supported options: e1000, e1000e, VirtualE1000, VirtualE1000e, VirtualPCNet32, and VirtualVmxnet.",
             "type": "string",
             "enum": [
                 "e1000",
@@ -201,7 +201,6 @@
                 "VirtualE1000",
                 "VirtualE1000e",
                 "VirtualPCNet32",
-                "VirtualSriovEthernetCard",
                 "VirtualVmxnet",
                 "VirtualVmxnet3"
             ],
