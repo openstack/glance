@@ -90,6 +90,7 @@ class ImagesController(object):
 
     @utils.mutating
     def import_image(self, req, image_id, body):
+        image_repo = self.gateway.get_repo(req.context)
         task_factory = self.gateway.get_task_factory(req.context)
         executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
@@ -99,6 +100,32 @@ class ImagesController(object):
 
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
+
+        try:
+            image = image_repo.get(image_id)
+            if image.status == 'active':
+                msg = _("Image with status active cannot be target for import")
+                raise exception.Conflict(msg)
+            if image.status != 'queued' and import_method == 'web-download':
+                msg = _("Image needs to be in 'queued' state to use "
+                        "'web-download' method")
+                raise exception.Conflict(msg)
+            if (image.status != 'uploading' and
+                    import_method == 'glance-direct'):
+                msg = _("Image needs to be staged before 'glance-direct' "
+                        "method can be used")
+                raise exception.Conflict(msg)
+            if not getattr(image, 'container_format', None):
+                msg = _("'container_format' needs to be set before import")
+                raise exception.Conflict(msg)
+            if not getattr(image, 'disk_format', None):
+                msg = _("'disk_format' needs to be set before import")
+                raise exception.Conflict(msg)
+        except exception.Conflict as e:
+            raise webob.exc.HTTPConflict(explanation=e.msg)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
+
         if (import_method == 'web-download' and
            not utils.validate_import_uri(uri)):
                 LOG.debug("URI for web-download does not pass filtering: %s",
