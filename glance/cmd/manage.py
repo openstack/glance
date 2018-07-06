@@ -371,7 +371,7 @@ class DbCommands(object):
           help='Purge deleted rows older than age in days')
     @args('--max_rows', type=int,
           help='Limit number of records to delete')
-    def purge_images_table(self, age_in_days=30, max_rows=100):
+    def purge_images_table(self, age_in_days=180, max_rows=100):
         """Purge deleted rows older than a given age from images table."""
         self._purge(age_in_days, max_rows, purge_images_only=True)
 
