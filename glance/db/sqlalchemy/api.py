@@ -1322,6 +1322,11 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             LOG.warning(_LW('Expected table %(tbl)s was not found in DB.'),
                         {'tbl': tbl})
         else:
+            # NOTE(abhishekk): To mitigate OSSN-0075 images records should be
+            # purged with new ``purge-images-table`` command.
+            if tbl == 'images':
+                continue
+
             tables.append(tbl)
 
     for tbl in tables:
@@ -1352,6 +1357,50 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
         rows = result.rowcount
         LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),
                  {'rows': rows, 'tbl': tbl})
+
+
+def purge_deleted_rows_from_images(context, age_in_days, max_rows,
+                                   session=None):
+    """Purges soft deleted rows
+
+    Deletes rows of table images table according to given age for
+    relevant models.
+    """
+    # check max_rows for its maximum limit
+    _validate_db_int(max_rows=max_rows)
+
+    session = session or get_session()
+    metadata = MetaData(get_engine())
+    deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
+
+    tbl = 'images'
+    tab = Table(tbl, metadata, autoload=True)
+    LOG.info(
+        _LI('Purging deleted rows older than %(age_in_days)d day(s) '
+            'from table %(tbl)s'),
+        {'age_in_days': age_in_days, 'tbl': tbl})
+
+    column = tab.c.id
+    deleted_at_column = tab.c.deleted_at
+
+    query_delete = sql.select(
+        [column], deleted_at_column < deleted_age).order_by(
+        deleted_at_column).limit(max_rows)
+
+    delete_statement = DeleteFromSelect(tab, query_delete, column)
+
+    try:
+        with session.begin():
+            result = session.execute(delete_statement)
+    except db_exception.DBReferenceError as ex:
+        with excutils.save_and_reraise_exception():
+            LOG.error(_LE('DBError detected when purging from '
+                      "%(tablename)s: %(error)s"),
+                      {'tablename': tbl, 'error': six.text_type(ex)})
+
+    rows = result.rowcount
+    LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),
+             {'rows': rows, 'tbl': tbl})
 
 
 def user_get_storage_usage(context, owner_id, image_id=None, session=None):

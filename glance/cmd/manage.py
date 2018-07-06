@@ -329,24 +329,17 @@ class DbCommands(object):
         metadata.db_export_metadefs(db_api.get_engine(),
                                     path)
 
-    @args('--age_in_days', type=int,
-          help='Purge deleted rows older than age in days')
-    @args('--max_rows', type=int,
-          help='Limit number of records to delete')
-    def purge(self, age_in_days=30, max_rows=100):
-        """Purge deleted rows older than a given age from glance tables."""
+    def _purge(self, age_in_days, max_rows, purge_images_only=False):
         try:
             age_in_days = int(age_in_days)
         except ValueError:
             sys.exit(_("Invalid int value for age_in_days: "
                        "%(age_in_days)s") % {'age_in_days': age_in_days})
-
         try:
             max_rows = int(max_rows)
         except ValueError:
             sys.exit(_("Invalid int value for max_rows: "
                        "%(max_rows)s") % {'max_rows': max_rows})
-
         if age_in_days < 0:
             sys.exit(_("Must supply a non-negative value for age."))
         if age_in_days >= (int(time.time()) / 86400):
@@ -354,14 +347,33 @@ class DbCommands(object):
         if max_rows < 1:
             sys.exit(_("Minimal rows limit is 1."))
         ctx = context.get_admin_context(show_deleted=True)
-
         try:
-            db_api.purge_deleted_rows(ctx, age_in_days, max_rows)
+            if purge_images_only:
+                db_api.purge_deleted_rows_from_images(ctx, age_in_days,
+                                                      max_rows)
+            else:
+                db_api.purge_deleted_rows(ctx, age_in_days, max_rows)
         except exception.Invalid as exc:
             sys.exit(exc.msg)
         except db_exc.DBReferenceError:
             sys.exit(_("Purge command failed, check glance-manage"
                        " logs for more details."))
+
+    @args('--age_in_days', type=int,
+          help='Purge deleted rows older than age in days')
+    @args('--max_rows', type=int,
+          help='Limit number of records to delete')
+    def purge(self, age_in_days=30, max_rows=100):
+        """Purge deleted rows older than a given age from glance tables."""
+        self._purge(age_in_days, max_rows)
+
+    @args('--age_in_days', type=int,
+          help='Purge deleted rows older than age in days')
+    @args('--max_rows', type=int,
+          help='Limit number of records to delete')
+    def purge_images_table(self, age_in_days=30, max_rows=100):
+        """Purge deleted rows older than a given age from images table."""
+        self._purge(age_in_days, max_rows, purge_images_only=True)
 
 
 class DbLegacyCommands(object):
