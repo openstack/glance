@@ -1,0 +1,12 @@
+---
+prelude: >
+  - The ``glance-manage`` utility has been updated to address OpenStack
+    Security Note OSSN-0075.
+security:
+  - |
+    The ``glance-manage`` tool has been updated to address `OSSN-0075`_.
+    Please see the `Database Maintenance`_ section of the Glance
+    Administration Guide for details.
+
+    .. _`OSSN-0075`: https://wiki.openstack.org/wiki/OSSN/OSSN-0075
+    .. _`Database Maintenance`: https://docs.openstack.org/glance/latest/admin/db.html#database-maintenance
