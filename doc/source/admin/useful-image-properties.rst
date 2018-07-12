@@ -231,6 +231,32 @@ Here is a list of useful image properties and the values they expect.
        ramdisk when booting an AMI-style image.
      - Valid image ID.
    * - All
+     - ``trait:<trait_name>``
+     - Added in the Rocky release. Functionality is similar to traits specified
+       in `flavor extra specs <https://docs.openstack.org/nova/latest/user/flavors.html#extra-specs>`_.
+
+       Traits allow specifying a server to build on a compute node with the set
+       of traits specified in the image. The traits are associated with the
+       resource provider that represents the compute node in the Placement API.
+
+       The syntax of specifying traits is **trait:<trait_name>=value**, for
+       example:
+
+       * trait:HW_CPU_X86_AVX2=required
+       * trait:STORAGE_DISK_SSD=required
+
+       The nova scheduler will pass required traits specified on the image to
+       the Placement API to include only resource providers that can satisfy
+       the required traits. Traits for the resource providers can be managed
+       using the `osc-placement plugin. <https://docs.openstack.org/osc-placement/latest/index.html>`_
+
+       Image traits are used by the nova scheduler even in cases of volume
+       backed instances, if the volume source is an image with traits.
+     - Only valid value is ``required``, any other value is invalid.
+
+       * ``required`` - <trait_name> is required on the resource provider that
+         represents the compute node on which the image is launched.
+   * - All
      - ``vm_mode``
      - The virtual machine mode. This represents the host/guest ABI
        (application binary interface) used for the virtual machine.
