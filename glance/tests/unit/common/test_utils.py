@@ -87,7 +87,7 @@ class TestUtils(test_utils.BaseTestCase):
             yield chunk
             iteration += 1
             if iteration >= max_iterations:
-                raise StopIteration()
+                return
 
     def _test_reader_chunked(self, chunk_size, read_size, max_iterations=5):
         generator = self._create_generator(chunk_size, max_iterations)

@@ -34,7 +34,7 @@ class SimpleIterator(object):
             yield chunk
             chunk = read_chunk()
         else:
-            raise StopIteration()
+            return
 
 
 class TestSizeCheckedIter(testtools.TestCase):
