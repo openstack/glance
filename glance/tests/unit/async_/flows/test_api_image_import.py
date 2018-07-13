@@ -17,7 +17,7 @@ import mock
 
 from oslo_config import cfg
 
-import glance.async.flows.api_image_import as import_flow
+import glance.async_.flows.api_image_import as import_flow
 import glance.tests.utils as test_utils
 
 CONF = cfg.CONF
@@ -52,7 +52,7 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
         self.mock_task_repo = mock.MagicMock()
         self.mock_image_repo = mock.MagicMock()
 
-    @mock.patch('glance.async.flows.api_image_import._VerifyStaging.__init__')
+    @mock.patch('glance.async_.flows.api_image_import._VerifyStaging.__init__')
     @mock.patch('taskflow.patterns.linear_flow.Flow.add')
     @mock.patch('taskflow.patterns.linear_flow.__init__')
     def _pass_uri(self, mock_lf_init, mock_flow_add, mock_VS_init,

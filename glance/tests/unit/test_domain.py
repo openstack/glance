@@ -21,8 +21,8 @@ import mock
 from oslo_config import cfg
 import oslo_utils.importutils
 
-import glance.async
-from glance.async import taskflow_executor
+import glance.async_
+from glance.async_ import taskflow_executor
 from glance.common import exception
 from glance.common import timeutils
 from glance import domain
@@ -467,12 +467,12 @@ class TestTask(test_utils.BaseTestCase):
             self.task.expires_at
         )
 
-    @mock.patch.object(glance.async.TaskExecutor, 'begin_processing')
+    @mock.patch.object(glance.async_.TaskExecutor, 'begin_processing')
     def test_run(self, mock_begin_processing):
-        executor = glance.async.TaskExecutor(context=mock.ANY,
-                                             task_repo=mock.ANY,
-                                             image_repo=mock.ANY,
-                                             image_factory=mock.ANY)
+        executor = glance.async_.TaskExecutor(context=mock.ANY,
+                                              task_repo=mock.ANY,
+                                              image_repo=mock.ANY,
+                                              image_factory=mock.ANY)
         self.task.run(executor)
 
         mock_begin_processing.assert_called_once_with(self.task.task_id)

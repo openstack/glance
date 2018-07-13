@@ -19,7 +19,7 @@ from glance_store._drivers import filesystem
 from glance_store import backend
 from oslo_config import cfg
 
-from glance.async.flows._internal_plugins import web_download
+from glance.async_.flows._internal_plugins import web_download
 
 import glance.common.exception
 import glance.common.scripts.utils as script_utils

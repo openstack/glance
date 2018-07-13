@@ -243,17 +243,17 @@ specified in the ``glance-image-import.conf`` file.  The plugins are loaded by
 the Glance project team, these are already registered for you.)
 
 A plugin must be written in Python as a `Taskflow "Task" object`_.  The file
-containing this object must be present in the ``glance/async/flows/plugins``
+containing this object must be present in the ``glance/async_/flows/plugins``
 directory.  The plugin file must contain a ``get_flow`` function that returns a
 Taskflow Task object wrapped in a linear flow.  See the ``no_op`` plugin,
-located at ``glance/async/flows/plugins/no_op.py`` for an example of how to do
+located at ``glance/async_/flows/plugins/no_op.py`` for an example of how to do
 this.
 
 Specifying the plugins to be used
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First, the plugin code must exist in the directory
-``glance/async/flows/plugins``.  The name of a plugin is the filename (without
+``glance/async_/flows/plugins``.  The name of a plugin is the filename (without
 extension) of the file containing the plugin code.  For example, a file named
 ``fred_mertz.py`` would contain the plugin ``fred_mertz``.
 
@@ -269,7 +269,7 @@ of the form::
 
 For example::
 
-  no_op = glance.async.flows.plugins.no_op:get_flow
+  no_op = glance.async_.flows.plugins.no_op:get_flow
 
 Make sure any plugin you want to use is included here.
 
@@ -337,7 +337,7 @@ required.
    The first section, ``image_import_opts``, is used to enable the plugin by
    specifying the plugin name as one of the elements of the list that is the
    value of the `image_import_plugins` parameter.  The plugin name is simply
-   the module name under glance/async/flows/plugins/
+   the module name under glance/async\_/flows/plugins/
 
    The second section, ``inject_metadata_properties``, is where you set the
    parameters for the injection plugin.  (Note that the values you specify here

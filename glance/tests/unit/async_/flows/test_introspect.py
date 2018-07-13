@@ -20,8 +20,8 @@ import glance_store
 from oslo_concurrency import processutils
 from oslo_config import cfg
 
-from glance.async.flows import introspect
-from glance.async import utils as async_utils
+from glance.async_.flows import introspect
+from glance.async_ import utils as async_utils
 from glance import domain
 import glance.tests.utils as test_utils
 

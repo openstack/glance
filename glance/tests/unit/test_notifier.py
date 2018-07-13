@@ -22,7 +22,7 @@ from oslo_config import cfg
 import oslo_messaging
 import webob
 
-import glance.async
+import glance.async_
 from glance.common import exception
 from glance.common import timeutils
 import glance.context
@@ -681,7 +681,7 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual(0, len(output_logs))
 
     def test_task_run_notification(self):
-        with mock.patch('glance.async.TaskExecutor') as mock_executor:
+        with mock.patch('glance.async_.TaskExecutor') as mock_executor:
             executor = mock_executor.return_value
             executor._run.return_value = mock.Mock()
             self.task_proxy.run(executor=mock_executor)
@@ -694,7 +694,7 @@ class TestTaskNotifications(utils.BaseTestCase):
 
     def test_task_run_notification_disabled(self):
         self.config(disabled_notifications=['task.run'])
-        with mock.patch('glance.async.TaskExecutor') as mock_executor:
+        with mock.patch('glance.async_.TaskExecutor') as mock_executor:
             executor = mock_executor.return_value
             executor._run.return_value = mock.Mock()
             self.task_proxy.run(executor=mock_executor)

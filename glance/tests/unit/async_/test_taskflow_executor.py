@@ -19,7 +19,7 @@ import glance_store
 from oslo_config import cfg
 from taskflow import engines
 
-from glance.async import taskflow_executor
+from glance.async_ import taskflow_executor
 from glance.common.scripts.image_import import main as image_import
 from glance import domain
 import glance.tests.utils as test_utils

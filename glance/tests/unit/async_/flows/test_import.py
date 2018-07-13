@@ -25,9 +25,9 @@ from six.moves import urllib
 from taskflow import task
 from taskflow.types import failure
 
-import glance.async.flows.base_import as import_flow
-from glance.async import taskflow_executor
-from glance.async import utils as async_utils
+import glance.async_.flows.base_import as import_flow
+from glance.async_ import taskflow_executor
+from glance.async_ import utils as async_utils
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
 from glance.common import utils

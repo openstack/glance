@@ -30,7 +30,7 @@ from taskflow import retry
 from taskflow import task
 from taskflow.types import failure
 
-from glance.async import utils
+from glance.async_ import utils
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils

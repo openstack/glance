@@ -23,8 +23,8 @@ from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
 
-import glance.async.flows._internal_plugins as internal_plugins
-import glance.async.flows.plugins as import_plugins
+import glance.async_.flows._internal_plugins as internal_plugins
+import glance.async_.flows.plugins as import_plugins
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils

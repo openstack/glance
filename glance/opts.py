@@ -28,11 +28,11 @@ from osprofiler import opts as profiler
 
 import glance.api.middleware.context
 import glance.api.versions
-import glance.async.flows._internal_plugins
-import glance.async.flows.api_image_import
-import glance.async.flows.convert
-from glance.async.flows.plugins import plugin_opts
-import glance.async.taskflow_executor
+import glance.async_.flows._internal_plugins
+import glance.async_.flows.api_image_import
+import glance.async_.flows.convert
+from glance.async_.flows.plugins import plugin_opts
+import glance.async_.taskflow_executor
 import glance.common.config
 import glance.common.location_strategy
 import glance.common.location_strategy.store_type
@@ -71,8 +71,8 @@ _api_opts = [
     ('image_format', glance.common.config.image_format_opts),
     ('task', glance.common.config.task_opts),
     ('taskflow_executor', list(itertools.chain(
-        glance.async.taskflow_executor.taskflow_executor_opts,
-        glance.async.flows.convert.convert_task_opts))),
+        glance.async_.taskflow_executor.taskflow_executor_opts,
+        glance.async_.flows.convert.convert_task_opts))),
     ('store_type_location_strategy',
      glance.common.location_strategy.store_type.store_type_opts),
     profiler.list_opts()[0],
@@ -109,9 +109,10 @@ _manage_opts = [
     (None, [])
 ]
 _image_import_opts = [
-    ('image_import_opts', glance.async.flows.api_image_import.api_import_opts),
+    ('image_import_opts',
+     glance.async_.flows.api_image_import.api_import_opts),
     ('import_filtering_opts',
-     glance.async.flows._internal_plugins.import_filtering_opts),
+     glance.async_.flows._internal_plugins.import_filtering_opts),
 ]
 
 

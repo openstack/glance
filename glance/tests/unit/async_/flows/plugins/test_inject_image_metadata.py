@@ -19,7 +19,7 @@ import os
 import glance_store
 from oslo_config import cfg
 
-import glance.async.flows.plugins.inject_image_metadata as inject_metadata
+import glance.async_.flows.plugins.inject_image_metadata as inject_metadata
 from glance.common import utils
 from glance import domain
 from glance import gateway
