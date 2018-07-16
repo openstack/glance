@@ -31,6 +31,7 @@ from glance.async import utils as async_utils
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
 from glance.common import utils
+from glance import context
 from glance import domain
 from glance import gateway
 import glance.tests.utils as test_utils
@@ -63,7 +64,9 @@ class TestImportTask(test_utils.BaseTestCase):
         utils.safe_mkdirs(self.work_dir)
         self.config(work_dir=self.work_dir, group='task')
 
-        self.context = mock.MagicMock()
+        self.context = context.RequestContext(
+            user_id=TENANT1, project_id=TENANT1, overwrite=False
+        )
         self.img_repo = mock.MagicMock()
         self.task_repo = mock.MagicMock()
 
