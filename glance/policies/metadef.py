@@ -20,17 +20,22 @@ metadef_policies = [
     policy.RuleDefault(name="modify_metadef_namespace",
                        check_str="rule:default"),
     policy.RuleDefault(name="add_metadef_namespace", check_str="rule:default"),
+    policy.RuleDefault(name="delete_metadef_namespace",
+                       check_str="rule:default"),
 
     policy.RuleDefault(name="get_metadef_object", check_str="rule:default"),
     policy.RuleDefault(name="get_metadef_objects", check_str="rule:default"),
     policy.RuleDefault(name="modify_metadef_object", check_str="rule:default"),
     policy.RuleDefault(name="add_metadef_object", check_str="rule:default"),
+    policy.RuleDefault(name="delete_metadef_object", check_str="rule:default"),
 
     policy.RuleDefault(name="list_metadef_resource_types",
                        check_str="rule:default"),
     policy.RuleDefault(name="get_metadef_resource_type",
                        check_str="rule:default"),
     policy.RuleDefault(name="add_metadef_resource_type_association",
+                       check_str="rule:default"),
+    policy.RuleDefault(name="remove_metadef_resource_type_association",
                        check_str="rule:default"),
 
     policy.RuleDefault(name="get_metadef_property", check_str="rule:default"),
@@ -39,12 +44,16 @@ metadef_policies = [
     policy.RuleDefault(name="modify_metadef_property",
                        check_str="rule:default"),
     policy.RuleDefault(name="add_metadef_property", check_str="rule:default"),
+    policy.RuleDefault(name="remove_metadef_property",
+                       check_str="rule:default"),
 
     policy.RuleDefault(name="get_metadef_tag", check_str="rule:default"),
     policy.RuleDefault(name="get_metadef_tags", check_str="rule:default"),
     policy.RuleDefault(name="modify_metadef_tag", check_str="rule:default"),
     policy.RuleDefault(name="add_metadef_tag", check_str="rule:default"),
     policy.RuleDefault(name="add_metadef_tags", check_str="rule:default"),
+    policy.RuleDefault(name="delete_metadef_tag", check_str="rule:default"),
+    policy.RuleDefault(name="delete_metadef_tags", check_str="rule:default"),
 ]
 
 
