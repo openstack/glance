@@ -74,9 +74,7 @@ class Server(object):
         self.show_image_direct_url = False
         self.show_multiple_locations = False
         self.property_protection_file = ''
-        self.enable_v1_api = True
         self.enable_v2_api = True
-        self.enable_v1_registry = True
         self.enable_v2_registry = True
         self.needs_database = False
         self.log_file = None
@@ -346,7 +344,6 @@ sql_connection = %(sql_connection)s
 show_image_direct_url = %(show_image_direct_url)s
 show_multiple_locations = %(show_multiple_locations)s
 user_storage_quota = %(user_storage_quota)s
-enable_v1_api = %(enable_v1_api)s
 enable_v2_api = %(enable_v2_api)s
 lock_path = %(lock_path)s
 property_protection_file = %(property_protection_file)s

@@ -33,7 +33,7 @@ class TestCORSMiddleware(functional.FunctionalTest):
         # Cleanup is handled in teardown of the parent class.
         self.start_servers(**self.__dict__.copy())
         self.http = httplib2.Http()
-        self.api_path = "http://%s:%d/v1/images" % ("127.0.0.1", self.api_port)
+        self.api_path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
 
     def test_valid_cors_options_request(self):
         (r_headers, content) = self.http.request(

@@ -31,7 +31,6 @@ import six
 from six.moves import http_client as http
 import webob
 
-from glance.api.v1 import router as router_v1
 from glance.api.v2 import router as router_v2
 from glance.common import exception
 from glance.common import utils
@@ -218,24 +217,6 @@ class RequestTest(test_utils.BaseTestCase):
 
     def test_http_error_response_codes(self):
         sample_id, member_id, tag_val, task_id = 'abc', '123', '1', '2'
-
-        """Makes sure v1 unallowed methods return 405"""
-        unallowed_methods = [
-            ('/images', ['PUT', 'DELETE', 'HEAD', 'PATCH']),
-            ('/images/detail', ['POST', 'PUT', 'DELETE', 'PATCH']),
-            ('/images/%s' % sample_id, ['POST', 'PATCH']),
-            ('/images/%s/members' % sample_id,
-                ['POST', 'DELETE', 'HEAD', 'PATCH']),
-            ('/images/%s/members/%s' % (sample_id, member_id),
-                ['POST', 'HEAD', 'PATCH']),
-        ]
-        api = test_utils.FakeAuthMiddleware(router_v1.API(routes.Mapper()))
-        for uri, methods in unallowed_methods:
-            for method in methods:
-                req = webob.Request.blank(uri)
-                req.method = method
-                res = req.get_response(api)
-                self.assertEqual(http.METHOD_NOT_ALLOWED, res.status_int)
 
         """Makes sure v2 unallowed methods return 405"""
         unallowed_methods = [

@@ -71,18 +71,6 @@ class VersionsTest(base.IsolatedUnitTest):
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
-            {
-                'id': 'v1.1',
-                'status': 'DEPRECATED',
-                'links': [{'rel': 'self',
-                           'href': '%s/v1/' % url}],
-            },
-            {
-                'id': 'v1.0',
-                'status': 'DEPRECATED',
-                'links': [{'rel': 'self',
-                           'href': '%s/v1/' % url}],
-            },
         ]
         return versions
 
@@ -141,27 +129,6 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
     def setUp(self):
         super(VersionNegotiationTest, self).setUp()
         self.middleware = version_negotiation.VersionNegotiationFilter(None)
-
-    def test_request_url_v1(self):
-        request = webob.Request.blank('/v1/images')
-        self.middleware.process_request(request)
-        self.assertEqual('/v1/images', request.path_info)
-
-    def test_request_url_v1_0(self):
-        request = webob.Request.blank('/v1.0/images')
-        self.middleware.process_request(request)
-        self.assertEqual('/v1/images', request.path_info)
-
-    def test_request_url_v1_1(self):
-        request = webob.Request.blank('/v1.1/images')
-        self.middleware.process_request(request)
-        self.assertEqual('/v1/images', request.path_info)
-
-    def test_request_accept_v1(self):
-        request = webob.Request.blank('/images')
-        request.headers = {'accept': 'application/vnd.openstack.images-v1'}
-        self.middleware.process_request(request)
-        self.assertEqual('/v1/images', request.path_info)
 
     def test_request_url_v2(self):
         request = webob.Request.blank('/v2/images')

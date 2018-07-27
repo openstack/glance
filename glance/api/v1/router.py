@@ -14,8 +14,6 @@
 #    under the License.
 
 
-from glance.api.v1 import images
-from glance.api.v1 import members
 from glance.common import wsgi
 
 
@@ -26,84 +24,8 @@ class API(wsgi.Router):
     def __init__(self, mapper):
         reject_method_resource = wsgi.Resource(wsgi.RejectMethodController())
 
-        images_resource = images.create_resource()
-
         mapper.connect("/",
-                       controller=images_resource,
-                       action="index")
-        mapper.connect("/images",
-                       controller=images_resource,
-                       action='index',
-                       conditions={'method': ['GET']})
-        mapper.connect("/images",
-                       controller=images_resource,
-                       action='create',
-                       conditions={'method': ['POST']})
-        mapper.connect("/images",
                        controller=reject_method_resource,
-                       action='reject',
-                       allowed_methods='GET, POST')
-        mapper.connect("/images/detail",
-                       controller=images_resource,
-                       action='detail',
-                       conditions={'method': ['GET', 'HEAD']})
-        mapper.connect("/images/detail",
-                       controller=reject_method_resource,
-                       action='reject',
-                       allowed_methods='GET, HEAD')
-        mapper.connect("/images/{id}",
-                       controller=images_resource,
-                       action="meta",
-                       conditions=dict(method=["HEAD"]))
-        mapper.connect("/images/{id}",
-                       controller=images_resource,
-                       action="show",
-                       conditions=dict(method=["GET"]))
-        mapper.connect("/images/{id}",
-                       controller=images_resource,
-                       action="update",
-                       conditions=dict(method=["PUT"]))
-        mapper.connect("/images/{id}",
-                       controller=images_resource,
-                       action="delete",
-                       conditions=dict(method=["DELETE"]))
-        mapper.connect("/images/{id}",
-                       controller=reject_method_resource,
-                       action='reject',
-                       allowed_methods='GET, HEAD, PUT, DELETE')
-
-        members_resource = members.create_resource()
-
-        mapper.connect("/images/{image_id}/members",
-                       controller=members_resource,
-                       action="index",
-                       conditions={'method': ['GET']})
-        mapper.connect("/images/{image_id}/members",
-                       controller=members_resource,
-                       action="update_all",
-                       conditions=dict(method=["PUT"]))
-        mapper.connect("/images/{image_id}/members",
-                       controller=reject_method_resource,
-                       action='reject',
-                       allowed_methods='GET, PUT')
-        mapper.connect("/images/{image_id}/members/{id}",
-                       controller=members_resource,
-                       action="show",
-                       conditions={'method': ['GET']})
-        mapper.connect("/images/{image_id}/members/{id}",
-                       controller=members_resource,
-                       action="update",
-                       conditions={'method': ['PUT']})
-        mapper.connect("/images/{image_id}/members/{id}",
-                       controller=members_resource,
-                       action="delete",
-                       conditions={'method': ['DELETE']})
-        mapper.connect("/images/{image_id}/members/{id}",
-                       controller=reject_method_resource,
-                       action='reject',
-                       allowed_methods='GET, PUT, DELETE')
-        mapper.connect("/shared-images/{id}",
-                       controller=members_resource,
-                       action="index_shared_images")
+                       action="reject")
 
         super(API, self).__init__(mapper)

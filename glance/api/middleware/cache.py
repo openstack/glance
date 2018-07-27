@@ -31,7 +31,6 @@ import webob
 
 from glance.api.common import size_checked_iter
 from glance.api import policy
-from glance.api.v1 import images
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -55,7 +54,6 @@ class CacheFilter(wsgi.Middleware):
 
     def __init__(self, app):
         self.cache = image_cache.ImageCache()
-        self.serializer = images.ImageSerializer()
         self.policy = policy.Enforcer()
         LOG.info(_LI("Initialized image cache middleware"))
         super(CacheFilter, self).__init__(app)
@@ -213,21 +211,6 @@ class CacheFilter(wsgi.Middleware):
             return None
         else:
             return (image_id, method, version)
-
-    def _process_v1_request(self, request, image_id, image_iterator,
-                            image_meta):
-        # Don't display location
-        if 'location' in image_meta:
-            del image_meta['location']
-        image_meta.pop('location_data', None)
-        self._verify_metadata(image_meta)
-
-        response = webob.Response(request=request)
-        raw_response = {
-            'image_iterator': image_iterator,
-            'image_meta': image_meta,
-        }
-        return self.serializer.show(response, raw_response)
 
     def _process_v2_request(self, request, image_id, image_iterator,
                             image_meta):
