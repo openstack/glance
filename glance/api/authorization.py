@@ -315,6 +315,8 @@ class ImmutableImageProxy(object):
     min_disk = _immutable_attr('base', 'min_disk')
     min_ram = _immutable_attr('base', 'min_ram')
     protected = _immutable_attr('base', 'protected')
+    os_hash_algo = _immutable_attr('base', 'os_hash_algo')
+    os_hash_value = _immutable_attr('base', 'os_hash_value')
     os_hidden = _immutable_attr('base', 'os_hidden')
     locations = _immutable_attr('base', 'locations', proxy=ImmutableLocations)
     checksum = _immutable_attr('base', 'checksum')

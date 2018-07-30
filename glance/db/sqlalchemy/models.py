@@ -120,7 +120,8 @@ class Image(BASE, GlanceBase):
                       Index('owner_image_idx', 'owner'),
                       Index('created_at_image_idx', 'created_at'),
                       Index('updated_at_image_idx', 'updated_at'),
-                      Index('os_hidden_image_idx', 'os_hidden'))
+                      Index('os_hidden_image_idx', 'os_hidden'),
+                      Index('os_hash_value_image_idx', 'os_hash_value'))
 
     id = Column(String(36), primary_key=True,
                 default=lambda: str(uuid.uuid4()))
@@ -134,6 +135,8 @@ class Image(BASE, GlanceBase):
                         name='image_visibility'), nullable=False,
                         server_default='shared')
     checksum = Column(String(32))
+    os_hash_algo = Column(String(64))
+    os_hash_value = Column(String(128))
     min_disk = Column(Integer, nullable=False, default=0)
     min_ram = Column(Integer, nullable=False, default=0)
     owner = Column(String(255))

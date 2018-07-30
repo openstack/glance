@@ -225,6 +225,8 @@ def _image_format(image_id, **values):
         'size': None,
         'virtual_size': None,
         'checksum': None,
+        'os_hash_algo': None,
+        'os_hash_value': None,
         'tags': [],
         'created_at': dt,
         'updated_at': dt,
@@ -735,7 +737,7 @@ def image_create(context, image_values, v1_mode=False):
                         'protected', 'is_public', 'container_format',
                         'disk_format', 'created_at', 'updated_at', 'deleted',
                         'deleted_at', 'properties', 'tags', 'visibility',
-                        'os_hidden'])
+                        'os_hidden', 'os_hash_algo', 'os_hash_value'])
 
     incorrect_keys = set(image_values.keys()) - allowed_keys
     if incorrect_keys:

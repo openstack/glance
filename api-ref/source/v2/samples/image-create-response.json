@@ -15,6 +15,8 @@
     "id": "b2173dd3-7ad6-4362-baa6-a68bce3565cb",
     "file": "/v2/images/b2173dd3-7ad6-4362-baa6-a68bce3565cb/file",
     "checksum": null,
+    "os_hash_algo": null,
+    "os_hash_value": null,
     "owner": "bab7d5c60cd041a0a36f7c4b6e1dd978",
     "virtual_size": null,
     "min_ram": 0,

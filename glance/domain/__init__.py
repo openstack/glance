@@ -48,7 +48,8 @@ def _import_delayed_delete():
 
 class ImageFactory(object):
     _readonly_properties = ['created_at', 'updated_at', 'status', 'checksum',
-                            'size', 'virtual_size']
+                            'os_hash_algo', 'os_hash_value', 'size',
+                            'virtual_size']
     _reserved_properties = ['owner', 'locations', 'deleted', 'deleted_at',
                             'direct_url', 'self', 'file', 'schema']
 
@@ -127,6 +128,8 @@ class Image(object):
         self.protected = kwargs.pop('protected', False)
         self.locations = kwargs.pop('locations', [])
         self.checksum = kwargs.pop('checksum', None)
+        self.os_hash_algo = kwargs.pop('os_hash_algo', None)
+        self.os_hash_value = kwargs.pop('os_hash_value', None)
         self.owner = kwargs.pop('owner', None)
         self._disk_format = kwargs.pop('disk_format', None)
         self._container_format = kwargs.pop('container_format', None)

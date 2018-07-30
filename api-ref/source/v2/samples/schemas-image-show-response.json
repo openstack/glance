@@ -145,6 +145,24 @@
             "is_base": false,
             "type": "string"
         },
+        "os_hash_algo": {
+            "description": "Algorithm to calculate the os_hash_value",
+            "maxLength": 64,
+            "readOnly": true,
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "os_hash_value": {
+            "description": "Hexdigest of the image contents using the algorithm specified by the os_hash_algo",
+            "maxLength": 128,
+            "readOnly": true,
+            "type": [
+                "null",
+                "string"
+            ]
+        },
         "os_version": {
             "description": "Operating system version as specified by the distributor",
             "is_base": false,

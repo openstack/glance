@@ -38,6 +38,8 @@ class TestSchemas(functional.FunctionalTest):
             'name',
             'visibility',
             'checksum',
+            'os_hash_algo',
+            'os_hash_value',
             'created_at',
             'updated_at',
             'tags',

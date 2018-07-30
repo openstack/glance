@@ -9,6 +9,8 @@
     "min_ram": 512,
     "name": "Fedora 17",
     "owner": "02a7fb2dd4ef434c8a628c511dcbbeb6",
+    "os_hash_algo": "sha512",
+    "os_hash_value": "ef7d1ed957ffafefb324d50ebc6685ed03d0e64549762ba94a1c44e92270cdbb69d7437dd1e101d00dd41684aaecccad1edc5c2e295e66d4733025b052497844"
     "protected": false,
     "schema": "/v2/schemas/image",
     "self": "/v2/images/2b61ed2b-f800-4da0-99ff-396b742b8646",

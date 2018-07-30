@@ -428,12 +428,19 @@ class ImageProxy(glance.domain.proxy.Image):
         else:
             verifier = None
 
-        location, size, checksum, loc_meta = self.store_api.add_to_backend(
+        hashing_algo = CONF['hashing_algorithm']
+
+        (location,
+         size,
+         checksum,
+         multihash,
+         loc_meta) = self.store_api.add_to_backend_with_multihash(
             CONF,
             self.image.image_id,
             utils.LimitingReader(utils.CooperativeReader(data),
                                  CONF.image_size_cap),
             size,
+            hashing_algo,
             context=self.context,
             verifier=verifier)
 
@@ -454,6 +461,8 @@ class ImageProxy(glance.domain.proxy.Image):
                                  'status': 'active'}]
         self.image.size = size
         self.image.checksum = checksum
+        self.image.os_hash_value = multihash
+        self.image.os_hash_algo = hashing_algo
         self.image.status = 'active'
 
     def get_data(self, offset=0, chunk_size=None):

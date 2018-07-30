@@ -484,6 +484,27 @@ next:
   in: body
   required: true
   type: string
+os_hash_algo:
+  description: |
+    The algorithm used to compute a secure hash of the image data for this
+    image.  The result of the computation is displayed as the value of the
+    ``os_hash_value`` property.  The value might be ``null`` (JSON null
+    data type).  The algorithm used is chosen by the cloud operator; it
+    may not be configured by end users.  *(Since Image API v2.7)*
+  in: body
+  required: true
+  type: string
+os_hash_value:
+  description: |
+    The hexdigest of the secure hash of the image data computed using the
+    algorithm whose name is the value of the ``os_hash_algo`` property.
+    The value might be ``null`` (JSON null data type) if data has not
+    yet been associated with this image, or if the image was created using
+    a version of the Image Service API prior to version 2.7.
+    *(Since Image API v2.7)*
+  in: body
+  required: true
+  type: string
 owner:
   description: |
     An identifier for the owner of the image, usually the project (also

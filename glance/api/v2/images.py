@@ -446,7 +446,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
     _disallowed_properties = ('direct_url', 'self', 'file', 'schema')
     _readonly_properties = ('created_at', 'updated_at', 'status', 'checksum',
                             'size', 'virtual_size', 'direct_url', 'self',
-                            'file', 'schema', 'id')
+                            'file', 'schema', 'id', 'os_hash_algo',
+                            'os_hash_value')
     _reserved_properties = ('location', 'deleted', 'deleted_at')
     _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
@@ -884,7 +885,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             attributes = ['name', 'disk_format', 'container_format',
                           'visibility', 'size', 'virtual_size', 'status',
                           'checksum', 'protected', 'min_ram', 'min_disk',
-                          'owner', 'os_hidden']
+                          'owner', 'os_hidden', 'os_hash_algo',
+                          'os_hash_value']
             for key in attributes:
                 image_view[key] = getattr(image, key)
             image_view['id'] = image.image_id
@@ -1017,6 +1019,19 @@ def get_base_properties():
             'readOnly': True,
             'description': _('md5 hash of image contents.'),
             'maxLength': 32,
+        },
+        'os_hash_algo': {
+            'type': ['null', 'string'],
+            'readOnly': True,
+            'description': _('Algorithm to calculate the os_hash_value'),
+            'maxLength': 64,
+        },
+        'os_hash_value': {
+            'type': ['null', 'string'],
+            'readOnly': True,
+            'description': _('Hexdigest of the image contents using the '
+                             'algorithm specified by the os_hash_algo'),
+            'maxLength': 128,
         },
         'owner': {
             'type': ['null', 'string'],

@@ -13,6 +13,8 @@
     "id": "1bea47ed-f6a9-463b-b423-14b9cca9ad27",
     "file": "/v2/images/1bea47ed-f6a9-463b-b423-14b9cca9ad27/file",
     "checksum": "64d7c1cd2b6f60c92c14662941cb7913",
+    "os_hash_algo": "sha512",
+    "os_hash_value": "073b4523583784fbe01daff81eba092a262ec37ba6d04dd3f52e4cd5c93eb8258af44881345ecda0e49f3d8cc6d2df6b050ff3e72681d723234aff9d17d0cf09"
     "owner": "5ef70662f8b34079a6eddb8da9d75fe8",
     "size": 13167616,
     "min_ram": 0,

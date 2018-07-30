@@ -238,6 +238,30 @@ class FakeStoreAPI(object):
         checksum = 'Z'
         return (image_id, size, checksum, self.store_metadata)
 
+    def add_to_backend_with_multihash(
+            self, conf, image_id, data, size, hashing_algo,
+            scheme=None, context=None, verifier=None):
+        store_max_size = 7
+        current_store_size = 2
+        for location in self.data.keys():
+            if image_id in location:
+                raise exception.Duplicate()
+        if not size:
+            # 'data' is a string wrapped in a LimitingReader|CooperativeReader
+            # pipeline, so peek under the hood of those objects to get at the
+            # string itself.
+            size = len(data.data.fd)
+        if (current_store_size + size) > store_max_size:
+            raise exception.StorageFull()
+        if context.user == USER2:
+            raise exception.Forbidden()
+        if context.user == USER3:
+            raise exception.StorageWriteDenied()
+        self.data[image_id] = (data, size)
+        checksum = 'Z'
+        multihash = 'ZZ'
+        return (image_id, size, checksum, multihash, self.store_metadata)
+
     def check_location_metadata(self, val, key=''):
         store.check_location_metadata(val)
 

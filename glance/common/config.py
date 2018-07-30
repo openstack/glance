@@ -192,6 +192,40 @@ Related options:
     * image_property_quota
 
 """)),
+    cfg.StrOpt('hashing_algorithm',
+               default='sha512',
+               help=_(""""
+Secure hashing algorithm used for computing the 'os_hash_value' property.
+
+This option configures the Glance "multihash", which consists of two
+image properties: the 'os_hash_algo' and the 'os_hash_value'.  The
+'os_hash_algo' will be populated by the value of this configuration
+option, and the 'os_hash_value' will be populated by the hexdigest computed
+when the algorithm is applied to the uploaded or imported image data.
+
+The value must be a valid secure hash algorithm name recognized by the
+python 'hashlib' library.  You can determine what these are by examining
+the 'hashlib.algorithms_available' data member of the version of the
+library being used in your Glance installation.  For interoperability
+purposes, however, we recommend that you use the set of secure hash
+names supplies by the 'hashlib.algorithms_guaranteed' data member because
+those algorithms are guaranteed to be supported by the 'hashlib' library
+on all platforms.  Thus, any image consumer using 'hashlib' locally should
+be able to verify the 'os_hash_value' of the image.
+
+The default value of 'sha512' is a performant secure hash algorithm.
+
+If this option is misconfigured, any attempts to store image data will fail.
+For that reason, we recommend using the default value.
+
+Possible values:
+    * Any secure hash algorithm name recognized by the Python 'hashlib'
+      library
+
+Related options:
+    * None
+
+""")),
     cfg.IntOpt('image_member_quota', default=128,
                help=_("""
 Maximum number of image members per image.

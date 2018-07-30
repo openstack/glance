@@ -15,6 +15,7 @@
 #    under the License.
 
 import collections
+import hashlib
 import os.path
 
 import mock
@@ -66,6 +67,8 @@ class ImageStub(object):
         self.status = status
         self.extra_properties = extra_properties
         self.checksum = 'c2e5db72bd7fd153f53ede5da5a06de3'
+        self.os_hash_algo = 'sha512'
+        self.os_hash_value = hashlib.sha512(b'glance').hexdigest()
         self.created_at = '2013-09-28T15:27:36Z'
         self.updated_at = '2013-09-28T15:27:37Z'
         self.locations = []

@@ -202,6 +202,8 @@ Response Parameters
    - min_disk: min_disk
    - min_ram: min_ram
    - name: name
+   - os_hash_algo: os_hash_algo
+   - os_hash_value: os_hash_value
    - owner: owner
    - protected: protected
    - schema: schema-image
@@ -266,6 +268,8 @@ Response Parameters
    - min_disk: min_disk
    - min_ram: min_ram
    - name: name
+   - os_hash_algo: os_hash_algo
+   - os_hash_value: os_hash_value
    - owner: owner
    - protected: protected
    - schema: schema-image
@@ -584,8 +588,10 @@ Response Parameters
    - id: id
    - min_disk: min_disk
    - min_ram: min_ram
-   - owner: owner
    - name: name
+   - owner: owner
+   - os_hash_algo: os_hash_algo
+   - os_hash_value: os_hash_value
    - protected: protected
    - schema: schema-image
    - self: self

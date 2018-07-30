@@ -1,0 +1,55 @@
+---
+features:
+  - |
+    This release implements the Glance spec `Secure Hash Algorithm Support
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/approved/glance/multihash.html>`_
+    (also known as "multihash").  This feature supplements the current
+    'checksum' image property with a self-describing secure hash.  The
+    self-description consists of two new image properties:
+
+    * ``os_hash_algo`` - this contains the name of the secure hash algorithm
+      used to generate the value on this image
+    * ``os_hash_value`` - this is the hexdigest computed by applying the
+      secure hash algorithm named in the ``os_hash_algo`` property to the
+      image data
+
+    These are read-only image properties and are not user-modifiable.
+
+    The secure hash algorithm used is an operator-configurable setting.  See
+    the help text for 'hashing_algorithm' in the sample Glance configuration
+    file for more information.
+
+    The default secure hash algorithm is SHA-512.  It should be suitable for
+    most applications.
+
+    The legacy 'checksum' image property, which provides an MD5 message
+    digest of the image data, is preserved for backward compatibility.
+issues:
+  - |
+    The ``os_hash_value`` image property, introduced as part of the
+    `Secure Hash Algorithm Support
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/approved/glance/multihash.html>`_
+    ("multihash") feature, is limited to 128 characters.  This is sufficient
+    to store 512 bits as a hexadecimal numeral.
+
+  - |
+    The "multihash" implemented in this release (`Secure Hash Algorithm Support
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/approved/glance/multihash.html>`_)
+    is computed only for new images.  There is no provision for computing
+    the multihash for existing images.  Thus, users should expect to see
+    JSON 'null' values for the ``os_hash_algo`` and ``os_hash_value`` image
+    properties on images created prior to the installation of the Rocky
+    release at your site.
+security:
+  - |
+    This release implements the Glance spec `Secure Hash Algorithm Support
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/approved/glance/multihash.html>`_,
+    which introduces a self-describing "multihash" to the image-show response.
+    This feature supplements the current 'checksum' image property with a
+    self-describing secure hash.  The default hashing algorithm is SHA-512,
+    which is currently considered secure.  In the event that algorithm is
+    compromised, you will immediately be able to begin using a different
+    algorithm (as long as it's supported by the Python 'hashlib' library and
+    has output that fits in 128 characters) by modifying the value of the
+    'hashing_algorithm' configuration option and either restarting or issuing
+    a SIGHUP to Glance.

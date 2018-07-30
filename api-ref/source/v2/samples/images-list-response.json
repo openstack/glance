@@ -15,6 +15,8 @@
             "id": "1bea47ed-f6a9-463b-b423-14b9cca9ad27",
             "file": "/v2/images/1bea47ed-f6a9-463b-b423-14b9cca9ad27/file",
             "checksum": "64d7c1cd2b6f60c92c14662941cb7913",
+            "os_hash_algo": "sha512",
+            "os_hash_value": "073b4523583784fbe01daff81eba092a262ec37ba6d04dd3f52e4cd5c93eb8258af44881345ecda0e49f3d8cc6d2df6b050ff3e72681d723234aff9d17d0cf09"
             "owner": "5ef70662f8b34079a6eddb8da9d75fe8",
             "size": 13167616,
             "min_ram": 0,
@@ -36,6 +38,8 @@
             "id": "781b3762-9469-4cec-b58d-3349e5de4e9c",
             "file": "/v2/images/781b3762-9469-4cec-b58d-3349e5de4e9c/file",
             "checksum": "afab0f79bac770d61d24b4d0560b5f70",
+            "os_hash_algo": "sha512",
+            "os_hash_value": "ea3e20140df1cc65f53d4c5b9ee3b38d0d6868f61bbe2230417b0f98cef0e0c7c37f0ebc5c6456fa47f013de48b452617d56c15fdba25e100379bd0e81ee15ec"
             "owner": "5ef70662f8b34079a6eddb8da9d75fe8",
             "size": 476704768,
             "min_ram": 0,

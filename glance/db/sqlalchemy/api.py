@@ -468,6 +468,10 @@ def _make_conditions_from_filters(filters, is_public=None):
         checksum = filters.pop('checksum')
         image_conditions.append(models.Image.checksum == checksum)
 
+    if 'os_hash_value' in filters:
+        os_hash_value = filters.pop('os_hash_value')
+        image_conditions.append(models.Image.os_hash_value == os_hash_value)
+
     for (k, v) in filters.pop('properties', {}).items():
         prop_filters = _make_image_property_condition(key=k, value=v)
         prop_conditions.append(prop_filters)
