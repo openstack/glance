@@ -277,6 +277,48 @@ Here is a list of useful image properties and the values they expect.
      - The preferred number of threads to expose to the guest.
      - Integer.
    * - libvirt API driver
+     - ``hw_cpu_policy``
+     - Used to pin the virtual CPUs (vCPUs) of instances to the host’s
+       physical CPU cores (pCPUs). Host aggregates should be used to separate
+       these pinned instances from unpinned instances as the latter will not
+       respect the resourcing requirements of the former.
+     - * ``shared`` - (default) The guest vCPUs will be allowed to freely float
+         across host pCPUs, albeit potentially constrained by NUMA policy.
+       * ``dedicated`` - The guest vCPUs will be strictly pinned to a set of
+         host pCPUs. In the absence of an explicit vCPU topology request, the
+         drivers typically expose all vCPUs as sockets with one core and one
+         thread. When strict CPU pinning is in effect the guest CPU topology
+         will be setup to match the topology of the CPUs to which it is pinned.
+         This option implies an overcommit ratio of 1.0. For example, if a two
+         vCPU guest is pinned to a single host core with two threads, then the
+         guest will get a topology of one socket, one core, two threads.
+   * - libvirt API driver
+     - ``hw_cpu_thread_policy``
+     - Further refine ``hw_cpu_policy=dedicated`` by stating how hardware CPU
+       threads in a simultaneous multithreading-based (SMT) architecture be
+       used. SMT-based architectures include Intel processors with
+       Hyper-Threading technology. In these architectures, processor cores
+       share a number of components with one or more other cores. Cores in
+       such architectures are commonly referred to as hardware threads, while
+       the cores that a given core share components with are known as thread
+       siblings.
+     - * ``prefer`` - (default) The host may or may not have an SMT
+         architecture. Where an SMT architecture is present, thread siblings
+         are preferred.
+       * ``isolate`` - The host must not have an SMT architecture or must
+         emulate a non-SMT architecture. If the host does not have an SMT
+         architecture, each vCPU is placed on a different core as expected. If
+         the host does have an SMT architecture - that is, one or more cores
+         have thread siblings - then each vCPU is placed on a different
+         physical core. No vCPUs from other guests are placed on the same core.
+         All but one thread sibling on each utilized core is therefore
+         guaranteed to be unusable.
+       * ``require`` - The host must have an SMT architecture. Each vCPU is
+         allocated on thread siblings. If the host does not have an SMT
+         architecture, then it is not used. If the host has an SMT
+         architecture, but not enough cores with free thread siblings are
+         available, then scheduling fails.
+   * - libvirt API driver
      - ``hw_disk_bus``
      - Specifies the type of disk controller to attach disk devices to.
      - One of ``scsi``, ``virtio``, ``uml``, ``xen``, ``ide``, or ``usb``.
