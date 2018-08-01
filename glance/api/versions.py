@@ -74,7 +74,8 @@ class Controller(object):
         version_objs = []
         if CONF.enable_v2_api:
             version_objs.extend([
-                build_version_object(2.6, 'v2', 'CURRENT'),
+                build_version_object(2.7, 'v2', 'CURRENT'),
+                build_version_object(2.6, 'v2', 'SUPPORTED'),
                 build_version_object(2.5, 'v2', 'SUPPORTED'),
                 build_version_object(2.4, 'v2', 'SUPPORTED'),
                 build_version_object(2.3, 'v2', 'SUPPORTED'),
