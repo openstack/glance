@@ -14,8 +14,10 @@
 # limitations under the License.
 
 from oslo_config import cfg
+import webob.exc
 
 from glance.common import wsgi
+from glance.i18n import _
 
 
 CONF = cfg.CONF
@@ -33,6 +35,27 @@ class InfoController(object):
         return {
             'import-methods': import_methods
         }
+
+    def get_stores(self, req):
+        # TODO(abhishekk): This will be removed after config options
+        # 'stores' and 'default_store' are removed.
+        enabled_backends = CONF.enabled_backends
+        if not enabled_backends:
+            msg = _("Multi backend is not supported at this site.")
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        backends = []
+        for backend in enabled_backends:
+            stores = {}
+            stores['id'] = backend
+            description = getattr(CONF, backend).store_description
+            if description:
+                stores['description'] = description
+            if backend == CONF.glance_store.default_backend:
+                stores['default'] = "true"
+            backends.append(stores)
+
+        return {'stores': backends}
 
 
 def create_resource():

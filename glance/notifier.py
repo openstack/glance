@@ -315,10 +315,15 @@ class NotificationBase(object):
     def get_payload(self, obj):
         return {}
 
-    def send_notification(self, notification_id, obj, extra_payload=None):
+    def send_notification(self, notification_id, obj, extra_payload=None,
+                          backend=None):
         payload = self.get_payload(obj)
         if extra_payload is not None:
             payload.update(extra_payload)
+
+        # update backend information in the notification
+        if backend:
+            payload["backend"] = backend
 
         _send_notification(self.notifier.info, notification_id, payload)
 
@@ -419,12 +424,12 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
         data = self.repo.get_data(offset=offset, chunk_size=chunk_size)
         return self._get_chunk_data_iterator(data, chunk_size=chunk_size)
 
-    def set_data(self, data, size=None):
-        self.send_notification('image.prepare', self.repo)
+    def set_data(self, data, size=None, backend=None):
+        self.send_notification('image.prepare', self.repo, backend=backend)
 
         notify_error = self.notifier.error
         try:
-            self.repo.set_data(data, size)
+            self.repo.set_data(data, size, backend=backend)
         except glance_store.StorageFull as e:
             msg = (_("Image storage media is full: %s") %
                    encodeutils.exception_to_unicode(e))

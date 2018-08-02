@@ -59,9 +59,16 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                                                      self.store_api)
             member_ids = [m.member_id for m in member_repo.list()]
         for location in image.locations:
-            self.store_api.set_acls(location['url'], public=public,
-                                    read_tenants=member_ids,
-                                    context=self.context)
+            if CONF.enabled_backends:
+                self.store_api.set_acls_for_multi_store(
+                    location['url'], location['metadata']['backend'],
+                    public=public, read_tenants=member_ids,
+                    context=self.context
+                )
+            else:
+                self.store_api.set_acls(location['url'], public=public,
+                                        read_tenants=member_ids,
+                                        context=self.context)
 
     def add(self, image):
         result = super(ImageRepoProxy, self).add(image)
@@ -82,19 +89,28 @@ def _get_member_repo_for_store(image, context, db_api, store_api):
     return store_image_repo
 
 
-def _check_location_uri(context, store_api, store_utils, uri):
+def _check_location_uri(context, store_api, store_utils, uri,
+                        backend=None):
     """Check if an image location is valid.
 
     :param context: Glance request context
     :param store_api: store API module
     :param store_utils: store utils module
     :param uri: location's uri string
+    :param backend: A backend name for the store
     """
 
     try:
         # NOTE(zhiyan): Some stores return zero when it catch exception
+        if CONF.enabled_backends:
+            size_from_backend = store_api.get_size_from_uri_and_backend(
+                uri, backend, context=context)
+        else:
+            size_from_backend = store_api.get_size_from_backend(
+                uri, context=context)
+
         is_ok = (store_utils.validate_external_location(uri) and
-                 store_api.get_size_from_backend(uri, context=context) > 0)
+                 size_from_backend > 0)
     except (store.UnknownScheme, store.NotFound, store.BadStoreUri):
         is_ok = False
     if not is_ok:
@@ -103,15 +119,25 @@ def _check_location_uri(context, store_api, store_utils, uri):
 
 
 def _check_image_location(context, store_api, store_utils, location):
-    _check_location_uri(context, store_api, store_utils, location['url'])
+    backend = None
+    if CONF.enabled_backends:
+        backend = location['metadata'].get('backend')
+
+    _check_location_uri(context, store_api, store_utils, location['url'],
+                        backend=backend)
     store_api.check_location_metadata(location['metadata'])
 
 
 def _set_image_size(context, image, locations):
     if not image.size:
         for location in locations:
-            size_from_backend = store.get_size_from_backend(
-                location['url'], context=context)
+            if CONF.enabled_backends:
+                size_from_backend = store.get_size_from_uri_and_backend(
+                    location['url'], location['metadata'].get('backend'),
+                    context=context)
+            else:
+                size_from_backend = store.get_size_from_backend(
+                    location['url'], context=context)
 
             if size_from_backend:
                 # NOTE(flwang): This assumes all locations have the same size
@@ -404,7 +430,7 @@ class ImageProxy(glance.domain.proxy.Image):
                     self.image.image_id,
                     location)
 
-    def set_data(self, data, size=None):
+    def set_data(self, data, size=None, backend=None):
         if size is None:
             size = 0  # NOTE(markwash): zero -> unknown size
 
@@ -429,20 +455,32 @@ class ImageProxy(glance.domain.proxy.Image):
             verifier = None
 
         hashing_algo = CONF['hashing_algorithm']
-
-        (location,
-         size,
-         checksum,
-         multihash,
-         loc_meta) = self.store_api.add_to_backend_with_multihash(
-            CONF,
-            self.image.image_id,
-            utils.LimitingReader(utils.CooperativeReader(data),
-                                 CONF.image_size_cap),
-            size,
-            hashing_algo,
-            context=self.context,
-            verifier=verifier)
+        if CONF.enabled_backends:
+            (location, size, checksum,
+             multihash, loc_meta) = self.store_api.add_with_multihash(
+                CONF,
+                self.image.image_id,
+                utils.LimitingReader(utils.CooperativeReader(data),
+                                     CONF.image_size_cap),
+                size,
+                backend,
+                hashing_algo,
+                context=self.context,
+                verifier=verifier)
+        else:
+            (location,
+             size,
+             checksum,
+             multihash,
+             loc_meta) = self.store_api.add_to_backend_with_multihash(
+                CONF,
+                self.image.image_id,
+                utils.LimitingReader(utils.CooperativeReader(data),
+                                     CONF.image_size_cap),
+                size,
+                hashing_algo,
+                context=self.context,
+                verifier=verifier)
 
         # NOTE(bpoulos): if verification fails, exception will be raised
         if verifier:
@@ -451,8 +489,12 @@ class ImageProxy(glance.domain.proxy.Image):
                 LOG.info(_LI("Successfully verified signature for image %s"),
                          self.image.image_id)
             except crypto_exception.InvalidSignature:
-                self.store_api.delete_from_backend(location,
-                                                   context=self.context)
+                if CONF.enabled_backends:
+                    self.store_api.delete(location, loc_meta.get('backend'),
+                                          context=self.context)
+                else:
+                    self.store_api.delete_from_backend(location,
+                                                       context=self.context)
                 raise cursive_exception.SignatureVerificationError(
                     _('Signature verification failed')
                 )
@@ -476,11 +518,18 @@ class ImageProxy(glance.domain.proxy.Image):
         err = None
         for loc in self.image.locations:
             try:
-                data, size = self.store_api.get_from_backend(
-                    loc['url'],
-                    offset=offset,
-                    chunk_size=chunk_size,
-                    context=self.context)
+                backend = loc['metadata'].get('backend')
+                if CONF.enabled_backends:
+                    data, size = self.store_api.get(
+                        loc['url'], backend, offset=offset,
+                        chunk_size=chunk_size, context=self.context
+                    )
+                else:
+                    data, size = self.store_api.get_from_backend(
+                        loc['url'],
+                        offset=offset,
+                        chunk_size=chunk_size,
+                        context=self.context)
 
                 return data
             except Exception as e:
@@ -490,8 +539,9 @@ class ImageProxy(glance.domain.proxy.Image):
                             'err': encodeutils.exception_to_unicode(e)})
                 err = e
         # tried all locations
-        LOG.error(_LE('Glance tried all active locations to get data for '
-                      'image %s but all have failed.') % self.image.image_id)
+        LOG.error(_LE(
+            'Glance tried all active locations/stores to get data '
+            'for image %s but all have failed.') % self.image.image_id)
         raise err
 
 

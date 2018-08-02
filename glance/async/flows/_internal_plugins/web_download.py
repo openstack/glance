@@ -61,8 +61,14 @@ class _WebDownload(task.Task):
         # glance_store refactor is done. A good thing is that glance_store is
         # under our team's management and it gates on Glance so changes to
         # this API will (should?) break task's tests.
+        # TODO(abhishekk): After removal of backend module from glance_store
+        # need to change this to use multi_backend module.
         conf = cfg.ConfigOpts()
-        backend.register_opts(conf)
+        try:
+            backend.register_opts(conf)
+        except cfg.DuplicateOptError:
+            pass
+
         conf.set_override('filesystem_store_datadir',
                           CONF.node_staging_uri[7:],
                           group='glance_store')

@@ -317,6 +317,13 @@ wsgi_opts = [
                       '"HTTP_X_FORWARDED_PROTO".')),
 ]
 
+store_opts = [
+    cfg.DictOpt('enabled_backends',
+                help=_('Key:Value pair of store identifier and store type. '
+                       'In case of multiple backends should be separated'
+                       'using comma.')),
+]
+
 
 LOG = logging.getLogger(__name__)
 
@@ -325,6 +332,7 @@ CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
 CONF.register_opts(wsgi_opts)
+CONF.register_opts(store_opts)
 profiler_opts.set_defaults(CONF)
 
 ASYNC_EVENTLET_THREAD_POOL_LIST = []
@@ -446,6 +454,13 @@ def initialize_glance_store():
     glance_store.register_opts(CONF)
     glance_store.create_stores(CONF)
     glance_store.verify_default_store()
+
+
+def initialize_multi_store():
+    """Initialize glance multi store backends."""
+    glance_store.register_store_opts(CONF)
+    glance_store.create_multi_stores(CONF)
+    glance_store.verify_store()
 
 
 def get_asynchronous_eventlet_pool(size=1000):
@@ -599,7 +614,10 @@ class Server(object):
         self.client_socket_timeout = CONF.client_socket_timeout or None
         self.configure_socket(old_conf, has_changed)
         if self.initialize_glance_store:
-            initialize_glance_store()
+            if CONF.enabled_backends:
+                initialize_multi_store()
+            else:
+                initialize_glance_store()
 
     def reload(self):
         """

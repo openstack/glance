@@ -44,7 +44,7 @@ class ImageStub(glance.domain.Image):
     def get_data(self, offset=0, chunk_size=None):
         return ['01234', '56789']
 
-    def set_data(self, data, size=None):
+    def set_data(self, data, size, backend=None):
         for chunk in data:
             pass
 

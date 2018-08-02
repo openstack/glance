@@ -137,13 +137,13 @@ def create_image(image_repo, image_factory, image_properties, task_id):
     return image
 
 
-def set_image_data(image, uri, task_id):
+def set_image_data(image, uri, task_id, backend=None):
     data_iter = None
     try:
         LOG.info(_LI("Task %(task_id)s: Got image data uri %(data_uri)s to be "
                  "imported"), {"data_uri": uri, "task_id": task_id})
         data_iter = script_utils.get_image_data_iter(uri)
-        image.set_data(data_iter)
+        image.set_data(data_iter, backend=backend)
     except Exception as e:
         with excutils.save_and_reraise_exception():
             LOG.warn(_LW("Task %(task_id)s failed with exception %(error)s") %

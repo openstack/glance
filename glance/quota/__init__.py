@@ -57,8 +57,13 @@ def _calc_required_size(context, image, locations):
             size_from_backend = None
 
             try:
-                size_from_backend = store.get_size_from_backend(
-                    location['url'], context=context)
+                if CONF.enabled_backends:
+                    size_from_backend = store.get_size_from_uri_and_backend(
+                        location['url'], location['metadata'].get('backend'),
+                        context=context)
+                else:
+                    size_from_backend = store.get_size_from_backend(
+                        location['url'], context=context)
             except (store.UnknownScheme, store.NotFound):
                 pass
             except store.BadStoreUri:
@@ -293,7 +298,7 @@ class ImageProxy(glance.domain.proxy.Image):
         super(ImageProxy, self).__init__(image)
         self.orig_props = set(image.extra_properties.keys())
 
-    def set_data(self, data, size=None):
+    def set_data(self, data, size=None, backend=None):
         remaining = glance.api.common.check_quota(
             self.context, size, self.db_api, image_id=self.image.image_id)
         if remaining is not None:
@@ -302,7 +307,7 @@ class ImageProxy(glance.domain.proxy.Image):
             data = utils.LimitingReader(
                 data, remaining, exception_class=exception.StorageQuotaFull)
 
-        self.image.set_data(data, size=size)
+        self.image.set_data(data, size=size, backend=backend)
 
         # NOTE(jbresnah) If two uploads happen at the same time and neither
         # properly sets the size attribute[1] then there is a race condition

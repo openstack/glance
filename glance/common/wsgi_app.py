@@ -22,6 +22,7 @@ from glance import notifier
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
+CONF.import_opt("enabled_backends", "glance.common.wsgi")
 logging.register_options(CONF)
 
 CONFIG_FILES = ['glance-api-paste.ini',
@@ -60,8 +61,15 @@ def init_app():
     config_files = _get_config_files()
     CONF([], project='glance', default_config_files=config_files)
     logging.setup(CONF, "glance")
-    glance_store.register_opts(CONF)
-    glance_store.create_stores(CONF)
-    glance_store.verify_default_store()
+
+    if CONF.enabled_backends:
+        glance_store.register_store_opts(CONF)
+        glance_store.create_multi_stores(CONF)
+        glance_store.verify_store()
+    else:
+        glance_store.register_opts(CONF)
+        glance_store.create_stores(CONF)
+        glance_store.verify_default_store()
+
     _setup_os_profiler()
     return config.load_paste_app('glance-api')
