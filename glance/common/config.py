@@ -208,7 +208,7 @@ python 'hashlib' library.  You can determine what these are by examining
 the 'hashlib.algorithms_available' data member of the version of the
 library being used in your Glance installation.  For interoperability
 purposes, however, we recommend that you use the set of secure hash
-names supplies by the 'hashlib.algorithms_guaranteed' data member because
+names supplied by the 'hashlib.algorithms_guaranteed' data member because
 those algorithms are guaranteed to be supported by the 'hashlib' library
 on all platforms.  Thus, any image consumer using 'hashlib' locally should
 be able to verify the 'os_hash_value' of the image.
