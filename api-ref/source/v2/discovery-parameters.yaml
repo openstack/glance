@@ -1,0 +1,11 @@
+stores:
+  description: |
+    A list of store objects, where each store object may contain the
+    following fields:
+
+    - ``id``
+    - ``description``
+    - ``default``
+  in: body
+  required: true
+  type: array

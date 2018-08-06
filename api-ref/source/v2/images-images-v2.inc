@@ -148,6 +148,19 @@ Creates a catalog record for an operating system disk image.
 *(Since Image API v2.0)*
 
 The ``Location`` response header contains the URI for the image.
+
+A multiple store backend support is introduced in the Rocky release
+as a part of the EXPERIMENTAL Image API v2.8. Since Image API v2.8 a
+new header ``OpenStack-image-store-ids`` which contains the list of
+available stores will be included in response. This header is only
+included if multiple backend stores are supported.
+
+.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
+          its use in production systems is currently **not supported**.
+          However we encourage people to use this feature for testing
+          purposes and report the issues so that we can make it stable and
+          fully supported in Stein release.
+
 The response body contains the new image entity.
 
 Synchronous Postconditions
@@ -193,6 +206,7 @@ Response Parameters
 
    - Location: Location
    - OpenStack-image-import-methods: import-header
+   - OpenStack-image-store-ids: stores-header
    - checksum: checksum
    - container_format: container_format
    - created_at: created_at

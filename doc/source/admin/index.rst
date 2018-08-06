@@ -15,6 +15,7 @@ Glance Administration Guide
    controllingservers
    flows
    interoperable-image-import
+   multistores
    db
    db-sqlalchemy-migrate
    zero-downtime-db-upgrade

@@ -44,6 +44,19 @@ Thus, the first step is:
     methods may be determined independently of creating an image by making
     the :ref:`Import Method Discovery <import-discovery-call>` call.
 
+    In a cloud in which multiple storage backends are available, the
+    :ref:`Image Create <image-create>` response will include a
+    ``OpenStack-image-store-ids`` header listing the stores available in
+    that cloud.  Alternatively, these stores may be determined independently
+    of creating an image by making the :ref:`Stores Discovery
+    <store-discovery-call>` call.
+
+.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
+          its use in production systems is currently **not supported**.
+          However we encourage people to use this feature for testing
+          purposes and report the issues so that we can make it stable and
+          fully supported in Stein release.
+
 The glance-direct import method
 -------------------------------
 
@@ -158,8 +171,26 @@ call.
 In the ``web-download`` workflow, the data is made available to the Image
 service by being posted to an accessible location with a URL that you know.
 
-Example call: ``curl -i -X POST -H "X-Auth-Token: $token"
-$image_url/v2/images/{image_id}/import``
+Beginning with API version 2.8, an optional ``X-Image-Meta-Store``
+header may be added to the request.  When present, the image data will be
+placed into the backing store whose identifier is the value of this
+header.  If the store identifier specified is not recognized, a 409 (Conflict)
+response is returned.  When the header is not present, the image
+data is placed into the default backing store.
+
+* Store identifiers are site-specific.  Use the :ref:`Store
+  Discovery <store-discovery-call>` call to determine what
+  stores are available in a particular cloud.
+* The default store may be determined from the :ref:`Store
+  Discovery <store-discovery-call>` response.
+* A default store is always defined, so if you do not have a need
+  to use a particular store, simply omit this header and the default store
+  will be used.
+* For API versions before version 2.8, this header is silently
+  ignored.
+
+Example call: ``curl -i -X POST -H "X-Image-Meta-Store: {store_identifier}"
+-H "X-Auth-Token: $token" $image_url/v2/images/{image_id}/import``
 
 The JSON request body specifies what import method you wish to use
 for this image request.
@@ -225,6 +256,7 @@ Request
 .. rest_parameters:: images-parameters.yaml
 
    - Content-type: Content-Type-json
+   - X-Image-Meta-Store: store-header
    - image_id: image_id-in-path
    - method: method-in-request
 
