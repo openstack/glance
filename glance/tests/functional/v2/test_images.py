@@ -4466,3 +4466,1023 @@ class TestQuotasWithRegistry(TestQuotas):
         self.api_server.data_api = (
             'glance.tests.functional.v2.registry_data_api')
         self.registry_server.deployment_flavor = 'trusted-auth'
+
+
+class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
+
+    def setUp(self):
+        super(TestImagesMultipleBackend, self).setUp()
+        self.cleanup()
+        self.include_scrubber = False
+        self.api_server_multiple_backend.deployment_flavor = 'noauth'
+        self.api_server_multiple_backend.data_api = 'glance.db.sqlalchemy.api'
+        for i in range(3):
+            ret = test_utils.start_http_server("foo_image_id%d" % i,
+                                               "foo_image%d" % i)
+            setattr(self, 'http_server%d_pid' % i, ret[0])
+            setattr(self, 'http_port%d' % i, ret[1])
+
+    def tearDown(self):
+        for i in range(3):
+            pid = getattr(self, 'http_server%d_pid' % i, None)
+            if pid:
+                os.kill(pid, signal.SIGKILL)
+
+        super(TestImagesMultipleBackend, self).tearDown()
+
+    def _url(self, path):
+        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
+
+    def _headers(self, custom_headers=None):
+        base_headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': TENANT1,
+            'X-Roles': 'member',
+        }
+        base_headers.update(custom_headers or {})
+        return base_headers
+
+    def test_image_import_using_glance_direct(self):
+        self.start_servers(**self.__dict__.copy())
+
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # glance-direct should be available in discovery response
+        path = self._url('/v2/info/import')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['import-methods']['value']
+        self.assertIn("glance-direct", discovery_calls)
+
+        # file1 and file2 should be available in discovery response
+        available_stores = ['file1', 'file2']
+        path = self._url('/v2/info/stores')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['stores']
+        for stores in discovery_calls:
+            self.assertIn('id', stores)
+            self.assertIn(stores['id'], available_stores)
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
+                                'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Check 'OpenStack-image-store-ids' header present in response
+        self.assertIn('OpenStack-image-store-ids', response.headers)
+        for store in available_stores:
+            self.assertIn(store, response.headers['OpenStack-image-store-ids'])
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'os_hidden',
+            u'os_hash_algo',
+            u'os_hash_value'
+
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        def _verify_image_checksum_and_status(checksum=None, status=None):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(http.OK, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
+        # Upload some image data to staging area
+        path = self._url('/v2/images/%s/stage' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Verify image is in uploading state and checksum is None
+        _verify_image_checksum_and_status(status='uploading')
+
+        # Import image to store
+        path = self._url('/v2/images/%s/import' % image_id)
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'glance-direct'
+        }})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code)
+
+        # Verify image is in active state and checksum is set
+        # NOTE(abhishekk): As import is a async call we need to provide
+        # some timelap to complete the call.
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=2,
+                                   delay_sec=0.2)
+        _verify_image_checksum_and_status(
+            checksum='8f113e38d28a79a5a451b16048cc2b72',
+            status='active')
+
+        # Ensure the size is updated to reflect the data uploaded
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+
+        # Ensure image is created in default backend
+        self.assertIn('file1', jsonutils.loads(response.text)['stores'])
+
+        # Deleting image should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Image list should now be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        self.stop_servers()
+
+    def test_image_import_using_glance_direct_different_backend(self):
+        self.start_servers(**self.__dict__.copy())
+
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # glance-direct should be available in discovery response
+        path = self._url('/v2/info/import')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['import-methods']['value']
+        self.assertIn("glance-direct", discovery_calls)
+
+        # file1 and file2 should be available in discovery response
+        available_stores = ['file1', 'file2']
+        path = self._url('/v2/info/stores')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['stores']
+        for stores in discovery_calls:
+            self.assertIn('id', stores)
+            self.assertIn(stores['id'], available_stores)
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
+                                'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Check 'OpenStack-image-store-ids' header present in response
+        self.assertIn('OpenStack-image-store-ids', response.headers)
+        for store in available_stores:
+            self.assertIn(store, response.headers['OpenStack-image-store-ids'])
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'os_hidden',
+            u'os_hash_algo',
+            u'os_hash_value'
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        def _verify_image_checksum_and_status(checksum=None, status=None):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(http.OK, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
+        # Upload some image data to staging area
+        path = self._url('/v2/images/%s/stage' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Verify image is in uploading state and checksum is None
+        _verify_image_checksum_and_status(status='uploading')
+
+        # Import image to file2 store (other than default backend)
+        path = self._url('/v2/images/%s/import' % image_id)
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+            'X-Image-Meta-Store': 'file2'
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'glance-direct'
+        }})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code)
+
+        # Verify image is in active state and checksum is set
+        # NOTE(abhishekk): As import is a async call we need to provide
+        # some timelap to complete the call.
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=2,
+                                   delay_sec=0.2)
+        _verify_image_checksum_and_status(
+            checksum='8f113e38d28a79a5a451b16048cc2b72',
+            status='active')
+
+        # Ensure the size is updated to reflect the data uploaded
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+
+        # Ensure image is created in different backend
+        self.assertIn('file2', jsonutils.loads(response.text)['stores'])
+
+        # Deleting image should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Image list should now be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        self.stop_servers()
+
+    def test_image_import_using_web_download(self):
+        self.config(node_staging_uri="file:///tmp/staging/")
+        self.start_servers(**self.__dict__.copy())
+
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # web-download should be available in discovery response
+        path = self._url('/v2/info/import')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['import-methods']['value']
+        self.assertIn("web-download", discovery_calls)
+
+        # file1 and file2 should be available in discovery response
+        available_stores = ['file1', 'file2']
+        path = self._url('/v2/info/stores')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['stores']
+        for stores in discovery_calls:
+            self.assertIn('id', stores)
+            self.assertIn(stores['id'], available_stores)
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
+                                'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Check 'OpenStack-image-store-ids' header present in response
+        self.assertIn('OpenStack-image-store-ids', response.headers)
+        for store in available_stores:
+            self.assertIn(store, response.headers['OpenStack-image-store-ids'])
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'os_hidden',
+            u'os_hash_algo',
+            u'os_hash_value'
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        def _verify_image_checksum_and_status(checksum=None, status=None):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(http.OK, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
+        # Verify image is in queued state and checksum is None
+        _verify_image_checksum_and_status(status='queued')
+
+        # Import image to store
+        path = self._url('/v2/images/%s/import' % image_id)
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'web-download',
+            'uri': 'https://www.openstack.org/assets/openstack-logo/'
+                   '2016R/OpenStack-Logo-Horizontal.eps.zip'
+        }})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code)
+
+        # Verify image is in active state and checksum is set
+        # NOTE(abhishekk): As import is a async call we need to provide
+        # some timelap to complete the call.
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=20,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+        _verify_image_checksum_and_status(
+            checksum='bcd65f8922f61a9e6a20572ad7aa2bdd',
+            status='active')
+
+        # Ensure image is created in default backend
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertIn('file1', jsonutils.loads(response.text)['stores'])
+
+        # Deleting image should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Image list should now be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        self.stop_servers()
+
+    def test_image_import_using_web_download_different_backend(self):
+        self.config(node_staging_uri="file:///tmp/staging/")
+        self.start_servers(**self.__dict__.copy())
+
+        # Image list should be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # web-download should be available in discovery response
+        path = self._url('/v2/info/import')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['import-methods']['value']
+        self.assertIn("web-download", discovery_calls)
+
+        # file1 and file2 should be available in discovery response
+        available_stores = ['file1', 'file2']
+        path = self._url('/v2/info/stores')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['stores']
+        for stores in discovery_calls:
+            self.assertIn('id', stores)
+            self.assertIn(stores['id'], available_stores)
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
+                                'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Check 'OpenStack-image-store-ids' header present in response
+        self.assertIn('OpenStack-image-store-ids', response.headers)
+        for store in available_stores:
+            self.assertIn(store, response.headers['OpenStack-image-store-ids'])
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'os_hidden',
+            u'os_hash_algo',
+            u'os_hash_value'
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image_id,
+            'protected': False,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        def _verify_image_checksum_and_status(checksum=None, status=None):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(http.OK, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
+        # Verify image is in queued state and checksum is None
+        _verify_image_checksum_and_status(status='queued')
+
+        # Import image to store
+        path = self._url('/v2/images/%s/import' % image_id)
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+            'X-Image-Meta-Store': 'file2'
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'web-download',
+            'uri': 'https://www.openstack.org/assets/openstack-logo/'
+                   '2016R/OpenStack-Logo-Horizontal.eps.zip'
+        }})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code)
+
+        # Verify image is in active state and checksum is set
+        # NOTE(abhishekk): As import is a async call we need to provide
+        # some timelap to complete the call.
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=20,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+        _verify_image_checksum_and_status(
+            checksum='bcd65f8922f61a9e6a20572ad7aa2bdd',
+            status='active')
+
+        # Ensure image is created in different backend
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertIn('file2', jsonutils.loads(response.text)['stores'])
+
+        # Deleting image should work
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Image list should now be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        self.stop_servers()
+
+    def test_image_lifecycle(self):
+        # Image list should be empty
+        self.start_servers(**self.__dict__.copy())
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # file1 and file2 should be available in discovery response
+        available_stores = ['file1', 'file2']
+        path = self._url('/v2/info/stores')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['stores']
+        for stores in discovery_calls:
+            self.assertIn('id', stores)
+            self.assertIn(stores['id'], available_stores)
+
+        # Create an image (with two deployer-defined properties)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
+                                'foo': 'bar', 'disk_format': 'aki',
+                                'container_format': 'aki', 'abc': 'xyz',
+                                'protected': True})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Check 'OpenStack-image-store-ids' header present in response
+        self.assertIn('OpenStack-image-store-ids', response.headers)
+        for store in available_stores:
+            self.assertIn(store, response.headers['OpenStack-image-store-ids'])
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'foo',
+            u'abc',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'os_hidden',
+            u'os_hash_algo',
+            u'os_hash_value'
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image_id,
+            'protected': True,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'foo': 'bar',
+            'abc': 'xyz',
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Try to download data before its uploaded
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        def _verify_image_checksum_and_status(checksum, status):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(http.OK, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
+        # Upload some image data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
+        _verify_image_checksum_and_status(expected_checksum, 'active')
+
+        # Ensure image is created in default backend
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertIn('file1', jsonutils.loads(response.text)['stores'])
+
+        # Try to download the data that was just uploaded
+        path = self._url('/v2/images/%s/file' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertEqual(expected_checksum, response.headers['Content-MD5'])
+        self.assertEqual('ZZZZZ', response.text)
+
+        # Ensure the size is updated to reflect the data uploaded
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+
+        # Unprotect image for deletion
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        doc = [{'op': 'replace', 'path': '/protected', 'value': False}]
+        data = jsonutils.dumps(doc)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(http.OK, response.status_code, response.text)
+
+        # Deletion should work. Deleting image
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # This image should be no longer be directly accessible
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.NOT_FOUND, response.status_code)
+
+        # And neither should its data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
+
+        # Image list should now be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        self.stop_servers()
+
+    def test_image_lifecycle_different_backend(self):
+        # Image list should be empty
+        self.start_servers(**self.__dict__.copy())
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        # file1 and file2 should be available in discovery response
+        available_stores = ['file1', 'file2']
+        path = self._url('/v2/info/stores')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        discovery_calls = jsonutils.loads(
+            response.text)['stores']
+        for stores in discovery_calls:
+            self.assertIn('id', stores)
+            self.assertIn(stores['id'], available_stores)
+
+        # Create an image (with two deployer-defined properties)
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
+                                'foo': 'bar', 'disk_format': 'aki',
+                                'container_format': 'aki', 'abc': 'xyz',
+                                'protected': True})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Check 'OpenStack-image-store-ids' header present in response
+        self.assertIn('OpenStack-image-store-ids', response.headers)
+        for store in available_stores:
+            self.assertIn(store, response.headers['OpenStack-image-store-ids'])
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        checked_keys = set([
+            u'status',
+            u'name',
+            u'tags',
+            u'created_at',
+            u'updated_at',
+            u'visibility',
+            u'self',
+            u'protected',
+            u'id',
+            u'file',
+            u'min_disk',
+            u'foo',
+            u'abc',
+            u'type',
+            u'min_ram',
+            u'schema',
+            u'disk_format',
+            u'container_format',
+            u'owner',
+            u'checksum',
+            u'size',
+            u'virtual_size',
+            u'os_hidden',
+            u'os_hash_algo',
+            u'os_hash_value'
+
+        ])
+        self.assertEqual(checked_keys, set(image.keys()))
+        expected_image = {
+            'status': 'queued',
+            'name': 'image-1',
+            'tags': [],
+            'visibility': 'shared',
+            'self': '/v2/images/%s' % image_id,
+            'protected': True,
+            'file': '/v2/images/%s/file' % image_id,
+            'min_disk': 0,
+            'foo': 'bar',
+            'abc': 'xyz',
+            'type': 'kernel',
+            'min_ram': 0,
+            'schema': '/v2/schemas/image',
+        }
+        for key, value in expected_image.items():
+            self.assertEqual(value, image[key], key)
+
+        # Image list should now have one entry
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Try to download data before its uploaded
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        def _verify_image_checksum_and_status(checksum, status):
+            # Checksum should be populated and status should be active
+            path = self._url('/v2/images/%s' % image_id)
+            response = requests.get(path, headers=self._headers())
+            self.assertEqual(http.OK, response.status_code)
+            image = jsonutils.loads(response.text)
+            self.assertEqual(checksum, image['checksum'])
+            self.assertEqual(status, image['status'])
+
+        # Upload some image data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({
+            'Content-Type': 'application/octet-stream',
+            'X-Image-Meta-Store': 'file2'
+        })
+        response = requests.put(path, headers=headers, data='ZZZZZ')
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
+        _verify_image_checksum_and_status(expected_checksum, 'active')
+
+        # Ensure image is created in different backend
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertIn('file2', jsonutils.loads(response.text)['stores'])
+
+        # Try to download the data that was just uploaded
+        path = self._url('/v2/images/%s/file' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertEqual(expected_checksum, response.headers['Content-MD5'])
+        self.assertEqual('ZZZZZ', response.text)
+
+        # Ensure the size is updated to reflect the data uploaded
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+
+        # Unprotect image for deletion
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        doc = [{'op': 'replace', 'path': '/protected', 'value': False}]
+        data = jsonutils.dumps(doc)
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(http.OK, response.status_code, response.text)
+
+        # Deletion should work. Deleting image
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # This image should be no longer be directly accessible
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.NOT_FOUND, response.status_code)
+
+        # And neither should its data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers()
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
+
+        # Image list should now be empty
+        path = self._url('/v2/images')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        images = jsonutils.loads(response.text)['images']
+        self.assertEqual(0, len(images))
+
+        self.stop_servers()
