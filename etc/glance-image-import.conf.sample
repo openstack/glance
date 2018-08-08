@@ -25,7 +25,10 @@
 # Related Options:
 #     * disk_formats
 #  (string value)
-# Allowed values: qcow2, raw, vdmk
+# Possible values:
+# qcow2 - <No description provided>
+# raw - <No description provided>
+# vdmk - <No description provided>
 #output_format = raw
 
 
