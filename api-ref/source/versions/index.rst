@@ -26,6 +26,8 @@ Version History
 
 **Rocky changes**
 
+- version 2.8 is EXPERIMENTAL
+- version 2.7 is CURRENT
 - version 1.1 is DELETED
 - version 1.0 is DELETED
 
