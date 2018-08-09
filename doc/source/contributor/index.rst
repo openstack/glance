@@ -25,6 +25,7 @@ Development Practices
    :maxdepth: 3
 
    blueprints
+   release-notes
    documentation
    database_migrations
 .. bugs
