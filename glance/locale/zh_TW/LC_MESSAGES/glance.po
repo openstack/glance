@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-02-22 03:33+0000\n"
+"POT-Creation-Date: 2018-08-09 04:23+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -89,12 +89,6 @@ msgstr "已停止 %s"
 msgid "%s is stopped"
 msgstr "%s 已停止"
 
-msgid ""
-"--os_auth_url option or OS_AUTH_URL environment variable required when "
-"keystone authentication strategy is enabled\n"
-msgstr ""
-"--os_auth_url 選項或 OS_AUTH_URL 環境變數（啟用 Keystone 鑑別策略時需要）\n"
-
 msgid "A body is not expected with this request."
 msgstr "此要求預期不含內文。"
 
@@ -150,10 +144,6 @@ msgstr "映像檔綱目 URL"
 msgid "An image self url"
 msgstr "映像檔自身 URL"
 
-#, python-format
-msgid "An image with identifier %s already exists"
-msgstr "ID 為 %s 的映像檔已存在"
-
 msgid "An import task exception occurred"
 msgstr "發生匯入作業異常狀況"
 
@@ -175,9 +165,6 @@ msgstr "發生不明的作業異常狀況"
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
 msgstr "嘗試上傳重複的映像檔：%s"
-
-msgid "Attempted to update Location field for an image not in queued status."
-msgstr "已嘗試更新處於未排入佇列狀態之映像檔的「位置」欄位。"
 
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
@@ -230,10 +217,6 @@ msgid "Bad header: %(header_name)s"
 msgstr "錯誤的標頭：%(header_name)s"
 
 #, python-format
-msgid "Bad value passed to filter %(filter)s got %(val)s"
-msgstr "傳遞給過濾器 %(filter)s 的值不正確，取得 %(val)s"
-
-#, python-format
 msgid "Badly formed S3 URI: %(uri)s"
 msgstr "S3 URI 的格式不正確：%(uri)s"
 
@@ -267,9 +250,6 @@ msgstr "無法儲存映像檔 %(image_id)s 的資料：%(error)s"
 msgid "Cannot set locations to empty list."
 msgstr "無法將位置設為空白清單。"
 
-msgid "Cannot upload to an unqueued image"
-msgstr "無法上傳至未排入佇列的映像檔"
-
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr "總和檢查驗證失敗。已中止快取映像檔 '%s'。"
@@ -290,12 +270,6 @@ msgstr "將錯誤/不當的要求連接至 URL %(url)s 處的鑑別服務。"
 #, python-format
 msgid "Constructed URL: %s"
 msgstr "已建構 URL：%s"
-
-msgid "Container format is not specified."
-msgstr "未指定儲存器格式。"
-
-msgid "Content-Type must be application/octet-stream"
-msgstr "內容類型必須是 application/octet-stream"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
@@ -401,9 +375,6 @@ msgstr "正在拒絕嘗試上傳大於 %d 個位元組的映像檔。"
 msgid "Descriptive name for the image"
 msgstr "映像檔的敘述性名稱"
 
-msgid "Disk format is not specified."
-msgstr "未指定磁碟格式。"
-
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
@@ -428,17 +399,6 @@ msgstr "預期成員的格式為：{\"member\": \"image_id\"}"
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "預期狀態的格式為：{\"status\": \"status\"}"
 
-msgid "External source should not be empty"
-msgstr "外部來源不應是空的"
-
-#, python-format
-msgid "External sources are not supported: '%s'"
-msgstr "不支援外部來源：'%s'"
-
-#, python-format
-msgid "Failed to activate image. Got error: %s"
-msgstr "無法啟動映像檔。發生錯誤：%s"
-
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "無法新增映像檔 meta 資料。發生錯誤：%s"
@@ -446,14 +406,6 @@ msgstr "無法新增映像檔 meta 資料。發生錯誤：%s"
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "找不到要刪除的映像檔 %(image_id)s"
-
-#, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "找不到要刪除的映像檔：%s"
-
-#, python-format
-msgid "Failed to find image to update: %s"
-msgstr "找不到要更新的映像檔：%s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
@@ -466,10 +418,6 @@ msgstr "無法起始設定映像檔快取資料庫。發生錯誤：%s"
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "無法從配置中讀取 %s"
-
-#, python-format
-msgid "Failed to reserve image. Got error: %s"
-msgstr "無法保留映像檔。發生錯誤：%s"
 
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
@@ -502,32 +450,6 @@ msgstr "不容許檔案型匯入。請使用映像檔資料的非本端來源。
 
 msgid "Forbidden image access"
 msgstr "已禁止映像檔存取"
-
-#, python-format
-msgid "Forbidden to delete a %s image."
-msgstr "已禁止刪除 %s 映像檔。"
-
-#, python-format
-msgid "Forbidden to delete image: %s"
-msgstr "已禁止刪除映像檔：%s"
-
-#, python-format
-msgid "Forbidden to modify '%(key)s' of %(status)s image."
-msgstr "已禁止修改 %(status)s 映像檔的 '%(key)s'。"
-
-#, python-format
-msgid "Forbidden to modify '%s' of image."
-msgstr "禁止修改映像檔的 '%s'。"
-
-msgid "Forbidden to reserve image."
-msgstr "已禁止保留映像檔。"
-
-msgid "Forbidden to update deleted image."
-msgstr "已禁止更新所刪除的映像檔。"
-
-#, python-format
-msgid "Forbidden to update image: %s"
-msgstr "已禁止更新映像檔：%s"
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -617,19 +539,9 @@ msgstr "映像檔超出儲存體配額：%s"
 msgid "Image id is required."
 msgstr "映像檔 ID 是必要的。"
 
-msgid "Image is protected"
-msgstr "映像檔是受保護的"
-
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr "已超出映像檔 %(id)s 的映像檔成員限制：%(e)s："
-
-#, python-format
-msgid "Image name too long: %d"
-msgstr "映像檔名稱太長：%d"
-
-msgid "Image operation conflicts"
-msgstr "映像檔作業衝突"
 
 #, python-format
 msgid ""
@@ -651,10 +563,6 @@ msgstr "映像檔上傳問題：%s"
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr "ID 為 %s 的映像檔已存在！"
-
-#, python-format
-msgid "Image with identifier %s has been deleted."
-msgstr "已刪除 ID 為 %s 的映像檔。"
 
 #, python-format
 msgid "Image with identifier %s not found"
@@ -686,10 +594,6 @@ msgstr "對映像檔儲存媒體的許可權不足：%s"
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "此資源的 JSON 指標無效：'/%s'"
 
-#, python-format
-msgid "Invalid checksum '%s': can't exceed 32 characters"
-msgstr "無效的總和檢查 '%s'：不能超過 32 個字元"
-
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "glance-swift 配置檔中的配置無效。"
 
@@ -697,16 +601,8 @@ msgid "Invalid configuration in property protection file."
 msgstr "內容保護檔案中的配置無效。"
 
 #, python-format
-msgid "Invalid container format '%s' for image."
-msgstr "映像檔的儲存器格式 '%s' 無效。"
-
-#, python-format
 msgid "Invalid content type %(content_type)s"
 msgstr "無效的內容類型 %(content_type)s"
-
-#, python-format
-msgid "Invalid disk format '%s' for image."
-msgstr "映像檔的磁碟格式 '%s' 無效。"
 
 #, python-format
 msgid "Invalid filter value %s. The quote is not closed."
@@ -727,10 +623,6 @@ msgstr "無效的映像檔 ID 格式"
 
 msgid "Invalid location"
 msgstr "無效的位置"
-
-#, python-format
-msgid "Invalid location %s"
-msgstr "無效的位置 %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -759,14 +651,6 @@ msgstr "無效的標記。找不到映像檔。"
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr "無效的成員資格關聯：%s"
-
-msgid ""
-"Invalid mix of disk and container formats. When setting a disk or container "
-"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
-"match."
-msgstr ""
-"磁碟格式及儲存器格式的混合無效。將磁碟格式或儲存器格式設為 'aki'、'ari' 或 "
-"'ami' 其中之一時，儲存器格式及磁碟格式必須相符。"
 
 #, python-format
 msgid ""
@@ -799,10 +683,6 @@ msgstr "無效的狀態值：%s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "無效的狀態：%s"
-
-#, python-format
-msgid "Invalid time format for %s."
-msgstr "%s 的時間格式無效。"
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -849,9 +729,6 @@ msgstr "選項 %(option)s 的值 %(value)s 無效"
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr "無效的可見性值：%s"
-
-msgid "It's invalid to provide multiple image sources."
-msgstr "提供多個映像檔來源是無效的做法。"
 
 msgid "It's not allowed to add locations if locations are invisible."
 msgstr "如果位置是隱藏的，則不容許新增位置。"
@@ -1105,20 +982,8 @@ msgstr "可能無法移除內容 %s。"
 msgid "Property %s must be set prior to saving data."
 msgstr "儲存資料之前必須設定內容 %s。"
 
-#, python-format
-msgid "Property '%s' is protected"
-msgstr "內容 '%s' 受保護"
-
 msgid "Property names can't contain 4 byte unicode."
 msgstr "內容名稱不能包含 4 位元組 Unicode。"
-
-#, python-format
-msgid ""
-"Provided image size must match the stored image size. (provided size: "
-"%(ps)d, stored size: %(ss)d)"
-msgstr ""
-"提供的映像檔大小必須符合儲存的映像檔大小。（提供的大小：%(ps)d，儲存的大小："
-"%(ss)d）"
 
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
@@ -1167,10 +1032,6 @@ msgstr "要求內文必須是作業物件的 JSON 陣列。"
 
 msgid "Request must be a list of commands"
 msgstr "要求必須是指令清單"
-
-#, python-format
-msgid "Required store %s is invalid"
-msgstr "需要的儲存庫 %s 無效"
 
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
@@ -1378,12 +1239,6 @@ msgid ""
 "Attempted: %(attempted)s, Maximum: %(maximum)s"
 msgstr ""
 "容許的映像檔內容數目已超出此限制。已嘗試：%(attempted)s，上限：%(maximum)s"
-
-#, python-format
-msgid ""
-"The limit has been exceeded on the number of allowed image properties. "
-"Attempted: %(num)s, Maximum: %(quota)s"
-msgstr "容許的映像檔內容數目已超出此限制。已嘗試：%(num)s，上限：%(quota)s"
 
 #, python-format
 msgid ""
@@ -1632,9 +1487,6 @@ msgstr ""
 "目前不允許對 Glance 作業執行這項作業。根據它們的 expires_at內容，將在達到時間"
 "之後自動刪除它們。"
 
-msgid "This operation is currently not permitted on Glance images details."
-msgstr "目前不允許對 Glance 映像檔詳細資料執行這項作業。"
-
 msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr "作業在成功或失敗後存活的時間（小時）"
@@ -1713,9 +1565,6 @@ msgstr "找不到 %s 的 paste 配置檔。"
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr "無法上傳映像檔 %(image_id)s 的重複映像檔資料：%(error)s"
-
-msgid "Unauthorized image access"
-msgstr "未獲授權的映像檔存取"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "非預期的內文類型。預期為清單/字典。"

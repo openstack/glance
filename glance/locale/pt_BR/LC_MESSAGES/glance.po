@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-02-22 03:33+0000\n"
+"POT-Creation-Date: 2018-08-09 04:23+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -97,13 +97,6 @@ msgstr "%s já está parado"
 msgid "%s is stopped"
 msgstr "%s está parado"
 
-msgid ""
-"--os_auth_url option or OS_AUTH_URL environment variable required when "
-"keystone authentication strategy is enabled\n"
-msgstr ""
-"opção --os_auth_url ou variável de ambiente OS_AUTH_URL requerida quando "
-"estratégia de autenticação keystone está ativada\n"
-
 msgid "A body is not expected with this request."
 msgstr "Um corpo não é esperado com essa solicitação."
 
@@ -165,10 +158,6 @@ msgstr "Uma URL de esquema de imagem"
 msgid "An image self url"
 msgstr "Uma URL automática de imagem"
 
-#, python-format
-msgid "An image with identifier %s already exists"
-msgstr "Uma imagem com o identificador %s já existe"
-
 msgid "An import task exception occurred"
 msgstr "Ocorreu uma exceção em uma tarefa importante"
 
@@ -190,11 +179,6 @@ msgstr "Ocorreu uma exceção de tarefa desconhecida"
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
 msgstr "Tentativa de fazer upload de imagem duplicada: %s"
-
-msgid "Attempted to update Location field for an image not in queued status."
-msgstr ""
-"Tentativa de atualizar o campo Local para uma imagem não está no status em "
-"fila."
 
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
@@ -253,10 +237,6 @@ msgid "Bad header: %(header_name)s"
 msgstr "Cabeçalho inválido: %(header_name)s"
 
 #, python-format
-msgid "Bad value passed to filter %(filter)s got %(val)s"
-msgstr "Valor inválido passado para o filtro %(filter)s obteve %(val)s"
-
-#, python-format
 msgid "Badly formed S3 URI: %(uri)s"
 msgstr "URI S3 malformado: %(uri)s"
 
@@ -291,9 +271,6 @@ msgstr "Não é possível salvar os dados da imagem %(image_id)s: %(error)s"
 msgid "Cannot set locations to empty list."
 msgstr "Não é possível configurar locais para esvaziar a lista."
 
-msgid "Cannot upload to an unqueued image"
-msgstr "Não é possível fazer upload para uma imagem fora da fila"
-
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr ""
@@ -318,12 +295,6 @@ msgstr ""
 #, python-format
 msgid "Constructed URL: %s"
 msgstr "URL construída: %s"
-
-msgid "Container format is not specified."
-msgstr "O formato de contêiner não foi especificado."
-
-msgid "Content-Type must be application/octet-stream"
-msgstr "Tipo de Conteúdo deve ser application/octet-stream"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
@@ -431,9 +402,6 @@ msgstr "Negando tentativa de fazer upload de imagem maior que %d bytes."
 msgid "Descriptive name for the image"
 msgstr "Nome descritivo para a imagem"
 
-msgid "Disk format is not specified."
-msgstr "O formato de disco não foi especificado."
-
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
@@ -463,17 +431,6 @@ msgstr "O membro era esperado no formato: {\"member\": \"image_id\"}"
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "O estado era esperado no formato: {\"status\": \"status\"}"
 
-msgid "External source should not be empty"
-msgstr "A fonte externa não deve estar vazia"
-
-#, python-format
-msgid "External sources are not supported: '%s'"
-msgstr "As fontes externas não são suportadas: '%s'"
-
-#, python-format
-msgid "Failed to activate image. Got error: %s"
-msgstr "Falha ao ativar imagem. Erro obtido: %s"
-
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "Falha ao incluir metadados da imagem. Erro obtido: %s"
@@ -481,14 +438,6 @@ msgstr "Falha ao incluir metadados da imagem. Erro obtido: %s"
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "Falhar ao localizar a imagem %(image_id)s para excluir"
-
-#, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "Falha ao encontrar imagem para excluir: %s"
-
-#, python-format
-msgid "Failed to find image to update: %s"
-msgstr "Falha ao encontrar imagem para atualizar: %s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
@@ -502,10 +451,6 @@ msgstr ""
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "Falha ao ler %s da configuração"
-
-#, python-format
-msgid "Failed to reserve image. Got error: %s"
-msgstr "Falha ao reservar imagem. Erro obtido: %s"
 
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
@@ -545,32 +490,6 @@ msgstr ""
 
 msgid "Forbidden image access"
 msgstr "Proibido o acesso a imagem"
-
-#, python-format
-msgid "Forbidden to delete a %s image."
-msgstr "Proibido excluir uma imagem %s."
-
-#, python-format
-msgid "Forbidden to delete image: %s"
-msgstr "Proibido excluir imagem: %s"
-
-#, python-format
-msgid "Forbidden to modify '%(key)s' of %(status)s image."
-msgstr "Proibido modificar '%(key)s' da imagem %(status)s"
-
-#, python-format
-msgid "Forbidden to modify '%s' of image."
-msgstr "Proibido modificar '%s' de imagem."
-
-msgid "Forbidden to reserve image."
-msgstr "Proibido reservar imagem."
-
-msgid "Forbidden to update deleted image."
-msgstr "Proibido atualizar imagem excluída."
-
-#, python-format
-msgid "Forbidden to update image: %s"
-msgstr "Proibido atualizar imagem: %s"
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -669,19 +588,9 @@ msgstr "Imagem excede a cota de armazenamento: %s"
 msgid "Image id is required."
 msgstr "ID da imagem é obrigatório."
 
-msgid "Image is protected"
-msgstr "A imagem está protegida"
-
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr "O limite do membro da imagem excedido para imagem %(id)s: %(e)s:"
-
-#, python-format
-msgid "Image name too long: %d"
-msgstr "Nome da imagem muito longo: %d"
-
-msgid "Image operation conflicts"
-msgstr "Conflitos da operação de imagem"
 
 #, python-format
 msgid ""
@@ -706,10 +615,6 @@ msgstr "Problema ao fazer upload de imagem: %s"
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr "A imagem o identificador %s já existe!"
-
-#, python-format
-msgid "Image with identifier %s has been deleted."
-msgstr "Imagem com identificador %s foi excluída."
 
 #, python-format
 msgid "Image with identifier %s not found"
@@ -743,10 +648,6 @@ msgstr "Permissões insuficientes na mídia de armazenamento da imagem: %s"
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Ponteiro de JSON inválido para este recurso: '/%s'"
 
-#, python-format
-msgid "Invalid checksum '%s': can't exceed 32 characters"
-msgstr "Soma de verificação inválida '%s': não pode exceder 32 caracteres"
-
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "Configuração inválida no arquivo de configuração glance-swift."
 
@@ -754,16 +655,8 @@ msgid "Invalid configuration in property protection file."
 msgstr "Configuração inválida no arquivo de proteção de propriedade."
 
 #, python-format
-msgid "Invalid container format '%s' for image."
-msgstr "Formato de Contâiner inválido '%s' para imagem."
-
-#, python-format
 msgid "Invalid content type %(content_type)s"
 msgstr "Tipo de conteúdo inválido %(content_type)s"
-
-#, python-format
-msgid "Invalid disk format '%s' for image."
-msgstr "Formato de disco inválido '%s' para imagem."
 
 #, python-format
 msgid "Invalid filter value %s. The quote is not closed."
@@ -787,10 +680,6 @@ msgstr "Formato de ID da imagem inválido"
 
 msgid "Invalid location"
 msgstr "Local inválido"
-
-#, python-format
-msgid "Invalid location %s"
-msgstr "Local inválido %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -820,15 +709,6 @@ msgstr "Marcador inválido. A imagem não pôde ser localizada."
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr "Associação inválida: %s"
-
-msgid ""
-"Invalid mix of disk and container formats. When setting a disk or container "
-"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
-"match."
-msgstr ""
-"Combinação inválida de formatos de disco e contêiner. Ao configurar um "
-"formato de disco ou contêiner para um destes, 'aki', 'ari' ou 'ami', os "
-"formatos de contêiner e disco devem corresponder."
 
 #, python-format
 msgid ""
@@ -864,10 +744,6 @@ msgstr "Valro de status inválido: %s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "Status inválido: %s"
-
-#, python-format
-msgid "Invalid time format for %s."
-msgstr "Fromato de horário inválido para %s"
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -917,9 +793,6 @@ msgstr "Valor inválido para a opção %(option)s: %(value)s"
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr "Valor de visibilidade inválido: %s"
-
-msgid "It's invalid to provide multiple image sources."
-msgstr "é inválido fornecer múltiplas fontes de imagens."
 
 msgid "It's not allowed to add locations if locations are invisible."
 msgstr "Não é permitido adicionar locais se os locais forem invisíveis."
@@ -1195,20 +1068,8 @@ msgstr "A propriedade %s pode não ser removida."
 msgid "Property %s must be set prior to saving data."
 msgstr "A propriedade %s deve ser configurada antes de salvar os dados."
 
-#, python-format
-msgid "Property '%s' is protected"
-msgstr "Propriedade '%s' é protegida"
-
 msgid "Property names can't contain 4 byte unicode."
 msgstr "Os nomes de propriedade não podem conter unicode de 4 bytes."
-
-#, python-format
-msgid ""
-"Provided image size must match the stored image size. (provided size: "
-"%(ps)d, stored size: %(ss)d)"
-msgstr ""
-"O tamanho da imagem fornecida deve corresponder ao tamanho da imagem "
-"armazenada. (tamanho fornecido: %(ps)d, tamanho armazenado:%(ss)d)"
 
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
@@ -1260,10 +1121,6 @@ msgstr ""
 
 msgid "Request must be a list of commands"
 msgstr "Requisição deve ser uma lista de comandos"
-
-#, python-format
-msgid "Required store %s is invalid"
-msgstr "O armazenamento necessário %s é inválido"
 
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
@@ -1488,14 +1345,6 @@ msgid ""
 msgstr ""
 "O limite foi excedido no número de propriedades de imagem permitidas. "
 "Tentativa: %(attempted)s, Máximo: %(maximum)s"
-
-#, python-format
-msgid ""
-"The limit has been exceeded on the number of allowed image properties. "
-"Attempted: %(num)s, Maximum: %(quota)s"
-msgstr ""
-"O limite foi excedido no número de propriedades de imagem permitidas. "
-"Tentativa: %(num)s, Máximo: %(quota)s"
 
 #, python-format
 msgid ""
@@ -1766,10 +1615,6 @@ msgstr ""
 "automaticamente excluídas após atingir o tempo com base em sua propriedade "
 "expires_at."
 
-msgid "This operation is currently not permitted on Glance images details."
-msgstr ""
-"Esta operação não é atualmente permitida em detalhes de imagens do Glance."
-
 msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr "Tempo em horas durante o qual uma tarefa é mantida, com êxito ou falha"
@@ -1857,9 +1702,6 @@ msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 "Não é possível fazer upload de dados de imagem duplicados para a imagem "
 "%(image_id)s: %(error)s"
-
-msgid "Unauthorized image access"
-msgstr "Acesso à imagem desautorizado"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "Tipo de corpo inesperado. Lista/dicionário esperados."

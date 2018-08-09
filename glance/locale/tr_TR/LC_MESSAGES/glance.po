@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-02-22 03:33+0000\n"
+"POT-Creation-Date: 2018-08-09 04:23+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -89,13 +89,6 @@ msgstr "%s zaten durdurulmuş"
 msgid "%s is stopped"
 msgstr "%s durduruldu"
 
-msgid ""
-"--os_auth_url option or OS_AUTH_URL environment variable required when "
-"keystone authentication strategy is enabled\n"
-msgstr ""
-"--os_auth_url seçeneği ya da OS_AUTH_URL ortam değişkeni, keystone kimlik "
-"doğrulama stratejisi etkinken gereklidir\n"
-
 #, python-format
 msgid ""
 "A metadata definition object with name=%(object_name)s already exists in "
@@ -140,10 +133,6 @@ msgstr "Görevin sahibi için bir tanımlayıcı"
 msgid "An identifier for the task"
 msgstr "Görev için bir tanımlayıcı"
 
-#, python-format
-msgid "An image with identifier %s already exists"
-msgstr "%s belirteçli imaj zaten var"
-
 msgid "An object with the same identifier already exists."
 msgstr "Aynı tanımlayıcı ile bir nesne zaten mevcut."
 
@@ -162,11 +151,6 @@ msgstr "Bilinmeyen bir görev olağandışı durumu oluştu"
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
 msgstr "Çift imaj yüklemeyi dene: %s"
-
-msgid "Attempted to update Location field for an image not in queued status."
-msgstr ""
-"Durumu kuyruğa alınmış olmayan bir imaj için Konum alanı güncellemesi "
-"denendi."
 
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
@@ -212,10 +196,6 @@ msgid "Bad header: %(header_name)s"
 msgstr "Kötü başlık: %(header_name)s"
 
 #, python-format
-msgid "Bad value passed to filter %(filter)s got %(val)s"
-msgstr "%(filter)s süzgecine geçirilen hatalı değer %(val)s var"
-
-#, python-format
 msgid "Badly formed S3 URI: %(uri)s"
 msgstr "Hatalı oluşturulmuş S3 URI: %(uri)s"
 
@@ -243,9 +223,6 @@ msgstr "%(key)s '%(value)s' imaj değeri bir tam sayıya dönüştürülemez."
 msgid "Cannot save data for image %(image_id)s: %(error)s"
 msgstr "%(image_id)s imajı için veri kaydedilemiyor: %(error)s"
 
-msgid "Cannot upload to an unqueued image"
-msgstr "Kuyruğa alınmamış imaj yüklenemez"
-
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr ""
@@ -271,12 +248,6 @@ msgstr ""
 #, python-format
 msgid "Constructed URL: %s"
 msgstr "URL inşa edildi: %s"
-
-msgid "Container format is not specified."
-msgstr "Kap biçimi belirtilmemiş."
-
-msgid "Content-Type must be application/octet-stream"
-msgstr "İçerik-Türü uygulama/sekiz bitli bayt akışı olmalıdır"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
@@ -342,9 +313,6 @@ msgstr "%d bayttan büyük bir imajın yükleme girişimi reddediliyor."
 msgid "Descriptive name for the image"
 msgstr "İmaj için açıklayıcı ad"
 
-msgid "Disk format is not specified."
-msgstr "Disk biçimi belirtilmemiş."
-
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
@@ -357,28 +325,12 @@ msgstr ""
 "Depolama yapılandırmasında hata. Depolamak için imaj ekleme devre dışıdır."
 
 #, python-format
-msgid "External sources are not supported: '%s'"
-msgstr "Harici kaynaklar desteklenmiyor: '%s'"
-
-#, python-format
-msgid "Failed to activate image. Got error: %s"
-msgstr "İmaj etkinleştirme işlemi başarısız oldu. Alınan hata: %s"
-
-#, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "İmaj metadata ekleme işlemi başarısız oldu. Alınan hata: %s"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "Silinecek %(image_id)s imajını bulma işlemi başarısız oldu"
-
-#, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "Silinecek imaj bulunamadı: %s"
-
-#, python-format
-msgid "Failed to find image to update: %s"
-msgstr "Güncellenecek imaj bulma işlemi başarısız oldu: %s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
@@ -391,10 +343,6 @@ msgstr "İmaj önbellek veritabanı başlatılamadı. Alınan hata: %s"
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "Yapılandırmadan %s okunamadı"
-
-#, python-format
-msgid "Failed to reserve image. Got error: %s"
-msgstr "İmaj ayırma işlemi başarısız oldu. Alınan hata: %s"
 
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
@@ -426,24 +374,6 @@ msgid ""
 msgstr ""
 "Dosya tabanlı içeri aktarmlara izin verilmez. Lütfen imaj verilerinin yerel "
 "olmayan bir kaynağını kullanın."
-
-#, python-format
-msgid "Forbidden to delete a %s image."
-msgstr "%s imajını silmek yasak."
-
-#, python-format
-msgid "Forbidden to delete image: %s"
-msgstr "İmaj silmek yasak: %s"
-
-msgid "Forbidden to reserve image."
-msgstr "İmaj ayırmak yasak."
-
-msgid "Forbidden to update deleted image."
-msgstr "Silinen imajın güncellenmesi yasak."
-
-#, python-format
-msgid "Forbidden to update image: %s"
-msgstr "İmaj güncellemek yasak: %s"
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -531,19 +461,9 @@ msgstr "İmaj depolama kotasını aşar: %s"
 msgid "Image id is required."
 msgstr "İmaj kimliği gereklidir."
 
-msgid "Image is protected"
-msgstr "İmaj korumalıdır"
-
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr "%(id)s imajı için üye sınırı aşıldı: %(e)s:"
-
-#, python-format
-msgid "Image name too long: %d"
-msgstr "İmaj adı çok uzun: %d"
-
-msgid "Image operation conflicts"
-msgstr "İmaj işlem çatışmaları"
 
 #, python-format
 msgid ""
@@ -567,10 +487,6 @@ msgstr "İmaj yükleme sorunu: %s"
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr "%s tanımlayıcısı ile imaj zaten mevcut!"
-
-#, python-format
-msgid "Image with identifier %s has been deleted."
-msgstr "%s tanımlayıcılı imaj silindi."
 
 #, python-format
 msgid "Image with identifier %s not found"
@@ -604,10 +520,6 @@ msgstr "İmaj depolama ortamında yetersiz izinler: %s"
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Bu kaynak için geçersiz JSON işaretçisi: '/%s'"
 
-#, python-format
-msgid "Invalid checksum '%s': can't exceed 32 characters"
-msgstr "Geçersiz sağlama '%s': 32 karakterden uzun olamaz"
-
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "glance-swift yapılandır dosyasında geçersiz yapılandırma."
 
@@ -615,26 +527,14 @@ msgid "Invalid configuration in property protection file."
 msgstr "Özellik koruma dosyasında geçersiz yapılandırma."
 
 #, python-format
-msgid "Invalid container format '%s' for image."
-msgstr "İmaj için geçersiz kap biçimi '%s'."
-
-#, python-format
 msgid "Invalid content type %(content_type)s"
 msgstr "Geçersiz içerik türü %(content_type)s"
-
-#, python-format
-msgid "Invalid disk format '%s' for image."
-msgstr "İmaj için geçersiz disk biçimi '%s'."
 
 msgid "Invalid image id format"
 msgstr "Geçersiz imaj id biçimi"
 
 msgid "Invalid location"
 msgstr "Geçersiz konum"
-
-#, python-format
-msgid "Invalid location %s"
-msgstr "Geçersiz konum %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -664,15 +564,6 @@ msgstr "Geçersiz işaretçi. İmaj bulunamadı."
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr "Geçersiz üyelik ilişkisi: %s"
-
-msgid ""
-"Invalid mix of disk and container formats. When setting a disk or container "
-"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
-"match."
-msgstr ""
-"Geçersiz disk ve kap biçimleri karışımı. Bir disk ya da kap biçimi 'aki', "
-"'ari' ya da 'ami' biçimlerinden biri olarak ayarlanırsa, kap ve disk biçimi "
-"eşleşmelidir."
 
 #, python-format
 msgid ""
@@ -757,9 +648,6 @@ msgstr "%(option)s seçeneği için geçersiz değer: %(value)s"
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr "Geçersiz görünürlük değeri: %s"
-
-msgid "It's invalid to provide multiple image sources."
-msgstr "Birden fazla imaj kaynağı sağlamak için geçersizdir."
 
 msgid "List of strings related to the image"
 msgstr "İmaj ile ilgili karakter dizilerinin listesi"
@@ -1004,20 +892,8 @@ msgstr "Özellik %s kaldırılamayabilir."
 msgid "Property %s must be set prior to saving data."
 msgstr "%s özelliği veri kaydetmeden önce ayarlanmış olmalıdır."
 
-#, python-format
-msgid "Property '%s' is protected"
-msgstr "'%s' özelliği korumalıdır"
-
 msgid "Property names can't contain 4 byte unicode."
 msgstr "Özellik adları 4 bayt unicode içeremez."
-
-#, python-format
-msgid ""
-"Provided image size must match the stored image size. (provided size: "
-"%(ps)d, stored size: %(ss)d)"
-msgstr ""
-"Sağlanan imaj boyutu depolanan imaj boyutu ile eşleşmelidir. (sağlanan "
-"boyut: %(ps)d, depolanan boyut: %(ss)d)"
 
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
@@ -1068,10 +944,6 @@ msgstr "İstek vücudu işlem nesnelerinin bir JSON dizisi olmalıdır."
 
 msgid "Request must be a list of commands"
 msgstr "İstek komutların bir listesi olmalıdır"
-
-#, python-format
-msgid "Required store %s is invalid"
-msgstr "İstenen depo %s geçersizdir"
 
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
@@ -1286,14 +1158,6 @@ msgid ""
 msgstr ""
 "İzin verilen imaj özelliklerinin sayı sınırı aşıldı.Denenen: %(attempted)s, "
 "Azami: %(maximum)s"
-
-#, python-format
-msgid ""
-"The limit has been exceeded on the number of allowed image properties. "
-"Attempted: %(num)s, Maximum: %(quota)s"
-msgstr ""
-"İmaj özelliklerinde izin verilen sınır aşıldı.Denenen: %(num)s, En fazla: "
-"%(quota)s"
 
 #, python-format
 msgid ""
@@ -1557,9 +1421,6 @@ msgstr ""
 "Şu anda Glance Görevleri üzerinde bu işleme izin verilmiyor. Onlar "
 "expires_at özellikliğine göre süreleri dolduktan sonra otomatik silinirler."
 
-msgid "This operation is currently not permitted on Glance images details."
-msgstr "Bu işleme şu anda Glance imaj ayrıntılarında izin verilmez."
-
 msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr ""
@@ -1631,9 +1492,6 @@ msgstr "%s için yapıştırma yapılandırma dosyası yerleştirilemedi."
 #, python-format
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr "%(image_id)s imajı için çift imaj verisi yüklenemedi: %(error)s"
-
-msgid "Unauthorized image access"
-msgstr "Yetkisiz imaj erişimi"
 
 #, python-format
 msgid "Unexpected response: %s"

@@ -1,9 +1,9 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: glance 15.0.0.0b3.dev29\n"
+"Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2017-06-23 20:54+0000\n"
+"POT-Creation-Date: 2018-08-09 04:23+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.9.6\n"
+"X-Generator: Zanata 4.3.3\n"
 "Language-Team: Russian\n"
 
 #, python-format
@@ -89,13 +89,6 @@ msgstr "%s уже остановлен"
 msgid "%s is stopped"
 msgstr "%s остановлен"
 
-msgid ""
-"--os_auth_url option or OS_AUTH_URL environment variable required when "
-"keystone authentication strategy is enabled\n"
-msgstr ""
-"Опция --os_auth_url или переменная среды OS_AUTH_URL требуется, если "
-"включена стратегия идентификации Keystone\n"
-
 msgid "A body is not expected with this request."
 msgstr "В этом запросе не должно быть тела."
 
@@ -154,10 +147,6 @@ msgstr "url схемы образа"
 msgid "An image self url"
 msgstr "Собственный url образа"
 
-#, python-format
-msgid "An image with identifier %s already exists"
-msgstr "Образ с идентификатором %s уже существует"
-
 msgid "An import task exception occurred"
 msgstr "Исключительная ситуация в задаче импорта"
 
@@ -179,11 +168,6 @@ msgstr "Непредвиденная исключительная ситуаци
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
 msgstr "Попытка загрузить дубликат образа: %s"
-
-msgid "Attempted to update Location field for an image not in queued status."
-msgstr ""
-"Предпринята попытка обновить поле Расположение для образа, не находящегося в "
-"очереди."
 
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
@@ -244,10 +228,6 @@ msgid "Bad header: %(header_name)s"
 msgstr "Неправильный заголовок: %(header_name)s"
 
 #, python-format
-msgid "Bad value passed to filter %(filter)s got %(val)s"
-msgstr "Фильтру %(filter)s передано неверное значение, получено %(val)s"
-
-#, python-format
 msgid "Badly formed S3 URI: %(uri)s"
 msgstr "Неправильно сформированный URI S3: %(uri)s"
 
@@ -282,9 +262,6 @@ msgstr "Не удается сохранить данные для образа 
 msgid "Cannot set locations to empty list."
 msgstr "Список расположений не может быть пустым."
 
-msgid "Cannot upload to an unqueued image"
-msgstr "Невозможно загрузить в образ, не находящийся в очереди"
-
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr ""
@@ -308,12 +285,6 @@ msgstr ""
 #, python-format
 msgid "Constructed URL: %s"
 msgstr "Сформированный URL: %s"
-
-msgid "Container format is not specified."
-msgstr "Не указан формат контейнера."
-
-msgid "Content-Type must be application/octet-stream"
-msgstr "Content-Type должен быть задан в формате приложение/октет-поток"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
@@ -420,9 +391,6 @@ msgstr "Попытка загрузить образ размером более
 msgid "Descriptive name for the image"
 msgstr "Описательное имя образа"
 
-msgid "Disk format is not specified."
-msgstr "Не указан формат диска."
-
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
@@ -450,17 +418,6 @@ msgstr "Элемент должен быть задан в формате: {\"me
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "Состояние должно быть указано в формате: {\"status\": \"status\"}"
 
-msgid "External source should not be empty"
-msgstr "Внешний источник не должен быть пустым"
-
-#, python-format
-msgid "External sources are not supported: '%s'"
-msgstr "Внешние ресурсы не поддерживаются: %s"
-
-#, python-format
-msgid "Failed to activate image. Got error: %s"
-msgstr "Активировать образ не удалось. Ошибка: %s"
-
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "Добавить метаданные образа не удалось. Ошибка: %s"
@@ -468,14 +425,6 @@ msgstr "Добавить метаданные образа не удалось. 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "Найти образ для удаления %(image_id)s не удалось"
-
-#, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "Найти образ для удаления не удалось: %s"
-
-#, python-format
-msgid "Failed to find image to update: %s"
-msgstr "Найти образ для обновления не удалось: %s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
@@ -488,10 +437,6 @@ msgstr "Инициализировать базу данных кэша обра
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "Прочесть %s из конфигурации не удалось"
-
-#, python-format
-msgid "Failed to reserve image. Got error: %s"
-msgstr "Зарезервировать образ не удалось. Ошибка: %s"
 
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
@@ -531,32 +476,6 @@ msgstr ""
 
 msgid "Forbidden image access"
 msgstr "Доступ к образу запрещен"
-
-#, python-format
-msgid "Forbidden to delete a %s image."
-msgstr "Удалять образ %s запрещено."
-
-#, python-format
-msgid "Forbidden to delete image: %s"
-msgstr "Удалять образ запрещено: %s"
-
-#, python-format
-msgid "Forbidden to modify '%(key)s' of %(status)s image."
-msgstr "Запрещено изменять '%(key)s' образа  %(status)s."
-
-#, python-format
-msgid "Forbidden to modify '%s' of image."
-msgstr "Изменять '%s' образа запрещено."
-
-msgid "Forbidden to reserve image."
-msgstr "Резервировать образ запрещено."
-
-msgid "Forbidden to update deleted image."
-msgstr "Обновлять удаленный образ запрещено."
-
-#, python-format
-msgid "Forbidden to update image: %s"
-msgstr "Обновлять образ запрещено: %s"
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -652,20 +571,10 @@ msgstr "Размер образа превышает квоту хранилищ
 msgid "Image id is required."
 msgstr "Требуется ИД образа."
 
-msgid "Image is protected"
-msgstr "Образ защищен"
-
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr ""
 "Превышено предельно допустимое число участников для образа %(id)s: %(e)s:"
-
-#, python-format
-msgid "Image name too long: %d"
-msgstr "Имя образа слишком длинное: %d"
-
-msgid "Image operation conflicts"
-msgstr "Конфликт операций с образом"
 
 #, python-format
 msgid ""
@@ -688,10 +597,6 @@ msgstr "Неполадка при передаче образа: %s"
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr "Образ с идентификатором %s уже существует!"
-
-#, python-format
-msgid "Image with identifier %s has been deleted."
-msgstr "Образ с идентификатором %s удален."
 
 #, python-format
 msgid "Image with identifier %s not found"
@@ -725,11 +630,6 @@ msgstr "Недостаточные права для доступа к носи�
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "Недопустимый указатель JSON для этого ресурса: '%s'"
 
-#, python-format
-msgid "Invalid checksum '%s': can't exceed 32 characters"
-msgstr ""
-"Недопустимая контрольная сумма '%s': длина не может превышать 32 символа"
-
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "Недопустимая конфигурация в файле конфигурации glance-swift."
 
@@ -737,16 +637,8 @@ msgid "Invalid configuration in property protection file."
 msgstr "Недопустимая конфигурация в файле защиты свойств."
 
 #, python-format
-msgid "Invalid container format '%s' for image."
-msgstr "Неверный формат контейнера '%s' для образа."
-
-#, python-format
 msgid "Invalid content type %(content_type)s"
 msgstr "Недопустимый тип содержимого: %(content_type)s"
-
-#, python-format
-msgid "Invalid disk format '%s' for image."
-msgstr "Неверный формат диска '%s' для образа."
 
 #, python-format
 msgid "Invalid filter value %s. The quote is not closed."
@@ -769,10 +661,6 @@ msgstr "Недопустимый формат ИД образа"
 
 msgid "Invalid location"
 msgstr "Недопустимое расположение"
-
-#, python-format
-msgid "Invalid location %s"
-msgstr "Неверное расположение %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -802,15 +690,6 @@ msgstr "Недопустимый маркер. Образ не найден."
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr "Недопустимая ассоциация членства: %s"
-
-msgid ""
-"Invalid mix of disk and container formats. When setting a disk or container "
-"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
-"match."
-msgstr ""
-"Недопустимое сочетание форматов диска и контейнера. При задании формата "
-"диска или контейнера равным 'aki', 'ari' или 'ami' форматы контейнера и "
-"диска должны совпадать."
 
 #, python-format
 msgid ""
@@ -847,10 +726,6 @@ msgstr "Недопустимое значение состояния: %s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "Недопустимое состояние: %s"
-
-#, python-format
-msgid "Invalid time format for %s."
-msgstr "Недопустимый формат времени для %s."
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -900,9 +775,6 @@ msgstr "Недопустимое значение для опции %(option)s: 
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr "Недопустимое значение видимости: %s"
-
-msgid "It's invalid to provide multiple image sources."
-msgstr "Указывать несколько источников образов нельзя."
 
 msgid "It's not allowed to add locations if locations are invisible."
 msgstr "Не разрешено добавлять расположения, если они невидимы."
@@ -1174,21 +1046,9 @@ msgstr "Свойство %s нельзя удалить."
 msgid "Property %s must be set prior to saving data."
 msgstr "Свойство %s должно быть задано до сохранения данных."
 
-#, python-format
-msgid "Property '%s' is protected"
-msgstr "Свойство '%s' защищено"
-
 msgid "Property names can't contain 4 byte unicode."
 msgstr ""
 "Имена свойств не могут содержать символы в кодировке 4-байтового unicode."
-
-#, python-format
-msgid ""
-"Provided image size must match the stored image size. (provided size: "
-"%(ps)d, stored size: %(ss)d)"
-msgstr ""
-"Указанный размер образа должен быть равен сохраненному размеру образа. "
-"(Указанный размер: %(ps)d, сохраненный размер: %(ss)d)"
 
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
@@ -1237,10 +1097,6 @@ msgstr "Тело запроса должно быть массивом JSON об
 
 msgid "Request must be a list of commands"
 msgstr "Запрос должен быть списком команд"
-
-#, python-format
-msgid "Required store %s is invalid"
-msgstr "Необходимое хранилище %s недопустимо"
 
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
@@ -1462,14 +1318,6 @@ msgid ""
 msgstr ""
 "Превышено ограничение по числу разрешенных свойств образа. Указанное число: "
 "%(attempted)s, максимальное число: %(maximum)s"
-
-#, python-format
-msgid ""
-"The limit has been exceeded on the number of allowed image properties. "
-"Attempted: %(num)s, Maximum: %(quota)s"
-msgstr ""
-"Превышено ограничение по числу разрешенных свойств образа. Указанное число: "
-"%(num)s, максимальное число: %(quota)s"
 
 #, python-format
 msgid ""
@@ -1734,10 +1582,6 @@ msgstr ""
 "автоматически удаляются после достижения срока, указанного в их свойстве "
 "expires_at."
 
-msgid "This operation is currently not permitted on Glance images details."
-msgstr ""
-"Эта операция в настоящее время не разрешена для сведений об образах Glance."
-
 msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr ""
@@ -1824,9 +1668,6 @@ msgstr "Не удается найти/вставить файл конфигу�
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 "Не удается загрузить данные для дубликата образа %(image_id)s: %(error)s"
-
-msgid "Unauthorized image access"
-msgstr "Нет прав на доступ к образу"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "Непредвиденный тип тела. Ожидался список или словарь."

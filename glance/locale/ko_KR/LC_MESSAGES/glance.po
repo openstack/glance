@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-02-22 03:33+0000\n"
+"POT-Creation-Date: 2018-08-09 04:23+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -94,13 +94,6 @@ msgstr "%s이(가) 이미 중지되었습니다."
 msgid "%s is stopped"
 msgstr "%s이(가) 중지됨"
 
-msgid ""
-"--os_auth_url option or OS_AUTH_URL environment variable required when "
-"keystone authentication strategy is enabled\n"
-msgstr ""
-"키스톤 인증 전략이 사용될 경우 --os_auth_url 옵션 또는 OS_AUTH_URL 환경 변수"
-"가 필요합니다.\n"
-
 msgid "A body is not expected with this request."
 msgstr "이 요청에는 본문이 없어야 합니다."
 
@@ -157,10 +150,6 @@ msgstr "이미지 스키마 url"
 msgid "An image self url"
 msgstr "이미지 자체 url"
 
-#, python-format
-msgid "An image with identifier %s already exists"
-msgstr "ID가 %s인 이미지가 이미 존재함"
-
 msgid "An import task exception occurred"
 msgstr "가져오기 작업 예외 발생"
 
@@ -182,10 +171,6 @@ msgstr "알 수 없는 태스크 예외 발생"
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
 msgstr "중복 이미지를 업로드하려고 시도 중: %s"
-
-msgid "Attempted to update Location field for an image not in queued status."
-msgstr ""
-"큐에 들어간 상태에 있지 않은 이미지에 대한 위치 필드를 업데이트하려고 시도함"
 
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
@@ -241,10 +226,6 @@ msgid "Bad header: %(header_name)s"
 msgstr "잘못된 헤더: %(header_name)s"
 
 #, python-format
-msgid "Bad value passed to filter %(filter)s got %(val)s"
-msgstr "잘못된 값이 %(filter)s 필터에 전달됨, %(val)s 제공"
-
-#, python-format
 msgid "Badly formed S3 URI: %(uri)s"
 msgstr "양식이 잘못된 S3 URI: %(uri)s"
 
@@ -278,9 +259,6 @@ msgstr "이미지 %(image_id)s 에 대한 데이터 저장 불가: %(error)s"
 msgid "Cannot set locations to empty list."
 msgstr "위치를 비어 있는 목록으로 설정할 수 없습니다."
 
-msgid "Cannot upload to an unqueued image"
-msgstr "큐에 들어가지 않은 이미지에 업로드할 수 없음"
-
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr "체크섬 검증에 실패했습니다. '%s' 이미지 캐시가 중단되었습니다."
@@ -301,12 +279,6 @@ msgstr "연결 오류/URL %(url)s에서 Auth 서비스에 대한 잘못된 요�
 #, python-format
 msgid "Constructed URL: %s"
 msgstr "URL을 구성함: %s"
-
-msgid "Container format is not specified."
-msgstr "컨테이너 형식이 지정되지 않았습니다."
-
-msgid "Content-Type must be application/octet-stream"
-msgstr "Content-Type은 application/octet-stream이어야 함"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
@@ -412,9 +384,6 @@ msgstr "%d바이트를 초과하는 이미지의 업로드를 거부하는 중�
 msgid "Descriptive name for the image"
 msgstr "이미지에 대한 설명식 이름"
 
-msgid "Disk format is not specified."
-msgstr "디스크 형식이 지정되지 않았습니다."
-
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
@@ -441,17 +410,6 @@ msgstr "{\"member\": \"image_id\"} 형식의 멤버가 있어야 함"
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "{\"status\": \"status\"} 형식의 상태가 있어야 함"
 
-msgid "External source should not be empty"
-msgstr "외부 소스는 비어있지 않아야 함"
-
-#, python-format
-msgid "External sources are not supported: '%s'"
-msgstr "외부 소스가 지원되지 않음: '%s'"
-
-#, python-format
-msgid "Failed to activate image. Got error: %s"
-msgstr "이미지 활성화에 실패했습니다. 오류 발생: %s"
-
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "이미지 메타데이터 추가 실패. 오류 발생: %s"
@@ -459,14 +417,6 @@ msgstr "이미지 메타데이터 추가 실패. 오류 발생: %s"
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "삭제할 %(image_id)s 이미지를 찾는 데 실패함"
-
-#, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "삭제할 image 가 발견되지 않음 : %s"
-
-#, python-format
-msgid "Failed to find image to update: %s"
-msgstr "업데이트할 이미지를 찾는 데 실패함: %s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
@@ -479,10 +429,6 @@ msgstr "이미지 캐시 데이터베이스를 초기화하지 못했습니다. 
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "구성에서 %s을(를) 읽지 못했음"
-
-#, python-format
-msgid "Failed to reserve image. Got error: %s"
-msgstr "이미지 예약 실패, 오류 발생: %s"
 
 #, python-format
 msgid "Failed to update image metadata. Got error: %s"
@@ -520,32 +466,6 @@ msgstr ""
 
 msgid "Forbidden image access"
 msgstr "금지된 이미지 액세스"
-
-#, python-format
-msgid "Forbidden to delete a %s image."
-msgstr "%s 이미지를 삭제하는 것은 금지되어 있습니다."
-
-#, python-format
-msgid "Forbidden to delete image: %s"
-msgstr "이미지 삭제가 금지됨: %s"
-
-#, python-format
-msgid "Forbidden to modify '%(key)s' of %(status)s image."
-msgstr "%(status)s 이미지의 '%(key)s' 수정이 금지되었습니다."
-
-#, python-format
-msgid "Forbidden to modify '%s' of image."
-msgstr "이미지의 '%s'을(를) 수정하는 것이 금지되어 있습니다."
-
-msgid "Forbidden to reserve image."
-msgstr "이미지 예약은 금지되어 있습니다."
-
-msgid "Forbidden to update deleted image."
-msgstr "삭제된 이미지를 업데이트하는 것은 금지되어 있습니다."
-
-#, python-format
-msgid "Forbidden to update image: %s"
-msgstr "이미지 업데이트가 금지됨: %s"
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -641,19 +561,9 @@ msgstr "이미지가 스토리지 할당량을 초과함: %s"
 msgid "Image id is required."
 msgstr "이미지 ID가 필요합니다."
 
-msgid "Image is protected"
-msgstr "이미지가 보호됨"
-
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr "이미지 %(id)s에 대한 이미지 멤버 한계 초과: %(e)s:"
-
-#, python-format
-msgid "Image name too long: %d"
-msgstr "이미지 이름이 너무 김: %d"
-
-msgid "Image operation conflicts"
-msgstr "이미지 조작이 충돌함"
 
 #, python-format
 msgid ""
@@ -676,10 +586,6 @@ msgstr "이미지 업로드 문제: %s"
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr "ID가 %s인 이미지가 이미 존재합니다!"
-
-#, python-format
-msgid "Image with identifier %s has been deleted."
-msgstr "ID가 %s인 이미지가 삭제되었습니다."
 
 #, python-format
 msgid "Image with identifier %s not found"
@@ -712,10 +618,6 @@ msgstr "이미지 스토리지 미디어 권한 부족 : %s"
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "이 자원에 대해 올바르지 않은 JSON 포인터: '/%s'"
 
-#, python-format
-msgid "Invalid checksum '%s': can't exceed 32 characters"
-msgstr "올바르지 않은 체크섬 '%s': 32자를 초과할 수 없음"
-
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "glance-swift 구성 파일의 구성이 올바르지 않습니다."
 
@@ -723,16 +625,8 @@ msgid "Invalid configuration in property protection file."
 msgstr "특성 보호 파일의 올바르지 않은 구성입니다."
 
 #, python-format
-msgid "Invalid container format '%s' for image."
-msgstr "이미지에 대한 컨테이너 형식 '%s'이(가) 올바르지 않습니다."
-
-#, python-format
 msgid "Invalid content type %(content_type)s"
 msgstr "올바르지 않은 컨텐츠 유형 %(content_type)s"
-
-#, python-format
-msgid "Invalid disk format '%s' for image."
-msgstr "이미지에 대한 디스크 형식 '%s'이(가) 올바르지 않습니다."
 
 #, python-format
 msgid "Invalid filter value %s. The quote is not closed."
@@ -753,10 +647,6 @@ msgstr "올바르지 않은 이미지 ID 형식"
 
 msgid "Invalid location"
 msgstr "잘못된 위치"
-
-#, python-format
-msgid "Invalid location %s"
-msgstr "올바르지 않은 위치 %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -786,15 +676,6 @@ msgstr "올바르지 않은 마커입니다. 이미지를 찾을 수 없습니�
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr "올바르지 않은 멤버십 연관: %s"
-
-msgid ""
-"Invalid mix of disk and container formats. When setting a disk or container "
-"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
-"match."
-msgstr ""
-"디스크와 컨테이너 형식의 조합이 올바르지 않습니다. 디스크나 컨테이너 형식을 "
-"'aki', 'ari', 또는 'ami' 중 하나로 설정할 경우 컨테이너와 디스크형식이 일치해"
-"야 합니다."
 
 #, python-format
 msgid ""
@@ -828,10 +709,6 @@ msgstr "올바르지 않은 상태 값: %s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "올바르지 않은 상태: %s"
-
-#, python-format
-msgid "Invalid time format for %s."
-msgstr "%s에 올바르지 않은 시간 형식입니다."
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -880,9 +757,6 @@ msgstr "옵션 %(option)s에 올바르지 않은 값: %(value)s"
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr "올바르지 않은 가시성 값: %s"
-
-msgid "It's invalid to provide multiple image sources."
-msgstr "여러 개의 이미지 소스를 제공하면 안 됩니다."
 
 msgid "It's not allowed to add locations if locations are invisible."
 msgstr "위치가 표시되지 않는 경우 위치를 추가할 수 없습니다."
@@ -1151,20 +1025,8 @@ msgstr "%s 특성을 제거할 수 없습니다."
 msgid "Property %s must be set prior to saving data."
 msgstr "데이터를 저장하기 전에 %s 특성을 설정해야 합니다."
 
-#, python-format
-msgid "Property '%s' is protected"
-msgstr "'%s' 특성이 보호됨 "
-
 msgid "Property names can't contain 4 byte unicode."
 msgstr "특성 이름에 4바이트 유니코드를 포함할 수 없습니다."
-
-#, python-format
-msgid ""
-"Provided image size must match the stored image size. (provided size: "
-"%(ps)d, stored size: %(ss)d)"
-msgstr ""
-"제공된 이미지 크기가 저장된 이미지 크기와 일치해야 합니다(제공된 크기: "
-"%(ps)d, 저장된 크기: %(ss)d)."
 
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
@@ -1214,10 +1076,6 @@ msgstr "요청 본문은 오퍼레이션 오브젝트의 JSON 배열이어야 �
 
 msgid "Request must be a list of commands"
 msgstr "요청은 쉼표로 구분한 목록이어야 합니다."
-
-#, python-format
-msgid "Required store %s is invalid"
-msgstr "필수 저장소 %s이(가) 올바르지 않음"
 
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
@@ -1435,14 +1293,6 @@ msgid ""
 msgstr ""
 "허용된 이미지 특성 수의 한계가 초과되었습니다. 시도함: %(attempted)s, 최대: "
 "%(maximum)s"
-
-#, python-format
-msgid ""
-"The limit has been exceeded on the number of allowed image properties. "
-"Attempted: %(num)s, Maximum: %(quota)s"
-msgstr ""
-"허용된 이미지 특성 수의 한계가 초과되었습니다. 시도함: %(num)s, 최대: "
-"%(quota)s"
 
 #, python-format
 msgid ""
@@ -1706,9 +1556,6 @@ msgstr ""
 "해당 동작은 현재 Glance 작업에 대해서는 허용되지 않습니다. 이들은 expires_at "
 "특성에 기반한 시간에 도달하면 자동으로 삭제됩니다."
 
-msgid "This operation is currently not permitted on Glance images details."
-msgstr "해당 동작은 현재 Glance 이미지 세부사항에 대해서는 허용되지 않습니다."
-
 msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr "이후에 태스크가 활성이 되는 시간(시), 성공 또는 실패"
@@ -1793,9 +1640,6 @@ msgstr "%s에 대한 붙여넣기 구성 파일을 찾을 수 없습니다."
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 "이미지 %(image_id)s에 대한 중복 이미지 데이터를 업로드할 수 없음: %(error)s"
-
-msgid "Unauthorized image access"
-msgstr "권한 없는 이미지 액세스"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "예기치않은 본문 타입. list/dict를 예상합니다."

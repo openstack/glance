@@ -5,21 +5,21 @@
 # Translators:
 # Tomoyuki KATO <tomo@dream.daynight.jp>, 2013
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
-# Shu Muto <shu-mutou@rf.jp.nec.com>, 2018. #zanata
+# Shu Muto <shu.mutow@gmail.com>, 2018. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-02-10 21:19+0000\n"
+"POT-Creation-Date: 2018-08-09 04:23+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2018-02-09 10:00+0000\n"
-"Last-Translator: Shu Muto <shu-mutou@rf.jp.nec.com>\n"
+"Last-Translator: Shu Muto <shu.mutow@gmail.com>\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
-"X-Generator: Zanata 3.9.6\n"
+"X-Generator: Zanata 4.3.3\n"
 "Language-Team: Japanese\n"
 
 #, python-format
@@ -100,13 +100,6 @@ msgstr ""
 "'node_staging_uri' が正しく設定されていません。ステージングストアをロードでき"
 "ませんでした。"
 
-msgid ""
-"--os_auth_url option or OS_AUTH_URL environment variable required when "
-"keystone authentication strategy is enabled\n"
-msgstr ""
-"keystone 認証戦略が有効な場合は、--os_auth_url オプションまたはOS_AUTH_URL 環"
-"境変数が必要です\n"
-
 msgid "A body is not expected with this request."
 msgstr "この要求では本文は予期されません。"
 
@@ -174,10 +167,6 @@ msgstr "イメージスキーマの URL"
 msgid "An image self url"
 msgstr "イメージ自体の URL"
 
-#, python-format
-msgid "An image with identifier %s already exists"
-msgstr "ID %s のイメージは既に存在します"
-
 msgid "An import task exception occurred"
 msgstr "インポートタスクの例外が発生しました"
 
@@ -199,10 +188,6 @@ msgstr "不明なタスク例外が発生しました"
 #, python-format
 msgid "Attempt to upload duplicate image: %s"
 msgstr "重複したイメージのアップロードを試行します: %s"
-
-msgid "Attempted to update Location field for an image not in queued status."
-msgstr ""
-"待機状況になっていないイメージの「場所」フィールドを更新しようとしました。"
 
 #, python-format
 msgid "Attribute '%(property)s' is read-only."
@@ -261,10 +246,6 @@ msgid "Bad header: %(header_name)s"
 msgstr "ヘッダーが正しくありません: %(header_name)s"
 
 #, python-format
-msgid "Bad value passed to filter %(filter)s got %(val)s"
-msgstr "正しくない値がフィルター %(filter)s に渡され、%(val)s が取得されました"
-
-#, python-format
 msgid "Badly formed S3 URI: %(uri)s"
 msgstr "S3 URI の形式が正しくありません: %(uri)s"
 
@@ -298,9 +279,6 @@ msgstr "イメージ %(image_id)s のデータを保存できません: %(error)
 msgid "Cannot set locations to empty list."
 msgstr "空のリストに場所を設定することはできません。"
 
-msgid "Cannot upload to an unqueued image"
-msgstr "キューに入れられていないイメージに対してアップロードできません"
-
 #, python-format
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr ""
@@ -323,12 +301,6 @@ msgstr "接続エラー/URL %(url)s の認証サービスに対する正しく�
 #, python-format
 msgid "Constructed URL: %s"
 msgstr "URL を構成しました: %s"
-
-msgid "Container format is not specified."
-msgstr "コンテナーフォーマットが指定されていません。"
-
-msgid "Content-Type must be application/octet-stream"
-msgstr "Content-Type は application/octet-stream でなければなりません"
 
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
@@ -528,9 +500,6 @@ msgstr "%d バイトより大きいイメージのアップロード試行を拒
 msgid "Descriptive name for the image"
 msgstr "イメージの記述名"
 
-msgid "Disk format is not specified."
-msgstr "ディスクフォーマットが指定されていません。"
-
 #, python-format
 msgid ""
 "Driver %(driver_name)s could not be configured correctly. Reason: %(reason)s"
@@ -558,17 +527,6 @@ msgstr "次の形式でメンバーを予期: {\"member\": \"image_id\"}"
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "次の形式で状態を予期: {\"status\": \"status\"}"
 
-msgid "External source should not be empty"
-msgstr "外部ソースは空であってはなりません"
-
-#, python-format
-msgid "External sources are not supported: '%s'"
-msgstr "外部ソースはサポートされていません:  '%s'"
-
-#, python-format
-msgid "Failed to activate image. Got error: %s"
-msgstr "イメージのアクティブ化に失敗しました。受け取ったエラー: %s"
-
 #, python-format
 msgid "Failed to add image metadata. Got error: %s"
 msgstr "イメージメタデータを追加できませんでした。受け取ったエラー: %s"
@@ -576,14 +534,6 @@ msgstr "イメージメタデータを追加できませんでした。受け取
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "削除するイメージ %(image_id)s が見つかりませんでした"
-
-#, python-format
-msgid "Failed to find image to delete: %s"
-msgstr "削除するイメージが見つかりませんでした: %s"
-
-#, python-format
-msgid "Failed to find image to update: %s"
-msgstr "更新するイメージが見つかりませんでした: %s"
 
 #, python-format
 msgid "Failed to find resource type %(resourcetype)s to delete"
@@ -597,10 +547,6 @@ msgstr ""
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "設定から %s を読み取ることができませんでした"
-
-#, python-format
-msgid "Failed to reserve image. Got error: %s"
-msgstr "イメージを予約できませんでした。受け取ったエラー: %s"
 
 #, python-format
 msgid "Failed to sync database: ERROR: %s"
@@ -645,32 +591,6 @@ msgstr ""
 
 msgid "Forbidden image access"
 msgstr "イメージにアクセスする権限がありません"
-
-#, python-format
-msgid "Forbidden to delete a %s image."
-msgstr "%s イメージの削除は禁止されています。"
-
-#, python-format
-msgid "Forbidden to delete image: %s"
-msgstr "イメージの削除は禁止されています: %s"
-
-#, python-format
-msgid "Forbidden to modify '%(key)s' of %(status)s image."
-msgstr "%(status)s イメージの '%(key)s' を変更することは禁止されています。"
-
-#, python-format
-msgid "Forbidden to modify '%s' of image."
-msgstr "イメージの '%s' を変更することは禁止されています。"
-
-msgid "Forbidden to reserve image."
-msgstr "イメージの予約は禁止されています。"
-
-msgid "Forbidden to update deleted image."
-msgstr "削除されたイメージの更新は禁止されています。"
-
-#, python-format
-msgid "Forbidden to update image: %s"
-msgstr "イメージの更新は禁止されています: %s"
 
 #, python-format
 msgid "Forbidden upload attempt: %s"
@@ -767,22 +687,9 @@ msgstr "イメージがストレージクォータを超えています: %s"
 msgid "Image id is required."
 msgstr "イメージ ID が必要です。"
 
-msgid "Image import is not supported at this site."
-msgstr "このサイトではイメージのインポートはサポートされていません。"
-
-msgid "Image is protected"
-msgstr "イメージは保護されています"
-
 #, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr "イメージ %(id)s のメンバー数がイメージメンバー上限を超えました: %(e)s:"
-
-#, python-format
-msgid "Image name too long: %d"
-msgstr "イメージ名が長すぎます: %d"
-
-msgid "Image operation conflicts"
-msgstr "イメージ操作が競合しています"
 
 #, python-format
 msgid ""
@@ -806,10 +713,6 @@ msgstr "イメージのアップロード問題: %s"
 #, python-format
 msgid "Image with identifier %s already exists!"
 msgstr "ID %s のイメージは既に存在します。"
-
-#, python-format
-msgid "Image with identifier %s has been deleted."
-msgstr "ID %s のイメージが削除されました。"
 
 #, python-format
 msgid "Image with identifier %s not found"
@@ -849,10 +752,6 @@ msgstr "イメージストレージのメディアに対する許可が不十分
 msgid "Invalid JSON pointer for this resource: '/%s'"
 msgstr "このリソースの JSON ポインターは無効です: '/%s'"
 
-#, python-format
-msgid "Invalid checksum '%s': can't exceed 32 characters"
-msgstr "無効なチェックサム '%s': 32文字を超えることはできません"
-
 msgid "Invalid configuration in glance-swift conf file."
 msgstr "glance-swift 設定ファイルの設定が無効です。"
 
@@ -860,16 +759,8 @@ msgid "Invalid configuration in property protection file."
 msgstr "プロパティー保護ファイルで設定が無効です。"
 
 #, python-format
-msgid "Invalid container format '%s' for image."
-msgstr "コンテナー形式 '%s' はイメージには無効です。"
-
-#, python-format
 msgid "Invalid content type %(content_type)s"
 msgstr "コンテンツタイプ %(content_type)s が無効です"
-
-#, python-format
-msgid "Invalid disk format '%s' for image."
-msgstr "ディスク形式 '%s' はイメージには無効です。"
 
 #, python-format
 msgid "Invalid filter value %s. The quote is not closed."
@@ -894,10 +785,6 @@ msgstr "max_rows の整数値 %(max_rows)s は無効です。"
 
 msgid "Invalid location"
 msgstr "無効な場所"
-
-#, python-format
-msgid "Invalid location %s"
-msgstr "無効な場所 %s"
 
 #, python-format
 msgid "Invalid location: %s"
@@ -927,15 +814,6 @@ msgstr "無効なマーカーです。イメージが見つかりませんでし
 #, python-format
 msgid "Invalid membership association: %s"
 msgstr "無効なメンバーシップの関連付け: %s"
-
-msgid ""
-"Invalid mix of disk and container formats. When setting a disk or container "
-"format to one of 'aki', 'ari', or 'ami', the container and disk formats must "
-"match."
-msgstr ""
-"ディスクとコンテナーの形式が無効な形で混在しています。ディスクまたはコンテ"
-"ナーの形式を 'aki'、'ari'、または 'ami' のいずれかに設定するときは、コンテ"
-"ナーとディスクの形式が一致していなければなりません。"
 
 #, python-format
 msgid ""
@@ -971,10 +849,6 @@ msgstr "状態の値が無効です: %s"
 #, python-format
 msgid "Invalid status: %s"
 msgstr "無効な状況: %s"
-
-#, python-format
-msgid "Invalid time format for %s."
-msgstr "%s に対する無効な時刻フォーマット。"
 
 #, python-format
 msgid "Invalid type value: %s"
@@ -1031,9 +905,6 @@ msgstr "オプション %(option)s の値が無効です: %(value)s"
 #, python-format
 msgid "Invalid visibility value: %s"
 msgstr "無効な可視性の値: %s"
-
-msgid "It's invalid to provide multiple image sources."
-msgstr "イメージソースの複数指定は無効です。"
 
 #, python-format
 msgid "It's not allowed to add locations if image status is %s."
@@ -1329,20 +1200,8 @@ msgstr "プロパティー %s は削除できません。"
 msgid "Property %s must be set prior to saving data."
 msgstr "データの保存前にプロパティー %s を設定する必要があります。"
 
-#, python-format
-msgid "Property '%s' is protected"
-msgstr "プロパティー '%s' は保護されています"
-
 msgid "Property names can't contain 4 byte unicode."
 msgstr "プロパティー名に 4 バイトの Unicode が含まれていてはなりません。"
-
-#, python-format
-msgid ""
-"Provided image size must match the stored image size. (provided size: "
-"%(ps)d, stored size: %(ss)d)"
-msgstr ""
-"指定するイメージのサイズは、保管されているイメージのサイズと一致しなければな"
-"りません。(指定サイズ: %(ps)d、保管サイズ: %(ss)d)"
 
 #, python-format
 msgid "Provided object does not match schema '%(schema)s': %(reason)s"
@@ -1397,10 +1256,6 @@ msgstr "要求本文は、操作オブジェクトの JSON 配列でなければ
 
 msgid "Request must be a list of commands"
 msgstr "要求はコマンドのリストである必要があります"
-
-#, python-format
-msgid "Required store %s is invalid"
-msgstr "必須のストア %s が無効です"
 
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
@@ -1643,14 +1498,6 @@ msgid ""
 msgstr ""
 "許可されるイメージプロパティー数の制限を超えました。試行: %(attempted)s、最"
 "大: %(maximum)s"
-
-#, python-format
-msgid ""
-"The limit has been exceeded on the number of allowed image properties. "
-"Attempted: %(num)s, Maximum: %(quota)s"
-msgstr ""
-"許可されるイメージプロパティー数の制限を超えました。試行: %(num)s、最大: "
-"%(quota)s"
 
 #, python-format
 msgid ""
@@ -1917,9 +1764,6 @@ msgstr ""
 "この操作は、Glance タスクでは現在許可されていません。これらのタスクは、"
 "expires_at プロパティーに基づき、時間に達すると自動的に削除されます。"
 
-msgid "This operation is currently not permitted on Glance images details."
-msgstr "この操作は、Glance イメージの詳細では現在許可されていません。"
-
 msgid ""
 "Time in hours for which a task lives after, either succeeding or failing"
 msgstr "成功または失敗の後でタスクが存続する時間 (時)"
@@ -2009,9 +1853,6 @@ msgstr "%s の paste 設定ファイルが見つかりません。"
 msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
 msgstr ""
 "イメージ %(image_id)s の重複イメージデータはアップロードできません: %(error)s"
-
-msgid "Unauthorized image access"
-msgstr "許可されていないイメージアクセス"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "予期しない本文タイプ。予期されたのはリストまたは辞書です。"
