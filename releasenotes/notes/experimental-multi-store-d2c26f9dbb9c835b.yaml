@@ -1,0 +1,40 @@
+---
+features:
+  - |
+    This release provides an EXPERIMENTAL implementation of the Glance spec
+    `Multi-Store Backend Support
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/implemented/glance/multi-store.html>`_,
+    which allows an operator to configure multiple backing stores so that
+    end users may direct image data to be stored in a specific backend.
+    See `Multi Store Support
+    <https://docs.openstack.org/glance/latest/admin/multistores.html>`_
+    in the Glance Administration Guide for more information.
+
+    This experimental feature is optionally exposed as the EXPERIMENTAL
+    Image Service API version 2.8.  Its use in production systems is currently
+    **not supported**.  We encourage people to use this feature for testing
+    purposes and report any issues so that it can be made stable and fully
+    supported in the Stein release.
+other:
+  - |
+    The `Multi-Store Backend Support
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/implemented/glance/multi-store.html>`_
+    feature is introduced on an experimental basis in the EXPERIMENTAL
+    Image Service API version 2.8:
+
+    * a new *list stores* call, `GET /v2/info/stores
+      <https://developer.openstack.org/api-ref/image/v2/index.html#list-stores>`_
+    * a new ``OpenStack-image-store-ids`` header in the `create image
+      <https://developer.openstack.org/api-ref/image/v2/index.html#create-image>`_
+      response
+    * an ``X-Image-Meta-Store`` header may be included with the `image data
+      upload
+      <https://developer.openstack.org/api-ref/image/v2/index.html#upload-binary-image-data>`_
+      request
+    * an ``X-Image-Meta-Store`` header may be included with the `image import
+      <https://developer.openstack.org/api-ref/image/v2/index.html#import-an-image>`_
+      request
+
+    Please keep in mind that as version 2.8 of the Image Service API is
+    EXPERIMENTAL, we reserve the right to make modifications to these aspects
+    of the API should user feedback indicate that a change is required.
