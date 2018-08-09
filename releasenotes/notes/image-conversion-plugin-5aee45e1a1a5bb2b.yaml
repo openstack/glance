@@ -1,8 +1,4 @@
 ---
-prelude: >
-  Automatic image conversion plugin for Interoperable Image Import. This
-  release introduces a new plugin that can be used to convert images to
-  specific format automatically upon image import.
 features:
   - |
     Automatic image conversion plugin for Interoperable Image Import. With

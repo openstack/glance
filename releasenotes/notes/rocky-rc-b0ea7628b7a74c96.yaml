@@ -1,0 +1,34 @@
+---
+prelude: |
+    This release of OpenStack Glance introduces 2 new API versions. Images
+    API v2.7 adds support and modifications for the Hidden Images and
+    Multihash features introduced during Rocky cycle. Version 2.8 is
+    included as an optional EXPERIMENTAL API for testing and preparing for
+    multiple back-end support.
+
+    Rocky development cycle marks long waited milestone on Glance work. The
+    Images API v1 which has been deprecated for years is finally removed and
+    not available at all in Glance version 17.0.0 forward.
+
+    Some security aspects were tackled for this release. Multihash, providing
+    secure hashing for image data with future proof options marks the end of
+    relying upon MD5 checksums when verifying image payloads. OSSN-0075
+    migitation lessens the risk of ID reusability on those very rare cases
+    when a database purge is necessary.
+
+    When delayed delete is enabled operators are able to recover image records
+    if the scrubber has been stopped before the data removal interval. While
+    the image metadata is still not preserved in these cases, this provides a
+    way to save the image data on accidental deletes.
+
+    Due to increasing core counts on modern servers Glance services started
+    consuming huge amounts of resources as the default was to spin up equal
+    amount of workers to logical CPUs seen on the host. This automatic scaling
+    was capped to 8 workers limiting the resources consumed. While each worker
+    can handle a pool of connections this limit should be sufficient for most
+    clouds. Large deployments should monitor their performance after upgrade.
+
+    When using Interoperable Image Import workflow, the cloud operators can
+    now enable automatic image conversion to desired format. When the plugin
+    is enabled end-users do not have any input to its operation but their
+    local checksum might not match with checksums recorded in Glance.
