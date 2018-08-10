@@ -48,12 +48,14 @@ class TestLocationStrategy(base.IsolatedUnitTest):
         modules = ['module1', 'module2']
 
         def _fake_stevedore_extension_manager(*args, **kwargs):
-            ret = lambda: None
+            def ret():
+                return None
             ret.names = lambda: modules
             return ret
 
         def _fake_stevedore_driver_manager(*args, **kwargs):
-            ret = lambda: None
+            def ret():
+                return None
             ret.driver = lambda: None
             ret.driver.__name__ = kwargs['name']
             # Module 1 and 2 has a same strategy name
@@ -61,10 +63,10 @@ class TestLocationStrategy(base.IsolatedUnitTest):
             ret.driver.init = lambda: None
             return ret
 
-        self.stub = self.stubs.Set(stevedore.extension, "ExtensionManager",
-                                   _fake_stevedore_extension_manager)
-        self.stub = self.stubs.Set(stevedore.driver, "DriverManager",
-                                   _fake_stevedore_driver_manager)
+        self.stub = self.mock_object(stevedore.extension, "ExtensionManager",
+                                     _fake_stevedore_extension_manager)
+        self.stub = self.mock_object(stevedore.driver, "DriverManager",
+                                     _fake_stevedore_driver_manager)
 
         loaded_modules = location_strategy._load_strategies()
         self.assertEqual(1, len(loaded_modules))
@@ -76,7 +78,8 @@ class TestLocationStrategy(base.IsolatedUnitTest):
         modules = ['module_init_exception', 'module_good']
 
         def _fake_stevedore_extension_manager(*args, **kwargs):
-            ret = lambda: None
+            def ret():
+                return None
             ret.names = lambda: modules
             return ret
 
@@ -84,17 +87,18 @@ class TestLocationStrategy(base.IsolatedUnitTest):
             if kwargs['name'] == 'module_init_exception':
                 raise Exception('strategy module failed to initialize.')
             else:
-                ret = lambda: None
+                def ret():
+                    return None
                 ret.driver = lambda: None
                 ret.driver.__name__ = kwargs['name']
                 ret.driver.get_strategy_name = lambda: kwargs['name']
                 ret.driver.init = lambda: None
             return ret
 
-        self.stub = self.stubs.Set(stevedore.extension, "ExtensionManager",
-                                   _fake_stevedore_extension_manager)
-        self.stub = self.stubs.Set(stevedore.driver, "DriverManager",
-                                   _fake_stevedore_driver_manager)
+        self.stub = self.mock_object(stevedore.extension, "ExtensionManager",
+                                     _fake_stevedore_extension_manager)
+        self.stub = self.mock_object(stevedore.driver, "DriverManager",
+                                     _fake_stevedore_driver_manager)
 
         loaded_modules = location_strategy._load_strategies()
         self.assertEqual(1, len(loaded_modules))

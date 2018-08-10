@@ -759,7 +759,7 @@ class TestRegistryV2ClientApi(base.IsolatedUnitTest):
         self.config(admin_tenant_name=expected['tenant'])
         self.config(auth_strategy=expected['strategy'])
         self.config(auth_region=expected['region'])
-        self.stubs.Set(os, 'getenv', lambda x: None)
+        self.mock_object(os, 'getenv', lambda x: None)
 
         self.assertIsNone(rapi._CLIENT_CREDS)
         rapi.configure_registry_admin_creds()

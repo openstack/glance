@@ -17,6 +17,7 @@ import os
 
 import glance_store as store
 from glance_store import location
+import mock
 from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_db import options
@@ -134,3 +135,14 @@ class MultiIsolatedUnitTest(MultiStoreClearingUnitTest):
         fap = open(CONF.oslo_policy.policy_file, 'w')
         fap.write(jsonutils.dumps(rules))
         fap.close()
+
+    def mock_object(self, obj, attr_name, *args, **kwargs):
+        """Use python mock to mock an object attribute
+
+        Mocks the specified objects attribute with the given value.
+        Automatically performs 'addCleanup' for the mock.
+        """
+        patcher = mock.patch.object(obj, attr_name, *args, **kwargs)
+        result = patcher.start()
+        self.addCleanup(patcher.stop)
+        return result

@@ -25,6 +25,7 @@ import subprocess
 
 from alembic import command as alembic_command
 import fixtures
+import mock
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture
@@ -79,7 +80,7 @@ class BaseTestCase(testtools.TestCase):
         self.addCleanup(CONF.reset)
         mox_fixture = self.useFixture(moxstubout.MoxStubout())
         self.stubs = mox_fixture.stubs
-        self.stubs.Set(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
+        self.mock_object(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(self.conf_dir)
@@ -139,9 +140,21 @@ class BaseTestCase(testtools.TestCase):
         """
         self._config_fixture.config(**kw)
 
+    def mock_object(self, obj, attr_name, *args, **kwargs):
+        """"Use python mock to mock an object attirbute
+
+        Mocks the specified objects attribute with the given value.
+        Automatically performs 'addCleanup' for the mock.
+        """
+        patcher = mock.patch.object(obj, attr_name, *args, **kwargs)
+        result = patcher.start()
+        self.addCleanup(patcher.stop)
+        return result
+
 
 class requires(object):
     """Decorator that initiates additional test setup/teardown."""
+
     def __init__(self, setup=None, teardown=None):
         self.setup = setup
         self.teardown = teardown
@@ -160,6 +173,7 @@ class requires(object):
 
 class depends_on_exe(object):
     """Decorator to skip test if an executable is unavailable"""
+
     def __init__(self, exe):
         self.exe = exe
 

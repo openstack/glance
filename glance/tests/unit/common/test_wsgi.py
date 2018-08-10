@@ -49,7 +49,8 @@ class RequestTest(test_utils.BaseTestCase):
         def returns_some_locales(*args, **kwargs):
             return all_locales
 
-        self.stubs.Set(localedata, 'locale_identifiers', returns_some_locales)
+        self.mock_object(localedata, 'locale_identifiers',
+                         returns_some_locales)
 
         # Override gettext.find to return other than None for some languages.
         def fake_gettext_find(lang_id, *args, **kwargs):
@@ -62,7 +63,7 @@ class RequestTest(test_utils.BaseTestCase):
                 return found_ret
             return None
 
-        self.stubs.Set(gettext, 'find', fake_gettext_find)
+        self.mock_object(gettext, 'find', fake_gettext_find)
 
     def test_content_range(self):
         request = wsgi.Request.blank('/tests/123')
@@ -338,7 +339,7 @@ class ResourceTest(test_utils.BaseTestCase):
             if isinstance(obj, wsgi.JSONResponseSerializer):
                 raise webob.exc.HTTPForbidden()
 
-        self.stubs.Set(wsgi.Resource, 'dispatch', dispatch)
+        self.mock_object(wsgi.Resource, 'dispatch', dispatch)
 
         request = wsgi.Request.blank('/')
 
@@ -357,7 +358,7 @@ class ResourceTest(test_utils.BaseTestCase):
         def dispatch(self, obj, action, *args, **kwargs):
             raise Exception("test exception")
 
-        self.stubs.Set(wsgi.Resource, 'dispatch', dispatch)
+        self.mock_object(wsgi.Resource, 'dispatch', dispatch)
 
         request = wsgi.Request.blank('/')
 

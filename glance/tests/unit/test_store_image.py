@@ -128,8 +128,8 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(2, len(image1.locations))
         self.assertEqual(UUID2, location_data['url'])
 
-        self.stubs.Set(unit_test_utils.FakeStoreAPI, 'get_from_backend',
-                       fake_get_from_backend)
+        self.mock_object(unit_test_utils.FakeStoreAPI, 'get_from_backend',
+                         fake_get_from_backend)
         # This time, image1.get_data() returns the data wrapped in a
         # LimitingReader|CooperativeReader pipeline, so peeking under
         # the hood of those objects to get at the underlying string.
@@ -200,8 +200,8 @@ class TestStoreImage(utils.BaseTestCase):
         }
         image_stub = ImageStub(UUID2, status='queued',
                                extra_properties=extra_properties)
-        self.stubs.Set(signature_utils, 'get_verifier',
-                       unit_test_utils.fake_get_verifier)
+        self.mock_object(signature_utils, 'get_verifier',
+                         unit_test_utils.fake_get_verifier)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', 4)
@@ -220,8 +220,8 @@ class TestStoreImage(utils.BaseTestCase):
         }
         image_stub = ImageStub(UUID2, status='queued',
                                extra_properties=extra_properties)
-        self.stubs.Set(signature_utils, 'get_verifier',
-                       unit_test_utils.fake_get_verifier)
+        self.mock_object(signature_utils, 'get_verifier',
+                         unit_test_utils.fake_get_verifier)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         with mock.patch.object(self.store_api,
@@ -240,8 +240,8 @@ class TestStoreImage(utils.BaseTestCase):
         }
         image_stub = ImageStub(UUID2, status='queued',
                                extra_properties=extra_properties)
-        self.stubs.Set(signature_utils, 'get_verifier',
-                       unit_test_utils.fake_get_verifier)
+        self.mock_object(signature_utils, 'get_verifier',
+                         unit_test_utils.fake_get_verifier)
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', 4)

@@ -23,7 +23,6 @@ import time
 
 import fixtures
 from oslo_utils import units
-from oslotest import moxstubout
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -518,9 +517,7 @@ class TestImageCacheNoDep(test_utils.BaseTestCase):
         def init_driver(self2):
             self2.driver = self.driver
 
-        mox_fixture = self.useFixture(moxstubout.MoxStubout())
-        self.stubs = mox_fixture.stubs
-        self.stubs.Set(image_cache.ImageCache, 'init_driver', init_driver)
+        self.mock_object(image_cache.ImageCache, 'init_driver', init_driver)
 
     def test_get_caching_iter_when_write_fails(self):
 

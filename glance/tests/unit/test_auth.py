@@ -15,7 +15,6 @@
 #    under the License.
 
 from oslo_serialization import jsonutils
-from oslotest import moxstubout
 from six.moves import http_client as http
 import webob
 
@@ -123,8 +122,6 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
     def setUp(self):
         super(TestKeystoneAuthPlugin, self).setUp()
-        mox_fixture = self.useFixture(moxstubout.MoxStubout())
-        self.stubs = mox_fixture.stubs
 
     def test_get_plugin_from_strategy_keystone(self):
         strategy = auth.get_plugin_from_strategy('keystone')
@@ -200,7 +197,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             resp.status = http.BAD_REQUEST
             return FakeResponse(resp), ""
 
-        self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
+        self.mock_object(auth.KeystoneStrategy, '_do_request', fake_do_request)
 
         bad_creds = {
             'username': 'user1',
@@ -222,7 +219,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             resp.status = http.BAD_REQUEST
             return FakeResponse(resp), ""
 
-        self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
+        self.mock_object(auth.KeystoneStrategy, '_do_request', fake_do_request)
 
         bad_creds = {
             'username': 'user1',
@@ -254,7 +251,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
             return FakeResponse(resp), ""
 
-        self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
+        self.mock_object(auth.KeystoneStrategy, '_do_request', fake_do_request)
 
         unauthorized_creds = [
             {
@@ -344,7 +341,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
         mock_token = V2Token()
         mock_token.add_service('image', ['RegionOne'])
-        self.stubs.Set(auth.KeystoneStrategy, '_do_request', fake_do_request)
+        self.mock_object(auth.KeystoneStrategy, '_do_request', fake_do_request)
 
         unauthorized_creds = [
             {
