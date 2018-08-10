@@ -17,6 +17,11 @@
       See https://bugs.launchpad.net/glance/+bug/1482633
     vars:
       tox_envlist: broken-py35-ssl-tests
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^doc/.*$
+      - ^releasenotes/.*$
 
 - job:
     name: glance-tox-oslo-tips-base
