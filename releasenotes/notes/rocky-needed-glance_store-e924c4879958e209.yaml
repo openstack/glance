@@ -1,0 +1,11 @@
+---
+issues:
+  - |
+    Due to the bug in the glance_store implementation of multihash feature the
+    first stable Rocky release (0.26.0) of glance_store does not work with
+    Glance 17.0.0. Please note that version 0.26.1+ of the store library is
+    required. Image creations will fail when the data is tried to be uploaded
+    to the back-end due to missing wrapping of the function used.
+upgrade:
+  - |
+    Ensure that the version 0.26.1 or higher of glance_store library is used.
