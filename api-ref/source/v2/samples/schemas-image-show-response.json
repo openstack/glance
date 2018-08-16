@@ -163,6 +163,10 @@
                 "string"
             ]
         },
+        "os_hidden": {
+            "description": "If true, image will not appear in default image list response.",
+            "type": "boolean"
+        },
         "os_version": {
             "description": "Operating system version as specified by the distributor",
             "is_base": false,

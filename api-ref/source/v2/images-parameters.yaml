@@ -165,6 +165,14 @@ name-in-query:
   in: query
   required: false
   type: string
+os_hidden-in-query:
+  description: |
+    When ``true``, filters the response to display only "hidden" images.  By
+    default, "hidden" images are not included in the image-list response.
+    *(Since Image API v2.7)*
+  in: query
+  required: false
+  type: boolean
 owner-in-query:
   description: |
     Filters the response by a project (also called a "tenant") ID.  Shows only
@@ -522,6 +530,18 @@ os_hash_value:
   in: body
   required: true
   type: string
+os_hidden:
+  description: |
+    This field controls whether an image is displayed in the default
+    image-list response.  A "hidden" image is out of date somehow (for
+    example, it may not have the latest updates applied) and hence should
+    not be a user's first choice, but it's not deleted because it may be
+    needed for server rebuilds.  By hiding it from the default image list,
+    it's easier for end users to find and use a more up-to-date version of
+    this image.  *(Since Image API v2.7)*
+  in: body
+  required: true
+  type: boolean
 owner:
   description: |
     An identifier for the owner of the image, usually the project (also

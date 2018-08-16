@@ -218,6 +218,7 @@ Response Parameters
    - name: name
    - os_hash_algo: os_hash_algo
    - os_hash_value: os_hash_value
+   - os_hidden: os_hidden
    - owner: owner
    - protected: protected
    - schema: schema-image
@@ -284,6 +285,7 @@ Response Parameters
    - name: name
    - os_hash_algo: os_hash_algo
    - os_hash_value: os_hash_value
+   - os_hidden: os_hidden
    - owner: owner
    - protected: protected
    - schema: schema-image
@@ -482,6 +484,7 @@ Request
    - status: status-in-query
    - tag: tag-in-query
    - visibility: visibility-in-query
+   - os_hidden: os_hidden-in-query
    - member_status: member_status-in-query
    - size_max: size_max
    - size_min: size_min
@@ -606,6 +609,7 @@ Response Parameters
    - owner: owner
    - os_hash_algo: os_hash_algo
    - os_hash_value: os_hash_value
+   - os_hidden: os_hidden
    - protected: protected
    - schema: schema-image
    - self: self
