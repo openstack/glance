@@ -21,13 +21,6 @@ prelude: |
     the image metadata is still not preserved in these cases, this provides a
     way to save the image data on accidental deletes.
 
-    Due to increasing core counts on modern servers Glance services started
-    consuming huge amounts of resources as the default was to spin up equal
-    amount of workers to logical CPUs seen on the host. This automatic scaling
-    was capped to 8 workers limiting the resources consumed. While each worker
-    can handle a pool of connections this limit should be sufficient for most
-    clouds. Large deployments should monitor their performance after upgrade.
-
     When using Interoperable Image Import workflow, the cloud operators can
     now enable automatic image conversion to desired format. When the plugin
     is enabled end-users do not have any input to its operation but their

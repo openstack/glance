@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    On top of testing and documentation fixes following bugs
+    were addressed
+
+    * Bug 1695299_: Support RFC1738 quoted chars in passwords
+    * Bug 1734832_: Fix unreachable 'ImageSizeLimitExceeded' exception in image-upload
+    * Bug 1765748_: Prepare for WebOb 1.8.1
+
+    .. _1695299: https://bugs.launchpad.net/glance/+bug/1695299
+    .. _1734832: https://bugs.launchpad.net/glance/+bug/1734832
+    .. _1765748: https://bugs.launchpad.net/glance/+bug/1765748
