@@ -17,6 +17,7 @@
     "checksum": null,
     "os_hash_algo": null,
     "os_hash_value": null,
+    "os_hidden": false,
     "owner": "bab7d5c60cd041a0a36f7c4b6e1dd978",
     "virtual_size": null,
     "min_ram": 0,
