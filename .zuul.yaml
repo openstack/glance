@@ -179,6 +179,15 @@
       tox_envlist: functional-py35
 
 - project:
+    templates:
+      - openstack-python35-jobs
+      - openstack-python-jobs
+      - publish-openstack-sphinx-docs
+      - periodic-stable-jobs
+      - check-requirements
+      - integrated-gate
+      - integrated-gate-py35
+      - release-notes-jobs
     check:
       jobs:
         - openstack-tox-functional
@@ -186,15 +195,89 @@
         - openstack-tox-lower-constraints
         - glance-eventlet-ssl-handshake-broken-py35:
             voting: false
+        - legacy-tempest-dsvm-full-devstack-plugin-ceph:
+            voting: false
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
+        - tempest-full:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
+        - neutron-grenade:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
     gate:
       jobs:
         - openstack-tox-functional
         - openstack-tox-functional-py35
         - openstack-tox-lower-constraints
+        - tempest-full:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
+        - neutron-grenade:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
+
     experimental:
       jobs:
         - barbican-simple-crypto-devstack-tempest
         - glance-dsvm-grenade-multinode
+        - legacy-tempest-dsvm-py35-full-devstack-plugin-ceph:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
+        - legacy-tempest-dsvm-neutron-pg-full:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
+        - legacy-tempest-dsvm-neutron-full-opensuse-423:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tox.ini$
     periodic:
       jobs:
         - glance-tox-functional-oslo-tips
