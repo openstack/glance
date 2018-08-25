@@ -1720,14 +1720,24 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(2, len(output.locations))
         self.assertEqual(new_location, output.locations[1])
 
-    def test_replace_location_possible_on_queued(self):
-        self.skipTest('This test is intermittently failing at the gate. '
-                      'See bug #1649300')
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_replace_location_on_queued(self,
+                                        mock_get_size,
+                                        mock_get_size_uri,
+                                        mock_set_acls,
+                                        mock_check_loc,
+                                        mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
         self.config(show_multiple_locations=True)
         self.images = [
             _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
                         name='1',
-                        is_public=True,
                         disk_format='raw',
                         container_format='bare',
                         status='queued'),
@@ -1741,15 +1751,26 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('1', output.image_id)
         self.assertEqual(1, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
+        self.assertEqual('active', output.status)
 
-    def test_add_location_possible_on_queued(self):
-        self.skipTest('This test is intermittently failing at the gate. '
-                      'See bug #1649300')
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_on_queued(self,
+                                    mock_get_size,
+                                    mock_get_size_uri,
+                                    mock_set_acls,
+                                    mock_check_loc,
+                                    mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
         self.config(show_multiple_locations=True)
         self.images = [
             _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
                         name='1',
-                        is_public=True,
                         disk_format='raw',
                         container_format='bare',
                         status='queued'),
@@ -1763,6 +1784,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('1', output.image_id)
         self.assertEqual(1, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
+        self.assertEqual('active', output.status)
 
     def _test_update_locations_status(self, image_status, update):
         self.config(show_multiple_locations=True)

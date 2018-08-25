@@ -391,6 +391,8 @@ class ImagesController(object):
             # NOTE(flwang): _locations_proxy's setattr method will check if
             # the update is acceptable.
             image.locations = value
+            if image.status == 'queued':
+                image.status = 'active'
         except (exception.BadStoreUri, exception.DuplicateLocation) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except ValueError as ve:    # update image status failed.
