@@ -193,26 +193,3 @@ def stub_out_registry_and_store_server(stubs, base_dir, **kwargs):
             glance.common.client.BaseClient._sendable)
     stubs.Set(glance.common.client.BaseClient, '_sendable',
               fake_sendable)
-
-
-def stub_out_registry_server(stubs, **kwargs):
-    """Mocks calls to 127.0.0.1 on 9191 for testing.
-
-    Done so that a real Glance Registry server does not need to be up and
-    running.
-    """
-    def fake_get_connection_type(client):
-        """Returns the proper connection type."""
-        DEFAULT_REGISTRY_PORT = 9191
-
-        if (client.port == DEFAULT_REGISTRY_PORT and
-                client.host == '0.0.0.0'):
-            rserver = kwargs.pop("registry", None)
-            return FakeRegistryConnection(registry=rserver)
-
-    def fake_image_iter(self):
-        for i in self.response.app_iter:
-            yield i
-
-    stubs.Set(glance.common.client.BaseClient, 'get_connection_type',
-              fake_get_connection_type)
