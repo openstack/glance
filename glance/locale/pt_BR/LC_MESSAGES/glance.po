@@ -8,16 +8,17 @@
 # Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>, 2014
 # Volmar Oliveira Junior <volmar.oliveira.jr@gmail.com>, 2013
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# André Franciosi <andre@franciosi.org>, 2018. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-08-09 04:23+0000\n"
+"POT-Creation-Date: 2018-08-17 00:37+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-12 05:22+0000\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
+"PO-Revision-Date: 2018-09-06 11:41+0000\n"
+"Last-Translator: André Franciosi <andre@franciosi.org>\n"
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -993,7 +994,7 @@ msgstr "As operações devem ser objetos JSON."
 
 #, python-format
 msgid "Original locations is not empty: %s"
-msgstr "Localidade original não está vazia: %s"
+msgstr "Localidades originais não estão vazias: %s"
 
 msgid "Owner can't be updated by non admin."
 msgstr "O proprietário não pode ser atualizado por um não administrador."
