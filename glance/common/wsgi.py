@@ -1027,8 +1027,10 @@ class Request(webob.Request):
     def best_match_content_type(self):
         """Determine the requested response content-type."""
         supported = ('application/json',)
-        bm = self.accept.best_match(supported)
-        return bm or 'application/json'
+        best_matches = self.accept.acceptable_offers(supported)
+        if not best_matches:
+            return 'application/json'
+        return best_matches[0][0]
 
     def get_content_type(self, allowed_content_types):
         """Determine content type of the request body."""
