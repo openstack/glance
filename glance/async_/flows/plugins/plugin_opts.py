@@ -14,8 +14,8 @@
 # under the License.
 
 
-import glance.async.flows.plugins.image_conversion
-import glance.async.flows.plugins.inject_image_metadata
+import glance.async_.flows.plugins.image_conversion
+import glance.async_.flows.plugins.inject_image_metadata
 
 
 # Note(jokke): This list contains tuples of config options for import plugins.
@@ -27,9 +27,9 @@ import glance.async.flows.plugins.inject_image_metadata
 # registered under at the config file.
 PLUGIN_OPTS = [
     ('inject_metadata_properties',
-     glance.async.flows.plugins.inject_image_metadata.inject_metadata_opts),
+     glance.async_.flows.plugins.inject_image_metadata.inject_metadata_opts),
     ('image_conversion',
-     glance.async.flows.plugins.image_conversion.conversion_plugin_opts),
+     glance.async_.flows.plugins.image_conversion.conversion_plugin_opts),
 ]
 
 

@@ -513,7 +513,7 @@ class TaskExecutorFactory(object):
                     TaskExecutorFactory.eventlet_deprecation_warned = True
                 task_executor = 'taskflow'
 
-            executor_cls = ('glance.async.%s_executor.'
+            executor_cls = ('glance.async_.%s_executor.'
                             'TaskExecutor' % task_executor)
             LOG.debug("Loading %s executor", task_executor)
             executor = importutils.import_class(executor_cls)

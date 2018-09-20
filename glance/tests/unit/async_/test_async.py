@@ -16,7 +16,7 @@
 
 import mock
 
-import glance.async
+import glance.async_
 import glance.tests.utils as test_utils
 
 
@@ -28,10 +28,10 @@ class TestTaskExecutor(test_utils.BaseTestCase):
         self.task_repo = mock.Mock()
         self.image_repo = mock.Mock()
         self.image_factory = mock.Mock()
-        self.executor = glance.async.TaskExecutor(self.context,
-                                                  self.task_repo,
-                                                  self.image_repo,
-                                                  self.image_factory)
+        self.executor = glance.async_.TaskExecutor(self.context,
+                                                   self.task_repo,
+                                                   self.image_repo,
+                                                   self.image_factory)
 
     def test_begin_processing(self):
         # setup
@@ -40,7 +40,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
         task = mock.Mock()
 
         with mock.patch.object(
-                glance.async.TaskExecutor,
+                glance.async_.TaskExecutor,
                 '_run') as mock_run:
             self.task_repo.get.return_value = task
             self.executor.begin_processing(task_id)

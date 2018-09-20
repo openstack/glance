@@ -128,7 +128,7 @@ def cooperative_read(fd):
 MAX_COOP_READER_BUFFER_SIZE = 134217728  # 128M seems like a sane buffer limit
 
 CONF.import_group('import_filtering_opts',
-                  'glance.async.flows._internal_plugins')
+                  'glance.async_.flows._internal_plugins')
 
 
 def validate_import_uri(uri):

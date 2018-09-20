@@ -23,7 +23,7 @@ from stevedore import driver
 from taskflow import engines
 from taskflow.listeners import logging as llistener
 
-import glance.async
+import glance.async_
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
 from glance.i18n import _, _LE
@@ -85,7 +85,7 @@ CONF = cfg.CONF
 CONF.register_opts(taskflow_executor_opts, group='taskflow_executor')
 
 
-class TaskExecutor(glance.async.TaskExecutor):
+class TaskExecutor(glance.async_.TaskExecutor):
 
     def __init__(self, context, task_repo, image_repo, image_factory):
         self.context = context

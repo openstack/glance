@@ -22,8 +22,8 @@ from oslo_concurrency import processutils
 from oslo_config import cfg
 import six
 
-from glance.async.flows import convert
-from glance.async import taskflow_executor
+from glance.async_.flows import convert
+from glance.async_ import taskflow_executor
 from glance.common.scripts import utils as script_utils
 from glance.common import utils
 from glance import domain

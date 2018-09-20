@@ -24,7 +24,7 @@ try:
 except ImportError:
     from defusedxml.ElementTree import ParseError
 
-from glance.async.flows import ovf_process
+from glance.async_.flows import ovf_process
 import glance.tests.utils as test_utils
 from oslo_config import cfg
 

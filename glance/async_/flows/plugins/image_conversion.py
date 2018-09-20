@@ -24,7 +24,7 @@ from oslo_utils import excutils
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
-from glance.async import utils
+from glance.async_ import utils
 from glance.i18n import _
 
 LOG = logging.getLogger(__name__)
