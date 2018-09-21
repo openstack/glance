@@ -186,6 +186,7 @@
 - project:
     templates:
       - openstack-python35-jobs
+      - openstack-python36-jobs
       - openstack-python-jobs
       - publish-openstack-docs-pti
       - periodic-stable-jobs
