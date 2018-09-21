@@ -11,7 +11,7 @@
     experimental:
       jobs:
         - barbican-simple-crypto-devstack-tempest
-        - legacy-tempest-dsvm-py35-full-devstack-plugin-ceph:
+        - devstack-plugin-ceph-tempest-py3:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^.*\.rst$
@@ -40,7 +40,7 @@
               - ^tox.ini$
     check:
       jobs:
-        - legacy-tempest-dsvm-full-devstack-plugin-ceph:
+        - devstack-plugin-ceph-tempest:
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
