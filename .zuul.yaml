@@ -195,7 +195,7 @@
         - openstack-tox-lower-constraints
         - glance-eventlet-ssl-handshake-broken-py35:
             voting: false
-        - legacy-tempest-dsvm-full-devstack-plugin-ceph:
+        - devstack-plugin-ceph-tempest:
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -251,7 +251,7 @@
       jobs:
         - barbican-simple-crypto-devstack-tempest
         - glance-dsvm-grenade-multinode
-        - legacy-tempest-dsvm-py35-full-devstack-plugin-ceph:
+        - devstack-plugin-ceph-tempest-py3:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^.*\.rst$
