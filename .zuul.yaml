@@ -12,7 +12,7 @@
       jobs:
         - openstack-tox-functional
         - openstack-tox-functional-py35
-        - legacy-tempest-dsvm-full-devstack-plugin-ceph:
+        - devstack-plugin-ceph-tempest:
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -66,7 +66,7 @@
     experimental:
       jobs:
         - barbican-simple-crypto-devstack-tempest
-        - legacy-tempest-dsvm-py35-full-devstack-plugin-ceph:
+        - devstack-plugin-ceph-tempest-py3:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^.*\.rst$
