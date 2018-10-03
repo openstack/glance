@@ -1821,6 +1821,12 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_location_add_not_permitted_status_killed(self):
         self._test_update_locations_status('killed', 'add')
 
+    def test_location_add_not_permitted_status_importing(self):
+        self._test_update_locations_status('importing', 'add')
+
+    def test_location_add_not_permitted_status_uploading(self):
+        self._test_update_locations_status('uploading', 'add')
+
     def test_location_remove_not_permitted_status_saving(self):
         self._test_update_locations_status('saving', 'remove')
 
@@ -1839,6 +1845,12 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_location_remove_not_permitted_status_queued(self):
         self._test_update_locations_status('queued', 'remove')
 
+    def test_location_remove_not_permitted_status_importing(self):
+        self._test_update_locations_status('importing', 'remove')
+
+    def test_location_remove_not_permitted_status_uploading(self):
+        self._test_update_locations_status('uploading', 'remove')
+
     def test_location_replace_not_permitted_status_saving(self):
         self._test_update_locations_status('saving', 'replace')
 
@@ -1853,6 +1865,12 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_location_replace_not_permitted_status_killed(self):
         self._test_update_locations_status('killed', 'replace')
+
+    def test_location_replace_not_permitted_status_importing(self):
+        self._test_update_locations_status('importing', 'replace')
+
+    def test_location_replace_not_permitted_status_uploading(self):
+        self._test_update_locations_status('uploading', 'replace')
 
     def test_update_add_locations_insertion(self):
         self.config(show_multiple_locations=True)
