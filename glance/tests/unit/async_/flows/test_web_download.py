@@ -19,6 +19,7 @@ from unittest import mock
 from glance_store._drivers import filesystem
 from glance_store import backend
 from oslo_config import cfg
+from taskflow.types import failure
 
 from glance.async_.flows._internal_plugins import web_download
 from glance.async_.flows import api_image_import
@@ -175,3 +176,74 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
             delete_from_fs_task.execute(staging_path)
             self.assertEqual(1, mock_exists.call_count)
             self.assertEqual(1, mock_unlik.call_count)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
+    def test_web_download_revert_with_failure(self, mock_store_api,
+                                              mock_add):
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        with mock.patch.object(script_utils,
+                               'get_image_data_iter') as mock_iter:
+            mock_iter.return_value.headers = {'content-length': '4'}
+            mock_add.return_value = "/path/to_downloaded_data", 3
+            self.assertRaises(
+                glance.common.exception.ImportTaskError,
+                web_download_task.execute)
+
+        web_download_task.revert(None)
+        mock_store_api.delete_from_backend.assert_called_once_with(
+            "/path/to_downloaded_data")
+
+    @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
+    def test_web_download_revert_without_failure_multi_store(self,
+                                                             mock_store_api):
+        enabled_backends = {
+            'fast': 'file',
+            'cheap': 'file'
+        }
+        self.config(enabled_backends=enabled_backends)
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        web_download_task._path = "/path/to_downloaded_data"
+        web_download_task.revert("/path/to_downloaded_data")
+        mock_store_api.delete.assert_called_once_with(
+            "/path/to_downloaded_data", None)
+
+    @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
+    def test_web_download_revert_with_failure_without_path(self,
+                                                           mock_store_api):
+        result = failure.Failure.from_exception(
+            glance.common.exception.ImportTaskError())
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        web_download_task.revert(result)
+        mock_store_api.delete_from_backend.assert_not_called()
+
+    @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
+    def test_web_download_revert_with_failure_with_path(self, mock_store_api):
+        result = failure.Failure.from_exception(
+            glance.common.exception.ImportTaskError())
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        web_download_task._path = "/path/to_downloaded_data"
+        web_download_task.revert(result)
+        mock_store_api.delete_from_backend.assert_called_once_with(
+            "/path/to_downloaded_data")
+
+    @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
+    def test_web_download_delete_fails_on_revert(self, mock_store_api):
+        result = failure.Failure.from_exception(
+            glance.common.exception.ImportTaskError())
+        mock_store_api.delete_from_backend.side_effect = Exception
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        web_download_task._path = "/path/to_downloaded_data"
+        # this will verify that revert does not break because of failure
+        # while deleting data in staging area
+        web_download_task.revert(result)

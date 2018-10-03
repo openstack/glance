@@ -144,6 +144,20 @@ class _WebDownload(task.Task):
             image.status = 'queued'
             self.image_repo.save(image)
 
+        # NOTE(abhishekk): Deleting partial image data from staging area
+        if self._path is not None:
+            LOG.debug(('Deleting image %(image_id)s from staging '
+                       'area.'), {'image_id': self.image_id})
+            try:
+                if CONF.enabled_backends:
+                    store_api.delete(self._path, None)
+                else:
+                    store_api.delete_from_backend(self._path)
+            except Exception:
+                LOG.exception(_LE("Error reverting web-download "
+                                  "task: %(task_id)s"), {
+                    'task_id': self.task_id})
+
 
 def get_flow(**kwargs):
     """Return task flow for web-download.
