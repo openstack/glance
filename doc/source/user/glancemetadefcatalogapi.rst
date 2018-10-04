@@ -25,8 +25,8 @@ services, and projects for OpenStack users.
 
 This is about the definition of the available metadata that can be used on
 different types of resources (images, artifacts, volumes, flavors, aggregates,
-etc). A definition includes the properties type, its key, it's description,
-and it's constraints. This catalog will not store the values for specific
+etc). A definition includes the properties type, its key, its description,
+and its constraints. This catalog will not store the values for specific
 instance properties.
 
 For example, a definition of a virtual CPU topology property for number of
