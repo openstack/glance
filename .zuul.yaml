@@ -28,8 +28,13 @@
     parent: tox
     abstract: true
     description: Abstract job for Glance vs. oslo libraries
-    # NOTE(rosmaita): only need functional test jobs, oslo is
-    # already running periodic jobs using our unit tests
+    # NOTE(rosmaita): we only need functional test jobs, oslo is
+    # already running periodic jobs using our unit tests.  Those
+    # jobs are configured for glance in openstack-infra/project-config/
+    # zuul.d/projects.yaml using the template 'periodic-jobs-with-oslo-master'
+    # which is defined in openstack-infra/openstack-zuul-jobs/zuul.d/
+    # project-templates.yaml; the jobs the template refers to are
+    # defined in openstack-infra/openstack-zuul-jobs/zuul.d/jobs.yaml
     required-projects:
       - name: openstack/debtcollector
       - name: openstack/futurist
