@@ -341,8 +341,11 @@ class TestImages(functional.FunctionalTest):
             'content-type': 'application/json',
             'X-Roles': 'admin',
         })
-        image_data_uri = ('https://www.openstack.org/assets/openstack-logo/'
-                          '2016R/OpenStack-Logo-Horizontal.eps.zip')
+
+        # Start http server locally
+        pid, port = test_utils.start_standalone_http_server()
+
+        image_data_uri = 'http://localhost:%s/' % port
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
             'uri': image_data_uri
@@ -368,6 +371,9 @@ class TestImages(functional.FunctionalTest):
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
                                                   status='active')
+
+        # kill the local http server
+        os.kill(pid, signal.SIGKILL)
 
         # Deleting image should work
         path = self._url('/v2/images/%s' % image_id)
@@ -4901,8 +4907,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
             'content-type': 'application/json',
             'X-Roles': 'admin',
         })
-        image_data_uri = ('https://www.openstack.org/assets/openstack-logo/'
-                          '2016R/OpenStack-Logo-Horizontal.eps.zip')
+
+        # Start http server locally
+        pid, port = test_utils.start_standalone_http_server()
+
+        image_data_uri = 'http://localhost:%s/' % port
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
             'uri': image_data_uri
@@ -4928,6 +4937,9 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
                                                   status='active')
+
+        # kill the local http server
+        os.kill(pid, signal.SIGKILL)
         # Ensure image is created in default backend
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
@@ -5055,8 +5067,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
             'X-Roles': 'admin',
             'X-Image-Meta-Store': 'file2'
         })
-        image_data_uri = ('https://www.openstack.org/assets/openstack-logo/'
-                          '2016R/OpenStack-Logo-Horizontal.eps.zip')
+
+        # Start http server locally
+        pid, port = test_utils.start_standalone_http_server()
+
+        image_data_uri = 'http://localhost:%s/' % port
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
             'uri': image_data_uri
@@ -5082,6 +5097,10 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
                                                   status='active')
+
+        # kill the local http server
+        os.kill(pid, signal.SIGKILL)
+
         # Ensure image is created in different backend
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())

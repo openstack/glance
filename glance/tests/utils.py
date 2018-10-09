@@ -713,3 +713,28 @@ def is_sqlite_version_prior_to(major, minor):
     import sqlite3
     tup = sqlite3.sqlite_version_info
     return tup[0] < major or (tup[0] == major and tup[1] < minor)
+
+
+def start_standalone_http_server():
+    def _get_http_handler_class():
+        class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+            def do_GET(self):
+                data = b"Hello World!!!"
+                self.send_response(http.OK)
+                self.send_header('Content-Length', str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
+
+        return StaticHTTPRequestHandler
+
+    server_address = ('127.0.0.1', 0)
+    handler_class = _get_http_handler_class()
+    httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
+    port = httpd.socket.getsockname()[1]
+
+    pid = os.fork()
+    if pid == 0:
+        httpd.serve_forever()
+    else:
+        return pid, port
