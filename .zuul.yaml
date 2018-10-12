@@ -265,7 +265,7 @@
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
-        - legacy-tempest-dsvm-neutron-pg-full:
+        - tempest-pg-full:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^.*\.rst$
