@@ -189,20 +189,6 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
 
-        def _verify_image_hashes_and_status(
-                checksum=None, os_hash_value=None, status=None):
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            if os_hash_value:
-                # make sure we're using the hashing_algorithm we expect
-                self.assertEqual(six.text_type('sha512'),
-                                 image['os_hash_algo'])
-            self.assertEqual(os_hash_value, image['os_hash_value'])
-            self.assertEqual(status, image['status'])
-
         # Upload some image data to staging area
         path = self._url('/v2/images/%s/stage' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
@@ -211,7 +197,8 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Verify image is in uploading state, hashes are None
-        _verify_image_hashes_and_status(status='uploading')
+        func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  status='uploading')
 
         # Import image to store
         path = self._url('/v2/images/%s/import' % image_id)
@@ -236,9 +223,11 @@ class TestImages(functional.FunctionalTest):
                                    delay_sec=0.2)
         expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
-        _verify_image_hashes_and_status(checksum=expect_c,
-                                        os_hash_value=expect_h,
-                                        status='active')
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
@@ -341,22 +330,10 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
 
-        def _verify_image_hashes_and_status(
-                checksum=None, os_hash_value=None, status=None):
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            if os_hash_value:
-                # make sure we're using the hashing_algorithm we expect
-                self.assertEqual(six.text_type('sha512'),
-                                 image['os_hash_algo'])
-            self.assertEqual(os_hash_value, image['os_hash_value'])
-            self.assertEqual(status, image['status'])
-
         # Verify image is in queued state and hashes are None
-        _verify_image_hashes_and_status(status='queued')
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  status='queued')
 
         # Import image to store
         path = self._url('/v2/images/%s/import' % image_id)
@@ -386,9 +363,11 @@ class TestImages(functional.FunctionalTest):
         with requests.get(image_data_uri) as r:
             expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
-        _verify_image_hashes_and_status(checksum=expect_c,
-                                        os_hash_value=expect_h,
-                                        status='active')
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
 
         # Deleting image should work
         path = self._url('/v2/images/%s' % image_id)
@@ -748,18 +727,6 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        def _verify_image_hashes_and_status(checksum, os_hash_value, status):
-            # hashes should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            # make sure we're using the default algo
-            self.assertEqual(six.text_type('sha512'), image['os_hash_algo'])
-            self.assertEqual(os_hash_value, image['os_hash_value'])
-            self.assertEqual(status, image['status'])
-
         # Upload some image data
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
@@ -769,7 +736,8 @@ class TestImages(functional.FunctionalTest):
 
         expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
-        _verify_image_hashes_and_status(expect_c, expect_h, 'active')
+        func_utils.verify_image_hashes_and_status(self, image_id, expect_c,
+                                                  expect_h, 'active')
 
         # `disk_format` and `container_format` cannot
         # be replaced when the image is active.
@@ -797,7 +765,8 @@ class TestImages(functional.FunctionalTest):
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         response = requests.put(path, headers=headers, data='XXX')
         self.assertEqual(http.CONFLICT, response.status_code)
-        _verify_image_hashes_and_status(expect_c, expect_h, 'active')
+        func_utils.verify_image_hashes_and_status(self, image_id, expect_c,
+                                                  expect_h, 'active')
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
@@ -1100,33 +1069,32 @@ class TestImages(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.BAD_REQUEST, response.status_code)
 
-        def _verify_image_checksum_and_status(checksum, status):
-            # Checksum should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            self.assertEqual(status, image['status'])
-
         # Upload some image data to image-1
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
+        image_data = b'ZZZZZ'
+        response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
-
-        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
-        _verify_image_checksum_and_status(expected_checksum, 'active')
-
+        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  expect_c,
+                                                  expect_h,
+                                                  status='active')
         # Upload some image data to image-2
         path = self._url('/v2/images/%s/file' % image2_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
+        image_data = b'WWWWW'
+        response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
-
-        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
-        _verify_image_checksum_and_status(expected_checksum, 'active')
-
+        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image2_id,
+                                                  expect_c,
+                                                  expect_h,
+                                                  status='active')
         # Hide image-1
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
@@ -4601,23 +4569,16 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
 
-        def _verify_image_checksum_and_status(checksum=None, status=None):
-            # Checksum should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            self.assertEqual(status, image['status'])
-
         # Upload some image data to staging area
+        image_data = b'QQQQQ'
         path = self._url('/v2/images/%s/stage' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
+        response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Verify image is in uploading state and checksum is None
-        _verify_image_checksum_and_status(status='uploading')
+        func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  status='uploading')
 
         # Import image to store
         path = self._url('/v2/images/%s/import' % image_id)
@@ -4640,15 +4601,20 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    status='active',
                                    max_sec=2,
                                    delay_sec=0.2)
-        _verify_image_checksum_and_status(
-            checksum='8f113e38d28a79a5a451b16048cc2b72',
-            status='active')
+        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+        self.assertEqual(len(image_data),
+                         jsonutils.loads(response.text)['size'])
 
         # Ensure image is created in default backend
         self.assertIn('file1', jsonutils.loads(response.text)['stores'])
@@ -4763,23 +4729,16 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
 
-        def _verify_image_checksum_and_status(checksum=None, status=None):
-            # Checksum should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            self.assertEqual(status, image['status'])
-
         # Upload some image data to staging area
+        image_data = b'GLANCE IS DEAD SEXY'
         path = self._url('/v2/images/%s/stage' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
+        response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Verify image is in uploading state and checksum is None
-        _verify_image_checksum_and_status(status='uploading')
+        func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  status='uploading')
 
         # Import image to file2 store (other than default backend)
         path = self._url('/v2/images/%s/import' % image_id)
@@ -4803,15 +4762,20 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    status='active',
                                    max_sec=2,
                                    delay_sec=0.2)
-        _verify_image_checksum_and_status(
-            checksum='8f113e38d28a79a5a451b16048cc2b72',
-            status='active')
+        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+        self.assertEqual(len(image_data),
+                         jsonutils.loads(response.text)['size'])
 
         # Ensure image is created in different backend
         self.assertIn('file2', jsonutils.loads(response.text)['stores'])
@@ -4927,17 +4891,9 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
 
-        def _verify_image_checksum_and_status(checksum=None, status=None):
-            # Checksum should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            self.assertEqual(status, image['status'])
-
         # Verify image is in queued state and checksum is None
-        _verify_image_checksum_and_status(status='queued')
+        func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  status='queued')
 
         # Import image to store
         path = self._url('/v2/images/%s/import' % image_id)
@@ -4945,10 +4901,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
             'content-type': 'application/json',
             'X-Roles': 'admin',
         })
+        image_data_uri = ('https://www.openstack.org/assets/openstack-logo/'
+                          '2016R/OpenStack-Logo-Horizontal.eps.zip')
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
-            'uri': 'https://www.openstack.org/assets/openstack-logo/'
-                   '2016R/OpenStack-Logo-Horizontal.eps.zip'
+            'uri': image_data_uri
         }})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code)
@@ -4963,10 +4920,14 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    max_sec=20,
                                    delay_sec=0.2,
                                    start_delay_sec=1)
-        _verify_image_checksum_and_status(
-            checksum='bcd65f8922f61a9e6a20572ad7aa2bdd',
-            status='active')
-
+        with requests.get(image_data_uri) as r:
+            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
         # Ensure image is created in default backend
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
@@ -5084,18 +5045,9 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
 
-        def _verify_image_checksum_and_status(checksum=None, status=None):
-            # Checksum should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            self.assertEqual(status, image['status'])
-
         # Verify image is in queued state and checksum is None
-        _verify_image_checksum_and_status(status='queued')
-
+        func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  status='queued')
         # Import image to store
         path = self._url('/v2/images/%s/import' % image_id)
         headers = self._headers({
@@ -5103,10 +5055,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
             'X-Roles': 'admin',
             'X-Image-Meta-Store': 'file2'
         })
+        image_data_uri = ('https://www.openstack.org/assets/openstack-logo/'
+                          '2016R/OpenStack-Logo-Horizontal.eps.zip')
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
-            'uri': 'https://www.openstack.org/assets/openstack-logo/'
-                   '2016R/OpenStack-Logo-Horizontal.eps.zip'
+            'uri': image_data_uri
         }})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code)
@@ -5121,10 +5074,14 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    max_sec=20,
                                    delay_sec=0.2,
                                    start_delay_sec=1)
-        _verify_image_checksum_and_status(
-            checksum='bcd65f8922f61a9e6a20572ad7aa2bdd',
-            status='active')
-
+        with requests.get(image_data_uri) as r:
+            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
         # Ensure image is created in different backend
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
@@ -5243,23 +5200,20 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        def _verify_image_checksum_and_status(checksum, status):
-            # Checksum should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            self.assertEqual(status, image['status'])
-
         # Upload some image data
+        image_data = b'OpenStack Rules, Other Clouds Drool'
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
+        response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
-        _verify_image_checksum_and_status(expected_checksum, 'active')
+        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
 
         # Ensure image is created in default backend
         path = self._url('/v2/images/%s' % image_id)
@@ -5271,14 +5225,15 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertEqual(expected_checksum, response.headers['Content-MD5'])
-        self.assertEqual('ZZZZZ', response.text)
+        self.assertEqual(expect_c, response.headers['Content-MD5'])
+        self.assertEqual(image_data.decode('utf-8'), response.text)
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+        self.assertEqual(len(image_data),
+                         jsonutils.loads(response.text)['size'])
 
         # Unprotect image for deletion
         path = self._url('/v2/images/%s' % image_id)
@@ -5413,26 +5368,23 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         response = requests.get(path, headers=headers)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        def _verify_image_checksum_and_status(checksum, status):
-            # Checksum should be populated and status should be active
-            path = self._url('/v2/images/%s' % image_id)
-            response = requests.get(path, headers=self._headers())
-            self.assertEqual(http.OK, response.status_code)
-            image = jsonutils.loads(response.text)
-            self.assertEqual(checksum, image['checksum'])
-            self.assertEqual(status, image['status'])
-
         # Upload some image data
+        image_data = b'just a passing glance'
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({
             'Content-Type': 'application/octet-stream',
             'X-Image-Meta-Store': 'file2'
         })
-        response = requests.put(path, headers=headers, data='ZZZZZ')
+        response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        expected_checksum = '8f113e38d28a79a5a451b16048cc2b72'
-        _verify_image_checksum_and_status(expected_checksum, 'active')
+        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
+        func_utils.verify_image_hashes_and_status(self,
+                                                  image_id,
+                                                  checksum=expect_c,
+                                                  os_hash_value=expect_h,
+                                                  status='active')
 
         # Ensure image is created in different backend
         path = self._url('/v2/images/%s' % image_id)
@@ -5444,14 +5396,15 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         path = self._url('/v2/images/%s/file' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertEqual(expected_checksum, response.headers['Content-MD5'])
-        self.assertEqual('ZZZZZ', response.text)
+        self.assertEqual(expect_c, response.headers['Content-MD5'])
+        self.assertEqual(image_data.decode('utf-8'), response.text)
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertEqual(5, jsonutils.loads(response.text)['size'])
+        self.assertEqual(len(image_data),
+                         jsonutils.loads(response.text)['size'])
 
         # Unprotect image for deletion
         path = self._url('/v2/images/%s' % image_id)
