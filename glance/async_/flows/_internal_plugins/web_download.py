@@ -12,7 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+import glance_store as store_api
 from glance_store import backend
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -44,15 +44,22 @@ class _WebDownload(task.Task):
         super(_WebDownload, self).__init__(
             name='%s-WebDownload-%s' % (task_type, task_id))
 
-        if CONF.node_staging_uri is None:
-            msg = (_("%(task_id)s of %(task_type)s not configured "
-                     "properly. Missing node_staging_uri: %(work_dir)s") %
-                   {'task_id': self.task_id,
-                    'task_type': self.task_type,
-                    'work_dir': CONF.node_staging_uri})
-            raise exception.BadTaskConfiguration(msg)
+        # NOTE(abhishekk): Use reserved 'os_glance_staging_store' for
+        # staging the data, the else part will be removed once old way
+        # of configuring store is deprecated.
+        if CONF.enabled_backends:
+            self.store = store_api.get_store_from_store_identifier(
+                'os_glance_staging_store')
+        else:
+            if CONF.node_staging_uri is None:
+                msg = (_("%(task_id)s of %(task_type)s not configured "
+                         "properly. Missing node_staging_uri: %(work_dir)s") %
+                       {'task_id': self.task_id,
+                        'task_type': self.task_type,
+                        'work_dir': CONF.node_staging_uri})
+                raise exception.BadTaskConfiguration(msg)
 
-        self.store = self._build_store()
+            self.store = self._build_store()
 
     def _build_store(self):
         # NOTE(flaper87): Due to the nice glance_store api (#sarcasm), we're
@@ -111,7 +118,6 @@ class _WebDownload(task.Task):
                            "task_id": self.task_id})
 
         path = self.store.add(self.image_id, data, 0)[0]
-
         return path
 
     def revert(self, result, **kwargs):

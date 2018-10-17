@@ -17,6 +17,7 @@ import os
 from cursive import exception as cursive_exception
 import glance_store
 from glance_store import backend
+from glance_store import location
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
@@ -75,21 +76,29 @@ class ImageDataController(object):
         :param image: The image will be restored
         :param staging_store: The store used for staging
         """
-        # NOTE(abhishek): staging_store not being used in this function
-        # because of bug #1803498
-        # TODO(abhishek): refactor to use the staging_store when the
-        # "Rethinking Filesystem Access" spec is implemented in Train
-        file_path = str(CONF.node_staging_uri + '/' + image.image_id)[7:]
-        if os.path.exists(file_path):
+        if CONF.enabled_backends:
+            file_path = "%s/%s" % (getattr(
+                CONF, 'os_glance_staging_store').filesystem_store_datadir,
+                image.image_id)
             try:
-                os.unlink(file_path)
-            except OSError as e:
-                LOG.error(_("Cannot delete staged image data %(fn)s "
-                            "[Errno %(en)d]"), {'fn': file_path,
-                                                'en': e.errno})
+                loc = location.get_location_from_uri_and_backend(
+                    file_path, 'os_glance_staging_store')
+                staging_store.delete(loc)
+            except (glance_store.exceptions.NotFound,
+                    glance_store.exceptions.UnknownScheme):
+                pass
         else:
-            LOG.warning(_("Staged image data not found "
-                          "at %(fn)s"), {'fn': file_path})
+            file_path = str(CONF.node_staging_uri + '/' + image.image_id)[7:]
+            if os.path.exists(file_path):
+                try:
+                    os.unlink(file_path)
+                except OSError as e:
+                    LOG.error(_("Cannot delete staged image data %(fn)s "
+                                "[Errno %(en)d]"), {'fn': file_path,
+                                                    'en': e.errno})
+            else:
+                LOG.warning(_("Staged image data not found "
+                              "at %(fn)s"), {'fn': file_path})
 
         self._restore(image_repo, image)
 
@@ -320,7 +329,14 @@ class ImageDataController(object):
                 raise exception.BadStoreUri(message=msg)
             return staging_store
 
-        staging_store = _build_staging_store()
+        # NOTE(abhishekk): Use reserved 'os_glance_staging_store' for staging
+        # the data, the else part will be removed once multiple backend feature
+        # is declared as stable.
+        if CONF.enabled_backends:
+            staging_store = glance_store.get_store_from_store_identifier(
+                'os_glance_staging_store')
+        else:
+            staging_store = _build_staging_store()
 
         try:
             image = image_repo.get(image_id)

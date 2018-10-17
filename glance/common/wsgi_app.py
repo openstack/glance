@@ -18,6 +18,7 @@ from oslo_log import log as logging
 import osprofiler.initializer
 
 from glance.common import config
+from glance.common import store_utils
 from glance import notifier
 
 CONF = cfg.CONF
@@ -28,6 +29,12 @@ logging.register_options(CONF)
 CONFIG_FILES = ['glance-api-paste.ini',
                 'glance-image-import.conf',
                 'glance-api.conf']
+
+# Reserved file stores for staging and tasks operations
+RESERVED_STORES = {
+    'os_glance_staging_store': 'file',
+    'os_glance_tasks_store': 'file'
+}
 
 
 def _get_config_files(env=None):
@@ -63,8 +70,13 @@ def init_app():
     logging.setup(CONF, "glance")
 
     if CONF.enabled_backends:
-        glance_store.register_store_opts(CONF)
-        glance_store.create_multi_stores(CONF)
+        if store_utils.check_reserved_stores(CONF.enabled_backends):
+            msg = _("'os_glance_' prefix should not be used in "
+                    "enabled_backends config option. It is reserved "
+                    "for internal use only.")
+            raise RuntimeError(msg)
+        glance_store.register_store_opts(CONF, reserved_stores=RESERVED_STORES)
+        glance_store.create_multi_stores(CONF, reserved_stores=RESERVED_STORES)
         glance_store.verify_store()
     else:
         glance_store.register_opts(CONF)

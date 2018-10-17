@@ -114,7 +114,13 @@ class _Convert(task.Task):
         # shields us from being vulnerable to an attack vector described here
         # https://bugs.launchpad.net/glance/+bug/1449062
 
-        dest_path = os.path.join(CONF.task.work_dir, "%s.converted" % image_id)
+        data_dir = CONF.task.work_dir
+        # NOTE(abhishekk): Use reserved 'os_glance_tasks_store' for tasks.
+        if CONF.enabled_backends:
+            data_dir = getattr(
+                CONF, 'os_glance_tasks_store').filesystem_store_datadir
+
+        dest_path = os.path.join(data_dir, "%s.converted" % image_id)
         stdout, stderr = putils.trycmd('qemu-img', 'convert',
                                        '-f', src_format,
                                        '-O', conversion_format,

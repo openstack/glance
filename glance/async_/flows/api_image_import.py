@@ -14,6 +14,7 @@
 #    under the License.
 import os
 
+import glance_store as store_api
 from glance_store import backend
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -86,23 +87,28 @@ class _DeleteFromFS(task.Task):
 
         :param file_path: path to the file being deleted
         """
-        # TODO(abhishekk): After removal of backend module from glance_store
-        # need to change this to use multi_backend module.
-        file_path = file_path[7:]
-        if os.path.exists(file_path):
-            try:
-                LOG.debug(_("After upload to the backend, deleting staged "
-                            "image data from %(fn)s"), {'fn': file_path})
-                os.unlink(file_path)
-            except OSError as e:
-                LOG.error(_("After upload to backend, deletion of staged "
-                            "image data from %(fn)s has failed because "
-                            "[Errno %(en)d]"), {'fn': file_path,
-                                                'en': e.errno})
+        if CONF.enabled_backends:
+            store_api.delete(file_path, 'os_glance_staging_store')
         else:
-            LOG.warning(_("After upload to backend, deletion of staged "
-                          "image data has failed because "
-                          "it cannot be found at %(fn)s"), {'fn': file_path})
+            # TODO(abhishekk): After removal of backend module from
+            # glance_store need to change this to use multi_backend
+            # module.
+            file_path = file_path[7:]
+            if os.path.exists(file_path):
+                try:
+                    LOG.debug(_("After upload to the backend, deleting staged "
+                                "image data from %(fn)s"), {'fn': file_path})
+                    os.unlink(file_path)
+                except OSError as e:
+                    LOG.error(_("After upload to backend, deletion of staged "
+                                "image data from %(fn)s has failed because "
+                                "[Errno %(en)d]"), {'fn': file_path,
+                                                    'en': e.errno})
+            else:
+                LOG.warning(_("After upload to backend, deletion of staged "
+                              "image data has failed because "
+                              "it cannot be found at %(fn)s"), {
+                    'fn': file_path})
 
 
 class _VerifyStaging(task.Task):
@@ -132,10 +138,11 @@ class _VerifyStaging(task.Task):
                     'task_type': self.task_type})
             raise exception.BadTaskConfiguration(msg)
 
-        # NOTE(jokke): We really don't need the store for anything but
-        # verifying that we actually can build the store will allow us to
-        # fail the flow early with clear message why that happens.
-        self._build_store()
+        if not CONF.enabled_backends:
+            # NOTE(jokke): We really don't need the store for anything but
+            # verifying that we actually can build the store will allow us to
+            # fail the flow early with clear message why that happens.
+            self._build_store()
 
     def _build_store(self):
         # TODO(abhishekk): After removal of backend module from glance_store
@@ -332,18 +339,26 @@ def get_flow(**kwargs):
     backend = kwargs.get('backend')
 
     separator = ''
-    if not CONF.node_staging_uri.endswith('/'):
+    if not CONF.enabled_backends and not CONF.node_staging_uri.endswith('/'):
         separator = '/'
 
     if not uri and import_method == 'glance-direct':
-        uri = separator.join((CONF.node_staging_uri, str(image_id)))
+        if CONF.enabled_backends:
+            separator, staging_dir = _get_dir_separator()
+            uri = separator.join((staging_dir, str(image_id)))
+        else:
+            uri = separator.join((CONF.node_staging_uri, str(image_id)))
 
     flow = lf.Flow(task_type, retry=retry.AlwaysRevert())
 
     if import_method == 'web-download':
         downloadToStaging = internal_plugins.get_import_plugin(**kwargs)
         flow.add(downloadToStaging)
-        file_uri = separator.join((CONF.node_staging_uri, str(image_id)))
+        if CONF.enabled_backends:
+            separator, staging_dir = _get_dir_separator()
+            file_uri = separator.join((staging_dir, str(image_id)))
+        else:
+            file_uri = separator.join((CONF.node_staging_uri, str(image_id)))
     else:
         file_uri = uri
 
@@ -381,3 +396,12 @@ def get_flow(**kwargs):
     image_repo.save(image, from_state=from_state)
 
     return flow
+
+
+def _get_dir_separator():
+    separator = ''
+    staging_dir = "file://%s" % getattr(
+        CONF, 'os_glance_staging_store').filesystem_store_datadir
+    if not staging_dir.endswith('/'):
+        separator = '/'
+    return separator, staging_dir

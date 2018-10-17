@@ -59,3 +59,16 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
                 self.assertTrue(stores['read-only'])
             else:
                 self.assertIsNone(stores.get('read-only'))
+
+    def test_get_stores_reserved_stores_excluded(self):
+        enabled_backends = {
+            'fast': 'file',
+            'cheap': 'file'
+        }
+        self.config(enabled_backends=enabled_backends)
+        req = unit_test_utils.get_fake_request()
+        output = self.controller.get_stores(req)
+        self.assertIn('stores', output)
+        self.assertEqual(2, len(output['stores']))
+        for stores in output["stores"]:
+            self.assertFalse(stores["id"].startswith("os_glance_"))

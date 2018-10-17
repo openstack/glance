@@ -570,6 +570,16 @@ class ServerTest(test_utils.BaseTestCase):
 
     @mock.patch.object(prefetcher, 'Prefetcher')
     @mock.patch.object(wsgi.Server, 'configure_socket')
+    def test_reserved_stores_not_allowed(self, mock_configure_socket,
+                                         mock_prefetcher):
+        """Ensure the reserved stores are not allowed"""
+        enabled_backends = {'os_glance_file_store': 'file'}
+        self.config(enabled_backends=enabled_backends)
+        server = wsgi.Server(threads=1, initialize_glance_store=True)
+        self.assertRaises(RuntimeError, server.configure)
+
+    @mock.patch.object(prefetcher, 'Prefetcher')
+    @mock.patch.object(wsgi.Server, 'configure_socket')
     def test_http_keepalive(self, mock_configure_socket, mock_prefetcher):
         self.config(http_keepalive=False)
         self.config(workers=0)

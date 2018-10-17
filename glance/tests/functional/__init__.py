@@ -565,6 +565,7 @@ class ApiServerForMultipleBackend(Server):
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir_backend_1 = os.path.join(self.test_dir, "images_1")
         self.image_dir_backend_2 = os.path.join(self.test_dir, "images_2")
+        self.staging_dir = os.path.join(self.test_dir, "staging")
         self.pid_file = pid_file or os.path.join(self.test_dir,
                                                  "multiple_backend_api.pid")
         self.log_file = os.path.join(self.test_dir, "multiple_backend_api.log")
@@ -635,7 +636,7 @@ image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
 allow_additional_image_properties = True
-enabled_backends=file1:file, file2:file
+enabled_backends=file1:file,file2:file
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
@@ -651,6 +652,8 @@ filesystem_store_datadir=%(image_dir_backend_1)s
 filesystem_store_datadir=%(image_dir_backend_2)s
 [import_filtering_opts]
 allowed_ports = []
+[os_glance_staging_store]
+filesystem_store_datadir=%(staging_dir)s
 """
         self.paste_conf_base = """[pipeline:glance-api]
 pipeline =
