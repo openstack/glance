@@ -31,6 +31,7 @@ from glance.version import version_info as version
 paste_deploy_opts = [
     cfg.StrOpt('flavor',
                sample_default='keystone',
+               default='keystone',
                help=_("""
 Deployment flavor to use in the server application pipeline.
 
