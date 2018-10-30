@@ -364,6 +364,8 @@ store_type_preference = %(store_type_location_strategy_preference)s
 [glance_store]
 filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
+[import_filtering_opts]
+allowed_ports = []
 """
         self.paste_conf_base = """[pipeline:glance-api]
 pipeline =
@@ -549,6 +551,8 @@ default_backend = %(default_backend)s
 filesystem_store_datadir=%(image_dir_backend_1)s
 [file2]
 filesystem_store_datadir=%(image_dir_backend_2)s
+[import_filtering_opts]
+allowed_ports = []
 """
         self.paste_conf_base = """[pipeline:glance-api]
 pipeline =
