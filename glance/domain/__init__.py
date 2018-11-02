@@ -300,9 +300,9 @@ class ExtraProperties(collections.MutableMapping, dict):
 
     def __eq__(self, other):
         if isinstance(other, ExtraProperties):
-            return dict(self).__eq__(dict(other))
+            return dict.__eq__(self, dict(other))
         elif isinstance(other, dict):
-            return dict(self).__eq__(other)
+            return dict.__eq__(self, other)
         else:
             return False
 
@@ -310,10 +310,10 @@ class ExtraProperties(collections.MutableMapping, dict):
         return not self.__eq__(other)
 
     def __len__(self):
-        return dict(self).__len__()
+        return dict.__len__(self)
 
     def keys(self):
-        return dict(self).keys()
+        return dict.keys(self)
 
 
 class ImageMembership(object):
