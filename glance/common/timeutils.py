@@ -20,7 +20,6 @@ Time related utilities and helper functions.
 import datetime
 
 import iso8601
-from monotonic import monotonic as now  # noqa
 from oslo_utils import encodeutils
 
 # ISO 8601 extended time format with microseconds
