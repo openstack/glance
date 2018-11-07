@@ -71,7 +71,7 @@ Release notes
 To learn more about Glance's new features, optimizations, and changes
 between versions, consult the release notes online at:
 
-* `Release Notes <https://docs.openstack.org/releasenotes/glance/>`_
+* `Release Notes <https://docs.openstack.org/releasenotes/glance/>`__
 
 Other Information
 -----------------
