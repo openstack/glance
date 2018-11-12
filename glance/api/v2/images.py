@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import hashlib
 import re
 
 import glance_store
@@ -45,6 +46,7 @@ CONF.import_opt('disk_formats', 'glance.common.config', group='image_format')
 CONF.import_opt('container_formats', 'glance.common.config',
                 group='image_format')
 CONF.import_opt('show_multiple_locations', 'glance.common.config')
+CONF.import_opt('hashing_algorithm', 'glance.common.config')
 
 
 class ImagesController(object):
@@ -364,6 +366,76 @@ class ImagesController(object):
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
+    def _validate_validation_data(self, image, locations):
+        val_data = {}
+        for loc in locations:
+            if 'validation_data' not in loc:
+                continue
+            for k, v in loc['validation_data'].items():
+                if val_data.get(k, v) != v:
+                    msg = _("Conflicting values for %s") % k
+                    raise webob.exc.HTTPConflict(explanation=msg)
+                val_data[k] = v
+
+        # NOTE(imacdonn): values may be provided for items which are
+        # already set, so long as the values exactly match. In this
+        # case, nothing actually needs to be updated, but we should
+        # reject the request if there's an apparent attempt to supply
+        # a different value.
+        new_val_data = {}
+        for k, v in val_data.items():
+            current = getattr(image, k)
+            if v == current:
+                continue
+            if current:
+                msg = _("%s is already set with a different value") % k
+                raise webob.exc.HTTPConflict(explanation=msg)
+            new_val_data[k] = v
+
+        if not new_val_data:
+            return {}
+
+        if image.status != 'queued':
+            msg = _("New value(s) for %s may only be provided when image "
+                    "status is 'queued'") % ', '.join(new_val_data.keys())
+            raise webob.exc.HTTPConflict(explanation=msg)
+
+        if 'checksum' in new_val_data:
+            try:
+                checksum_bytes = bytearray.fromhex(new_val_data['checksum'])
+            except ValueError:
+                msg = (_("checksum (%s) is not a valid hexadecimal value") %
+                       new_val_data['checksum'])
+                raise webob.exc.HTTPConflict(explanation=msg)
+            if len(checksum_bytes) != 16:
+                msg = (_("checksum (%s) is not the correct size for md5 "
+                         "(should be 16 bytes)") %
+                       new_val_data['checksum'])
+                raise webob.exc.HTTPConflict(explanation=msg)
+
+        hash_algo = new_val_data.get('os_hash_algo')
+        if hash_algo != CONF['hashing_algorithm']:
+            msg = (_("os_hash_algo must be %(want)s, not %(got)s") %
+                   {'want': CONF['hashing_algorithm'], 'got': hash_algo})
+            raise webob.exc.HTTPConflict(explanation=msg)
+
+        try:
+            hash_bytes = bytearray.fromhex(new_val_data['os_hash_value'])
+        except ValueError:
+            msg = (_("os_hash_value (%s) is not a valid hexadecimal value") %
+                   new_val_data['os_hash_value'])
+            raise webob.exc.HTTPConflict(explanation=msg)
+        want_size = hashlib.new(hash_algo).digest_size
+        if len(hash_bytes) != want_size:
+            msg = (_("os_hash_value (%(value)s) is not the correct size for "
+                     "%(algo)s (should be %(want)d bytes)") %
+                   {'value': new_val_data['os_hash_value'],
+                    'algo': hash_algo,
+                    'want': want_size})
+            raise webob.exc.HTTPConflict(explanation=msg)
+
+        return new_val_data
+
     def _get_locations_op_pos(self, path_pos, max_pos, allow_max):
         if path_pos is None or max_pos is None:
             return None
@@ -387,11 +459,15 @@ class ImagesController(object):
                     "%s.") % image.status
             raise webob.exc.HTTPConflict(explanation=msg)
 
+        val_data = self._validate_validation_data(image, value)
+
         try:
             # NOTE(flwang): _locations_proxy's setattr method will check if
             # the update is acceptable.
             image.locations = value
             if image.status == 'queued':
+                for k, v in val_data.items():
+                    setattr(image, k, v)
                 image.status = 'active'
         except (exception.BadStoreUri, exception.DuplicateLocation) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
@@ -410,6 +486,8 @@ class ImagesController(object):
                     "%s.") % image.status
             raise webob.exc.HTTPConflict(explanation=msg)
 
+        val_data = self._validate_validation_data(image, [value])
+
         pos = self._get_locations_op_pos(path_pos,
                                          len(image.locations), True)
         if pos is None:
@@ -418,6 +496,8 @@ class ImagesController(object):
         try:
             image.locations.insert(pos, value)
             if image.status == 'queued':
+                for k, v in val_data.items():
+                    setattr(image, k, v)
                 image.status = 'active'
         except (exception.BadStoreUri, exception.DuplicateLocation) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
@@ -1163,6 +1243,36 @@ def get_base_properties():
                     },
                     'metadata': {
                         'type': 'object',
+                    },
+                    'validation_data': {
+                        'description': _(
+                            'Values to be used to populate the corresponding '
+                            'image properties. If the image status is not '
+                            '\'queued\', values must exactly match those '
+                            'already contained in the image properties.'
+                        ),
+                        'type': 'object',
+                        'writeOnly': True,
+                        'additionalProperties': False,
+                        'properties': {
+                            'checksum': {
+                                'type': 'string',
+                                'minLength': 32,
+                                'maxLength': 32,
+                            },
+                            'os_hash_algo': {
+                                'type': 'string',
+                                'maxLength': 64,
+                            },
+                            'os_hash_value': {
+                                'type': 'string',
+                                'maxLength': 128,
+                            },
+                        },
+                        'required': [
+                            'os_hash_algo',
+                            'os_hash_value',
+                        ],
                     },
                 },
                 'required': ['url', 'metadata'],

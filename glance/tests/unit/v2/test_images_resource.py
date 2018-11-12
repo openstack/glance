@@ -1725,33 +1725,131 @@ class TestImagesController(base.IsolatedUnitTest):
     @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
     @mock.patch.object(store, 'get_size_from_uri_and_backend')
     @mock.patch.object(store, 'get_size_from_backend')
-    def test_replace_location_on_queued(self,
-                                        mock_get_size,
-                                        mock_get_size_uri,
-                                        mock_set_acls,
-                                        mock_check_loc,
-                                        mock_calc):
+    def test_replace_locations_on_queued(self,
+                                         mock_get_size,
+                                         mock_get_size_uri,
+                                         mock_set_acls,
+                                         mock_check_loc,
+                                         mock_calc):
         mock_calc.return_value = 1
         mock_get_size.return_value = 1
         mock_get_size_uri.return_value = 1
         self.config(show_multiple_locations=True)
+        image_id = str(uuid.uuid4())
         self.images = [
-            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+            _db_fixture(image_id, owner=TENANT1,
                         name='1',
                         disk_format='raw',
                         container_format='bare',
-                        status='queued'),
+                        status='queued',
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None),
         ]
         self.db.image_create(None, self.images[0])
         request = unit_test_utils.get_fake_request()
-        new_location = {'url': '%s/fake_location_1' % BASE_URI, 'metadata': {}}
+        new_location1 = {'url': '%s/fake_location_1' % BASE_URI,
+                         'metadata': {},
+                         'validation_data': {'checksum': CHKSUM,
+                                             'os_hash_algo': 'sha512',
+                                             'os_hash_value': MULTIHASH1}}
+        new_location2 = {'url': '%s/fake_location_2' % BASE_URI,
+                         'metadata': {},
+                         'validation_data': {'checksum': CHKSUM,
+                                             'os_hash_algo': 'sha512',
+                                             'os_hash_value': MULTIHASH1}}
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [new_location1, new_location2]}]
+        output = self.controller.update(request, image_id, changes)
+        self.assertEqual(image_id, output.image_id)
+        self.assertEqual(2, len(output.locations))
+        self.assertEqual(new_location1['url'], output.locations[0]['url'])
+        self.assertEqual(new_location2['url'], output.locations[1]['url'])
+        self.assertEqual('active', output.status)
+        self.assertEqual(CHKSUM, output.checksum)
+        self.assertEqual('sha512', output.os_hash_algo)
+        self.assertEqual(MULTIHASH1, output.os_hash_value)
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_new_validation_data_on_active(self,
+                                                        mock_get_size,
+                                                        mock_get_size_uri,
+                                                        mock_set_acls,
+                                                        mock_check_loc,
+                                                        mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location = {'url': '%s/fake_location_1' % BASE_URI,
+                        'metadata': {},
+                        'validation_data': {'checksum': CHKSUM,
+                                            'os_hash_algo': 'sha512',
+                                            'os_hash_value': MULTIHASH1}}
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                "may only be provided when image status "
+                                "is 'queued'",
+                                self.controller.update,
+                                request, image_id, changes)
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_replace_locations_different_validation_data(self,
+                                                         mock_get_size,
+                                                         mock_get_size_uri,
+                                                         mock_set_acls,
+                                                         mock_check_loc,
+                                                         mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        checksum=CHKSUM,
+                        os_hash_algo='sha512',
+                        os_hash_value=MULTIHASH1),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location = {'url': '%s/fake_location_1' % BASE_URI,
+                        'metadata': {},
+                        'validation_data': {'checksum': CHKSUM1,
+                                            'os_hash_algo': 'sha512',
+                                            'os_hash_value': MULTIHASH2}}
         changes = [{'op': 'replace', 'path': ['locations'],
                     'value': [new_location]}]
-        output = self.controller.update(request, '1', changes)
-        self.assertEqual('1', output.image_id)
-        self.assertEqual(1, len(output.locations))
-        self.assertEqual(new_location, output.locations[0])
-        self.assertEqual('active', output.status)
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                "already set with a different value",
+                                self.controller.update,
+                                request, image_id, changes)
 
     @mock.patch.object(glance.quota, '_calc_required_size')
     @mock.patch.object(glance.location, '_check_image_location')
@@ -1768,8 +1866,9 @@ class TestImagesController(base.IsolatedUnitTest):
         mock_get_size.return_value = 1
         mock_get_size_uri.return_value = 1
         self.config(show_multiple_locations=True)
+        image_id = str(uuid.uuid4())
         self.images = [
-            _db_fixture('1', owner=TENANT1, checksum=CHKSUM,
+            _db_fixture(image_id, owner=TENANT1, checksum=CHKSUM,
                         name='1',
                         disk_format='raw',
                         container_format='bare',
@@ -1777,14 +1876,188 @@ class TestImagesController(base.IsolatedUnitTest):
         ]
         self.db.image_create(None, self.images[0])
         request = unit_test_utils.get_fake_request()
-        new_location = {'url': '%s/fake_location_1' % BASE_URI, 'metadata': {}}
+        new_location = {'url': '%s/fake_location_1' % BASE_URI,
+                        'metadata': {}}
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
-        output = self.controller.update(request, '1', changes)
-        self.assertEqual('1', output.image_id)
+        output = self.controller.update(request, image_id, changes)
+        self.assertEqual(image_id, output.image_id)
         self.assertEqual(1, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
         self.assertEqual('active', output.status)
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_invalid_validation_data(self,
+                                                  mock_get_size,
+                                                  mock_get_size_uri,
+                                                  mock_set_acls,
+                                                  mock_check_loc,
+                                                  mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+
+        location = {
+            'url': '%s/fake_location_1' % BASE_URI,
+            'metadata': {},
+            'validation_data': {}
+        }
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': location}]
+
+        changes[0]['value']['validation_data'] = {
+            'checksum': 'something the same length as md5',
+            'os_hash_algo': 'sha512',
+            'os_hash_value': MULTIHASH1,
+        }
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                'checksum .* is not a valid hexadecimal value',
+                                self.controller.update,
+                                request, image_id, changes)
+
+        changes[0]['value']['validation_data'] = {
+            'checksum': '0123456789abcdef',
+            'os_hash_algo': 'sha512',
+            'os_hash_value': MULTIHASH1,
+        }
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                'checksum .* is not the correct size',
+                                self.controller.update,
+                                request, image_id, changes)
+
+        changes[0]['value']['validation_data'] = {
+            'checksum': CHKSUM,
+            'os_hash_algo': 'sha256',
+            'os_hash_value': MULTIHASH1,
+        }
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                'os_hash_algo must be sha512',
+                                self.controller.update,
+                                request, image_id, changes)
+
+        changes[0]['value']['validation_data'] = {
+            'checksum': CHKSUM,
+            'os_hash_algo': 'sha512',
+            'os_hash_value': 'not a hex value',
+        }
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                'os_hash_value .* is not a valid hexadecimal '
+                                'value',
+                                self.controller.update,
+                                request, image_id, changes)
+
+        changes[0]['value']['validation_data'] = {
+            'checksum': CHKSUM,
+            'os_hash_algo': 'sha512',
+            'os_hash_value': '0123456789abcdef',
+        }
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                'os_hash_value .* is not the correct size '
+                                'for sha512',
+                                self.controller.update,
+                                request, image_id, changes)
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_same_validation_data(self,
+                                               mock_get_size,
+                                               mock_get_size_uri,
+                                               mock_set_acls,
+                                               mock_check_loc,
+                                               mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        image_id = str(uuid.uuid4())
+        os_hash_value = '6513f21e44aa3da349f248188a44bc304a3653a04122d8fb45' \
+                        '35423c8e1d14cd6a153f735bb0982e2161b5b5186106570c17' \
+                        'a9e58b64dd39390617cd5a350f78'
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        checksum='checksum1',
+                        os_hash_algo='sha512',
+                        os_hash_value=os_hash_value),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location = {'url': '%s/fake_location_1' % BASE_URI,
+                        'metadata': {},
+                        'validation_data': {'checksum': 'checksum1',
+                                            'os_hash_algo': 'sha512',
+                                            'os_hash_value': os_hash_value}}
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        output = self.controller.update(request, image_id, changes)
+        self.assertEqual(image_id, output.image_id)
+        self.assertEqual(1, len(output.locations))
+        self.assertEqual(new_location, output.locations[0])
+        self.assertEqual('active', output.status)
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_different_validation_data(self,
+                                                    mock_get_size,
+                                                    mock_get_size_uri,
+                                                    mock_set_acls,
+                                                    mock_check_loc,
+                                                    mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        checksum=CHKSUM,
+                        os_hash_algo='sha512',
+                        os_hash_value=MULTIHASH1),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location = {'url': '%s/fake_location_1' % BASE_URI,
+                        'metadata': {},
+                        'validation_data': {'checksum': CHKSUM1,
+                                            'os_hash_algo': 'sha512',
+                                            'os_hash_value': MULTIHASH2}}
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        self.assertRaisesRegexp(webob.exc.HTTPConflict,
+                                "already set with a different value",
+                                self.controller.update,
+                                request, image_id, changes)
 
     def _test_update_locations_status(self, image_status, update):
         self.config(show_multiple_locations=True)
@@ -2695,6 +2968,44 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             request.body = jsonutils.dump_as_bytes([change])
             self.assertRaises(webob.exc.HTTPBadRequest,
                               self.deserializer.update, request)
+
+    def test_update_invalid_validation_data(self):
+        request = self._get_fake_patch_request()
+        changes = [{
+            'op': 'add',
+            'path': '/locations/0',
+            'value': {
+                'url': 'http://localhost/fake',
+                'metadata': {},
+            }
+        }]
+
+        changes[0]['value']['validation_data'] = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': MULTIHASH1,
+            'checksum': CHKSUM,
+        }
+        request.body = jsonutils.dump_as_bytes(changes)
+        self.deserializer.update(request)
+
+        changes[0]['value']['validation_data'] = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': MULTIHASH1,
+            'checksum': CHKSUM,
+            'bogus_key': 'bogus_value',
+        }
+        request.body = jsonutils.dump_as_bytes(changes)
+        self.assertRaisesRegexp(webob.exc.HTTPBadRequest,
+                                'Additional properties are not allowed',
+                                self.deserializer.update, request)
+
+        changes[0]['value']['validation_data'] = {
+            'checksum': CHKSUM,
+        }
+        request.body = jsonutils.dump_as_bytes(changes)
+        self.assertRaisesRegexp(webob.exc.HTTPBadRequest,
+                                'os_hash.* is a required property',
+                                self.deserializer.update, request)
 
     def test_update(self):
         request = self._get_fake_patch_request()
