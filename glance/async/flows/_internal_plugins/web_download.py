@@ -16,6 +16,8 @@
 from glance_store import backend
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
+from oslo_utils import excutils
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 from taskflow.types import failure
@@ -100,7 +102,13 @@ class _WebDownload(task.Task):
         # While using any path should be "technically" fine, it's not what
         # we recommend as the best solution. For more details on this, please
         # refer to the comment in the `_ImportToStore.execute` method.
-        data = script_utils.get_image_data_iter(self.uri)
+        try:
+            data = script_utils.get_image_data_iter(self.uri)
+        except Exception as e:
+            with excutils.save_and_reraise_exception():
+                LOG.error("Task %(task_id)s failed with exception %(error)s",
+                          {"error": encodeutils.exception_to_unicode(e),
+                           "task_id": self.task_id})
 
         path = self.store.add(self.image_id, data, 0)[0]
 
@@ -108,10 +116,15 @@ class _WebDownload(task.Task):
 
     def revert(self, result, **kwargs):
         if isinstance(result, failure.Failure):
-            LOG.exception(_LE('Task: %(task_id)s failed to import image '
-                              '%(image_id)s to the filesystem.'),
-                          {'task_id': self.task_id,
-                           'image_id': self.image_id})
+            LOG.error(_LE('Task: %(task_id)s failed to import image '
+                          '%(image_id)s to the filesystem.'),
+                      {'task_id': self.task_id,
+                       'image_id': self.image_id})
+            # NOTE(abhishekk): Revert image state back to 'queued' as
+            # something went wrong.
+            image = self.image_repo.get(self.image_id)
+            image.status = 'queued'
+            self.image_repo.save(image)
 
 
 def get_flow(**kwargs):
