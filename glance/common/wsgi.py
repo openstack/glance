@@ -314,7 +314,7 @@ wsgi_opts = [
 store_opts = [
     cfg.DictOpt('enabled_backends',
                 help=_('Key:Value pair of store identifier and store type. '
-                       'In case of multiple backends should be separated'
+                       'In case of multiple backends should be separated '
                        'using comma.')),
 ]
 
