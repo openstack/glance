@@ -345,6 +345,14 @@ Here is a list of useful image properties and the values they expect.
           rng_dev_path=/dev/hwrng
 
      - ``virtio``, or other supported device.
+   * - libvirt API driver
+     - ``hw_time_hpet``
+     - Adds support for the High Precision Event Timer (HPET) for x86 guests
+       in the libvirt driver when ``hypervisor_type=qemu`` and
+       ``architecture=i686`` or ``architecture=x86_64``. The timer can be
+       enabled by setting ``hw_time_hpet=true``. By default HPET remains
+       disabled.
+     - ``true`` or ``false`` (default)
    * - libvirt API driver, Hyper-V driver
      - ``hw_machine_type``
      - For libvirt: Enables booting an ARM system using the specified machine
