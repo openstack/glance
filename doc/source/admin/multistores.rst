@@ -70,7 +70,7 @@ operators to enable multiple stores support.
 
     .. code-block:: ini
 
-         [DEFAULT]
+         [glance_store]
          default_backend = fast
 
 * For each of the store identifier defined in ``enabled_backends`` section
