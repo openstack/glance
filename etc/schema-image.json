@@ -22,7 +22,11 @@
         "type": "string"
     },
     "os_version": {
-        "description": "Operating system version as specified by the distributor",
+        "description": "Operating system version as specified by the distributor.",
+        "type": "string"
+    },
+    "description": {
+        "description": "A human-readable string describing this image.",
         "type": "string"
     }
 }

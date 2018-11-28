@@ -60,3 +60,9 @@ https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html
 --------------
 
 The operating system version as specified by the distributor.
+
+**description**
+---------------
+
+A brief human-readable string, suitable for display in a user interface,
+describing the image.

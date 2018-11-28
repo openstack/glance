@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    A new common image property, 'description', has been added.  This
+    allows you to specify a brief human-readable description, suitable
+    for display in a user interface, on images.  It has been possible
+    to do this previously using a custom image property; this change
+    simply standardizes the usage in order to promote interoperability.
+    This change has no effect on any property named 'description' on
+    existing images, and it is not a required image property.
