@@ -75,7 +75,7 @@ class _ConvertImage(task.Task):
 
     def execute(self, file_path, **kwargs):
 
-        target_format = CONF.conversion_plugin_options.output_format
+        target_format = CONF.image_conversion.output_format
         # TODO(jokke): Once we support other schemas we need to take them into
         # account and handle the paths here.
         src_path = file_path.split('file://')[-1]
