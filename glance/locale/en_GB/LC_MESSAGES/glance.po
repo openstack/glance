@@ -12,11 +12,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-08-09 04:23+0000\n"
+"POT-Creation-Date: 2018-11-20 06:34+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-08-08 09:19+0000\n"
+"PO-Revision-Date: 2018-12-04 05:26+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -3428,6 +3428,10 @@ msgid "%s can't contain 4 byte unicode characters."
 msgstr "%s can't contain 4 byte unicode characters."
 
 #, python-format
+msgid "%s is already set with a different value"
+msgstr "%s is already set with a different value"
+
+#, python-format
 msgid "%s is already stopped"
 msgstr "%s is already stopped"
 
@@ -3658,6 +3662,10 @@ msgstr "Command not found"
 
 msgid "Configuration option was not valid"
 msgstr "Configuration option was not valid"
+
+#, python-format
+msgid "Conflicting values for %s"
+msgstr "Conflicting values for %s"
 
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
@@ -4483,6 +4491,10 @@ msgstr ""
 
 msgid "Must supply a non-negative value for age."
 msgstr "Must supply a non-negative value for age."
+
+#, python-format
+msgid "New value(s) for %s may only be provided when image status is 'queued'"
+msgstr "New value(s) for %s may only be provided when image status is 'queued'"
 
 msgid "No authenticated user"
 msgstr "No authenticated user"
@@ -5416,6 +5428,15 @@ msgstr "Uploading the image failed due to: %(exc)s"
 msgid "Use the http_proxy_to_wsgi middleware instead."
 msgstr "Use the http_proxy_to_wsgi middleware instead."
 
+msgid ""
+"Values to be used to populate the corresponding image properties. If the "
+"image status is not 'queued', values must exactly match those already "
+"contained in the image properties."
+msgstr ""
+"Values to be used to populate the corresponding image properties. If the "
+"image status is not 'queued', values must exactly match those already "
+"contained in the image properties."
+
 msgid "Virtual size of image in bytes"
 msgstr "Virtual size of image in bytes"
 
@@ -5644,6 +5665,14 @@ msgstr ""
 "%(from)s)"
 
 #, python-format
+msgid "checksum (%s) is not a valid hexadecimal value"
+msgstr "checksum (%s) is not a valid hexadecimal value"
+
+#, python-format
+msgid "checksum (%s) is not the correct size for md5 (should be 16 bytes)"
+msgstr "checksum (%s) is not the correct size for MD5 (should be 16 bytes)"
+
+#, python-format
 msgid "custom properties (%(props)s) conflict with base properties"
 msgstr "custom properties (%(props)s) conflict with base properties"
 
@@ -5665,6 +5694,22 @@ msgstr "MD5 hash of image contents."
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() got unexpected keywords %s"
+
+#, python-format
+msgid "os_hash_algo must be %(want)s, not %(got)s"
+msgstr "os_hash_algo must be %(want)s, not %(got)s"
+
+#, python-format
+msgid ""
+"os_hash_value (%(value)s) is not the correct size for %(algo)s (should be "
+"%(want)d bytes)"
+msgstr ""
+"os_hash_value (%(value)s) is not the correct size for %(algo)s (should be "
+"%(want)d bytes)"
+
+#, python-format
+msgid "os_hash_value (%s) is not a valid hexadecimal value"
+msgstr "os_hash_value (%s) is not a valid hexadecimal value"
 
 msgid "protected must be True, or False"
 msgstr "protected must be True, or False"
