@@ -55,4 +55,3 @@ cursive>=0.2.1 # Apache-2.0
 
 # timeutils
 iso8601>=0.1.11 # MIT
-monotonic>=0.6 # Apache-2.0
