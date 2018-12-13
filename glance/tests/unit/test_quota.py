@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import copy
 import uuid
 
 import mock
@@ -596,15 +597,24 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
             items.remove(item)
         self.assertEqual(0, len(items))
 
-    def test_tags_attr_exception(self):
+    def test_tags_attr_no_loop(self):
         proxy = glance.quota.QuotaImageTagsProxy(None)
-        self.assertRaises(AttributeError, lambda: proxy.foo)
+        self.assertEqual(set([]), proxy.tags)
 
-        # Remove tags to cause the object to be broken. If tags
-        # is not there and we weren't raising TypeError, we'd
-        # get an infinite loop when calling 'proxy.foo'.
+    def test_tags_deepcopy(self):
+        proxy = glance.quota.QuotaImageTagsProxy(set(['a', 'b']))
+        proxy_copy = copy.deepcopy(proxy)
+        self.assertEqual(set(['a', 'b']), proxy_copy.tags)
+        self.assertIn('a', proxy_copy)
+        # remove is a found via __getattr__
+        proxy_copy.remove('a')
+        self.assertNotIn('a', proxy_copy)
+
+    def test_tags_delete(self):
+        proxy = glance.quota.QuotaImageTagsProxy(set(['a', 'b']))
+        self.assertEqual(set(['a', 'b']), proxy.tags)
         del proxy.tags
-        self.assertRaises(TypeError, lambda: proxy.foo)
+        self.assertIsNone(proxy.tags)
 
 
 class TestImageMemberQuotas(test_utils.BaseTestCase):
