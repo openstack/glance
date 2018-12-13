@@ -596,6 +596,16 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
             items.remove(item)
         self.assertEqual(0, len(items))
 
+    def test_tags_attr_exception(self):
+        proxy = glance.quota.QuotaImageTagsProxy(None)
+        self.assertRaises(AttributeError, lambda: proxy.foo)
+
+        # Remove tags to cause the object to be broken. If tags
+        # is not there and we weren't raising TypeError, we'd
+        # get an infinite loop when calling 'proxy.foo'.
+        del proxy.tags
+        self.assertRaises(TypeError, lambda: proxy.foo)
+
 
 class TestImageMemberQuotas(test_utils.BaseTestCase):
 

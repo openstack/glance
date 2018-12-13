@@ -165,7 +165,14 @@ class QuotaImageTagsProxy(object):
         return self.tags.__len__(*args, **kwargs)
 
     def __getattr__(self, name):
-        return getattr(self.tags, name)
+        # Use TypeError here, not AttributeError, as the latter is how we
+        # know a tag is not present. TypeError says "this object is not
+        # what it claims to be".
+        try:
+            tags = self.__getattribute__('tags')
+        except AttributeError:
+            raise TypeError('QuotaImageTagsProxy has no tags.')
+        return getattr(tags, name)
 
 
 class ImageMemberFactoryProxy(glance.domain.proxy.ImageMembershipFactory):
