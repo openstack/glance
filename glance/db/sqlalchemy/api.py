@@ -1322,6 +1322,35 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             continue
         if hasattr(model_class, 'deleted'):
             tables.append(model_class.__tablename__)
+
+    # First force purging of records that are not soft deleted but
+    # are referencing soft deleted tasks/images records (e.g. task_info
+    # records). Then purge all soft deleted records in glance tables in the
+    # right order to avoid FK constraint violation.
+    t = Table("tasks", metadata, autoload=True)
+    ti = Table("task_info", metadata, autoload=True)
+    joined_rec = ti.join(t, t.c.id == ti.c.task_id)
+    deleted_task_info = sql.select([ti.c.task_id],
+                                   t.c.deleted_at < deleted_age).\
+        select_from(joined_rec).order_by(t.c.deleted_at).limit(max_rows)
+    delete_statement = DeleteFromSelect(ti, deleted_task_info,
+                                        ti.c.task_id)
+    LOG.info(_LI('Purging deleted rows older than %(age_in_days)d day(s) '
+                 'from table %(tbl)s'),
+             {'age_in_days': age_in_days, 'tbl': ti})
+    try:
+        with session.begin():
+            result = session.execute(delete_statement)
+    except (db_exception.DBError, db_exception.DBReferenceError) as ex:
+        LOG.exception(_LE('DBError detected when force purging '
+                          'table=%(table)s: %(error)s'),
+                      {'table': ti, 'error': six.text_type(ex)})
+        raise
+
+    rows = result.rowcount
+    LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),
+             {'rows': rows, 'tbl': ti})
+
     # get rid of FK constraints
     for tbl in ('images', 'tasks'):
         try:

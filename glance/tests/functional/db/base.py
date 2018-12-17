@@ -1946,6 +1946,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
         self.adm_context = context.get_admin_context(show_deleted=True)
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
+        self.context = context.RequestContext(is_admin=True)
         self.image_fixtures, self.task_fixtures = self.build_fixtures()
         self.create_tasks(self.task_fixtures)
         self.create_images(self.image_fixtures)
@@ -2078,6 +2079,29 @@ class DBPurgeTests(test_utils.BaseTestCase):
         # due to DBReferenceError being raised
         images_rows = session.query(images).count()
         self.assertEqual(4, images_rows)
+
+    def test_purge_task_info_with_refs_to_soft_deleted_tasks(self):
+        session = db_api.get_session()
+        engine = db_api.get_engine()
+
+        # check initial task and task_info row number are 3
+        tasks = self.db_api.task_get_all(self.adm_context)
+        self.assertEqual(3, len(tasks))
+
+        task_info = sqlalchemyutils.get_table(engine, 'task_info')
+        task_info_rows = session.query(task_info).count()
+        self.assertEqual(3, task_info_rows)
+
+        # purge soft deleted rows older than yesterday
+        self.db_api.purge_deleted_rows(self.context, 1, 5)
+
+        # check 1 row of task table is purged
+        tasks = self.db_api.task_get_all(self.adm_context)
+        self.assertEqual(2, len(tasks))
+
+        # and no task_info was left behind, 1 row purged
+        task_info_rows = session.query(task_info).count()
+        self.assertEqual(2, task_info_rows)
 
 
 class TestVisibility(test_utils.BaseTestCase):
