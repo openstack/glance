@@ -31,7 +31,6 @@ from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
 from oslo_serialization import jsonutils
-from oslotest import moxstubout
 import six
 from six.moves import BaseHTTPServer
 from six.moves import http_client as http
@@ -78,8 +77,6 @@ class BaseTestCase(testtools.TestCase):
         # the following policy tests
         config.parse_args(args=[])
         self.addCleanup(CONF.reset)
-        mox_fixture = self.useFixture(moxstubout.MoxStubout())
-        self.stubs = mox_fixture.stubs
         self.mock_object(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')

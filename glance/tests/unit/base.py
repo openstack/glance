@@ -103,9 +103,23 @@ class IsolatedUnitTest(StoreClearingUnitTest):
                     group="glance_store")
 
         store.create_stores()
-        stubs.stub_out_registry_and_store_server(self.stubs,
-                                                 self.test_dir,
-                                                 registry=self.registry)
+
+        def fake_get_conection_type(client):
+            DEFAULT_REGISTRY_PORT = 9191
+            DEFAULT_API_PORT = 9292
+
+            if (client.port == DEFAULT_API_PORT and
+                    client.host == '0.0.0.0'):
+                return stubs.FakeGlanceConnection
+            elif (client.port == DEFAULT_REGISTRY_PORT and
+                  client.host == '0.0.0.0'):
+                return stubs.FakeRegistryConnection(registry=self.registry)
+
+        self.patcher = mock.patch(
+            'glance.common.client.BaseClient.get_connection_type',
+            fake_get_conection_type)
+        self.addCleanup(self.patcher.stop)
+        self.patcher.start()
 
     def set_policy_rules(self, rules):
         fap = open(CONF.oslo_policy.policy_file, 'w')
@@ -127,7 +141,7 @@ class MultiIsolatedUnitTest(MultiStoreClearingUnitTest):
         lockutils.set_defaults(os.path.join(self.test_dir))
 
         self.config(debug=False)
-        stubs.stub_out_registry_and_store_server(self.stubs,
+        stubs.stub_out_registry_and_store_server(self,
                                                  self.test_dir,
                                                  registry=self.registry)
 

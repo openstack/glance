@@ -161,19 +161,6 @@ def stub_out_registry_and_store_server(stubs, base_dir, **kwargs):
             setattr(res, 'read', fake_reader)
             return res
 
-    def fake_get_connection_type(client):
-        """Returns the proper connection type."""
-        DEFAULT_REGISTRY_PORT = 9191
-        DEFAULT_API_PORT = 9292
-
-        if (client.port == DEFAULT_API_PORT and
-                client.host == '0.0.0.0'):
-            return FakeGlanceConnection
-        elif (client.port == DEFAULT_REGISTRY_PORT and
-              client.host == '0.0.0.0'):
-            rserver = kwargs.get("registry")
-            return FakeRegistryConnection(registry=rserver)
-
     def fake_image_iter(self):
         for i in self.source.app_iter:
             yield i
@@ -187,9 +174,5 @@ def stub_out_registry_and_store_server(stubs, base_dir, **kwargs):
                 assert glance.common.client.SENDFILE_SUPPORTED
             return force
 
-    stubs.Set(glance.common.client.BaseClient, 'get_connection_type',
-              fake_get_connection_type)
     setattr(glance.common.client.BaseClient, '_stub_orig_sendable',
             glance.common.client.BaseClient._sendable)
-    stubs.Set(glance.common.client.BaseClient, '_sendable',
-              fake_sendable)
