@@ -405,14 +405,26 @@ Related options:
 """)),
     # NOTE(flaper87): The policy.json file should be updated and the locaiton
     # related rules set to admin only once this option is finally removed.
+    # NOTE(rosmaita): Unfortunately, this option is used to gate some code
+    # paths; if the location related policies are set admin-only, then no
+    # normal users can save or retrieve image data.
     cfg.BoolOpt('show_multiple_locations', default=False,
                 deprecated_for_removal=True,
-                deprecated_reason=_('This option will be removed in the Pike '
-                                    'release or later because the same '
-                                    'functionality can be achieved with '
-                                    'greater granularity by using policies. '
-                                    'Please see the Newton '
-                                    'release notes for more information.'),
+                deprecated_reason=_('Use of this option, deprecated since '
+                                    'Newton, is a security risk and will be '
+                                    'removed once we figure out a way to '
+                                    'satisfy those use cases that currently '
+                                    'require it.  An earlier announcement '
+                                    'that the same functionality can be '
+                                    'achieved with greater granularity by '
+                                    'using policies is incorrect.  You cannot '
+                                    'work around this option via policy '
+                                    'configuration at the present time, '
+                                    'though that is the direction we believe '
+                                    'the fix will take.  Please keep an eye '
+                                    'on the Glance release notes to stay up '
+                                    'to date on progress in addressing this '
+                                    'issue.'),
                 deprecated_since='Newton',
                 help=_("""
 Show all image locations when returning an image.
@@ -429,6 +441,8 @@ NOTES:
       image locations can sometimes include credentials. Hence, this
       is set to ``False`` by default. Set this to ``True`` with
       EXTREME CAUTION and ONLY IF you know what you are doing!
+    * See https://wiki.openstack.org/wiki/OSSN/OSSN-0065 for more
+      information.
     * If an operator wishes to avoid showing any image location(s)
       to the user, then both this option and
       ``show_image_direct_url`` MUST be set to ``False``.
