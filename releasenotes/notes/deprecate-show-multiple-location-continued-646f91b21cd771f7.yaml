@@ -1,0 +1,23 @@
+---
+upgrade:
+  - |
+    The ``show_multiple_locations`` configuration option remains deprecated in
+    this release, but it has not been removed.  (It had been scheduled for
+    removal in the Pike release.)  Please keep a watch on the Glance release
+    notes and the glance-specs repository to stay informed about developments
+    on this issue.
+
+    The plan is to eliminate the option and use only policies to control image
+    locations access.  This, however, requires some major refactoring.  See the
+    `draft Policy Refactor spec <https://review.openstack.org/#/c/528021/>`_
+    for more information.
+
+    There is no projected timeline for this change, as no one has been able to
+    commit time to it.  The Glance team would be happy to discuss this more
+    with anyone interested in working on it.
+
+    The workaround is to continue to use the ``show_multiple_locations`` option
+    in a dedicated "internal" Glance node that is not accessible to end users.
+    We continue to recommend that image locations not be exposed to end users.
+    See `OSSN-0065 <https://wiki.openstack.org/wiki/OSSN/OSSN-0065>`_ for more
+    information.
