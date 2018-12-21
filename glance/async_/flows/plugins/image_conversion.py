@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 conversion_plugin_opts = [
     cfg.StrOpt('output_format',
                default='raw',
-               choices=('qcow2', 'raw', 'vdmk'),
+               choices=('qcow2', 'raw', 'vmdk'),
                help=_("""
 Desired output format for image conversion plugin.
 
@@ -46,7 +46,7 @@ the conversion and import will fail.
 Possible values:
     * qcow2
     * raw
-    * vdmk
+    * vmdk
 
 Related Options:
     * disk_formats

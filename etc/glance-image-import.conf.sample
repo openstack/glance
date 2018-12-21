@@ -20,7 +20,7 @@
 # Possible values:
 #     * qcow2
 #     * raw
-#     * vdmk
+#     * vmdk
 #
 # Related Options:
 #     * disk_formats
@@ -28,7 +28,7 @@
 # Possible values:
 # qcow2 - <No description provided>
 # raw - <No description provided>
-# vdmk - <No description provided>
+# vmdk - <No description provided>
 #output_format = raw
 
 
@@ -60,6 +60,10 @@
 #     * Any provided Task object name to be included
 #       in to the flow.
 #  (list value)
+#
+# This option has a sample default set, which means that
+# its actual default value may vary from the one documented
+# below.
 #image_import_plugins = [no_op]
 
 
