@@ -495,8 +495,10 @@ class Server(object):
         try:
             # NOTE(flaper87): Make sure this process
             # runs in its own process group.
+            # NOTE(lpetrut): This isn't available on Windows, so we're going
+            # to use job objects instead.
             os.setpgid(self.pgid, self.pgid)
-        except OSError:
+        except (OSError, AttributeError):
             # NOTE(flaper87): When running glance-control,
             # (glance's functional tests, for example)
             # setpgid fails with EPERM as glance-control
@@ -508,18 +510,25 @@ class Server(object):
             # shouldn't raise any error here.
             self.pgid = 0
 
+    @staticmethod
+    def set_signal_handler(signal_name, handler):
+        # Some signals may not be available on this platform.
+        sig = getattr(signal, signal_name, None)
+        if sig is not None:
+            signal.signal(sig, handler)
+
     def hup(self, *args):
         """
         Reloads configuration files with zero down time
         """
-        signal.signal(signal.SIGHUP, signal.SIG_IGN)
+        self.set_signal_handler("SIGHUP", signal.SIG_IGN)
         raise exception.SIGHUPInterrupt
 
     def kill_children(self, *args):
         """Kills the entire process group."""
-        signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+        self.set_signal_handler("SIGTERM", signal.SIG_IGN)
+        self.set_signal_handler("SIGINT", signal.SIG_IGN)
+        self.set_signal_handler("SIGCHLD", signal.SIG_IGN)
         self.running = False
         os.killpg(self.pgid, signal.SIGTERM)
 
@@ -544,9 +553,9 @@ class Server(object):
             return
         else:
             LOG.info(_LI("Starting %d workers"), workers)
-            signal.signal(signal.SIGTERM, self.kill_children)
-            signal.signal(signal.SIGINT, self.kill_children)
-            signal.signal(signal.SIGHUP, self.hup)
+            self.set_signal_handler("SIGTERM", self.kill_children)
+            self.set_signal_handler("SIGINT", self.kill_children)
+            self.set_signal_handler("SIGHUP", self.hup)
             while len(self.children) < workers:
                 self.run_child()
 
@@ -655,18 +664,18 @@ class Server(object):
     def run_child(self):
         def child_hup(*args):
             """Shuts down child processes, existing requests are handled."""
-            signal.signal(signal.SIGHUP, signal.SIG_IGN)
+            self.set_signal_handler("SIGHUP", signal.SIG_IGN)
             eventlet.wsgi.is_accepting = False
             self.sock.close()
 
         pid = os.fork()
         if pid == 0:
-            signal.signal(signal.SIGHUP, child_hup)
-            signal.signal(signal.SIGTERM, signal.SIG_DFL)
+            self.set_signal_handler("SIGHUP", child_hup)
+            self.set_signal_handler("SIGTERM", signal.SIG_DFL)
             # ignore the interrupt signal to avoid a race whereby
             # a child worker receives the signal before the parent
             # and is respawned unnecessarily as a result
-            signal.signal(signal.SIGINT, signal.SIG_IGN)
+            self.set_signal_handler("SIGINT", signal.SIG_IGN)
             # The child has no need to stash the unwrapped
             # socket, and the reference prevents a clean
             # exit on sighup
