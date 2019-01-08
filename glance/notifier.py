@@ -448,7 +448,7 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             raise webob.exc.HTTPBadRequest(
                 explanation=encodeutils.exception_to_unicode(e))
         except exception.Duplicate as e:
-            msg = (_("Unable to upload duplicate image data for image"
+            msg = (_("Unable to upload duplicate image data for image "
                      "%(image_id)s: %(error)s") %
                    {'image_id': self.repo.image_id,
                     'error': encodeutils.exception_to_unicode(e)})
