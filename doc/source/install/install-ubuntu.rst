@@ -18,7 +18,7 @@ create a database, service credentials, and API endpoints.
 
      .. code-block:: console
 
-        $ mysql -u root -p
+        # mysql
 
      .. end
 
