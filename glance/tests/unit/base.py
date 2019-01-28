@@ -108,11 +108,9 @@ class IsolatedUnitTest(StoreClearingUnitTest):
             DEFAULT_REGISTRY_PORT = 9191
             DEFAULT_API_PORT = 9292
 
-            if (client.port == DEFAULT_API_PORT and
-                    client.host == '0.0.0.0'):
+            if client.port == DEFAULT_API_PORT:
                 return stubs.FakeGlanceConnection
-            elif (client.port == DEFAULT_REGISTRY_PORT and
-                  client.host == '0.0.0.0'):
+            elif client.port == DEFAULT_REGISTRY_PORT:
                 return stubs.FakeRegistryConnection(registry=self.registry)
 
         self.patcher = mock.patch(

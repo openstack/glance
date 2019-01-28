@@ -32,7 +32,7 @@ class TestSqlite(functional.FunctionalTest):
         self.cleanup()
         self.start_servers(**self.__dict__.copy())
 
-        cmd = "sqlite3 tests.sqlite '.schema'"
+        cmd = 'sqlite3 tests.sqlite ".schema"'
         exitcode, out, err = execute(cmd, raise_error=True)
 
         self.assertNotIn('BIGINT', out)

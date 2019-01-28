@@ -45,7 +45,7 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         headers = {'content-type': 'application/json'}
         image_entity = {
@@ -61,7 +61,7 @@ class BaseCacheMiddlewareTest(object):
         data = jsonutils.loads(content)
         image_id = data['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
         headers = {'content-type': 'application/octet-stream'}
         image_data = "*" * FIVE_KB
@@ -87,7 +87,7 @@ class BaseCacheMiddlewareTest(object):
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
-        path = "http://%s:%d/v2/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v2/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -107,7 +107,7 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         headers = {'content-type': 'application/json'}
         image_entity = {
@@ -123,7 +123,7 @@ class BaseCacheMiddlewareTest(object):
         data = jsonutils.loads(content)
         image_id = data['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
         headers = {'content-type': 'application/octet-stream'}
         image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -187,7 +187,7 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         headers = {'content-type': 'application/json'}
         image_entity = {
@@ -203,7 +203,7 @@ class BaseCacheMiddlewareTest(object):
         data = jsonutils.loads(content)
         image_id = data['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
         headers = {'content-type': 'application/octet-stream'}
         image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -283,7 +283,7 @@ class BaseCacheMiddlewareTest(object):
         self.start_servers(**self.__dict__.copy())
 
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("0.0.0.0", self.api_port)
+        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
         headers = {'content-type': 'application/json'}
         image_entity = {
@@ -299,7 +299,7 @@ class BaseCacheMiddlewareTest(object):
         data = jsonutils.loads(content)
         image_id = data['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
         headers = {'content-type': 'application/octet-stream'}
         image_data = "*" * FIVE_KB
@@ -324,7 +324,7 @@ class BaseCacheMiddlewareTest(object):
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
-        path = "http://%s:%d/v2/images/%s" % ("0.0.0.0", self.api_port,
+        path = "http://%s:%d/v2/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
         response, content = http.request(path, 'DELETE')
@@ -347,7 +347,7 @@ class TestImageCacheXattr(functional.FunctionalTest,
         filesystem)
         """
         if getattr(self, 'disabled', False):
-            return
+            raise self.skipException('Test disabled.')
 
         if not getattr(self, 'inited', False):
             try:
@@ -356,7 +356,7 @@ class TestImageCacheXattr(functional.FunctionalTest,
                 self.inited = True
                 self.disabled = True
                 self.disabled_message = ("python-xattr not installed.")
-                return
+                raise self.skipException(self.disabled_message)
 
         self.inited = True
         self.disabled = False
@@ -370,7 +370,7 @@ class TestImageCacheXattr(functional.FunctionalTest,
             self.inited = True
             self.disabled = True
             self.disabled_message = ("filesystem does not support xattr")
-            return
+            raise self.skipException(self.disabled_message)
 
     def tearDown(self):
         super(TestImageCacheXattr, self).tearDown()

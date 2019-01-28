@@ -79,7 +79,7 @@ class TestRegistryV2Client(base.IsolatedUnitTest,
                                    created_at=uuid2_time)]
         self.destroy_fixtures()
         self.create_fixtures()
-        self.client = rclient.RegistryClient("0.0.0.0")
+        self.client = rclient.RegistryClient("127.0.0.1")
 
     def tearDown(self):
         """Clear the test environment"""

@@ -32,7 +32,6 @@ CONF = cfg.CONF
 _registry_client = 'glance.registry.client'
 CONF.import_opt('registry_client_protocol', _registry_client)
 CONF.import_opt('registry_client_key_file', _registry_client)
-CONF.import_opt('registry_client_cert_file', _registry_client)
 CONF.import_opt('registry_client_ca_file', _registry_client)
 CONF.import_opt('registry_client_insecure', _registry_client)
 CONF.import_opt('registry_client_timeout', _registry_client)

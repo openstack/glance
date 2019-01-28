@@ -17,6 +17,7 @@
 
 import copy
 import datetime
+import time
 import uuid
 
 import mock
@@ -1339,6 +1340,10 @@ class DriverTests(object):
                     'can_share': False,
                     'deleted': False}
         self.assertEqual(expected, member)
+
+        # The clock may not be very accurate, for which reason we may
+        # get identical timestamps.
+        time.sleep(0.01)
 
         member = self.db_api.image_member_update(self.context,
                                                  member_id,

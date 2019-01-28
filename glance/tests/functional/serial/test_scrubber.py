@@ -346,6 +346,8 @@ class TestScrubber(functional.FunctionalTest):
     def test_scrubber_restore_image_with_daemon_running(self):
         self.cleanup()
         self.scrubber_daemon.start(daemon=True)
+        # Give the scrubber some time to start.
+        time.sleep(5)
 
         exe_cmd = "%s -m glance.cmd.scrubber" % sys.executable
         cmd = ("%s --restore fake_image_id" % exe_cmd)
