@@ -1580,7 +1580,7 @@ class TaskTests(test_utils.BaseTestCase):
         db_tests.reset_db(self.db_api)
 
     def build_task_fixtures(self):
-        self.context.tenant = str(uuid.uuid4())
+        self.context.project_id = str(uuid.uuid4())
         fixtures = [
             {
                 'owner': self.context.owner,
@@ -1816,7 +1816,7 @@ class TaskTests(test_utils.BaseTestCase):
 
     def test_task_create(self):
         task_id = str(uuid.uuid4())
-        self.context.tenant = self.context.owner
+        self.context.project_id = self.context.owner
         values = {
             'id': task_id,
             'owner': self.context.owner,
@@ -1834,7 +1834,7 @@ class TaskTests(test_utils.BaseTestCase):
 
     def test_task_create_with_all_task_info_null(self):
         task_id = str(uuid.uuid4())
-        self.context.tenant = str(uuid.uuid4())
+        self.context.project_id = str(uuid.uuid4())
         values = {
             'id': task_id,
             'owner': self.context.owner,
@@ -1856,7 +1856,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertIsNone(task['message'])
 
     def test_task_update(self):
-        self.context.tenant = str(uuid.uuid4())
+        self.context.project_id = str(uuid.uuid4())
         result = {'foo': 'bar'}
         task_values = build_task_fixture(owner=self.context.owner,
                                          result=result)
@@ -1883,7 +1883,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertGreater(task['updated_at'], task['created_at'])
 
     def test_task_update_with_all_task_info_null(self):
-        self.context.tenant = str(uuid.uuid4())
+        self.context.project_id = str(uuid.uuid4())
         task_values = build_task_fixture(owner=self.context.owner,
                                          input=None,
                                          result=None,

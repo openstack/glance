@@ -29,10 +29,10 @@ def patched_bulk_request(self, commands):
     # present)
     body = self._serializer.to_json(commands)
     headers = {"X-Identity-Status": "Confirmed", 'X-Roles': 'member'}
-    if self.context.user is not None:
-        headers['X-User-Id'] = self.context.user
-    if self.context.tenant is not None:
-        headers['X-Tenant-Id'] = self.context.tenant
+    if self.context.user_id is not None:
+        headers['X-User-Id'] = self.context.user_id
+    if self.context.project_id is not None:
+        headers['X-Tenant-Id'] = self.context.project_id
     response = super(RPCClient, self).do_request('POST',
                                                  self.base_path,
                                                  body,

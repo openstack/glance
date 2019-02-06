@@ -394,8 +394,8 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             'bytes_sent': bytes_sent,
             'image_id': self.repo.image_id,
             'owner_id': self.repo.owner,
-            'receiver_tenant_id': self.context.tenant,
-            'receiver_user_id': self.context.user,
+            'receiver_tenant_id': self.context.project_id,
+            'receiver_user_id': self.context.user_id,
         }
 
     def _get_chunk_data_iterator(self, data, chunk_size=None):

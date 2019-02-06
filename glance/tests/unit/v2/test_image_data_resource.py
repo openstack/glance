@@ -403,7 +403,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         # check that token has been correctly acquired and deleted
         mock_refresher.assert_called_once_with(
             request.environ['keystone.token_auth'],
-            request.context.tenant, ['FakeRole'])
+            request.context.project_id, ['FakeRole'])
         refresher.refresh_token.assert_called_once_with()
         refresher.release_resources.assert_called_once_with()
         self.assertEqual("fake_token", request.context.auth_token)

@@ -131,4 +131,9 @@ class WarningsFixture(pyfixtures.Fixture):
                     ' This key is deprecated. Please update your policy '
                     'file to use the standard policy values.')
 
+        # NOTE(mriedem): user/tenant is deprecated in oslo.context so don't
+        # let anything new use it
+        warnings.filterwarnings(
+            'error', message="Property '.*' has moved to '.*'")
+
         self.addCleanup(warnings.resetwarnings)

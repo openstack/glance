@@ -41,8 +41,8 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         req = self._build_request()
         self._build_middleware().process_request(req)
         self.assertEqual('token1', req.context.auth_token)
-        self.assertEqual('user1', req.context.user)
-        self.assertEqual('tenant1', req.context.tenant)
+        self.assertEqual('user1', req.context.user_id)
+        self.assertEqual('tenant1', req.context.project_id)
         self.assertEqual(['role1', 'role2'], req.context.roles)
 
     def test_is_admin_flag(self):
@@ -93,8 +93,8 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         middleware = self._build_middleware()
         middleware.process_request(req)
         self.assertIsNone(req.context.auth_token)
-        self.assertIsNone(req.context.user)
-        self.assertIsNone(req.context.tenant)
+        self.assertIsNone(req.context.user_id)
+        self.assertIsNone(req.context.project_id)
         self.assertEqual([], req.context.roles)
         self.assertFalse(req.context.is_admin)
         self.assertTrue(req.context.read_only)
@@ -141,8 +141,8 @@ class TestUnauthenticatedContextMiddleware(base.IsolatedUnitTest):
         req = webob.Request.blank('/')
         middleware.process_request(req)
         self.assertIsNone(req.context.auth_token)
-        self.assertIsNone(req.context.user)
-        self.assertIsNone(req.context.tenant)
+        self.assertIsNone(req.context.user_id)
+        self.assertIsNone(req.context.project_id)
         self.assertEqual([], req.context.roles)
         self.assertTrue(req.context.is_admin)
 

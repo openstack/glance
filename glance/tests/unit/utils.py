@@ -230,9 +230,9 @@ class FakeStoreAPI(object):
             size = len(data.data.fd)
         if (current_store_size + size) > store_max_size:
             raise exception.StorageFull()
-        if context.user == USER2:
+        if context.user_id == USER2:
             raise exception.Forbidden()
-        if context.user == USER3:
+        if context.user_id == USER3:
             raise exception.StorageWriteDenied()
         self.data[image_id] = (data, size)
         checksum = 'Z'
@@ -253,9 +253,9 @@ class FakeStoreAPI(object):
             size = len(data.data.fd)
         if (current_store_size + size) > store_max_size:
             raise exception.StorageFull()
-        if context.user == USER2:
+        if context.user_id == USER2:
             raise exception.Forbidden()
-        if context.user == USER3:
+        if context.user_id == USER3:
             raise exception.StorageWriteDenied()
         self.data[image_id] = (data, size)
         checksum = 'Z'

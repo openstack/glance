@@ -288,7 +288,7 @@ class TestTasksController(test_utils.BaseTestCase):
 
     def test_get_not_allowed(self):
         request = unit_test_utils.get_fake_request()
-        self.assertEqual(TENANT1, request.context.tenant)
+        self.assertEqual(TENANT1, request.context.project_id)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.get, request, UUID4)
 

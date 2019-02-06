@@ -28,6 +28,15 @@ class RequestContext(context.RequestContext):
 
     def __init__(self, owner_is_tenant=True, service_catalog=None,
                  policy_enforcer=None, **kwargs):
+        # TODO(mriedem): Remove usage of user and tenant from old tests.
+        if 'tenant' in kwargs:
+            # Prefer project_id if passed, otherwise alias tenant as project_id
+            tenant = kwargs.pop('tenant')
+            kwargs['project_id'] = kwargs.get('project_id', tenant)
+        if 'user' in kwargs:
+            # Prefer user_id if passed, otherwise alias user as user_id
+            user = kwargs.pop('user')
+            kwargs['user_id'] = kwargs.get('user_id', user)
         super(RequestContext, self).__init__(**kwargs)
         self.owner_is_tenant = owner_is_tenant
         self.service_catalog = service_catalog
@@ -45,8 +54,8 @@ class RequestContext(context.RequestContext):
 
     def to_policy_values(self):
         pdict = super(RequestContext, self).to_policy_values()
-        pdict['user'] = self.user_id
-        pdict['tenant'] = self.project_id
+        pdict['user_id'] = self.user_id
+        pdict['project_id'] = self.project_id
         return pdict
 
     @classmethod

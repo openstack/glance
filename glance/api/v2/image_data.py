@@ -133,7 +133,7 @@ class ImageDataController(object):
                                 'keystone.token_info')['token']['roles']:
                             roles.append(role_info['name'])
                         refresher = trust_auth.TokenRefresher(user_plugin,
-                                                              cxt.tenant,
+                                                              cxt.project_id,
                                                               roles)
                     except Exception as e:
                         LOG.info(_LI("Unable to create trust: %s "

@@ -651,7 +651,7 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_show_not_allowed(self):
         request = unit_test_utils.get_fake_request()
-        self.assertEqual(TENANT1, request.context.tenant)
+        self.assertEqual(TENANT1, request.context.project_id)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, UUID4)
 
@@ -2669,7 +2669,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         # NOTE(abhishekk): For coverage purpose setting tenant to
         # None. It is not expected to do in normal scenarios.
-        request.context.tenant = None
+        request.context.project_id = None
         with mock.patch.object(
                 glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')

@@ -76,8 +76,8 @@ def image_send_notification(bytes_written, expected_size, image_meta, request,
             'bytes_sent': bytes_written,
             'image_id': image_meta['id'],
             'owner_id': image_meta['owner'],
-            'receiver_tenant_id': context.tenant,
-            'receiver_user_id': context.user,
+            'receiver_tenant_id': context.project_id,
+            'receiver_user_id': context.user_id,
             'destination_ip': request.remote_addr,
         }
         if bytes_written != expected_size:
@@ -156,7 +156,7 @@ def check_quota(context, image_size, db_api, image_id=None):
     if remaining is None:
         return
 
-    user = getattr(context, 'user', '<unknown>')
+    user = getattr(context, 'user_id', '<unknown>')
 
     if image_size is None:
         # NOTE(jbresnah) When the image size is None it means that it is
