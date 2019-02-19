@@ -30,6 +30,7 @@ from glance.i18n import _
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+_ENFORCER = None
 
 DEFAULT_RULES = policy.Rules.from_dict({
     'context_is_admin': 'role:admin',
@@ -87,6 +88,14 @@ class Enforcer(policy.Enforcer):
            :returns: A non-False value if context role is admin.
         """
         return self.check(context, 'context_is_admin', context.to_dict())
+
+
+def get_enforcer():
+    CONF([], project='glance')
+    global _ENFORCER
+    if _ENFORCER is None:
+        _ENFORCER = Enforcer()
+    return _ENFORCER
 
 
 class ImageRepoProxy(glance.domain.proxy.Repo):
