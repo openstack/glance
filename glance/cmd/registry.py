@@ -39,6 +39,7 @@ if os.name == 'nt':
 else:
     eventlet.patcher.monkey_patch()
 
+from oslo_reports import guru_meditation_report as gmr
 from oslo_utils import encodeutils
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
@@ -56,6 +57,7 @@ import osprofiler.initializer
 from glance.common import config
 from glance.common import wsgi
 from glance import notifier
+from glance import version
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
@@ -69,6 +71,7 @@ def main():
         config.set_config_defaults()
         wsgi.set_eventlet_hub()
         logging.setup(CONF, 'glance')
+        gmr.TextGuruMeditation.setup_autorun(version)
         notifier.set_defaults()
 
         if CONF.profiler.enabled:
