@@ -218,7 +218,7 @@ class CooperativeReader(object):
                 result = self.buffer[self.position:]
                 self.buffer = b''
                 self.position = 0
-                return str(result)
+                return bytes(result)
             else:
                 # otherwise read the next chunk from the underlying iterator
                 # and return it as a whole. Reset the buffer, as subsequent
@@ -228,7 +228,7 @@ class CooperativeReader(object):
                         self.iterator = self.__iter__()
                     return next(self.iterator)
                 except StopIteration:
-                    return ''
+                    return b''
                 finally:
                     self.buffer = b''
                     self.position = 0

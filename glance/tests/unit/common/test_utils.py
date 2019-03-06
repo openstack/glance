@@ -67,6 +67,35 @@ class TestUtils(test_utils.BaseTestCase):
         meat = b''.join(chunks)
         self.assertEqual(b'aaabbbcccdddeeefffggghhh', meat)
 
+    def test_cooperative_reader_unbounded_read_on_iterator(self):
+        """Ensure cooperative reader is happy with empty iterators"""
+        data = b'abcdefgh'
+        data_list = [data[i:i + 1] * 3 for i in range(len(data))]
+        reader = utils.CooperativeReader(data_list)
+        self.assertEqual(
+            [chunk for chunk in iter(lambda: reader.read(), b'')],
+            [b'aaa', b'bbb', b'ccc', b'ddd', b'eee', b'fff', b'ggg', b'hhh'])
+
+    def test_cooperative_reader_on_iterator_with_buffer(self):
+        """Ensure cooperative reader is happy with empty iterators"""
+        data_list = [b'abcd', b'efgh']
+        reader = utils.CooperativeReader(data_list)
+        # read from part of a chunk, get the first item into the buffer
+        self.assertEqual(b'ab', reader.read(2))
+        # read purely from buffer
+        self.assertEqual(b'c', reader.read(1))
+        # unbounded read grabs the rest of the buffer
+        self.assertEqual(b'd', reader.read())
+        # then the whole next chunk
+        self.assertEqual(b'efgh', reader.read())
+        # past that, it's always empty
+        self.assertEqual(b'', reader.read())
+
+    def test_cooperative_reader_unbounded_read_on_empty_iterator(self):
+        """Ensure cooperative reader is happy with empty iterators"""
+        reader = utils.CooperativeReader([])
+        self.assertEqual(b'', reader.read())
+
     def test_cooperative_reader_of_iterator_stop_iteration_err(self):
         """Ensure cooperative reader supports iterator backends too"""
         reader = utils.CooperativeReader([l * 3 for l in ''])
