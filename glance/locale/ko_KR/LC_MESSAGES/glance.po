@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-08-09 04:23+0000\n"
+"POT-Creation-Date: 2019-03-08 07:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -93,6 +93,13 @@ msgstr "%s이(가) 이미 중지되었습니다."
 #, python-format
 msgid "%s is stopped"
 msgstr "%s이(가) 중지됨"
+
+msgid ""
+"--os_auth_url option or OS_AUTH_URL environment variable required when "
+"keystone authentication strategy is enabled\n"
+msgstr ""
+"키스톤 인증 전략이 사용될 경우 --os_auth_url 옵션 또는 OS_AUTH_URL 환경 변수"
+"가 필요합니다.\n"
 
 msgid "A body is not expected with this request."
 msgstr "이 요청에는 본문이 없어야 합니다."
@@ -1635,11 +1642,6 @@ msgstr "스키마를 로드할 수 없음: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "%s에 대한 붙여넣기 구성 파일을 찾을 수 없습니다."
-
-#, python-format
-msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
-msgstr ""
-"이미지 %(image_id)s에 대한 중복 이미지 데이터를 업로드할 수 없음: %(error)s"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "예기치않은 본문 타입. list/dict를 예상합니다."
