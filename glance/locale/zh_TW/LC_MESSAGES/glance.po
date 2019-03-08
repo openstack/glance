@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-08-09 04:23+0000\n"
+"POT-Creation-Date: 2019-03-08 07:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -88,6 +88,12 @@ msgstr "已停止 %s"
 #, python-format
 msgid "%s is stopped"
 msgstr "%s 已停止"
+
+msgid ""
+"--os_auth_url option or OS_AUTH_URL environment variable required when "
+"keystone authentication strategy is enabled\n"
+msgstr ""
+"--os_auth_url 選項或 OS_AUTH_URL 環境變數（啟用 Keystone 鑑別策略時需要）\n"
 
 msgid "A body is not expected with this request."
 msgstr "此要求預期不含內文。"
@@ -1561,10 +1567,6 @@ msgstr "無法載入綱目：%(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "找不到 %s 的 paste 配置檔。"
-
-#, python-format
-msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
-msgstr "無法上傳映像檔 %(image_id)s 的重複映像檔資料：%(error)s"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "非預期的內文類型。預期為清單/字典。"

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-08-09 04:23+0000\n"
+"POT-Creation-Date: 2019-03-08 07:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -88,6 +88,13 @@ msgstr "%s zaten durdurulmuş"
 #, python-format
 msgid "%s is stopped"
 msgstr "%s durduruldu"
+
+msgid ""
+"--os_auth_url option or OS_AUTH_URL environment variable required when "
+"keystone authentication strategy is enabled\n"
+msgstr ""
+"--os_auth_url seçeneği ya da OS_AUTH_URL ortam değişkeni, keystone kimlik "
+"doğrulama stratejisi etkinken gereklidir\n"
 
 #, python-format
 msgid ""
@@ -1488,10 +1495,6 @@ msgstr "Şema yüklenemedi: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "%s için yapıştırma yapılandırma dosyası yerleştirilemedi."
-
-#, python-format
-msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
-msgstr "%(image_id)s imajı için çift imaj verisi yüklenemedi: %(error)s"
 
 #, python-format
 msgid "Unexpected response: %s"

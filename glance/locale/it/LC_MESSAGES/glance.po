@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-08-09 04:23+0000\n"
+"POT-Creation-Date: 2019-03-08 07:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -94,6 +94,13 @@ msgstr "%s è già stato arrestato"
 #, python-format
 msgid "%s is stopped"
 msgstr "%s è stato arrestato"
+
+msgid ""
+"--os_auth_url option or OS_AUTH_URL environment variable required when "
+"keystone authentication strategy is enabled\n"
+msgstr ""
+"l'opzione --os_auth_url o la variabile d'ambiente OS_AUTH_URL sono "
+"obbligatori quando è abilitato il modo di autenticazione keystone\n"
 
 msgid "A body is not expected with this request."
 msgstr "Un corpo non è previsto con questa richiesta."
@@ -1721,12 +1728,6 @@ msgstr "Impossibile caricare lo schema: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "Impossibile individuare il file di configurazione paste per %s."
-
-#, python-format
-msgid "Unable to upload duplicate image data for image%(image_id)s: %(error)s"
-msgstr ""
-"Impossibile caricare i dati dell'immagine duplicata per l'immagine "
-"%(image_id)s: %(error)s"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "Tipo di corpo imprevisto. Elenco/dizionario previsto."
