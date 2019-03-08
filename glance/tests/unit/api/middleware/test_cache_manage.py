@@ -10,8 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glance.api import cached_images
 from glance.api.middleware import cache_manage
+from glance.api.v2 import cached_images
 import glance.common.config
 import glance.common.wsgi
 import glance.image_cache
@@ -44,14 +44,14 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         # check
         self.assertIsNone(resource)
 
-    @mock.patch.object(cached_images.Controller, "get_cached_images")
+    @mock.patch.object(cached_images.CacheController, "get_cached_images")
     def test_get_cached_images(self,
                                mock_get_cached_images):
         # setup
         mock_get_cached_images.return_value = self.stub_value
 
         # prepare
-        request = webob.Request.blank("/v1/cached_images")
+        request = webob.Request.blank("/v2/cached_images")
 
         # call
         resource = self.cache_manage_filter.process_request(request)
@@ -61,14 +61,14 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         self.assertEqual('"' + self.stub_value + '"',
                          resource.body.decode('utf-8'))
 
-    @mock.patch.object(cached_images.Controller, "delete_cached_image")
+    @mock.patch.object(cached_images.CacheController, "delete_cached_image")
     def test_delete_cached_image(self,
                                  mock_delete_cached_image):
         # setup
         mock_delete_cached_image.return_value = self.stub_value
 
         # prepare
-        request = webob.Request.blank("/v1/cached_images/" + self.image_id,
+        request = webob.Request.blank("/v2/cached_images/" + self.image_id,
                                       environ={'REQUEST_METHOD': "DELETE"})
 
         # call
@@ -80,14 +80,14 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         self.assertEqual('"' + self.stub_value + '"',
                          resource.body.decode('utf-8'))
 
-    @mock.patch.object(cached_images.Controller, "delete_cached_images")
+    @mock.patch.object(cached_images.CacheController, "delete_cached_images")
     def test_delete_cached_images(self,
                                   mock_delete_cached_images):
         # setup
         mock_delete_cached_images.return_value = self.stub_value
 
         # prepare
-        request = webob.Request.blank("/v1/cached_images",
+        request = webob.Request.blank("/v2/cached_images",
                                       environ={'REQUEST_METHOD': "DELETE"})
 
         # call
@@ -98,14 +98,14 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         self.assertEqual('"' + self.stub_value + '"',
                          resource.body.decode('utf-8'))
 
-    @mock.patch.object(cached_images.Controller, "queue_image")
+    @mock.patch.object(cached_images.CacheController, "queue_image")
     def test_put_queued_image(self,
                               mock_queue_image):
         # setup
         mock_queue_image.return_value = self.stub_value
 
         # prepare
-        request = webob.Request.blank("/v1/queued_images/" + self.image_id,
+        request = webob.Request.blank("/v2/queued_images/" + self.image_id,
                                       environ={'REQUEST_METHOD': "PUT"})
 
         # call
@@ -116,14 +116,14 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         self.assertEqual('"' + self.stub_value + '"',
                          resource.body.decode('utf-8'))
 
-    @mock.patch.object(cached_images.Controller, "get_queued_images")
+    @mock.patch.object(cached_images.CacheController, "get_queued_images")
     def test_get_queued_images(self,
                                mock_get_queued_images):
         # setup
         mock_get_queued_images.return_value = self.stub_value
 
         # prepare
-        request = webob.Request.blank("/v1/queued_images")
+        request = webob.Request.blank("/v2/queued_images")
 
         # call
         resource = self.cache_manage_filter.process_request(request)
@@ -133,14 +133,14 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         self.assertEqual('"' + self.stub_value + '"',
                          resource.body.decode('utf-8'))
 
-    @mock.patch.object(cached_images.Controller, "delete_queued_image")
+    @mock.patch.object(cached_images.CacheController, "delete_queued_image")
     def test_delete_queued_image(self,
                                  mock_delete_queued_image):
         # setup
         mock_delete_queued_image.return_value = self.stub_value
 
         # prepare
-        request = webob.Request.blank("/v1/queued_images/" + self.image_id,
+        request = webob.Request.blank("/v2/queued_images/" + self.image_id,
                                       environ={'REQUEST_METHOD': 'DELETE'})
 
         # call
@@ -152,14 +152,14 @@ class TestCacheManageFilter(test_utils.BaseTestCase):
         self.assertEqual('"' + self.stub_value + '"',
                          resource.body.decode('utf-8'))
 
-    @mock.patch.object(cached_images.Controller, "delete_queued_images")
+    @mock.patch.object(cached_images.CacheController, "delete_queued_images")
     def test_delete_queued_images(self,
                                   mock_delete_queued_images):
         # setup
         mock_delete_queued_images.return_value = self.stub_value
 
         # prepare
-        request = webob.Request.blank("/v1/queued_images",
+        request = webob.Request.blank("/v2/queued_images",
                                       environ={'REQUEST_METHOD': 'DELETE'})
 
         # call
