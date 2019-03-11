@@ -8,7 +8,6 @@
       - openstack-dev/grenade
       - openstack-infra/devstack-gate
       - openstack/glance
-    nodeset: legacy-ubuntu-xenial-2-node
 
 - job:
     name: glance-eventlet-ssl-handshake-broken-py35
