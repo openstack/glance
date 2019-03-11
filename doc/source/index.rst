@@ -23,7 +23,10 @@ About Glance
 
 The Image service (glance) project provides a service where users can upload
 and discover data assets that are meant to be used with other services.
-This currently includes images and metadata definitions.
+This currently includes *images* and *metadata definitions*.
+
+Images
+------
 
 Glance image services include discovering, registering, and
 retrieving virtual machine (VM) images. Glance has a RESTful API that allows
@@ -34,6 +37,27 @@ querying of VM image metadata as well as retrieval of the actual image.
 VM images made available through Glance can be stored in a variety of
 locations from simple filesystems to object-storage systems like the
 OpenStack Swift project.
+
+Metadata Definitions
+--------------------
+
+Glance hosts a *metadefs* catalog.  This provides the OpenStack community
+with a way to programmatically determine various metadata key names and
+valid values that can be applied to OpenStack resources.
+
+Note that what we're talking about here is simply a *catalog*; the keys and
+values don't actually do anything unless they are applied to individual
+OpenStack resources using the APIs or client tools provided by the services
+responsible for those resources.
+
+It's also worth noting that there is no special relationship between the
+Image Service and the Metadefs Service.  If you want to apply the keys and
+values defined in the Metadefs Service to images, you must use the Image
+Service API or client tools just as you would for any other OpenStack
+service.
+
+Design Principles
+-----------------
 
 Glance, as with all OpenStack projects, is written with the following design
 guidelines in mind:
