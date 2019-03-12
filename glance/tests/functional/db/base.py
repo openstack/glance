@@ -2204,6 +2204,11 @@ class VisibilityTests(object):
         for i in images:
             self.assertEqual('community', i['visibility'])
 
+    def test_unknown_admin_visibility_all(self):
+        images = self.db_api.image_get_all(self.admin_none_context,
+                                           filters={'visibility': 'all'})
+        self.assertEqual(16, len(images))
+
     def test_known_admin_sees_all_but_others_community_images(self):
         images = self.db_api.image_get_all(self.admin_context)
         self.assertEqual(13, len(images))
@@ -2262,6 +2267,11 @@ class VisibilityTests(object):
         for i in images:
             self.assertEqual('community', i['visibility'])
 
+    def test_known_admin_visibility_all(self):
+        images = self.db_api.image_get_all(self.admin_context,
+                                           filters={'visibility': 'all'})
+        self.assertEqual(16, len(images))
+
     def test_what_unknown_user_sees(self):
         images = self.db_api.image_get_all(self.none_context)
         self.assertEqual(4, len(images))
@@ -2307,6 +2317,11 @@ class VisibilityTests(object):
         self.assertEqual(4, len(images))
         for i in images:
             self.assertEqual('community', i['visibility'])
+
+    def test_unknown_user_visibility_all(self):
+        images = self.db_api.image_get_all(self.none_context,
+                                           filters={'visibility': 'all'})
+        self.assertEqual(8, len(images))
 
     def test_what_tenant1_sees(self):
         images = self.db_api.image_get_all(self.tenant1_context)
@@ -2365,6 +2380,11 @@ class VisibilityTests(object):
         self.assertEqual(4, len(images))
         for i in images:
             self.assertEqual('community', i['visibility'])
+
+    def test_tenant1_visibility_all(self):
+        images = self.db_api.image_get_all(self.tenant1_context,
+                                           filters={'visibility': 'all'})
+        self.assertEqual(10, len(images))
 
     def _setup_is_public_red_herring(self):
         values = {

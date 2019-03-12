@@ -263,6 +263,12 @@ class TestImageRepo(test_utils.BaseTestCase):
         image_ids = set([i.image_id for i in images])
         self.assertEqual(set([UUID2]), image_ids)
 
+    def test_list_all_images(self):
+        filters = {'visibility': 'all'}
+        images = self.image_repo.list(filters=filters)
+        image_ids = set([i.image_id for i in images])
+        self.assertEqual(set([UUID1, UUID2, UUID3]), image_ids)
+
     def test_list_with_checksum_filter_single_image(self):
         filters = {'checksum': CHECKSUM}
         images = self.image_repo.list(filters=filters)
