@@ -14,13 +14,14 @@
 #    under the License.
 
 import mock
+import os
 
 from glance_store._drivers import filesystem
 from glance_store import backend
 from oslo_config import cfg
 
 from glance.async.flows._internal_plugins import web_download
-
+from glance.async.flows import api_image_import
 import glance.common.exception
 import glance.common.scripts.utils as script_utils
 from glance import domain
@@ -86,3 +87,50 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
                               self.task_type, self.task_repo, self.image_id,
                               self.uri)
             mock_override.assert_called()
+
+    def test_web_download_failed(self):
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        with mock.patch.object(script_utils,
+                               "get_image_data_iter") as mock_iter:
+            mock_iter.side_effect = glance.common.exception.NotFound
+            self.assertRaises(glance.common.exception.NotFound,
+                              web_download_task.execute)
+
+    def test_web_download_delete_staging_image_not_exist(self):
+        staging_path = "file:///tmp/staging/temp-image"
+        delete_from_fs_task = api_image_import._DeleteFromFS(
+            self.task.task_id, self.task_type)
+        with mock.patch.object(os.path, "exists") as mock_exists:
+            mock_exists.return_value = False
+            with mock.patch.object(os, "unlink") as mock_unlik:
+                delete_from_fs_task.execute(staging_path)
+
+                self.assertEqual(1, mock_exists.call_count)
+                self.assertEqual(0, mock_unlik.call_count)
+
+    @mock.patch.object(os.path, "exists")
+    def test_web_download_delete_staging_image_failed(self, mock_exists):
+        mock_exists.return_value = True
+        staging_path = "file:///tmp/staging/temp-image"
+        delete_from_fs_task = api_image_import._DeleteFromFS(
+            self.task.task_id, self.task_type)
+        with mock.patch.object(os, "unlink") as mock_unlink:
+            try:
+                delete_from_fs_task.execute(staging_path)
+            except OSError:
+                self.assertEqual(1, mock_unlink.call_count)
+
+            self.assertEqual(1, mock_exists.call_count)
+
+    @mock.patch.object(os.path, "exists")
+    def test_web_download_delete_staging_image_succeed(self, mock_exists):
+        mock_exists.return_value = True
+        staging_path = "file:///tmp/staging/temp-image"
+        delete_from_fs_task = api_image_import._DeleteFromFS(
+            self.task.task_id, self.task_type)
+        with mock.patch.object(os, "unlink") as mock_unlik:
+            delete_from_fs_task.execute(staging_path)
+            self.assertEqual(1, mock_exists.call_count)
+            self.assertEqual(1, mock_unlik.call_count)
