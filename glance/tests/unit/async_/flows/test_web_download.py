@@ -86,3 +86,13 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
                               self.task_type, self.task_repo, self.image_id,
                               self.uri)
             mock_override.assert_called()
+
+    def test_web_download_failed(self):
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        with mock.patch.object(script_utils,
+                               "get_image_data_iter") as mock_iter:
+            mock_iter.side_effect = glance.common.exception.NotFound
+            self.assertRaises(glance.common.exception.NotFound,
+                              web_download_task.execute)
