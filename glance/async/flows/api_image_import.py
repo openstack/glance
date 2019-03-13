@@ -12,8 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import os
 
-import glance_store as store_api
 from glance_store import backend
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -28,7 +28,7 @@ import glance.async.flows.plugins as import_plugins
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
-from glance.i18n import _, _LE, _LI
+from glance.i18n import _, _LE, _LI, _LW
 
 
 LOG = logging.getLogger(__name__)
@@ -86,7 +86,23 @@ class _DeleteFromFS(task.Task):
 
         :param file_path: path to the file being deleted
         """
-        store_api.delete_from_backend(file_path)
+        # TODO(abhishekk): After removal of backend module from glance_store
+        # need to change this to use multi_backend module.
+        file_path = file_path[7:]
+        if os.path.exists(file_path):
+            try:
+                LOG.debug("After upload to the backend, deleting staged "
+                          "image data from %(fn)s"), {'fn': file_path}
+                os.unlink(file_path)
+            except OSError as e:
+                LOG.error(_("After upload to backend, deletion of staged "
+                            "image data from %(fn)s has failed because "
+                            "[Errno %(en)d]"), {'fn': file_path,
+                                                'en': e.errno})
+        else:
+            LOG.warning(_LW("After upload to backend, deletion of staged "
+                            "image data has failed because "
+                            "it cannot be found at %(fn)s"), {'fn': file_path})
 
 
 class _VerifyStaging(task.Task):

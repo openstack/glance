@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import os
+
 from cursive import exception as cursive_exception
 import glance_store
 from glance_store import backend
@@ -73,14 +75,23 @@ class ImageDataController(object):
         :param image: The image will be restored
         :param staging_store: The store used for staging
         """
-        loc = glance_store.location.get_location_from_uri(str(
-            CONF.node_staging_uri + '/' + image.image_id))
-        try:
-            staging_store.delete(loc)
-        except glance_store.exceptions.NotFound:
-            pass
-        finally:
-            self._restore(image_repo, image)
+        # NOTE(abhishek): staging_store not being used in this function
+        # because of bug #1803498
+        # TODO(abhishek): refactor to use the staging_store when the
+        # "Rethinking Filesystem Access" spec is implemented in Train
+        file_path = str(CONF.node_staging_uri + '/' + image.image_id)[7:]
+        if os.path.exists(file_path):
+            try:
+                os.unlink(file_path)
+            except OSError as e:
+                LOG.error(_("Cannot delete staged image data %(fn)s "
+                            "[Errno %(en)d]"), {'fn': file_path,
+                                                'en': e.errno})
+        else:
+            LOG.warning(_("Staged image data not found "
+                          "at %(fn)s"), {'fn': file_path})
+
+        self._restore(image_repo, image)
 
     def _delete(self, image_repo, image):
         """Delete the image.
