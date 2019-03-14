@@ -22,6 +22,7 @@ import shlex
 import shutil
 import socket
 import subprocess
+import threading
 
 from alembic import command as alembic_command
 import fixtures
@@ -176,7 +177,11 @@ class depends_on_exe(object):
 
     def __call__(self, func):
         def _runner(*args, **kw):
-            cmd = 'which %s' % self.exe
+            if os.name != 'nt':
+                cmd = 'which %s' % self.exe
+            else:
+                cmd = 'where.exe', '%s' % self.exe
+
             exitcode, out, err = execute(cmd, raise_error=False)
             if exitcode != 0:
                 args[0].disabled_message = 'test requires exe: %s' % self.exe
@@ -325,7 +330,11 @@ def execute(cmd,
     path_ext = [os.path.join(os.getcwd(), 'bin')]
 
     # Also jack in the path cmd comes from, if it's absolute
-    args = shlex.split(cmd)
+    if os.name != 'nt':
+        args = shlex.split(cmd)
+    else:
+        args = cmd
+
     executable = args[0]
     if os.path.isabs(executable):
         path_ext.append(os.path.dirname(executable))
@@ -484,7 +493,7 @@ def start_http_server(image_id, image_data):
                 self.send_response(http.OK)
                 self.send_header('Content-Length', str(len(fixture)))
                 self.end_headers()
-                self.wfile.write(fixture)
+                self.wfile.write(six.b(fixture))
                 return
 
             def do_HEAD(self):
@@ -510,11 +519,11 @@ def start_http_server(image_id, image_data):
     httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
     port = httpd.socket.getsockname()[1]
 
-    pid = os.fork()
-    if pid == 0:
-        httpd.serve_forever()
-    else:
-        return pid, port
+    thread = threading.Thread(target=httpd.serve_forever)
+    thread.daemon = True
+    thread.start()
+
+    return thread, httpd, port
 
 
 class RegistryAPIMixIn(object):
@@ -730,8 +739,8 @@ def start_standalone_http_server():
     httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
     port = httpd.socket.getsockname()[1]
 
-    pid = os.fork()
-    if pid == 0:
-        httpd.serve_forever()
-    else:
-        return pid, port
+    thread = threading.Thread(target=httpd.serve_forever)
+    thread.daemon = True
+    thread.start()
+
+    return thread, httpd, port

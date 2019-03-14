@@ -15,6 +15,7 @@
 
 """Tests for `glance.wsgi`."""
 
+import os
 import socket
 import time
 
@@ -52,4 +53,9 @@ class TestWSGIServer(testtools.TestCase):
         # Should succeed - no timeout
         self.assertIn(greetings, get_request())
         # Should fail - connection timed out so we get nothing from the server
-        self.assertFalse(get_request(delay=1.1))
+        if os.name == 'nt':
+            self.assertRaises(ConnectionAbortedError,
+                              get_request,
+                              delay=1.1)
+        else:
+            self.assertFalse(get_request(delay=1.1))

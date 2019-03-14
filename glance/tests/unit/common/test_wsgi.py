@@ -588,8 +588,11 @@ class ServerTest(test_utils.BaseTestCase):
                                                 keepalive=False,
                                                 socket_timeout=900)
 
-    def test_number_of_workers(self):
+    def test_number_of_workers_posix(self):
         """Ensure the number of workers matches num cpus limited to 8."""
+        if os.name == 'nt':
+            raise self.skipException("Unsupported platform.")
+
         def pid():
             i = 1
             while True:

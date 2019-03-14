@@ -21,6 +21,7 @@ and Registry server, grabbing the logs of each, cleaning up pidfiles,
 and spinning down the servers.
 """
 
+import abc
 import atexit
 import datetime
 import errno
@@ -28,12 +29,16 @@ import os
 import platform
 import shutil
 import signal
+import six
 import socket
+import subprocess
 import sys
 import tempfile
 import time
 
 import fixtures
+from os_win import utilsfactory as os_win_utilsfactory
+from oslo_config import cfg
 from oslo_serialization import jsonutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -48,8 +53,18 @@ from glance.tests import utils as test_utils
 execute, get_unused_port = test_utils.execute, test_utils.get_unused_port
 tracecmd_osmap = {'Linux': 'strace', 'FreeBSD': 'truss'}
 
+if os.name == 'nt':
+    SQLITE_CONN_TEMPLATE = 'sqlite:///%s/tests.sqlite'
+else:
+    SQLITE_CONN_TEMPLATE = 'sqlite:////%s/tests.sqlite'
 
-class Server(object):
+
+CONF = cfg.CONF
+CONF.import_opt('registry_host', 'glance.registry')
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseServer(object):
     """
     Class used to easily manage starting and stopping
     a server during functional test runs.
@@ -131,6 +146,78 @@ class Server(object):
 
         return self.conf_file_name, overridden
 
+    @abc.abstractmethod
+    def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def stop(self):
+        pass
+
+    def reload(self, expect_exit=True, expected_exitcode=0, **kwargs):
+        """
+        Start and stop the service to reload
+
+        Any kwargs passed to this method will override the configuration
+        value in the conf file used in starting the servers.
+        """
+        self.stop()
+        return self.start(expect_exit=expect_exit,
+                          expected_exitcode=expected_exitcode, **kwargs)
+
+    def create_database(self):
+        """Create database if required for this server"""
+        if self.needs_database:
+            conf_dir = os.path.join(self.test_dir, 'etc')
+            utils.safe_mkdirs(conf_dir)
+            conf_filepath = os.path.join(conf_dir, 'glance-manage.conf')
+
+            with open(conf_filepath, 'w') as conf_file:
+                conf_file.write('[DEFAULT]\n')
+                conf_file.write('sql_connection = %s' % self.sql_connection)
+                conf_file.flush()
+
+            glance_db_env = 'GLANCE_DB_TEST_SQLITE_FILE'
+            if glance_db_env in os.environ:
+                # use the empty db created and cached as a tempfile
+                # instead of spending the time creating a new one
+                db_location = os.environ[glance_db_env]
+                shutil.copyfile(db_location, "%s/tests.sqlite" % self.test_dir)
+            else:
+                cmd = ('%s -m glance.cmd.manage --config-file %s db sync' %
+                       (sys.executable, conf_filepath))
+                execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
+                        expect_exit=True)
+
+                # copy the clean db to a temp location so that it
+                # can be reused for future tests
+                (osf, db_location) = tempfile.mkstemp()
+                os.close(osf)
+                shutil.copyfile('%s/tests.sqlite' % self.test_dir, db_location)
+                os.environ[glance_db_env] = db_location
+
+                # cleanup the temp file when the test suite is
+                # complete
+                def _delete_cached_db():
+                    try:
+                        os.remove(os.environ[glance_db_env])
+                    except Exception:
+                        glance_tests.logger.exception(
+                            "Error cleaning up the file %s" %
+                            os.environ[glance_db_env])
+                atexit.register(_delete_cached_db)
+
+    def dump_log(self):
+        if not self.log_file:
+            return "log_file not set for {name}".format(name=self.server_name)
+        elif not os.path.exists(self.log_file):
+            return "{log_file} for {name} did not exist".format(
+                log_file=self.log_file, name=self.server_name)
+        with open(self.log_file, 'r') as fptr:
+            return fptr.read().strip()
+
+
+class PosixServer(BaseServer):
     def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
         """
         Starts the server.
@@ -190,61 +277,6 @@ class Server(object):
             self.sock = None
         return (rc, '', '')
 
-    def reload(self, expect_exit=True, expected_exitcode=0, **kwargs):
-        """
-        Start and stop the service to reload
-
-        Any kwargs passed to this method will override the configuration
-        value in the conf file used in starting the servers.
-        """
-        self.stop()
-        return self.start(expect_exit=expect_exit,
-                          expected_exitcode=expected_exitcode, **kwargs)
-
-    def create_database(self):
-        """Create database if required for this server"""
-        if self.needs_database:
-            conf_dir = os.path.join(self.test_dir, 'etc')
-            utils.safe_mkdirs(conf_dir)
-            conf_filepath = os.path.join(conf_dir, 'glance-manage.conf')
-
-            with open(conf_filepath, 'w') as conf_file:
-                conf_file.write('[DEFAULT]\n')
-                conf_file.write('sql_connection = %s' % self.sql_connection)
-                conf_file.flush()
-
-            glance_db_env = 'GLANCE_DB_TEST_SQLITE_FILE'
-            if glance_db_env in os.environ:
-                # use the empty db created and cached as a tempfile
-                # instead of spending the time creating a new one
-                db_location = os.environ[glance_db_env]
-                os.system('cp %s %s/tests.sqlite'
-                          % (db_location, self.test_dir))
-            else:
-                cmd = ('%s -m glance.cmd.manage --config-file %s db sync' %
-                       (sys.executable, conf_filepath))
-                execute(cmd, no_venv=self.no_venv, exec_env=self.exec_env,
-                        expect_exit=True)
-
-                # copy the clean db to a temp location so that it
-                # can be reused for future tests
-                (osf, db_location) = tempfile.mkstemp()
-                os.close(osf)
-                os.system('cp %s/tests.sqlite %s'
-                          % (self.test_dir, db_location))
-                os.environ[glance_db_env] = db_location
-
-                # cleanup the temp file when the test suite is
-                # complete
-                def _delete_cached_db():
-                    try:
-                        os.remove(os.environ[glance_db_env])
-                    except Exception:
-                        glance_tests.logger.exception(
-                            "Error cleaning up the file %s" %
-                            os.environ[glance_db_env])
-                atexit.register(_delete_cached_db)
-
     def stop(self):
         """
         Spin down the server.
@@ -257,14 +289,80 @@ class Server(object):
         rc = test_utils.wait_for_fork(self.process_pid, raise_error=False)
         return (rc, '', '')
 
-    def dump_log(self):
-        if not self.log_file:
-            return "log_file not set for {name}".format(name=self.server_name)
-        elif not os.path.exists(self.log_file):
-            return "{log_file} for {name} did not exist".format(
-                log_file=self.log_file, name=self.server_name)
-        with open(self.log_file, 'r') as fptr:
-            return fptr.read().strip()
+
+class Win32Server(BaseServer):
+    def __init__(self, *args, **kwargs):
+        super(Win32Server, self).__init__(*args, **kwargs)
+
+        self._processutils = os_win_utilsfactory.get_processutils()
+
+    def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
+        """
+        Starts the server.
+
+        Any kwargs passed to this method will override the configuration
+        value in the conf file used in starting the servers.
+        """
+
+        # Ensure the configuration file is written
+        self.write_conf(**kwargs)
+
+        self.create_database()
+
+        cmd = ("%(server_module)s --config-file %(conf_file_name)s"
+               % {"server_module": self.server_module,
+                  "conf_file_name": self.conf_file_name})
+        cmd = "%s -m %s" % (sys.executable, cmd)
+
+        # Passing socket objects on Windows is a bit more cumbersome.
+        # We don't really have to do it.
+        if self.sock:
+            self.sock.close()
+            self.sock = None
+
+        self.process = subprocess.Popen(
+            cmd,
+            env=self.exec_env)
+        self.process_pid = self.process.pid
+
+        try:
+            self.job_handle = self._processutils.kill_process_on_job_close(
+                self.process_pid)
+        except Exception:
+            # Could not associate child process with a job, killing it.
+            self.process.kill()
+            raise
+
+        self.stop_kill = not expect_exit
+        if self.pid_file:
+            pf = open(self.pid_file, 'w')
+            pf.write('%d\n' % self.process_pid)
+            pf.close()
+
+        rc = 0
+        if expect_exit:
+            self.process.communicate()
+            rc = self.process.returncode
+
+        return (rc, '', '')
+
+    def stop(self):
+        """
+        Spin down the server.
+        """
+        if not self.process_pid:
+            raise Exception('Server "%s" process not running.'
+                            % self.server_name)
+
+        if self.stop_kill:
+            self.process.terminate()
+        return (0, '', '')
+
+
+if os.name == 'nt':
+    Server = Win32Server
+else:
+    Server = PosixServer
 
 
 class ApiServer(Server):
@@ -305,7 +403,7 @@ class ApiServer(Server):
         self.disable_path = None
 
         self.needs_database = True
-        default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
+        default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
         self.data_api = kwargs.get("data_api",
@@ -488,7 +586,7 @@ class ApiServerForMultipleBackend(Server):
         self.disable_path = None
 
         self.needs_database = True
-        default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
+        default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
         self.data_api = kwargs.get("data_api",
@@ -646,7 +744,7 @@ class RegistryServer(Server):
         self.server_module = 'glance.cmd.%s' % self.server_name
 
         self.needs_database = True
-        default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
+        default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
 
@@ -732,7 +830,7 @@ class ScrubberDaemon(Server):
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.lock_path = self.test_dir
 
-        default_sql_connection = 'sqlite:////%s/tests.sqlite' % self.test_dir
+        default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
         self.policy_file = policy_file
@@ -789,6 +887,11 @@ class FunctionalTest(test_utils.BaseTestCase):
         # Please disbale it by explicitly setting 'self.include_scrubber' to
         # False in the test SetUps that do not require Scrubber to run.
         self.include_scrubber = True
+
+        # The clients will try to connect to this address. Let's make sure
+        # we're not using the default '0.0.0.0'
+        self.config(bind_host='127.0.0.1',
+                    registry_host='127.0.0.1')
 
         self.tracecmd = tracecmd_osmap.get(platform.system())
 

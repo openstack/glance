@@ -135,8 +135,8 @@ class TestImportTask(test_utils.BaseTestCase):
                 self.assertFalse(os.path.exists(tmp_image_path))
                 self.assertTrue(os.path.exists(image_path))
                 self.assertEqual(1, len(list(self.image.locations)))
-                self.assertEqual("file://%s/%s" % (self.test_dir,
-                                                   self.image.image_id),
+                self.assertEqual("file://%s%s%s" % (self.test_dir, os.sep,
+                                                    self.image.image_id),
                                  self.image.locations[0]['url'])
 
                 self._assert_qemu_process_limits(tmock)

@@ -15,6 +15,7 @@
 
 import atexit
 import os.path
+import shutil
 import tempfile
 
 import fixtures
@@ -163,8 +164,7 @@ class ApiTest(test_utils.BaseTestCase):
             # use the empty db created and cached as a tempfile
             # instead of spending the time creating a new one
             db_location = os.environ[glance_db_env]
-            test_utils.execute('cp %s %s/tests.sqlite'
-                               % (db_location, self.test_dir))
+            shutil.copyfile(db_location, "%s/tests.sqlite" % self.test_dir)
         else:
             test_utils.db_sync()
 
@@ -172,8 +172,7 @@ class ApiTest(test_utils.BaseTestCase):
             # can be reused for future tests
             (osf, db_location) = tempfile.mkstemp()
             os.close(osf)
-            test_utils.execute('cp %s/tests.sqlite %s'
-                               % (self.test_dir, db_location))
+            shutil.copyfile('%s/tests.sqlite' % self.test_dir, db_location)
             os.environ[glance_db_env] = db_location
 
             # cleanup the temp file when the test suite is

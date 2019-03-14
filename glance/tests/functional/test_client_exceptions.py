@@ -28,7 +28,6 @@ from glance.common import wsgi
 from glance.tests import functional
 from glance.tests import utils
 
-
 eventlet.patcher.monkey_patch(socket=True)
 
 
