@@ -44,18 +44,20 @@ class TestWSGIServer(testtools.TestCase):
         port = server.sock.getsockname()[1]
 
         def get_request(delay=0.0):
-            sock = socket.socket()
-            sock.connect(('127.0.0.1', port))
-            time.sleep(delay)
-            sock.send(b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n')
-            return sock.recv(1024)
+            # Socket timeouts are handled rather inconsistently on Windows.
+            # recv may either return nothing OR raise a ConnectionAbortedError.
+            exp_exc = OSError if os.name == 'nt' else ()
+
+            try:
+                sock = socket.socket()
+                sock.connect(('127.0.0.1', port))
+                time.sleep(delay)
+                sock.send(b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n')
+                return sock.recv(1024)
+            except exp_exc:
+                return None
 
         # Should succeed - no timeout
         self.assertIn(greetings, get_request())
         # Should fail - connection timed out so we get nothing from the server
-        if os.name == 'nt':
-            self.assertRaises(ConnectionAbortedError,
-                              get_request,
-                              delay=1.1)
-        else:
-            self.assertFalse(get_request(delay=1.1))
+        self.assertFalse(get_request(delay=1.1))

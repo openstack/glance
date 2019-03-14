@@ -23,6 +23,7 @@ import shutil
 import socket
 import subprocess
 import threading
+import time
 
 from alembic import command as alembic_command
 import fixtures
@@ -148,6 +149,26 @@ class BaseTestCase(testtools.TestCase):
         result = patcher.start()
         self.addCleanup(patcher.stop)
         return result
+
+    def delay_inaccurate_clock(self, duration=0.001):
+        """Add a small delay to compensate for inaccurate system clocks.
+
+        Some tests make assertions based on timestamps (e.g. comparing
+        'created_at' and 'updated_at' fields). In some cases, subsequent
+        time.time() calls may return identical values (python timestamps can
+        have a lower resolution on Windows compared to Linux - 1e-7 as
+        opposed to 1e-9).
+
+        A small delay (a few ms should be negligeable) can prevent such
+        issues. At the same time, it spares us from mocking the time
+        module, which might be undesired.
+        """
+
+        # For now, we'll do this only for Windows. If really needed,
+        # on Py3 we can get the clock resolution using time.get_clock_info,
+        # but at that point we may as well just sleep 1ms all the time.
+        if os.name == 'nt':
+            time.sleep(duration)
 
 
 class requires(object):
