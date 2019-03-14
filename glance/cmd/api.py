@@ -62,6 +62,7 @@ from glance import notifier
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 logging.register_options(CONF)
+wsgi.register_cli_opts()
 
 # NOTE(rosmaita): Any new exceptions added should preserve the current
 # error codes for backward compatibility.  The value 99 is returned

@@ -60,6 +60,7 @@ from glance import notifier
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 logging.register_options(CONF)
+wsgi.register_cli_opts()
 
 
 def main():
