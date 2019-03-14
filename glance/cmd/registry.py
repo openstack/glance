@@ -20,6 +20,10 @@
 """
 Reference implementation server for Glance Registry
 """
+
+import os
+import sys
+
 import eventlet
 # NOTE(jokke): As per the eventlet commit
 # b756447bab51046dfc6f1e0e299cc997ab343701 there's circular import happening
@@ -27,11 +31,13 @@ import eventlet
 # before calling monkey_patch(). This is solved in eventlet 0.22.0 but we
 # need to address it before that is widely used around.
 eventlet.hubs.get_hub()
-eventlet.patcher.monkey_patch()
 
-import os
-import sys
-
+if os.name == 'nt':
+    # eventlet monkey patching the os module causes subprocess.Popen to fail
+    # on Windows when using pipes due to missing non-blocking IO support.
+    eventlet.patcher.monkey_patch(os=False)
+else:
+    eventlet.patcher.monkey_patch()
 
 from oslo_utils import encodeutils
 

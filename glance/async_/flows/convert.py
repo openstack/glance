@@ -91,6 +91,7 @@ class _Convert(task.Task):
         # specified. There's no "sane" default for this
         # because the dest format may work differently depending
         # on the environment OpenStack is running in.
+        abs_file_path = file_path.split("file://")[-1]
         conversion_format = CONF.taskflow_executor.conversion_format
         if conversion_format is None:
             if not _Convert.conversion_missing_warned:
@@ -123,7 +124,8 @@ class _Convert(task.Task):
         if stderr:
             raise RuntimeError(stderr)
 
-        os.rename(dest_path, file_path.split("file://")[-1])
+        os.unlink(abs_file_path)
+        os.rename(dest_path, abs_file_path)
         return file_path
 
     def revert(self, image_id, result=None, **kwargs):

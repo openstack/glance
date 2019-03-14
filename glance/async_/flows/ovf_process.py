@@ -82,6 +82,7 @@ class _OVF_Process(task.Task):
         :param file_path: Path to the OVA package
         """
 
+        file_abs_path = file_path.split("file://")[-1]
         image = self.image_repo.get(image_id)
         # Expect 'ova' as image container format for OVF_Process task
         if image.container_format == 'ova':
@@ -92,17 +93,23 @@ class _OVF_Process(task.Task):
             # the context as a short-cut.
             if image.context and image.context.is_admin:
                 extractor = OVAImageExtractor()
-                data_iter = self._get_ova_iter_objects(file_path)
-                disk, properties = extractor.extract(data_iter)
-                image.extra_properties.update(properties)
-                image.container_format = 'bare'
-                self.image_repo.save(image)
-                dest_path = self._get_extracted_file_path(image_id)
-                with open(dest_path, 'wb') as f:
-                    shutil.copyfileobj(disk, f, 4096)
+                data_iter = None
+                try:
+                    data_iter = self._get_ova_iter_objects(file_path)
+                    disk, properties = extractor.extract(data_iter)
+                    image.extra_properties.update(properties)
+                    image.container_format = 'bare'
+                    self.image_repo.save(image)
+                    dest_path = self._get_extracted_file_path(image_id)
+                    with open(dest_path, 'wb') as f:
+                        shutil.copyfileobj(disk, f, 4096)
+                finally:
+                    if data_iter:
+                        data_iter.close()
 
                 # Overwrite the input ova file since it is no longer needed
-                os.rename(dest_path, file_path.split("file://")[-1])
+                os.unlink(file_abs_path)
+                os.rename(dest_path, file_abs_path)
 
             else:
                 raise RuntimeError(_('OVA extract is limited to admin'))

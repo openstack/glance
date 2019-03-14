@@ -61,6 +61,7 @@ openstackdocstheme==1.18.1
 os-api-ref==1.4.0
 os-client-config==1.29.0
 os-testr==1.0.0
+os-win==3.0.0
 oslo.cache==1.29.0
 oslo.concurrency==3.26.0
 oslo.config==5.2.0

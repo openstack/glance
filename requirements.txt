@@ -56,3 +56,5 @@ cursive>=0.2.1 # Apache-2.0
 
 # timeutils
 iso8601>=0.1.11 # MIT
+
+os-win>=3.0.0 # Apache-2.0
