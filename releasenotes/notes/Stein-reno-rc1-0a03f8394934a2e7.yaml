@@ -1,0 +1,65 @@
+---
+prelude: |
+  Stein release cycle has been without major changes to the Images API, this
+  release does not introduce new Images API minor version.
+
+  Some work has been done on Windows compatibility and Glance Stein release
+  is compatible running on Windows platform. Future development will be also
+  gated on Windows based on 3rd party CI model.
+
+  Due to some unresolved issues on consuming multiple backends work the
+  stabilization of the feature has been pushed to Train and will stay
+  EXPERIMENTAL on Stein.
+
+  This release also contains some feature work, life improving changes and bug
+  fixes. Please refer the rest of the release notes and docs for details.
+features:
+  - |
+    Re-introducing cache-manage utility. In Rocky the Images API v1 dependent
+    glance-cache-manage utility was removed while removing the v1 endpoints.
+    Stein release introduces the command refactored to utilize the Images API
+    version 2.
+  - |
+    Added oslopolicy enforcer entrypoint making it possible to utilize
+    oslopolicy-policy-generator to get uniform information about the policies.
+    NOTE: Glance will require policy.json being present for any meaningful
+    output.
+issues:
+  - |
+    Multiple back-ends: No default back-end gets assigned when adding location
+    via the locations api and not defining back-end ID on the call. This might
+    affect specially Nova snapshots utilizing rdb back-end.
+fixes:
+  - |
+    The following are some highlights of the bug fixes included in this
+    release.
+
+    * Bug 1781617_: Rename ``async`` package to ``async_`` (Python 3.7)
+    * Bug 1781627_: Handle StopIteration for Py3.7 PEP 0479
+    * Bug 1695299_: Support RFC1738 quoted chars in passwords
+    * Bug 1750892_: Update status to active when locations replaced
+    * Bug 1770410_: Use WebOb 1.8.1
+    * Bug 1793057_: Provision to add new config options in sample config file
+    * Bug 1800601_: py3: fix recursion issue under py37
+    * Bug 1805765_: Image conversion fails
+    * Bug 1803643_: Fix for FK constraint violation
+    * Bug 1808063_: Guard __getattr__ on QuotaImageTagsProxy
+    * Bug 1809462_: Correct typo in config option choices (Image conversion)
+    * Bug 1803299_: Failure in web-dowload kept image in importing state
+    * Bug 1818919_: py3: Fix return type on CooperativeReader.read
+    * Bug 1803498_: Data remains in staging area if 'file' store is not enabled
+
+    .. _1781617: https://code.launchpad.net/bugs/1781617
+    .. _1781627: https://code.launchpad.net/bugs/1781627
+    .. _1695299: https://code.launchpad.net/bugs/1695299
+    .. _1750892: https://code.launchpad.net/bugs/1750892
+    .. _1770410: https://code.launchpad.net/bugs/1770410
+    .. _1793057: https://code.launchpad.net/bugs/1793057
+    .. _1800601: https://code.launchpad.net/bugs/1800601
+    .. _1805765: https://code.launchpad.net/bugs/1805765
+    .. _1803643: https://code.launchpad.net/bugs/1803643
+    .. _1808063: https://code.launchpad.net/bugs/1808063
+    .. _1809462: https://code.launchpad.net/bugs/1809462
+    .. _1803299: https://code.launchpad.net/bugs/1803299
+    .. _1818919: https://code.launchpad.net/bugs/1818919
+    .. _1803498: https://code.launchpad.net/bugs/1803498
