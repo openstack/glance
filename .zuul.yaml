@@ -18,10 +18,16 @@
     vars:
       tox_envlist: broken-py35-ssl-tests
     irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^lower-constraints.txt$
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
+      - ^etc/.*$
       - ^releasenotes/.*$
+      - ^setup.cfg$
+      - ^tox.ini$
+      - ^\.zuul\.yaml$
 
 - job:
     name: glance-tox-oslo-tips-base
@@ -215,30 +221,39 @@
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
+              - ^\.zuul\.yaml$
         - tempest-full:
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
+              - ^\.zuul\.yaml$
         - neutron-grenade:
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
+              - ^\.zuul\.yaml$
     gate:
       jobs:
         - openstack-tox-functional
@@ -246,22 +261,27 @@
         - tempest-full:
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
+              - ^\.zuul\.yaml$
         - neutron-grenade:
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
-
+              - ^\.zuul\.yaml$
     experimental:
       jobs:
         - barbican-simple-crypto-devstack-tempest
@@ -269,30 +289,39 @@
         - devstack-plugin-ceph-tempest-py3:
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
+              - ^\.zuul\.yaml$
         - tempest-pg-full:
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
+              - ^\.zuul\.yaml$
         - tempest-full-py3-opensuse150:
             irrelevant-files:
               - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^doc/.*$
+              - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
               - ^tox.ini$
+              - ^\.zuul\.yaml$
     periodic:
       jobs:
         # NOTE(rosmaita): we only want the "tips" jobs to be run against
