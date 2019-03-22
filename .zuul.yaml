@@ -224,10 +224,15 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
         - tempest-full:
@@ -236,10 +241,15 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
         - neutron-grenade:
@@ -248,12 +258,52 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
+        - tempest-full-py3:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
+              - ^doc/.*$
+              - ^etc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tools/.*$
+              - ^tox.ini$
+              - ^\.zuul\.yaml$
+        - grenade-py3:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
+              - ^doc/.*$
+              - ^etc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tools/.*$
+              - ^tox.ini$
+              - ^\.zuul\.yaml$
+
     gate:
       jobs:
         - openstack-tox-functional
@@ -264,10 +314,15 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
         - neutron-grenade:
@@ -276,10 +331,49 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
+              - ^tox.ini$
+              - ^\.zuul\.yaml$
+        - tempest-full-py3:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
+              - ^doc/.*$
+              - ^etc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tools/.*$
+              - ^tox.ini$
+              - ^\.zuul\.yaml$
+        - grenade-py3:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^lower-constraints.txt$
+              - ^.*\.rst$
+              - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
+              - ^doc/.*$
+              - ^etc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
     experimental:
@@ -292,10 +386,15 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
         - tempest-pg-full:
@@ -304,10 +403,15 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
         - tempest-full-py3-opensuse150:
@@ -316,10 +420,15 @@
               - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
+              - ^glance/hacking/.*$
+              - ^glance/locale/.*$
+              - ^glance/tests/functional.*$
+              - ^glance/tests/unit.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+              - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
     periodic:
