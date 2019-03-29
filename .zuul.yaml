@@ -66,12 +66,12 @@
       tox_envlist: functional
 
 - job:
-    name: glance-tox-functional-py35-oslo-tips
+    name: glance-tox-functional-py36-oslo-tips
     parent: glance-tox-oslo-tips-base
     description: |
-      Glance py35 functional tests vs. oslo libraries masters
+      Glance py36 functional tests vs. oslo libraries masters
     vars:
-      tox_envlist: functional-py35
+      tox_envlist: functional-py36
 
 - job:
     name: glance-tox-keystone-tips-base
@@ -92,12 +92,12 @@
       tox_envlist: py27
 
 - job:
-    name: glance-tox-py35-keystone-tips
+    name: glance-tox-py36-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py35 unit tests vs. keystone masters
+      Glance py36 unit tests vs. keystone masters
     vars:
-      tox_envlist: py35
+      tox_envlist: py36
 
 - job:
     name: glance-tox-functional-keystone-tips
@@ -108,12 +108,12 @@
       tox_envlist: functional
 
 - job:
-    name: glance-tox-functional-py35-keystone-tips
+    name: glance-tox-functional-py36-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py35 functional tests vs. keystone masters
+      Glance py36 functional tests vs. keystone masters
     vars:
-      tox_envlist: functional-py35
+      tox_envlist: functional-py36
 
 - job:
     name: glance-tox-glance_store-tips-base
@@ -132,12 +132,12 @@
       tox_envlist: py27
 
 - job:
-    name: glance-tox-py35-glance_store-tips
+    name: glance-tox-py36-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py35 unit tests vs. glance_store master
+      Glance py36 unit tests vs. glance_store master
     vars:
-      tox_envlist: py35
+      tox_envlist: py36
 
 - job:
     name: glance-tox-functional-glance_store-tips
@@ -148,12 +148,12 @@
       tox_envlist: functional
 
 - job:
-    name: glance-tox-functional-py35-glance_store-tips
+    name: glance-tox-functional-py36-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py35 functional tests vs. glance_store master
+      Glance py36 functional tests vs. glance_store master
     vars:
-      tox_envlist: functional-py35
+      tox_envlist: functional-py36
 
 - job:
     name: glance-tox-cursive-tips-base
@@ -174,12 +174,12 @@
       tox_envlist: py27
 
 - job:
-    name: glance-tox-py35-cursive-tips
+    name: glance-tox-py36-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py35 unit tests vs. cursive (and related libs) master
+      Glance py36 unit tests vs. cursive (and related libs) master
     vars:
-      tox_envlist: py35
+      tox_envlist: py36
 
 - job:
     name: glance-tox-functional-cursive-tips
@@ -190,12 +190,12 @@
       tox_envlist: functional
 
 - job:
-    name: glance-tox-functional-py35-cursive-tips
+    name: glance-tox-functional-py36-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py35 functional tests vs. cursive (and related libs) master
+      Glance py36 functional tests vs. cursive (and related libs) master
     vars:
-      tox_envlist: functional-py35
+      tox_envlist: functional-py36
 
 - project:
     templates:
@@ -446,29 +446,29 @@
         # aren't doing that either.
         - glance-tox-functional-oslo-tips:
             branches: master
-        - glance-tox-functional-py35-oslo-tips:
+        - glance-tox-functional-py36-oslo-tips:
             branches: master
         - glance-tox-py27-keystone-tips:
             branches: master
-        - glance-tox-py35-keystone-tips:
+        - glance-tox-py36-keystone-tips:
             branches: master
         - glance-tox-functional-keystone-tips:
             branches: master
-        - glance-tox-functional-py35-keystone-tips:
+        - glance-tox-functional-py36-keystone-tips:
             branches: master
         - glance-tox-py27-glance_store-tips:
             branches: master
-        - glance-tox-py35-glance_store-tips:
+        - glance-tox-py36-glance_store-tips:
             branches: master
         - glance-tox-functional-glance_store-tips:
             branches: master
-        - glance-tox-functional-py35-glance_store-tips:
+        - glance-tox-functional-py36-glance_store-tips:
             branches: master
         - glance-tox-py27-cursive-tips:
             branches: master
-        - glance-tox-py35-cursive-tips:
+        - glance-tox-py36-cursive-tips:
             branches: master
         - glance-tox-functional-cursive-tips:
             branches: master
-        - glance-tox-functional-py35-cursive-tips:
+        - glance-tox-functional-py36-cursive-tips:
             branches: master
