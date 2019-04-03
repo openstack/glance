@@ -676,7 +676,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if not pointer.startswith('/'):
             msg = _('Pointer `%s` does not start with "/".') % pointer
             raise webob.exc.HTTPBadRequest(explanation=msg)
-        if re.search('/\s*?/', pointer[1:]):
+        if re.search(r'/\s*?/', pointer[1:]):
             msg = _('Pointer `%s` contains adjacent "/".') % pointer
             raise webob.exc.HTTPBadRequest(explanation=msg)
         if len(pointer) > 1 and pointer.endswith('/'):
