@@ -1813,11 +1813,12 @@ class TestImagesController(base.IsolatedUnitTest):
                                             'os_hash_value': MULTIHASH1}}
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                "may only be provided when image status "
-                                "is 'queued'",
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              "may only be provided when image status "
+                              "is 'queued'",
+                              self.controller.update,
+                              request, image_id, changes)
 
     @mock.patch.object(glance.quota, '_calc_required_size')
     @mock.patch.object(glance.location, '_check_image_location')
@@ -1854,10 +1855,11 @@ class TestImagesController(base.IsolatedUnitTest):
                                             'os_hash_value': MULTIHASH2}}
         changes = [{'op': 'replace', 'path': ['locations'],
                     'value': [new_location]}]
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                "already set with a different value",
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              "already set with a different value",
+                              self.controller.update,
+                              request, image_id, changes)
 
     @mock.patch.object(glance.quota, '_calc_required_size')
     @mock.patch.object(glance.location, '_check_image_location')
@@ -1936,52 +1938,57 @@ class TestImagesController(base.IsolatedUnitTest):
             'os_hash_algo': 'sha512',
             'os_hash_value': MULTIHASH1,
         }
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                'checksum .* is not a valid hexadecimal value',
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              'checksum .* is not a valid hexadecimal value',
+                              self.controller.update,
+                              request, image_id, changes)
 
         changes[0]['value']['validation_data'] = {
             'checksum': '0123456789abcdef',
             'os_hash_algo': 'sha512',
             'os_hash_value': MULTIHASH1,
         }
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                'checksum .* is not the correct size',
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              'checksum .* is not the correct size',
+                              self.controller.update,
+                              request, image_id, changes)
 
         changes[0]['value']['validation_data'] = {
             'checksum': CHKSUM,
             'os_hash_algo': 'sha256',
             'os_hash_value': MULTIHASH1,
         }
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                'os_hash_algo must be sha512',
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              'os_hash_algo must be sha512',
+                              self.controller.update,
+                              request, image_id, changes)
 
         changes[0]['value']['validation_data'] = {
             'checksum': CHKSUM,
             'os_hash_algo': 'sha512',
             'os_hash_value': 'not a hex value',
         }
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                'os_hash_value .* is not a valid hexadecimal '
-                                'value',
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              'os_hash_value .* is not a valid hexadecimal '
+                              'value',
+                              self.controller.update,
+                              request, image_id, changes)
 
         changes[0]['value']['validation_data'] = {
             'checksum': CHKSUM,
             'os_hash_algo': 'sha512',
             'os_hash_value': '0123456789abcdef',
         }
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                'os_hash_value .* is not the correct size '
-                                'for sha512',
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              'os_hash_value .* is not the correct size '
+                              'for sha512',
+                              self.controller.update,
+                              request, image_id, changes)
 
     @mock.patch.object(glance.quota, '_calc_required_size')
     @mock.patch.object(glance.location, '_check_image_location')
@@ -2062,10 +2069,11 @@ class TestImagesController(base.IsolatedUnitTest):
                                             'os_hash_value': MULTIHASH2}}
         changes = [{'op': 'add', 'path': ['locations', '-'],
                     'value': new_location}]
-        self.assertRaisesRegexp(webob.exc.HTTPConflict,
-                                "already set with a different value",
-                                self.controller.update,
-                                request, image_id, changes)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPConflict,
+                              "already set with a different value",
+                              self.controller.update,
+                              request, image_id, changes)
 
     def _test_update_locations_status(self, image_status, update):
         self.config(show_multiple_locations=True)
@@ -3003,17 +3011,19 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'bogus_key': 'bogus_value',
         }
         request.body = jsonutils.dump_as_bytes(changes)
-        self.assertRaisesRegexp(webob.exc.HTTPBadRequest,
-                                'Additional properties are not allowed',
-                                self.deserializer.update, request)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPBadRequest,
+                              'Additional properties are not allowed',
+                              self.deserializer.update, request)
 
         changes[0]['value']['validation_data'] = {
             'checksum': CHKSUM,
         }
         request.body = jsonutils.dump_as_bytes(changes)
-        self.assertRaisesRegexp(webob.exc.HTTPBadRequest,
-                                'os_hash.* is a required property',
-                                self.deserializer.update, request)
+        six.assertRaisesRegex(self,
+                              webob.exc.HTTPBadRequest,
+                              'os_hash.* is a required property',
+                              self.deserializer.update, request)
 
     def test_update(self):
         request = self._get_fake_patch_request()
