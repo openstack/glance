@@ -112,7 +112,7 @@ def get_remaining_quota(context, db_api, image_id=None):
 
     # set quota must have a number optionally followed by B, KB, MB,
     # GB or TB without any spaces in between
-    pattern = re.compile('^(\d+)((K|M|G|T)?B)?$')
+    pattern = re.compile(r'^(\d+)((K|M|G|T)?B)?$')
     match = pattern.match(users_quota)
 
     if not match:

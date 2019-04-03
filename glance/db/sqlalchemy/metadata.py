@@ -395,7 +395,7 @@ def _export_data_to_file(meta, path):
     namespace_table = get_metadef_namespaces_table(meta)
     namespaces = namespace_table.select().execute().fetchall()
 
-    pattern = re.compile('[\W_]+', re.UNICODE)
+    pattern = re.compile(r'[\W_]+', re.UNICODE)
 
     for id, namespace in enumerate(namespaces, start=1):
         namespace_id = namespace['id']

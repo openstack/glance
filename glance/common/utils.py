@@ -516,7 +516,7 @@ def is_valid_hostname(hostname):
 
 def is_valid_fqdn(fqdn):
     """Verify whether a host is a valid FQDN."""
-    return re.match('^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', fqdn) is not None
+    return re.match(r'^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', fqdn) is not None
 
 
 def parse_valid_host_port(host_port):
