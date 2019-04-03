@@ -74,8 +74,8 @@ class TimeUtilsTest(test_utils.BaseTestCase):
         before = timeutils.utcnow()
         after = before + datetime.timedelta(days=7, seconds=59,
                                             microseconds=123456)
-        self.assertAlmostEquals(604859.123456,
-                                timeutils.delta_seconds(before, after))
+        self.assertAlmostEqual(604859.123456,
+                               timeutils.delta_seconds(before, after))
 
     def test_iso8601_from_timestamp(self):
         utcnow = timeutils.utcnow()
