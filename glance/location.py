@@ -13,7 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import collections
+# TODO(smcginnis) update this once six has support for collections.abc
+# (https://github.com/benjaminp/six/pull/241) or clean up once we drop py2.7.
+try:
+    from collections.abc import MutableSequence
+except ImportError:
+    from collections import MutableSequence
+
 import copy
 import functools
 
@@ -186,7 +192,7 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
 
 
 @functools.total_ordering
-class StoreLocations(collections.MutableSequence):
+class StoreLocations(MutableSequence):
     """
     The proxy for store location property. It takes responsibility for::
 
