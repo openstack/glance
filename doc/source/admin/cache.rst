@@ -150,6 +150,14 @@ following methods:
 
    $ glance-cache-manage --host=<HOST> list-cached
 
+* In Glance, image cache is local to each node, hence image cache management
+  must be performed on each node locally. If OpenStack cloud is deployed with
+  HA (3/5/7 controllers) then while running the cache management it is
+  necessary to specify the HOST address using -H option.
+  Example usage::
+
+   $ glance-cache-manage --host=<HOST> list-cached
+
 * You can issue the following call on \*nix systems (on the host that contains
   the image cache)::
 
