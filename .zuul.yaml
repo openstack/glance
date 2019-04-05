@@ -225,8 +225,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -242,8 +241,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -259,8 +257,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -276,8 +273,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -293,8 +289,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -315,8 +310,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -332,8 +326,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -349,8 +342,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -366,8 +358,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -387,8 +378,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -404,8 +394,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
@@ -421,8 +410,7 @@
               - ^api-ref/.*$
               - ^glance/hacking/.*$
               - ^glance/locale/.*$
-              - ^glance/tests/functional.*$
-              - ^glance/tests/unit.*$
+              - ^glance/tests/.*$
               - ^doc/.*$
               - ^etc/.*$
               - ^releasenotes/.*$
