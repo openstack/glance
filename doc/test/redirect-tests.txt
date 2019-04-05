@@ -50,7 +50,6 @@
 # to: cli
 /glance/latest/man/glanceapi.html 301 /glance/latest/cli/glanceapi.html
 /glance/latest/man/glancecachecleaner.html 301 /glance/latest/cli/glancecachecleaner.html
-/glance/latest/man/glancecachemanage.html 301 /glance/latest/cli/glancecachemanage.html
 /glance/latest/man/glancecacheprefetcher.html 301 /glance/latest/cli/glancecacheprefetcher.html
 /glance/latest/man/glancecachepruner.html 301 /glance/latest/cli/glancecachepruner.html
 /glance/latest/man/glancecontrol.html 301 /glance/latest/cli/glancecontrol.html
