@@ -135,6 +135,17 @@ class VersionsTest(base.IsolatedUnitTest):
         expected = self._get_versions_list(ssl_url)
         self.assertEqual(expected, results)
 
+    def test_get_version_list_for_external_app(self):
+        url = 'http://customhost:9292/app/api'
+        req = webob.Request.blank('/', base_url=url)
+        self.config(bind_host='127.0.0.1', bind_port=9292)
+        res = versions.Controller().index(req)
+        self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
+        self.assertEqual('application/json', res.content_type)
+        results = jsonutils.loads(res.body)['versions']
+        expected = self._get_versions_list(url)
+        self.assertEqual(expected, results)
+
 
 class VersionNegotiationTest(base.IsolatedUnitTest):
 

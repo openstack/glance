@@ -17,6 +17,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from six.moves import http_client
+from six.moves import urllib
 import webob.dec
 
 from glance.common import wsgi
@@ -59,14 +60,17 @@ class Controller(object):
     def index(self, req, explicit=False):
         """Respond to a request for all OpenStack API versions."""
         def build_version_object(version, path, status):
-            url = CONF.public_endpoint or req.host_url
+            url = CONF.public_endpoint or req.application_url
+            # Always add '/' to url end for urljoin href url
+            url = url.rstrip('/') + '/'
+            href = urllib.parse.urljoin(url, path).rstrip('/') + '/'
             return {
                 'id': 'v%s' % version,
                 'status': status,
                 'links': [
                     {
                         'rel': 'self',
-                        'href': '%s/%s/' % (url, path),
+                        'href': '%s' % href,
                     },
                 ],
             }
