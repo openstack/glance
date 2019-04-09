@@ -20,3 +20,4 @@ postgresql
 postgresql-client [platform:dpkg]
 postgresql-devel [platform:rpm]
 postgresql-server [platform:rpm]
+libpq-dev [platform:dpkg]
