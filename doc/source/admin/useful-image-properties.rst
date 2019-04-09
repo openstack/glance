@@ -226,6 +226,15 @@ Here is a list of useful image properties and the values they expect.
        * ``disabled`` or ``optional`` - (default) Disable the Secure Boot
          feature.
    * - All
+     - ``os_shutdown_timeout``
+     - By default, guests will be given 60 seconds to perform a graceful
+       shutdown. After that, the VM is powered off. This property allows
+       overriding the amount of time (unit: seconds) to allow a guest OS to
+       cleanly shut down before power off. A value of 0 (zero) means the guest
+       will be powered off immediately with no opportunity for guest OS
+       clean-up.
+     - Integer value (in seconds) with a minimum of 0 (zero). Default is 60.
+   * - All
      - ``ramdisk_id``
      - The ID of image stored in the Image service that should be used as the
        ramdisk when booting an AMI-style image.
