@@ -1,0 +1,11 @@
+===============
+Gate-only tests
+===============
+
+These tests catch configuration problems for some code constants that
+must be maintained manually.  We have them separated out from the other
+tests so that they can easily be run in their own gate job and don't
+affect local development.
+
+It would be nice if someone with some free time could figure out how
+to make these changes automatic (or unnecessary) ...
