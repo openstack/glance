@@ -20,4 +20,13 @@
 ``--os-auth-url=OS_AUTH_URL``
       Defaults to env[OS_AUTH_URL]
 
+``-os-user-domain-id=OS_USER_DOMAIN_ID``
+      Defaults to env[OS_USER_DOMAIN_ID]
+
+``--os-project-domain-id=OS_PROJECT_DOMAIN_ID``
+      Defaults to env[OS_PROJECT_DOMAIN_ID]
+
+``--os-domain-id=OS_AUTH_URL``
+      Defaults to env[OS_DOMAIN_ID]
+
 
