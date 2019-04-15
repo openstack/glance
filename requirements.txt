@@ -31,7 +31,7 @@ PrettyTable<0.8,>=0.7.1 # BSD
 # For paste.util.template used in keystone.common.template
 Paste>=2.0.2 # MIT
 
-jsonschema<3.0.0,>=2.6.0 # MIT
+jsonschema>=2.6.0 # MIT
 pyOpenSSL>=17.1.0 # Apache-2.0
 # Required by openstack.common libraries
 six>=1.10.0 # MIT
