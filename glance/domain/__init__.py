@@ -366,10 +366,10 @@ class Task(object):
                  task_input, result, message):
 
         if task_type not in self._supported_task_type:
-            raise exception.InvalidTaskType(task_type)
+            raise exception.InvalidTaskType(type=task_type)
 
         if status not in self._supported_task_status:
-            raise exception.InvalidTaskStatus(status)
+            raise exception.InvalidTaskStatus(status=status)
 
         self.task_id = task_id
         self._status = status
