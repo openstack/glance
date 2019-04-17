@@ -76,7 +76,7 @@ as a part of the EXPERIMENTAL Image API v2.8.
 
 In version 2.7 of the API, this call will return a 404 (Not Found).
 Use the :ref:`API versions call <versions-call>` to determine
-what API verisons are available in your cloud.
+what API versions are available in your cloud.
 
 Normal response codes: 200
 
