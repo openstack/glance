@@ -238,7 +238,7 @@
         - glance-code-constants-check
         - devstack-plugin-ceph-tempest:
             voting: false
-            irrelevant-files:
+            irrelevant-files: &tempest-irrelevant-files
               - ^(test-|)requirements.txt$
               - ^lower-constraints.txt$
               - ^.*\.rst$
@@ -254,190 +254,36 @@
               - ^tox.ini$
               - ^\.zuul\.yaml$
         - tempest-full:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - neutron-grenade:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - tempest-full-py3:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - grenade-py3:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
 
     gate:
       jobs:
         - openstack-tox-functional
         - openstack-tox-functional-py35
         - tempest-full:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - neutron-grenade:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - tempest-full-py3:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - grenade-py3:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
     experimental:
       jobs:
         - barbican-simple-crypto-devstack-tempest
         - glance-dsvm-grenade-multinode
         - devstack-plugin-ceph-tempest-py3:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - tempest-pg-full:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
         - tempest-full-py3-opensuse150:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
-              - ^.*\.rst$
-              - ^api-ref/.*$
-              - ^glance/hacking/.*$
-              - ^glance/locale/.*$
-              - ^glance/tests/.*$
-              - ^doc/.*$
-              - ^etc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-              - ^tools/.*$
-              - ^tox.ini$
-              - ^\.zuul\.yaml$
+            irrelevant-files: *tempest-irrelevant-files
     periodic:
       jobs:
         # NOTE(rosmaita): we only want the "tips" jobs to be run against
