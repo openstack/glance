@@ -5,8 +5,8 @@
     post-run: playbooks/legacy/glance-dsvm-grenade-multinode/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
       - openstack/glance
     nodeset: legacy-ubuntu-xenial-2-node
 
@@ -146,7 +146,7 @@
     abstract: true
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
-      - name: openstack/cursive
+      - name: x/cursive
       - name: openstack/python-barbicanclient
       - name: openstack/castellan
 
@@ -293,7 +293,7 @@
         # The "tips" jobs can be removed from the stable branch .zuul.yaml
         # files if someone is so inclined, but that would require manual
         # maintenance, so we do not do it by default.  Another option is
-        # to define these jobs in the openstack-infra/project-config repo.
+        # to define these jobs in the openstack/project-config repo.
         # That would make us less agile in adjusting these tests, so we
         # aren't doing that either.
         - glance-tox-functional-oslo-tips:
