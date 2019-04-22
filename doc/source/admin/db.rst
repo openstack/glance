@@ -74,9 +74,9 @@ migrations:
    used to do the upgrade to Ocata, is
    `ocata01_add_visibility_remove_is_public.py`_.
 
-.. _`current directory`: http://git.openstack.org/cgit/openstack/glance/tree/glance/db/sqlalchemy/migrate_repo/versions?h=stable/ocata
-.. _`045_add_visibility.py`: http://git.openstack.org/cgit/openstack/glance/tree/glance/db/sqlalchemy/migrate_repo/versions/045_add_visibility.py?h=stable/ocata
-.. _`ocata01_add_visibility_remove_is_public.py`: http://git.openstack.org/cgit/openstack/glance/tree/glance/db/sqlalchemy/alembic_migrations/versions/ocata01_add_visibility_remove_is_public.py?h=stable/ocata
+.. _`current directory`: https://opendev.org/openstack/glance/src/branch/stable/ocata/glance/db/sqlalchemy/migrate_repo/versions
+.. _`045_add_visibility.py`: https://opendev.org/openstack/glance/src/branch/stable/ocata/glance/db/sqlalchemy/migrate_repo/versions/045_add_visibility.py
+.. _`ocata01_add_visibility_remove_is_public.py`: https://opendev.org/openstack/glance/src/branch/stable/ocata/glance/db/sqlalchemy/alembic_migrations/versions/ocata01_add_visibility_remove_is_public.py
 
 Sync the Database
 -----------------
@@ -166,7 +166,7 @@ purging the database.
    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/approved/glance/mitigate-ossn-0075.html>`_
    contains a discussion of the issue and explains the changes made to the
    ``glance-manage`` tool for the Rocky release.  The `Gerrit review of the
-   spec <https://review.openstack.org/468179>`_ contains an extensive
+   spec <https://review.opendev.org/#/c/468179/>`_ contains an extensive
    discussion of several alternative approaches and will give you an idea of
    why the Glance team provided a "mitigation" instead of a fix.
 

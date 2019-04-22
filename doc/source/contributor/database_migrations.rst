@@ -296,7 +296,7 @@ NOTES
   database upgrades, as a developer you have to pay attention in your scripts
   to determine whether you need to add/remove triggers in the expand/contract
   scripts.  See the changes to the ocata scripts in
-  https://review.openstack.org/#/c/544792/ for an example of how to do this.
+  https://review.opendev.org/#/c/544792/ for an example of how to do this.
 
 * Alembic is a database migration engine written for SQLAlchemy. So, any
   migration script written for SQLAlchemy Migrate should work with Alembic as
@@ -354,5 +354,5 @@ References
 .. [GSPEC2] `Glance Alembic Migrations Spec
             <https://specs.openstack.org/openstack/glance-specs/specs/ocata/implemented/glance/alembic-migrations.html>`_
 .. [GMIGS1] `Glance Alembic Migrations Implementation
-            <http://git.openstack.org/cgit/openstack/glance/tree/glance/db/sqlalchemy/alembic_migrations/versions>`_
+            <https://opendev.org/openstack/glance/src/branch/master/glance/db/sqlalchemy/alembic_migrations/versions>`_
 .. [ALMBC] `Alembic Operations <http://alembic.zzzcomputing.com/en/latest/ops.html>`_

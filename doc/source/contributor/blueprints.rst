@@ -2,7 +2,7 @@ Blueprints and Specs
 ====================
 
 The Glance team uses the `glance-specs
-<http://git.openstack.org/cgit/openstack/glance-specs>`_ repository for its
+<https://opendev.org/openstack/glance-specs>`_ repository for its
 specification reviews. Detailed information can be found `here
 <https://wiki.openstack.org/wiki/Blueprints#Glance>`_. Please also find
 additional information in the reviews.rst file.
@@ -16,7 +16,7 @@ particularly good argument is made in favor of having an exception for
 it.
 
 Please note that we use a `template
-<http://git.openstack.org/cgit/openstack/glance-specs/tree/specs/template.rst>`_
+<https://opendev.org/openstack/glance-specs/src/branch/master/specs/template.rst>`_
 for spec submissions. It is not required to fill out all sections in the
 template. Review of the spec may require filling in information left out by
 the submitter.
@@ -48,7 +48,7 @@ lite*, which is a quick description of what you want to do.
 
 You propose a spec-lite in the same way you propose a full spec: copy
 the `spec-lite template
-<http://git.openstack.org/cgit/openstack/glance-specs/tree/specs/spec-lite-template.rst>`_
+<https://opendev.org/openstack/glance-specs/src/branch/master/specs/spec-lite-template.rst>`_
 in the **approved** directory for the release cycle in which you're proposing
 the change, fill out the appropriate sections, and put up a patch in gerrit.
 
