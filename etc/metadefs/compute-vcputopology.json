@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::VirtCPUTopology",
     "display_name": "Virtual CPU Topology",
-    "description": "This provides the preferred socket/core/thread counts for the virtual CPU instance exposed to guests. This enables the ability to avoid hitting limitations on vCPU topologies that OS vendors place on their products. See also: http://git.openstack.org/cgit/openstack/nova-specs/tree/specs/juno/virt-driver-vcpu-topology.rst",
+    "description": "This provides the preferred socket/core/thread counts for the virtual CPU instance exposed to guests. This enables the ability to avoid hitting limitations on vCPU topologies that OS vendors place on their products. See also: https://opendev.org/openstack/nova-specs/src/branch/master/specs/juno/implemented/virt-driver-vcpu-topology.rst",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [

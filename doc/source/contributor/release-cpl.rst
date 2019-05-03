@@ -49,7 +49,7 @@ You **do** have to be:
   possibly even the PTL, shows up right before RC1 with a large but probably
   innocuous change. Even if this passes the gate, you should err on the side
   of caution and ask to not allow it to merge.
-  (This has happened `before <https://review.openstack.org/#/c/427535/>`_ )
+  (This has happened `before <https://review.opendev.org/#/c/427535/>`_ )
 
 A Release CPL has authority within the Glance project. They have authority
 through two measures:
@@ -274,9 +274,9 @@ revised by the Glance Release CPLs:
 .. _weekly meeting:
     http://eavesdrop.openstack.org/#Release_Team_Meeting
 .. _openstack/governance:
-    https://git.openstack.org/cgit/openstack/governance
+    https://opendev.org/openstack/governance
 .. _openstack/releases:
-    https://git.openstack.org/cgit/openstack/releases
+    https://opendev.org/openstack/releases
 .. _StoryBoard:
     https://storyboard.openstack.org/
 .. _glance/db/migration.py:
@@ -284,7 +284,7 @@ revised by the Glance Release CPLs:
 .. _release management process guide:
     https://docs.openstack.org/project-team-guide/release-management.html
 .. _release management tooling guide:
-    http://git.openstack.org/cgit/openstack/releases/tree/README.rst
+    https://opendev.org/openstack/releases/src/branch/master/README.rst
 .. _bug tracker:
     https://bugs.launchpad.net/glance
 .. _release notes:

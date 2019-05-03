@@ -458,8 +458,8 @@ You will need to configure 'glance-image-import.conf' file as shown below:
        [image_conversion]
        output_format = raw
 
-.. _glance-api.conf: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-api.conf
-.. _glance-image-import.conf.sample: http://git.openstack.org/cgit/openstack/glance/tree/etc/glance-image-import.conf.sample
+.. _glance-api.conf: https://opendev.org/openstack/glance/src/branch/master/etc/glance-api.conf
+.. _glance-image-import.conf.sample: https://opendev.org/openstack/glance/src/branch/master/etc/glance-image-import.conf.sample
 .. _`Image Import Refactor`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
 .. _`Image Service API reference`: https://developer.openstack.org/api-ref/image/
 .. _`Inject metadata properties automatically to non-admin images`: https://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/inject-automatic-metadata.html

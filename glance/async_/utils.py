@@ -67,7 +67,7 @@ class OptionalTask(task.Task):
         # ourselves we must.
         #
         # NOTE(harlowja): The upstream change that is hopefully going to make
-        # this easier/built-in is at: https://review.openstack.org/#/c/271116/
+        # this easier/built-in is at: https://review.opendev.org/#/c/271116/
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
