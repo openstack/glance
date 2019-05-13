@@ -15,10 +15,33 @@
 #    under the License.
 
 import copy
+import functools
+
+from oslo_config import cfg
+from oslo_log import log as logging
 
 from glance.common import exception
+from glance.common import store_utils
 import glance.domain.proxy
 from glance.i18n import _
+
+CONF = cfg.CONF
+LOG = logging.getLogger(__name__)
+
+
+def lazy_update_store_info(func):
+    """Update store information in location metadata"""
+    @functools.wraps(func)
+    def wrapped(context, image, **kwargs):
+        image_repo = kwargs.get('image_repo')
+        if CONF.enabled_backends:
+            store_utils.update_store_in_locations(
+                image.locations, image.image_id)
+            image_repo.save(image)
+
+        return func(context, image, **kwargs)
+
+    return wrapped
 
 
 def is_image_mutable(context, image):
@@ -32,7 +55,8 @@ def is_image_mutable(context, image):
     return image.owner == context.owner
 
 
-def proxy_image(context, image):
+@lazy_update_store_info
+def proxy_image(context, image, image_repo=None):
     if is_image_mutable(context, image):
         return ImageProxy(image, context)
     else:
@@ -105,11 +129,12 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def get(self, image_id):
         image = self.image_repo.get(image_id)
-        return proxy_image(self.context, image)
+        return proxy_image(self.context, image, image_repo=self.image_repo)
 
     def list(self, *args, **kwargs):
         images = self.image_repo.list(*args, **kwargs)
-        return [proxy_image(self.context, i) for i in images]
+        return [proxy_image(self.context, i,
+                            image_repo=self.image_repo) for i in images]
 
 
 def _validate_image_accepts_members(visibility):
