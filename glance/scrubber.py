@@ -255,7 +255,7 @@ class ScrubDBQueue(object):
 
                 # if multi-store is enabled then we need to pass backend
                 # to delete the image.
-                backend = loc['metadata'].get('backend')
+                backend = loc['metadata'].get('store')
                 if CONF.enabled_backends:
                     ret.append((image['id'], loc['id'], uri, backend))
                 else:

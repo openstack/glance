@@ -59,7 +59,7 @@ def _calc_required_size(context, image, locations):
             try:
                 if CONF.enabled_backends:
                     size_from_backend = store.get_size_from_uri_and_backend(
-                        location['url'], location['metadata'].get('backend'),
+                        location['url'], location['metadata'].get('store'),
                         context=context)
                 else:
                     size_from_backend = store.get_size_from_backend(

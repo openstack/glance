@@ -47,7 +47,7 @@ def safe_delete_from_backend(context, image_id, location):
 
     try:
         if CONF.enabled_backends:
-            backend = location['metadata'].get('backend')
+            backend = location['metadata'].get('store')
             ret = store_api.delete(location['url'],
                                    backend,
                                    context=context)
