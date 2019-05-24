@@ -6,6 +6,7 @@ stores:
     - ``id``
     - ``description``
     - ``default``
+    - ``read-only``
   in: body
   required: true
   type: array
