@@ -12,6 +12,11 @@
         {
             "id":"cheap",
             "description": "Less expensive rbd store"
+        },
+        {
+            "id":"read_only_store",
+            "description": "Read only http store",
+            "read-only": true
         }
     ]
 }

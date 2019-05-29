@@ -50,16 +50,23 @@ operators to enable multiple stores support.
     represents the identifier for the store and value will be the type
     of the store. Valid values are one of ``file``, ``http``, ``rbd``,
     ``swift``, ``cinder``, ``sheepdog`` or ``vmware``. In order to have
-    multiple stores operator can specify multiple key:value separated by comma.
+    multiple stores operator can specify multiple key:value separated by
+    comma.
+
+    Due to the special read only nature and characteristics of the
+    http store type, we do not encourage nor support configuring
+    multiple instances of the http type store even though it's
+    possible.
+
+    The http store type is always treated by Glance as a read-only
+    store.  This is indicated in the response to the ``/v2/stores/info``
+    call, where an http type store will have the attribute ``read-only:
+    True`` in addition to the usual ``id`` and ``description`` fields.
 
     .. code-block:: ini
 
          [DEFAULT]
          enabled_backends = fast:rbd, cheap:rbd, shared:file, reliable:file
-
-    .. note:: Due to the special read only nature and characteristics of the
-              http store we do not encourage nor support configuring multiple
-              instances of http store even though it's possible.
 
 * in the ``[glance_store]`` options group:
 
