@@ -70,9 +70,8 @@ as a part of the EXPERIMENTAL Image API v2.8.
 
 .. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
           its use in production systems is currently **not supported**.
-          However we encourage people to use this feature for testing
-          purposes and report the issues so that we can make it stable and
-          fully supported in Stein release.
+          The feature is being finalized during the Train development
+          cycle and is expected to be fully supported in Image API v2.9.
 
 In version 2.7 of the API, this call will return a 404 (Not Found).
 Use the :ref:`API versions call <versions-call>` to determine
