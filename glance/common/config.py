@@ -194,7 +194,7 @@ Related options:
 """)),
     cfg.StrOpt('hashing_algorithm',
                default='sha512',
-               help=_(""""
+               help=_("""
 Secure hashing algorithm used for computing the 'os_hash_value' property.
 
 This option configures the Glance "multihash", which consists of two
