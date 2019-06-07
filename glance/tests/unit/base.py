@@ -72,15 +72,15 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
         :param passing_config: making store driver passes basic configurations.
         :returns: the number of how many store drivers been loaded.
         """
-        self.config(enabled_backends={'file1': 'file', 'ceph1': 'rbd',
+        self.config(enabled_backends={'fast': 'file', 'cheap': 'file',
                                       'readonly_store': 'http'})
         store.register_store_opts(CONF)
 
-        self.config(default_backend='file1',
+        self.config(default_backend='fast',
                     group='glance_store')
 
         self.config(filesystem_store_datadir=self.test_dir,
-                    group='file1')
+                    group='fast')
         store.create_multi_stores(CONF)
 
 
