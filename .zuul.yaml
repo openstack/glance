@@ -276,6 +276,10 @@
             irrelevant-files: *tempest-irrelevant-files
     experimental:
       jobs:
+        - glance-tox-py27-glance_store-tips
+        - glance-tox-py36-glance_store-tips
+        - glance-tox-functional-glance_store-tips
+        - glance-tox-functional-py36-glance_store-tips
         - barbican-simple-crypto-devstack-tempest
         - glance-dsvm-grenade-multinode
         - devstack-plugin-ceph-tempest-py3:
