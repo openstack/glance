@@ -67,7 +67,7 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         for location in image.locations:
             if CONF.enabled_backends:
                 self.store_api.set_acls_for_multi_store(
-                    location['url'], location['metadata']['backend'],
+                    location['url'], location['metadata'].get('backend'),
                     public=public, read_tenants=member_ids,
                     context=self.context
                 )
