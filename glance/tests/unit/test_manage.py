@@ -379,6 +379,9 @@ class TestManage(TestManageBase):
                       exit.code)
 
     @mock.patch(
+        'glance.db.sqlalchemy.alembic_migrations.data_migrations.'
+        'has_pending_migrations')
+    @mock.patch(
         'glance.db.sqlalchemy.alembic_migrations.get_current_alembic_heads')
     @mock.patch(
         'glance.db.sqlalchemy.alembic_migrations.get_alembic_branch_head')
@@ -386,13 +389,15 @@ class TestManage(TestManageBase):
     @mock.patch.object(manage.DbCommands, '_sync')
     def test_contract(self, mock_sync, mock_validate_engine,
                       mock_get_alembic_branch_head,
-                      mock_get_current_alembic_heads):
+                      mock_get_current_alembic_heads,
+                      mock_has_pending_migrations):
         engine = mock_validate_engine.return_value
         engine.engine.name = 'mysql'
         mock_get_current_alembic_heads.side_effect = ['pike_expand01',
                                                       'pike_contract01']
         mock_get_alembic_branch_head.side_effect = ['pike_contract01',
                                                     'pike_expand01']
+        mock_has_pending_migrations.return_value = False
         self.db.contract()
         mock_sync.assert_called_once_with(version='pike_contract01')
 

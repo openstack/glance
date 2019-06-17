@@ -47,9 +47,9 @@ def get_backend():
 # Migration-related constants
 EXPAND_BRANCH = 'expand'
 CONTRACT_BRANCH = 'contract'
-CURRENT_RELEASE = 'stein'
+CURRENT_RELEASE = 'train'
 ALEMBIC_INIT_VERSION = 'liberty'
-LATEST_REVISION = 'queens_contract01'
+LATEST_REVISION = 'rocky_contract02'
 INIT_VERSION = 0
 
 MIGRATE_REPO_PATH = os.path.join(
