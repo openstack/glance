@@ -135,6 +135,7 @@ class ImageCacheTestCase(object):
 
         self.assertTrue(os.path.exists(incomplete_file_path))
 
+        self.delay_inaccurate_clock()
         self.cache.clean(stall_time=0)
 
         self.assertFalse(os.path.exists(incomplete_file_path))

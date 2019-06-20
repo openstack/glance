@@ -17,7 +17,6 @@
 
 import copy
 import datetime
-import time
 import uuid
 
 import mock
@@ -139,6 +138,7 @@ class TestDriver(test_utils.BaseTestCase):
     def create_images(self, images):
         for fixture in images:
             self.db_api.image_create(self.adm_context, fixture)
+            self.delay_inaccurate_clock()
 
 
 class DriverTests(object):
@@ -319,6 +319,7 @@ class DriverTests(object):
 
     def test_image_update_properties(self):
         fixture = {'properties': {'ping': 'pong'}}
+        self.delay_inaccurate_clock()
         image = self.db_api.image_update(self.adm_context, UUID1, fixture)
         expected = {'ping': 'pong', 'foo': 'bar', 'far': 'boo'}
         actual = {p['name']: p['value'] for p in image['properties']}
@@ -1298,6 +1299,7 @@ class DriverTests(object):
                     'deleted': False}
         self.assertEqual(expected, member)
 
+        self.delay_inaccurate_clock()
         member = self.db_api.image_member_update(self.context,
                                                  member_id,
                                                  {'can_share': True})
@@ -1341,10 +1343,7 @@ class DriverTests(object):
                     'deleted': False}
         self.assertEqual(expected, member)
 
-        # The clock may not be very accurate, for which reason we may
-        # get identical timestamps.
-        time.sleep(0.01)
-
+        self.delay_inaccurate_clock()
         member = self.db_api.image_member_update(self.context,
                                                  member_id,
                                                  {'status': 'accepted'})
@@ -1872,6 +1871,7 @@ class TaskTests(test_utils.BaseTestCase):
             'status': 'processing',
             'message': 'This is a error string',
         }
+        self.delay_inaccurate_clock()
         task = self.db_api.task_update(self.adm_context, task_id, fixture)
 
         self.assertEqual(task_id, task['id'])
@@ -1897,6 +1897,7 @@ class TaskTests(test_utils.BaseTestCase):
 
         task_id = task['id']
         fixture = {'status': 'processing'}
+        self.delay_inaccurate_clock()
         task = self.db_api.task_update(self.adm_context, task_id, fixture)
 
         self.assertEqual(task_id, task['id'])
