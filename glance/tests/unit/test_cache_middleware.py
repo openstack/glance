@@ -38,6 +38,7 @@ class ImageStub(object):
         self.extra_properties = extra_properties
         self.checksum = 'c1234'
         self.size = 123456789
+        self.os_hash_algo = None
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):

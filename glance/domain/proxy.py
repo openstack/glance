@@ -194,8 +194,8 @@ class Image(object):
     def reactivate(self):
         self.base.reactivate()
 
-    def set_data(self, data, size=None, backend=None):
-        self.base.set_data(data, size, backend=backend)
+    def set_data(self, data, size=None, backend=None, set_active=True):
+        self.base.set_data(data, size, backend=backend, set_active=set_active)
 
     def get_data(self, *args, **kwargs):
         return self.base.get_data(*args, **kwargs)

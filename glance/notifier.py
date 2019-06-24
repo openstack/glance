@@ -400,6 +400,17 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             'receiver_user_id': self.context.user_id,
         }
 
+    def _format_import_properties(self):
+        importing = self.repo.extra_properties.get(
+            'os_glance_importing_to_stores')
+        importing = importing.split(',') if importing else []
+        failed = self.repo.extra_properties.get('os_glance_failed_import')
+        failed = failed.split(',') if failed else []
+        return {
+            'os_glance_importing_to_stores': importing,
+            'os_glance_failed_import': failed
+        }
+
     def _get_chunk_data_iterator(self, data, chunk_size=None):
         sent = 0
         for chunk in data:
@@ -426,12 +437,15 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
         data = self.repo.get_data(offset=offset, chunk_size=chunk_size)
         return self._get_chunk_data_iterator(data, chunk_size=chunk_size)
 
-    def set_data(self, data, size=None, backend=None):
-        self.send_notification('image.prepare', self.repo, backend=backend)
+    def set_data(self, data, size=None, backend=None, set_active=True):
+        self.send_notification('image.prepare', self.repo, backend=backend,
+                               extra_payload=self._format_import_properties())
 
         notify_error = self.notifier.error
+        status = self.repo.status
         try:
-            self.repo.set_data(data, size, backend=backend)
+            self.repo.set_data(data, size, backend=backend,
+                               set_active=set_active)
         except glance_store.StorageFull as e:
             msg = (_("Image storage media is full: %s") %
                    encodeutils.exception_to_unicode(e))
@@ -486,8 +500,11 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
                         'error': encodeutils.exception_to_unicode(e)})
                 _send_notification(notify_error, 'image.upload', msg)
         else:
-            self.send_notification('image.upload', self.repo)
-            self.send_notification('image.activate', self.repo)
+            extra_payload = self._format_import_properties()
+            self.send_notification('image.upload', self.repo,
+                                   extra_payload=extra_payload)
+            if set_active and status != 'active':
+                self.send_notification('image.activate', self.repo)
 
 
 class ImageMemberProxy(NotificationProxy, domain_proxy.ImageMember):

@@ -436,31 +436,17 @@ class ImageProxy(glance.domain.proxy.Image):
                     self.image.image_id,
                     location)
 
-    def set_data(self, data, size=None, backend=None):
-        if size is None:
-            size = 0  # NOTE(markwash): zero -> unknown size
+    def _upload_to_store(self, data, verifier, store=None, size=None):
+        """
+        Upload data to store
 
-        # Create the verifier for signature verification (if correct properties
-        # are present)
-        extra_props = self.image.extra_properties
-        if (signature_utils.should_create_verifier(extra_props)):
-            # NOTE(bpoulos): if creating verifier fails, exception will be
-            # raised
-            img_signature = extra_props[signature_utils.SIGNATURE]
-            hash_method = extra_props[signature_utils.HASH_METHOD]
-            key_type = extra_props[signature_utils.KEY_TYPE]
-            cert_uuid = extra_props[signature_utils.CERT_UUID]
-            verifier = signature_utils.get_verifier(
-                context=self.context,
-                img_signature_certificate_uuid=cert_uuid,
-                img_signature_hash_method=hash_method,
-                img_signature=img_signature,
-                img_signature_key_type=key_type
-            )
-        else:
-            verifier = None
-
-        hashing_algo = CONF['hashing_algorithm']
+        :param data: data to upload to store
+        :param verifier: for signature verification
+        :param store: store to upload data to
+        :param size: data size
+        :return:
+        """
+        hashing_algo = self.image.os_hash_algo or CONF['hashing_algorithm']
         if CONF.enabled_backends:
             (location, size, checksum,
              multihash, loc_meta) = self.store_api.add_with_multihash(
@@ -469,7 +455,7 @@ class ImageProxy(glance.domain.proxy.Image):
                 utils.LimitingReader(utils.CooperativeReader(data),
                                      CONF.image_size_cap),
                 size,
-                backend,
+                store,
                 hashing_algo,
                 context=self.context,
                 verifier=verifier)
@@ -487,16 +473,33 @@ class ImageProxy(glance.domain.proxy.Image):
                 hashing_algo,
                 context=self.context,
                 verifier=verifier)
+        self._verify_signature(verifier, location, loc_meta)
+        for attr, data in {"size": size, "os_hash_value": multihash,
+                           "checksum": checksum}.items():
+            self._verify_uploaded_data(data, attr)
+        self.image.locations.append({'url': location, 'metadata': loc_meta,
+                                     'status': 'active'})
+        self.image.checksum = checksum
+        self.image.os_hash_value = multihash
+        self.image.size = size
+        self.image.os_hash_algo = hashing_algo
 
+    def _verify_signature(self, verifier, location, loc_meta):
+        """
+        Verify signature of uploaded data.
+
+        :param verifier: for signature verification
+        """
         # NOTE(bpoulos): if verification fails, exception will be raised
-        if verifier:
+        if verifier is not None:
             try:
                 verifier.verify()
-                LOG.info(_LI("Successfully verified signature for image %s"),
-                         self.image.image_id)
+                msg = _LI("Successfully verified signature for image %s")
+                LOG.info(msg, self.image.image_id)
             except crypto_exception.InvalidSignature:
                 if CONF.enabled_backends:
-                    self.store_api.delete(location, loc_meta.get('store'),
+                    self.store_api.delete(location,
+                                          loc_meta.get('store'),
                                           context=self.context)
                 else:
                     self.store_api.delete_from_backend(location,
@@ -505,13 +508,46 @@ class ImageProxy(glance.domain.proxy.Image):
                     _('Signature verification failed')
                 )
 
-        self.image.locations = [{'url': location, 'metadata': loc_meta,
-                                 'status': 'active'}]
-        self.image.size = size
-        self.image.checksum = checksum
-        self.image.os_hash_value = multihash
-        self.image.os_hash_algo = hashing_algo
-        self.image.status = 'active'
+    def _verify_uploaded_data(self, value, attribute_name):
+        """
+        Verify value of attribute_name uploaded data
+
+        :param value: value to compare
+        :param attribute_name: attribute name of the image to compare with
+        """
+        image_value = getattr(self.image, attribute_name)
+        if image_value is not None and value != image_value:
+            msg = _("%s of uploaded data is different from current "
+                    "value set on the image.")
+            LOG.error(msg, attribute_name)
+            raise exception.UploadException(msg % attribute_name)
+
+    def set_data(self, data, size=None, backend=None, set_active=True):
+        if size is None:
+            size = 0  # NOTE(markwash): zero -> unknown size
+
+        # Create the verifier for signature verification (if correct properties
+        # are present)
+        extra_props = self.image.extra_properties
+        verifier = None
+        if signature_utils.should_create_verifier(extra_props):
+            # NOTE(bpoulos): if creating verifier fails, exception will be
+            # raised
+            img_signature = extra_props[signature_utils.SIGNATURE]
+            hash_method = extra_props[signature_utils.HASH_METHOD]
+            key_type = extra_props[signature_utils.KEY_TYPE]
+            cert_uuid = extra_props[signature_utils.CERT_UUID]
+            verifier = signature_utils.get_verifier(
+                context=self.context,
+                img_signature_certificate_uuid=cert_uuid,
+                img_signature_hash_method=hash_method,
+                img_signature=img_signature,
+                img_signature_key_type=key_type
+            )
+
+        self._upload_to_store(data, verifier, backend, size)
+        if set_active and self.image.status != 'active':
+            self.image.status = 'active'
 
     def get_data(self, offset=0, chunk_size=None):
         if not self.image.locations:

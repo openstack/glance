@@ -306,7 +306,7 @@ class ImageProxy(glance.domain.proxy.Image):
         super(ImageProxy, self).__init__(image)
         self.orig_props = set(image.extra_properties.keys())
 
-    def set_data(self, data, size=None, backend=None):
+    def set_data(self, data, size=None, backend=None, set_active=True):
         remaining = glance.api.common.check_quota(
             self.context, size, self.db_api, image_id=self.image.image_id)
         if remaining is not None:
@@ -315,7 +315,8 @@ class ImageProxy(glance.domain.proxy.Image):
             data = utils.LimitingReader(
                 data, remaining, exception_class=exception.StorageQuotaFull)
 
-        self.image.set_data(data, size=size, backend=backend)
+        self.image.set_data(data, size=size, backend=backend,
+                            set_active=set_active)
 
         # NOTE(jbresnah) If two uploads happen at the same time and neither
         # properly sets the size attribute[1] then there is a race condition

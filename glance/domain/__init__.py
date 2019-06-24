@@ -289,7 +289,7 @@ class Image(object):
     def get_data(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def set_data(self, data, size=None, backend=None):
+    def set_data(self, data, size=None, backend=None, set_active=True):
         raise NotImplementedError()
 
 

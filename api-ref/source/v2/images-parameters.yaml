@@ -286,6 +286,30 @@ visibility-in-query:
   type: string
 
 # variables in body
+all-stores-in-request:
+  description: |
+    When set to True the data will be imported to the set of stores you may
+    consume from this particular deployment of Glance (ie: the same set of
+    stores returned to a call to /v2/info/stores on the glance-api the request
+    hits).
+    This can't be used simultaneously with the ``stores`` parameter.
+  in: body
+  required: false
+  type: boolean
+all-stores-succeed-in-request:
+  description: |
+    A boolean parameter indicating the behavior of the import workflow when an
+    error occurs.
+    When set to True, if an error occurs during the upload in at least one
+    store, the worfklow fails, the data is deleted from stores where copying
+    is done (not staging), and the state of the image is unchanged.
+    When set to False, the workflow will fail (data deleted from stores, ...)
+    only if the import fails on all stores specified by the user. In case of a
+    partial success, the locations added to the image will be the stores where
+    the data has been correctly uploaded.
+  in: body
+  required: false
+  type: boolean
 checksum:
   description: |
     Hash that is used over the image data. The Image
@@ -606,6 +630,13 @@ status:
   in: body
   required: true
   type: string
+stores-in-request:
+  description: |
+    If present contains the list of store id to import the image binary data
+    to.
+  in: body
+  required: false
+  type: array
 tags:
   description: |
     List of tags for this image, possibly an empty list.

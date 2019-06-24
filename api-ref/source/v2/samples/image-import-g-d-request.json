@@ -1,5 +1,7 @@
 {
     "method": {
         "name": "glance-direct"
-    }
+    },
+    "stores": ["common", "cheap", "fast", "reliable"],
+    "all_stores_must_succeed": false
 }

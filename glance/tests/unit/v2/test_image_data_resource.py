@@ -71,7 +71,7 @@ class FakeImage(object):
             return self.data[offset:offset + chunk_size]
         return self.data[offset:]
 
-    def set_data(self, data, size=None, backend=None):
+    def set_data(self, data, size=None, backend=None, set_active=True):
         self.data = ''.join(data)
         self.size = size
         self.status = 'modified-by-fake'

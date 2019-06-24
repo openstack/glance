@@ -44,7 +44,7 @@ class ImageStub(glance.domain.Image):
     def get_data(self, offset=0, chunk_size=None):
         return ['01234', '56789']
 
-    def set_data(self, data, size, backend=None):
+    def set_data(self, data, size, backend=None, set_active=True):
         for chunk in data:
             pass
 
@@ -272,10 +272,17 @@ class TestImageNotifications(utils.BaseTestCase):
             self.assertEqual('INFO', output_log['notification_type'])
             self.assertEqual('image.prepare', output_log['event_type'])
             self.assertEqual(self.image.image_id, output_log['payload']['id'])
+            self.assertEqual(['store1', 'store2'], output_log['payload'][
+                'os_glance_importing_to_stores'])
+            self.assertEqual([],
+                             output_log['payload']['os_glance_failed_import'])
             yield 'abcd'
             yield 'efgh'
             insurance['called'] = True
 
+        self.image_proxy.extra_properties[
+            'os_glance_importing_to_stores'] = 'store1,store2'
+        self.image_proxy.extra_properties['os_glance_failed_import'] = ''
         self.image_proxy.set_data(data_iterator(), 8)
         self.assertTrue(insurance['called'])
 
@@ -294,39 +301,83 @@ class TestImageNotifications(utils.BaseTestCase):
         self.assertTrue(insurance['called'])
 
     def test_image_set_data_upload_and_activate_notification(self):
+        image = ImageStub(image_id=UUID1, name='image-1', status='queued',
+                          created_at=DATETIME, updated_at=DATETIME,
+                          owner=TENANT1, visibility='public')
+        context = glance.context.RequestContext(tenant=TENANT2, user=USER1)
+        fake_notifier = unit_test_utils.FakeNotifier()
+        image_proxy = glance.notifier.ImageProxy(image, context, fake_notifier)
+
         def data_iterator():
-            self.notifier.log = []
+            fake_notifier.log = []
             yield 'abcde'
             yield 'fghij'
+            image_proxy.extra_properties[
+                'os_glance_importing_to_stores'] = 'store2'
 
-        self.image_proxy.set_data(data_iterator(), 10)
+        image_proxy.extra_properties[
+            'os_glance_importing_to_stores'] = 'store1,store2'
+        image_proxy.extra_properties['os_glance_failed_import'] = ''
+        image_proxy.set_data(data_iterator(), 10)
 
-        output_logs = self.notifier.get_logs()
+        output_logs = fake_notifier.get_logs()
         self.assertEqual(2, len(output_logs))
 
         output_log = output_logs[0]
         self.assertEqual('INFO', output_log['notification_type'])
         self.assertEqual('image.upload', output_log['event_type'])
         self.assertEqual(self.image.image_id, output_log['payload']['id'])
+        self.assertEqual(['store2'], output_log['payload'][
+            'os_glance_importing_to_stores'])
+        self.assertEqual([],
+                         output_log['payload']['os_glance_failed_import'])
 
         output_log = output_logs[1]
         self.assertEqual('INFO', output_log['notification_type'])
         self.assertEqual('image.activate', output_log['event_type'])
         self.assertEqual(self.image.image_id, output_log['payload']['id'])
 
-    def test_image_set_data_upload_and_activate_notification_disabled(self):
+    def test_image_set_data_upload_and_not_activate_notification(self):
         insurance = {'called': False}
 
         def data_iterator():
             self.notifier.log = []
             yield 'abcde'
             yield 'fghij'
+            self.image_proxy.extra_properties[
+                'os_glance_importing_to_stores'] = 'store2'
+            insurance['called'] = True
+
+        self.image_proxy.set_data(data_iterator(), 10)
+
+        output_logs = self.notifier.get_logs()
+        self.assertEqual(1, len(output_logs))
+
+        output_log = output_logs[0]
+        self.assertEqual('INFO', output_log['notification_type'])
+        self.assertEqual('image.upload', output_log['event_type'])
+        self.assertEqual(self.image.image_id, output_log['payload']['id'])
+        self.assertTrue(insurance['called'])
+
+    def test_image_set_data_upload_and_activate_notification_disabled(self):
+        insurance = {'called': False}
+        image = ImageStub(image_id=UUID1, name='image-1', status='queued',
+                          created_at=DATETIME, updated_at=DATETIME,
+                          owner=TENANT1, visibility='public')
+        context = glance.context.RequestContext(tenant=TENANT2, user=USER1)
+        fake_notifier = unit_test_utils.FakeNotifier()
+        image_proxy = glance.notifier.ImageProxy(image, context, fake_notifier)
+
+        def data_iterator():
+            fake_notifier.log = []
+            yield 'abcde'
+            yield 'fghij'
             insurance['called'] = True
 
         self.config(disabled_notifications=['image.activate', 'image.upload'])
-        self.image_proxy.set_data(data_iterator(), 10)
+        image_proxy.set_data(data_iterator(), 10)
         self.assertTrue(insurance['called'])
-        output_logs = self.notifier.get_logs()
+        output_logs = fake_notifier.get_logs()
         self.assertEqual(0, len(output_logs))
 
     def test_image_set_data_storage_full(self):

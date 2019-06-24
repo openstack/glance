@@ -223,6 +223,111 @@ be either 80 or 443.)
 
 .. _iir_plugins:
 
+Importing in multiple stores
+----------------------------
+
+Starting with Ussuri, it is possible to import data into multiple stores
+using interoperable image import workflow.
+
+The status of the image is set to ``active`` according to the value of
+``all_stores_must_succeed`` parameter.
+
+* If set to False: the image will be available as soon as an import to
+  one store has succeeded.
+
+* If set to True (default): the status is set to ``active`` only when all
+  stores have been successfully treated.
+
+Check progress
+~~~~~~~~~~~~~~
+
+As each store is treated sequentially, it can take quite some time for the
+workflow to complete depending on the size of the image and the number of
+stores to import data to.
+It is possible to follow task progress by looking at 2 reserved image
+properties:
+
+* ``os_glance_importing_to_stores``: This property contains a list of stores
+  that has not yet been processed. At the beginning of the import flow, it is
+  filled with the stores provided in the request. Each time a store is fully
+  handled, it is removed from the list.
+
+* ``os_glance_failed_import``: Each time an import in a store fails, it is
+  added to this list. This property is emptied at the beginning of the import
+  flow.
+
+These 2 properties are also available in the notifications sent during the
+workflow:
+
+.. note:: Example
+
+    An operator calls the import image api with the following parameters::
+
+        curl -i -X POST -H "X-Auth-Token: $token"
+             -H "Content-Type: application/json"
+             -d '{"method": {"name":"glance-direct"},
+                  "stores": ["ceph1", "ceph2"],
+                  "all_stores_must_succeed": false}'
+            $image_url/v2/images/{image_id}/import
+
+    The upload fails for 'ceph2' but succeed on 'ceph1'. Since the parameter
+    ``all_stores_must_succeed`` has been set to 'false', the task ends
+    successfully and the image is now active.
+
+    Notifications sent by glance looks like (payload is truncated for
+    clarity)::
+
+        {
+            "priority": "INFO",
+            "event_type": "image.prepare",
+            "timestamp": "2019-08-27 16:10:30.066867",
+            "payload": {"status": "importing",
+                        "name": "example",
+                        "backend": "ceph1",
+                        "os_glance_importing_to_stores": ["ceph1", "ceph2"],
+                        "os_glance_failed_import": [],
+                        ...},
+            "message_id": "1c8993ad-e47c-4af7-9f75-fa49596eeb10",
+            ...
+        }
+
+        {
+            "priority": "INFO",
+            "event_type": "image.upload",
+            "timestamp": "2019-08-27 16:10:32.058812",
+            "payload": {"status": "active",
+                        "name": "example",
+                        "backend": "ceph1",
+                        "os_glance_importing_to_stores": ["ceph2"],
+                        "os_glance_failed_import": [],
+                        ...},
+            "message_id": "8b8993ad-e47c-4af7-9f75-fa49596eeb11",
+            ...
+        }
+
+        {
+            "priority": "INFO",
+            "event_type": "image.prepare",
+            "timestamp": "2019-08-27 16:10:33.066867",
+            "payload": {"status": "active",
+                        "name": "example",
+                        "backend": "ceph2",
+                        "os_glance_importing_to_stores": ["ceph2"],
+                        "os_glance_failed_import": [],
+                        ...},
+            "message_id": "1c8993ad-e47c-4af7-9f75-fa49596eeb18",
+            ...
+        }
+
+        {
+            "priority": "ERROR",
+            "event_type": "image.upload",
+            "timestamp": "2019-08-27 16:10:34.058812",
+            "payload": "Error Message",
+            "message_id": "8b8993ad-e47c-4af7-9f75-fa49596eeb11",
+            ...
+        }
+
 Customizing the image import process
 ------------------------------------
 

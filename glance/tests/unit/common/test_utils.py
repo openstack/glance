@@ -14,9 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import glance_store as store
 import mock
 import tempfile
 
+from oslo_config import cfg
 from oslo_log import log as logging
 import six
 import webob
@@ -25,6 +27,9 @@ from glance.common import exception
 from glance.common import store_utils
 from glance.common import utils
 from glance.tests import utils as test_utils
+
+
+CONF = cfg.CONF
 
 
 class TestStoreUtils(test_utils.BaseTestCase):
@@ -407,6 +412,104 @@ class TestUtils(test_utils.BaseTestCase):
             self.assertRaises(ValueError,
                               utils.parse_valid_host_port,
                               pair)
+
+    def test_get_stores_from_request_returns_default(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+
+        req = webob.Request.blank('/some_request')
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            result = utils.get_stores_from_request(req, {})
+            self.assertEqual(["ceph1"], result)
+            mock_get_store.assert_called_once_with("ceph1")
+
+    def test_get_stores_from_request_returns_stores_from_body(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+
+        body = {"stores": ["ceph1", "ceph2"]}
+        req = webob.Request.blank("/some_request")
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            result = utils.get_stores_from_request(req, body)
+            self.assertEqual(["ceph1", "ceph2"], result)
+            mock_get_store.assert_any_call("ceph1")
+            mock_get_store.assert_any_call("ceph2")
+            self.assertEqual(mock_get_store.call_count, 2)
+
+    def test_get_stores_from_request_returns_store_from_headers(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+
+        headers = {"x-image-meta-store": "ceph2"}
+        req = webob.Request.blank("/some_request", headers=headers)
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            result = utils.get_stores_from_request(req, {})
+            self.assertEqual(["ceph2"], result)
+            mock_get_store.assert_called_once_with("ceph2")
+
+    def test_get_stores_from_request_raises_bad_request(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+        headers = {"x-image-meta-store": "ceph2"}
+        body = {"stores": ["ceph1"]}
+        req = webob.Request.blank("/some_request", headers=headers)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          utils.get_stores_from_request, req, body)
+
+    def test_get_stores_from_request_returns_all_stores(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+        body = {"all_stores": True}
+        req = webob.Request.blank("/some_request")
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            result = sorted(utils.get_stores_from_request(req, body))
+            self.assertEqual(["ceph1", "ceph2"], result)
+            mock_get_store.assert_any_call("ceph1")
+            mock_get_store.assert_any_call("ceph2")
+            self.assertEqual(mock_get_store.call_count, 2)
+
+    def test_get_stores_from_request_raises_bad_request_with_all_stores(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+        headers = {"x-image-meta-store": "ceph2"}
+        body = {"stores": ["ceph1"], "all_stores": True}
+        req = webob.Request.blank("/some_request", headers=headers)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          utils.get_stores_from_request, req, body)
 
 
 class SplitFilterOpTestCase(test_utils.BaseTestCase):

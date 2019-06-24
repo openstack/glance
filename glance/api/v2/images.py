@@ -105,6 +105,7 @@ class ImagesController(object):
         task_repo = self.gateway.get_task_repo(req.context)
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
+        all_stores_must_succeed = body.get('all_stores_must_succeed', True)
 
         try:
             image = image_repo.get(image_id)
@@ -127,24 +128,26 @@ class ImagesController(object):
                 msg = _("'disk_format' needs to be set before import")
                 raise exception.Conflict(msg)
 
-            backend = None
+            stores = [None]
             if CONF.enabled_backends:
-                backend = req.headers.get('x-image-meta-store',
-                                          CONF.glance_store.default_backend)
                 try:
-                    glance_store.get_store_from_store_identifier(backend)
-                except glance_store.UnknownScheme:
-                    msg = _("Store for scheme %s not found") % backend
-                    LOG.warn(msg)
-                    raise exception.Conflict(msg)
+                    stores = utils.get_stores_from_request(req, body)
+                except glance_store.UnknownScheme as exc:
+                    LOG.warn(exc.msg)
+                    raise exception.Conflict(exc.msg)
         except exception.Conflict as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
+        if (not all_stores_must_succeed) and (not CONF.enabled_backends):
+            msg = (_("All_stores_must_succeed can only be set with "
+                     "enabled_backends %s") % uri)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
         task_input = {'image_id': image_id,
                       'import_req': body,
-                      'backend': backend}
+                      'backend': stores}
 
         if (import_method == 'web-download' and
            not utils.validate_import_uri(uri)):

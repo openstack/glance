@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from cryptography import exceptions as crypto_exception
 from cursive import exception as cursive_exception
 from cursive import signature_utils
 import glance_store
@@ -48,8 +49,11 @@ class ImageStub(object):
         self.status = status
         self.locations = locations or []
         self.visibility = visibility
-        self.size = 1
+        self.size = None
         self.extra_properties = extra_properties or {}
+        self.os_hash_algo = None
+        self.os_hash_value = None
+        self.checksum = None
 
     def delete(self):
         self.status = 'deleted'
@@ -82,6 +86,104 @@ class FakeMemberRepo(object):
 
     def remove(self, member):
         self.tenants.remove(member.member_id)
+
+
+class TestStoreMultiBackends(utils.BaseTestCase):
+    def setUp(self):
+        self.store_api = unit_test_utils.FakeStoreAPI()
+        self.store_utils = unit_test_utils.FakeStoreUtils(self.store_api)
+        self.enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
+        super(TestStoreMultiBackends, self).setUp()
+        self.config(enabled_backends=self.enabled_backends)
+
+    @mock.patch("glance.location.signature_utils.get_verifier")
+    def test_set_data_calls_upload_to_store(self, msig):
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'img_signature_certificate_uuid': 'UUID',
+            'img_signature_hash_method': 'METHOD',
+            'img_signature_key_type': 'TYPE',
+            'img_signature': 'VALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued', locations=[],
+                               extra_properties=extra_properties)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           self.store_api, self.store_utils)
+        with mock.patch.object(image, "_upload_to_store") as mloc:
+            image.set_data('YYYY', 4, backend='ceph1')
+            msig.assert_called_once_with(context=context,
+                                         img_signature_certificate_uuid='UUID',
+                                         img_signature_hash_method='METHOD',
+                                         img_signature='VALID',
+                                         img_signature_key_type='TYPE')
+            mloc.assert_called_once_with('YYYY', msig.return_value, 'ceph1', 4)
+
+        self.assertEqual('active', image.status)
+
+    def test_image_set_data(self):
+        store_api = mock.MagicMock()
+        store_api.add_with_multihash.return_value = (
+            "rbd://ceph1", 4, "Z", "MH", {"backend": "ceph1"})
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        image.set_data('YYYY', 4, backend='ceph1')
+        self.assertEqual(4, image.size)
+
+        # NOTE(markwash): FakeStore returns image_id for location
+        self.assertEqual("rbd://ceph1", image.locations[0]['url'])
+        self.assertEqual({"backend": "ceph1"}, image.locations[0]['metadata'])
+        self.assertEqual('Z', image.checksum)
+        self.assertEqual('active', image.status)
+
+    @mock.patch('glance.location.LOG')
+    def test_image_set_data_valid_signature(self, mock_log):
+        store_api = mock.MagicMock()
+        store_api.add_with_multihash.return_value = (
+            "rbd://ceph1", 4, "Z", "MH", {"backend": "ceph1"})
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'img_signature_certificate_uuid': 'UUID',
+            'img_signature_hash_method': 'METHOD',
+            'img_signature_key_type': 'TYPE',
+            'img_signature': 'VALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        self.mock_object(signature_utils, 'get_verifier',
+                         unit_test_utils.fake_get_verifier)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        image.set_data('YYYY', 4, backend='ceph1')
+        self.assertEqual('active', image.status)
+        call = mock.call(u'Successfully verified signature for image %s',
+                         UUID2)
+        mock_log.info.assert_has_calls([call])
+
+    @mock.patch("glance.location.signature_utils.get_verifier")
+    def test_image_set_data_invalid_signature(self, msig):
+        msig.return_value.verify.side_effect = \
+            crypto_exception.InvalidSignature
+        store_api = mock.MagicMock()
+        store_api.add_with_multihash.return_value = (
+            "rbd://ceph1", 4, "Z", "MH", {"backend": "ceph1"})
+        context = glance.context.RequestContext(user=USER1)
+        extra_properties = {
+            'img_signature_certificate_uuid': 'UUID',
+            'img_signature_hash_method': 'METHOD',
+            'img_signature_key_type': 'TYPE',
+            'img_signature': 'INVALID'
+        }
+        image_stub = ImageStub(UUID2, status='queued',
+                               extra_properties=extra_properties)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        self.assertRaises(cursive_exception.SignatureVerificationError,
+                          image.set_data, 'YYYY', 4, backend='ceph1')
 
 
 class TestStoreImage(utils.BaseTestCase):
@@ -124,7 +226,11 @@ class TestStoreImage(utils.BaseTestCase):
         context = glance.context.RequestContext(user=USER1)
         (image2, image_stub2) = self._add_image(context, UUID2, 'ZZZ', 3)
         location_data = image2.locations[0]
-        image1.locations.append(location_data)
+
+        with mock.patch("glance.location.store") as mock_store:
+            mock_store.get_size_from_uri_and_backend.return_value = 3
+            image1.locations.append(location_data)
+
         self.assertEqual(2, len(image1.locations))
         self.assertEqual(UUID2, location_data['url'])
 
@@ -603,8 +709,9 @@ class TestStoreImage(utils.BaseTestCase):
 
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
-
-        image3.locations += [location2, location3]
+        with mock.patch("glance.location.store") as mock_store:
+            mock_store.get_size_from_uri_and_backend.return_value = 4
+            image3.locations += [location2, location3]
 
         self.assertEqual([location2, location3], image_stub3.locations)
         self.assertEqual([location2, location3], image3.locations)
@@ -633,7 +740,9 @@ class TestStoreImage(utils.BaseTestCase):
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
 
-        image3.locations += [location2, location3]
+        with mock.patch("glance.location.store") as mock_store:
+            mock_store.get_size_from_uri_and_backend.return_value = 4
+            image3.locations += [location2, location3]
 
         self.assertEqual(1, image_stub3.locations.index(location3))
 
@@ -660,7 +769,9 @@ class TestStoreImage(utils.BaseTestCase):
         location2 = {'url': UUID2, 'metadata': {}}
         location3 = {'url': UUID3, 'metadata': {}}
 
-        image3.locations += [location2, location3]
+        with mock.patch("glance.location.store") as mock_store:
+            mock_store.get_size_from_uri_and_backend.return_value = 4
+            image3.locations += [location2, location3]
 
         self.assertEqual(1, image_stub3.locations.index(location3))
         self.assertEqual(location2, image_stub3.locations[0])
@@ -690,7 +801,9 @@ class TestStoreImage(utils.BaseTestCase):
         location3 = {'url': UUID3, 'metadata': {}}
         location_bad = {'url': 'unknown://location', 'metadata': {}}
 
-        image3.locations += [location2, location3]
+        with mock.patch("glance.location.store") as mock_store:
+            mock_store.get_size_from_uri_and_backend.return_value = 4
+            image3.locations += [location2, location3]
 
         self.assertIn(location3, image_stub3.locations)
         self.assertNotIn(location_bad, image_stub3.locations)
@@ -718,7 +831,9 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
         image3 = glance.location.ImageProxy(image_stub3, context,
                                             self.store_api, self.store_utils)
-        image3.locations += [location2, location3]
+        with mock.patch("glance.location.store") as mock_store:
+            mock_store.get_size_from_uri_and_backend.return_value = 4
+            image3.locations += [location2, location3]
 
         image_stub3.locations.reverse()
 

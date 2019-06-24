@@ -2,5 +2,7 @@
     "method": {
         "name": "web-download",
         "uri": "https://download.cirros-cloud.net/0.4.0/cirros-0.4.0-ppc64le-disk.img"
-    }
+    },
+    "all_stores": true,
+    "all_stores_must_succeed": true
 }

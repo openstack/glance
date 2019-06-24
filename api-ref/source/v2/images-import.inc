@@ -171,12 +171,12 @@ call.
 In the ``web-download`` workflow, the data is made available to the Image
 service by being posted to an accessible location with a URL that you know.
 
-Beginning with API version 2.8, an optional ``X-Image-Meta-Store``
-header may be added to the request.  When present, the image data will be
-placed into the backing store whose identifier is the value of this
-header.  If the store identifier specified is not recognized, a 409 (Conflict)
-response is returned.  When the header is not present, the image
-data is placed into the default backing store.
+Beginning with API version 2.8, an optional ``stores`` parameter may be added
+to the body request. When present, it contains the list of backing store
+identifiers to import the image binary data to. If at least one store
+identifier specified is not recognized, a 409 (Conflict) response is returned.
+When the parameter is not present, the image data is placed into the default
+backing store.
 
 * Store identifiers are site-specific.  Use the :ref:`Store
   Discovery <store-discovery-call>` call to determine what
@@ -184,13 +184,27 @@ data is placed into the default backing store.
 * The default store may be determined from the :ref:`Store
   Discovery <store-discovery-call>` response.
 * A default store is always defined, so if you do not have a need
-  to use a particular store, simply omit this header and the default store
+  to use particular stores, simply omit this parameter and the default store
   will be used.
-* For API versions before version 2.8, this header is silently
+* For API versions before version 2.8, this parameter is silently
   ignored.
 
-Example call: ``curl -i -X POST -H "X-Image-Meta-Store: {store_identifier}"
--H "X-Auth-Token: $token" $image_url/v2/images/{image_id}/import``
+For backwards compatibility, if the ``stores`` parameter is not specified, the
+header 'X-Image-Meta-Store' is evaluated.
+
+To import the data into the entire set of stores you may consume from this
+particular deployment of Glance without specifying each one of them, you can
+use the optional boolean body parameter ``all_stores``.
+Note that this can't be used simultaneously with the ``stores`` parameter.
+
+To set the behavior of the import workflow in case of error, you can use the
+optional boolean body parameter ``all_stores_must_succeed``.
+When set to True, if an error occurs during the upload in at least one store,
+the worfklow fails, the data is deleted from stores where copying is done and
+the state of the image remains unchanged.
+When set to False (default), the workflow will fail only if the upload fails
+on all stores specified. In case of a partial success, the locations added to
+the image will be the stores where the data has been correctly uploaded.
 
 The JSON request body specifies what import method you wish to use
 for this image request.
@@ -259,6 +273,9 @@ Request
    - X-Image-Meta-Store: store-header
    - image_id: image_id-in-path
    - method: method-in-request
+   - all_stores: all-stores-in-request
+   - all_stores_must_succeed: all-stores-succeed-in-request
+   - stores: stores-in-request
 
 Request Example - glance-direct import method
 ---------------------------------------------
