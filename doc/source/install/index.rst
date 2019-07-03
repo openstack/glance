@@ -25,32 +25,4 @@ Glance Installation
    verify.rst
 
 
-Supported Releases
-==================
 
-Queens (Latest Release)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-To install Glance, see the Queens Image service install guide for
-each distribution:
-
-- `Ubuntu <https://docs.openstack.org/glance/queens/install/install-debian.html>`__
-- `CentOS and RHEL <https://docs.openstack.org/glance/queens/install/install-rdo.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/glance/queens/install/install-obs.html>`__
-
-Pike (Maintained Release)
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To install Glance, see the Pike Image service install guide for
-each distribution:
-
-- `Ubuntu <https://docs.openstack.org/glance/pike/install/install-debian.html>`__
-- `CentOS and RHEL <https://docs.openstack.org/glance/pike/install/install-rdo.html>`__
-- `openSUSE and SUSE Linux Enterprise <https://docs.openstack.org/glance/pike/install/install-obs.html>`__
-
-Ocata (Legacy Release)
-~~~~~~~~~~~~~~~~~~~~~~
-
-To install Glance, see the `Ocata Image service install guide`_.
-
-.. _`Ocata Image service install guide`: https://docs.openstack.org/glance/ocata/installing.html
