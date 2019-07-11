@@ -16,6 +16,7 @@
 import datetime
 import eventlet
 import hashlib
+import os
 import uuid
 
 import glance_store as store
@@ -2643,17 +2644,42 @@ class TestImagesController(base.IsolatedUnitTest):
                           request, UUID1)
 
     def test_delete_uploading_status_image(self):
-        """Ensure status of uploading image is updated (LP bug #1733289)"""
+        """Ensure uploading image is deleted (LP bug #1733289)
+        Ensure image stuck in uploading state is deleted (LP bug #1836140)
+        """
         request = unit_test_utils.get_fake_request(is_admin=True)
         image = self.db.image_create(request.context, {'status': 'uploading'})
         image_id = image['id']
-        with mock.patch.object(self.store,
-                               'delete_from_backend') as mock_store:
-            self.controller.delete(request, image_id)
+        with mock.patch.object(os.path, 'exists') as mock_exists:
+            mock_exists.return_value = True
+            with mock.patch.object(os, "unlink") as mock_unlik:
+                self.controller.delete(request, image_id)
 
-        # Ensure delete_from_backend is called
-        self.assertEqual(1, mock_store.call_count)
+                self.assertEqual(1, mock_exists.call_count)
+                self.assertEqual(1, mock_unlik.call_count)
 
+        # Ensure that image is deleted
+        image = self.db.image_get(request.context, image_id,
+                                  force_show_deleted=True)
+        self.assertTrue(image['deleted'])
+        self.assertEqual('deleted', image['status'])
+
+    def test_deletion_of_staging_data_failed(self):
+        """Ensure uploading image is deleted (LP bug #1733289)
+        Ensure image stuck in uploading state is deleted (LP bug #1836140)
+        """
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        image = self.db.image_create(request.context, {'status': 'uploading'})
+        image_id = image['id']
+        with mock.patch.object(os.path, 'exists') as mock_exists:
+            mock_exists.return_value = False
+            with mock.patch.object(os, "unlink") as mock_unlik:
+                self.controller.delete(request, image_id)
+
+                self.assertEqual(1, mock_exists.call_count)
+                self.assertEqual(0, mock_unlik.call_count)
+
+        # Ensure that image is deleted
         image = self.db.image_get(request.context, image_id,
                                   force_show_deleted=True)
         self.assertTrue(image['deleted'])
