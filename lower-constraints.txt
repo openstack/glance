@@ -57,7 +57,7 @@ msgpack==0.5.6
 netaddr==0.7.19
 netifaces==0.10.6
 networkx==1.11
-openstackdocstheme==1.18.1
+openstackdocstheme==1.20.0
 os-api-ref==1.4.0
 os-client-config==1.29.0
 os-testr==1.0.0
