@@ -17,6 +17,8 @@ import hashlib
 import os
 import re
 
+from castellan.common import exception as castellan_exception
+from castellan import key_manager
 import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -59,6 +61,8 @@ class ImagesController(object):
         self.store_api = store_api or glance_store
         self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
                                               self.notifier, self.policy)
+
+        self._key_manager = key_manager.API(CONF)
 
     @utils.mutating
     def create(self, req, image, extra_properties, tags):
@@ -330,6 +334,32 @@ class ImagesController(object):
                 msg = _("Property %s does not exist.")
                 raise webob.exc.HTTPConflict(msg % path_root)
 
+    def _delete_encryption_key(self, context, image):
+        props = image.extra_properties
+
+        cinder_encryption_key_id = props.get('cinder_encryption_key_id')
+        if cinder_encryption_key_id is None:
+            return
+
+        deletion_policy = props.get('cinder_encryption_key_deletion_policy',
+                                    '')
+        if deletion_policy != 'on_image_deletion':
+            return
+
+        try:
+            self._key_manager.delete(context, cinder_encryption_key_id)
+        except castellan_exception.Forbidden:
+            msg = ('Not allowed to delete encryption key %s' %
+                   cinder_encryption_key_id)
+            LOG.warn(msg)
+        except (castellan_exception.ManagedObjectNotFoundError, KeyError):
+            msg = 'Could not find encryption key %s' % cinder_encryption_key_id
+            LOG.warn(msg)
+        except castellan_exception.KeyManagerError:
+            msg = ('Failed to delete cinder encryption key %s' %
+                   cinder_encryption_key_id)
+            LOG.warn(msg)
+
     @utils.mutating
     def delete(self, req, image_id):
         image_repo = self.gateway.get_repo(req.context)
@@ -358,6 +388,7 @@ class ImagesController(object):
                         "it cannot be found at %(fn)s"), {'fn': file_path})
 
             image.delete()
+            self._delete_encryption_key(req.context, image)
             image_repo.remove(image)
         except (glance_store.Forbidden, exception.Forbidden) as e:
             LOG.debug("User not permitted to delete image '%s'", image_id)

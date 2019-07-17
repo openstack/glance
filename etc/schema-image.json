@@ -28,5 +28,17 @@
     "description": {
         "description": "A human-readable string describing this image.",
         "type": "string"
+    },
+    "cinder_encryption_key_id": {
+        "description": "Identifier in the OpenStack Key Management Service for the encryption key for the Block Storage Service to use when mounting a volume created from this image",
+        "type": "string"
+    },
+    "cinder_encryption_key_deletion_policy": {
+        "description": "States the condition under which the Image Service will delete the object associated with the 'cinder_encryption_key_id' image property.  If this property is missing, the Image Service will take no action",
+        "type": "string",
+        "enum": [
+            "on_image_deletion",
+            "do_not_delete"
+        ]
     }
 }
