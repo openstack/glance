@@ -36,7 +36,7 @@ API
 To learn how to use Glance's API, consult the documentation available
 online at:
 
-* `Image Service APIs <https://developer.openstack.org/api-ref/image/>`_
+* `Image Service APIs <https://docs.openstack.org/api-ref/image/>`_
 
 Developers
 ----------
