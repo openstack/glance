@@ -759,9 +759,14 @@ class RegistryServer(Server):
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
         self.disable_path = None
+        self.image_cache_dir = os.path.join(self.test_dir,
+                                            'cache')
+        self.image_cache_driver = 'sqlite'
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
+image_cache_dir = %(image_cache_dir)s
+image_cache_driver = %(image_cache_driver)s
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 log_file = %(log_file)s

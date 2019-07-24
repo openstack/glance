@@ -97,7 +97,15 @@ def main():
                 host=CONF.bind_host
             )
 
-        server = wsgi.Server(initialize_glance_store=True)
+        # NOTE(abhishekk): Added initialize_prefetcher KW argument to Server
+        # object so that prefetcher object should only be initialized in case
+        # of API service and ignored in case of registry. Once registry is
+        # removed this parameter should be removed as well.
+        initialize_prefetcher = False
+        if CONF.paste_deploy.flavor == 'keystone+cachemanagement':
+            initialize_prefetcher = True
+        server = wsgi.Server(initialize_glance_store=True,
+                             initialize_prefetcher=initialize_prefetcher)
         server.start(config.load_paste_app('glance-api'), default_port=9292)
         server.wait()
     except Exception as e:

@@ -19,19 +19,21 @@ import os
 import socket
 import time
 
-from oslo_config import cfg
-import testtools
+import fixtures
 
 from glance.common import wsgi
+from glance.tests import functional
 
-CONF = cfg.CONF
 
-
-class TestWSGIServer(testtools.TestCase):
+class TestWSGIServer(functional.FunctionalTest):
     """WSGI server tests."""
     def test_client_socket_timeout(self):
-        CONF.set_default("workers", 0)
-        CONF.set_default("client_socket_timeout", 1)
+        test_dir = self.useFixture(fixtures.TempDir()).path
+        image_cache_dir = os.path.join(test_dir, 'cache')
+        self.config(workers=0)
+        self.config(client_socket_timeout=1)
+        self.config(image_cache_dir=image_cache_dir)
+        self.config(image_cache_driver="sqlite")
         """Verify connections are timed out as per 'client_socket_timeout'"""
         greetings = b'Hello, World!!!'
 

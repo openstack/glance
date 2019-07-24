@@ -15,6 +15,7 @@
 #    under the License.
 
 """Functional test asserting strongly typed exceptions from glance client"""
+import os
 
 import eventlet.patcher
 import httplib2
@@ -70,6 +71,10 @@ class TestClientExceptions(functional.FunctionalTest):
     def setUp(self):
         super(TestClientExceptions, self).setUp()
         self.port = utils.get_unused_port()
+        self.image_cache_dir = os.path.join(self.test_dir,
+                                            'cache')
+        self.config(image_cache_dir=self.image_cache_dir)
+        self.config(image_cache_driver='sqlite')
         server = wsgi.Server()
         self.config(bind_host='127.0.0.1')
         self.config(workers=0)

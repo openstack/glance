@@ -30,6 +30,7 @@ import signal
 import struct
 import subprocess
 import sys
+import threading
 import time
 
 from eventlet.green import socket
@@ -56,6 +57,7 @@ from glance.common import exception
 from glance.common import utils
 from glance import i18n
 from glance.i18n import _, _LE, _LI, _LW
+from glance.image_cache import prefetcher
 
 
 bind_opts = [
@@ -330,6 +332,23 @@ cli_opts = [
                     'used for inter-process communication.'),
 ]
 
+cache_opts = [
+    cfg.FloatOpt('cache_prefetcher_interval',
+                 default=300,
+                 help=_("""
+The interval in seconds to run periodic job cache_images.
+
+The cache_images method will fetch all images which are in queued state
+for caching in cache directory. The default value is 300.
+
+Possible values:
+    * Positive integer
+
+Related options:
+    * None
+"""))
+]
+
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
@@ -338,6 +357,7 @@ CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
 CONF.register_opts(wsgi_opts)
 CONF.register_opts(store_opts)
+CONF.register_opts(cache_opts)
 profiler_opts.set_defaults(CONF)
 
 ASYNC_EVENTLET_THREAD_POOL_LIST = []
@@ -502,7 +522,8 @@ class BaseServer(object):
     This class requires initialize_glance_store set to True if
     glance store needs to be initialized.
     """
-    def __init__(self, threads=1000, initialize_glance_store=False):
+    def __init__(self, threads=1000, initialize_glance_store=False,
+                 initialize_prefetcher=False):
         os.umask(0o27)  # ensure files are created with the correct privileges
         self._logger = logging.getLogger("eventlet.wsgi.server")
         self.threads = threads
@@ -512,6 +533,18 @@ class BaseServer(object):
         # NOTE(abhishek): Allows us to only re-initialize glance_store when
         # the API's configuration reloads.
         self.initialize_glance_store = initialize_glance_store
+        self.initialize_prefetcher = initialize_prefetcher
+        if self.initialize_prefetcher:
+            self.prefetcher = prefetcher.Prefetcher()
+
+    def cache_images(self):
+        # After every 'cache_prefetcher_interval' this call will run and fetch
+        # all queued images into cache if there are any
+        cache_thread = threading.Timer(CONF.cache_prefetcher_interval,
+                                       self.cache_images)
+        cache_thread.daemon = True
+        cache_thread.start()
+        self.prefetcher.run()
 
     @staticmethod
     def set_signal_handler(signal_name, handler):
@@ -553,6 +586,8 @@ class BaseServer(object):
         self.default_port = default_port
         self.configure()
         self.start_wsgi()
+        if self.initialize_prefetcher:
+            self.cache_images()
 
     def start_wsgi(self):
         workers = get_num_workers()

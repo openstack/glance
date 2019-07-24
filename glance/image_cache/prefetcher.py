@@ -19,51 +19,58 @@ Prefetches images into the Image Cache
 
 import eventlet
 import glance_store
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from glance.common import exception
 from glance import context
 from glance.i18n import _LI, _LW
 from glance.image_cache import base
-import glance.registry.client.v1.api as registry
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
 class Prefetcher(base.CacheApp):
-
     def __init__(self):
+        # NOTE(abhishekk): Importing the glance.gateway just in time to avoid
+        # import loop during initialization
+        import glance.gateway  # noqa
         super(Prefetcher, self).__init__()
-        registry.configure_registry_client()
-        registry.configure_registry_admin_creds()
+        self.gateway = glance.gateway.Gateway()
 
     def fetch_image_into_cache(self, image_id):
         ctx = context.RequestContext(is_admin=True, show_deleted=True)
 
         try:
-            image_meta = registry.get_image_metadata(ctx, image_id)
-            if image_meta['status'] != 'active':
-                LOG.warn(_LW("Image '%s' is not active. Not caching.") %
-                         image_id)
-                return False
-
+            image_repo = self.gateway.get_repo(ctx)
+            image = image_repo.get(image_id)
         except exception.NotFound:
-            LOG.warn(_LW("No metadata found for image '%s'") % image_id)
+            LOG.warn(_LW("Image '%s' not found") % image_id)
             return False
 
-        location = image_meta['location']
-        image_data, image_size = glance_store.get_from_backend(location,
-                                                               context=ctx)
-        LOG.debug("Caching image '%s'", image_id)
-        cache_tee_iter = self.cache.cache_tee_iter(image_id, image_data,
-                                                   image_meta['checksum'])
-        # Image is tee'd into cache and checksum verified
-        # as we iterate
-        list(cache_tee_iter)
-        return True
+        if image.status != 'active':
+            LOG.warn(_LW("Image '%s' is not active. Not caching.") % image_id)
+            return False
+
+        for loc in image.locations:
+            if CONF.enabled_backends:
+                image_data, image_size = glance_store.get(loc['url'],
+                                                          None,
+                                                          context=ctx)
+            else:
+                image_data, image_size = glance_store.get_from_backend(
+                    loc['url'], context=ctx)
+
+            LOG.debug("Caching image '%s'", image_id)
+            cache_tee_iter = self.cache.cache_tee_iter(image_id, image_data,
+                                                       image.checksum)
+            # Image is tee'd into cache and checksum verified
+            # as we iterate
+            list(cache_tee_iter)
+            return True
 
     def run(self):
-
         images = self.cache.get_queued_images()
         if not images:
             LOG.debug("Nothing to prefetch.")

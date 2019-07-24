@@ -24,6 +24,7 @@ import glance.common.config
 from glance.common import exception as exc
 import glance.common.wsgi
 import glance.image_cache.cleaner
+from glance.image_cache import prefetcher
 import glance.image_cache.pruner
 from glance.tests import utils as test_utils
 
@@ -64,11 +65,13 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         sys.argv = self.__argv_backup
         super(TestGlanceApiCmd, self).tearDown()
 
-    def test_supported_default_store(self):
+    @mock.patch.object(prefetcher, 'Prefetcher')
+    def test_supported_default_store(self, mock_prefetcher):
         self.config(group='glance_store', default_store='file')
         glance.cmd.api.main()
 
-    def test_worker_creation_failure(self):
+    @mock.patch.object(prefetcher, 'Prefetcher')
+    def test_worker_creation_failure(self, mock_prefetcher):
         failure = exc.WorkerCreationFailure(reason='test')
         self.mock_object(glance.common.wsgi.Server, 'start',
                          self._raise(failure))
