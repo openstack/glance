@@ -93,7 +93,7 @@ Pick the documents that best match your user profile.
        * :doc:`configuration/index`
    * - | **End User** or **Third-party Developer**
        | You want to use the Image Service APIs provided by Glance.
-     - * `Image Service API Reference <https://developer.openstack.org/api-ref/image/>`_
+     - * `Image Service API Reference <https://docs.openstack.org/api-ref/image/>`_
        * `Image Service API Guide <https://specs.openstack.org/openstack/glance-specs/specs/api/v2/image-api-v2.html>`_
        * :doc:`user/index`
    * - **Everyone**

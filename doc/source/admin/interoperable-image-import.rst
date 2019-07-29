@@ -461,9 +461,9 @@ You will need to configure 'glance-image-import.conf' file as shown below:
 .. _glance-api.conf: https://opendev.org/openstack/glance/src/branch/master/etc/glance-api.conf
 .. _glance-image-import.conf.sample: https://opendev.org/openstack/glance/src/branch/master/etc/glance-image-import.conf.sample
 .. _`Image Import Refactor`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
-.. _`Image Service API reference`: https://developer.openstack.org/api-ref/image/
+.. _`Image Service API reference`: https://docs.openstack.org/api-ref/image/
 .. _`Inject metadata properties automatically to non-admin images`: https://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/inject-automatic-metadata.html
-.. _`Interoperable Image Import`: https://developer.openstack.org/api-ref/image/v2/index.html#interoperable-image-import
+.. _`Interoperable Image Import`: https://docs.openstack.org/api-ref/image/v2/index.html#interoperable-image-import
 .. _OSSN-0078: https://wiki.openstack.org/wiki/OSSN/OSSN-0078
 .. _`Stevedore`: https://docs.openstack.org/stevedore
 .. _`Taskflow`: https://docs.openstack.org/taskflow

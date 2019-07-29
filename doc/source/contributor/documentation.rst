@@ -38,12 +38,12 @@ easy to find answers to.
 
   Each project's API Reference Guide is published to:
 
-  - ``https://developer.openstack.org/api-ref/$service-type``
+  - ``https://docs.openstack.org/api-ref/$service-type``
 
   For example, the Glance Image Service API Reference guide is
   published to:
 
-  - ``https://developer.openstack.org/api-ref/image``
+  - ``https://docs.openstack.org/api-ref/image``
 
 Where to Contribute
 -------------------
@@ -83,7 +83,7 @@ which you may want to contribute:
 * OpenStack API Reference
 
   There's a "quick reference" guide to the APIs implemented by Glance:
-  http://developer.openstack.org/api-ref/image/
+  https://docs.openstack.org/api-ref/image/
 
   The guide is generated from source files in the source code tree under
   ``api-ref/source``.  Corrections in spelling or typographical errors may be
