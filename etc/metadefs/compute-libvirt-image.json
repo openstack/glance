@@ -80,6 +80,12 @@
                 "virtio"
             ]
         },
+        "hw_pmu": {
+            "title": "Virtual Performance Monitoring Unit",
+            "description": "Controls emulation of a vPMU in the guest. To reduce latency in realtime workloads disable the vPMU by setting hw_pmu=false",
+            "type": "string",
+            "enum": ["true", "false"]
+        },
         "hw_qemu_guest_agent": {
             "title": "QEMU Guest Agent",
             "description": "This is a background process which helps management applications execute guest OS level commands. For example, freezing and thawing filesystems, entering suspend. However, guest agent (GA) is not bullet proof, and hostile guest OS can send spurious replies.",

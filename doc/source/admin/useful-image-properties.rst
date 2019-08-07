@@ -462,6 +462,11 @@ Here is a list of useful image properties and the values they expect.
        needed.
      - ``true`` or ``false``
    * - libvirt API driver
+     - ``hw_pmu``
+     - Controls emulation of a virtual performance monitoring unit (vPMU) in the guest.
+       To reduce latency in realtime workloads disable the vPMU by setting hw_pmu=false.
+     - ``true`` or ``false``
+   * - libvirt API driver
      - ``img_hide_hypervisor_id``
      - Some hypervisors add a signature to their guests.  While the presence
        of the signature can enable some paravirtualization features on the

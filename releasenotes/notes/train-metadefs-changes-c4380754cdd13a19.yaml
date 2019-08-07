@@ -4,6 +4,8 @@ upgrade:
     The following metadata definitions have been modified in the Train
     release:
 
+    * Added ``hw_pmu`` boolean in the ``OS::Compute::LibvirtImage`` namespace.
+
     * Added ``powervm`` to the ``hypervisor_type`` enumeration in the
       ``OS:::Compute::Hypervisor`` namespace.
 
