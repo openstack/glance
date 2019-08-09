@@ -84,9 +84,12 @@ Pick the documents that best match your user profile.
          ideas to the Glance Project.
      - * :doc:`contributor/index`
    * - | **Administrator**
-       | You want to administer and maintain a Glance installation.
+       | You want to administer and maintain a Glance installation, including
+         being aware of changes in Glance from release to release.
      - * :doc:`admin/index`
        * :doc:`cli/index`
+       * `Glance Release Notes
+         <https://docs.openstack.org/releasenotes/glance/index.html>`_
    * - | **Operator**
        | You want to install and configure Glance for your cloud.
      - * :doc:`install/index`
