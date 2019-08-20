@@ -67,7 +67,7 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         for location in image.locations:
             if CONF.enabled_backends:
                 self.store_api.set_acls_for_multi_store(
-                    location['url'], location['metadata'].get('backend'),
+                    location['url'], location['metadata'].get('store'),
                     public=public, read_tenants=member_ids,
                     context=self.context
                 )
@@ -127,7 +127,7 @@ def _check_location_uri(context, store_api, store_utils, uri,
 def _check_image_location(context, store_api, store_utils, location):
     backend = None
     if CONF.enabled_backends:
-        backend = location['metadata'].get('backend')
+        backend = location['metadata'].get('store')
 
     _check_location_uri(context, store_api, store_utils, location['url'],
                         backend=backend)
@@ -139,7 +139,7 @@ def _set_image_size(context, image, locations):
         for location in locations:
             if CONF.enabled_backends:
                 size_from_backend = store.get_size_from_uri_and_backend(
-                    location['url'], location['metadata'].get('backend'),
+                    location['url'], location['metadata'].get('store'),
                     context=context)
             else:
                 size_from_backend = store.get_size_from_backend(
@@ -496,7 +496,7 @@ class ImageProxy(glance.domain.proxy.Image):
                          self.image.image_id)
             except crypto_exception.InvalidSignature:
                 if CONF.enabled_backends:
-                    self.store_api.delete(location, loc_meta.get('backend'),
+                    self.store_api.delete(location, loc_meta.get('store'),
                                           context=self.context)
                 else:
                     self.store_api.delete_from_backend(location,
@@ -524,7 +524,7 @@ class ImageProxy(glance.domain.proxy.Image):
         err = None
         for loc in self.image.locations:
             try:
-                backend = loc['metadata'].get('backend')
+                backend = loc['metadata'].get('store')
                 if CONF.enabled_backends:
                     data, size = self.store_api.get(
                         loc['url'], backend, offset=offset,

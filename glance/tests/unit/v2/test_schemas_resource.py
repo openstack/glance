@@ -34,7 +34,7 @@ class TestSchemasController(test_utils.BaseTestCase):
                         'file', 'container_format', 'schema', 'id', 'size',
                         'direct_url', 'min_ram', 'min_disk', 'protected',
                         'locations', 'owner', 'virtual_size', 'os_hidden',
-                        'os_hash_algo', 'os_hash_value', 'backend'])
+                        'os_hash_algo', 'os_hash_value', 'stores'])
         self.assertEqual(expected, set(output['properties'].keys()))
 
     def test_image_has_correct_statuses(self):

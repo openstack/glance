@@ -58,7 +58,7 @@ class TestSchemas(functional.FunctionalTest):
             'min_disk',
             'protected',
             'os_hidden',
-            'backend'
+            'stores'
         ])
         self.assertEqual(expected, set(image_schema['properties'].keys()))
 

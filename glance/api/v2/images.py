@@ -1045,7 +1045,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                 if locations:
                     stores = []
                     for loc in locations:
-                        backend = loc['metadata'].get('backend')
+                        backend = loc['metadata'].get('store')
                         if backend:
                             stores.append(backend)
 
@@ -1238,10 +1238,13 @@ def get_base_properties():
             'readOnly': True,
             'description': _('An image file url'),
         },
-        'backend': {
+        'stores': {
             'type': 'string',
             'readOnly': True,
-            'description': _('Backend store to upload image to'),
+            'description': _('Store in which image data resides.  Only '
+                             'present when the operator has enabled multiple '
+                             'stores.  May be a comma-separated list of store '
+                             'identifiers.'),
         },
         'schema': {
             'type': 'string',
