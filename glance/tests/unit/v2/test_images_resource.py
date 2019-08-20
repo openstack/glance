@@ -32,6 +32,7 @@ import webob
 import glance.api.v2.image_actions
 import glance.api.v2.images
 from glance.common import exception
+from glance.common import store_utils
 from glance import domain
 import glance.schema
 from glance.tests.unit import base
@@ -4704,6 +4705,9 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                         tags=['redhat', '64bit', 'power'],
                         properties={'hypervisor_type': 'kvm', 'foo': 'bar',
                                     'bar': 'foo'},
+                        locations=[{'url': 'file://%s/%s' % (self.test_dir,
+                                                             UUID2),
+                                    'metadata': {}, 'status': 'active'}],
                         created_at=DATETIME + datetime.timedelta(seconds=1)),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
                         name='3', size=512, virtual_size=2048,
@@ -4739,6 +4743,20 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                           self.controller.import_image,
                           request, UUID1,
                           {'method': {'name': 'glance-direct'}})
+
+    def test_image_lazy_loading_store(self):
+        # assert existing image does not have store in metadata
+        existing_image = self.images[1]
+        self.assertNotIn('store', existing_image['locations'][0]['metadata'])
+
+        # assert: store information will be added by lazy loading
+        request = unit_test_utils.get_fake_request()
+        with mock.patch.object(store_utils,
+                               "_get_store_id_from_uri") as mock_uri:
+            mock_uri.return_value = "fast"
+            image = self.controller.show(request, UUID2)
+            for loc in image.locations:
+                self.assertIn('store', loc['metadata'])
 
     def test_image_import_invalid_backend_in_request_header(self):
         request = unit_test_utils.get_fake_request()

@@ -147,3 +147,41 @@ def validate_external_location(uri):
 
     return (scheme in known_schemes and
             scheme not in RESTRICTED_URI_SCHEMAS)
+
+
+def _get_store_id_from_uri(uri):
+    scheme = urlparse.urlparse(uri).scheme
+    location_map = store_api.location.SCHEME_TO_CLS_BACKEND_MAP
+    url_matched = False
+    if scheme not in location_map:
+        LOG.warning("Unknown scheme '%(scheme)s' found in uri '%(uri)s'", {
+            'scheme': scheme, 'uri': uri})
+        return
+    for store in location_map[scheme]:
+        store_instance = location_map[scheme][store]['store']
+        if uri.startswith(store_instance.url_prefix):
+            url_matched = True
+            break
+
+    if url_matched:
+        return store
+    else:
+        LOG.warning("Invalid location uri %s", uri)
+        return
+
+
+def update_store_in_locations(locations, image_id):
+    for loc in locations:
+        store_id = _get_store_id_from_uri(loc['url'])
+        if store_id:
+            if 'store' in loc['metadata']:
+                old_store = loc['metadata']['store']
+                if old_store != store_id:
+                    LOG.debug("Store '%(old)s' has changed to "
+                              "'%(new)s' by operator, updating "
+                              "the same in the location of image "
+                              "'%(id)s'", {'old': old_store,
+                                           'new': store_id,
+                                           'id': image_id})
+
+            loc['metadata']['store'] = store_id
