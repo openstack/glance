@@ -88,9 +88,16 @@ Container Format
 The container format refers to whether the virtual machine image is in a
 file format that also contains metadata about the actual virtual machine.
 
-Note that the container format string is not currently used by Glance or
-other OpenStack components, so it is safe to simply specify **bare** as
-the container format if you are unsure.
+Note the following:
+
+1. Glance does not verify that the ``container_format`` image property
+   accurately describes the image data payload.
+
+2. Do not assume that all OpenStack services can handle all the container
+   formats defined by Glance.
+
+   Consult the documentation for the service consuming your image to see
+   what container formats the service supports.
 
 You can set your image's container format to one of the following:
 
@@ -122,3 +129,16 @@ You can set your image's container format to one of the following:
 
   This indicates what is stored in Glance is a Docker tar archive of
   the container filesystem
+
+* **compressed**
+
+  The exact format of the compressed file is not specified. It is the
+  responsibility of the consuming service to analyze the data payload
+  and determine the specific compression format. A particular
+  OpenStack service may only support specific formats.
+
+  You may assume that any OpenStack service that creates an image with
+  a 'compressed' container format will be able to consume that image.
+
+  Consult the documentation for the service that will consume your
+  image for details.
