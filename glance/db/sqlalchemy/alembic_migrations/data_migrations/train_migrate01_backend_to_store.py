@@ -24,6 +24,12 @@ def has_migrations(engine):
     """
     sql_query = ("select meta_data from image_locations where "
                  "INSTR(meta_data, '\"backend\":') > 0")
+
+    # NOTE(abhishekk): INSTR function doesn't supported in postgresql
+    if engine.name == 'postgresql':
+        sql_query = ("select meta_data from image_locations where "
+                     "POSITION('\"backend\":' IN meta_data) > 0")
+
     with engine.connect() as con:
         metadata_backend = con.execute(sql_query)
         if metadata_backend.rowcount > 0:
@@ -37,6 +43,13 @@ def migrate(engine):
     sql_query = ("UPDATE image_locations SET meta_data = REPLACE(meta_data, "
                  "'\"backend\":', '\"store\":') where INSTR(meta_data, "
                  " '\"backend\":') > 0")
+
+    # NOTE(abhishekk): INSTR function doesn't supported in postgresql
+    if engine.name == 'postgresql':
+        sql_query = ("UPDATE image_locations SET meta_data = REPLACE("
+                     "meta_data, '\"backend\":', '\"store\":') where "
+                     "POSITION('\"backend\":' IN meta_data) > 0")
+
     with engine.connect() as con:
         migrated_rows = con.execute(sql_query)
         return migrated_rows.rowcount
