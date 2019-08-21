@@ -50,6 +50,7 @@ UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'
 UUID3 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'
 UUID4 = '6bbe7cc2-eae7-4c0f-b50d-a7160b0c6a86'
+UUID5 = '13c58ac4-210d-41ab-8cdb-1adfe4610019'
 
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
@@ -4709,6 +4710,19 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                                                              UUID2),
                                     'metadata': {}, 'status': 'active'}],
                         created_at=DATETIME + datetime.timedelta(seconds=1)),
+            _db_fixture(UUID5, owner=TENANT3, checksum=CHKSUM1,
+                        name='2', size=512, virtual_size=2048,
+                        visibility='public',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        tags=['redhat', '64bit', 'power'],
+                        properties={'hypervisor_type': 'kvm', 'foo': 'bar',
+                                    'bar': 'foo'},
+                        locations=[{'url': 'file://%s/%s' % (self.test_dir,
+                                                             UUID2),
+                                    'metadata': {}, 'status': 'active'}],
+                        created_at=DATETIME + datetime.timedelta(seconds=1)),
             _db_fixture(UUID3, owner=TENANT3, checksum=CHKSUM1,
                         name='3', size=512, virtual_size=2048,
                         visibility='public', tags=['windows', '64bit', 'x86'],
@@ -4755,6 +4769,22 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                                "_get_store_id_from_uri") as mock_uri:
             mock_uri.return_value = "fast"
             image = self.controller.show(request, UUID2)
+            for loc in image.locations:
+                self.assertIn('store', loc['metadata'])
+
+    def test_image_lazy_loading_store_different_owner(self):
+        # assert existing image does not have store in metadata
+        existing_image = self.images[2]
+        self.assertNotIn('store', existing_image['locations'][0]['metadata'])
+
+        # assert: store information will be added by lazy loading even if owner
+        # is different
+        request = unit_test_utils.get_fake_request()
+        request.headers.update({'X-Tenant_id': TENANT1})
+        with mock.patch.object(store_utils,
+                               "_get_store_id_from_uri") as mock_uri:
+            mock_uri.return_value = "fast"
+            image = self.controller.show(request, UUID5)
             for loc in image.locations:
                 self.assertIn('store', loc['metadata'])
 
