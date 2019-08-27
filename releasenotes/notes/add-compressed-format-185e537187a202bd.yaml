@@ -1,0 +1,60 @@
+---
+features:
+  - |
+    The identifier ``compressed`` has been added to the list of supported
+    container formats.  The intent is that this format identifier will be used
+    for any compressed file archive format (for example, gzip or rar) that is
+    not otherwise covered by the existing container format identifiers.
+
+    As with all container formats, Glance does not verify that the data payload
+    of an image is actually in that format.  Further, you should not expect
+    other OpenStack services to be able to handle arbitrary compressed file
+    formats.  Consult the documentation of any services that will consume your
+    image for details.
+upgrade:
+  - |
+    The identifier ``compressed`` has been added to the list of supported
+    container formats.  The intent is that this format identifier will be used
+    for any compressed file archive format (for example, gzip or rar) that is
+    not otherwise covered by the existing container format identifiers.
+
+    The ``compressed`` container format was added in support of the Cinder
+    (Block Storage Service) feature `Leverage compression accelerator
+    <http://specs.openstack.org/openstack/cinder-specs/specs/train/leverage-compression-accelerator.html>`_.
+    You may expect that Cinder will be able to consume any image in
+    ``compressed`` container format *that Cinder has created*.  You should
+    not expect, however, for other services to be able to consume such an image
+    at the present time.  Further, you should not expect Cinder to be able
+    to successfully use an image in ``compressed`` format that it has not
+    created itself.
+issues:
+  - |
+    The introduction of the ``compressed`` container format in this release
+    gives us the opportunity to remind you that Glance does not verify that
+    the ``container_format`` image property is accurate for *any* container
+    format.  It is the responsibility of the image consumer to verify the
+    image data payload format and take appropriate action in the case of a
+    misdescribed image.
+  - |
+    The intent of the ``compressed`` container format identifier introduced
+    in this release is that it will be used for any compressed file archive
+    format (for example, gzip or rar) that is not otherwise covered by the
+    existing container format identifiers.
+
+    The exact format of the compressed file is unspecified.  It is the
+    responsibility of the consuming service to analyze the data payload and
+    determine the compression format.  A particular OpenStack service may only
+    support specific formats.  Thus, even if a service does support the
+    ``compressed`` container format, this does not imply that the service can
+    handle arbitrary compression formats.  Consult the documentation for the
+    service that will consume your image for details.
+  - |
+    As of this release, the only service using the ``compressed`` container
+    format is Cinder (Block Storage Service), when Cinder is configured to use
+    compression when uploading a volume-image to Glance.  While you may expect
+    that Cinder will be able to consume any image in ``compressed`` container
+    format *that Cinder has created*, you should not expect Cinder to be able
+    to successfully use an image in ``compressed`` format that it has not
+    created itself.  Consult the `Cinder documentation
+    <https://docs.openstack.org/cinder/latest>`_
+    for more information.
