@@ -85,7 +85,8 @@ Related Options:
 ]
 image_format_opts = [
     cfg.ListOpt('container_formats',
-                default=['ami', 'ari', 'aki', 'bare', 'ovf', 'ova', 'docker'],
+                default=['ami', 'ari', 'aki', 'bare', 'ovf', 'ova', 'docker',
+                         'compressed'],
                 help=_("Supported values for the 'container_format' "
                        "image attribute"),
                 deprecated_opts=[cfg.DeprecatedOpt('container_formats',
