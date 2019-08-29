@@ -99,6 +99,11 @@ class TestTrainMigrate01MySQL(TestTrainMigrate01Mixin,
     pass
 
 
+class TestTrain01PostgresSQL(TestTrainMigrate01Mixin,
+                             test_base.PostgreSQLOpportunisticTestCase):
+    pass
+
+
 class TestTrainMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
     """This mixin is used to create an initial glance database and upgrade it
     up to the train_expand01 revision.
@@ -127,5 +132,9 @@ class TestTrainMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
 
 class TestTrainMigrate01_EmptyDBMySQL(TestTrainMigrate01_EmptyDBMixin,
                                       test_base.MySQLOpportunisticTestCase):
-    """This test runs the Train data migrations on an empty databse."""
+    pass
+
+
+class TestTrainMigrate01_PySQL(TestTrainMigrate01_EmptyDBMixin,
+                               test_base.PostgreSQLOpportunisticTestCase):
     pass
