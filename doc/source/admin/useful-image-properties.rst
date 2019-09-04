@@ -50,6 +50,11 @@ Some important points to keep in mind:
   <https://docs.openstack.org/nova/latest/configuration/config.html>`_
   section of the Nova Configuration Guide for more information.
 
+* Some properties recognized by Nova may have no effect unless a corresponding
+  property is enabled in the server flavor.  For example, the ``hw_rng_model``
+  image property has no effect unless the Nova flavor has been configured to
+  have ``hw_rng:allowed`` set to True in the flavor's extra_specs.
+
 * In a mixed hypervisor environment, the Compute Service uses the
   ``hypervisor_type`` image property to match images to the correct hypervisor
   type.
@@ -340,8 +345,12 @@ Here is a list of useful image properties and the values they expect.
      - ``usbtablet``
    * - libvirt API driver
      - ``hw_rng_model``
-     - Adds a random-number generator device to the image's instances. The
-       cloud administrator can enable and control device behavior by
+     - Adds a random-number generator device to the image's instances.  This
+       image property by itself does not guarantee that a hardware RNG will be
+       used; it expresses a preference that may or may not be satisfied
+       depending upon Nova configuration.
+
+       The cloud administrator can enable and control device behavior by
        configuring the instance's flavor. By default:
 
        * The generator device is disabled.
@@ -353,6 +362,9 @@ Here is a list of useful image properties and the values they expect.
 
           rng_dev_path=/dev/hwrng
 
+       * The use of a hardware random number generator must be configured in a
+         flavor's extra_specs by setting ``hw_rng:allowed`` to True in the
+         flavor definition.
      - ``virtio``, or other supported device.
    * - libvirt API driver
      - ``hw_time_hpet``
