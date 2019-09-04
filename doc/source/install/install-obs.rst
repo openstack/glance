@@ -176,13 +176,10 @@ Install and configure components
 
     Starting with the Newton release, SUSE OpenStack packages are shipping
     with the upstream default configuration files. For example
-    ``/etc/glance/glance-api.conf`` or
-    ``/etc/glance/glance-registry.conf``, with customizations in
-    ``/etc/glance/glance-api.conf.d/`` or
-    ``/etc/glance/glance-registry.conf.d/``. While the following
+    ``/etc/glance/glance-api.conf``, with customizations in
+    ``/etc/glance/glance-api.conf.d/``. While the following
     instructions modify the default configuration files, adding new files
-    in ``/etc/glance/glance-api.conf.d`` or
-    ``/etc/glance/glance-registry.conf.d`` achieves the same result.
+    in ``/etc/glance/glance-api.conf.d`` achieves the same result.
 
 
 
@@ -191,7 +188,7 @@ Install and configure components
    .. code-block:: console
 
       # zypper install openstack-glance \
-        openstack-glance-api openstack-glance-registry
+        openstack-glance-api
 
    .. end
 
@@ -261,58 +258,6 @@ Install and configure components
 
      .. end
 
-3. Edit the ``/etc/glance/glance-registry.conf`` file and complete
-   the following actions:
-
-   .. include:: ../deprecate-registry.inc
-
-   * In the ``[database]`` section, configure database access:
-
-     .. path /etc/glance/glance-registry.conf
-     .. code-block:: ini
-
-        [database]
-        # ...
-        connection = mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
-
-     .. end
-
-     Replace ``GLANCE_DBPASS`` with the password you chose for the
-     Image service database.
-
-   * In the ``[keystone_authtoken]`` and ``[paste_deploy]`` sections,
-     configure Identity service access:
-
-     .. path /etc/glance/glance-registry.conf
-     .. code-block:: ini
-
-        [keystone_authtoken]
-        # ...
-        www_authenticate_uri = http://controller:5000
-        auth_url = http://controller:5000
-        memcached_servers = controller:11211
-        auth_type = password
-        project_domain_name = Default
-        user_domain_name = Default
-        project_name = service
-        username = glance
-        password = GLANCE_PASS
-
-        [paste_deploy]
-        # ...
-        flavor = keystone
-
-     .. end
-
-     Replace ``GLANCE_PASS`` with the password you chose for the
-     ``glance`` user in the Identity service.
-
-     .. note::
-
-        Comment out or remove any other options in the
-        ``[keystone_authtoken]`` section.
-
-
 Finalize installation
 ---------------------
 
@@ -322,10 +267,8 @@ Finalize installation
 
   .. code-block:: console
 
-     # systemctl enable openstack-glance-api.service \
-       openstack-glance-registry.service
-     # systemctl start openstack-glance-api.service \
-       openstack-glance-registry.service
+     # systemctl enable openstack-glance-api.service
+     # systemctl start openstack-glance-api.service
 
   .. end
 
