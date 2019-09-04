@@ -153,8 +153,6 @@ man_pages = [
      [u'OpenStack'], 1),
     ('cli/glancecachecleaner', 'glance-cache-cleaner', u'Glance Cache Cleaner',
      [u'OpenStack'], 1),
-    ('cli/glancecachemanage', 'glance-cache-manage', u'Glance Cache Manager',
-     [u'OpenStack'], 1),
     ('cli/glancecacheprefetcher', 'glance-cache-prefetcher',
      u'Glance Cache Pre-fetcher', [u'OpenStack'], 1),
     ('cli/glancecachepruner', 'glance-cache-pruner', u'Glance Cache Pruner',
