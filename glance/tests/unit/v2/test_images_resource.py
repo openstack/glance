@@ -19,6 +19,7 @@ import hashlib
 import os
 import uuid
 
+from castellan.common import exception as castellan_exception
 import glance_store as store
 import mock
 from oslo_serialization import jsonutils
@@ -36,6 +37,7 @@ from glance.common import store_utils
 from glance import domain
 import glance.schema
 from glance.tests.unit import base
+from glance.tests.unit.keymgr import fake as fake_keymgr
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
@@ -155,6 +157,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                                          self.notifier,
                                                          self.store))
         self.controller.gateway.store_utils = self.store_utils
+        self.controller._key_manager = fake_keymgr.fake_api()
         store.create_stores()
 
     def _create_images(self):
@@ -2720,6 +2723,199 @@ class TestImagesController(base.IsolatedUnitTest):
                               self.controller.import_image,
                               request, UUID4, {'method': {'name':
                                                           'glance-direct'}})
+
+    def test_delete_encryption_key_no_encryption_key(self):
+        request = unit_test_utils.get_fake_request()
+        fake_encryption_key = self.controller._key_manager.store(
+            request.context, mock.Mock())
+        image = _domain_fixture(
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            os_hash_algo=FAKEHASHALGO, os_hash_value=MULTIHASH1,
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            virtual_size=3072, extra_properties={})
+        self.controller._delete_encryption_key(request.context, image)
+        # Make sure the encrytion key is still there
+        key = self.controller._key_manager.get(request.context,
+                                               fake_encryption_key)
+        self.assertEqual(fake_encryption_key, key._id)
+
+    def test_delete_encryption_key_no_deletion_policy(self):
+        request = unit_test_utils.get_fake_request()
+        fake_encryption_key = self.controller._key_manager.store(
+            request.context, mock.Mock())
+        props = {
+            'cinder_encryption_key_id': fake_encryption_key,
+        }
+        image = _domain_fixture(
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            os_hash_algo=FAKEHASHALGO, os_hash_value=MULTIHASH1,
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            virtual_size=3072, extra_properties=props)
+        self.controller._delete_encryption_key(request.context, image)
+        # Make sure the encrytion key is still there
+        key = self.controller._key_manager.get(request.context,
+                                               fake_encryption_key)
+        self.assertEqual(fake_encryption_key, key._id)
+
+    def test_delete_encryption_key_do_not_delete(self):
+        request = unit_test_utils.get_fake_request()
+        fake_encryption_key = self.controller._key_manager.store(
+            request.context, mock.Mock())
+        props = {
+            'cinder_encryption_key_id': fake_encryption_key,
+            'cinder_encryption_key_deletion_policy': 'do_not_delete',
+        }
+        image = _domain_fixture(
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            os_hash_algo=FAKEHASHALGO, os_hash_value=MULTIHASH1,
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            virtual_size=3072, extra_properties=props)
+        self.controller._delete_encryption_key(request.context, image)
+        # Make sure the encrytion key is still there
+        key = self.controller._key_manager.get(request.context,
+                                               fake_encryption_key)
+        self.assertEqual(fake_encryption_key, key._id)
+
+    def test_delete_encryption_key_forbidden(self):
+        request = unit_test_utils.get_fake_request()
+        fake_encryption_key = self.controller._key_manager.store(
+            request.context, mock.Mock())
+        props = {
+            'cinder_encryption_key_id': fake_encryption_key,
+            'cinder_encryption_key_deletion_policy': 'on_image_deletion',
+        }
+        image = _domain_fixture(
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            os_hash_algo=FAKEHASHALGO, os_hash_value=MULTIHASH1,
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            virtual_size=3072, extra_properties=props)
+        with mock.patch.object(self.controller._key_manager, 'delete',
+                               side_effect=castellan_exception.Forbidden):
+            self.controller._delete_encryption_key(request.context, image)
+        # Make sure the encrytion key is still there
+        key = self.controller._key_manager.get(request.context,
+                                               fake_encryption_key)
+        self.assertEqual(fake_encryption_key, key._id)
+
+    def test_delete_encryption_key_not_found(self):
+        request = unit_test_utils.get_fake_request()
+        fake_encryption_key = self.controller._key_manager.store(
+            request.context, mock.Mock())
+        props = {
+            'cinder_encryption_key_id': fake_encryption_key,
+            'cinder_encryption_key_deletion_policy': 'on_image_deletion',
+        }
+        image = _domain_fixture(
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            os_hash_algo=FAKEHASHALGO, os_hash_value=MULTIHASH1,
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            virtual_size=3072, extra_properties=props)
+        with mock.patch.object(self.controller._key_manager, 'delete',
+                               side_effect=castellan_exception.ManagedObjectNotFoundError):  # noqa
+            self.controller._delete_encryption_key(request.context, image)
+        # Make sure the encrytion key is still there
+        key = self.controller._key_manager.get(request.context,
+                                               fake_encryption_key)
+        self.assertEqual(fake_encryption_key, key._id)
+
+    def test_delete_encryption_key_error(self):
+        request = unit_test_utils.get_fake_request()
+        fake_encryption_key = self.controller._key_manager.store(
+            request.context, mock.Mock())
+        props = {
+            'cinder_encryption_key_id': fake_encryption_key,
+            'cinder_encryption_key_deletion_policy': 'on_image_deletion',
+        }
+        image = _domain_fixture(
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            os_hash_algo=FAKEHASHALGO, os_hash_value=MULTIHASH1,
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            virtual_size=3072, extra_properties=props)
+        with mock.patch.object(self.controller._key_manager, 'delete',
+                               side_effect=castellan_exception.KeyManagerError):  # noqa
+            self.controller._delete_encryption_key(request.context, image)
+        # Make sure the encrytion key is still there
+        key = self.controller._key_manager.get(request.context,
+                                               fake_encryption_key)
+        self.assertEqual(fake_encryption_key, key._id)
+
+    def test_delete_encryption_key(self):
+        request = unit_test_utils.get_fake_request()
+        fake_encryption_key = self.controller._key_manager.store(
+            request.context, mock.Mock())
+        props = {
+            'cinder_encryption_key_id': fake_encryption_key,
+            'cinder_encryption_key_deletion_policy': 'on_image_deletion',
+        }
+        image = _domain_fixture(
+            UUID2, name='image-2', owner=TENANT2,
+            checksum='ca425b88f047ce8ec45ee90e813ada91',
+            os_hash_algo=FAKEHASHALGO, os_hash_value=MULTIHASH1,
+            created_at=DATETIME, updated_at=DATETIME, size=1024,
+            virtual_size=3072, extra_properties=props)
+        self.controller._delete_encryption_key(request.context, image)
+        # Make sure the encrytion key is gone
+        self.assertRaises(KeyError,
+                          self.controller._key_manager.get,
+                          request.context, fake_encryption_key)
+
+    def test_delete_no_encryption_key_id(self):
+        request = unit_test_utils.get_fake_request()
+        extra_props = {
+            'cinder_encryption_key_deletion_policy': 'on_image_deletion',
+        }
+        created_image = self.controller.create(request,
+                                               image={'name': 'image-1'},
+                                               extra_properties=extra_props,
+                                               tags=[])
+        image_id = created_image.image_id
+        self.controller.delete(request, image_id)
+        # Ensure that image is deleted
+        image = self.db.image_get(request.context, image_id,
+                                  force_show_deleted=True)
+        self.assertTrue(image['deleted'])
+        self.assertEqual('deleted', image['status'])
+
+    def test_delete_invalid_encryption_key_id(self):
+        request = unit_test_utils.get_fake_request()
+        extra_props = {
+            'cinder_encryption_key_id': 'invalid',
+            'cinder_encryption_key_deletion_policy': 'on_image_deletion',
+        }
+        created_image = self.controller.create(request,
+                                               image={'name': 'image-1'},
+                                               extra_properties=extra_props,
+                                               tags=[])
+        image_id = created_image.image_id
+        self.controller.delete(request, image_id)
+        # Ensure that image is deleted
+        image = self.db.image_get(request.context, image_id,
+                                  force_show_deleted=True)
+        self.assertTrue(image['deleted'])
+        self.assertEqual('deleted', image['status'])
+
+    def test_delete_invalid_encryption_key_deletion_policy(self):
+        request = unit_test_utils.get_fake_request()
+        extra_props = {
+            'cinder_encryption_key_deletion_policy': 'invalid',
+        }
+        created_image = self.controller.create(request,
+                                               image={'name': 'image-1'},
+                                               extra_properties=extra_props,
+                                               tags=[])
+        image_id = created_image.image_id
+        self.controller.delete(request, image_id)
+        # Ensure that image is deleted
+        image = self.db.image_get(request.context, image_id,
+                                  force_show_deleted=True)
+        self.assertTrue(image['deleted'])
+        self.assertEqual('deleted', image['status'])
 
 
 class TestImagesControllerPolicies(base.IsolatedUnitTest):
