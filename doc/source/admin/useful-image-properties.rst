@@ -420,8 +420,10 @@ Here is a list of useful image properties and the values they expect.
      - Integer
    * - libvirt API driver
      - ``hw_video_model``
-     - The video image driver used.
-     - ``vga``, ``cirrus``, ``vmvga``, ``xen``, or ``qxl``.
+     - The graphic device model presented to the guest.
+       hw_video_model=none disables the graphics device in the guest and should
+       generally be used when using gpu passthrough.
+     - ``vga``, ``cirrus``, ``vmvga``, ``xen``, ``qxl``, ``virtio``, ``gop`` or ``none``.
    * - libvirt API driver
      - ``hw_video_ram``
      - Maximum RAM for the video image. Used only if a ``hw_video:ram_max_mb``

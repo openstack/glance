@@ -44,14 +44,17 @@
         },
         "hw_video_model": {
             "title": "Video Model",
-            "description": "The video image driver used.",
+            "description": "The graphic device model presented to the guest. hw_video_model=none disables the graphics device in the guest and should generally be used when using gpu passthrough.",
             "type": "string",
             "enum": [
                 "vga",
                 "cirrus",
                 "vmvga",
                 "xen",
-                "qxl"
+                "qxl",
+                "virtio",
+                "gop",
+                "none"
             ]
         },
         "hw_video_ram": {

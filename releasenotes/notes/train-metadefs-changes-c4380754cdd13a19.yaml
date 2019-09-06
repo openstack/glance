@@ -9,6 +9,9 @@ upgrade:
     * Added ``powervm`` to the ``hypervisor_type`` enumeration in the
       ``OS:::Compute::Hypervisor`` namespace.
 
+    * Added ``virtio``, ``gop`` and ``none`` to the ``hw_video_model``
+      enumeration in the ``OS::Compute::LibvirtImage`` namespace.
+
     You may upgrade these definitions using:
 
     ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``
