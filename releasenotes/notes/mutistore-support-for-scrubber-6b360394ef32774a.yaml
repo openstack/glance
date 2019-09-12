@@ -1,0 +1,17 @@
+---
+features:
+  - |
+    The glance-scrubber utility is now multistore aware.  If you
+    are using the multistore feature, you must define configuration
+    options for ``os_glance_tasks_store`` and ``os_glance_staging_store``
+    in the ``glance-scrubber.conf`` file.  See the "Reserved Stores"
+    section of the "Multi Store Support" chapter of the Glance
+    Administration Guide for more information.
+
+upgrade:
+  - |
+    If you are using the multistore feature, you must define
+    configuration options for ``os_glance_tasks_store`` and
+    ``os_glance_staging_store`` in the ``glance-scrubber.conf`` file.
+    See the "Reserved Stores" section of the "Multi Store Support"
+    chapter of the Glance Administration Guide for more information.
