@@ -333,9 +333,33 @@ Here is a list of useful image properties and the values they expect.
          architecture, but not enough cores with free thread siblings are
          available, then scheduling fails.
    * - libvirt API driver
+     - ``hw_cdrom_bus``
+     - Specifies the type of disk controller to attach CD-ROM devices to.
+     - As for ``hw_disk_bus``.
+   * - libvirt API driver
      - ``hw_disk_bus``
      - Specifies the type of disk controller to attach disk devices to.
-     - One of ``scsi``, ``virtio``, ``uml``, ``xen``, ``ide``, or ``usb``.
+     - Options depend on the value of `nova's virt_type config option
+       <https://docs.openstack.org/nova/latest/configuration/config.html#libvirt.virt_type>`_:
+
+       * For ``qemu`` and ``kvm``: one of ``scsi``, ``virtio``,
+         ``uml``, ``xen``, ``ide``, ``usb``, or ``lxc``.
+       * For ``xen``: one of ``xen`` or ``ide``.
+       * For ``uml``: must be ``uml``.
+       * For ``lxc``: must be ``lxc``.
+       * For ``parallels``: one of ``ide`` or ``scsi``.
+   * - libvirt API driver
+     - ``hw_firmware_type``
+     - Specifies the type of firmware with which to boot the guest.
+     - One of ``bios`` or ``uefi``.
+   * - libvirt API driver
+     - ``hw_mem_encryption``
+     - Enables encryption of guest memory at the hardware level, if
+       there are compute hosts available which support this. See
+       `nova's documentation on configuration of the KVM hypervisor
+       <https://docs.openstack.org/nova/latest/admin/configuration/hypervisor-kvm.html#amd-sev-secure-encrypted-virtualization>`_
+       for more details.
+     - ``true`` or ``false`` (default).
    * - libvirt API driver
      - ``hw_pointer_model``
      - Input devices that allow interaction with a graphical framebuffer,

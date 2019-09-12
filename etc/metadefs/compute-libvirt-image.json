@@ -10,6 +10,22 @@
         }
     ],
     "properties": {
+        "hw_cdrom_bus": {
+            "title": "CD-ROM Bus",
+            "description": "Specifies the type of disk controller to attach CD-ROM devices to.",
+            "type": "string",
+            "enum": [
+                "scsi",
+                "virtio",
+                "uml",
+                "xen",
+                "ide",
+                "usb",
+                "fdc",
+                "sata",
+                "lxc"
+            ]
+        },
         "hw_disk_bus": {
             "title": "Disk Bus",
             "description": "Specifies the type of disk controller to attach disk devices to.",
@@ -22,7 +38,17 @@
                 "ide",
                 "usb",
                 "fdc",
-                "sata"
+                "sata",
+                "lxc"
+            ]
+        },
+        "hw_firmware_type": {
+            "title": "Firmware Type",
+            "description": "Specifies whether the image should be booted with a legacy BIOS or with UEFI.",
+            "type": "string",
+            "enum": [
+                "bios",
+                "uefi"
             ]
         },
         "hw_rng_model": {

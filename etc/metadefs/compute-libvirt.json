@@ -26,6 +26,12 @@
             "description": "If true, enables the BIOS bootmenu. In cases where both the image metadata and Extra Spec are set, the Extra Spec setting is used. This allows for flexibility in setting/overriding the default behavior as needed.",
             "type": "string",
             "enum": ["true", "false"]
+        },
+        "mem_encryption": {
+            "title": "Hardware Memory Encryption",
+            "description": "Enables encryption of guest memory at the hardware level, if there are compute hosts available which support this. See https://docs.openstack.org/nova/latest/admin/configuration/hypervisor-kvm.html#amd-sev-secure-encrypted-virtualization for details.",
+            "type": "string",
+            "enum": ["true", "false"]
         }
     },
     "objects": []
