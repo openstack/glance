@@ -78,6 +78,7 @@ class Controller(object):
                     build_version_object(2.8, 'v2', 'EXPERIMENTAL')
                 ])
             version_objs.extend([
+                build_version_object(2.9, 'v2', 'EXPERIMENTAL'),
                 build_version_object(2.7, 'v2', 'CURRENT'),
                 build_version_object(2.6, 'v2', 'SUPPORTED'),
                 build_version_object(2.5, 'v2', 'SUPPORTED'),

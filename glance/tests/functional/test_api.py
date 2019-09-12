@@ -27,6 +27,11 @@ def _generate_v2_versions(url):
     version_list = []
     version_list.extend([
         {
+            'id': 'v2.9',
+            'status': 'EXPERIMENTAL',
+            'links': [{'rel': 'self', 'href': url % '2'}],
+        },
+        {
             'id': 'v2.7',
             'status': 'CURRENT',
             'links': [{'rel': 'self', 'href': url % '2'}],

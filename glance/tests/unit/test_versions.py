@@ -30,6 +30,12 @@ class VersionsTest(base.IsolatedUnitTest):
     def _get_versions_list(self, url):
         versions = [
             {
+                'id': 'v2.9',
+                'status': 'EXPERIMENTAL',
+                'links': [{'rel': 'self',
+                           'href': '%s/v2/' % url}],
+            },
+            {
                 'id': 'v2.7',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self',
@@ -181,8 +187,13 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v2_9_unsupported(self):
+    def test_request_url_v2_9(self):
         request = webob.Request.blank('/v2.9/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    def test_request_url_v2_10_unsupported(self):
+        request = webob.Request.blank('/v2.10/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
