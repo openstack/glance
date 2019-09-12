@@ -543,11 +543,16 @@ def main():
     try:
         logging.register_options(CONF)
         CONF.set_default(name='use_stderr', default=True)
-        cfg_files = cfg.find_config_files(project='glance',
-                                          prog='glance-api')
-        cfg_files.extend(cfg.find_config_files(project='glance',
-                                               prog='glance-manage'))
-        config.parse_args(default_config_files=cfg_files)
+        cfg_files = []
+        cfg_dirs = []
+        for prog in ['glance-api', 'glance-manage']:
+            cfg_files.extend(cfg.find_config_files(project='glance',
+                                                   prog=prog))
+            cfg_dirs.extend(cfg.find_config_dirs(project='glance',
+                                                 prog=prog))
+
+        config.parse_args(default_config_files=cfg_files,
+                          default_config_dirs=cfg_dirs)
         config.set_config_defaults()
         logging.setup(CONF, 'glance')
     except RuntimeError as e:
