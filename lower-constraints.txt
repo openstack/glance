@@ -25,7 +25,7 @@ docutils==0.14
 dogpile.cache==0.6.5
 dulwich==0.19.0
 enum-compat==0.0.2
-eventlet==0.18.2
+eventlet==0.22.0
 extras==1.0.0
 fasteners==0.14.1
 fixtures==3.0.0
