@@ -1,0 +1,18 @@
+---
+features:
+  - |
+    Train release includes a change to how cache prefetching works. As the
+    prefetcher was one of the last components still relying to the
+    glance-registry the requirement was removed by implementing the prefetcher
+    as part of glance-api. Crontab based prefetcher is not available anymore
+    and the new prefetching will be set up through glance-api.conf.
+upgrade:
+  - |
+    Location metadata key ``backend`` has been changed to ``store``. Any
+    environment that might be using the old ``backend`` key will have the key
+    name changed through lazy update upon access.
+fixes:
+  - |
+    Bug 1836140_: Image deletion returns 500 if 'file' store is not enabled
+
+    .. _1836140: https://bugs.launchpad.net/glance/+bug/1836140
