@@ -376,10 +376,10 @@ Here is a list of useful image properties and the values they expect.
      - ``true`` or ``false`` (default)
    * - libvirt API driver, Hyper-V driver
      - ``hw_machine_type``
-     - For libvirt: Enables booting an ARM system using the specified machine
-       type. By default, if an ARM image is used and its type is not specified,
-       Compute uses ``vexpress-a15`` (for ARMv7) or ``virt`` (for AArch64)
-       machine types.
+     - For libvirt: Enables booting an ARM system using the specified
+       machine type. If an ARM image is used and its machine type is
+       not explicitly specified, then Compute uses the ``virt`` machine
+       type as the default for ARMv7 and AArch64.
 
        For Hyper-V: Specifies whether the Hyper-V instance will be a generation
        1 or generation 2 VM. By default, if the property is not provided, the
