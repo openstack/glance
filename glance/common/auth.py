@@ -18,15 +18,18 @@ This auth module is intended to allow OpenStack client-tools to select from a
 variety of authentication strategies, including NoAuth (the default), and
 Keystone (an identity management system).
 
-    > auth_plugin = AuthPlugin(creds)
+::
 
-    > auth_plugin.authenticate()
+   > auth_plugin = AuthPlugin(creds)
 
-    > auth_plugin.auth_token
+   > auth_plugin.authenticate()
+
+   > auth_plugin.auth_token
     abcdefg
 
-    > auth_plugin.management_url
-    http://service_endpoint/
+   > auth_plugin.management_url
+   http://service_endpoint/
+
 """
 import httplib2
 from keystoneauth1.access import service_catalog as ks_service_catalog

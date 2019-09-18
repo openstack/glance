@@ -1343,9 +1343,7 @@ this registry server operates. These configuration options are specified in the
 with the glance-api service when clients are using the v1 REST API. See
 `Configuring Glance APIs`_ for more info.
 
-``sql_connection=CONNECTION_STRING`` (``--sql-connection`` when specified
-on command line)
-
+``sql_connection=CONNECTION_STRING``
   Optional. Default: ``None``
 
   Can be specified in configuration files. Can also be specified on the
@@ -1355,6 +1353,8 @@ on command line)
   database. Please see the documentation for
   `SQLAlchemy connection strings <http://docs.sqlalchemy.org/en/latest/core/connections.html>`_
   online. You must urlencode any special characters in CONNECTION_STRING.
+
+  Use ``--sql-connection`` when specified on command line.
 
 ``sql_timeout=SECONDS``
   Optional. Default: ``3600``

@@ -66,7 +66,7 @@ will not start**
 The path to the file should be specified in the ``[DEFAULT]`` section of
 ``glance-api.conf`` as follows.
 
- ::
+::
 
   property_protection_file=/path/to/file
 
@@ -77,7 +77,7 @@ The file may use either roles or policies to describe the property protections.
 The config value should be specified in the ``[DEFAULT]`` section of
 ``glance-api.conf`` as follows.
 
- ::
+::
 
   property_protection_rule_format=<roles|policies>
 
@@ -116,7 +116,7 @@ Examples
 
 **Example 1**. Limit all property interactions to admin only.
 
- ::
+::
 
   [.*]
   create = admin
@@ -128,7 +128,7 @@ Examples
 and modify properties prefixed with ``x_billing_code_``. Allow admins to
 read and modify any properties.
 
- ::
+::
 
   [^x_billing_code_.*]
   create = admin,billing
@@ -145,7 +145,7 @@ read and modify any properties.
 **Example 3**. Limit all property interactions to admin only using policy
 rule context_is_admin defined in policy.json.
 
- ::
+::
 
   [.*]
   create = context_is_admin

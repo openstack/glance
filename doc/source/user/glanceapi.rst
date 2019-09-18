@@ -432,8 +432,8 @@ We have created a new virtual machine image in some way (created a
 "golden image" or snapshotted/backed up an existing image) and we
 wish to do two things:
 
- * Store the disk image data in Glance
- * Store metadata about this image in Glance
+* Store the disk image data in Glance
+* Store metadata about this image in Glance
 
 We can do the above two activities in a single call to the Glance API.
 Assuming, like in the examples above, that a Glance API server is running

@@ -421,13 +421,13 @@ required.
 
 You will need to configure 'glance-image-import.conf' file as shown below:
 
-   .. code-block:: ini
+.. code-block:: ini
 
-       [image_import_opts]
-       image_import_plugins = ['image_conversion']
+   [image_import_opts]
+   image_import_plugins = ['image_conversion']
 
-       [image_conversion]
-       output_format = raw
+   [image_conversion]
+   output_format = raw
 
 .. note::
 

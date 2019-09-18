@@ -121,8 +121,8 @@ OPTIONS
       The inverse of --daemon. Runs the scrub operation once and
       then exits. This is the default.
 
-  **--restore <IMAGE_ID>**
-        Restore the specified image status from 'pending_delete' to 'active'.
+**--restore <IMAGE_ID>**
+      Restore the specified image status from 'pending_delete' to 'active'.
 
 FILES
 =====
