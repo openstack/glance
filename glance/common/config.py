@@ -133,10 +133,9 @@ Related Options:
                deprecated_for_removal=True,
                deprecated_since="Train",
                deprecated_reason=_("""
-With the introduction of the Glance multistore feature, the way of
-configuring this option has changed. Please refer to
-[os_glance_tasks_store]/filesystem_store_datadir for multistore
-configuration.
+With the introduction of the Glance multistore feature, it is
+no longer necessary to reserve a local directory for the tasks
+workspace.  Instead, a more flexible filesystem store can be used.
 
 This option is scheduled to be removed early in the 'U' development
 cycle.
@@ -173,7 +172,6 @@ Possible values:
 
 Related Options:
     * enabled_backends
-    * [os_glance_tasks_store]/filesystem_store_datadir
 
 """)),
 ]
@@ -678,10 +676,10 @@ Relation options:
                deprecated_for_removal=True,
                deprecated_since="Train",
                deprecated_reason=_("""
-With the introduction of the Glance multistore feature, the way of
-configuring this option has changed. Please refer to
-[os_glance_staging_store]/filesystem_store_datadir for multistore
-configuration.
+With the introduction of the Glance multistore feature, it is
+no longer necessary to reserve a local directory for the temporary
+image staging area.  Instead, a more flexible filesystem store can
+be used.
 
 This option is scheduled to be removed early in the 'U' development
 cycle.
@@ -715,7 +713,6 @@ Possible values:
 Related options:
     * [task]/work_dir
     * enabled_backends
-    * [os_glance_staging_store]/filesystem_store_datadir
 
 """)),
     cfg.ListOpt('enabled_import_methods',
