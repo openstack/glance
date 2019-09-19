@@ -115,12 +115,6 @@ _image_import_opts = [
     ('import_filtering_opts',
      glance.async_.flows._internal_plugins.import_filtering_opts),
 ]
-_reserved_store_opts = [
-    (glance.common.config.staging_store_group,
-     glance.common.config.staging_store_opts),
-    (glance.common.config.tasks_store_group,
-     glance.common.config.tasks_store_opts),
-]
 
 
 def list_api_opts():
@@ -175,8 +169,3 @@ def list_image_import_opts():
     opts = copy.deepcopy(_image_import_opts)
     opts.extend(plugin_opts.get_plugin_opts())
     return [(g, copy.deepcopy(o)) for g, o in opts]
-
-
-def list_reserved_store_opts():
-    """Return list of oslo_config options required for the reserved stores."""
-    return [(g, copy.deepcopy(o)) for g, o in _reserved_store_opts]

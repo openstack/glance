@@ -17,11 +17,9 @@
 Routines for configuring Glance
 """
 
-import copy
 import logging
 import os
 
-from glance_store._drivers.filesystem import _FILESYSTEM_CONFIGS as fs_cfg
 from oslo_config import cfg
 from oslo_middleware import cors
 from oslo_policy import policy
@@ -130,16 +128,6 @@ Related Options:
 """)),
     cfg.StrOpt('work_dir',
                sample_default='/work_dir',
-               deprecated_for_removal=True,
-               deprecated_since="Train",
-               deprecated_reason=_("""
-With the introduction of the Glance multistore feature, it is
-no longer necessary to reserve a local directory for the tasks
-workspace.  Instead, a more flexible filesystem store can be used.
-
-This option is scheduled to be removed early in the 'U' development
-cycle.
-"""),
                help=_("""
 Absolute path to the work directory to use for asynchronous
 task operations.
@@ -161,17 +149,12 @@ image conversion is enabled. All this being said, remember these
 are just estimations and you should do them based on the worst
 case scenario and be prepared to act in case they were wrong.
 
-NOTE: If you are using the Glance multistore feature, you *must*
-use a filesystem store instead of this setting.  See the
-``[os_glance_tasks_store]`` section of this configuration file
-for more information.
-
 Possible values:
     * String value representing the absolute path to the working
       directory
 
 Related Options:
-    * enabled_backends
+    * None
 
 """)),
 ]
@@ -673,17 +656,6 @@ Relation options:
 
 """)),
     cfg.StrOpt('node_staging_uri',
-               deprecated_for_removal=True,
-               deprecated_since="Train",
-               deprecated_reason=_("""
-With the introduction of the Glance multistore feature, it is
-no longer necessary to reserve a local directory for the temporary
-image staging area.  Instead, a more flexible filesystem store can
-be used.
-
-This option is scheduled to be removed early in the 'U' development
-cycle.
-"""),
                default='file:///tmp/staging/',
                help=_("""
 The URL provides location where the temporary data will be stored
@@ -702,17 +674,11 @@ api_image_import flow will support for now.
 NOTE: The staging path must be on shared filesystem available to all
 Glance API nodes.
 
-NOTE: If you are using the Glance multistore feature, you *must*
-use a filesystem store instead of this setting.  See the
-``[os_glance_staging_store]`` section of this configuration file
-for more information.
-
 Possible values:
     * String starting with 'file://' followed by absolute FS path
 
 Related options:
     * [task]/work_dir
-    * enabled_backends
 
 """)),
     cfg.ListOpt('enabled_import_methods',
@@ -728,137 +694,10 @@ Related options:
     * [DEFAULT]/node_staging_uri""")),
 ]
 
-staging_store_group = cfg.OptGroup(
-    name='os_glance_staging_store',
-    help=("""
-This is the configuration block for a store reserved for Glance's
-internal use.
-
-When the Glance multistore feature is in use, as indicated by the
-configuration option ``[DEFAULT]/enabled_backends`` having been
-configured, you must configure a *filesystem store* as the "staging
-area" for the interoperable image import process.  Please see the
-Glance Train release notes and the "Multi Store Support" chapter of
- the Glance Administration Guide for more information.
-
-NOTE: Configuring this store replaces the use of the old
-``[DEFAULT]/node_staging_uri`` option.  Keep in mind, however, that the
-reserved store you configure in this section of the configuration file
-is *ignored* unless the Glance multistore feature is configured.
-
-Related Options:
-
-    * [DEFAULT]/enabled_backends - NOTE: ``enabled_backends`` must have
-      a value (that's how the multistore feature is enabled), but the
-      list of backends must NOT include this reserved store
-
-"""))
-staging_store_opts = [
-    cfg.StrOpt('filesystem_store_datadir',
-               sample_default='/var/lib/glance/staging/',
-               help=_("""
-Absolute path to the work directory to use as the staging area
-for the interoperable image import process.
-
-NOTE: When providing a value for this option, please make sure
-that enough space is provided for concurrent user image import operations.
-A rough estimation can be done by multiplying the expected number of
-concurrent image imports with an average image size (e.g 500MB). (A
-worst case scenario for concurrent uploads would be ``[DEFAULT]/workers``,
-in which every available API thread is satisfying a PUT request to the
-staging area.)  The size estimation should be done based on the average
-size image in your deployment.
-
-Possible values:
-
-    * String value representing the absolute path to a directory
-      to be used by a filesystem store
-    * This value MUST be different from the value used for the
-      ``[os_glance_tasks_store]/filesystem_store_datadir`` option
-
-Related Options:
-
-    * [os_glance_tasks_store]/filesystem_store_datadir
-
-""")),
-]
-# TODO(rosmaita): when we eliminate the filesystem-only requirement
-# for the reserved stores, do this in a way that doesn't rely on using
-# a private var of a third-party library (may require exposing a more
-# convenient list  options function on the glance_store side)
-staging_store_opts.extend([copy.deepcopy(opt) for opt in fs_cfg
-                           if opt.name != 'filesystem_store_datadir'])
-
-tasks_store_group = cfg.OptGroup(
-    name='os_glance_tasks_store',
-    help=("""
-This is the configuration block for a store reserved for Glance's
-internal use.
-
-When the Glance multistore feature is in use, as indicated by the
-configuration option ``[DEFAULT]/enabled_backends`` having been
-configured, you must configure a *filesystem store* for the use of
-the tasks engine.  Please see the Glance Train release notes
-and the "Multi Store Support" chapter of the Glance Administration
-Guide for more information.
-
-NOTE: Configuring this store replaces the use of the old
-``[tasks]/work_dir`` option.  Keep in mind, however, that
-the reserved store you configure in this section of the configuration
-file is *ignored* unless the Glance multistore feature is configured.
-
-Related Options:
-
-    * [DEFAULT]/enabled_backends - NOTE: ``enabled_backends`` must have
-      a value (that's how the multistore feature is enabled), but the
-      list of backends must NOT include this reserved store
-
-"""))
-tasks_store_opts = [
-    cfg.StrOpt('filesystem_store_datadir',
-               sample_default='/var/lib/glance/tasks_work_dir/',
-               help=_("""
-Absolute path to the work directory to use for asynchronous
-task operations.
-
-NOTE: When providing a value for this option, please make sure
-that enough space is provided for concurrent tasks to run
-efficiently without running out of space.
-
-A rough estimation can be done by multiplying the number of
-``[taskflow_executor]/max_workers`` with an average image size
-(e.g 500MB). The image size estimation should be done based on
-the average size in your deployment. Note that depending on the
-tasks running you may need to multiply this number by some factor
-depending on what the task does. For example, you may want to double
-the available size if image conversion is enabled. All this being said,
-remember these are just estimations and you should do them based on
-the worst case scenario and be prepared to act in case they were wrong.
-
-Possible values:
-    * String value representing the absolute path to a directory
-      to be used by a filesystem store
-    * This value MUST be different from the value used for the
-      ``[os_glance_staging_store]/filesystem_store_datadir`` option
-
-Related Options:
-    * [taskflow_executor]/max_workers
-    * [os_glance_staging_store]/filesystem_store_datadir
-
-""")),
-]
-# TODO(rosmaita): eliminate dependency on private var of 3rd party lib
-tasks_store_opts.extend([copy.deepcopy(opt) for opt in fs_cfg
-                         if opt.name != 'filesystem_store_datadir'])
-
 CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(image_format_opts, group='image_format')
 CONF.register_opts(task_opts, group='task')
-CONF.register_group(staging_store_group)
-CONF.register_opts(staging_store_opts, group=staging_store_group)
-CONF.register_group(tasks_store_group)
-CONF.register_opts(tasks_store_opts, group=tasks_store_group)
 CONF.register_opts(common_opts)
 policy.Enforcer(CONF)
 
