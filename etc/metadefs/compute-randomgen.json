@@ -22,7 +22,7 @@
         },
         "hw_rng:rate_period": {
             "title": "Random number generator read period.",
-            "description": "Duration of the read period in seconds.",
+            "description": "Duration of the read period in milliseconds.",
             "type": "integer"
         }
     }
