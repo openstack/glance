@@ -4482,8 +4482,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         return base_headers
 
     def test_image_import_using_glance_direct(self):
-        self.skipTest("ToDo: remove after "
-                      "https://review.opendev.org/#/c/658962 gets merged")
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -4645,8 +4643,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_glance_direct_different_backend(self):
-        self.skipTest("ToDo: remove after "
-                      "https://review.opendev.org/#/c/658962 gets merged")
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -4808,8 +4804,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
-        self.skipTest("ToDo: remove after "
-                      "https://review.opendev.org/#/c/658962 gets merged")
         self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 
@@ -4971,8 +4965,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download_different_backend(self):
-        self.skipTest("ToDo: remove after "
-                      "https://review.opendev.org/#/c/658962 gets merged")
         self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 
@@ -5135,8 +5127,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_lifecycle(self):
-        self.skipTest("ToDo: remove after "
-                      "https://review.opendev.org/#/c/658962 gets merged")
         # Image list should be empty
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
@@ -5304,8 +5294,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_lifecycle_different_backend(self):
-        self.skipTest("ToDo: remove after "
-                      "https://review.opendev.org/#/c/658962 gets merged")
         # Image list should be empty
         self.start_servers(**self.__dict__.copy())
         path = self._url('/v2/images')
