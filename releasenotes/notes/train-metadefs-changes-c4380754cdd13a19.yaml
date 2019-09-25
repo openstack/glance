@@ -4,7 +4,13 @@ upgrade:
     The following metadata definitions have been modified in the Train
     release:
 
-    * Added ``hw_pmu`` boolean in the ``OS::Compute::LibvirtImage`` namespace.
+    * Added ``hw:mem_encryption`` boolean in the ``OS::Nova::Flavor``
+      namespace, and ``hw_mem_encryption`` boolean in the
+      ``OS::Glance::Image`` namespace.
+
+    * Added ``hw_pmu`` boolean, and ``hw_cdrom_bus`` and
+      ``hw_firmware_type`` enumerations in the
+      ``OS::Compute::LibvirtImage`` namespace.
 
     * Added ``powervm`` to the ``hypervisor_type`` enumeration in the
       ``OS:::Compute::Hypervisor`` namespace.
