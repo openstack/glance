@@ -1789,6 +1789,112 @@ class TestImagesController(base.IsolatedUnitTest):
     @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
     @mock.patch.object(store, 'get_size_from_uri_and_backend')
     @mock.patch.object(store, 'get_size_from_backend')
+    def test_replace_locations_identify_associated_store(
+            self, mock_get_size, mock_get_size_uri, mock_set_acls,
+            mock_check_loc, mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        self.config(enabled_backends={'fake-store': 'http'})
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued',
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location1 = {'url': '%s/fake_location_1' % BASE_URI,
+                         'metadata': {},
+                         'validation_data': {'checksum': CHKSUM,
+                                             'os_hash_algo': 'sha512',
+                                             'os_hash_value': MULTIHASH1}}
+        new_location2 = {'url': '%s/fake_location_2' % BASE_URI,
+                         'metadata': {},
+                         'validation_data': {'checksum': CHKSUM,
+                                             'os_hash_algo': 'sha512',
+                                             'os_hash_value': MULTIHASH1}}
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [new_location1, new_location2]}]
+
+        with mock.patch.object(store_utils,
+                               '_get_store_id_from_uri') as mock_store:
+            mock_store.return_value = 'fake-store'
+            # ensure location metadata is updated
+            new_location1['metadata']['store'] = 'fake-store'
+            new_location1['metadata']['store'] = 'fake-store'
+
+            output = self.controller.update(request, image_id, changes)
+            self.assertEqual(2, len(output.locations))
+            self.assertEqual(image_id, output.image_id)
+            self.assertEqual(new_location1, output.locations[0])
+            self.assertEqual(new_location2, output.locations[1])
+            self.assertEqual('active', output.status)
+            self.assertEqual(CHKSUM, output.checksum)
+            self.assertEqual('sha512', output.os_hash_algo)
+            self.assertEqual(MULTIHASH1, output.os_hash_value)
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_replace_locations_unknon_locations(
+            self, mock_get_size, mock_get_size_uri, mock_set_acls,
+            mock_check_loc, mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        self.config(enabled_backends={'fake-store': 'http'})
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued',
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location1 = {'url': 'unknown://whocares',
+                         'metadata': {},
+                         'validation_data': {'checksum': CHKSUM,
+                                             'os_hash_algo': 'sha512',
+                                             'os_hash_value': MULTIHASH1}}
+        new_location2 = {'url': 'unknown://whatever',
+                         'metadata': {'store': 'unkstore'},
+                         'validation_data': {'checksum': CHKSUM,
+                                             'os_hash_algo': 'sha512',
+                                             'os_hash_value': MULTIHASH1}}
+        changes = [{'op': 'replace', 'path': ['locations'],
+                    'value': [new_location1, new_location2]}]
+
+        output = self.controller.update(request, image_id, changes)
+        self.assertEqual(2, len(output.locations))
+        self.assertEqual(image_id, output.image_id)
+        self.assertEqual('active', output.status)
+        self.assertEqual(CHKSUM, output.checksum)
+        self.assertEqual('sha512', output.os_hash_algo)
+        self.assertEqual(MULTIHASH1, output.os_hash_value)
+        # ensure location metadata is same
+        self.assertEqual(new_location1, output.locations[0])
+        self.assertEqual(new_location2, output.locations[1])
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
     def test_add_location_new_validation_data_on_active(self,
                                                         mock_get_size,
                                                         mock_get_size_uri,
@@ -1901,6 +2007,82 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(1, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
         self.assertEqual('active', output.status)
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_identify_associated_store(
+            self, mock_get_size, mock_get_size_uri, mock_set_acls,
+            mock_check_loc, mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        self.config(enabled_backends={'fake-store': 'http'})
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        new_location = {'url': '%s/fake_location_1' % BASE_URI,
+                        'metadata': {}}
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+        with mock.patch.object(store_utils,
+                               '_get_store_id_from_uri') as mock_store:
+            mock_store.return_value = 'fake-store'
+            output = self.controller.update(request, image_id, changes)
+
+            self.assertEqual(image_id, output.image_id)
+            self.assertEqual(1, len(output.locations))
+            self.assertEqual('active', output.status)
+            # ensure location metadata is updated
+            new_location['metadata']['store'] = 'fake-store'
+            self.assertEqual(new_location, output.locations[0])
+
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_unknown_locations(
+            self, mock_get_size, mock_get_size_uri, mock_set_acls,
+            mock_check_loc, mock_calc):
+        mock_calc.return_value = 1
+        mock_get_size.return_value = 1
+        mock_get_size_uri.return_value = 1
+        self.config(show_multiple_locations=True)
+        self.config(enabled_backends={'fake-store': 'http'})
+        image_id = str(uuid.uuid4())
+
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+
+        new_location = {'url': 'unknown://whocares', 'metadata': {}}
+        request = unit_test_utils.get_fake_request()
+        changes = [{'op': 'add', 'path': ['locations', '-'],
+                    'value': new_location}]
+
+        output = self.controller.update(request, image_id, changes)
+
+        self.assertEqual(image_id, output.image_id)
+        self.assertEqual('active', output.status)
+        self.assertEqual(1, len(output.locations))
+        # ensure location metadata is same
+        self.assertEqual(new_location, output.locations[0])
 
     @mock.patch.object(glance.quota, '_calc_required_size')
     @mock.patch.object(glance.location, '_check_image_location')

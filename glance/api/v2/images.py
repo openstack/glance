@@ -33,6 +33,7 @@ from glance.api import common
 from glance.api import policy
 from glance.common import exception
 from glance.common import location_strategy
+from glance.common import store_utils
 from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
@@ -506,6 +507,9 @@ class ImagesController(object):
             raise webob.exc.HTTPConflict(explanation=msg)
 
         val_data = self._validate_validation_data(image, value)
+        # NOTE(abhishekk): get glance store based on location uri
+        if CONF.enabled_backends:
+            store_utils.update_store_in_locations(value, image.image_id)
 
         try:
             # NOTE(flwang): _locations_proxy's setattr method will check if
@@ -533,6 +537,9 @@ class ImagesController(object):
             raise webob.exc.HTTPConflict(explanation=msg)
 
         val_data = self._validate_validation_data(image, [value])
+        # NOTE(abhishekk): get glance store based on location uri
+        if CONF.enabled_backends:
+            store_utils.update_store_in_locations([value], image.image_id)
 
         pos = self._get_locations_op_pos(path_pos,
                                          len(image.locations), True)
