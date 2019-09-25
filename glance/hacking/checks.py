@@ -32,10 +32,10 @@ Guidelines for writing new hacking checks
 
 asse_trueinst_re = re.compile(
     r"(.)*assertTrue\(isinstance\((\w|\.|\'|\"|\[|\])+, "
-    "(\w|\.|\'|\"|\[|\])+\)\)")
+    r"(\w|\.|\'|\"|\[|\])+\)\)")
 asse_equal_type_re = re.compile(
     r"(.)*assertEqual\(type\((\w|\.|\'|\"|\[|\])+\), "
-    "(\w|\.|\'|\"|\[|\])+\)")
+    r"(\w|\.|\'|\"|\[|\])+\)")
 asse_equal_end_with_none_re = re.compile(
     r"(.)*assertEqual\((\w|\.|\'|\"|\[|\])+, None\)")
 asse_equal_start_with_none_re = re.compile(

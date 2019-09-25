@@ -31,7 +31,7 @@ TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
 def set_config_value(filepath, key, value):
     """Set 'key = value' in config file"""
     replacement_line = '%s = %s\n' % (key, value)
-    match = re.compile('^%s\s+=' % key).match
+    match = re.compile(r'^%s\s+=' % key).match
     with open(filepath, 'r+') as f:
         lines = f.readlines()
         f.seek(0, 0)
