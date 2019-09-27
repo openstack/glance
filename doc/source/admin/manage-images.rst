@@ -6,13 +6,13 @@ The cloud operator assigns roles to users. Roles determine who can
 upload and manage images. The operator might restrict image upload and
 management to only cloud administrators or operators.
 
-You can upload images through the :command:`openstack image create`
-command or the Image service API. You can use the ``openstack`` client
-for the image management. It provides mechanisms to list and
-delete images, set and delete image metadata, and create images of a
-running instance or snapshot and backup types.
+You can upload images through the :command:`glance image-create` or
+:command:`glance image-create-via-import` command or the Image service API.
+You can use the ``glance`` client for the image management. It provides
+mechanisms to do all operations supported by the Images API v2.
 
-After you upload an image, you cannot change it.
+After you upload an image, you cannot change the content, but you can update
+the metadata.
 
 For details about image creation, see the `Virtual Machine Image
 Guide <https://docs.openstack.org/image-guide/>`__.
@@ -21,27 +21,27 @@ List or get details for images (glance)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To get a list of images and to get further details about a single
-image, use :command:`openstack image list` and :command:`openstack image show`
+image, use :command:`glance image-list` and :command:`glance image-show`
 commands.
 
 .. code-block:: console
 
-   $ openstack image list
-   +--------------------------------------+---------------------------------+--------+
-   | ID                                   | Name                            | Status |
-   +--------------------------------------+---------------------------------+--------+
-   | dfc1dfb0-d7bf-4fff-8994-319dd6f703d7 | cirros-0.3.5-x86_64-uec         | active |
-   | a3867e29-c7a1-44b0-9e7f-10db587cad20 | cirros-0.3.5-x86_64-uec-kernel  | active |
-   | 4b916fba-6775-4092-92df-f41df7246a6b | cirros-0.3.5-x86_64-uec-ramdisk | active |
-   | d07831df-edc3-4817-9881-89141f9134c3 | myCirrosImage                   | active |
-   +--------------------------------------+---------------------------------+--------+
+   $ glance image-list
+   +--------------------------------------+---------------------------------+
+   | ID                                   | Name                            |
+   +--------------------------------------+---------------------------------+
+   | dfc1dfb0-d7bf-4fff-8994-319dd6f703d7 | cirros-0.3.5-x86_64-uec         |
+   | a3867e29-c7a1-44b0-9e7f-10db587cad20 | cirros-0.3.5-x86_64-uec-kernel  |
+   | 4b916fba-6775-4092-92df-f41df7246a6b | cirros-0.3.5-x86_64-uec-ramdisk |
+   | d07831df-edc3-4817-9881-89141f9134c3 | myCirrosImage                   |
+   +--------------------------------------+---------------------------------+
 .. code-block:: console
 
-   $ openstack image show myCirrosImage
+   $ glance image-show d07831df-edc3-4817-9881-89141f9134c3
    +------------------+------------------------------------------------------+
    | Field            | Value                                                |
    +------------------+------------------------------------------------------+
-   | checksum         | ee1eca47dc88f4879d8a229cc70a07c6                     |
+   | checksum         | 443b7623e27ecf03dc9e01ee93f67afe                     |
    | container_format | ami                                                  |
    | created_at       | 2016-08-11T15:07:26Z                                 |
    | disk_format      | ami                                                  |
@@ -50,6 +50,11 @@ commands.
    | min_disk         | 0                                                    |
    | min_ram          | 0                                                    |
    | name             | myCirrosImage                                        |
+   | os_hash_algo     | sha512                                               |
+   | os_hash_value    | 6513f21e44aa3da349f248188a44bc304a3653a04122d8fb4535 |
+   |                  | 423c8e1d14cd6a153f735bb0982e2161b5b5186106570c17a9e5 |
+   |                  | 8b64dd39390617cd5a350f78                             |
+   | os_hidden        | False                                                |
    | owner            | d88310717a8e4ebcae84ed075f82c51e                     |
    | protected        | False                                                |
    | schema           | /v2/schemas/image                                    |
@@ -66,70 +71,101 @@ list, as follows:
 
 .. code-block:: console
 
-   $ openstack image list | grep 'cirros'
-   | dfc1dfb0-d7bf-4fff-8994-319dd6f703d7 | cirros-0.3.5-x86_64-uec         | active |
-   | a3867e29-c7a1-44b0-9e7f-10db587cad20 | cirros-0.3.5-x86_64-uec-kernel  | active |
-   | 4b916fba-6775-4092-92df-f41df7246a6b | cirros-0.3.5-x86_64-uec-ramdisk | active |
-
-.. note::
-
-   To store location metadata for images, which enables direct file access for a client,
-   update the ``/etc/glance/glance-api.conf`` file with the following statements:
-
-   * ``show_multiple_locations = True``
-
-   * ``filesystem_store_metadata_file = filePath``
-
-     where filePath points to a JSON file that defines the mount point for OpenStack
-     images on your system and a unique ID. For example:
-
-   .. code-block:: json
-
-      [{
-          "id": "2d9bb53f-70ea-4066-a68b-67960eaae673",
-          "mountpoint": "/var/lib/glance/images/"
-      }]
-
-   After you restart the Image service, you can use the following syntax to view
-   the image's location information:
-
-   .. code-block:: console
-
-      $ openstack --os-image-api-version 2 image show imageID
-
-   For example, using the image ID shown above, you would issue the command as follows:
-
-   .. code-block:: console
-
-      $ openstack --os-image-api-version 2 image show 2d9bb53f-70ea-4066-a68b-67960eaae673
+   $ glance image-list | grep 'cirros'
+   | dfc1dfb0-d7bf-4fff-8994-319dd6f703d7 | cirros-0.3.5-x86_64-uec         |
+   | a3867e29-c7a1-44b0-9e7f-10db587cad20 | cirros-0.3.5-x86_64-uec-kernel  |
+   | 4b916fba-6775-4092-92df-f41df7246a6b | cirros-0.3.5-x86_64-uec-ramdisk |
 
 Create or update an image (glance)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create an image, use :command:`openstack image create`:
+To create an image, use :command:`glance image-create`:
 
 .. code-block:: console
 
-   $ openstack image create imageName
+   $ glance image-create --name imageName
 
-To update an image by name or ID, use :command:`openstack image set`:
+To update an image, you must specify its ID and use
+:command:`glance image-update`:
 
 .. code-block:: console
 
-   $ openstack image set imageName
+   $ glance image-update --property x="y" <IMAGE_ID>
 
-The following list explains the optional arguments that you can use with
-the ``create`` and ``set`` commands to modify image properties. For
-more information, refer to the `OpenStack Image command reference
-<https://docs.openstack.org/developer/python-openstackclient/command-objects/image.html>`_.
+The following list explains the commonly used properties that you can set or
+modify when using the ``image-create`` and ``image-update`` commands.
+For more information, refer to the `OpenStack Useful Image Properties
+<https://docs.openstack.org/glance/latest/admin/useful-image-properties.html>`_.
+
+``--architecture <ARCHITECTURE>``
+    Operating system architecture as specified in
+    https://docs.openstack.org/glance/latest/admin/useful-image-properties.html
+
+``--protected [True|False]``
+    If true, image will not be deletable.
+
+``--name <NAME>``
+    Descriptive name for the image
+
+``--instance-uuid <INSTANCE_UUID>``
+    Metadata which can be used to record which instance this image is
+    associated with. (Informational only, does not create an instance
+    snapshot.)
+
+``--min-disk <MIN_DISK>``
+    Amount of disk space (in GB) required to boot image.
+
+``--visibility <VISIBILITY>``
+    Scope of image accessibility.  Valid values: ``public``, ``private``,
+    ``community``, ``shared``
+
+``--kernel-id <KERNEL_ID>``
+    ID of image stored in Glance that should be used as the kernel when
+    booting an AMI-style image.
+
+``--os-version <OS_VERSION>``
+    Operating system version as specified by the distributor
+
+``--disk-format <DISK_FORMAT>``
+    Format of the disk.  May not be modified once an image has gone
+    to ``active`` status.  Valid values: ``ami``, ``ari``, ``aki``, ``vhd``,
+    ``vhdx``, ``vmdk``, ``raw``, ``qcow2``, ``vdi``, ``iso``, ``ploop``
+
+``--os-distro <OS_DISTRO>``
+    Common name of operating system distribution as specified in
+    https://docs.openstack.org/glance/latest/admin/useful-image-properties.html
+
+``--owner <OWNER>``
+    Owner of the image.  Usually, may be set by an admin only.
+
+``--ramdisk-id <RAMDISK_ID>``
+    ID of image stored in Glance that should be used as the ramdisk when
+    booting an AMI-style image.
+
+``--min-ram <MIN_RAM>``
+    Amount of ram (in MB) required to boot image.
+
+``--container-format <CONTAINER_FORMAT>``
+    Format of the container.  May not be modified once an image has gone
+    to ``active`` status.  Valid values: ``ami``, ``ari``, ``aki``,
+    ``bare``, ``ovf``, ``ova``, ``docker``, ``compressed``
+
+``--hidden [True|False]``
+    If true, image will not appear in default image list response.
+
+``--property <key=value>``
+    Arbitrary property to associate with image. May be used multiple times.
+
+``--remove-property key``
+    Name of arbitrary property to remove from the image.
 
 The following example shows the command that you would use to upload a
 CentOS 6.3 image in qcow2 format and configure it for public access:
 
 .. code-block:: console
 
-   $ openstack image create --disk-format qcow2 --container-format bare \
-     --public --file ./centos63.qcow2 centos63-image
+   $ glance image-create --disk-format qcow2 --container-format bare \
+     --visibility public --file ./centos63.qcow2 --name centos63-image
 
 The following example shows how to update an existing image with a
 properties that describe the disk bus, the CD-ROM bus, and the VIF
@@ -139,7 +175,7 @@ model:
 
    When you use OpenStack with VMware vCenter Server, you need to specify
    the ``vmware_disktype`` and ``vmware_adaptertype`` properties with
-   :command:`openstack image create`.
+   :command:`glance image-create`.
    Also, we recommend that you set the ``hypervisor_type="vmware"`` property.
    For more information, see `Images with VMware vSphere
    <https://docs.openstack.org/ocata/config-reference/compute/hypervisor-vmware.html#images-with-vmware-vsphere>`_
@@ -147,11 +183,11 @@ model:
 
 .. code-block:: console
 
-   $ openstack image set \
+   $ glance image-update \
        --property hw_disk_bus=scsi \
        --property hw_cdrom_bus=ide \
        --property hw_vif_model=e1000 \
-       f16-x86_64-openstack-sda
+       <Image-ID>
 
 Currently the libvirt virtualization tool determines the disk, CD-ROM,
 and VIF device models based on the configured hypervisor type
@@ -243,16 +279,8 @@ in the following tables.
 
    .. code-block:: console
 
-      $ openstack image set --property short-id=fedora23 \
-        name-of-my-fedora-image
-
-   Alternatively, users can set ``id`` to a URL:
-
-   .. code-block:: console
-
-      $ openstack image set \
-        --property id=http://fedoraproject.org/fedora/23 \
-        ID-of-my-fedora-image
+      $ glance image-update --property short-id=fedora23 \
+        <Image-ID>
 
 Create an image from ISO image
 ------------------------------
@@ -264,14 +292,14 @@ In the Image service, run the following command:
 
 .. code-block:: console
 
-   $ openstack image create ISO_IMAGE --file IMAGE.iso \
+   $ glance image-create --name ISO_IMAGE --file IMAGE.iso \
      --disk-format iso --container-format bare
 
 Optionally, to confirm the upload in Image service, run:
 
 .. code-block:: console
 
-   $ openstack image list
+   $ glance image-list
 
 Troubleshoot image creation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

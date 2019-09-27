@@ -43,7 +43,7 @@ For information about how to manage images, see the
 
    .. code-block:: console
 
-      $ openstack image create "cirros" \
+      $ glance image-create --name "cirros" \
         --file cirros-0.4.0-x86_64-disk.img \
         --disk-format qcow2 --container-format bare \
         --public
@@ -73,9 +73,9 @@ For information about how to manage images, see the
 
    .. end
 
-   For information about the :command:`openstack image create` parameters,
-   see `Create or update an image (glance)
-   <https://docs.openstack.org/user-guide/common/cli-manage-images.html#create-or-update-an-image-glance>`__
+   For information about the :command:`glance` parameters,
+   see `Image service (glance) command-line client
+   <https://docs.openstack.org/python-glanceclient/latest/cli/details.html>`__
    in the ``OpenStack User Guide``.
 
    For information about disk and container formats for images, see
@@ -92,7 +92,7 @@ For information about how to manage images, see the
 
    .. code-block:: console
 
-      $ openstack image list
+      $ glance image-list
 
       +--------------------------------------+--------+--------+
       | ID                                   | Name   | Status |

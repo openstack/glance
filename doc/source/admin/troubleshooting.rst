@@ -331,28 +331,24 @@ restarts. To get a list of available images on your system, run:
 
 .. code-block:: console
 
-   $ openstack image list
-   +--------------------------------------+-----------------------------+--------+
-   | ID                                   | Name                        | Status |
-   +--------------------------------------+-----------------------------+--------+
-   | aee1d242-730f-431f-88c1-87630c0f07ba | Ubuntu 14.04 cloudimg amd64 | active |
-   +--------------------------------------+-----------------------------+--------+
-   | 0b27baa1-0ca6-49a7-b3f4-48388e440245 | Ubuntu 14.10 cloudimg amd64 | active |
-   +--------------------------------------+-----------------------------+--------+
-   | df8d56fc-9cea-4dfd-a8d3-28764de3cb08 | jenkins                     | active |
-   +--------------------------------------+-----------------------------+--------+
+   $ glance image-list
+   +--------------------------------------+-----------------------------+
+   | ID                                   | Name                        |
+   +--------------------------------------+-----------------------------+
+   | aee1d242-730f-431f-88c1-87630c0f07ba | Ubuntu 14.04 cloudimg amd64 |
+   +--------------------------------------+-----------------------------+
+   | 0b27baa1-0ca6-49a7-b3f4-48388e440245 | Ubuntu 14.10 cloudimg amd64 |
+   +--------------------------------------+-----------------------------+
+   | df8d56fc-9cea-4dfd-a8d3-28764de3cb08 | jenkins                     |
+   +--------------------------------------+-----------------------------+
 
 The displayed image attributes are:
 
 ``ID``
-    Automatically generated UUID of the image.
+    Automatically generated or user provided UUID of the image.
 
 ``Name``
     Free form, human-readable name for the image.
-
-``Status``
-    The status of the image. Images marked ``active`` are available for
-    use.
 
 Virtual hardware templates are called ``flavors``, and are defined by
 administrators. Prior to the Newton release, a default installation also
@@ -397,6 +393,14 @@ or you can install the latest version using the pip python package installer:
 
 For more information about python-openstackclient and other command-line
 tools, see the `OpenStack End User Guide <../cli/index.html>`__.
+
+Latest image management tools can be installed using the pip package manager:
+
+.. code-block:: console
+
+   # pip install python-glanceclient
+
+This package provides you the :command:`glance` for managing all your images.
 
 
 Control where instances run
@@ -445,7 +449,8 @@ be set to ``uefi`` when the image is created. For example:
 
 .. code-block:: console
 
-   $ openstack image create --container-format bare --disk-format qcow2 \
-     --property hw_firmware_type=uefi --file /tmp/cloud-uefi.qcow --name uefi
+   $ glance image-create-via-import --container-format bare \
+     --disk-format qcow2 --property hw_firmware_type=uefi \
+     --file /tmp/cloud-uefi.qcow --name uefi
 
 After that, you can launch instances from this UEFI image.
