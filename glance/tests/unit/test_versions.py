@@ -31,13 +31,13 @@ class VersionsTest(base.IsolatedUnitTest):
         versions = [
             {
                 'id': 'v2.9',
-                'status': 'EXPERIMENTAL',
+                'status': 'CURRENT',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
             {
                 'id': 'v2.7',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
