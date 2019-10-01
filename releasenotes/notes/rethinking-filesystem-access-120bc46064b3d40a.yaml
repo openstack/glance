@@ -1,0 +1,57 @@
+---
+features:
+  - |
+    With the introduction of the Glance multiple stores feature, introduced
+    on an experimental basis in Rocky and now established as a full feature
+    in the Train release, it is now possible for Glance to use backends
+    accessed via the glance_store library for the temporary storage of
+    data that previously required access to the local filesystem.  Please
+    note the following:
+
+    * In this release, the use of stores (instead of local directories) is
+      optional, but it will become mandatory for the 'U' release.
+
+    * In this release, the stores used *must* be the filesystem store type.
+      Our goal is that in a future release, operators will be able to
+      configure a store of their choice for these functions.  In Train,
+      however, each of these *must* be a filesystem store.
+
+    Please see the Upgrades section of this document and the "Multi Store
+    Support" chapter of the Glance Administration Guide for more information.
+
+upgrade:
+  - |
+    The configuration options ``work_dir`` and ``node_staging_uri`` are
+    deprecated and will be removed early in the 'U' development cycle.
+
+    These local directories are used by Glance for the temporary storage
+    of data during the interoperable image import process and by the
+    tasks engine.  This release introduces the ability to instead use a
+    backend filesystem store accessed via the glance_store library for this
+    temporary storage.  Please note the following:
+
+    * If you wish to use the backend store feature now, please see the
+      "Reserved Stores" section of the "Multi Store Support" chapter of
+      the Glance Administration Guide for configuration information.
+
+    * If you use the Glance multiple stores feature, introduced on an
+      experimental basis in Rocky and now fully supported in the Train
+      release, then you *must* use backing stores instead of ``work_dir``
+      and ``node_staging_uri`` for Glance's temporary storage **beginning
+      right now with the current release**.  See the "Reserved Stores"
+      section of the "Multi Store Support" chapter of the Glance
+      Administration Guide for more information.
+
+  - |
+    The store name prefix ``os_glance_*`` is reserved by Glance for internal
+    stores.  Glance will refuse to start if a store with this prefix is
+    included in the ``enabled_backends`` option.
+
+    The internal store identifiers introduced in this release are
+    ``os_glance_tasks_store`` and ``os_glance_staging_store``.
+
+issues:
+  - |
+    When using the multiple stores feature, each filesystem store **must**
+    be configured with a different value for the ``filesystem_store_datadir``
+    option.  This is not currently enforced in the code.

@@ -16,11 +16,8 @@
 Multi Store Support
 ===================
 
-.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
-          its use in production systems is currently **not supported**.
-          However we encourage people to use this feature for testing
-          purposes and report the issues so that we can make it stable and
-          fully supported in Stein release.
+.. note:: The Multi Store feature was introduced as EXPERIMENTAL in Rocky
+          and is now fully supported in the Train release.
 
 Scope of this document
 ----------------------
@@ -53,10 +50,10 @@ operators to enable multiple stores support.
     multiple stores operator can specify multiple key:value separated by
     comma.
 
-    Due to the special read only nature and characteristics of the
-    http store type, we do not encourage nor support configuring
-    multiple instances of the http type store even though it's
-    possible.
+    .. warning::
+       The store identifier prefix ``os_glance_`` is reserved.  If you
+       define a store identifier with this prefix, the glance service will
+       refuse to start.
 
     The http store type is always treated by Glance as a read-only
     store.  This is indicated in the response to the ``/v2/stores/info``
@@ -112,15 +109,98 @@ operators to enable multiple stores support.
 
   .. note ::
        ``store_description`` is a new config option added to each store where
-       operator can add meaningful description about that store. This description
-       is displayed in the GET /v2/info/stores response.
+       operator can add meaningful description about that store. This
+       description is displayed in the GET /v2/info/stores response.
 
-* For new image import workflow glance will reserve a ``os_staging`` file
-  store identifier for staging the images data during staging operation. This
-  should be added by default in ``glance-api.conf`` as shown below:
+Store Configuration Issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  .. code-block:: ini
+Please keep the following points in mind.
 
-        [os_staging]
-        filesystem_store_datadir = /opt/stack/data/glance/os_staging/
-        store_description = "Filesystem store for staging purpose"
+* Due to the special read only nature and characteristics of the
+  http store type, configuring multiple instances of the http type
+  store **is not supported**.  (This constraint is not currently
+  enforced in the code.)
+
+* Each instance of the filesystem store **must** have a different value
+  for the ``filesystem_store_datadir``.  (This constraint is not currently
+  enforced in the code.)
+
+
+Reserved Stores
+---------------
+
+With the Train release, Glance is beginning a transition from its former
+reliance upon local directories for temporary data storage to the ability
+to use backend stores accessed via the glance_store library.
+
+In the Train release, the use of backend stores for this purpose is optional
+**unless you are using the multi store support feature**.  Since you are
+reading this document, this situation most likely applies to you.
+
+.. note::
+   Currently, only the filesystem store type is supported as a Glance
+   reserved store.
+
+The reserved stores are not intended to be exposed to end users.  Thus
+they will not appear in the response to the store discovery call, GET
+/v2/info/stores, or as values in the ``OpenStack-image-store-ids``
+response header of the image-create call.
+
+You do not get to select the name of a reserved store; these are defined
+by Glance and begin with the prefix ``os_glance_``.  In the Train release,
+you do not get to select the store type: all reserved stores must be of
+type filesystem.
+
+Currently, there are two reserved stores:
+
+``os_glance_tasks_store``
+    This store is used for the tasks engine.  It replaces the use of the
+    DEPRECATED configuration option ``[task]/work_dir``.
+
+``os_glance_staging_store``
+    This store is used for the staging area for the interoperable image
+    import process.  It replaces  the use of the DEPRECATED configuration
+    option ``[DEFAULT]/node_staging_uri``.
+
+Configuration
+~~~~~~~~~~~~~
+
+As mentioned above, you do not get to select the name or the type of
+a reserved store (though we anticipate that you will be able configure
+the store type in a future release).
+
+The reserved stores *must* be of type filesystem.  Hence, you must
+provide configuration for them in your ``glance-api.conf`` file.  You
+do this by introducing a section in ``glance-api.conf`` for each reserved
+store as follows:
+
+.. code-block:: ini
+
+    [os_glance_tasks_store]
+    filesystem_store_datadir = /var/lib/glance/tasks_work_dir
+
+    [os_glance_staging_store]
+    filesystem_store_datadir = /var/lib/glance/staging
+
+Since these are both filesystem stores (remember, you do not get a choice)
+the only option you must configure for each is the
+``filesystem_store_datadir``.  Please keep the following points in mind:
+
+* The path for ``filesystem_store_datadir`` used for the reserved
+  stores must be **different** from the path you are using for
+  any filesystem store you have listed in ``enabled_backends``.
+  Using the same data directory for multiple filesystem stores is
+  **unsupported** and may lead to data loss.
+
+* The identifiers for reserved stores, that is, ``os_glance_tasks_store``
+  and ``os_glance_staging_store``, must **not** be included in the
+  ``enabled_backends`` list.
+
+* The reserved stores will **not** appear in the store discovery response
+  or as values in the ``OpenStack-image-store-ids`` response header of
+  the image-create call.
+
+* The reserved stores will **not** be accepted as the value of the
+  ``X-Image-Meta-Store`` header on the image-data-upload call or
+  the image-import call.

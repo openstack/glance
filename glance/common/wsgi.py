@@ -54,6 +54,7 @@ from webob import multidict
 
 from glance.common import config
 from glance.common import exception
+from glance.common import store_utils
 from glance.common import utils
 from glance import i18n
 from glance.i18n import _, _LE, _LI, _LW
@@ -370,6 +371,12 @@ except ImportError:
     LOG.debug('Detected not running under uwsgi')
     uwsgi = None
 
+# Reserved file stores for staging and tasks operations
+RESERVED_STORES = {
+    'os_glance_staging_store': 'file',
+    'os_glance_tasks_store': 'file'
+}
+
 
 def register_cli_opts():
     CONF.register_cli_opts(cli_opts)
@@ -492,8 +499,8 @@ def initialize_glance_store():
 
 def initialize_multi_store():
     """Initialize glance multi store backends."""
-    glance_store.register_store_opts(CONF)
-    glance_store.create_multi_stores(CONF)
+    glance_store.register_store_opts(CONF, reserved_stores=RESERVED_STORES)
+    glance_store.create_multi_stores(CONF, reserved_stores=RESERVED_STORES)
     glance_store.verify_store()
 
 
@@ -619,6 +626,11 @@ class BaseServer(object):
         self.configure_socket(old_conf, has_changed)
         if self.initialize_glance_store:
             if CONF.enabled_backends:
+                if store_utils.check_reserved_stores(CONF.enabled_backends):
+                    msg = _("'os_glance_' prefix should not be used in "
+                            "enabled_backends config option. It is reserved "
+                            "for internal use only.")
+                    raise RuntimeError(msg)
                 initialize_multi_store()
             else:
                 initialize_glance_store()

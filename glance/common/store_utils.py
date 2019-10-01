@@ -32,6 +32,13 @@ CONF.import_opt('use_user_token', 'glance.registry.client')
 RESTRICTED_URI_SCHEMAS = frozenset(['file', 'filesystem', 'swift+config'])
 
 
+def check_reserved_stores(enabled_stores):
+    for store in enabled_stores:
+        if store.startswith("os_glance_"):
+            return True
+    return False
+
+
 def safe_delete_from_backend(context, image_id, location):
     """
     Given a location, delete an image from the store and
@@ -159,7 +166,8 @@ def _get_store_id_from_uri(uri):
         return
     for store in location_map[scheme]:
         store_instance = location_map[scheme][store]['store']
-        if uri.startswith(store_instance.url_prefix):
+        url_prefix = store_instance.url_prefix
+        if url_prefix and uri.startswith(url_prefix):
             url_matched = True
             break
 

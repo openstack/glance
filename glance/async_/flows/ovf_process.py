@@ -59,7 +59,13 @@ class _OVF_Process(task.Task):
             name='%s-OVF_Process-%s' % (task_type, task_id))
 
     def _get_extracted_file_path(self, image_id):
-        return os.path.join(CONF.task.work_dir,
+        file_path = CONF.task.work_dir
+        # NOTE(abhishekk): Use reserved 'os_glance_tasks_store' for tasks.
+        if CONF.enabled_backends:
+            file_path = getattr(
+                CONF, 'os_glance_tasks_store').filesystem_store_datadir
+
+        return os.path.join(file_path,
                             "%s.extracted" % image_id)
 
     def _get_ova_iter_objects(self, uri):

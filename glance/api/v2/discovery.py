@@ -46,6 +46,9 @@ class InfoController(object):
 
         backends = []
         for backend in enabled_backends:
+            if backend.startswith("os_glance_"):
+                continue
+
             stores = {}
             stores['id'] = backend
             description = getattr(CONF, backend).store_description

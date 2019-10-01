@@ -4506,9 +4506,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         discovery_calls = jsonutils.loads(
             response.text)['stores']
+        # os_glance_staging_store should not be available in discovery response
         for stores in discovery_calls:
             self.assertIn('id', stores)
             self.assertIn(stores['id'], available_stores)
+            self.assertFalse(stores["id"].startswith("os_glance_"))
 
         # Create an image
         path = self._url('/v2/images')
@@ -4667,9 +4669,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         discovery_calls = jsonutils.loads(
             response.text)['stores']
+        # os_glance_staging_store should not be available in discovery response
         for stores in discovery_calls:
             self.assertIn('id', stores)
             self.assertIn(stores['id'], available_stores)
+            self.assertFalse(stores["id"].startswith("os_glance_"))
 
         # Create an image
         path = self._url('/v2/images')
@@ -4829,9 +4833,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         discovery_calls = jsonutils.loads(
             response.text)['stores']
+        # os_glance_staging_store should not be available in discovery response
         for stores in discovery_calls:
             self.assertIn('id', stores)
             self.assertIn(stores['id'], available_stores)
+            self.assertFalse(stores["id"].startswith("os_glance_"))
 
         # Create an image
         path = self._url('/v2/images')
@@ -4990,9 +4996,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         discovery_calls = jsonutils.loads(
             response.text)['stores']
+        # os_glance_staging_store should not be available in discovery response
         for stores in discovery_calls:
             self.assertIn('id', stores)
             self.assertIn(stores['id'], available_stores)
+            self.assertFalse(stores["id"].startswith("os_glance_"))
 
         # Create an image
         path = self._url('/v2/images')
@@ -5142,9 +5150,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         discovery_calls = jsonutils.loads(
             response.text)['stores']
+        # os_glance_staging_store should not be available in discovery response
         for stores in discovery_calls:
             self.assertIn('id', stores)
             self.assertIn(stores['id'], available_stores)
+            self.assertFalse(stores["id"].startswith("os_glance_"))
 
         # Create an image (with two deployer-defined properties)
         path = self._url('/v2/images')
@@ -5309,9 +5319,11 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         discovery_calls = jsonutils.loads(
             response.text)['stores']
+        # os_glance_staging_store should not be available in discovery response
         for stores in discovery_calls:
             self.assertIn('id', stores)
             self.assertIn(stores['id'], available_stores)
+            self.assertFalse(stores["id"].startswith("os_glance_"))
 
         # Create an image (with two deployer-defined properties)
         path = self._url('/v2/images')
