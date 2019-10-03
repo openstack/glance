@@ -9,16 +9,17 @@
 # Robert Simai, 2014
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 # Robert Simai <robert.simai@suse.com>, 2016. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2019-03-08 07:05+0000\n"
+"POT-Creation-Date: 2019-10-02 10:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-12-06 08:09+0000\n"
-"Last-Translator: Robert Simai <robert.simai@suse.com>\n"
+"PO-Revision-Date: 2019-10-02 10:45+0000\n"
+"Last-Translator: Tom Cocozzello <tjcocozz@us.ibm.com>\n"
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -443,6 +444,10 @@ msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Fehler in Speicherkonfiguration. Hinzufügen von Abbildern zu Speicher ist "
 "inaktiviert."
+
+#, python-format
+msgid "Error: %(exc_type)s: %(e)s"
+msgstr "Fehler: %(exc_type)s: %(e)s"
 
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr ""
@@ -1118,6 +1123,11 @@ msgid "Provides a user friendly description of the namespace."
 msgstr ""
 "Stellt eine benutzerfreundliche Beschreibung des Namensbereichs bereit. "
 
+msgid "Purge command failed, check glance-manage logs for more details."
+msgstr ""
+"Der Löschbefehl ist fehlgeschlagen. Suchen Sie in den glance-manage-"
+"Protokolldateien nach weiteren Details."
+
 msgid "Received invalid HTTP redirect."
 msgstr "Ungültige HTTP-Umleitung erhalten."
 
@@ -1346,6 +1356,16 @@ msgid ""
 msgstr ""
 "Der angegebene URI ist ungültig. Geben Sie einen gültigen URI aus der "
 "folgenden Liste mit unterstützten URIs %(supported)s an."
+
+#, python-format
+msgid ""
+"The image %s is already present on the target, but our check for it did not "
+"find it. This indicates that we do not have permissions to see all the "
+"images on the target server."
+msgstr ""
+"Das Abbild %s ist bereits auf dem Target vorhanden, aber bei der Überprüfung "
+"wurde es nicht gefunden. Dies bedeutet, dass wir nicht über die "
+"Berechtigungen zum Anzeigen aller Abbilder auf dem Target-Server verfügen."
 
 #, python-format
 msgid "The incoming image is too large: %s"
@@ -1668,6 +1688,11 @@ msgstr ""
 msgid "Too few arguments."
 msgstr "Zu wenig Argumente"
 
+#, python-format
+msgid ""
+"Total size is %(size)d bytes (%(human_size)s) across %(img_count)d images"
+msgstr "Gesamtgröße ist %(size)d Byte (%(human_size)s) in %(img_count)d Images"
+
 msgid ""
 "URI cannot contain more than one occurrence of a scheme.If you have "
 "specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
@@ -1743,6 +1768,12 @@ msgstr "Schema kann nicht geladen werden: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "Konfigurationsdatei zum Einfügen für %s konnte nicht gefunden werden."
+
+#, python-format
+msgid "Unable to upload duplicate image data for image %(image_id)s: %(error)s"
+msgstr ""
+"Hochladen von doppelten Abbilddaten für Abbild %(image_id)s nicht möglich: "
+"%(error)s"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "Unerwarteter Hauptteiltyp. Erwartet wurde list/dict."
