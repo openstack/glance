@@ -1,0 +1,34 @@
+---
+prelude: |
+    Train release includes multiple important milestones in Glance development
+    priorities.
+
+    * Stabilization of multi-store feature; from Train onwards multi-store
+      is considered stable feature in glance, glance_store and
+      python-glanceclient. The community encourages everyone to adopt this new
+      way of configuring backend stores at earliest convenience as the old
+      configuration options are deprecated for removal to ease the burden of
+      maintaining underlying code. Users are able to select the store they
+      want their images to be stored during import process.
+
+    * ``glance-cache-manage`` and precaching is back; during the cycle we
+      fixed issues that caused cache management being impossible. The
+      prefetcher code was moved into glance-api to break the dependency to
+      glance-registry and does not run under cron anymore.
+
+    * Documentation examples were changed from ``openstack`` commands back to
+      ``glance``.  This should help avoid the frustration of glance-community
+      maintaining different client than what is referred in examples.
+      'python-glanceclient' is and will be the reference implementation of
+      Images API and the team will implement all API changes to the relevant
+      client version of the cycle as well.
+
+    * This release also bumps the Images API CURRENT version to 2.9
+
+fixes:
+  - |
+    * Bug 1808868_: Add SEV-related extra spec and image properties
+    * Bug 1802587_: Make location API compatible with multiple store
+
+    .. _1808868: https://code.launchpad.net/bugs/1808868
+    .. _1802587: https://code.launchpad.net/bugs/1802587

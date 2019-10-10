@@ -1,19 +1,17 @@
 ---
 features:
   - |
-    With the introduction of the Glance multiple stores feature, introduced
-    on an experimental basis in Rocky and now established as a full feature
-    in the Train release, it is now possible for Glance to use backends
-    accessed via the glance_store library for the temporary storage of
-    data that previously required access to the local filesystem.  Please
-    note the following:
+    It is now possible for Glance to use backends accessed via the
+    glance_store library for the temporary storage of data that previously
+    required access to the local filesystem.  Please note the following:
 
-    * In this release, the use of stores (instead of local directories) is
-      optional, but it will become mandatory for the 'U' release.
+    * In this release, the use of stores (instead of configuring the path
+      directly) is optional, but it will become mandatory for the 'U'
+      release.
 
     * In this release, the stores used *must* be the filesystem store type.
       Our goal is that in a future release, operators will be able to
-      configure a store of their choice for these functions.  In Train,
+      configure a store type from other selected drivers as well.  In Train,
       however, each of these *must* be a filesystem store.
 
     Please see the Upgrades section of this document and the "Multi Store
