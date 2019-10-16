@@ -309,7 +309,7 @@
               - ^setup.cfg$
               - ^tox.ini$
               - ^\.zuul\.yaml$
-        - tempest-full-py3-opensuse150:
+        - tempest-full-py3-opensuse15:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^lower-constraints.txt$
