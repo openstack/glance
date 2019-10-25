@@ -213,7 +213,7 @@
     check:
       jobs:
         - openstack-tox-functional
-        - openstack-tox-functional-py35
+        - openstack-tox-functional-py36
         - glance-eventlet-ssl-handshake-broken-py35:
             voting: false
         - devstack-plugin-ceph-tempest:
@@ -256,7 +256,7 @@
     gate:
       jobs:
         - openstack-tox-functional
-        - openstack-tox-functional-py35
+        - openstack-tox-functional-py36
         - tempest-full:
             irrelevant-files:
               - ^(test-|)requirements.txt$
