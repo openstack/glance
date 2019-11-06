@@ -22,6 +22,9 @@ tests.sqlite
 glance/versioninfo
 subunit.log
 
+# generated policy file
+etc/policy.yaml.sample
+
 # Swap files range from .saa to .swp
 *.s[a-w][a-p]
 
