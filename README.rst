@@ -1,6 +1,6 @@
-========================
-Team and repository tags
-========================
+================
+OpenStack Glance
+================
 
 .. image:: https://governance.openstack.org/tc/badges/glance.svg
     :target: https://governance.openstack.org/tc/reference/tags/index.html
@@ -19,11 +19,7 @@ Team and repository tags
 
 .. Change things from this point on
 
-======
-Glance
-======
-
-Glance is a project that provides services and associated libraries
+Glance is an OpenStack project that provides services and associated libraries
 to store, browse, share, distribute and manage bootable disk images,
 other data closely associated with initializing compute resources,
 and metadata definitions.
@@ -66,7 +62,7 @@ reported to the appropriate bug tracker. You can raise bugs here:
 * `Bug Tracker <https://bugs.launchpad.net/glance/>`_
 
 Release notes
------------------
+-------------
 
 To learn more about Glance's new features, optimizations, and changes
 between versions, consult the release notes online at:
