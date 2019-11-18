@@ -569,7 +569,9 @@ class TestTasksDeserializer(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestTasksDeserializer, self).setUp()
-        self.deserializer = glance.api.v2.tasks.RequestDeserializer()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.deserializer = glance.api.v2.tasks.RequestDeserializer(
+            policy_engine=self.policy)
 
     def test_create_no_body(self):
         request = unit_test_utils.get_fake_request()
