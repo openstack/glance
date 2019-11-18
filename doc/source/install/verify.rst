@@ -46,7 +46,7 @@ For information about how to manage images, see the
       $ glance image-create --name "cirros" \
         --file cirros-0.4.0-x86_64-disk.img \
         --disk-format qcow2 --container-format bare \
-        --public
+        --visibility=public
 
       +------------------+------------------------------------------------------+
       | Field            | Value                                                |
