@@ -32,6 +32,8 @@
     name: glance-tox-oslo-tips-base
     parent: tox
     abstract: true
+    nodeset: ubuntu-bionic
+    timeout: 2400
     description: Abstract job for Glance vs. oslo libraries
     # NOTE(rosmaita): we only need functional test jobs, oslo is
     # already running periodic jobs using our unit tests.  Those
@@ -58,12 +60,13 @@
       - name: openstack/taskflow
 
 - job:
-    name: glance-tox-functional-oslo-tips
+    name: glance-tox-functional-py37-oslo-tips
     parent: glance-tox-oslo-tips-base
     description: |
-      Glance py27 functional tests vs. oslo libraries masters
+      Glance py37 functional tests vs. oslo libraries masters
     vars:
-      tox_envlist: functional
+      python_version: 3.7
+      tox_envlist: functional-py37
 
 - job:
     name: glance-tox-functional-py36-oslo-tips
@@ -71,12 +74,15 @@
     description: |
       Glance py36 functional tests vs. oslo libraries masters
     vars:
+      python_version: 3.6
       tox_envlist: functional-py36
 
 - job:
     name: glance-tox-keystone-tips-base
     parent: tox
     abstract: true
+    nodeset: ubuntu-bionic
+    timeout: 2400
     description: Abstract job for Glance vs. keystone
     required-projects:
       - name: openstack/keystoneauth
@@ -84,12 +90,13 @@
       - name: openstack/python-keystoneclient
 
 - job:
-    name: glance-tox-py27-keystone-tips
+    name: glance-tox-py37-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py27 unit tests vs. keystone masters
+      Glance py37 unit tests vs. keystone masters
     vars:
-      tox_envlist: py27
+      python_version: 3.7
+      tox_envlist: py37
 
 - job:
     name: glance-tox-py36-keystone-tips
@@ -97,15 +104,17 @@
     description: |
       Glance py36 unit tests vs. keystone masters
     vars:
+      python_version: 3.6
       tox_envlist: py36
 
 - job:
-    name: glance-tox-functional-keystone-tips
+    name: glance-tox-functional-py37-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py27 functional tests vs. keystone masters
+      Glance py37 functional tests vs. keystone masters
     vars:
-      tox_envlist: functional
+      python_version: 3.7
+      tox_envlist: functional-py37
 
 - job:
     name: glance-tox-functional-py36-keystone-tips
@@ -113,23 +122,27 @@
     description: |
       Glance py36 functional tests vs. keystone masters
     vars:
+      python_version: 3.6
       tox_envlist: functional-py36
 
 - job:
     name: glance-tox-glance_store-tips-base
     parent: tox
     abstract: true
+    nodeset: ubuntu-bionic
+    timeout: 2400
     description: Abstract job for Glance vs. glance_store
     required-projects:
       - name: openstack/glance_store
 
 - job:
-    name: glance-tox-py27-glance_store-tips
+    name: glance-tox-py37-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py27 unit tests vs. glance_store master
+      Glance py37 unit tests vs. glance_store master
     vars:
-      tox_envlist: py27
+      python_version: 3.7
+      tox_envlist: py37
 
 - job:
     name: glance-tox-py36-glance_store-tips
@@ -137,15 +150,17 @@
     description: |
       Glance py36 unit tests vs. glance_store master
     vars:
+      python_version: 3.6
       tox_envlist: py36
 
 - job:
-    name: glance-tox-functional-glance_store-tips
+    name: glance-tox-functional-py37-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py27 functional tests vs. glance_store master
+      Glance py37 functional tests vs. glance_store master
     vars:
-      tox_envlist: functional
+      python_version: 3.7
+      tox_envlist: functional-py37
 
 - job:
     name: glance-tox-functional-py36-glance_store-tips
@@ -153,12 +168,15 @@
     description: |
       Glance py36 functional tests vs. glance_store master
     vars:
+      python_version: 3.6
       tox_envlist: functional-py36
 
 - job:
     name: glance-tox-cursive-tips-base
     parent: tox
     abstract: true
+    nodeset: ubuntu-bionic
+    timeout: 2400
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
       - name: x/cursive
@@ -166,12 +184,13 @@
       - name: openstack/castellan
 
 - job:
-    name: glance-tox-py27-cursive-tips
+    name: glance-tox-py37-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py27 unit tests vs. cursive (and related libs) master
+      Glance py37 unit tests vs. cursive (and related libs) master
     vars:
-      tox_envlist: py27
+      python_version: 3.7
+      tox_envlist: py37
 
 - job:
     name: glance-tox-py36-cursive-tips
@@ -179,15 +198,17 @@
     description: |
       Glance py36 unit tests vs. cursive (and related libs) master
     vars:
+      python_version: 3.6
       tox_envlist: py36
 
 - job:
-    name: glance-tox-functional-cursive-tips
+    name: glance-tox-functional-py37-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py27 functional tests vs. cursive (and related libs) master
+      Glance py37 functional tests vs. cursive (and related libs) master
     vars:
-      tox_envlist: functional
+      python_version: 3.7
+      tox_envlist: functional-py37
 
 - job:
     name: glance-tox-functional-py36-cursive-tips
@@ -195,22 +216,21 @@
     description: |
       Glance py36 functional tests vs. cursive (and related libs) master
     vars:
+      python_version: 3.6
       tox_envlist: functional-py36
 
 - project:
     templates:
       - check-requirements
-      - integrated-gate
       - integrated-gate-storage
       - openstack-lower-constraints-jobs
-      - openstack-python-jobs
-      - openstack-python3-train-jobs
+      - openstack-python3-ussuri-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
     check:
       jobs:
-        - openstack-tox-functional
+        - openstack-tox-functional-py36
         - openstack-tox-functional-py37
         - glance-code-constants-check
         - devstack-plugin-ceph-tempest:
@@ -230,8 +250,6 @@
               - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
-        - tempest-full:
-            irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - grenade-py3:
@@ -239,19 +257,17 @@
 
     gate:
       jobs:
-        - openstack-tox-functional
+        - openstack-tox-functional-py36
         - openstack-tox-functional-py37
-        - tempest-full:
-            irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - grenade-py3:
             irrelevant-files: *tempest-irrelevant-files
     experimental:
       jobs:
-        - glance-tox-py27-glance_store-tips
+        - glance-tox-py37-glance_store-tips
         - glance-tox-py36-glance_store-tips
-        - glance-tox-functional-glance_store-tips
+        - glance-tox-functional-py37-glance_store-tips
         - glance-tox-functional-py36-glance_store-tips
         - barbican-simple-crypto-devstack-tempest
         - glance-dsvm-grenade-multinode
@@ -275,31 +291,31 @@
         # to define these jobs in the openstack/project-config repo.
         # That would make us less agile in adjusting these tests, so we
         # aren't doing that either.
-        - glance-tox-functional-oslo-tips:
+        - glance-tox-functional-py37-oslo-tips:
             branches: master
         - glance-tox-functional-py36-oslo-tips:
             branches: master
-        - glance-tox-py27-keystone-tips:
+        - glance-tox-py37-keystone-tips:
             branches: master
         - glance-tox-py36-keystone-tips:
             branches: master
-        - glance-tox-functional-keystone-tips:
+        - glance-tox-functional-py37-keystone-tips:
             branches: master
         - glance-tox-functional-py36-keystone-tips:
             branches: master
-        - glance-tox-py27-glance_store-tips:
+        - glance-tox-py37-glance_store-tips:
             branches: master
         - glance-tox-py36-glance_store-tips:
             branches: master
-        - glance-tox-functional-glance_store-tips:
+        - glance-tox-functional-py37-glance_store-tips:
             branches: master
         - glance-tox-functional-py36-glance_store-tips:
             branches: master
-        - glance-tox-py27-cursive-tips:
+        - glance-tox-py37-cursive-tips:
             branches: master
         - glance-tox-py36-cursive-tips:
             branches: master
-        - glance-tox-functional-cursive-tips:
+        - glance-tox-functional-py37-cursive-tips:
             branches: master
         - glance-tox-functional-py36-cursive-tips:
             branches: master

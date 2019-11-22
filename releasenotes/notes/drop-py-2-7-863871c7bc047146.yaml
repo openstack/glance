@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    Python 2.7 support has been dropped. Last release of Glance
+    to support py2.7 is OpenStack Train (Glance 19.x). The minimum
+    version of Python now supported by Glance is Python 3.6.
