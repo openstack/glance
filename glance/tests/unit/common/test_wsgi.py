@@ -705,17 +705,11 @@ class GetSocketTestCase(test_utils.BaseTestCase):
         self.useFixture(fixtures.MonkeyPatch(
             "glance.common.wsgi.utils.validate_key_cert",
             lambda *x: None))
-        wsgi.CONF.cert_file = '/etc/ssl/cert'
-        wsgi.CONF.key_file = '/etc/ssl/key'
-        wsgi.CONF.ca_file = '/etc/ssl/ca_cert'
         wsgi.CONF.tcp_keepidle = 600
 
     @mock.patch.object(prefetcher, 'Prefetcher')
     def test_correct_configure_socket(self, mock_prefetcher):
         mock_socket = mock.Mock()
-        self.useFixture(fixtures.MonkeyPatch(
-            'glance.common.wsgi.ssl.wrap_socket',
-            mock_socket))
         self.useFixture(fixtures.MonkeyPatch(
             'glance.common.wsgi.eventlet.listen',
             lambda *x, **y: mock_socket))
@@ -731,23 +725,16 @@ class GetSocketTestCase(test_utils.BaseTestCase):
             socket.SO_KEEPALIVE,
             1), mock_socket.mock_calls)
         if hasattr(socket, 'TCP_KEEPIDLE'):
-            self.assertIn(mock.call().setsockopt(
+            self.assertIn(mock.call.setsockopt(
                 socket.IPPROTO_TCP,
                 socket.TCP_KEEPIDLE,
                 wsgi.CONF.tcp_keepidle), mock_socket.mock_calls)
-
-    def test_get_socket_without_all_ssl_reqs(self):
-        wsgi.CONF.key_file = None
-        self.assertRaises(RuntimeError, wsgi.get_socket, 1234)
 
     def test_get_socket_with_bind_problems(self):
         self.useFixture(fixtures.MonkeyPatch(
             'glance.common.wsgi.eventlet.listen',
             mock.Mock(side_effect=(
                 [wsgi.socket.error(socket.errno.EADDRINUSE)] * 3 + [None]))))
-        self.useFixture(fixtures.MonkeyPatch(
-            'glance.common.wsgi.ssl.wrap_socket',
-            lambda *x, **y: None))
 
         self.assertRaises(RuntimeError, wsgi.get_socket, 1234)
 
@@ -755,9 +742,6 @@ class GetSocketTestCase(test_utils.BaseTestCase):
         self.useFixture(fixtures.MonkeyPatch(
             'glance.common.wsgi.eventlet.listen',
             mock.Mock(side_effect=wsgi.socket.error(socket.errno.ENOMEM))))
-        self.useFixture(fixtures.MonkeyPatch(
-            'glance.common.wsgi.ssl.wrap_socket',
-            lambda *x, **y: None))
         self.assertRaises(wsgi.socket.error, wsgi.get_socket, 1234)
 
 

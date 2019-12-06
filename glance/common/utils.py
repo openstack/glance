@@ -31,12 +31,9 @@ from eventlet.green import socket
 import functools
 import os
 import re
-import uuid
 
-from OpenSSL import crypto
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import netutils
 from oslo_utils import strutils
@@ -46,7 +43,7 @@ from webob import exc
 
 from glance.common import exception
 from glance.common import timeutils
-from glance.i18n import _, _LE, _LW
+from glance.i18n import _, _LE
 
 CONF = cfg.CONF
 
@@ -438,61 +435,6 @@ def setup_remote_pydev_debug(host, port):
     except Exception:
         with excutils.save_and_reraise_exception():
             LOG.exception(error_msg)
-
-
-def validate_key_cert(key_file, cert_file):
-    try:
-        error_key_name = "private key"
-        error_filename = key_file
-        with open(key_file, 'r') as keyfile:
-            key_str = keyfile.read()
-        key = crypto.load_privatekey(crypto.FILETYPE_PEM, key_str)
-
-        error_key_name = "certificate"
-        error_filename = cert_file
-        with open(cert_file, 'r') as certfile:
-            cert_str = certfile.read()
-        cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_str)
-    except IOError as ioe:
-        raise RuntimeError(_("There is a problem with your %(error_key_name)s "
-                             "%(error_filename)s.  Please verify it."
-                             "  Error: %(ioe)s") %
-                           {'error_key_name': error_key_name,
-                            'error_filename': error_filename,
-                            'ioe': ioe})
-    except crypto.Error as ce:
-        raise RuntimeError(_("There is a problem with your %(error_key_name)s "
-                             "%(error_filename)s.  Please verify it. OpenSSL"
-                             " error: %(ce)s") %
-                           {'error_key_name': error_key_name,
-                            'error_filename': error_filename,
-                            'ce': ce})
-
-    try:
-        data = str(uuid.uuid4())
-        # On Python 3, explicitly encode to UTF-8 to call crypto.sign() which
-        # requires bytes. Otherwise, it raises a deprecation warning (and
-        # will raise an error later).
-        data = encodeutils.to_utf8(data)
-        digest = CONF.digest_algorithm
-        if digest == 'sha1':
-            LOG.warn(
-                _LW('The FIPS (FEDERAL INFORMATION PROCESSING STANDARDS)'
-                    ' state that the SHA-1 is not suitable for'
-                    ' general-purpose digital signature applications (as'
-                    ' specified in FIPS 186-3) that require 112 bits of'
-                    ' security. The default value is sha1 in Kilo for a'
-                    ' smooth upgrade process, and it will be updated'
-                    ' with sha256 in next release(L).'))
-        out = crypto.sign(key, data, digest)
-        crypto.verify(cert, out, data, digest)
-    except crypto.Error as ce:
-        raise RuntimeError(_("There is a problem with your key pair.  "
-                             "Please verify that cert %(cert_file)s and "
-                             "key %(key_file)s belong together.  OpenSSL "
-                             "error %(ce)s") % {'cert_file': cert_file,
-                                                'key_file': key_file,
-                                                'ce': ce})
 
 
 def get_test_suite_socket():

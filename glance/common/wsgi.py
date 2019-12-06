@@ -34,7 +34,6 @@ import threading
 import time
 
 from eventlet.green import socket
-from eventlet.green import ssl
 import eventlet.greenio
 import eventlet.wsgi
 import glance_store
@@ -139,67 +138,6 @@ reestablishment.
 
 Possible values:
     * Positive integer value representing time in seconds
-
-Related options:
-    * None
-
-""")),
-
-    cfg.StrOpt('ca_file',
-               sample_default='/etc/ssl/cafile',
-               help=_("""
-Absolute path to the CA file.
-
-Provide a string value representing a valid absolute path to
-the Certificate Authority file to use for client authentication.
-
-A CA file typically contains necessary trusted certificates to
-use for the client authentication. This is essential to ensure
-that a secure connection is established to the server via the
-internet.
-
-Possible values:
-    * Valid absolute path to the CA file
-
-Related options:
-    * None
-
-""")),
-
-    cfg.StrOpt('cert_file',
-               sample_default='/etc/ssl/certs',
-               help=_("""
-Absolute path to the certificate file.
-
-Provide a string value representing a valid absolute path to the
-certificate file which is required to start the API service
-securely.
-
-A certificate file typically is a public key container and includes
-the server's public key, server name, server information and the
-signature which was a result of the verification process using the
-CA certificate. This is required for a secure connection
-establishment.
-
-Possible values:
-    * Valid absolute path to the certificate file
-
-Related options:
-    * None
-
-""")),
-
-    cfg.StrOpt('key_file',
-               sample_default='/etc/ssl/key/key-file.pem',
-               help=_("""
-Absolute path to a private key file.
-
-Provide a string value representing a valid absolute path to a
-private key file which is required to establish the client-server
-connection.
-
-Possible values:
-    * Absolute path to the private key file
 
 Related options:
     * None
@@ -402,30 +340,6 @@ def get_bind_addr(default_port=None):
     return (CONF.bind_host, CONF.bind_port or default_port)
 
 
-def ssl_wrap_socket(sock):
-    """
-    Wrap an existing socket in SSL
-
-    :param sock: non-SSL socket to wrap
-
-    :returns: An SSL wrapped socket
-    """
-    utils.validate_key_cert(CONF.key_file, CONF.cert_file)
-
-    ssl_kwargs = {
-        'server_side': True,
-        'certfile': CONF.cert_file,
-        'keyfile': CONF.key_file,
-        'cert_reqs': ssl.CERT_NONE,
-    }
-
-    if CONF.ca_file:
-        ssl_kwargs['ca_certs'] = CONF.ca_file
-        ssl_kwargs['cert_reqs'] = ssl.CERT_REQUIRED
-
-    return ssl.wrap_socket(sock, **ssl_kwargs)
-
-
 def get_socket(default_port):
     """
     Bind socket to bind ip:port in conf
@@ -434,8 +348,7 @@ def get_socket(default_port):
 
     :param default_port: port to bind to if none is specified in conf
 
-    :returns: a socket object as returned from socket.listen or
-               ssl.wrap_socket if conf specifies cert_file
+    :returns: a socket object as returned from socket.listen
     """
     bind_addr = get_bind_addr(default_port)
 
@@ -449,12 +362,6 @@ def get_socket(default_port):
                                                socket.SOCK_STREAM)
         if addr[0] in (socket.AF_INET, socket.AF_INET6)
     ][0]
-
-    use_ssl = CONF.key_file or CONF.cert_file
-    if use_ssl and (not CONF.key_file or not CONF.cert_file):
-        raise RuntimeError(_("When running server in SSL mode, you must "
-                             "specify both a cert_file and key_file "
-                             "option value in your configuration file"))
 
     sock = utils.get_test_suite_socket()
     retry_until = time.time() + 30
@@ -701,16 +608,6 @@ class BaseServer(object):
         new_sock = (old_conf is None or (
                     has_changed('bind_host') or
                     has_changed('bind_port')))
-        # Will we be using https?
-        use_ssl = not (not CONF.cert_file or not CONF.key_file)
-        # Were we using https before?
-        old_use_ssl = (old_conf is not None and not (
-                       not old_conf.get('key_file') or
-                       not old_conf.get('cert_file')))
-        # Do we now need to perform an SSL wrap on the socket?
-        wrap_sock = use_ssl is True and (old_use_ssl is False or new_sock)
-        # Do we now need to perform an SSL unwrap on the socket?
-        unwrap_sock = use_ssl is False and old_use_ssl is True
 
         if new_sock:
             self._sock = None
@@ -722,25 +619,7 @@ class BaseServer(object):
             # sockets can hang around forever without keepalive
             _sock.setsockopt(socket.SOL_SOCKET,
                              socket.SO_KEEPALIVE, 1)
-            self._sock = _sock
-
-        if wrap_sock:
-            self.sock = ssl_wrap_socket(self._sock)
-
-        if unwrap_sock:
-            self.sock = self._sock
-
-        if new_sock and not use_ssl:
-            self.sock = self._sock
-
-        # Pick up newly deployed certs
-        if old_conf is not None and use_ssl is True and old_use_ssl is True:
-            if has_changed('cert_file') or has_changed('key_file'):
-                utils.validate_key_cert(CONF.key_file, CONF.cert_file)
-            if has_changed('cert_file'):
-                self.sock.certfile = CONF.cert_file
-            if has_changed('key_file'):
-                self.sock.keyfile = CONF.key_file
+            self.sock = _sock
 
         if new_sock or (old_conf is not None and has_changed('tcp_keepidle')):
             # This option isn't available in the OS X version of eventlet
@@ -982,19 +861,13 @@ class Win32Server(BaseServer):
 
     def configure_socket(self, old_conf=None, has_changed=None):
         fresh_start = not (old_conf or has_changed)
-        use_ssl = CONF.cert_file or CONF.key_file
         pipe_handle = getattr(CONF, 'pipe_handle', None)
 
         if not (fresh_start and pipe_handle):
             return super(Win32Server, self).configure_socket(
                 old_conf, has_changed)
 
-        self._sock = self._get_sock_from_parent()
-
-        if use_ssl:
-            self.sock = ssl_wrap_socket(self._sock)
-        else:
-            self.sock = self._sock
+        self.sock = self._get_sock_from_parent()
 
         if hasattr(socket, 'TCP_KEEPIDLE'):
             # This was introduced in WS 2016 RS3

@@ -15,7 +15,6 @@
 #    under the License.
 
 import mock
-import os
 import tempfile
 
 from oslo_log import log as logging
@@ -325,46 +324,6 @@ class TestUtils(test_utils.BaseTestCase):
         req = webob.Request.blank('/some_request')
         result = utils.mutating(fake_function)
         self.assertEqual("test passed", result(req, Fake()))
-
-    def test_validate_key_cert_key(self):
-        self.config(digest_algorithm='sha256')
-        var_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                               '../../', 'var'))
-        keyfile = os.path.join(var_dir, 'privatekey.key')
-        certfile = os.path.join(var_dir, 'certificate.crt')
-        utils.validate_key_cert(keyfile, certfile)
-
-    def test_validate_key_cert_no_private_key(self):
-        with tempfile.NamedTemporaryFile('w+') as tmpf:
-            self.assertRaises(RuntimeError,
-                              utils.validate_key_cert,
-                              "/not/a/file", tmpf.name)
-
-    def test_validate_key_cert_cert_cant_read(self):
-        with tempfile.NamedTemporaryFile('w+') as keyf:
-            with tempfile.NamedTemporaryFile('w+') as certf:
-                os.chmod(certf.name, 0)
-                self.assertRaises(RuntimeError,
-                                  utils.validate_key_cert,
-                                  keyf.name, certf.name)
-
-    def test_validate_key_cert_key_cant_read(self):
-        with tempfile.NamedTemporaryFile('w+') as keyf:
-            with tempfile.NamedTemporaryFile('w+') as certf:
-                os.chmod(keyf.name, 0)
-                self.assertRaises(RuntimeError,
-                                  utils.validate_key_cert,
-                                  keyf.name, certf.name)
-
-    def test_invalid_digest_algorithm(self):
-        self.config(digest_algorithm='fake_algorithm')
-        var_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                               '../../', 'var'))
-        keyfile = os.path.join(var_dir, 'privatekey.key')
-        certfile = os.path.join(var_dir, 'certificate.crt')
-        self.assertRaises(ValueError,
-                          utils.validate_key_cert,
-                          keyfile, certfile)
 
     def test_valid_hostname(self):
         valid_inputs = ['localhost',
