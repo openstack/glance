@@ -2493,6 +2493,38 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('deleted', deleted_img['status'])
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
 
+    def test_verify_staging_data_deleted_on_image_delete(self):
+        self.config(enabled_backends={'fake-store': 'file'})
+        self.config(node_staging_uri='file:///tmp/staging')
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='importing',
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        try:
+            with mock.patch.object(os.path, 'exists') as mock_exists:
+                mock_exists.return_value = True
+                with mock.patch.object(os, "unlink") as mock_unlik:
+                    self.controller.delete(request, image_id)
+
+                    self.assertEqual(1, mock_exists.call_count)
+                    self.assertEqual(1, mock_unlik.call_count)
+        except Exception as e:
+            self.fail("Delete raised exception: %s" % e)
+
+        deleted_img = self.db.image_get(request.context, image_id,
+                                        force_show_deleted=True)
+        self.assertTrue(deleted_img['deleted'])
+        self.assertEqual('deleted', deleted_img['status'])
+
     def test_delete_with_tags(self):
         request = unit_test_utils.get_fake_request()
         changes = [

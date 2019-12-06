@@ -335,27 +335,25 @@ class ImagesController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
-
-            if image.status == 'uploading':
-                file_path = str(
-                    CONF.node_staging_uri + '/' + image.image_id)[7:]
-                if os.path.exists(file_path):
-                    try:
-                        LOG.debug(
-                            "After upload to the backend, deleting staged "
-                            "image data from %(fn)s", {'fn': file_path})
-                        os.unlink(file_path)
-                    except OSError as e:
-                        LOG.error(
-                            "After upload to backend, deletion of staged "
-                            "image data from %(fn)s has failed because "
-                            "[Errno %(en)d]", {'fn': file_path,
-                                               'en': e.errno})
-                else:
-                    LOG.warning(_(
+            file_path = str(
+                CONF.node_staging_uri + '/' + image_id)[7:]
+            if os.path.exists(file_path):
+                try:
+                    LOG.debug(
+                        "After upload to the backend, deleting staged "
+                        "image data from %(fn)s", {'fn': file_path})
+                    os.unlink(file_path)
+                except OSError as e:
+                    LOG.error(
                         "After upload to backend, deletion of staged "
-                        "image data has failed because "
-                        "it cannot be found at %(fn)s"), {'fn': file_path})
+                        "image data from %(fn)s has failed because "
+                        "[Errno %(en)d]", {'fn': file_path,
+                                           'en': e.errno})
+            else:
+                LOG.warning(_(
+                    "After upload to backend, deletion of staged "
+                    "image data has failed because "
+                    "it cannot be found at %(fn)s"), {'fn': file_path})
 
             image.delete()
             image_repo.remove(image)
