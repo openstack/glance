@@ -29,6 +29,7 @@ import glance.async_.flows.plugins as import_plugins
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
+from glance.common import store_utils
 from glance.i18n import _, _LE, _LI
 
 
@@ -344,7 +345,7 @@ def get_flow(**kwargs):
 
     if not uri and import_method == 'glance-direct':
         if CONF.enabled_backends:
-            separator, staging_dir = _get_dir_separator()
+            separator, staging_dir = store_utils.get_dir_separator()
             uri = separator.join((staging_dir, str(image_id)))
         else:
             uri = separator.join((CONF.node_staging_uri, str(image_id)))
@@ -355,7 +356,7 @@ def get_flow(**kwargs):
         downloadToStaging = internal_plugins.get_import_plugin(**kwargs)
         flow.add(downloadToStaging)
         if CONF.enabled_backends:
-            separator, staging_dir = _get_dir_separator()
+            separator, staging_dir = store_utils.get_dir_separator()
             file_uri = separator.join((staging_dir, str(image_id)))
         else:
             file_uri = separator.join((CONF.node_staging_uri, str(image_id)))
@@ -396,12 +397,3 @@ def get_flow(**kwargs):
     image_repo.save(image, from_state=from_state)
 
     return flow
-
-
-def _get_dir_separator():
-    separator = ''
-    staging_dir = "file://%s" % getattr(
-        CONF, 'os_glance_staging_store').filesystem_store_datadir
-    if not staging_dir.endswith('/'):
-        separator = '/'
-    return separator, staging_dir
