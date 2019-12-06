@@ -558,9 +558,16 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
         if self.image.locations and not public:
             member_ids = [m.member_id for m in self.repo.list()]
             for location in self.image.locations:
-                self.store_api.set_acls(location['url'], public=public,
-                                        read_tenants=member_ids,
-                                        context=self.context)
+                if CONF.enabled_backends:
+                    self.store_api.set_acls_for_multi_store(
+                        location['url'], location['metadata'].get('backend'),
+                        public=public, read_tenants=member_ids,
+                        context=self.context
+                    )
+                else:
+                    self.store_api.set_acls(location['url'], public=public,
+                                            read_tenants=member_ids,
+                                            context=self.context)
 
     def add(self, member):
         super(ImageMemberRepoProxy, self).add(member)
