@@ -367,41 +367,41 @@ class ImagesController(object):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
-
-            if image.status == 'uploading':
-                if CONF.enabled_backends:
-                    file_path = "%s/%s" % (getattr(
-                        CONF, 'os_glance_staging_store'
-                    ).filesystem_store_datadir, image_id)
+            # NOTE(abhishekk): Delete the data from staging area
+            if CONF.enabled_backends:
+                separator, staging_dir = store_utils.get_dir_separator()
+                file_path = "%s%s%s" % (staging_dir,
+                                        separator,
+                                        image_id)
+                try:
+                    fn_call = glance_store.get_store_from_store_identifier
+                    staging_store = fn_call('os_glance_staging_store')
+                    loc = location.get_location_from_uri_and_backend(
+                        file_path, 'os_glance_staging_store')
+                    staging_store.delete(loc)
+                except (glance_store.exceptions.NotFound,
+                        glance_store.exceptions.UnknownScheme):
+                    pass
+            else:
+                file_path = str(
+                    CONF.node_staging_uri + '/' + image_id)[7:]
+                if os.path.exists(file_path):
                     try:
-                        fn_call = glance_store.get_store_from_store_identifier
-                        staging_store = fn_call('os_glance_staging_store')
-                        loc = location.get_location_from_uri_and_backend(
-                            file_path, 'os_glance_staging_store')
-                        staging_store.delete(loc)
-                    except (glance_store.exceptions.NotFound,
-                            glance_store.exceptions.UnknownScheme):
-                        pass
-                else:
-                    file_path = str(
-                        CONF.node_staging_uri + '/' + image_id)[7:]
-                    if os.path.exists(file_path):
-                        try:
-                            LOG.debug(
-                                "After upload to the backend, deleting staged "
-                                "image data from %(fn)s", {'fn': file_path})
-                            os.unlink(file_path)
-                        except OSError as e:
-                            LOG.error(
-                                "After upload to backend, deletion of staged "
-                                "image data from %(fn)s has failed because "
-                                "[Errno %(en)d]", {'fn': file_path,
-                                                   'en': e.errno})
-                    else:
-                        LOG.warning(_(
+                        LOG.debug(
+                            "After upload to the backend, deleting staged "
+                            "image data from %(fn)s", {'fn': file_path})
+                        os.unlink(file_path)
+                    except OSError as e:
+                        LOG.error(
                             "After upload to backend, deletion of staged "
-                            "image data has failed because "
-                            "it cannot be found at %(fn)s"), {'fn': file_path})
+                            "image data from %(fn)s has failed because "
+                            "[Errno %(en)d]", {'fn': file_path,
+                                               'en': e.errno})
+                else:
+                    LOG.warning(_(
+                        "After upload to backend, deletion of staged "
+                        "image data has failed because "
+                        "it cannot be found at %(fn)s"), {'fn': file_path})
 
             image.delete()
             self._delete_encryption_key(req.context, image)

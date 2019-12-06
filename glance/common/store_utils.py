@@ -193,3 +193,12 @@ def update_store_in_locations(locations, image_id):
                                            'id': image_id})
 
             loc['metadata']['store'] = store_id
+
+
+def get_dir_separator():
+    separator = ''
+    staging_dir = "file://%s" % getattr(
+        CONF, 'os_glance_staging_store').filesystem_store_datadir
+    if not staging_dir.endswith('/'):
+        separator = '/'
+    return separator, staging_dir
