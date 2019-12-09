@@ -81,6 +81,8 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
 
         self.config(filesystem_store_datadir=self.test_dir,
                     group='fast')
+        self.config(filesystem_store_datadir=self.test_dir2,
+                    group='cheap')
         store.create_multi_stores(CONF)
 
 

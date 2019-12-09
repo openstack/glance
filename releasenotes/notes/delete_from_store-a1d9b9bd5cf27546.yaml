@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    As part of the multi-store efforts this release introduces deletion from
+    single store. Through new '/v2/stores' endpoint the API user can request
+    image to be deleted from single store instead of deleting the whole image.
+    This feature can be used to clean up store metadata in cases where the
+    image data has for some reason disappeared from the store already, except
+    410 Gone HTTP response.

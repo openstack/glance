@@ -398,6 +398,68 @@ class ImagesController(object):
             LOG.warn(msg)
 
     @utils.mutating
+    def delete_from_store(self, req, store_id, image_id):
+        if not CONF.enabled_backends:
+            raise webob.exc.HTTPNotFound()
+        if store_id not in CONF.enabled_backends:
+            msg = (_("The selected store %s is not available on this node.") %
+                   store_id)
+            raise webob.exc.HTTPConflict(explanation=msg)
+
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            image = image_repo.get(image_id)
+        except exception.NotAuthenticated as e:
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg)
+        except exception.NotFound:
+            msg = (_("Failed to find image %(image_id)s") %
+                   {'image_id': image_id})
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        if image.status != 'active':
+            msg = _("It's not allowed to remove image data from store if "
+                    "image status is not 'active'")
+            raise webob.exc.HTTPConflict(explanation=msg)
+
+        if len(image.locations) == 1:
+            LOG.debug("User forbidden to remove last location of image %s",
+                      image_id)
+            msg = _("Cannot delete image data from the only store containing "
+                    "it. Consider deleting the image instead.")
+            raise webob.exc.HTTPForbidden(explanation=msg)
+
+        try:
+            # NOTE(jokke): Here we go through the locations list and act on
+            # the first hit. image.locations.pop() will actually remove the
+            # data from the backend as well as remove the location object
+            # from the list.
+            for pos, loc in enumerate(image.locations):
+                if loc['metadata'].get('store') == store_id:
+                    image.locations.pop(pos)
+                    break
+            else:
+                msg = (_("Image %(iid)s is not stored in store %(sid)s.") %
+                       {'iid': image_id, 'sid': store_id})
+                raise exception.Invalid(msg)
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.Invalid as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except glance_store.exceptions.HasSnapshot as e:
+            raise webob.exc.HTTPConflict(explanation=e.msg)
+        except glance_store.exceptions.InUseByStore as e:
+            msg = ("The data for Image %(id)s could not be deleted "
+                   "because it is in use: %(exc)s" % {"id": image_id,
+                                                      "exc": e.msg})
+            LOG.warning(msg)
+            raise webob.exc.HTTPConflict(explanation=msg)
+        except Exception as e:
+            raise webob.exc.HTTPInternalServerError(
+                explanation=encodeutils.exception_to_unicode(e))
+
+        image_repo.save(image)
+
+    @utils.mutating
     def delete(self, req, image_id):
         image_repo = self.gateway.get_repo(req.context)
         try:
@@ -1190,6 +1252,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.unicode_body = six.text_type(json.dumps(body,
                                                          ensure_ascii=False))
         response.content_type = 'application/json'
+
+    def delete_from_store(self, response, result):
+        response.status_int = http.NO_CONTENT
 
     def delete(self, response, result):
         response.status_int = http.NO_CONTENT

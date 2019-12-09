@@ -21,7 +21,7 @@ from oslo_utils import encodeutils
 import six.moves.urllib.parse as urlparse
 
 import glance.db as db_api
-from glance.i18n import _LE, _LW
+from glance.i18n import _LE
 from glance import scrubber
 
 LOG = logging.getLogger(__name__)
@@ -68,7 +68,9 @@ def safe_delete_from_backend(context, image_id, location):
                                                    location['id'], 'deleted')
         return ret
     except store_api.NotFound:
-        msg = _LW('Failed to delete image %s in store from URI') % image_id
+        msg = ("The image data for %(iid)s was not found in the store. "
+               "The image record has been updated to reflect "
+               "this." % {'iid': image_id})
         LOG.warn(msg)
     except store_api.StoreDeleteNotSupported as e:
         LOG.warn(encodeutils.exception_to_unicode(e))

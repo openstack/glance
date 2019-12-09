@@ -433,6 +433,15 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='POST')
+        mapper.connect('/stores/{store_id}/{image_id}',
+                       controller=images_resource,
+                       action='delete_from_store',
+                       conditions={'method': ['DELETE']},
+                       body_reject=True)
+        mapper.connect('/stores/{store_id}/{image_id}',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='DELETE')
 
         image_actions_resource = image_actions.create_resource()
         mapper.connect('/images/{image_id}/actions/deactivate',

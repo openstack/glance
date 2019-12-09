@@ -2916,6 +2916,12 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertTrue(image['deleted'])
         self.assertEqual('deleted', image['status'])
 
+    def test_delete_from_store_no_multistore(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.delete_from_store, request,
+                          "the IDs should", "not matter")
+
     def test_index_with_invalid_marker(self):
         fake_uuid = str(uuid.uuid4())
         request = unit_test_utils.get_fake_request()
@@ -5104,7 +5110,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         self.store = store
         self._create_images()
         self._create_image_members()
-        stores = {'cheap': 'file', 'fast': 'file'}
+        stores = {'cheap': 'file', 'fast': 'file', 'empty': 'file'}
         self.config(enabled_backends=stores)
         self.store.register_store_opts(CONF)
         self.controller = glance.api.v2.images.ImagesController(self.db,
@@ -5216,6 +5222,68 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                           request, UUID1,
                           {'method': {'name': 'glance-direct'}})
 
+    def test_delete_from_store_as_non_owner(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.delete_from_store,
+                          request,
+                          "fast",
+                          UUID6)
+
+    def test_delete_from_store_non_active(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.delete_from_store,
+                          request,
+                          "fast",
+                          UUID3)
+
+    def test_delete_from_store_no_image(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.delete_from_store,
+                          request,
+                          "fast",
+                          "nonexisting")
+
+    def test_delete_from_store_invalid_store(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.delete_from_store,
+                          request,
+                          "burn",
+                          UUID6)
+
+    def test_delete_from_store_not_in_store(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.delete_from_store,
+                          request,
+                          "empty",
+                          UUID6)
+
+    def test_delete_from_store_one_location(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.delete_from_store,
+                          request,
+                          "fast",
+                          UUID7)
+
+    def test_delete_from_store_as_non_admin(self):
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        self.controller.delete_from_store(request, "fast", UUID6)
+        image = self.controller.show(request, UUID6)
+        self.assertEqual(1, len(image.locations))
+        self.assertEqual("cheap", image.locations[0]['metadata']['store'])
+
+    def test_delete_from_store_as_admin(self):
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        self.controller.delete_from_store(request, "fast", UUID6)
+        image = self.controller.show(request, UUID6)
+        self.assertEqual(1, len(image.locations))
+        self.assertEqual("cheap", image.locations[0]['metadata']['store'])
+
     def test_image_lazy_loading_store(self):
         # assert existing image does not have store in metadata
         existing_image = self.images[1]
@@ -5319,11 +5387,13 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
 
         with mock.patch.object(
                 glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
-            mock_get.return_value = FakeImage(id=UUID7, status='active',
-                                              locations=locations)
-            self.assertIsNotNone(self.controller.import_image(request, UUID7,
-                                 {'method': {'name': 'copy-image'},
-                                  'all_stores': True}))
+            with mock.patch.object(self.store,
+                                   'get_store_from_store_identifier'):
+                mock_get.return_value = FakeImage(id=UUID7, status='active',
+                                                  locations=locations)
+                self.assertIsNotNone(self.controller.import_image(
+                    request, UUID7, {'method': {'name': 'copy-image'},
+                                     'all_stores': True}))
 
     def test_copy_non_active_image(self):
         request = unit_test_utils.get_fake_request()

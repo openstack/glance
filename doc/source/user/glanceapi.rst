@@ -771,6 +771,20 @@ New API Calls
   where <STATUS_VALUE> is ``pending``, ``accepted``, or ``rejected``.
   The {memberId} is the tenant ID of the image member.
 
+Images v2 Stores API
+--------------------
+
+Version 2.10 of the OpenStack Images API introduces new /v2/stores/ endpoint
+when multiple stores is configured. The endpoint is used to delete image from
+specific store.
+
+Delete from Store
+*****************
+
+A user wants to delete image from specific store. The user issues a ``DELETE``
+request to ``/v2/stores/<STORE_ID>/<IMAGE_ID>``. NOTE: request body is not
+accepted.
+
 Images v2 Tasks API
 -------------------
 

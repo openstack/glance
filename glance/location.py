@@ -244,6 +244,17 @@ class StoreLocations(MutableSequence):
                 self.image_proxy.context,
                 self.image_proxy.image.image_id,
                 location)
+        except store.exceptions.NotFound:
+            # NOTE(rosmaita): This can happen if the data was deleted by an
+            # operator from the backend, or a race condition from multiple
+            # delete-from-store requests. The old way to deal with this was
+            # that the user could just delete the image when the data is gone,
+            # but with multi-store, that is no longer a good option. So we
+            # intentionally leave the location popped (in other words, the
+            # pop() succeeds) but we also reraise the NotFound so that the
+            # calling code knows what happened.
+            with excutils.save_and_reraise_exception():
+                pass
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.value.insert(i, location)
