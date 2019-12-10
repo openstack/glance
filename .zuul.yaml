@@ -220,7 +220,7 @@
     templates:
       - check-requirements
       - integrated-gate
-      - integrated-gate-py3
+      - integrated-gate-storage
       - openstack-lower-constraints-jobs
       - openstack-python-jobs
       - openstack-python3-train-jobs
@@ -255,7 +255,7 @@
             irrelevant-files: *tempest-irrelevant-files
         - neutron-grenade:
             irrelevant-files: *tempest-irrelevant-files
-        - tempest-full-py3:
+        - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - grenade-py3:
             irrelevant-files: *tempest-irrelevant-files
@@ -268,7 +268,7 @@
             irrelevant-files: *tempest-irrelevant-files
         - neutron-grenade:
             irrelevant-files: *tempest-irrelevant-files
-        - tempest-full-py3:
+        - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - grenade-py3:
             irrelevant-files: *tempest-irrelevant-files
