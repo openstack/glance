@@ -90,7 +90,6 @@ class IsolatedUnitTest(StoreClearingUnitTest):
     Unit test case that establishes a mock environment within
     a testing directory (in isolation)
     """
-    registry = None
 
     def setUp(self):
         super(IsolatedUnitTest, self).setUp()
@@ -106,13 +105,10 @@ class IsolatedUnitTest(StoreClearingUnitTest):
         store.create_stores()
 
         def fake_get_conection_type(client):
-            DEFAULT_REGISTRY_PORT = 9191
             DEFAULT_API_PORT = 9292
 
             if client.port == DEFAULT_API_PORT:
                 return stubs.FakeGlanceConnection
-            elif client.port == DEFAULT_REGISTRY_PORT:
-                return stubs.FakeRegistryConnection(registry=self.registry)
 
         self.patcher = mock.patch(
             'glance.common.client.BaseClient.get_connection_type',
@@ -132,7 +128,6 @@ class MultiIsolatedUnitTest(MultiStoreClearingUnitTest):
     Unit test case that establishes a mock environment within
     a testing directory (in isolation)
     """
-    registry = None
 
     def setUp(self):
         super(MultiIsolatedUnitTest, self).setUp()
@@ -140,9 +135,6 @@ class MultiIsolatedUnitTest(MultiStoreClearingUnitTest):
         lockutils.set_defaults(os.path.join(self.test_dir))
 
         self.config(debug=False)
-        stubs.stub_out_registry_and_store_server(self,
-                                                 self.test_dir,
-                                                 registry=self.registry)
 
     def set_policy_rules(self, rules):
         fap = open(CONF.oslo_policy.policy_file, 'w')

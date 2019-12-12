@@ -96,8 +96,6 @@ class TestReload(functional.FunctionalTest):
     def _get_parent(self, server):
         if server == 'api':
             return self.api_server.process_pid
-        elif server == 'registry':
-            return self.registry_server.process_pid
 
     def _conffile(self, service):
         conf_dir = os.path.join(self.test_dir, 'etc')
@@ -122,7 +120,6 @@ class TestReload(functional.FunctionalTest):
                     return True
             return False
         self.api_server.fork_socket = False
-        self.registry_server.fork_socket = False
         self.start_servers(fork_socket=False, **vars(self))
 
         pre_pids = {}
@@ -139,25 +136,19 @@ class TestReload(functional.FunctionalTest):
         # This recycles the existing socket
         msg = 'Start timeout'
         for _ in self.ticker(msg):
-            for server in ('api', 'registry'):
-                pre_pids[server] = self._get_children(server)
+            pre_pids['api'] = self._get_children('api')
             if check_pids(pre_pids['api'], workers=1):
-                if check_pids(pre_pids['registry'], workers=1):
-                    break
+                break
 
-        for server in ('api', 'registry'):
-            # Labour costs have fallen
-            set_config_value(self._conffile(server), 'workers', '2')
-            cmd = "kill -HUP %s" % self._get_parent(server)
-            execute(cmd, raise_error=True)
+        set_config_value(self._conffile('api'), 'workers', '2')
+        cmd = "kill -HUP %s" % self._get_parent('api')
+        execute(cmd, raise_error=True)
 
         msg = 'Worker change timeout'
         for _ in self.ticker(msg):
-            for server in ('api', 'registry'):
-                post_pids[server] = self._get_children(server)
-            if check_pids(pre_pids['registry'], post_pids['registry']):
-                if check_pids(pre_pids['api'], post_pids['api']):
-                    break
+            post_pids['api'] = self._get_children('api')
+            if check_pids(pre_pids['api'], post_pids['api']):
+                break
 
         # Test changing the http bind_host
         # This requires a new socket

@@ -29,8 +29,6 @@ from six.moves import range
 
 from glance.common import exception
 from glance import image_cache
-# NOTE(bcwaldon): This is imported to load the registry config options
-import glance.registry  # noqa
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled
 from glance.tests.utils import xattr_writes_supported

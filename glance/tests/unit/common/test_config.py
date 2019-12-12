@@ -61,15 +61,15 @@ class TestPasteApp(test_utils.BaseTestCase):
         paste_to = temp_file.replace('.conf', '-paste.ini')
         if not paste_config_file and make_paste_file:
             paste_from = os.path.join(os.getcwd(),
-                                      'etc/glance-registry-paste.ini')
+                                      'etc/glance-api-paste.ini')
             _appendto(paste_from, paste_to, paste_append)
 
-        app = config.load_paste_app('glance-registry')
+        app = config.load_paste_app('glance-api')
 
         self.assertIsInstance(app, expected_app_type)
 
     def test_load_paste_app(self):
-        expected_middleware = oslo_middleware.Healthcheck
+        expected_middleware = oslo_middleware.CORS
         self._do_test_load_paste_app(expected_middleware)
 
     def test_load_paste_app_paste_config_not_found(self):
@@ -78,8 +78,8 @@ class TestPasteApp(test_utils.BaseTestCase):
                           expected_middleware, make_paste_file=False)
 
     def test_load_paste_app_with_paste_flavor(self):
-        pipeline = ('[pipeline:glance-registry-incomplete]\n'
-                    'pipeline = context registryapp')
+        pipeline = ('[pipeline:glance-api-incomplete]\n'
+                    'pipeline = context rootapp')
         expected_middleware = context.ContextMiddleware
         self._do_test_load_paste_app(expected_middleware,
                                      paste_flavor='incomplete',
@@ -87,13 +87,13 @@ class TestPasteApp(test_utils.BaseTestCase):
 
     def test_load_paste_app_with_paste_config_file(self):
         paste_config_file = os.path.join(os.getcwd(),
-                                         'etc/glance-registry-paste.ini')
-        expected_middleware = oslo_middleware.Healthcheck
+                                         'etc/glance-api-paste.ini')
+        expected_middleware = oslo_middleware.CORS
         self._do_test_load_paste_app(expected_middleware,
                                      paste_config_file=paste_config_file)
 
     def test_load_paste_app_with_paste_config_file_but_not_exist(self):
-        paste_config_file = os.path.abspath("glance-registry-paste.ini")
+        paste_config_file = os.path.abspath("glance-api-paste.ini")
         expected_middleware = oslo_middleware.Healthcheck
         self.assertRaises(RuntimeError, self._do_test_load_paste_app,
                           expected_middleware,

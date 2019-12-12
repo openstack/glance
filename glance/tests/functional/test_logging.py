@@ -36,7 +36,7 @@ class TestLogging(functional.FunctionalTest):
         self.start_servers()
 
         # The default functional test case has both debug on. Let's verify
-        # that debug statements appear in both the API and registry logs.
+        # that debug statements appear in the API logs.
 
         self.assertTrue(os.path.exists(self.api_server.log_file))
 
@@ -44,13 +44,6 @@ class TestLogging(functional.FunctionalTest):
             api_log_out = f.read()
 
         self.assertIn('DEBUG glance', api_log_out)
-
-        self.assertTrue(os.path.exists(self.registry_server.log_file))
-
-        with open(self.registry_server.log_file, 'r') as freg:
-            registry_log_out = freg.read()
-
-        self.assertIn('DEBUG glance', registry_log_out)
 
         self.stop_servers()
 
@@ -67,14 +60,6 @@ class TestLogging(functional.FunctionalTest):
             api_log_out = f.read()
 
         self.assertNotIn('DEBUG glance', api_log_out)
-
-        self.assertTrue(os.path.exists(self.registry_server.log_file))
-
-        with open(self.registry_server.log_file, 'r') as freg:
-            registry_log_out = freg.read()
-
-        self.assertNotIn('DEBUG glance', registry_log_out)
-
         self.stop_servers()
 
     def assertNotEmptyFile(self, path):

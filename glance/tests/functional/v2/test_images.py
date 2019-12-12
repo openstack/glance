@@ -74,40 +74,6 @@ class TestImages(functional.FunctionalTest):
         base_headers.update(custom_headers or {})
         return base_headers
 
-    def test_not_authenticated_in_registry_on_ops(self):
-        # https://bugs.launchpad.net/glance/+bug/1451850
-        # this configuration guarantees that authentication succeeds in
-        # glance-api and fails in glance-registry if no token is passed
-        self.api_server.deployment_flavor = ''
-        # make sure that request will reach registry
-        self.api_server.data_api = 'glance.db.registry.api'
-        self.registry_server.deployment_flavor = 'fakeauth'
-        self.start_servers(**self.__dict__.copy())
-        headers = {'content-type': 'application/json'}
-        image = {'name': 'image', 'type': 'kernel', 'disk_format': 'qcow2',
-                 'container_format': 'bare'}
-        # image create should return 401
-        response = requests.post(self._url('/v2/images'), headers=headers,
-                                 data=jsonutils.dumps(image))
-        self.assertEqual(http.UNAUTHORIZED, response.status_code)
-        # image list should return 401
-        response = requests.get(self._url('/v2/images'))
-        self.assertEqual(http.UNAUTHORIZED, response.status_code)
-        # image show should return 401
-        response = requests.get(self._url('/v2/images/someimageid'))
-        self.assertEqual(http.UNAUTHORIZED, response.status_code)
-        # image update should return 401
-        ops = [{'op': 'replace', 'path': '/protected', 'value': False}]
-        media_type = 'application/openstack-images-v2.1-json-patch'
-        response = requests.patch(self._url('/v2/images/someimageid'),
-                                  headers={'content-type': media_type},
-                                  data=jsonutils.dumps(ops))
-        self.assertEqual(http.UNAUTHORIZED, response.status_code)
-        # image delete should return 401
-        response = requests.delete(self._url('/v2/images/someimageid'))
-        self.assertEqual(http.UNAUTHORIZED, response.status_code)
-        self.stop_servers()
-
     def test_image_import_using_glance_direct(self):
         self.start_servers(**self.__dict__.copy())
 
@@ -3372,7 +3338,6 @@ class TestImages(functional.FunctionalTest):
     def test_image_visibility_to_different_users(self):
         self.cleanup()
         self.api_server.deployment_flavor = 'fakeauth'
-        self.registry_server.deployment_flavor = 'fakeauth'
 
         kwargs = self.__dict__.copy()
         kwargs['use_user_token'] = True
@@ -3596,15 +3561,6 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
 
 
-class TestImagesWithRegistry(TestImages):
-    def setUp(self):
-        super(TestImagesWithRegistry, self).setUp()
-        self.api_server.data_api = (
-            'glance.tests.functional.v2.registry_data_api')
-        self.registry_server.deployment_flavor = 'trusted-auth'
-        self.api_server.use_user_token = True
-
-
 class TestImagesIPv6(functional.FunctionalTest):
     """Verify that API and REG servers running IPv6 can communicate"""
 
@@ -3652,18 +3608,6 @@ class TestImagesIPv6(functional.FunctionalTest):
 
     def test_image_list_ipv6(self):
         # Image list should be empty
-        self.api_server.data_api = (
-            'glance.tests.functional.v2.registry_data_api')
-        self.registry_server.deployment_flavor = 'trusted-auth'
-
-        # Setting up configuration parameters properly
-        # (bind_host is not needed since it is replaced by monkey patches,
-        #  but it would be reflected in the configuration file, which is
-        #  at least improving consistency)
-        self.registry_server.bind_host = "::1"
-        self.api_server.bind_host = "::1"
-        self.api_server.registry_host = "::1"
-        self.scrubber_daemon.registry_host = "::1"
 
         self.start_servers(**self.__dict__.copy())
 
@@ -3878,14 +3822,6 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.stop_servers()
 
 
-class TestImageDirectURLVisibilityWithRegistry(TestImageDirectURLVisibility):
-    def setUp(self):
-        super(TestImageDirectURLVisibilityWithRegistry, self).setUp()
-        self.api_server.data_api = (
-            'glance.tests.functional.v2.registry_data_api')
-        self.registry_server.deployment_flavor = 'trusted-auth'
-
-
 class TestImageLocationSelectionStrategy(functional.FunctionalTest):
 
     def setUp(self):
@@ -3982,15 +3918,6 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.stop_servers()
 
 
-class TestImageLocationSelectionStrategyWithRegistry(
-        TestImageLocationSelectionStrategy):
-    def setUp(self):
-        super(TestImageLocationSelectionStrategyWithRegistry, self).setUp()
-        self.api_server.data_api = (
-            'glance.tests.functional.v2.registry_data_api')
-        self.registry_server.deployment_flavor = 'trusted-auth'
-
-
 class TestImageMembers(functional.FunctionalTest):
 
     def setUp(self):
@@ -3998,7 +3925,6 @@ class TestImageMembers(functional.FunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'fakeauth'
-        self.registry_server.deployment_flavor = 'fakeauth'
         self.start_servers(**self.__dict__.copy())
 
     def _url(self, path):
@@ -4350,14 +4276,6 @@ class TestImageMembers(functional.FunctionalTest):
         self.stop_servers()
 
 
-class TestImageMembersWithRegistry(TestImageMembers):
-    def setUp(self):
-        super(TestImageMembersWithRegistry, self).setUp()
-        self.api_server.data_api = (
-            'glance.tests.functional.v2.registry_data_api')
-        self.registry_server.deployment_flavor = 'trusted-auth'
-
-
 class TestQuotas(functional.FunctionalTest):
 
     def setUp(self):
@@ -4365,7 +4283,6 @@ class TestQuotas(functional.FunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
-        self.registry_server.deployment_flavor = 'trusted-auth'
         self.user_storage_quota = 100
         self.start_servers(**self.__dict__.copy())
 
@@ -4434,14 +4351,6 @@ class TestQuotas(functional.FunctionalTest):
             yield b'x' * (self.user_storage_quota + 1)
 
         self._upload_image_test(data_gen(), http.REQUEST_ENTITY_TOO_LARGE)
-
-
-class TestQuotasWithRegistry(TestQuotas):
-    def setUp(self):
-        super(TestQuotasWithRegistry, self).setUp()
-        self.api_server.data_api = (
-            'glance.tests.functional.v2.registry_data_api')
-        self.registry_server.deployment_flavor = 'trusted-auth'
 
 
 class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):

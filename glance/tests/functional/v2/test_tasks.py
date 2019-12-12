@@ -135,12 +135,3 @@ class TestTasks(functional.FunctionalTest):
         self.assertEqual('GET', response.headers.get('Allow'))
 
         self.stop_servers()
-
-
-class TestTasksWithRegistry(TestTasks):
-    def setUp(self):
-        super(TestTasksWithRegistry, self).setUp()
-        self.api_server.data_api = (
-            'glance.tests.functional.v2.registry_data_api')
-        self.registry_server.deployment_flavor = 'trusted-auth'
-        self.include_scrubber = False

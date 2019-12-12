@@ -32,7 +32,6 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
-from oslo_serialization import jsonutils
 import six
 from six.moves import BaseHTTPServer
 from six.moves import http_client as http
@@ -42,13 +41,11 @@ import webob
 from glance.common import config
 from glance.common import exception
 from glance.common import property_utils
-from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
 from glance import context
 from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy import api as db_api
-from glance.db.sqlalchemy import models as db_models
 from glance.tests.unit import fixtures as glance_fixtures
 
 CONF = cfg.CONF
@@ -545,79 +542,6 @@ def start_http_server(image_id, image_data):
     thread.start()
 
     return thread, httpd, port
-
-
-class RegistryAPIMixIn(object):
-
-    def create_fixtures(self):
-        for fixture in self.FIXTURES:
-            db_api.image_create(self.context, fixture)
-            with open(os.path.join(self.test_dir, fixture['id']),
-                      'wb') as image:
-                image.write(b"chunk00000remainder")
-
-    def destroy_fixtures(self):
-        db_models.unregister_models(db_api.get_engine())
-        db_models.register_models(db_api.get_engine())
-
-    def get_fixture(self, **kwargs):
-        fixture = {'name': 'fake public image',
-                   'status': 'active',
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf',
-                   'visibility': 'public',
-                   'size': 20,
-                   'checksum': None}
-        if 'is_public' in kwargs:
-            fixture.pop('visibility')
-        fixture.update(kwargs)
-        return fixture
-
-    def get_minimal_fixture(self, **kwargs):
-        fixture = {'name': 'fake public image',
-                   'visibility': 'public',
-                   'disk_format': 'vhd',
-                   'container_format': 'ovf'}
-        if 'is_public' in kwargs:
-            fixture.pop('visibility')
-        fixture.update(kwargs)
-        return fixture
-
-    def get_extra_fixture(self, id, name, **kwargs):
-        created_at = kwargs.pop('created_at', timeutils.utcnow())
-        updated_at = kwargs.pop('updated_at', created_at)
-        return self.get_fixture(
-            id=id, name=name, deleted=False, deleted_at=None,
-            created_at=created_at, updated_at=updated_at,
-            **kwargs)
-
-    def get_api_response_ext(self, http_resp, url='/images', headers=None,
-                             body=None, method=None, api=None,
-                             content_type=None):
-        if api is None:
-            api = self.api
-        if headers is None:
-            headers = {}
-        req = webob.Request.blank(url)
-        for k, v in six.iteritems(headers):
-            req.headers[k] = v
-        if method:
-            req.method = method
-        if body:
-            req.body = body
-        if content_type == 'json':
-            req.content_type = 'application/json'
-        elif content_type == 'octet':
-            req.content_type = 'application/octet-stream'
-        res = req.get_response(api)
-        self.assertEqual(res.status_int, http_resp)
-        return res
-
-    def assertEqualImages(self, res, uuids, key='images', unjsonify=True):
-        images = jsonutils.loads(res.body)[key] if unjsonify else res
-        self.assertEqual(len(images), len(uuids))
-        for i, value in enumerate(uuids):
-            self.assertEqual(images[i]['id'], value)
 
 
 class FakeAuthMiddleware(wsgi.Middleware):
