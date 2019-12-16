@@ -1,0 +1,15 @@
+---
+upgrade:
+  - |
+    If upgrade is conducted from PY27 where ssl connections has been terminated
+    into glance-api, the termination needs to happen externally from now on.
+security:
+  - |
+    The ssl support from Glance has been removed as it worked only under PY27
+    which is not anymore supported environment. Termination of encrypted
+    connections needs to happen externally as soon as move to PY3 happens. Any
+    deployment needing end to end encryption would need to put either reverse
+    proxy (using fully blown http server like Apache or Nginx will cause
+    significant performance hit and we advice using something more simple that
+    does not break the http protocol) in front of the service or utilize
+    ssl tunneling (like stunnel) between loadbalancers and glance-api.

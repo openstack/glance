@@ -379,8 +379,6 @@ class ApiServer(Server):
         self.default_store = kwargs.get("default_store", "file")
         self.bind_host = "127.0.0.1"
         self.registry_host = "127.0.0.1"
-        self.key_file = ""
-        self.cert_file = ""
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir = os.path.join(self.test_dir, "images")
         self.pid_file = pid_file or os.path.join(self.test_dir, "api.pid")
@@ -421,8 +419,6 @@ debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
-key_file = %(key_file)s
-cert_file = %(cert_file)s
 metadata_encryption_key = %(metadata_encryption_key)s
 registry_host = %(registry_host)s
 registry_port = %(registry_port)s
@@ -560,8 +556,6 @@ class ApiServerForMultipleBackend(Server):
         self.default_backend = kwargs.get("default_backend", "file1")
         self.bind_host = "127.0.0.1"
         self.registry_host = "127.0.0.1"
-        self.key_file = ""
-        self.cert_file = ""
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir_backend_1 = os.path.join(self.test_dir, "images_1")
         self.image_dir_backend_2 = os.path.join(self.test_dir, "images_2")
@@ -605,8 +599,6 @@ debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
-key_file = %(key_file)s
-cert_file = %(cert_file)s
 metadata_encryption_key = %(metadata_encryption_key)s
 registry_host = %(registry_host)s
 registry_port = %(registry_port)s

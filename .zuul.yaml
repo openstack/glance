@@ -10,25 +10,6 @@
       - openstack/glance
 
 - job:
-    name: glance-eventlet-ssl-handshake-broken-py3
-    parent: tox
-    description: |
-      See https://bugs.launchpad.net/glance/+bug/1482633
-    vars:
-      tox_envlist: broken-py3-ssl-tests
-    irrelevant-files:
-      - ^(test-|)requirements.txt$
-      - ^lower-constraints.txt$
-      - ^.*\.rst$
-      - ^api-ref/.*$
-      - ^doc/.*$
-      - ^etc/.*$
-      - ^releasenotes/.*$
-      - ^setup.cfg$
-      - ^tox.ini$
-      - ^\.zuul\.yaml$
-
-- job:
     name: glance-code-constants-check
     parent: tox
     description: |
@@ -231,8 +212,6 @@
       jobs:
         - openstack-tox-functional
         - openstack-tox-functional-py37
-        - glance-eventlet-ssl-handshake-broken-py3:
-            voting: false
         - glance-code-constants-check
         - devstack-plugin-ceph-tempest:
             voting: false
