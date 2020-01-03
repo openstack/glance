@@ -81,7 +81,7 @@ class TestTrainMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
             self.assertIn('"backend":', row['meta_data'])
 
         # run data migrations
-        data_migrations.migrate(engine)
+        data_migrations.migrate(engine, release='train')
 
         # check that meta_data has 'backend' key replaced with 'store'
         rows = (image_locations.select()
