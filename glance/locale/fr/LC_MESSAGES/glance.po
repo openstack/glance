@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2019-03-08 07:05+0000\n"
+"POT-Creation-Date: 2020-01-03 18:10+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1621,30 +1621,6 @@ msgstr ""
 "Nom convivial de l'espace de nom. Utilisé par l'interface utilisateur si "
 "disponible."
 
-#, python-format
-msgid ""
-"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
-"verify it.  Error: %(ioe)s"
-msgstr ""
-"Problème lié à votre %(error_key_name)s %(error_filename)s.  Veuillez "
-"vérifier. Erreur : %(ioe)s"
-
-#, python-format
-msgid ""
-"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
-"verify it. OpenSSL error: %(ce)s"
-msgstr ""
-"Problème lié à votre %(error_key_name)s %(error_filename)s.  Veuillez "
-"vérifier. Erreur OpenSSL : %(ce)s"
-
-#, python-format
-msgid ""
-"There is a problem with your key pair.  Please verify that cert "
-"%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
-msgstr ""
-"Il y a un problème avec votre paire de clés. Vérifiez que le certificat "
-"%(cert_file)s et la clé %(key_file)s correspondent. Erreur OpenSSL %(ce)s"
-
 msgid "There was an error configuring the client."
 msgstr "Une erreur s'est produite lors de la configuration du client."
 
@@ -1784,13 +1760,6 @@ msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
 "Attente de la fin du pid %(pid)s (%(file)s) pendant 15 secondes ; abandon en "
 "cours"
-
-msgid ""
-"When running server in SSL mode, you must specify both a cert_file and "
-"key_file option value in your configuration file"
-msgstr ""
-"Lors de l'exécution du serveur en mode SSL, vous devez spécifier une valeur "
-"d'option cert_file et key_file dans votre fichier de configuration"
 
 msgid ""
 "Whether to pass through the user token when making requests to the registry. "

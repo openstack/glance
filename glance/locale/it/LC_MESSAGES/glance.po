@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2019-03-08 07:05+0000\n"
+"POT-Creation-Date: 2020-01-03 18:10+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1606,31 +1606,6 @@ msgstr ""
 "Il nome utente semplice per lo spazio dei nomi. Utilizzato dalla UI se "
 "disponibile."
 
-#, python-format
-msgid ""
-"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
-"verify it.  Error: %(ioe)s"
-msgstr ""
-"Si è verificato un problema in %(error_key_name)s %(error_filename)s.  "
-"Verificare.  Errore: %(ioe)s"
-
-#, python-format
-msgid ""
-"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
-"verify it. OpenSSL error: %(ce)s"
-msgstr ""
-"Si è verificato un problema in %(error_key_name)s %(error_filename)s.  "
-"Verificare. Errore OpenSSL: %(ce)s"
-
-#, python-format
-msgid ""
-"There is a problem with your key pair.  Please verify that cert "
-"%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
-msgstr ""
-"Si è verificato un problema con la coppia di chiavi. Verificare che il cert "
-"%(cert_file)s e la chiave %(key_file)s siano collegati.  Errore OpenSSL "
-"%(ce)s"
-
 msgid "There was an error configuring the client."
 msgstr "Si è verificato un errore durante la configurazione del client."
 
@@ -1767,13 +1742,6 @@ msgstr "Dimensione virtuale dell'immagine in byte"
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "Entro 15 secondi il pid %(pid)s (%(file)s) verrà interrotto; terminato"
-
-msgid ""
-"When running server in SSL mode, you must specify both a cert_file and "
-"key_file option value in your configuration file"
-msgstr ""
-"Quando si esegue il server in modalità SSL, è necessario specificare sia un "
-"valore dell'opzione cert_file che key_file nel file di configurazione"
 
 msgid ""
 "Whether to pass through the user token when making requests to the registry. "

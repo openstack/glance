@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2019-03-08 07:05+0000\n"
+"POT-Creation-Date: 2020-01-03 18:10+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1734,30 +1734,6 @@ msgstr "固有の名前空間テキスト。"
 msgid "The user friendly name for the namespace. Used by UI if available."
 msgstr "名前空間の分かりやすい名前。存在する場合は、UI によって使用されます。"
 
-#, python-format
-msgid ""
-"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
-"verify it.  Error: %(ioe)s"
-msgstr ""
-"%(error_key_name)s %(error_filename)s に関して問題があります。確認してくださ"
-"い。エラー: %(ioe)s"
-
-#, python-format
-msgid ""
-"There is a problem with your %(error_key_name)s %(error_filename)s.  Please "
-"verify it. OpenSSL error: %(ce)s"
-msgstr ""
-"%(error_key_name)s %(error_filename)s に関して問題があります。確認してくださ"
-"い。OpenSSL エラー: %(ce)s"
-
-#, python-format
-msgid ""
-"There is a problem with your key pair.  Please verify that cert "
-"%(cert_file)s and key %(key_file)s belong together.  OpenSSL error %(ce)s"
-msgstr ""
-"ご使用の鍵ペアに関して問題があります。証明書 %(cert_file)s と鍵 %(key_file)s "
-"がペアになっていることを確認してください。OpenSSL エラー %(ce)s"
-
 msgid "There was an error configuring the client."
 msgstr "クライアントの設定中にエラーが発生しました。"
 
@@ -1906,13 +1882,6 @@ msgstr "イメージの仮想サイズ (バイト)"
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "pid %(pid)s (%(file)s) が停止するまで 15 秒お待ちください。中断中です"
-
-msgid ""
-"When running server in SSL mode, you must specify both a cert_file and "
-"key_file option value in your configuration file"
-msgstr ""
-"サーバーを SSL モードで実行する場合は、cert_file オプション値と key_file オプ"
-"ション値の両方を設定ファイルに指定する必要があります"
 
 msgid ""
 "Whether to pass through the user token when making requests to the registry. "
