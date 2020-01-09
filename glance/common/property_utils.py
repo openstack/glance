@@ -209,7 +209,7 @@ class PropertyRules(object):
     def _check_policy(self, property_exp, action, context):
         try:
             action = ":".join([property_exp, action])
-            self.policy_enforcer.enforce(context, action, {})
+            self.policy_enforcer.enforce(context, action, {}, registered=False)
         except exception.Forbidden:
             return False
         return True

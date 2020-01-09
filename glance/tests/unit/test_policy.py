@@ -162,6 +162,22 @@ class TaskFactoryStub(object):
 
 class TestPolicyEnforcer(base.IsolatedUnitTest):
 
+    def test_policy_enforce_unregistered(self):
+        enforcer = glance.api.policy.Enforcer()
+        context = glance.context.RequestContext(roles=[])
+
+        self.assertRaises(glance.api.policy.policy.PolicyNotRegistered,
+                          enforcer.enforce,
+                          context, 'wibble', {})
+
+    def test_policy_check_unregistered(self):
+        enforcer = glance.api.policy.Enforcer()
+        context = glance.context.RequestContext(roles=[])
+
+        self.assertRaises(glance.api.policy.policy.PolicyNotRegistered,
+                          enforcer.check,
+                          context, 'wibble', {})
+
     def test_policy_file_default_rules_default_location(self):
         enforcer = glance.api.policy.Enforcer()
 

@@ -32,34 +32,26 @@ from oslo_policy import policy
 from glance.common import exception
 import glance.domain.proxy
 from glance.i18n import _
+from glance import policies
 
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 _ENFORCER = None
 
-DEFAULT_RULES = policy.Rules.from_dict({
-    'context_is_admin': 'role:admin',
-    'default': 'role:admin',
-    'manage_image_cache': 'role:admin',
-})
-
 
 class Enforcer(policy.Enforcer):
     """Responsible for loading and enforcing rules"""
 
     def __init__(self):
-        if CONF.find_file(CONF.oslo_policy.policy_file):
-            kwargs = dict(rules=None, use_conf=True)
-        else:
-            kwargs = dict(rules=DEFAULT_RULES, use_conf=False)
-        super(Enforcer, self).__init__(CONF, overwrite=False, **kwargs)
+        super(Enforcer, self).__init__(CONF, use_conf=True, overwrite=False)
+        self.register_defaults(policies.list_rules())
 
     def add_rules(self, rules):
         """Add new rules to the Rules object"""
         self.set_rules(rules, overwrite=False, use_conf=self.use_conf)
 
-    def enforce(self, context, action, target):
+    def enforce(self, context, action, target, registered=True):
         """Verifies that the action is valid on the target in this context.
 
            :param context: Glance request context
@@ -68,13 +60,15 @@ class Enforcer(policy.Enforcer):
            :raises: `glance.common.exception.Forbidden`
            :returns: A non-False value if access is allowed.
         """
+        if registered and action not in self.registered_rules:
+            raise policy.PolicyNotRegistered(action)
         return super(Enforcer, self).enforce(action, target,
                                              context.to_policy_values(),
                                              do_raise=True,
                                              exc=exception.Forbidden,
                                              action=action)
 
-    def check(self, context, action, target):
+    def check(self, context, action, target, registered=True):
         """Verifies that the action is valid on the target in this context.
 
            :param context: Glance request context
@@ -82,6 +76,8 @@ class Enforcer(policy.Enforcer):
            :param target: Dictionary representing the object of the action.
            :returns: A non-False value if access is allowed.
         """
+        if registered and action not in self.registered_rules:
+            raise policy.PolicyNotRegistered(action)
         return super(Enforcer, self).enforce(action,
                                              target,
                                              context.to_policy_values())

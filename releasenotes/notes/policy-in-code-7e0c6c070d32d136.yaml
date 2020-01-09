@@ -1,0 +1,22 @@
+---
+upgrade:
+  - |
+    Policy defaults are now defined in code, as they already were in other
+    OpenStack services. After upgrading there is no need to provide a
+    ``policy.json`` file (and you should not do so) unless you want to override
+    the default policies, and only policies you want to override need be
+    mentioned in the file. You should no longer rely on the ``default`` rule,
+    and especially not the default value of the rule (which has been relaxed),
+    to assign a non-default policy to rules not explicitly specified in the
+    policy file.
+security:
+  - |
+    If the existing ``policy.json`` file relies on the ``default`` rule for
+    some policies (i.e. not all policies are explicitly specified in the file)
+    then the ``default`` rule must be explicitly set (e.g. to
+    ``"role:admin"``) in the file. The new default value for the ``default``
+    rule is ``""``, whereas since the Queens release it has been
+    ``"role:admin"`` (prior to Queens it was ``"@"``, which allows everything).
+    After upgrading to this release, the policy file should be replaced by one
+    that overrides only policies that need to be different from the defaults,
+    without relying on the ``default`` rule.
