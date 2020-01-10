@@ -61,14 +61,16 @@ prefix to disable all event notifications within a group.
 Possible values:
     A comma-separated list of individual notification types or
     notification groups to be disabled. Currently supported groups:
-        * image
-        * image.member
-        * task
-        * metadef_namespace
-        * metadef_object
-        * metadef_property
-        * metadef_resource_type
-        * metadef_tag
+
+    * image
+    * image.member
+    * task
+    * metadef_namespace
+    * metadef_object
+    * metadef_property
+    * metadef_resource_type
+    * metadef_tag
+
     For a complete listing and description of each event refer to:
     http://docs.openstack.org/developer/glance/notifications.html
 

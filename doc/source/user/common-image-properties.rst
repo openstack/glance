@@ -25,44 +25,29 @@ This document explains the names of these properties and the expected values.
 The common image properties are also described in a JSON schema, found in
 /etc/glance/schema-image.json in the Glance source code.
 
-**architecture**
-----------------
+architecture
+  Operating system architecture as specified in
+  https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html
 
-Operating system architecture as specified in
-https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html
+instance_uuid
+  Metadata which can be used to record which instance this image is associated
+  with. (Informational only, does not create an instance snapshot.)
 
+kernel_id
+  The ID of image stored in Glance that should be used as the kernel when
+  booting an AMI-style image.
 
-**instance_uuid**
------------------
+ramdisk_id
+  The ID of image stored in Glance that should be used as the ramdisk when
+  booting an AMI-style image.
 
-Metadata which can be used to record which instance this image is associated
-with. (Informational only, does not create an instance snapshot.)
+os_distro
+  The common name of the operating system distribution as specified in
+  https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html
 
-**kernel_id**
--------------
+os_version
+  The operating system version as specified by the distributor.
 
-The ID of image stored in Glance that should be used as the kernel when booting
-an AMI-style image.
-
-**ramdisk_id**
---------------
-
-The ID of image stored in Glance that should be used as the ramdisk when
-booting an AMI-style image.
-
-**os_distro**
--------------
-
-The common name of the operating system distribution as specified in
-https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html
-
-**os_version**
---------------
-
-The operating system version as specified by the distributor.
-
-**description**
----------------
-
-A brief human-readable string, suitable for display in a user interface,
-describing the image.
+description
+  A brief human-readable string, suitable for display in a user interface,
+  describing the image.

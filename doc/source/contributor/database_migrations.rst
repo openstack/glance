@@ -334,7 +334,7 @@ NOTES
         pass
 
 
- A no-op migrate script:
+  A no-op migrate script:
 
   .. code::
 

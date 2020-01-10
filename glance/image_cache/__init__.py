@@ -50,11 +50,12 @@ The essential functions of a driver are defined in the base class
 and prospective) must implement this interface. Currently available drivers
 are ``sqlite`` and ``xattr``. These drivers primarily differ in the way they
 store the information about cached images:
-    * The ``sqlite`` driver uses a sqlite database (which sits on every glance
-    node locally) to track the usage of cached images.
-    * The ``xattr`` driver uses the extended attributes of files to store this
-    information. It also requires a filesystem that sets ``atime`` on the files
-    when accessed.
+
+* The ``sqlite`` driver uses a sqlite database (which sits on every glance
+  node locally) to track the usage of cached images.
+* The ``xattr`` driver uses the extended attributes of files to store this
+  information. It also requires a filesystem that sets ``atime`` on the files
+  when accessed.
 
 Possible values:
     * sqlite

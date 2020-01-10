@@ -291,7 +291,7 @@ class BaseClient(object):
         """
         Setups the connection based on the given url.
 
-        The form is:
+        The form is::
 
             <http|https>://<host>:port/doc_root
         """

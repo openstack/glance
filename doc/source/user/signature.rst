@@ -103,12 +103,12 @@ Current ones you can use are:
 * DSA
 * ECC-CURVES
 
- * SECT571K1
- * SECT409K1
- * SECT571R1
- * SECT409R1
- * SECP521R1
- * SECP384R1
+* SECT571K1
+* SECT409K1
+* SECT571R1
+* SECT409R1
+* SECP521R1
+* SECP384R1
 
 .. Note:: ECC curves - Only keysizes above 384 are included.
           Not all ECC curves may be supported by the back end.

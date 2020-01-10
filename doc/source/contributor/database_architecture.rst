@@ -50,12 +50,13 @@ Image basic methods
    *image_id* with the values listed in the *values* dictionary. Returns a
    dictionary representation of the updated *Image* object.
 
- Optional parameters are:
-     - ``purge_props`` — a flag indicating that all the existing
-       properties not listed in the *values['properties']* should be
-       deleted;
-     - ``from_state`` — a string filter indicating that the updated
-       image must be in the specified state.
+   Optional parameters are:
+
+   - ``purge_props`` — a flag indicating that all the existing
+     properties not listed in the *values['properties']* should be
+     deleted;
+   - ``from_state`` — a string filter indicating that the updated
+     image must be in the specified state.
 
 #. ``image_destroy(context, image_id)`` — deletes all database
    records of an image with the identifier *image_id* (like tags,
@@ -71,25 +72,26 @@ Image basic methods
    is_public=None, admin_as_user=False, return_tag=False)`` — gets
    all the images that match zero or more filters.
 
- Optional parameters are:
-     - ``filters`` — dictionary of filter keys and values. If a 'properties'
-       key is present, it is treated as a dictionary of key/value filters in
-       the attribute of the image properties.
-     - ``marker`` — image id after which a page should start.
-     - ``limit`` — maximum number of images to return.
-     - ``sort_key`` — list of image attributes by which results should
-       be sorted.
-     - ``sort_dir`` — direction in which results should be sorted
-       (asc, desc).
-     - ``member_status`` — only returns shared images that have this
-       membership status.
-     - ``is_public`` — if true, returns only public images. If false,
-       returns only private and shared images.
-     - ``admin_as_user`` — for backwards compatibility. If true, an admin
-       sees the same set of images that would be seen by a regular user.
-     - ``return_tag`` — indicates whether an image entry in the result
-       includes its relevant tag entries. This can improve upper-layer
-       query performance and avoid using separate calls.
+   Optional parameters are:
+
+   - ``filters`` — dictionary of filter keys and values. If a 'properties'
+     key is present, it is treated as a dictionary of key/value filters in
+     the attribute of the image properties.
+   - ``marker`` — image id after which a page should start.
+   - ``limit`` — maximum number of images to return.
+   - ``sort_key`` — list of image attributes by which results should
+     be sorted.
+   - ``sort_dir`` — direction in which results should be sorted
+     (asc, desc).
+   - ``member_status`` — only returns shared images that have this
+     membership status.
+   - ``is_public`` — if true, returns only public images. If false,
+     returns only private and shared images.
+   - ``admin_as_user`` — for backwards compatibility. If true, an admin
+     sees the same set of images that would be seen by a regular user.
+   - ``return_tag`` — indicates whether an image entry in the result
+     includes its relevant tag entries. This can improve upper-layer
+     query performance and avoid using separate calls.
 
 Image location methods
 ----------------------

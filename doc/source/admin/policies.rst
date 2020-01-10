@@ -177,7 +177,7 @@ Examples
 
 Example 1. (The default policy configuration)
 
- ::
+::
 
   {
       "default": ""
@@ -188,7 +188,7 @@ Glance API are callable by anyone.
 
 Example 2. Disallow modification calls to non-admins
 
- ::
+::
 
   {
       "default": "",
