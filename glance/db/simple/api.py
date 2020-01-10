@@ -430,7 +430,7 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        LOG.warn(_LW('Could not find image %s') % image_id)
+        LOG.warn(_LW('Could not find image %s'), image_id)
         raise exception.ImageNotFound()
 
     if image['deleted'] and not (force_show_deleted
