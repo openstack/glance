@@ -52,8 +52,8 @@
             ]
         },
         "hw_rng_model": {
-            "title": "Random Number Generator Device",
-            "description": "Adds a random-number generator device to the image's instances. The cloud administrator can enable and control device behavior by configuring the instance's flavor. By default: The generator device is disabled. /dev/random is used as the default entropy source. To specify a physical HW RNG device, use the following option in the nova.conf file: rng_dev_path=/dev/hwrng",
+            "title": "Random Number Generator Device model",
+            "description": "The Random Number Generator (RNG) model to be used. From Ussuri release, Nova configures this to 'virtio' (the only allowed value) by default. `/dev/urandom` is used as the default entropy source. To specify a physical HW RNG device, use the following option in the `nova.conf` file: `rng_dev_path=/dev/hwrng`",
             "type": "string",
             "default": "virtio"
         },

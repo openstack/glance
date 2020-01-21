@@ -463,15 +463,15 @@ Here is a list of useful image properties and the values they expect.
 ``hw_rng_model``
   :Type: str
 
-  Adds a random-number generator device to the image's instances. This
-  image property by itself does not guarantee that a hardware RNG will be
-  used; it expresses a preference that may or may not be satisfied
-  depending upon Nova configuration.
+  From Ussuri release onwards, this property has no longer any effect,
+  because Nova, by default, will add a VirtIO-RNG (Random Number
+  Generator) device, with ``virtio`` as the RNG model.  Therefore, the
+  ``hw_rng_model`` image property is likely to be deprecated, if no
+  other compelling use cases show up.
 
-  The cloud administrator can enable and control device behavior by
-  configuring the instance's flavor. By default:
+  The cloud administrator can enable and control the source of the RNG
+  device backend by configuring the instance's flavor.  By default:
 
-  * The generator device is disabled.
   * ``/dev/urandom`` is used as the default entropy source. To
     specify a physical hardwre RNG device, use the following option in
     the ``nova.conf`` file:
@@ -489,7 +489,6 @@ Here is a list of useful image properties and the values they expect.
   One of:
 
   - ``virtio``
-  - Other supported device.
 
 ``hw_time_hpet``
   :Type: bool
