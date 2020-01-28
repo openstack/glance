@@ -41,25 +41,6 @@
         },
         {
             "created_at": "2014-08-28T17:13:06Z",
-            "description": "Trusted compute pools with Intel\u00ae Trusted Execution Technology (Intel\u00ae TXT) support IT compliance by protecting virtualized data centers - private, public, and hybrid clouds against attacks toward hypervisor and BIOS, firmware, and other pre-launch software components.",
-            "display_name": "Trusted Compute Pools (Intel\u00ae TXT)",
-            "namespace": "OS::Compute::Trust",
-            "owner": "admin",
-            "protected": true,
-            "resource_type_associations": [
-                {
-                    "created_at": "2014-08-28T17:13:06Z",
-                    "name": "OS::Nova::Flavor",
-                    "updated_at": "2014-08-28T17:13:06Z"
-                }
-            ],
-            "schema": "/v2/schemas/metadefs/namespace",
-            "self": "/v2/metadefs/namespaces/OS::Compute::Trust",
-            "updated_at": "2014-08-28T17:13:06Z",
-            "visibility": "public"
-        },
-        {
-            "created_at": "2014-08-28T17:13:06Z",
             "description": "This provides the preferred socket/core/thread counts for the virtual CPU instance exposed to guests. This enables the ability to avoid hitting limitations on vCPU topologies that OS vendors place on their products. See also: https://opendev.org/openstack/nova-specs/src/branch/master/specs/juno/implemented/virt-driver-vcpu-topology.rst",
             "display_name": "Virtual CPU Topology",
             "namespace": "OS::Compute::VirtCPUTopology",
