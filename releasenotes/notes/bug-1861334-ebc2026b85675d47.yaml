@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Bug 1861334_: cors config defaults not used when Glance is run as WSGI app
+
+    .. _1861334: https://bugs.launchpad.net/glance/+bug/1861334

@@ -65,6 +65,7 @@ def _setup_os_profiler():
 
 
 def init_app():
+    config.set_config_defaults()
     config_files = _get_config_files()
     CONF([], project='glance', default_config_files=config_files)
     logging.setup(CONF, "glance")
