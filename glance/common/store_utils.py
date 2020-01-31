@@ -172,7 +172,7 @@ def _get_store_id_from_uri(uri):
             break
 
     if url_matched:
-        return store
+        return u"%s" % store
     else:
         LOG.warning("Invalid location uri %s", uri)
         return
