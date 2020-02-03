@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    The ``sheepdog`` storage backend driver was deprecated in the Train release
+    and has now been removed. Any deployments still using Sheepdog storage
+    will need to migrate to a different backend storage prior to upgrading to
+    this release.

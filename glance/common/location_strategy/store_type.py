@@ -44,7 +44,6 @@ Possible values:
         * http
         * rbd
         * swift
-        * sheepdog
         * cinder
         * vmware
 
@@ -80,7 +79,6 @@ def init():
                'http': ['http', 'https'],
                'rbd': ['rbd'],
                'swift': ['swift', 'swift+https', 'swift+http'],
-               'sheepdog': ['sheepdog'],
                'cinder': ['cinder'],
                'vmware': ['vsphere']}
     _STORE_TO_SCHEME_MAP.clear()

@@ -502,7 +502,7 @@ The list of metadata headers that Glance accepts are listed below.
 * ``x-image-meta-store``
 
   This header is optional. Valid values are one of ``file``, ``rbd``,
-  ``swift``, ``cinder``, ``sheepdog`` or ``vsphere``.
+  ``swift``, ``cinder`` or ``vsphere``.
 
   When present, Glance will attempt to store the disk image data in the
   backing store indicated by the value of the header. If the Glance node

@@ -40,8 +40,7 @@ class StoreClearingUnitTest(test_utils.BaseTestCase):
         self.addCleanup(setattr, location, 'SCHEME_TO_CLS_MAP', dict())
 
     def _create_stores(self, passing_config=True):
-        """Create known stores. Mock out sheepdog's subprocess dependency
-        on collie.
+        """Create known stores.
 
         :param passing_config: making store driver passes basic configurations.
         :returns: the number of how many store drivers been loaded.
@@ -66,8 +65,7 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
         self.addCleanup(setattr, location, 'SCHEME_TO_CLS_MAP', dict())
 
     def _create_multi_stores(self, passing_config=True):
-        """Create known stores. Mock out sheepdog's subprocess dependency
-        on collie.
+        """Create known stores.
 
         :param passing_config: making store driver passes basic configurations.
         :returns: the number of how many store drivers been loaded.

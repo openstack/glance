@@ -46,9 +46,8 @@ operators to enable multiple stores support.
   * ``enabled_backends`` must be set as a key:value pair where key
     represents the identifier for the store and value will be the type
     of the store. Valid values are one of ``file``, ``http``, ``rbd``,
-    ``swift``, ``cinder``, ``sheepdog`` or ``vmware``. In order to have
-    multiple stores operator can specify multiple key:value separated by
-    comma.
+    ``swift``, ``cinder`` or ``vmware``. In order to have multiple stores
+    operator can specify multiple key:value separated by comma.
 
     .. warning::
        The store identifier prefix ``os_glance_`` is reserved.  If you
