@@ -530,7 +530,6 @@ class BaseServer(object):
         """
         eventlet.wsgi.MAX_HEADER_LINE = CONF.max_header_line
         self.client_socket_timeout = CONF.client_socket_timeout or None
-        self.configure_socket(old_conf, has_changed)
         if self.initialize_glance_store:
             if CONF.enabled_backends:
                 if store_utils.check_reserved_stores(CONF.enabled_backends):
@@ -541,6 +540,7 @@ class BaseServer(object):
                 initialize_multi_store()
             else:
                 initialize_glance_store()
+        self.configure_socket(old_conf, has_changed)
 
     def wait(self):
         """Wait until all servers have completed running."""
