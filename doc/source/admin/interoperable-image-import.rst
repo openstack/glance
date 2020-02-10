@@ -89,9 +89,9 @@ task-related policies:
 Image Import Methods
 --------------------
 
-Glance provides two import methods that you can make available to your
-users: ``glance-direct`` and ``web-download``.  By default, both methods
-are enabled.
+Glance provides three import methods that you can make available to your
+users: ``glance-direct``, ``web-download`` and ``copy-image``.  By default,
+all three methods are enabled.
 
 * The ``glance-direct`` import method allows your users to upload image data
   directly to Glance.
@@ -107,6 +107,10 @@ are enabled.
      will be removed from Glance during the Rocky development cycle.  The
      Queens release of Glance (16.x.x) is the final version in which you can
      expect to find the Image API v1.
+
+* The ``copy-image`` method allows and end user to copy existing image to
+  other Glance backends available in deployment. This import method is
+  only used if multiple glance backends are enabled in your deployment.
 
 You control which methods are available to API users by the
 ``enabled_import_methods`` configuration option in the default section of the
@@ -221,7 +225,32 @@ be either 80 or 443.)
    subdirectory of the Glance source code tree.  Make sure that you are looking
    in the correct branch for the OpenStack release you are working with.
 
+Configuring the copy-image method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For the ``copy-image`` method, make sure that ``copy-image`` is included
+in the list specified by your ``enabled_import_methods`` setting as well
+as you have multiple glance backends configured in your environment.
+
 .. _iir_plugins:
+
+Copying existing-image in multiple stores
+-----------------------------------------
+Starting with Ussuri release, it is possible to copy existing image data
+into multiple stores using interoperable image import workflow.
+
+Operator or end user can either copy the existing image by specifying
+``all_stores`` as True in request body or by passing list of desired
+stores in request body. If ``all_stores`` is specified and image data
+is already present in some of the available stores then those stores
+will be silently excluded from the list of all configured stores, whereas
+if ``all_stores`` is False, ``stores`` are specified in explicitly in
+request body and if image data is present in any of the specified store
+then the request will be rejected.
+
+Image will be copied to staging area from one of the available locations
+and then import processing will be continued using import workflow as
+explained in below ``Importing in multiple stores`` section.
 
 Importing in multiple stores
 ----------------------------

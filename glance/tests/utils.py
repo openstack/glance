@@ -78,6 +78,7 @@ class BaseTestCase(testtools.TestCase):
         self.addCleanup(CONF.reset)
         self.mock_object(exception, '_FATAL_EXCEPTION_FORMAT_ERRORS', True)
         self.test_dir = self.useFixture(fixtures.TempDir()).path
+        self.test_dir2 = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(self.conf_dir)
         self.set_policy()

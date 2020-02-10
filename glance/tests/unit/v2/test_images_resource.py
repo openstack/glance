@@ -22,6 +22,7 @@ import uuid
 from castellan.common import exception as castellan_exception
 import glance_store as store
 import mock
+from oslo_config import cfg
 from oslo_serialization import jsonutils
 import six
 from six.moves import http_client as http
@@ -41,6 +42,8 @@ from glance.tests.unit.keymgr import fake as fake_keymgr
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
+CONF = cfg.CONF
+
 DATETIME = datetime.datetime(2012, 5, 16, 15, 27, 36, 325355)
 ISOTIME = '2012-05-16T15:27:36Z'
 
@@ -53,6 +56,8 @@ UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'
 UUID3 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'
 UUID4 = '6bbe7cc2-eae7-4c0f-b50d-a7160b0c6a86'
 UUID5 = '13c58ac4-210d-41ab-8cdb-1adfe4610019'
+UUID6 = '6d33fd0f-2438-4419-acd0-ce1d452c97a0'
+UUID7 = '75ddbc84-9427-4f3b-8d7d-b0fd0543d9a8'
 
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
@@ -127,12 +132,13 @@ def _db_image_member_fixture(image_id, member_id, **kwargs):
 
 
 class FakeImage(object):
-    def __init__(self, status='active', container_format='ami',
-                 disk_format='ami'):
-        self.id = UUID4
+    def __init__(self, id=None, status='active', container_format='ami',
+                 disk_format='ami', locations=None):
+        self.id = id or UUID4
         self.status = status
         self.container_format = container_format
         self.disk_format = disk_format
+        self.locations = locations
 
 
 class TestImagesController(base.IsolatedUnitTest):
@@ -5098,6 +5104,9 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         self.store = store
         self._create_images()
         self._create_image_members()
+        stores = {'cheap': 'file', 'fast': 'file'}
+        self.config(enabled_backends=stores)
+        self.store.register_store_opts(CONF)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 self.policy,
                                                                 self.notifier,
@@ -5147,6 +5156,38 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
             _db_fixture(UUID4, owner=TENANT4, name='4',
                         size=1024, virtual_size=3072,
                         created_at=DATETIME + datetime.timedelta(seconds=3)),
+            _db_fixture(UUID6, owner=TENANT3, checksum=CHKSUM1,
+                        name='3', size=512, virtual_size=2048,
+                        visibility='public',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        tags=['redhat', '64bit', 'power'],
+                        properties={'hypervisor_type': 'kvm', 'foo': 'bar',
+                                    'bar': 'foo'},
+                        locations=[{'url': 'file://%s/%s' % (self.test_dir,
+                                                             UUID6),
+                                    'metadata': {'store': 'fast'},
+                                    'status': 'active'},
+                                   {'url': 'file://%s/%s' % (self.test_dir2,
+                                                             UUID6),
+                                    'metadata': {'store': 'cheap'},
+                                    'status': 'active'}],
+                        created_at=DATETIME + datetime.timedelta(seconds=1)),
+            _db_fixture(UUID7, owner=TENANT3, checksum=CHKSUM1,
+                        name='3', size=512, virtual_size=2048,
+                        visibility='public',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        tags=['redhat', '64bit', 'power'],
+                        properties={'hypervisor_type': 'kvm', 'foo': 'bar',
+                                    'bar': 'foo'},
+                        locations=[{'url': 'file://%s/%s' % (self.test_dir,
+                                                             UUID7),
+                                    'metadata': {'store': 'fast'},
+                                    'status': 'active'}],
+                        created_at=DATETIME + datetime.timedelta(seconds=1)),
         ]
         [self.db.image_create(None, image) for image in self.images]
 
@@ -5245,3 +5286,76 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
                               {'method': {'name': 'web-download'}})
+
+    def test_copy_image_stores_specified_in_header_and_body(self):
+        request = unit_test_utils.get_fake_request()
+        request.headers['x-image-meta-store'] = 'fast'
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage()
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.controller.import_image, request, UUID7,
+                              {'method': {'name': 'copy-image'},
+                               'stores': ["fast"]})
+
+    def test_copy_image_non_existing_image(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.side_effect = exception.NotFound
+            self.assertRaises(webob.exc.HTTPNotFound,
+                              self.controller.import_image, request, UUID1,
+                              {'method': {'name': 'copy-image'},
+                               'stores': ["fast"]})
+
+    def test_copy_image_with_all_stores(self):
+        request = unit_test_utils.get_fake_request()
+        locations = {'url': 'file://%s/%s' % (self.test_dir,
+                                              UUID7),
+                     'metadata': {'store': 'fast'},
+                     'status': 'active'},
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(id=UUID7, status='active',
+                                              locations=locations)
+            self.assertIsNotNone(self.controller.import_image(request, UUID7,
+                                 {'method': {'name': 'copy-image'},
+                                  'all_stores': True}))
+
+    def test_copy_non_active_image(self):
+        request = unit_test_utils.get_fake_request()
+
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            self.assertRaises(webob.exc.HTTPConflict,
+                              self.controller.import_image, request, UUID1,
+                              {'method': {'name': 'copy-image'},
+                               'stores': ["fast"]})
+
+    def test_copy_image_in_existing_store(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.controller.import_image, request, UUID6,
+                          {'method': {'name': 'copy-image'},
+                           'stores': ["fast"]})
+
+    def test_copy_image_to_other_stores(self):
+        request = unit_test_utils.get_fake_request()
+        locations = {'url': 'file://%s/%s' % (self.test_dir,
+                                              UUID7),
+                     'metadata': {'store': 'fast'},
+                     'status': 'active'},
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(id=UUID7, status='active',
+                                              locations=locations)
+
+            output = self.controller.import_image(
+                request, UUID7, {'method': {'name': 'copy-image'},
+                                 'stores': ["cheap"]})
+
+        self.assertEqual(UUID7, output)

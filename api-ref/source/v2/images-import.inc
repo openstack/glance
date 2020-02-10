@@ -51,12 +51,6 @@ Thus, the first step is:
     of creating an image by making the :ref:`Stores Discovery
     <store-discovery-call>` call.
 
-.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
-          its use in production systems is currently **not supported**.
-          However we encourage people to use this feature for testing
-          purposes and report the issues so that we can make it stable and
-          fully supported in Stein release.
-
 The glance-direct import method
 -------------------------------
 
@@ -82,6 +76,17 @@ The ``web-download`` workflow has **two** parts:
 2.  Issue the :ref:`Image Import <image-import-call>` call to complete
     the import process.  You will specify that you are using the
     ``web-download`` import method in the body of the import call.
+
+The copy-image import method
+------------------------------
+
+The ``copy-image`` workflow has **two** parts:
+
+1.  Identify the existing image which you want to copy to other stores.
+
+2.  Issue the :ref:`Image Import <image-import-call>` call to complete
+    the import process.  You will specify that you are using the
+    ``copy-image`` import method in the body of the import call.
 
 .. _image-stage-call:
 
@@ -171,6 +176,9 @@ call.
 In the ``web-download`` workflow, the data is made available to the Image
 service by being posted to an accessible location with a URL that you know.
 
+In the ``copy-image`` workflow, the data is made available to the Image
+service by copying existing image data to the staging area.
+
 Beginning with API version 2.8, an optional ``stores`` parameter may be added
 to the body request. When present, it contains the list of backing store
 identifiers to import the image binary data to. If at least one store
@@ -249,10 +257,34 @@ If you are using the ``web-download`` import method:
      restricted in a particular cloud.  Consult the cloud's local documentation
      for details.
 
+If you are using the ``copy-image`` import method:
+
+- The image status must be ``active``. (This indicates that image data is
+  associated with the image.)
+
+- The body of your request must indicate that you are using the
+  ``copy-image`` import method, and it must contain either the list of
+  stores where you want to copy your image or all_stores which will copy
+  the image in all available stores set in glance_api.conf using
+  ``enabled_backends`` configuration option.
+
+- If body of your request contains ``all_stores_must_succeed`` (default to
+  True) and an error occurs during the copying in at least one store,
+  the request will be rejected, the data will be deleted from the new stores
+  where copying is done (not staging), and the state of the image
+  remains the same.
+
+- If body of your request contains ``all_stores_must_succeed`` set to
+  False and an error occurs, then the request will fail (data deleted
+  from stores, ...) only if the copying fails on all stores specified by
+  the user. In case of a partial success, the locations added to the
+  image will be the stores where the data has been correctly uploaded.
+
 **Synchronous Postconditions**
 
 - With correct permissions, you can see the image status as
-  ``importing`` through API calls.  (Be aware, however, that if the import
+  ``importing`` (only for glance-direct and web-download import methods)
+  through API calls.  (Be aware, however, that if the import
   process completes before you make the API call, the image may already
   show as ``active``.)
 
@@ -289,4 +321,8 @@ Request Example - web-download import method
 .. literalinclude:: samples/image-import-w-d-request.json
    :language: json
 
+Request Example - copy-image import method
+--------------------------------------------
 
+.. literalinclude:: samples/image-import-c-i-request.json
+   :language: json
