@@ -60,7 +60,6 @@ else:
 
 
 CONF = cfg.CONF
-CONF.import_opt('registry_host', 'glance.registry')
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -90,7 +89,6 @@ class BaseServer(object):
         self.show_multiple_locations = False
         self.property_protection_file = ''
         self.enable_v2_api = True
-        self.enable_v2_registry = True
         self.needs_database = False
         self.log_file = None
         self.sock = sock
@@ -378,7 +376,6 @@ class ApiServer(Server):
         self.server_module = 'glance.cmd.%s' % self.server_name
         self.default_store = kwargs.get("default_store", "file")
         self.bind_host = "127.0.0.1"
-        self.registry_host = "127.0.0.1"
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir = os.path.join(self.test_dir, "images")
         self.pid_file = pid_file or os.path.join(self.test_dir, "api.pid")
@@ -420,8 +417,6 @@ default_log_levels = eventlet.wsgi.server=DEBUG
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-registry_host = %(registry_host)s
-registry_port = %(registry_port)s
 use_user_token = %(use_user_token)s
 send_identity_credentials = %(send_identity_credentials)s
 log_file = %(log_file)s
@@ -555,7 +550,6 @@ class ApiServerForMultipleBackend(Server):
         self.server_module = 'glance.cmd.%s' % self.server_name
         self.default_backend = kwargs.get("default_backend", "file1")
         self.bind_host = "127.0.0.1"
-        self.registry_host = "127.0.0.1"
         self.metadata_encryption_key = "012345678901234567890123456789ab"
         self.image_dir_backend_1 = os.path.join(self.test_dir, "images_1")
         self.image_dir_backend_2 = os.path.join(self.test_dir, "images_2")
@@ -600,8 +594,6 @@ default_log_levels = eventlet.wsgi.server=DEBUG
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-registry_host = %(registry_host)s
-registry_port = %(registry_port)s
 use_user_token = %(use_user_token)s
 send_identity_credentials = %(send_identity_credentials)s
 log_file = %(log_file)s
@@ -727,88 +719,6 @@ allowed_origin=http://valid.example.com
 """
 
 
-class RegistryServer(Server):
-
-    """
-    Server object that starts/stops/manages the Registry server
-    """
-
-    def __init__(self, test_dir, port, policy_file, sock=None):
-        super(RegistryServer, self).__init__(test_dir, port, sock=sock)
-        self.server_name = 'registry'
-        self.server_module = 'glance.cmd.%s' % self.server_name
-
-        self.needs_database = True
-        default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
-        self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
-                                             default_sql_connection)
-
-        self.bind_host = "127.0.0.1"
-        self.pid_file = os.path.join(self.test_dir, "registry.pid")
-        self.log_file = os.path.join(self.test_dir, "registry.log")
-        self.owner_is_tenant = True
-        self.workers = 0
-        self.api_version = 1
-        self.user_storage_quota = '0'
-        self.metadata_encryption_key = "012345678901234567890123456789ab"
-        self.policy_file = policy_file
-        self.policy_default_rule = 'default'
-        self.disable_path = None
-        self.image_cache_dir = os.path.join(self.test_dir,
-                                            'cache')
-        self.image_cache_driver = 'sqlite'
-
-        self.conf_base = """[DEFAULT]
-debug = %(debug)s
-image_cache_dir = %(image_cache_dir)s
-image_cache_driver = %(image_cache_driver)s
-bind_host = %(bind_host)s
-bind_port = %(bind_port)s
-log_file = %(log_file)s
-sql_connection = %(sql_connection)s
-sql_idle_timeout = 3600
-api_limit_max = 1000
-limit_param_default = 25
-owner_is_tenant = %(owner_is_tenant)s
-enable_v2_registry = %(enable_v2_registry)s
-workers = %(workers)s
-user_storage_quota = %(user_storage_quota)s
-metadata_encryption_key = %(metadata_encryption_key)s
-[oslo_policy]
-policy_file = %(policy_file)s
-policy_default_rule = %(policy_default_rule)s
-[paste_deploy]
-flavor = %(deployment_flavor)s
-"""
-        self.paste_conf_base = """[pipeline:glance-registry]
-pipeline = healthcheck unauthenticated-context registryapp
-
-[pipeline:glance-registry-fakeauth]
-pipeline = healthcheck fakeauth context registryapp
-
-[pipeline:glance-registry-trusted-auth]
-pipeline = healthcheck context registryapp
-
-[app:registryapp]
-paste.app_factory = glance.registry.api:API.factory
-
-[filter:healthcheck]
-paste.filter_factory = oslo_middleware:Healthcheck.factory
-backends = disable_by_file
-disable_by_file_path = %(disable_path)s
-
-[filter:context]
-paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
-
-[filter:unauthenticated-context]
-paste.filter_factory =
- glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
-
-[filter:fakeauth]
-paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
-"""
-
-
 class ScrubberDaemon(Server):
     """
     Server object that starts/stops/manages the Scrubber server
@@ -820,8 +730,6 @@ class ScrubberDaemon(Server):
         self.server_name = 'scrubber'
         self.server_module = 'glance.cmd.%s' % self.server_name
         self.daemon = daemon
-
-        self.registry_host = "127.0.0.1"
 
         self.image_dir = os.path.join(self.test_dir, "images")
         self.scrub_time = 5
@@ -882,7 +790,6 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
-        self.registry_port, reg_sock = test_utils.get_unused_port_and_socket()
         # NOTE: Scrubber is enabled by default for the functional tests.
         # Please disbale it by explicitly setting 'self.include_scrubber' to
         # False in the test SetUps that do not require Scrubber to run.
@@ -890,8 +797,7 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         # The clients will try to connect to this address. Let's make sure
         # we're not using the default '0.0.0.0'
-        self.config(bind_host='127.0.0.1',
-                    registry_host='127.0.0.1')
+        self.config(bind_host='127.0.0.1')
 
         self.tracecmd = tracecmd_osmap.get(platform.system())
 
@@ -913,15 +819,9 @@ class FunctionalTest(test_utils.BaseTestCase):
                                     self.policy_file,
                                     sock=api_sock)
 
-        self.registry_server = RegistryServer(self.test_dir,
-                                              self.registry_port,
-                                              self.policy_file,
-                                              sock=reg_sock)
-
         self.scrubber_daemon = ScrubberDaemon(self.test_dir, self.policy_file)
 
         self.pid_files = [self.api_server.pid_file,
-                          self.registry_server.pid_file,
                           self.scrubber_daemon.pid_file]
         self.files_to_destroy = []
         self.launched_servers = []
@@ -934,11 +834,8 @@ class FunctionalTest(test_utils.BaseTestCase):
             # and recreate it, which ensures that we have no side-effects
             # from the tests
             self.addCleanup(
-                self._reset_database, self.registry_server.sql_connection)
-            self.addCleanup(
                 self._reset_database, self.api_server.sql_connection)
             self.addCleanup(self.cleanup)
-            self._reset_database(self.registry_server.sql_connection)
             self._reset_database(self.api_server.sql_connection)
 
     def set_policy_rules(self, rules):
@@ -987,7 +884,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         # between a child process listening on a port actually dying
         # and a new process being started
         servers = [self.api_server,
-                   self.registry_server,
                    self.scrubber_daemon]
         for s in servers:
             try:
@@ -1070,7 +966,7 @@ class FunctionalTest(test_utils.BaseTestCase):
     def start_servers(self, **kwargs):
         """
         Starts the API and Registry servers (glance-control api start
-        & glance-control registry start) on unused ports.  glance-control
+        ) on unused ports.  glance-control
         should be installed into the python path
 
         Any kwargs passed to this method will override the configuration
@@ -1078,14 +974,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         """
         self.cleanup()
 
-        # Start up the API and default registry server
-
-        # We start the registry server first, as the API server config
-        # depends on the registry port - this ordering allows for
-        # retrying the launch on a port clash
-        self.start_with_retry(self.registry_server, 'registry_port', 3,
-                              **kwargs)
-        kwargs['registry_port'] = self.registry_server.bind_port
+        # Start up the API server
 
         self.start_with_retry(self.api_server, 'api_port', 3, **kwargs)
 
@@ -1206,13 +1095,10 @@ class FunctionalTest(test_utils.BaseTestCase):
         is meant to be called during a normal test case sequence.
         """
 
-        # Spin down the API and default registry server
+        # Spin down the API server
         self.stop_server(self.api_server)
-        self.stop_server(self.registry_server)
         if self.include_scrubber:
             self.stop_server(self.scrubber_daemon)
-
-        self._reset_database(self.registry_server.sql_connection)
 
     def run_sql_cmd(self, sql):
         """
@@ -1257,7 +1143,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
 
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
-        self.registry_port, reg_sock = test_utils.get_unused_port_and_socket()
         # NOTE: Scrubber is enabled by default for the functional tests.
         # Please disbale it by explicitly setting 'self.include_scrubber' to
         # False in the test SetUps that do not require Scrubber to run.
@@ -1281,15 +1166,9 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         self.api_server_multiple_backend = ApiServerForMultipleBackend(
             self.test_dir, self.api_port, self.policy_file, sock=api_sock)
 
-        self.registry_server = RegistryServer(self.test_dir,
-                                              self.registry_port,
-                                              self.policy_file,
-                                              sock=reg_sock)
-
         self.scrubber_daemon = ScrubberDaemon(self.test_dir, self.policy_file)
 
         self.pid_files = [self.api_server_multiple_backend.pid_file,
-                          self.registry_server.pid_file,
                           self.scrubber_daemon.pid_file]
         self.files_to_destroy = []
         self.launched_servers = []
@@ -1302,12 +1181,9 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
             # and recreate it, which ensures that we have no side-effects
             # from the tests
             self.addCleanup(
-                self._reset_database, self.registry_server.sql_connection)
-            self.addCleanup(
                 self._reset_database,
                 self.api_server_multiple_backend.sql_connection)
             self.addCleanup(self.cleanup)
-            self._reset_database(self.registry_server.sql_connection)
             self._reset_database(
                 self.api_server_multiple_backend.sql_connection)
 
@@ -1357,7 +1233,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         # between a child process listening on a port actually dying
         # and a new process being started
         servers = [self.api_server_multiple_backend,
-                   self.registry_server,
                    self.scrubber_daemon]
         for s in servers:
             try:
@@ -1440,7 +1315,7 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
     def start_servers(self, **kwargs):
         """
         Starts the API and Registry servers (glance-control api start
-        & glance-control registry start) on unused ports.  glance-control
+        ) on unused ports.  glance-control
         should be installed into the python path
 
         Any kwargs passed to this method will override the configuration
@@ -1448,14 +1323,7 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         """
         self.cleanup()
 
-        # Start up the API and default registry server
-
-        # We start the registry server first, as the API server config
-        # depends on the registry port - this ordering allows for
-        # retrying the launch on a port clash
-        self.start_with_retry(self.registry_server, 'registry_port', 3,
-                              **kwargs)
-        kwargs['registry_port'] = self.registry_server.bind_port
+        # Start up the API server
 
         self.start_with_retry(self.api_server_multiple_backend,
                               'api_port', 3, **kwargs)
@@ -1577,13 +1445,10 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         is meant to be called during a normal test case sequence.
         """
 
-        # Spin down the API and default registry server
+        # Spin down the API
         self.stop_server(self.api_server_multiple_backend)
-        self.stop_server(self.registry_server)
         if self.include_scrubber:
             self.stop_server(self.scrubber_daemon)
-
-        self._reset_database(self.registry_server.sql_connection)
 
     def run_sql_cmd(self, sql):
         """
