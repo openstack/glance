@@ -76,9 +76,11 @@ cli_opts = [
                      "one. This is the token used for the target system.")),
     cfg.StrOpt('command',
                positional=True,
+               required=False,
                help="Command to be given to replicator"),
     cfg.MultiStrOpt('args',
                     positional=True,
+                    required=False,
                     help="Arguments for the command"),
 ]
 
