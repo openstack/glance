@@ -103,4 +103,4 @@ following order:
 * ``/etc``
 
 All options set in ``glance-manage.conf`` override those set in
-``glance-registry.conf`` and ``glance-api.conf``.
+``glance-api.conf``.

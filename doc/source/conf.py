@@ -74,8 +74,6 @@ config_generator_config_file = [
      '_static/glance-cache'),
     ('../../etc/oslo-config-generator/glance-manage.conf',
      '_static/glance-manage'),
-    ('../../etc/oslo-config-generator/glance-registry.conf',
-     '_static/glance-registry'),
     ('../../etc/oslo-config-generator/glance-scrubber.conf',
      '_static/glance-scrubber'),
 ]
@@ -161,8 +159,6 @@ man_pages = [
     ('cli/glancecontrol', 'glance-control', u'Glance Daemon Control Helper ',
      [u'OpenStack'], 1),
     ('cli/glancemanage', 'glance-manage', u'Glance Management Utility',
-     [u'OpenStack'], 1),
-    ('cli/glanceregistry', 'glance-registry', u'Glance Registry Server',
      [u'OpenStack'], 1),
     ('cli/glancereplicator', 'glance-replicator', u'Glance Replicator',
      [u'OpenStack'], 1),

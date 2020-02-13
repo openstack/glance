@@ -28,8 +28,7 @@ programs.
 Starting a server
 -----------------
 
-There are two ways to start a Glance server (either the API server or the
-registry server):
+There are two ways to start a Glance server:
 
 * Manually calling the server program
 
@@ -61,8 +60,7 @@ following directories, stopping at the first config file it finds:
 * ``/etc``
 
 The filename that is searched for depends on the server application name. So,
-if you are starting up the API server, ``glance-api.conf`` is searched for,
-otherwise ``glance-registry.conf``.
+if you are starting up the API server, ``glance-api.conf`` is searched for.
 
 If no configuration file is found, you will see an error, like::
 
@@ -70,7 +68,7 @@ If no configuration file is found, you will see an error, like::
   ERROR: Unable to locate any configuration file. Cannot load application glance-api
 
 Here is an example showing how you can manually start the ``glance-api`` server
-and ``glance-registry`` in a shell.::
+in a shell.::
 
   $ sudo glance-api --config-file glance-api.conf --debug &
   jsuh@mc-ats1:~$ 2011-04-13 14:50:12    DEBUG [glance-api] ********************************************************************************
@@ -88,46 +86,16 @@ and ``glance-registry`` in a shell.::
   2011-04-13 14:50:12    DEBUG [routes.middleware] Initialized with method overriding = True, and path info altering = True
   2011-04-13 14:50:12    DEBUG [eventlet.wsgi.server] (21354) wsgi starting up on http://65.114.169.29:9292/
 
-  $ sudo glance-registry --config-file glance-registry.conf &
-  jsuh@mc-ats1:~$ 2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] PRAGMA table_info("images")
-  2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] ()
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Col ('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk')
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (0, u'created_at', u'DATETIME', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (1, u'updated_at', u'DATETIME', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (2, u'deleted_at', u'DATETIME', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (3, u'deleted', u'BOOLEAN', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (4, u'id', u'INTEGER', 1, None, 1)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (5, u'name', u'VARCHAR(255)', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (6, u'disk_format', u'VARCHAR(20)', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (7, u'container_format', u'VARCHAR(20)', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (8, u'size', u'INTEGER', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (9, u'status', u'VARCHAR(30)', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (10, u'is_public', u'BOOLEAN', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (11, u'location', u'TEXT', 0, None, 0)
-  2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] PRAGMA table_info("image_properties")
-  2011-04-13 14:51:16     INFO [sqlalchemy.engine.base.Engine.0x...feac] ()
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Col ('cid', 'name', 'type', 'notnull', 'dflt_value', 'pk')
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (0, u'created_at', u'DATETIME', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (1, u'updated_at', u'DATETIME', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (2, u'deleted_at', u'DATETIME', 0, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (3, u'deleted', u'BOOLEAN', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (4, u'id', u'INTEGER', 1, None, 1)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (5, u'image_id', u'INTEGER', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (6, u'key', u'VARCHAR(255)', 1, None, 0)
-  2011-04-13 14:51:16    DEBUG [sqlalchemy.engine.base.Engine.0x...feac] Row (7, u'value', u'TEXT', 0, None, 0)
-
   $ ps aux | grep glance
   root     20009  0.7  0.1  12744  9148 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-api glance-api.conf --debug
-  root     20012  2.0  0.1  25188 13356 pts/1    S    12:47   0:00 /usr/bin/python /usr/bin/glance-registry glance-registry.conf
   jsuh     20017  0.0  0.0   3368   744 pts/1    S+   12:47   0:00 grep glance
 
 Simply supply the configuration file as the parameter to the ``--config-file``
-option (the ``etc/glance-api.conf`` and  ``etc/glance-registry.conf`` sample
-configuration files were used in the above example) and then any other options
-you want to use. (``--debug`` was used above to show some of the debugging
-output that the server shows when starting up. Call the server program
-with ``--help`` to see all available options you can specify on the
-command line.)
+option (the ``etc/glance-api.conf``  sample configuration file was used in the
+above example) and then any other options you want to use. (``--debug`` was
+used above to show some of the debugging output that the server shows when
+starting up. Call the server program with ``--help`` to see all available
+options you can specify on the command line.)
 
 For more information on configuring the server via the ``paste.deploy``
 configuration files, see the section entitled
@@ -162,19 +130,15 @@ with ``glance-control`` in the following way::
   You must use the ``sudo`` program to run ``glance-control`` currently, as the
   pid files for the server programs are written to /var/run/glance/
 
-Here is an example that shows how to start the ``glance-registry`` server
+Here is an example that shows how to start the ``glance-api`` server
 with the ``glance-control`` wrapper script. ::
 
 
   $ sudo glance-control api start glance-api.conf
   Starting glance-api with /home/jsuh/glance.conf
 
-  $ sudo glance-control registry start glance-registry.conf
-  Starting glance-registry with /home/jsuh/glance.conf
-
   $ ps aux | grep glance
   root     20038  4.0  0.1  12728  9116 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-api /home/jsuh/glance-api.conf
-  root     20039  6.0  0.1  25188 13356 ?        Ss   12:51   0:00 /usr/bin/python /usr/bin/glance-registry /home/jsuh/glance-registry.conf
   jsuh     20042  0.0  0.0   3368   744 pts/1    S+   12:51   0:00 grep glance
 
 
@@ -218,8 +182,8 @@ use the ``glance-control`` program to stop it. Simply do the following::
 
 as this example shows::
 
-  $ sudo glance-control registry stop
-  Stopping glance-registry  pid: 17602  signal: 15
+  $ sudo glance-control api stop
+  Stopping glance-api  pid: 17602  signal: 15
 
 Restarting a server
 -------------------
@@ -227,9 +191,9 @@ Restarting a server
 You can restart a server with the ``glance-control`` program, as demonstrated
 here::
 
-  $ sudo glance-control registry restart etc/glance-registry.conf
-  Stopping glance-registry  pid: 17611  signal: 15
-  Starting glance-registry with /home/jpipes/repos/glance/trunk/etc/glance-registry.conf
+  $ sudo glance-control api restart etc/glance-api.conf
+  Stopping glance-api  pid: 17611  signal: 15
+  Starting glance-api with /home/jpipes/repos/glance/trunk/etc/glance-api.conf
 
 Reloading a server
 ------------------

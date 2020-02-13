@@ -80,15 +80,7 @@ _api_opts = [
     ('paste_deploy', glance.common.config.paste_deploy_opts)
 ]
 _registry_opts = [
-    (None, list(itertools.chain(
-        glance.api.middleware.context.context_opts,
-        glance.common.config.common_opts,
-        glance.common.wsgi.bind_opts,
-        glance.common.wsgi.socket_opts,
-        glance.common.wsgi.wsgi_opts,
-        glance.common.wsgi.eventlet_opts))),
-    profiler.list_opts()[0],
-    ('paste_deploy', glance.common.config.paste_deploy_opts)
+    (None, []),
 ]
 _scrubber_opts = [
     (None, list(itertools.chain(

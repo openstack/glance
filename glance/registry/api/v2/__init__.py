@@ -14,14 +14,12 @@
 #    under the License.
 
 from glance.common import wsgi
-from glance.registry.api.v2 import rpc
 
 
 def init(mapper):
-    rpc_resource = rpc.create_resource()
-    mapper.connect("/rpc", controller=rpc_resource,
-                   conditions=dict(method=["POST"]),
-                   action="__call__")
+    reject_method_resource = wsgi.Resource(wsgi.RejectMethodController())
+    mapper.connect("/rpc", controller=reject_method_resource,
+                   action="reject")
 
 
 class API(wsgi.Router):

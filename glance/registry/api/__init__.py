@@ -13,28 +13,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import debtcollector
+"""
+Glance Registry has been removed after deprecation
+
+Delete after devstack doesn't require anymore
+"""
+
 from oslo_config import cfg
 
 from glance.common import wsgi
-from glance.registry.api import v1
 from glance.registry.api import v2
 
 CONF = cfg.CONF
-CONF.import_opt('enable_v1_registry', 'glance.common.config')
-CONF.import_opt('enable_v2_registry', 'glance.common.config')
 
 
 class API(wsgi.Router):
     """WSGI entry point for all Registry requests."""
 
     def __init__(self, mapper):
-        mapper = mapper or wsgi.APIMapper()
-        if CONF.enable_v1_registry:
-            v1.init(mapper)
-        if CONF.enable_v2_registry:
-            debtcollector.deprecate("Glance Registry service has been "
-                                    "deprecated for removal.")
-            v2.init(mapper)
+        mapper = wsgi.APIMapper()
+        v2.init(mapper)
 
         super(API, self).__init__(mapper)
