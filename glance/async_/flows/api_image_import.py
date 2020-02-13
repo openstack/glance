@@ -320,11 +320,13 @@ class _ImportToStore(task.Task):
 
 class _SaveImage(task.Task):
 
-    def __init__(self, task_id, task_type, image_repo, image_id):
+    def __init__(self, task_id, task_type, image_repo, image_id,
+                 import_method):
         self.task_id = task_id
         self.task_type = task_type
         self.image_repo = image_repo
         self.image_id = image_id
+        self.import_method = import_method
         super(_SaveImage, self).__init__(
             name='%s-SaveImage-%s' % (task_type, task_id))
 
@@ -334,7 +336,8 @@ class _SaveImage(task.Task):
         :param image_id: Glance Image ID
         """
         new_image = self.image_repo.get(self.image_id)
-        if new_image.status == 'saving':
+        if (self.import_method != 'copy-image'
+                and new_image.status == 'importing'):
             # NOTE(flaper87): THIS IS WRONG!
             # we should be doing atomic updates to avoid
             # race conditions. This happens in other places
@@ -410,7 +413,7 @@ def get_flow(**kwargs):
     if not CONF.enabled_backends and not CONF.node_staging_uri.endswith('/'):
         separator = '/'
 
-    if not uri and import_method == 'glance-direct':
+    if not uri and import_method in ['glance-direct', 'copy-image']:
         if CONF.enabled_backends:
             separator, staging_dir = store_utils.get_dir_separator()
             uri = separator.join((staging_dir, str(image_id)))
@@ -419,9 +422,9 @@ def get_flow(**kwargs):
 
     flow = lf.Flow(task_type, retry=retry.AlwaysRevert())
 
-    if import_method == 'web-download':
-        downloadToStaging = internal_plugins.get_import_plugin(**kwargs)
-        flow.add(downloadToStaging)
+    if import_method in ['web-download', 'copy-image']:
+        internal_plugin = internal_plugins.get_import_plugin(**kwargs)
+        flow.add(internal_plugin)
         if CONF.enabled_backends:
             separator, staging_dir = store_utils.get_dir_separator()
             file_uri = separator.join((staging_dir, str(image_id)))
@@ -437,6 +440,8 @@ def get_flow(**kwargs):
 
     for idx, store in enumerate(stores, 1):
         set_active = (not all_stores_must_succeed) or (idx == len(stores))
+        if import_method == 'copy-image':
+            set_active = False
         task_name = task_type + "-" + (store or "")
         import_task = lf.Flow(task_name)
         import_to_store = _ImportToStore(task_id,
@@ -456,7 +461,8 @@ def get_flow(**kwargs):
     save_task = _SaveImage(task_id,
                            task_type,
                            image_repo,
-                           image_id)
+                           image_id,
+                           import_method)
     flow.add(save_task)
 
     complete_task = _CompleteTask(task_id,
@@ -467,7 +473,9 @@ def get_flow(**kwargs):
 
     image = image_repo.get(image_id)
     from_state = image.status
-    image.status = 'importing'
+    if import_method != 'copy-image':
+        image.status = 'importing'
+
     image.extra_properties[
         'os_glance_importing_to_stores'] = ','.join((store for store in
                                                      stores if

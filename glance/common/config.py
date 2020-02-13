@@ -684,14 +684,15 @@ Related options:
     cfg.ListOpt('enabled_import_methods',
                 item_type=cfg.types.String(quotes=True),
                 bounds=True,
-                default=['glance-direct', 'web-download'],
+                default=['glance-direct', 'web-download',
+                         'copy-image'],
                 help=_("""
-List of enabled Image Import Methods
+    List of enabled Image Import Methods
 
-Both 'glance-direct' and 'web-download' are enabled by default.
+    'glance-direct', 'copy-image' and 'web-download' are enabled by default.
 
-Related options:
-    * [DEFAULT]/node_staging_uri""")),
+    Related options:
+        * [DEFAULT]/node_staging_uri""")),
 ]
 
 CONF = cfg.CONF

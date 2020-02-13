@@ -1,0 +1,9 @@
+{
+    "method": {
+        "name": "copy-image"
+    },
+    "stores": ["common", "cheap", "fast", "reliable"],
+    "all_stores_must_succeed": false,
+    "all_stores": false
+}
+

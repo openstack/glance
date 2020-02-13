@@ -40,7 +40,7 @@ from glance.common import utils
 from glance.common import wsgi
 import glance.db
 import glance.gateway
-from glance.i18n import _, _LW
+from glance.i18n import _, _LI, _LW
 import glance.notifier
 import glance.schema
 
@@ -109,8 +109,12 @@ class ImagesController(object):
 
         try:
             image = image_repo.get(image_id)
-            if image.status == 'active':
+            if image.status == 'active' and import_method != "copy-image":
                 msg = _("Image with status active cannot be target for import")
+                raise exception.Conflict(msg)
+            if image.status != 'active' and import_method == "copy-image":
+                msg = _("Only images with status active can be targeted for "
+                        "copying")
                 raise exception.Conflict(msg)
             if image.status != 'queued' and import_method == 'web-download':
                 msg = _("Image needs to be in 'queued' state to use "
@@ -135,6 +139,34 @@ class ImagesController(object):
                 except glance_store.UnknownScheme as exc:
                     LOG.warn(exc.msg)
                     raise exception.Conflict(exc.msg)
+
+            # NOTE(abhishekk): If all_stores is specified and import_method is
+            # copy_image, then remove those stores where image is already
+            # present.
+            all_stores = body.get('all_stores', False)
+            if import_method == 'copy-image' and all_stores:
+                for loc in image.locations:
+                    existing_store = loc['metadata']['store']
+                    if existing_store in stores:
+                        LOG.debug("Removing store '%s' from all stores as "
+                                  "image is already available in that "
+                                  "store." % existing_store)
+                        stores.remove(existing_store)
+
+                if len(stores) == 0:
+                    LOG.info(_LI("Exiting copying workflow as image is "
+                                 "available in all configured stores."))
+                    return image_id
+
+            # validate if image is already existing in given stores when
+            # all_stores is False
+            if import_method == 'copy-image' and not all_stores:
+                for loc in image.locations:
+                    existing_store = loc['metadata']['store']
+                    if existing_store in stores:
+                        msg = _("Image is already present at store "
+                                "'%s'") % existing_store
+                        raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Conflict as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.NotFound as e:

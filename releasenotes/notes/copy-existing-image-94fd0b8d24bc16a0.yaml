@@ -1,0 +1,16 @@
+---
+features:
+  - |
+    Added new import method ``copy-image`` which will copy existing image
+    into multiple stores.
+upgrade:
+  - |
+    Added new import method ``copy-image`` which will copy existing image
+    into multiple stores. The new import method will work only if multiple
+    stores are enabled in the deployment. To use this feature operator
+    needs to mention ``copy-image`` import method in ``enabled_import_methods``
+    configuration option. Note that this new internal plugin applies *only* to
+    images imported via the `interoperable image import process`_.
+
+    .. _`interoperable image import process`: https://developer.openstack.org/api-ref/image/v2/#interoperable-image-import
+
