@@ -18,6 +18,15 @@ This sample configuration can also be viewed in `glance-api.conf.sample
 .. literalinclude:: ../_static/glance-api.conf.sample
 
 
+Sample configuration for Glance Registry
+----------------------------------------
+
+This sample configuration can also be viewed in `glance-registry.conf.sample
+<../_static/glance-registry.conf.sample>`_.
+
+.. literalinclude:: ../_static/glance-registry.conf.sample
+
+
 Sample configuration for Glance Scrubber
 ----------------------------------------
 
