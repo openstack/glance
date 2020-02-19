@@ -484,6 +484,30 @@ class TestUtils(test_utils.BaseTestCase):
             "ceph1": "rbd",
             "ceph2": "rbd"
         }
+        reserved_stores = {
+            'os_glance_staging_store': 'file',
+            'os_glance_tasks_store': 'file'
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF, reserved_stores=reserved_stores)
+        self.config(default_backend="ceph1", group="glance_store")
+        body = {"all_stores": True}
+        req = webob.Request.blank("/some_request")
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            result = sorted(utils.get_stores_from_request(req, body))
+            self.assertEqual(["ceph1", "ceph2"], result)
+            mock_get_store.assert_any_call("ceph1")
+            mock_get_store.assert_any_call("ceph2")
+            self.assertEqual(mock_get_store.call_count, 2)
+            self.assertNotIn('os_glance_staging_store', result)
+            self.assertNotIn('os_glance_tasks_store', result)
+
+    def test_get_stores_from_request_excludes_reserved_stores(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd"
+        }
         self.config(enabled_backends=enabled_backends)
         store.register_store_opts(CONF)
         self.config(default_backend="ceph1", group="glance_store")

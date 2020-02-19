@@ -44,6 +44,7 @@ from webob import exc
 
 from glance.common import exception
 from glance.common import timeutils
+from glance.common import wsgi
 from glance.i18n import _, _LE
 
 CONF = cfg.CONF
@@ -671,6 +672,17 @@ def evaluate_filter_op(value, operator, threshold):
     raise exception.InvalidFilterOperatorValue(msg)
 
 
+def _get_available_stores():
+    available_stores = CONF.enabled_backends
+    stores = []
+    # Remove reserved stores from the available stores list
+    for store in available_stores:
+        if store not in wsgi.RESERVED_STORES:
+            stores.append(store)
+
+    return stores
+
+
 def get_stores_from_request(req, body):
     """Processes a supplied request and extract stores from it
 
@@ -685,7 +697,7 @@ def get_stores_from_request(req, body):
             msg = _("All_stores parameter can't be used with "
                     "x-image-meta-store header or stores parameter")
             raise exc.HTTPBadRequest(explanation=msg)
-        stores = list(CONF.enabled_backends)
+        stores = _get_available_stores()
     else:
         try:
             stores = body['stores']
