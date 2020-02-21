@@ -177,6 +177,10 @@ Here is a list of useful image properties and the values they expect.
        the kernel when booting an AMI-style image.
      - Valid image ID
    * - All
+     - ``os_admin_user``
+     - The name of the user with admin privileges.
+     - Valid username (defaults to ``root`` for Linux guests and ``Administrator`` for Windows guests).
+   * - All
      - ``os_distro``
      - The common name of the operating system distribution in lowercase
        (uses the same data vocabulary as the
