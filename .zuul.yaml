@@ -233,7 +233,7 @@
         - openstack-tox-functional-py36
         - openstack-tox-functional-py37
         - glance-code-constants-check
-        - devstack-plugin-ceph-tempest:
+        - devstack-plugin-ceph-tempest-py3:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
               - ^(test-|)requirements.txt$
@@ -275,8 +275,6 @@
         - glance-tox-functional-py36-glance_store-tips
         - barbican-simple-crypto-devstack-tempest
         - glance-dsvm-grenade-multinode
-        - devstack-plugin-ceph-tempest-py3:
-            irrelevant-files: *tempest-irrelevant-files
         - tempest-pg-full:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-full-py3-opensuse15:
