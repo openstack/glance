@@ -163,6 +163,11 @@ Currently, there are two reserved stores:
     import process.  It replaces  the use of the DEPRECATED configuration
     option ``[DEFAULT]/node_staging_uri``.
 
+.. note::
+   If end user wants to retrieve all the available stores using
+   ``CONF.enabled_backeds`` then he needs to remove reserved
+   stores from that list explicitly.
+
 Configuration
 ~~~~~~~~~~~~~
 
