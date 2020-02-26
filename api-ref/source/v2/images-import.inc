@@ -18,7 +18,11 @@ the import methods available in the cloud in which you want to import
 an image.  Each of these methods is well defined (which is what makes
 this process interoperable among different OpenStack clouds).
 
-Two import methods are defined, ``glance-direct`` and ``web-download``.
+Three import methods are defined:
+
+* ``glance-direct``
+* ``web-download``
+* ``copy-image``
 
 .. note::
 
@@ -78,11 +82,11 @@ The ``web-download`` workflow has **two** parts:
     ``web-download`` import method in the body of the import call.
 
 The copy-image import method
-------------------------------
+----------------------------
 
 The ``copy-image`` workflow has **two** parts:
 
-1.  Identify the existing image which you want to copy to other stores.
+1.  Identify the existing image whose data you want to copy to other stores.
 
 2.  Issue the :ref:`Image Import <image-import-call>` call to complete
     the import process.  You will specify that you are using the
