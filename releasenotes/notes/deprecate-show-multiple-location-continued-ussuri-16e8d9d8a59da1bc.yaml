@@ -1,0 +1,18 @@
+---
+upgrade:
+  - |
+    The ``show_multiple_locations`` configuration option remains DEPRECATED but
+    not removed in the Ussuri release.  We continue to recommend that image
+    locations not be exposed to end users.  See `OSSN-0065
+    <https://wiki.openstack.org/wiki/OSSN/OSSN-0065>`_ for more information.
+
+    The plan continues to be to eliminate the option and use only policies to
+    control image locations access.  This, however, requires some major
+    refactoring, as discussed in the `draft Policy Refactor spec
+    <https://review.openstack.org/#/c/528021/>`_.  Further, there is no
+    projected timeline for this change, as no one has been able to commit time
+    to it.  (The Glance team would be happy to discuss this more with anyone
+    interested in working on it.)
+
+    Please keep a watch on the Glance release notes and the glance-specs
+    repository to stay informed about developments on this issue.
