@@ -1147,6 +1147,88 @@ Configuring the VMware Storage Backend
 
   Allow to perform insecure SSL requests to ESX/VC server.
 
+Configuring the S3 Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``s3_store_host``
+  Can only be specified in configuration files.
+
+  The host where the S3 server is listening. This option can contain a DNS name
+  (e.g. s3.amazonaws.com, my-object-storage.com) or an IP address (127.0.0.1).
+
+  Example::
+
+    s3_store_host = http://s3-ap-northeast-1.amazonaws.com
+    s3_store_host = https://s3-ap-northeast-1.amazonaws.com
+    s3_store_host = http://my-object-storage.com
+    s3_store_host = https://my-object-storage.com:9000
+
+``s3_store_access_key``
+  Can only be specified in configuration files.
+
+  Access Key for authenticating with the Amazon S3 or S3 compatible storage
+  server.
+
+``s3_store_secret_key``
+  Can only be specified in configuration files.
+
+  Secret Key for authenticating with the Amazon S3 or S3 compatible storage
+  server.
+
+``s3_store_bucket``
+  Can only be specified in configuration files.
+
+  Bucket name where the glance images will be stored in the S3.
+  If ``s3_store_create_bucket_on_put`` is set to true, it will be created
+  automatically even if the bucket does not exist.
+
+``s3_store_create_bucket_on_put``
+  Optional. Default: ``False``
+
+  Can only be specified in configuration files.
+
+  Determine whether S3 should create a new bucket. This option takes boolean
+  value to indicate whether or not Glance should create new bucket to S3 if it
+  does not exist.
+
+``s3_store_bucket_url_format``
+  Optional. Default: ``auto``
+
+  Can only be specified in configuration files.
+
+  This option takes access model that is used to specify the address of an
+  object in an S3 bucket. You can set the value from ``auto``, ``virtual`` or
+  ``path``.
+
+  **NOTE**:
+
+  * In ``path``-style, the endpoint for the object looks like ``https://s3.amazonaws.com/bucket/example.img``.
+  * In ``virtual``-style, the endpoint for the object looks like ``https://bucket.s3.amazonaws.com/example.img``.
+  * If you do not follow the DNS naming convention in the bucket name, you can
+    get objects in the path style, but not in the virtual style.
+
+``s3_store_large_object_size``
+  Optional. Default: ``100``
+
+  Can only be specified in configuration files.
+
+  What size, in MB, should S3 start chunking image files and do a multipart
+  upload in S3.
+
+``s3_store_large_object_chunk_size``
+  Optional. Default: ``10``
+
+  Can only be specified in configuration files.
+
+  What multipart upload part size, in MB, should S3 use when uploading parts.
+
+``s3_store_thread_pools``
+  Optional. Default: ``10``
+
+  Can only be specified in configuration files.
+
+  The number of thread pools to perform a multipart upload in S3.
+
 Configuring the Storage Endpoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
