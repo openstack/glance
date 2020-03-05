@@ -1,0 +1,16 @@
+---
+upgrade:
+  - |
+    Operators who use property protections with the
+    ``property_protection_rule_format`` set to  ``policies`` must still
+    define the policy rules used for property protections in a policy
+    file.  The content of the file may be JSON or YAML.  Additionally,
+    we suggest that the absolute pathname of this file be set as the
+    value of ``policy_file`` in the ``[oslo_policy]`` section of the
+    ``glance-api.conf`` file.
+
+    Be aware that if you define a policy rule for ``default`` or
+    ``context_is_admin``, that policy rule will also be used by the
+    policies that govern permissions to perform actions using the
+    Images API, even if these actions are not specified in the policy
+    file.

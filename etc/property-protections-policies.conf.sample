@@ -4,8 +4,13 @@
 # property_protection_rule_format=policies is enabled.
 #
 # Specify regular expression for which properties will be protected in []
-# For each section, specify CRUD permissions. You may refer to policies defined
-# in policy.json.
+# For each section, specify CRUD permissions.
+#
+# The permissions specified may refer to policies defined in a policy file.
+# The name of this file may be specified as the value of the policy_file
+# option in the [oslo_policy] section of the glance-api.conf file.  The
+# format of this file may be JSON or YAML.
+#
 # The property rules will be applied in the order specified. Once
 # a match is found the remaining property rules will not be applied.
 #
