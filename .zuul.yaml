@@ -244,9 +244,7 @@
               - ^glance/locale/.*$
               - ^glance/tests/.*$
               - ^doc/.*$
-              - ^etc/.*$
               - ^releasenotes/.*$
-              - ^setup.cfg$
               - ^tools/.*$
               - ^tox.ini$
               - ^\.zuul\.yaml$
