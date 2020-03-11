@@ -1,27 +1,19 @@
-If you would like to contribute to the development of OpenStack,
-you must follow the steps documented at:
+The source repository for this project can be found at:
 
-   http://docs.openstack.org/infra/manual/developers.html#getting-started
+  https://opendev.org/openstack/glance
 
-Once those steps have been completed, changes to OpenStack
-should be submitted for review via the Gerrit tool, following
-the workflow documented at:
+Pull requests submitted through GitHub are not monitored.
 
-   http://docs.openstack.org/infra/manual/developers.html#development-workflow
+To start contributing to OpenStack, follow the steps in the contribution guide
+to set up and use Gerrit:
 
-Pull requests submitted through GitHub will be ignored.
+  https://docs.openstack.org/contributors/code-and-documentation/quick-start.html
 
-Bugs should be filed on Launchpad, not GitHub:
+Bugs should be filed on Launchpad:
 
-   https://bugs.launchpad.net/glance
+  https://bugs.launchpad.net/glance
 
-Additionally, specific guidelines for contributing to Glance may be found in
-Glance's Documentation:
+For more specific information about contributing to this repository, see the
+glance contributor guide:
 
-   https://docs.openstack.org/glance/latest/contributor/index.html
-
-Please read and follow these Glance-specific guidelines, particularly the
-section on `Disallowed Minor Code Changes
-<https://docs.openstack.org/glance/latest/contributor/minor-code-changes.html>`_.
-You will thereby prevent your friendly review team from pulling out whatever
-hair they have left. Thank you for your cooperation.
+  https://docs.openstack.org/glance/latest/contributor/index.html
