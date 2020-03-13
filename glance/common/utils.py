@@ -557,10 +557,7 @@ def stash_conf_values():
     conf = {
         'bind_host': CONF.bind_host,
         'bind_port': CONF.bind_port,
-        'tcp_keepidle': CONF.cert_file,
         'backlog': CONF.backlog,
-        'key_file': CONF.key_file,
-        'cert_file': CONF.cert_file
     }
 
     return conf

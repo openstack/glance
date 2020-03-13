@@ -23,7 +23,6 @@ from six.moves import http_client as http
 
 from glance.tests import functional
 from glance.tests.utils import execute
-from glance.tests.utils import skip_if_disabled
 
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             '../', 'var'))
@@ -49,8 +48,6 @@ class TestReload(functional.FunctionalTest):
         self.cleanup()
         self.workers = 1
         self.include_scrubber = False
-        self.disabled = True
-        self.disabled_message = "Reload is broken, Bug 1855708"
 
     def tearDown(self):
         if not self.disabled:
@@ -105,7 +102,6 @@ class TestReload(functional.FunctionalTest):
     def _url(self, protocol, path):
         return '%s://127.0.0.1:%d%s' % (protocol, self.api_port, path)
 
-    @skip_if_disabled
     def test_reload(self):
         """Test SIGHUP picks up new config values"""
         def check_pids(pre, post=None, workers=2):
