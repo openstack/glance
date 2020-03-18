@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    New Interoperable Image Import plugin has been introduced
+    to address the use case of providing compressed images
+    either through 'web-download' or to optimize the network
+    utilization between the client and Glance.
