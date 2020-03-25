@@ -1,0 +1,14 @@
+---
+deprecations:
+  - |
+    The Glance API configuration option ``allow_additional_image_properties``
+    is deprecated in this release and is subject to removal at the beginning
+    of the Victoria development cycle, following the `OpenStack standard
+    deprecation policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
+
+    The migration path for operators who were using this option in its
+    nondefault ``False`` setting is to set the ``image_property_quota``
+    option to ``0``.  Since many other OpenStack services depend upon the
+    ability to read/write custom image properties, however, we suspect that
+    no one has been using the option with a nondefault value.

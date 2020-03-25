@@ -171,6 +171,13 @@ _DEPRECATE_GLANCE_V1_MSG = _('The Images (Glance) version 1 API has been '
 
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
+                deprecated_for_removal=True,
+                deprecated_since="Ussuri",
+                deprecated_reason=_("""
+This option is redundant.  Control custom image property usage via the
+'image_property_quota' configuration option.  This option is scheduled
+to be removed during the Victoria development cycle.
+"""),
                 help=_("""
 Allow users to add additional/custom properties to images.
 
