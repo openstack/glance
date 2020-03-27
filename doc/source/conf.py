@@ -30,9 +30,6 @@
 import os
 import sys
 
-import openstackdocstheme
-
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -187,7 +184,6 @@ html_theme = 'openstackdocs'
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = ['_theme']
-html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
