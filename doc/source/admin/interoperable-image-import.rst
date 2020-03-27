@@ -592,6 +592,80 @@ You will need to configure 'glance-image-import.conf' file as shown below:
        [image_conversion]
        output_format = raw
 
+The Image Decompression
+-----------------------
+.. list-table::
+
+   * - release introduced
+     - Ussuri (Glance 20.0.0)
+   * - configuration file
+     - ``glance-image-import.conf``
+
+This plugin implements automated image decompression for Interoperable Image
+Import. One use case for this plugin would be environments where user or
+operator wants to use 'web-download' method and the image provider supplies
+only compressed images.
+
+.. note::
+
+   This plugin may only be used as part of the interoperable image import
+   workflow (``POST v2/images/{image_id}/import``).  *It has no effect on the
+   image data upload call* (``PUT v2/images/{image_id}/file``).
+
+   You can guarantee that your end users must use interoperable image import by
+   restricting the ``upload_image`` policy appropriately in the Glance
+   ``policy.json`` file.  By default, this policy is unrestricted (that is,
+   any authorized user may make the image upload call).
+
+   For example, to allow only admin or service users to make the image upload
+   call, the policy could be restricted as follows:
+
+   .. code-block:: text
+
+      "upload_image": "role:admin or (service_user_id:<uuid of nova user>) or
+      (service_roles:<service user role>)"
+
+   where "service_role" is the role which is created for the service user
+   and assigned to trusted services.
+
+To use the Image Decompression Plugin, the following configuration is
+required.
+
+You will need to add "image_decompression" to 'glance-image-import.conf' file
+as shown below:
+
+.. code-block:: ini
+
+   [image_import_opts]
+   image_import_plugins = ['image_decompression']
+
+.. note::
+
+  The supported archive types for Image Decompression are zip, lha/lzh and gzip.
+  Currently the plugin does not support multi-layered archives (like tar.gz).
+  Lha/lzh is only supported in case python3 `lhafile` dependency library is
+  installed, absence of this dependency will fail the import job where lha file
+  is provided. (In this case we know it won't be bootable as the image is
+  compressed and we do not have means to decompress it.)
+
+.. note::
+
+  ``image_import_plugins`` config option is a list and multiple plugins can be
+  enabled for the import flow. The plugins are not run in parallel. One can
+  enable multiple plugins by configuring them in the
+  ``glance-image-import.conf`` for example as following:
+
+  .. code-block:: ini
+
+     [image_import_opts]
+     image_import_plugins = ['image_decompression', 'image_conversion']
+
+     [image_conversion]
+     output_format = raw
+
+  If Image Conversion is used together, decompression must happen first, this
+  is ensured by ordering the plugins.
+
 .. _glance-api.conf: https://opendev.org/openstack/glance/src/branch/master/etc/glance-api.conf
 .. _glance-image-import.conf.sample: https://opendev.org/openstack/glance/src/branch/master/etc/glance-image-import.conf.sample
 .. _`Image Import Refactor`: https://specs.openstack.org/openstack/glance-specs/specs/mitaka/approved/image-import/image-import-refactor.html
