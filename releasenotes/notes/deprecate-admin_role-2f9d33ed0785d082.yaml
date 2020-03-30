@@ -1,0 +1,53 @@
+---
+deprecations:
+  - |
+    The Glance API configuration option ``admin_role`` is deprecated in this
+    release and is subject to removal at the beginning of the Victoria
+    development cycle, following the `OpenStack standard deprecation policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
+
+    What this option does is to grant complete admin access to any
+    authenticated user with a particular role.  *This overrides any policy
+    rules configured in the policy configuration file.*  While everything
+    will behave as expected if you are also using the default policy settings,
+    this setting may cause anomalous behavior when you are configuring custom
+    policies.
+
+    Additionally, the default value of this option has been changed in
+    this release.  See the "Upgrade Notes" section of this document for
+    more information.
+
+    If you were previously aware of this option and were actually using it,
+    we apologize for the inconvenience its removal will cause, but overall
+    it will be better for everyone if policy configuration is confined to
+    the policy configuration file and this backdoor is eliminated.  The
+    migration path is to explictly mention the role you configured for this
+    option in appropriate places in your policy configuration file.
+upgrade:
+  - |
+    The default value of the Glance API configuration option ``admin_role``
+    has been changed in this release.  If you were also using the default
+    policy configuration, this change will not affect you.  If you were
+    *not* using the default policy configuration, please read on.
+
+    With the previous default value, any user with the ``admin`` role
+    could act in an administrative context *regardless of what your
+    policy file defined as the administrative context*.  And this might
+    not be a problem because usually the ``admin`` role is not assigned
+    to "regular" end users.  It does become a problem, however, when
+    operators attempt to configure different gradations of administrator.
+
+    In this release, the default value of ``admin_role`` has been defined
+    as ``__NOT_A_ROLE_07697c71e6174332989d3d5f2a7d2e7c_NOT_A_ROLE__``.
+    This effectively makes it inoperable (unless your Keystone administrator
+    has actually created such a role and assigned it to someone, which is
+    unlikely but possible, so you should check).  If your local policy tests
+    (you have some, right?) indicate that your Glance policies no longer
+    function as expected, then you have been relying on the ``admin_role``
+    configuration option and need to revise your policy file.  (A short
+    term fix would be to set the ``admin_role`` option back to ``admin``,
+    but keep in mind that it *is* a short-term fix, because this
+    configuration option is deprecated and subject to removal.)
+
+    See the "Deprecation Notes" section of this document for more
+    information.
