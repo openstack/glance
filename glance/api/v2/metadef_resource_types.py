@@ -128,7 +128,7 @@ class ResourceTypeController(object):
             LOG.debug("User not permitted to delete metadata resource type "
                       "'%s' within '%s' namespace", resource_type, namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.NotFound as e:
+        except exception.NotFound:
             msg = (_("Failed to find resource type %(resourcetype)s to "
                      "delete") % {'resourcetype': resource_type})
             LOG.error(msg)

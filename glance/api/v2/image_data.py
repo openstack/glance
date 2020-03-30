@@ -234,7 +234,7 @@ class ImageDataController(object):
             LOG.exception(msg)
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
-        except exception.Forbidden as e:
+        except exception.Forbidden:
             msg = ("Not allowed to upload image data for image %s" %
                    image_id)
             LOG.debug(msg)
@@ -283,16 +283,16 @@ class ImageDataController(object):
             self._delete(image_repo, image)
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
-        except webob.exc.HTTPGone as e:
+        except webob.exc.HTTPGone:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE("Failed to upload image data due to HTTP error"))
 
-        except webob.exc.HTTPError as e:
+        except webob.exc.HTTPError:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE("Failed to upload image data due to HTTP error"))
                 self._restore(image_repo, image)
 
-        except Exception as e:
+        except Exception:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE("Failed to upload image data due to "
                               "internal error"))
@@ -346,7 +346,7 @@ class ImageDataController(object):
                 staging_store.add(
                     image_id, utils.LimitingReader(
                         utils.CooperativeReader(data), CONF.image_size_cap), 0)
-            except glance_store.Duplicate as e:
+            except glance_store.Duplicate:
                 msg = _("The image %s has data on staging") % image_id
                 raise webob.exc.HTTPConflict(explanation=msg)
 
@@ -390,7 +390,7 @@ class ImageDataController(object):
             LOG.debug(msg)
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
-        except Exception as e:
+        except Exception:
             with excutils.save_and_reraise_exception():
                 LOG.exception(_LE("Failed to stage image data due to "
                                   "internal error"))

@@ -19,6 +19,7 @@ import osprofiler.initializer
 
 from glance.common import config
 from glance.common import store_utils
+from glance.i18n import _
 from glance import notifier
 
 CONF = cfg.CONF

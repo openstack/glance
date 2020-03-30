@@ -182,12 +182,10 @@ class ImagesController(object):
                       'backend': stores}
 
         if (import_method == 'web-download' and
-           not utils.validate_import_uri(uri)):
-                LOG.debug("URI for web-download does not pass filtering: %s",
-                          uri)
-                msg = (_("URI for web-download does not pass filtering: %s") %
-                       uri)
-                raise webob.exc.HTTPBadRequest(explanation=msg)
+                not utils.validate_import_uri(uri)):
+            LOG.debug("URI for web-download does not pass filtering: %s", uri)
+            msg = (_("URI for web-download does not pass filtering: %s") % uri)
+            raise webob.exc.HTTPBadRequest(explanation=msg)
 
         try:
             import_task = task_factory.new_task(task_type='api_image_import',
@@ -506,7 +504,7 @@ class ImagesController(object):
         except (glance_store.Forbidden, exception.Forbidden) as e:
             LOG.debug("User not permitted to delete image '%s'", image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except (glance_store.NotFound, exception.NotFound) as e:
+        except (glance_store.NotFound, exception.NotFound):
             msg = (_("Failed to find image %(image_id)s to delete") %
                    {'image_id': image_id})
             LOG.warn(msg)
@@ -1176,8 +1174,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                 locations = _get_image_locations(image)
                 if locations:
                     # Choose best location configured strategy
-                    l = location_strategy.choose_best_location(locations)
-                    image_view['direct_url'] = l['url']
+                    loc = location_strategy.choose_best_location(locations)
+                    image_view['direct_url'] = loc['url']
                 else:
                     LOG.debug("The 'locations' list of image %s is empty, "
                               "not including 'direct_url' in response",

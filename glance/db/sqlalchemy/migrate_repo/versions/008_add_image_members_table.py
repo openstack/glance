@@ -13,7 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy import *  # noqa
+from sqlalchemy import Column, ForeignKey, Index, MetaData, Table
+from sqlalchemy import UniqueConstraint
 
 from glance.db.sqlalchemy.migrate_repo.schema import (
     Boolean, DateTime, Integer, String, create_tables,

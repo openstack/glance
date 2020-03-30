@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy import *  # noqa
+from sqlalchemy import Index, MetaData
 
 from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
 

@@ -178,12 +178,11 @@ class ImagePager(object):
             page_size = image_count
         self.image_batches = []
         start = 0
-        l = len(images)
-        while start < l:
+        while start < image_count:
             self.image_batches.append(images[start: start + page_size])
             start += page_size
-            if (l - start) < page_size:
-                page_size = l - start
+            if (image_count - start) < page_size:
+                page_size = image_count - start
 
     def __call__(self):
         if len(self.image_batches) == 0:

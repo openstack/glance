@@ -242,7 +242,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                                request=req,
                                                content_type='text/plain')
 
-    except exception.ImageSizeLimitExceeded as e:
+    except exception.ImageSizeLimitExceeded:
         msg = (_("Denying attempt to upload image larger than %d bytes.")
                % CONF.image_size_cap)
         LOG.warn(msg)
@@ -273,7 +273,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
             LOG.exception(msg)
             safe_kill(req, image_id, 'saving')
 
-    except (ValueError, IOError) as e:
+    except (ValueError, IOError):
         msg = _("Client disconnected before sending all data to backend")
         LOG.warn(msg)
         safe_kill(req, image_id, 'saving')
@@ -281,7 +281,7 @@ def upload_data_to_store(req, image_meta, image_data, store, notifier):
                                        content_type="text/plain",
                                        request=req)
 
-    except Exception as e:
+    except Exception:
         msg = _("Failed to upload image %s") % image_id
         LOG.exception(msg)
         safe_kill(req, image_id, 'saving')

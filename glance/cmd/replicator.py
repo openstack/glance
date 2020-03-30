@@ -757,7 +757,7 @@ def main():
         config.parse_args()
     except RuntimeError as e:
         sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
-    except SystemExit as e:
+    except SystemExit:
         sys.exit("Please specify one command")
 
     # Setup logging
