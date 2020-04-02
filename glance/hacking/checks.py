@@ -14,6 +14,8 @@
 
 import re
 
+from hacking import core
+
 """
 Guidelines for writing new hacking checks
 
@@ -44,6 +46,7 @@ unicode_func_re = re.compile(r"(\s|\W|^)unicode\(")
 dict_constructor_with_list_copy_re = re.compile(r".*\bdict\((\[)?(\(|\[)")
 
 
+@core.flake8ext
 def assert_true_instance(logical_line):
     """Check for assertTrue(isinstance(a, b)) sentences
 
@@ -53,6 +56,7 @@ def assert_true_instance(logical_line):
         yield (0, "G316: assertTrue(isinstance(a, b)) sentences not allowed")
 
 
+@core.flake8ext
 def assert_equal_type(logical_line):
     """Check for assertEqual(type(A), B) sentences
 
@@ -62,6 +66,7 @@ def assert_equal_type(logical_line):
         yield (0, "G317: assertEqual(type(A), B) sentences not allowed")
 
 
+@core.flake8ext
 def assert_equal_none(logical_line):
     """Check for assertEqual(A, None) or assertEqual(None, A) sentences
 
@@ -74,6 +79,7 @@ def assert_equal_none(logical_line):
                "sentences not allowed")
 
 
+@core.flake8ext
 def no_translate_debug_logs(logical_line, filename):
     dirs = [
         "glance/api",
@@ -93,6 +99,7 @@ def no_translate_debug_logs(logical_line, filename):
             yield(0, "G319: Don't translate debug level logs")
 
 
+@core.flake8ext
 def no_direct_use_of_unicode_function(logical_line):
     """Check for use of unicode() builtin
 
@@ -102,6 +109,7 @@ def no_direct_use_of_unicode_function(logical_line):
         yield(0, "G320: Use six.text_type() instead of unicode()")
 
 
+@core.flake8ext
 def check_no_contextlib_nested(logical_line):
     msg = ("G327: contextlib.nested is deprecated since Python 2.7. See "
            "https://docs.python.org/2/library/contextlib.html#contextlib."
@@ -111,6 +119,7 @@ def check_no_contextlib_nested(logical_line):
         yield(0, msg)
 
 
+@core.flake8ext
 def dict_constructor_with_list_copy(logical_line):
     msg = ("G328: Must use a dict comprehension instead of a dict constructor "
            "with a sequence of key-value pairs.")
@@ -118,12 +127,14 @@ def dict_constructor_with_list_copy(logical_line):
         yield (0, msg)
 
 
+@core.flake8ext
 def check_python3_xrange(logical_line):
     if re.search(r"\bxrange\s*\(", logical_line):
         yield(0, "G329: Do not use xrange. Use range, or six.moves.range for "
                  "large loops.")
 
 
+@core.flake8ext
 def check_python3_no_iteritems(logical_line):
     msg = ("G330: Use six.iteritems() or dict.items() instead of "
            "dict.iteritems().")
@@ -131,6 +142,7 @@ def check_python3_no_iteritems(logical_line):
         yield(0, msg)
 
 
+@core.flake8ext
 def check_python3_no_iterkeys(logical_line):
     msg = ("G331: Use six.iterkeys() or dict.keys() instead of "
            "dict.iterkeys().")
@@ -138,22 +150,9 @@ def check_python3_no_iterkeys(logical_line):
         yield(0, msg)
 
 
+@core.flake8ext
 def check_python3_no_itervalues(logical_line):
     msg = ("G332: Use six.itervalues() or dict.values instead of "
            "dict.itervalues().")
     if re.search(r".*\.itervalues\(\)", logical_line):
         yield(0, msg)
-
-
-def factory(register):
-    register(assert_true_instance)
-    register(assert_equal_type)
-    register(assert_equal_none)
-    register(no_translate_debug_logs)
-    register(no_direct_use_of_unicode_function)
-    register(check_no_contextlib_nested)
-    register(dict_constructor_with_list_copy)
-    register(check_python3_xrange)
-    register(check_python3_no_iteritems)
-    register(check_python3_no_iterkeys)
-    register(check_python3_no_itervalues)
