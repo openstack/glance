@@ -59,6 +59,8 @@ bug_tag = 'documentation'
 apidoc_module_dir = '../../glance'
 apidoc_output_dir = 'contributor/api'
 apidoc_excluded_paths = [
+    'hacking/*',
+    'hacking',
     'tests/*',
     'tests',
     'db/sqlalchemy/*',
