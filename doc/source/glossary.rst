@@ -2536,7 +2536,7 @@ N
 
    neutron
 
-      Codename for OpenStack :term:`Networking service <Networking Service
+      Codename for OpenStack :term:`Networking service <Networking service
       (neutron)>`.
 
    neutron API
@@ -2567,7 +2567,7 @@ N
 
       Provides support for NexentaStor devices in Compute.
 
-   NFV Orchestration Service (tacker)
+   NFV Orchestration service (tacker)
 
       OpenStack service that aims to implement Network Function Virtualization
       (NFV) orchestration services and libraries for end-to-end life-cycle
@@ -2613,7 +2613,7 @@ N
 
    Nova API
 
-      Alternative term for the :term:`Compute API <Compute API (nova API)>`.
+      Alternative term for the :term:`Compute API <Compute API (Nova API)>`.
 
    nova-network
 

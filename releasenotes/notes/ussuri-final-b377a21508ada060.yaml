@@ -1,0 +1,36 @@
+---
+prelude: |
+    Ussuri release includes multiple important milestones in Glance development
+    priorities.
+
+    * Added support for importing images in multiple stores
+
+    * Added support for copying existing images in multiple stores
+
+    * Added support to delete image from single store
+
+    * Dropped support for python 2.7
+
+fixes:
+  - |
+    Bug 1823703_: Wrong version URL when Glance is deployed behind proxy with vhost
+  - |
+    Bug 1863021_: eventlet monkey patch results in assert len(_active) == 1 AssertionError
+  - |
+    Bug 1855708_: Reload tests broken in Py3
+  - |
+    Bug 1850412_: Useful image properties in glance - os_admin_user not documented
+  - |
+    Bug 1863879_: Multiple import fails if all-stores 'True' is passed
+  - |
+    Bug 1861723_: Glance is listening on TCP socket before store initialization
+  - |
+    Bug 1861501_: Store ID fetched from URI is incorrectly encoded under py27
+
+    .. _1823703: https://code.launchpad.net/bugs/1823703
+    .. _1863021: https://code.launchpad.net/bugs/1863021
+    .. _1855708: https://code.launchpad.net/bugs/1855708
+    .. _1850412: https://code.launchpad.net/bugs/1850412
+    .. _1863879: https://code.launchpad.net/bugs/1863879
+    .. _1861723: https://code.launchpad.net/bugs/1861723
+    .. _1861501: https://code.launchpad.net/bugs/1861501
