@@ -133,13 +133,13 @@ Glossary
 
 .. glossary::
 
-  uwsgi
+  uwsgi protocol
     The native protocol used by the uWSGI server. (The acronym is written in
     all lowercase on purpose.)
 
     https://uwsgi-docs.readthedocs.io/en/latest/Protocol.html
 
-  uWSGI
+  uWSGI project
     A project that aims at developing a full stack for building hosting
     services.  It produces software, the uWSGI server, that is exposed in
     Python code as a module named ``uwsgi``.
