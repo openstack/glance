@@ -194,21 +194,26 @@ can also be used to set policies for Image service actions.
           "get_metadef_objects":"",
           "modify_metadef_object":"",
           "add_metadef_object":"",
+          "delete_metadef_object":"",
 
           "list_metadef_resource_types":"",
           "get_metadef_resource_type":"",
           "add_metadef_resource_type_association":"",
+          "remove_metadef_resource_type_association":"",
 
           "get_metadef_property":"",
           "get_metadef_properties":"",
           "modify_metadef_property":"",
           "add_metadef_property":"",
+          "remove_metadef_property":"",
 
           "get_metadef_tag":"",
           "get_metadef_tags":"",
           "modify_metadef_tag":"",
           "add_metadef_tag":"",
-          "add_metadef_tags":""
+          "add_metadef_tags":"",
+          "delete_metadef_tag":"",
+          "delete_metadef_tags":""
        }
 
    For each parameter, use ``"rule:restricted"`` to restrict access to all

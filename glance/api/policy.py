@@ -454,6 +454,10 @@ class MetadefNamespaceProxy(glance.domain.proxy.MetadefNamespace):
         self.policy = policy
         super(MetadefNamespaceProxy, self).__init__(namespace)
 
+    def delete(self):
+        self.policy.enforce(self.context, 'delete_metadef_namespace', {})
+        return super(MetadefNamespaceProxy, self).delete()
+
 
 class MetadefNamespaceRepoProxy(glance.domain.proxy.MetadefNamespaceRepo):
 
@@ -483,6 +487,14 @@ class MetadefNamespaceRepoProxy(glance.domain.proxy.MetadefNamespaceRepo):
         self.policy.enforce(self.context, 'add_metadef_namespace', {})
         return super(MetadefNamespaceRepoProxy, self).add(namespace)
 
+    def remove(self, namespace):
+        self.policy.enforce(self.context, 'delete_metadef_namespace', {})
+        return super(MetadefNamespaceRepoProxy, self).remove(namespace)
+
+    def remove_tags(self, namespace):
+        self.policy.enforce(self.context, 'delete_metadef_tags', {})
+        return super(MetadefNamespaceRepoProxy, self).remove_tags(namespace)
+
 
 class MetadefNamespaceFactoryProxy(
         glance.domain.proxy.MetadefNamespaceFactory):
@@ -506,6 +518,10 @@ class MetadefObjectProxy(glance.domain.proxy.MetadefObject):
         self.context = context
         self.policy = policy
         super(MetadefObjectProxy, self).__init__(meta_object)
+
+    def delete(self):
+        self.policy.enforce(self.context, 'delete_metadef_object', {})
+        return super(MetadefObjectProxy, self).delete()
 
 
 class MetadefObjectRepoProxy(glance.domain.proxy.MetadefObjectRepo):
@@ -536,6 +552,10 @@ class MetadefObjectRepoProxy(glance.domain.proxy.MetadefObjectRepo):
         self.policy.enforce(self.context, 'add_metadef_object', {})
         return super(MetadefObjectRepoProxy, self).add(meta_object)
 
+    def remove(self, meta_object):
+        self.policy.enforce(self.context, 'delete_metadef_object', {})
+        return super(MetadefObjectRepoProxy, self).remove(meta_object)
+
 
 class MetadefObjectFactoryProxy(glance.domain.proxy.MetadefObjectFactory):
 
@@ -558,6 +578,11 @@ class MetadefResourceTypeProxy(glance.domain.proxy.MetadefResourceType):
         self.context = context
         self.policy = policy
         super(MetadefResourceTypeProxy, self).__init__(meta_resource_type)
+
+    def delete(self):
+        self.policy.enforce(self.context,
+                            'remove_metadef_resource_type_association', {})
+        return super(MetadefResourceTypeProxy, self).delete()
 
 
 class MetadefResourceTypeRepoProxy(
@@ -586,6 +611,12 @@ class MetadefResourceTypeRepoProxy(
                             'add_metadef_resource_type_association', {})
         return super(MetadefResourceTypeRepoProxy, self).add(resource_type)
 
+    def remove(self, *args, **kwargs):
+        self.policy.enforce(self.context,
+                            'remove_metadef_resource_type_association', {})
+        return super(MetadefResourceTypeRepoProxy,
+                     self).remove(*args, **kwargs)
+
 
 class MetadefResourceTypeFactoryProxy(
         glance.domain.proxy.MetadefResourceTypeFactory):
@@ -609,6 +640,10 @@ class MetadefPropertyProxy(glance.domain.proxy.MetadefProperty):
         self.context = context
         self.policy = policy
         super(MetadefPropertyProxy, self).__init__(namespace_property)
+
+    def delete(self):
+        self.policy.enforce(self.context, 'remove_metadef_property', {})
+        return super(MetadefPropertyProxy, self).delete()
 
 
 class MetadefPropertyRepoProxy(glance.domain.proxy.MetadefPropertyRepo):
@@ -643,6 +678,10 @@ class MetadefPropertyRepoProxy(glance.domain.proxy.MetadefPropertyRepo):
         return super(MetadefPropertyRepoProxy, self).add(
             namespace_property)
 
+    def remove(self, *args, **kwargs):
+        self.policy.enforce(self.context, 'remove_metadef_property', {})
+        return super(MetadefPropertyRepoProxy, self).remove(*args, **kwargs)
+
 
 class MetadefPropertyFactoryProxy(glance.domain.proxy.MetadefPropertyFactory):
 
@@ -664,6 +703,10 @@ class MetadefTagProxy(glance.domain.proxy.MetadefTag):
         self.context = context
         self.policy = policy
         super(MetadefTagProxy, self).__init__(meta_tag)
+
+    def delete(self):
+        self.policy.enforce(self.context, 'delete_metadef_tag', {})
+        return super(MetadefTagProxy, self).delete()
 
 
 class MetadefTagRepoProxy(glance.domain.proxy.MetadefTagRepo):
@@ -697,6 +740,10 @@ class MetadefTagRepoProxy(glance.domain.proxy.MetadefTagRepo):
     def add_tags(self, meta_tags):
         self.policy.enforce(self.context, 'add_metadef_tags', {})
         return super(MetadefTagRepoProxy, self).add_tags(meta_tags)
+
+    def remove(self, meta_tag):
+        self.policy.enforce(self.context, 'delete_metadef_tag', {})
+        return super(MetadefTagRepoProxy, self).remove(meta_tag)
 
 
 class MetadefTagFactoryProxy(glance.domain.proxy.MetadefTagFactory):

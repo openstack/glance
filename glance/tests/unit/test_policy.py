@@ -160,6 +160,94 @@ class TaskFactoryStub(object):
         return 'new_task'
 
 
+class MdNamespaceRepoStub(object):
+    def add(self, namespace):
+        return 'mdns_add'
+
+    def get(self, namespace):
+        return 'mdns_get'
+
+    def list(self, *args, **kwargs):
+        return ['mdns_list']
+
+    def save(self, namespace):
+        return 'mdns_save'
+
+    def remove(self, namespace):
+        return 'mdns_remove'
+
+    def remove_tags(self, namespace):
+        return 'mdtags_remove'
+
+
+class MdObjectRepoStub(object):
+    def add(self, obj):
+        return 'mdobj_add'
+
+    def get(self, ns, obj_name):
+        return 'mdobj_get'
+
+    def list(self, *args, **kwargs):
+        return ['mdobj_list']
+
+    def save(self, obj):
+        return 'mdobj_save'
+
+    def remove(self, obj):
+        return 'mdobj_remove'
+
+
+class MdResourceTypeRepoStub(object):
+    def add(self, rt):
+        return 'mdrt_add'
+
+    def get(self, *args, **kwargs):
+        return 'mdrt_get'
+
+    def list(self, *args, **kwargs):
+        return ['mdrt_list']
+
+    def remove(self, *args, **kwargs):
+        return 'mdrt_remove'
+
+
+class MdPropertyRepoStub(object):
+    def add(self, prop):
+        return 'mdprop_add'
+
+    def get(self, ns, prop_name):
+        return 'mdprop_get'
+
+    def list(self, *args, **kwargs):
+        return ['mdprop_list']
+
+    def save(self, prop):
+        return 'mdprop_save'
+
+    def remove(self, prop):
+        return 'mdprop_remove'
+
+
+class MdTagRepoStub(object):
+    def add(self, tag):
+        return 'mdtag_add'
+
+    def add_tags(self, tags):
+        return ['mdtag_add_tags']
+
+    def get(self, ns, tag_name):
+        return 'mdtag_get'
+
+    def list(self, *args, **kwargs):
+        return ['mdtag_list']
+
+    def save(self, tag):
+        return 'mdtag_save'
+
+    def remove(self, tag):
+        return 'mdtag_remove'
+
+
 class TestPolicyEnforcer(base.IsolatedUnitTest):
 
     def test_policy_enforce_unregistered(self):
@@ -602,6 +690,204 @@ class TestTaskPolicy(test_utils.BaseTestCase):
         )
         task = glance.api.policy.TaskProxy(self.task_stub, {}, self.policy)
         task_repo.add(task)
+
+
+class TestMetadefPolicy(test_utils.BaseTestCase):
+    def setUp(self):
+        self.fakens = mock.Mock()
+        self.fakeobj = mock.Mock()
+        self.fakert = mock.Mock()
+        self.fakeprop = mock.Mock()
+        self.faketag = mock.Mock()
+        self.policy = unit_test_utils.FakePolicyEnforcer()
+        super(TestMetadefPolicy, self).setUp()
+
+    def test_md_namespace_not_allowed(self):
+        rules = {'get_metadef_namespace': False,
+                 'get_metadef_namespaces': False,
+                 'modify_metadef_namespace': False,
+                 'add_metadef_namespace': False,
+                 'delete_metadef_namespace': False}
+        self.policy.set_rules(rules)
+        mdns_repo = glance.api.policy.MetadefNamespaceRepoProxy(
+            MdNamespaceRepoStub(), {}, self.policy)
+        self.assertRaises(exception.Forbidden, mdns_repo.add, self.fakens)
+        self.assertRaises(exception.Forbidden, mdns_repo.get, self.fakens)
+        self.assertRaises(exception.Forbidden, mdns_repo.list)
+        self.assertRaises(exception.Forbidden, mdns_repo.remove, self.fakens)
+        self.assertRaises(exception.Forbidden, mdns_repo.save, self.fakens)
+
+    def test_md_namespace_allowed(self):
+        rules = {'get_metadef_namespace': True,
+                 'get_metadef_namespaces': True,
+                 'modify_metadef_namespace': True,
+                 'add_metadef_namespace': True,
+                 'delete_metadef_namespace': True}
+        self.policy.set_rules(rules)
+        mdns_repo = glance.api.policy.MetadefNamespaceRepoProxy(
+            MdNamespaceRepoStub(), {}, self.policy)
+        self.assertEqual(None, mdns_repo.add(self.fakens))
+        self.assertEqual('mdns_get',
+                         mdns_repo.get(self.fakens).namespace_input)
+        self.assertEqual(['mdns_list'],
+                         [ns.namespace_input for ns in mdns_repo.list()])
+        self.assertEqual('mdns_save',
+                         mdns_repo.save(self.fakens).namespace_input)
+        self.assertEqual('mdns_remove',
+                         mdns_repo.remove(self.fakens).namespace_input)
+
+    def test_md_object_not_allowed(self):
+        rules = {'get_metadef_object': False,
+                 'get_metadef_objects': False,
+                 'modify_metadef_object': False,
+                 'add_metadef_object': False,
+                 'delete_metadef_object': False}
+        self.policy.set_rules(rules)
+        mdobj_repo = glance.api.policy.MetadefObjectRepoProxy(
+            MdObjectRepoStub(), {}, self.policy)
+        self.assertRaises(exception.Forbidden, mdobj_repo.add, self.fakeobj)
+        self.assertRaises(exception.Forbidden, mdobj_repo.get, self.fakens,
+                          self.fakeobj)
+        self.assertRaises(exception.Forbidden, mdobj_repo.list)
+        self.assertRaises(exception.Forbidden, mdobj_repo.remove, self.fakeobj)
+        self.assertRaises(exception.Forbidden, mdobj_repo.save, self.fakeobj)
+
+    def test_md_object_allowed(self):
+        rules = {'get_metadef_object': True,
+                 'get_metadef_objects': True,
+                 'modify_metadef_object': True,
+                 'add_metadef_object': True,
+                 'delete_metadef_object': True}
+        self.policy.set_rules(rules)
+        mdobj_repo = glance.api.policy.MetadefObjectRepoProxy(
+            MdObjectRepoStub(), {}, self.policy)
+        self.assertEqual(None, mdobj_repo.add(self.fakeobj))
+        self.assertEqual('mdobj_get',
+                         mdobj_repo.get(self.fakens, 'fakeobj').meta_object)
+        self.assertEqual(['mdobj_list'],
+                         [obj.meta_object for obj in mdobj_repo.list()])
+        self.assertEqual('mdobj_save',
+                         mdobj_repo.save(self.fakeobj).meta_object)
+        self.assertEqual('mdobj_remove',
+                         mdobj_repo.remove(self.fakeobj).meta_object)
+
+    def test_md_resource_type_not_allowed(self):
+        rules = {'get_metadef_resource_type': False,
+                 'list_metadef_resource_types': False,
+                 'add_metadef_resource_type_association': False,
+                 'remove_metadef_resource_type_association': False}
+        self.policy.set_rules(rules)
+        mdrt_repo = glance.api.policy.MetadefResourceTypeRepoProxy(
+            MdResourceTypeRepoStub(), {}, self.policy)
+        self.assertRaises(exception.Forbidden, mdrt_repo.add, self.fakert)
+        self.assertRaises(exception.Forbidden, mdrt_repo.get, self.fakert)
+        self.assertRaises(exception.Forbidden, mdrt_repo.list)
+        self.assertRaises(exception.Forbidden, mdrt_repo.remove, self.fakert)
+
+    def test_md_resource_type_allowed(self):
+        rules = {'get_metadef_resource_type': True,
+                 'list_metadef_resource_types': True,
+                 'add_metadef_resource_type_association': True,
+                 'remove_metadef_resource_type_association': True}
+        self.policy.set_rules(rules)
+        mdrt_repo = glance.api.policy.MetadefResourceTypeRepoProxy(
+            MdResourceTypeRepoStub(), {}, self.policy)
+        self.assertEqual(None, mdrt_repo.add(self.fakert))
+        self.assertEqual(
+            'mdrt_get', mdrt_repo.get(self.fakens,
+                                      'fakert').meta_resource_type)
+        self.assertEqual(['mdrt_list'],
+                         [rt.meta_resource_type for rt in mdrt_repo.list()])
+        self.assertEqual('mdrt_remove',
+                         mdrt_repo.remove(self.fakert).meta_resource_type)
+
+    def test_md_property_not_allowed(self):
+        rules = {'get_metadef_property': False,
+                 'get_metadef_properties': False,
+                 'modify_metadef_property': False,
+                 'add_metadef_property': False,
+                 'remove_metadef_property': False}
+        self.policy.set_rules(rules)
+        mdprop_repo = glance.api.policy.MetadefPropertyRepoProxy(
+            MdPropertyRepoStub(), {}, self.policy)
+        self.assertRaises(exception.Forbidden, mdprop_repo.add, self.fakeprop)
+        self.assertRaises(exception.Forbidden, mdprop_repo.get, self.fakens,
+                          self.fakeprop)
+        self.assertRaises(exception.Forbidden, mdprop_repo.list)
+        self.assertRaises(exception.Forbidden, mdprop_repo.remove,
+                          self.fakeprop)
+        self.assertRaises(exception.Forbidden, mdprop_repo.save, self.fakeprop)
+
+    def test_md_property_allowed(self):
+        rules = {'get_metadef_property': True,
+                 'get_metadef_properties': True,
+                 'modify_metadef_property': True,
+                 'add_metadef_property': True,
+                 'remove_metadef_property': True}
+        self.policy.set_rules(rules)
+        mdprop_repo = glance.api.policy.MetadefPropertyRepoProxy(
+            MdPropertyRepoStub(), {}, self.policy)
+        self.assertEqual(None, mdprop_repo.add(self.fakeprop))
+        self.assertEqual(
+            'mdprop_get', mdprop_repo.get(self.fakens,
+                                          'fakeprop').namespace_property)
+        self.assertEqual(['mdprop_list'],
+                         [prop.namespace_property for prop
+                          in mdprop_repo.list()])
+        self.assertEqual('mdprop_save',
+                         mdprop_repo.save(self.fakeprop).namespace_property)
+        self.assertEqual('mdprop_remove',
+                         mdprop_repo.remove(self.fakeprop).namespace_property)
+
+    def test_md_tag_not_allowed(self):
+        rules = {'get_metadef_tag': False,
+                 'get_metadef_tags': False,
+                 'modify_metadef_tag': False,
+                 'add_metadef_tag': False,
+                 'add_metadef_tags': False,
+                 'delete_metadef_tag': False,
+                 'delete_metadef_tags': False}
+        self.policy.set_rules(rules)
+        mdtag_repo = glance.api.policy.MetadefTagRepoProxy(
+            MdTagRepoStub(), {}, self.policy)
+        mdns_repo = glance.api.policy.MetadefNamespaceRepoProxy(
+            MdNamespaceRepoStub(), {}, self.policy)
+        self.assertRaises(exception.Forbidden, mdtag_repo.add, self.faketag)
+        self.assertRaises(exception.Forbidden, mdtag_repo.add_tags,
+                          [self.faketag])
+        self.assertRaises(exception.Forbidden, mdtag_repo.get, self.fakens,
+                          self.faketag)
+        self.assertRaises(exception.Forbidden, mdtag_repo.list)
+        self.assertRaises(exception.Forbidden, mdtag_repo.remove, self.faketag)
+        self.assertRaises(exception.Forbidden, mdns_repo.remove_tags,
+                          self.fakens)
+        self.assertRaises(exception.Forbidden, mdtag_repo.save, self.faketag)
+
+    def test_md_tag_allowed(self):
+        rules = {'get_metadef_tag': True,
+                 'get_metadef_tags': True,
+                 'modify_metadef_tag': True,
+                 'add_metadef_tag': True,
+                 'add_metadef_tags': True,
+                 'delete_metadef_tag': True,
+                 'delete_metadef_tags': True}
+        self.policy.set_rules(rules)
+        mdtag_repo = glance.api.policy.MetadefTagRepoProxy(
+            MdTagRepoStub(), {}, self.policy)
+        mdns_repo = glance.api.policy.MetadefNamespaceRepoProxy(
+            MdNamespaceRepoStub(), {}, self.policy)
+        self.assertEqual(None, mdtag_repo.add(self.faketag))
+        self.assertEqual(None, mdtag_repo.add_tags([self.faketag]))
+        self.assertEqual('mdtag_get',
+                         mdtag_repo.get(self.fakens, 'faketag').base)
+        self.assertEqual(['mdtag_list'],
+                         [tag.base for tag in mdtag_repo.list()])
+        self.assertEqual('mdtag_save',
+                         mdtag_repo.save(self.faketag).base)
+        self.assertEqual('mdtag_remove',
+                         mdtag_repo.remove(self.faketag).base)
+        self.assertEqual('mdtags_remove',
+                         mdns_repo.remove_tags(self.fakens).base)
 
 
 class TestContextPolicyEnforcer(base.IsolatedUnitTest):

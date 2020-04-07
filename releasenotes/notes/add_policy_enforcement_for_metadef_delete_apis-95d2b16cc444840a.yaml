@@ -1,0 +1,16 @@
+---
+features:
+  - |
+    Policy enforcement for several Metadata Definition delete APIs are
+    added in this release. The following actions are enforced
+    and added to the policy.json:
+
+    - ``delete_metadef_namespace``
+    - ``delete_metadef_object``
+    - ``remove_metadef_resource_type_association``
+    - ``remove_metadef_property``
+    - ``delete_metadef_tag``
+    - ``delete_metadef_tags``
+
+    This prevents roles that should not have access to these APIs from
+    performing the APIs associated with the actions above.
