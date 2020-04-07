@@ -628,6 +628,11 @@ only compressed images.
    where "service_role" is the role which is created for the service user
    and assigned to trusted services.
 
+.. note::
+
+    The plugin will not decompressed images which container_format is set
+    to 'compressed' to maintain the original intent of the image creator.
+
 To use the Image Decompression Plugin, the following configuration is
 required.
 
