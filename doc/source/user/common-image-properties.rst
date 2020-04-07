@@ -23,7 +23,7 @@ that may prove useful to consumers of your image.
 This document explains the names of these properties and the expected values.
 
 The common image properties are also described in a JSON schema, found in
-/etc/glance/schema-image.json in the Glance source code.
+``/etc/glance/schema-image.json`` in the Glance source code.
 
 kernel_id
   The ID of image stored in Glance that should be used as the kernel when
@@ -61,3 +61,26 @@ cinder_encryption_key_deletion_policy
   States the condition under which the Image Service will delete the object
   associated with the 'cinder_encryption_key_id' image property. If this
   property is missing, the Image Service will take no action.
+
+This file is the default schema. An operator can modify
+``/etc/schema-image.json`` to include arbitrary properties.
+
+.. warning::
+   * Do not delete existing properties from this default schema because this
+     will affect interoperability
+   * The ``type`` of each property in this JSON schema, specified by the
+     ``type`` key, must have value ``string`` even if the property you are
+     adding is not a string in common sense. For example, if you want to add a
+     property named ``is_removable`` and want its type to be ``boolean``.
+     However, you must give the ``type`` key the value ``string``. Otherwise,
+     when an end-user makes a call that sets a value on one of these, they
+     will gets a 500. This is because everything in the image_properties table
+     must be a string in the database. The API, however, won't accept a string
+     value when the schema says it is boolean or some other non-string JSON
+     data type
+
+.. note::
+   If your need is more complicated, we recommend using metadefs_ instead of
+   modifying this image schema
+
+.. _metadefs: https://docs.openstack.org/api-ref/image/v2/metadefs-index.html
