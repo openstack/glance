@@ -401,15 +401,15 @@ stores disk images. These configuration options are specified in the
 
   Sets the storage backend to use by default when storing images in Glance.
   Available options for this option are (``file``, ``swift``, ``rbd``,
-  ``sheepdog``, ``cinder`` or ``vsphere``). In order to select a default store
-  it must also be listed in the ``stores`` list described below.
+  ``cinder`` or ``vsphere``). In order to select a default store it must also
+  be listed in the ``stores`` list described below.
 
 ``stores=STORES``
   Optional. Default: ``file, http``
 
   A comma separated list of enabled glance stores. Some available options for
-  this option are (``filesystem``, ``http``, ``rbd``, ``swift``,
-  ``sheepdog``, ``cinder``, ``vmware``)
+  this option are (``filesystem``, ``http``, ``rbd``, ``swift``, ``cinder``,
+  ``vmware``)
 
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -908,37 +908,6 @@ using a pool called ``images``, run::
   ceph-authtool --create-keyring /etc/glance/rbd.keyring
   ceph-authtool --gen-key --name client.glance --cap mon 'allow r' --cap osd 'allow rwx pool=images' /etc/glance/rbd.keyring
   ceph auth add client.glance -i /etc/glance/rbd.keyring
-
-Configuring the Sheepdog Storage Backend
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-``sheepdog_store_address=ADDR``
-  Optional. Default: ``localhost``
-
-  Can only be specified in configuration files.
-
-  `This option is specific to the Sheepdog storage backend.`
-
-  Sets the IP address of the sheep daemon
-
-``sheepdog_store_port=PORT``
-  Optional. Default: ``7000``
-
-  Can only be specified in configuration files.
-
-  `This option is specific to the Sheepdog storage backend.`
-
-  Sets the IP port of the sheep daemon
-
-``sheepdog_store_chunk_size=SIZE_IN_MB``
-  Optional. Default: ``64``
-
-  Can only be specified in configuration files.
-
-  `This option is specific to the Sheepdog storage backend.`
-
-  Images will be chunked into objects of this size (in megabytes).
-  For best performance, this should be a power of two.
 
 Configuring the Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
