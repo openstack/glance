@@ -1115,6 +1115,17 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
             msg = _("Unknown import method name '%s'.") % method_name
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
+        # Validate 'all_stores_must_succeed' and 'all_stores'
+        all_stores_must_succeed = body.get('all_stores_must_succeed', True)
+        if not isinstance(all_stores_must_succeed, bool):
+            msg = (_("'all_stores_must_succeed' must be boolean value only"))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        all_stores = body.get('all_stores', False)
+        if not isinstance(all_stores, bool):
+            msg = (_("'all_stores' must be boolean value only"))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
     def import_image(self, request):
         body = self._get_request_body(request)
         self._validate_import_body(body)

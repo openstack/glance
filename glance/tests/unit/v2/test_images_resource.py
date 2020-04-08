@@ -4127,6 +4127,32 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                           self.deserializer.import_image,
                           request)
 
+    def test_import_image_with_all_stores_not_boolean(self):
+        request = unit_test_utils.get_fake_request()
+        import_body = {
+            'method': {
+                'name': 'glance-direct'
+            },
+            'all_stores': "true"
+        }
+        request.body = jsonutils.dump_as_bytes(import_body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.import_image,
+                          request)
+
+    def test_import_image_with_allow_failure_not_boolean(self):
+        request = unit_test_utils.get_fake_request()
+        import_body = {
+            'method': {
+                'name': 'glance-direct'
+            },
+            'all_stores_must_succeed': "true"
+        }
+        request.body = jsonutils.dump_as_bytes(import_body)
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.import_image,
+                          request)
+
     def _get_request_for_method(self, method_name):
         request = unit_test_utils.get_fake_request()
         import_body = {
