@@ -37,6 +37,25 @@
             "title": "OS Version",
             "description": "Operating system version as specified by the distributor. (for example, '11.10')",
             "type": "string"
+        },
+        "description": {
+            "title": "Image description",
+            "description": "A human-readable string describing this image.",
+            "type": "string"
+        },
+        "cinder_encryption_key_id": {
+            "title": "Cinder Encryption Key ID",
+            "description": "Identifier in the OpenStack Key Management Service for the encryption key for the Block Storage Service to use when mounting a volume created from this image",
+            "type": "string"
+        },
+        "cinder_encryption_key_deletion_policy": {
+            "title": "Cinder Encryption Key Deletion Policy",
+            "description": "States the condition under which the Image Service will delete the object associated with the 'cinder_encryption_key_id' image property.  If this property is missing, the Image Service will take no action",
+            "type": "string",
+            "enum": [
+                "on_image_deletion",
+                "do_not_delete"
+            ]
         }
     }
 }
