@@ -121,6 +121,11 @@ class _DecompressImage(task.Task):
         # account and handle the paths here.
         src_path = file_path.split('file://')[-1]
         self.dest_path = "%(path)s.uc" % {'path': src_path}
+        image = self.image_repo.get(self.image_id)
+        # NOTE(jokke): If the container format is 'compressed' the image is
+        # expected to be compressed so lets not decompress it.
+        if image.container_format == 'compressed':
+            return "file://%s" % src_path
         head = None
         with open(src_path, 'rb') as fd:
             head = fd.read(MAX_HEADER)
