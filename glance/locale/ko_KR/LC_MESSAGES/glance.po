@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-01-03 18:10+0000\n"
+"POT-Creation-Date: 2020-04-09 18:19+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1161,10 +1161,6 @@ msgstr "신호(%(sig)s)와 함께 %(serv)s(pid %(pid)s) 중지 중"
 #, python-format
 msgid "Store for image_id not found: %s"
 msgstr "image_id에 대한 저장소를 찾을 수 없음: %s"
-
-#, python-format
-msgid "Store for scheme %s not found"
-msgstr "%s 스키마에 대한 저장소를 찾을 수 없음"
 
 #, python-format
 msgid ""

@@ -1,15 +1,16 @@
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
 # Andi Chandler <andi@gowling.com>, 2019. #zanata
+# Andi Chandler <andi@gowling.com>, 2020. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: Glance Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-03 18:09+0000\n"
+"POT-Creation-Date: 2020-04-09 18:18+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-12-22 08:13+0000\n"
+"PO-Revision-Date: 2020-04-07 08:21+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -118,14 +119,23 @@ msgstr "16.0.1-11"
 msgid "17.0.0"
 msgstr "17.0.0"
 
-msgid "17.0.0-21"
-msgstr "17.0.0-21"
+msgid "17.0.1"
+msgstr "17.0.1"
 
 msgid "18.0.0"
 msgstr "18.0.0"
 
 msgid "19.0.0"
 msgstr "19.0.0"
+
+msgid "19.0.2"
+msgstr "19.0.2"
+
+msgid "20.0.0.0b1"
+msgstr "20.0.0.0b1"
+
+msgid "20.0.0.0b2"
+msgstr "20.0.0.0b2"
 
 msgid ""
 "A new interoperable image import method, ``web-download`` is introduced."
@@ -251,6 +261,24 @@ msgid "Add ``vhdx`` to list of supported disk format."
 msgstr "Add ``vhdx`` to list of supported disk format."
 
 msgid ""
+"Add ability to import image into multiple stores during `interoperable image "
+"import process`_."
+msgstr ""
+"Add ability to import image into multiple stores during `interoperable image "
+"import process`_."
+
+msgid ""
+"Add ability to import image into multiple stores during `interoperable image "
+"import process`_. This feature will only work if multiple stores are enabled "
+"in the deployment. It introduces 3 new optional body fields to the `import "
+"API path`:"
+msgstr ""
+"Add ability to import image into multiple stores during `interoperable image "
+"import process`_. This feature will only work if multiple stores are enabled "
+"in the deployment. It introduces 3 new optional body fields to the `import "
+"API path`:"
+
+msgid ""
 "Added ``hw:mem_encryption`` boolean in the ``OS::Nova::Flavor`` namespace, "
 "and ``hw_mem_encryption`` boolean in the ``OS::Glance::Image`` namespace."
 msgstr ""
@@ -309,6 +337,13 @@ msgid ""
 msgstr ""
 "Added additional metadata for CPU thread pinning policies to 'compute-cpu-"
 "pinning.json'. Use the ``glance_manage`` tool to upgrade."
+
+msgid ""
+"Added new import method ``copy-image`` which will copy existing image into "
+"multiple stores."
+msgstr ""
+"Added new import method ``copy-image`` which will copy existing image into "
+"multiple stores."
 
 msgid ""
 "Adding locations to a non-active or non-queued image is no longer allowed."
@@ -427,6 +462,13 @@ msgid ""
 msgstr ""
 "An enumeration of values was added for the `vmware:hw_version`_ property in "
 "the ``OS::Compute::VMwareFlavor`` namespace."
+
+msgid ""
+"An image created by the Block Storage service will have these properties set "
+"automatically, with the deletion policy set to ``on_image_deletion``."
+msgstr ""
+"An image created by the Block Storage service will have these properties set "
+"automatically, with the deletion policy set to ``on_image_deletion``."
 
 msgid ""
 "An image must have 'shared' visibility in order to accept members. This "
@@ -653,6 +695,36 @@ msgstr "Bug 1759510_: Image Import fails with Python 3.5"
 
 msgid "Bug 1765748_: Prepare for WebOb 1.8.1"
 msgstr "Bug 1765748_: Prepare for WebOb 1.8.1"
+
+msgid "Bug 1770410_: Use WebOb 1.8.1"
+msgstr "Bug 1770410_: Use WebOb 1.8.1"
+
+msgid "Bug 1781617_: Rename ``async`` package to ``async_`` (Python 3.7)"
+msgstr "Bug 1781617_: Rename ``async`` package to ``async_`` (Python 3.7)"
+
+msgid "Bug 1781627_: Handle StopIteration for Py3.7 PEP 0479"
+msgstr "Bug 1781627_: Handle StopIteration for Py3.7 PEP 0479"
+
+msgid "Bug 1793057_: Provision to add new config options in sample config file"
+msgstr ""
+"Bug 1793057_: Provision to add new config options in sample config file"
+
+msgid "Bug 1800601_: py3: fix recursion issue under py37"
+msgstr "Bug 1800601_: py3: fix recursion issue under py37"
+
+msgid "Bug 1802587_: Make location API compatible with multiple store"
+msgstr "Bug 1802587_: Make location API compatible with multiple store"
+
+msgid "Bug 1803299_: Failure in web-dowload kept image in importing state"
+msgstr "Bug 1803299_: Failure in web-dowload kept image in importing state"
+
+msgid ""
+"Bug 1803498_: Data remains in staging area if 'file' store is not enabled"
+msgstr ""
+"Bug 1803498_: Data remains in staging area if 'file' store is not enabled"
+
+msgid "Bug 1803643_: Fix for FK constraint violation"
+msgstr "Bug 1803643_: Fix for FK constraint violation"
 
 msgid "Bug Fixes"
 msgstr "Bug Fixes"
@@ -1614,6 +1686,9 @@ msgstr ""
 
 msgid "Start using reno to manage release notes."
 msgstr "Start using Reno to manage release notes."
+
+msgid "Stein Series Release Notes"
+msgstr "Stein Series Release Notes"
 
 msgid ""
 "Such an image will require its visibility to be updated to 'shared' before "
@@ -2592,6 +2667,9 @@ msgstr ""
 "use the new interoperable image import process.  They do, however, need "
 "permission to access internal Glance task objects."
 
+msgid "Train Series Release Notes"
+msgstr "Train Series Release Notes"
+
 msgid "Translations have been synced from Zanata."
 msgstr "Translations have been synced from Zanata."
 
@@ -2785,6 +2863,13 @@ msgstr ""
 "Please plan appropriately."
 
 msgid ""
+"You can now list all images that are available to you. Use the 'all' "
+"visibility option."
+msgstr ""
+"You can now list all images that are available to you. Use the 'all' "
+"visibility option."
+
+msgid ""
 "You may set the ``timeout`` option in the ``keystone_authtoken`` group in "
 "the **glance-api.conf** file."
 msgstr ""
@@ -2794,11 +2879,59 @@ msgstr ""
 msgid "You may upgrade these definitions using:"
 msgstr "You may upgrade these definitions using:"
 
+msgid ""
+"[`Community Goal <https://governance.openstack.org/tc/goals/stein/upgrade-"
+"checkers.html>`_] Support has been added for developers to write pre-upgrade "
+"checks. Operators can run these checks using ``glance-status upgrade "
+"check``. This allows operators to be more confident when upgrading their "
+"deployments by having a tool that automates programmable checks against the "
+"deployment configuration or dataset."
+msgstr ""
+"[`Community Goal <https://governance.openstack.org/tc/goals/stein/upgrade-"
+"checkers.html>`_] Support has been added for developers to write pre-upgrade "
+"checks. Operators can run these checks using ``glance-status upgrade "
+"check``. This allows operators to be more confident when upgrading their "
+"deployments by having a tool that automates programmable checks against the "
+"deployment configuration or dataset."
+
+msgid ""
+"``all_stores_must_succeed``: Control wether the import have to succeed in "
+"all stores."
+msgstr ""
+"``all_stores_must_succeed``: Control whether the import have to succeed in "
+"all stores."
+
+msgid "``all_stores``: To import the data in all configured stores."
+msgstr "``all_stores``: To import the data in all configured stores."
+
+msgid "``delete_metadef_namespace``"
+msgstr "``delete_metadef_namespace``"
+
+msgid "``delete_metadef_object``"
+msgstr "``delete_metadef_object``"
+
+msgid "``delete_metadef_tag``"
+msgstr "``delete_metadef_tag``"
+
+msgid "``delete_metadef_tags``"
+msgstr "``delete_metadef_tags``"
+
 msgid "``enable_image_import``"
 msgstr "``enable_image_import``"
 
 msgid "``enable_image_import`` is **True** by default (in Pike it was False)"
 msgstr "``enable_image_import`` is **True** by default (in Pike it was False)"
+
+msgid ""
+"``glance-cache-manage`` and precaching is back; during the cycle we fixed "
+"issues that caused cache management being impossible. The prefetcher code "
+"was moved into glance-api to break the dependency to glance-registry and "
+"does not run under cron anymore."
+msgstr ""
+"``glance-cache-manage`` and precaching is back; during the cycle we fixed "
+"issues that caused cache management being impossible. The prefetcher code "
+"was moved into glance-api to break the dependency to glance-registry and "
+"does not run under cron any more."
 
 msgid ""
 "``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``"
@@ -2820,6 +2953,20 @@ msgid "``node_staging_uri``"
 msgstr "``node_staging_uri``"
 
 msgid ""
+"``os_glance_failed_import``: Each time an import in a store fails, it is "
+"added to this list."
+msgstr ""
+"``os_glance_failed_import``: Each time an import in a store fails, it is "
+"added to this list."
+
+msgid ""
+"``os_glance_importing_to_stores``: list of stores that has not yet been "
+"processed."
+msgstr ""
+"``os_glance_importing_to_stores``: list of stores that has not yet been "
+"processed."
+
+msgid ""
 "``os_hash_algo`` - this contains the name of the secure hash algorithm used "
 "to generate the value on this image"
 msgstr ""
@@ -2832,6 +2979,17 @@ msgid ""
 msgstr ""
 "``os_hash_value`` - this is the hexdigest computed by applying the secure "
 "hash algorithm named in the ``os_hash_algo`` property to the image data"
+
+msgid "``remove_metadef_property``"
+msgstr "``remove_metadef_property``"
+
+msgid "``remove_metadef_resource_type_association``"
+msgstr "``remove_metadef_resource_type_association``"
+
+msgid ""
+"``stores``: List containing the stores id to import the image binary data to."
+msgstr ""
+"``stores``: List containing the stores id to import the image binary data to."
 
 msgid ""
 "a new *list stores* call, `GET /v2/info/stores <https://developer.openstack."
