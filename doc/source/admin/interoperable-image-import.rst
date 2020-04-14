@@ -47,19 +47,6 @@ be set:
 
 * in the default options group:
 
-  * ``enable_image_import`` must be either absent or set to **True** (the
-    default).
-
-    .. note ::
-       In the Pike release, the default value for this option was **False**.
-       This option is DEPRECATED and will be removed in the Rocky release.
-
-    If ``enable_image_import`` is set **False**, requests to the v2 endpoint
-    for URIs defined only in v2.6 will return 404 (Not Found) with a message in
-    the response body stating "Image import is not supported at this site."
-    Additionally, the image-create response will not contain the
-    "OpenStack-image-import-methods" header.
-
   * ``node_staging_uri`` must specify a location writable by the glance
     user.  If you have multiple Glance API nodes, this should be a
     reference to a shared filesystem available to all the nodes.
@@ -103,10 +90,7 @@ all three methods are enabled.
   .. note::
      The ``web-download`` import method replaces the copy-from functionality
      that was available in the Image API v1 but previously absent from v2.
-     This note is a gentle reminder that the Image API v1 is DEPRECATED and
-     will be removed from Glance during the Rocky development cycle.  The
-     Queens release of Glance (16.x.x) is the final version in which you can
-     expect to find the Image API v1.
+     Additionally, the Image API v1 was removed in Glance 17.0.0 (Rocky).
 
 * The ``copy-image`` method allows and end user to copy existing image to
   other Glance backends available in deployment. This import method is
