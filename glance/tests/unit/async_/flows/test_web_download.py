@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
 import os
+from unittest import mock
 
 from glance_store._drivers import filesystem
 from glance_store import backend

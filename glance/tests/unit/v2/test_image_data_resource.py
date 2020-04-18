@@ -12,12 +12,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from unittest import mock
 import uuid
 
 from cursive import exception as cursive_exception
 import glance_store
 from glance_store._drivers import filesystem
-import mock
 import six
 from six.moves import http_client as http
 import webob

@@ -16,8 +16,8 @@ import glance.common.config
 import glance.common.wsgi
 import glance.image_cache
 from glance.tests import utils as test_utils
+from unittest import mock
 
-import mock
 import webob
 
 

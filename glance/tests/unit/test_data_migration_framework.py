@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
 
 from glance.db.sqlalchemy.alembic_migrations import data_migrations
 from glance.tests import utils as test_utils

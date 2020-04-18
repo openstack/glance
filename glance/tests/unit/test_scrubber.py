@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from unittest import mock
 import uuid
 
 import glance_store
-import mock
 from mock import patch
 from oslo_config import cfg
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange

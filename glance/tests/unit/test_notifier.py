@@ -15,9 +15,9 @@
 #    under the License.
 
 import datetime
+from unittest import mock
 
 import glance_store
-import mock
 from oslo_config import cfg
 import oslo_messaging
 import webob

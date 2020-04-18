@@ -14,9 +14,9 @@
 #    under the License.
 
 from __future__ import absolute_import
+from unittest import mock
 
 import fixtures
-import mock
 from six.moves import StringIO
 
 from glance.cmd import manage

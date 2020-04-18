@@ -14,10 +14,10 @@
 #    under the License.
 
 import os
+from unittest import mock
 
 import glance_store as store
 from glance_store import location
-import mock
 from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_db import options

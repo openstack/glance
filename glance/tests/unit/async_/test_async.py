@@ -14,7 +14,7 @@
 #    under the License.
 
 
-import mock
+from unittest import mock
 
 import glance.async_
 import glance.tests.utils as test_utils

@@ -19,11 +19,11 @@ import datetime
 import gettext
 import os
 import socket
+from unittest import mock
 
 from babel import localedata
 import eventlet.patcher
 import fixtures
-import mock
 from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 import routes

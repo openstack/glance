@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import copy
+from unittest import mock
 import uuid
 
-import mock
 from mock import patch
 from oslo_utils import encodeutils
 from oslo_utils import units

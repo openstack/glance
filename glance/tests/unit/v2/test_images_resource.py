@@ -17,11 +17,11 @@ import datetime
 import eventlet
 import hashlib
 import os
+from unittest import mock
 import uuid
 
 from castellan.common import exception as castellan_exception
 import glance_store as store
-import mock
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 import six

@@ -17,8 +17,8 @@ import os.path
 import shutil
 import tarfile
 import tempfile
+from unittest import mock
 
-import mock
 try:
     from defusedxml.cElementTree import ParseError
 except ImportError:

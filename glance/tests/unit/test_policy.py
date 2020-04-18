@@ -20,11 +20,11 @@ try:
     from collections.abc import Iterable
 except ImportError:
     from collections import Iterable
+from unittest import mock
 
 import hashlib
 import os.path
 
-import mock
 import oslo_config.cfg
 
 import glance.api.policy

@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import glance_store
-import mock
+from unittest import mock
 
 from glance.common import exception
 from glance.common import store_utils

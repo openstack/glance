@@ -16,7 +16,7 @@ from cryptography import exceptions as crypto_exception
 from cursive import exception as cursive_exception
 from cursive import signature_utils
 import glance_store
-import mock
+from unittest import mock
 
 from glance.common import exception
 import glance.location

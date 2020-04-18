@@ -14,7 +14,7 @@
 #    under the License.
 
 
-import mock
+from unittest import mock
 
 import glance.common.scripts as scripts
 from glance.common.scripts.image_import import main as image_import

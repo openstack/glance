@@ -14,8 +14,8 @@
 #    under the License.
 
 import json
-import mock
 import os
+from unittest import mock
 
 import glance_store
 from oslo_concurrency import processutils as putils

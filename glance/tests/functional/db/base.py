@@ -17,9 +17,9 @@
 
 import copy
 import datetime
+from unittest import mock
 import uuid
 
-import mock
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange

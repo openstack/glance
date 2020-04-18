@@ -13,6 +13,7 @@
 #    under the License.
 
 from __future__ import absolute_import
+from unittest import mock
 
 import copy
 import os
@@ -20,7 +21,6 @@ import sys
 import uuid
 
 import fixtures
-import mock
 from oslo_serialization import jsonutils
 import six
 from six import moves

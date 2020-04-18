@@ -15,9 +15,9 @@
 
 import calendar
 import datetime
+from unittest import mock
 
 import iso8601
-import mock
 
 from glance.common import timeutils
 from glance.tests import utils as test_utils

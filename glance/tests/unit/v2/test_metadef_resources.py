@@ -14,7 +14,7 @@
 #    under the License.
 
 import datetime
-import mock
+from unittest import mock
 
 from oslo_serialization import jsonutils
 import webob

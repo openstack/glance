@@ -15,8 +15,8 @@
 #    under the License.
 
 import glance_store as store
-import mock
 import tempfile
+from unittest import mock
 
 from oslo_config import cfg
 from oslo_log import log as logging

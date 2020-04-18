@@ -14,7 +14,7 @@
 #    under the License.
 
 import datetime
-import mock
+from unittest import mock
 
 import glance_store as store_api
 from oslo_config import cfg

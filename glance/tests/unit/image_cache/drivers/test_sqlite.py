@@ -18,9 +18,9 @@ Tests for the sqlite image_cache driver.
 """
 
 import os
+from unittest import mock
 
 import ddt
-import mock
 
 from glance.image_cache.drivers import sqlite
 from glance.tests import utils

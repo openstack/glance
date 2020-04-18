@@ -15,9 +15,9 @@
 #    under the License.
 
 import datetime
+from unittest import mock
 import uuid
 
-import mock
 from oslo_config import cfg
 import oslo_utils.importutils
 

@@ -24,10 +24,10 @@ import socket
 import subprocess
 import threading
 import time
+from unittest import mock
 
 from alembic import command as alembic_command
 import fixtures
-import mock
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture

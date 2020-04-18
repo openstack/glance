@@ -16,7 +16,8 @@
 
 from cryptography import exceptions as crypto_exception
 import glance_store as store
-import mock
+from unittest import mock
+
 from oslo_config import cfg
 from six.moves import urllib
 
