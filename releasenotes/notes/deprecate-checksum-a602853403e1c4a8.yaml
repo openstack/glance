@@ -1,0 +1,23 @@
+---
+deprecations:
+  - |
+    The Image ``checksum`` property contains an MD5 hash of the image data
+    associated with an image.  MD5 has not been considered secure for some
+    time, and in order to comply with various security standards (for
+    example, FIPS), an implementation of the MD5 algorithm may not be
+    available on glance nodes.
+
+    The secure "multihash" image properties, ``os_hash_algo`` and
+    ``os_hash_value`` have been available on images since glance
+    version 17.0.0 (Rocky).  Until this point, the MD5 ``checksum``
+    property has been populated solely for backward compatability.  It
+    is not, however, necessary for validating downloaded image data.
+
+    Thus, we are announcing the DEPRECATION in this release of the
+    image ``checksum`` property.  It will remain as an image property,
+    but beginning with the Victoria release, the ``checksum`` will *not*
+    be populated on new images.
+
+    Users should instead rely on the secure "multihash" to validate image
+    downloads.  The python-glanceclient, for example, has been using multihash
+    validation (with an optional MD5 fallback) since version 2.13.0 (Rocky).
