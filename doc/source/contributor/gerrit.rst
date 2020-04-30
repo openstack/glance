@@ -50,7 +50,7 @@ Python 2 to Python 3 transition guidelines
   language features).
 * New features can use Python-3-only language constructs, but bugfixes
   likely to be backported should be more conservative and write for
-  Python 2 compatibilty.
+  Python 2 compatibility.
 * The code for drivers may continue to use the six compatibility library at
   their discretion.
 * We will not remove six from mainline Cinder code that impacts the drivers
