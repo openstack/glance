@@ -41,8 +41,8 @@ their locations:
          which are above the domain implementation.  The Auth, Property
          Protection (optional), Notifier, Policy, Quota,
          Location, and Database represent the domain implementation.
-         The Registry (optional) and Data Access sit below the domain
-         implementation.  Further, the Client block calls the Router;
+         The Data Access sit below the domain implementation.  Further,
+         the Client block calls the Router;
          the Location block calls the Glance Store, and the Data Access
          layer calls the DBMS.
          Additional information conveyed in the image is the location in
@@ -56,7 +56,6 @@ their locations:
          Quota: quota/__init__.py
          Location: location.py
          DB: db/__init__.py
-         Registry: registry/v2/*
          Data Access: db/sqlalchemy/api.py
 
 .. _authorization:

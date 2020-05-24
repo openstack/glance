@@ -20,13 +20,9 @@ Basic Configuration
 ===================
 
 Glance has a number of options that you can use to configure the Glance API
-server, the Glance Registry server, and the various storage backends that
-Glance can use to store images.
+server and the various storage backends that Glance can use to store images.
 
-.. include:: ../deprecate-registry.inc
-
-Most configuration is done via configuration files, with the Glance API
-server and Glance Registry server using separate configuration files.
+Most configuration is done via configuration files.
 
 When starting up a Glance server, you can specify the configuration file to
 use (see :ref:`the documentation on controller Glance servers
@@ -40,12 +36,10 @@ in order:
 * ``/etc``
 
 The Glance API server configuration file should be named ``glance-api.conf``.
-Similarly, the Glance Registry server configuration file should be named
-``glance-registry.conf``. There are many other configuration files also
-since Glance maintains a configuration file for each of its services. If you
-installed Glance via your operating system's package management system, it
-is likely that you will have sample configuration files installed in
-``/etc/glance``.
+There are many other configuration files also since Glance maintains a
+configuration file for each of its services. If you installed Glance via your
+operating system's package management system, it is likely that you will have
+sample configuration files installed in ``/etc/glance``.
 
 In addition, sample configuration files for each server application with
 detailed comments are available in the :ref:`Glance Sample Configuration
@@ -98,8 +92,7 @@ Glance has a few command-line options that are common to all Glance programs:
   * ``/etc``
 
   The filename that is searched for depends on the server application name. So,
-  if you are starting up the API server, ``glance-api.conf`` is searched for,
-  otherwise ``glance-registry.conf``.
+  if you are starting up the API server, ``glance-api.conf`` is searched for.
 
 ``--config-dir=DIR``
   Optional. Default: ``None``
@@ -130,7 +123,6 @@ Glance has a few command-line options that are common to all Glance programs:
 
   Note that ``glance-manage`` currently loads configuration from three files:
 
-  * ``glance-registry.conf``
   * ``glance-api.conf``
   * ``glance-manage.conf``
 
@@ -138,19 +130,14 @@ Glance has a few command-line options that are common to all Glance programs:
   other configuration options for ``glance-manage`` should be migrated
   in there.
   **Warning**: Options set in ``glance-manage.conf`` will override options of
-  the same section and name set in the other two. Similarly, options in
-  ``glance-api.conf`` will override options set in ``glance-registry.conf``.
-  This tool is planning to stop loading ``glance-registry.conf`` and
-  ``glance-api.conf`` in a future cycle.
+  the same section and name set in ``glance-api.conf``
 
 Configuring Server Startup Options
 ----------------------------------
 
-You can put the following options in the ``glance-api.conf`` and
-``glance-registry.conf`` files, under the ``[DEFAULT]`` section. They enable
-startup and binding behaviour for the API and registry servers, respectively.
-
-.. include:: ../deprecate-registry.inc
+You can put the following options in the ``glance-api.conf`` file, under
+the ``[DEFAULT]`` section. They enable startup and binding behaviour for
+the API servers, respectively.
 
 ``bind_host=ADDRESS``
   The address of the host to bind to.
@@ -160,8 +147,7 @@ startup and binding behaviour for the API and registry servers, respectively.
 ``bind_port=PORT``
   The port the server should bind to.
 
-  Optional. Default: ``9191`` for the registry server, ``9292`` for
-  the API server
+  Optional. Default: ``9292`` for the API server
 
 ``backlog=REQUESTS``
   Number of backlog requests to configure the socket with.
@@ -182,13 +168,12 @@ startup and binding behaviour for the API and registry servers, respectively.
   Optional. Default: ``900``
 
 ``workers=PROCESSES``
-  Number of Glance API or Registry worker processes to start. Each worker
-  process will listen on the same port. Increasing this value may increase
-  performance (especially if using SSL with compression enabled). Typically
-  it is recommended to have one worker process per CPU. The value `0`
-  will prevent any new worker processes from being created. When ``data_api``
-  is set to ``glance.db.simple.api``, ``workers`` MUST be set to either ``0``
-  or ``1``.
+  Number of Glance API worker processes to start. Each worker process will
+  listen on the same port. Increasing this value may increase performance
+  (especially if using SSL with compression enabled). Typically it is
+  recommended to have one worker process per CPU. The value `0` will prevent
+  any new worker processes from being created. When ``data_api`` is set to
+  ``glance.db.simple.api``, ``workers`` MUST be set to either ``0`` or ``1``.
 
   Optional. Default: The number of CPUs available will be used by default.
 
@@ -219,125 +204,6 @@ Configuring SSL Support
   ``cert_file`` and ''key_file`` are not set.
 
   Optional. Default: not enabled.
-
-Configuring Registry Access
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-There are a number of configuration options in Glance that control how
-the API server accesses the registry server.
-
-.. include:: ../deprecate-registry.inc
-
-``registry_client_protocol=PROTOCOL``
-  If you run a secure Registry server, you need to set this value to ``https``
-  and also set ``registry_client_key_file`` and optionally
-  ``registry_client_cert_file``.
-
-  Optional. Default: http
-
-``registry_client_key_file=PATH``
-  The path to the key file to use in SSL connections to the
-  registry server, if any. Alternately, you may set the
-  ``GLANCE_CLIENT_KEY_FILE`` environ variable to a filepath of the key file
-
-  Optional. Default: Not set.
-
-``registry_client_cert_file=PATH``
-  Optional. Default: Not set.
-
-  The path to the cert file to use in SSL connections to the
-  registry server, if any. Alternately, you may set the
-  ``GLANCE_CLIENT_CERT_FILE`` environ variable to a filepath of the cert file
-
-``registry_client_ca_file=PATH``
-  Optional. Default: Not set.
-
-  The path to a Certifying Authority's cert file to use in SSL connections
-  to the registry server, if any. Alternately, you may set the
-  ``GLANCE_CLIENT_CA_FILE`` environ variable to a filepath of the CA cert file
-
-``registry_client_insecure=False``
-  Optional. Default: False.
-
-  When using SSL in connections to the registry server, do not require
-  validation via a certifying authority. This is the registry's equivalent of
-  specifying --insecure on the command line using glanceclient for the API
-
-``registry_client_timeout=SECONDS``
-  Optional. Default: ``600``.
-
-  The period of time, in seconds, that the API server will wait for a registry
-  request to complete. A value of '0' implies no timeout.
-
-.. note::
-   ``use_user_token``, ``admin_user``, ``admin_password``,
-   ``admin_tenant_name``, ``auth_url``, ``auth_strategy`` and ``auth_region``
-   options were considered harmful and have been deprecated in M release.
-   They will be removed in O release. For more information read
-   `OSSN-0060 <https://wiki.openstack.org/wiki/OSSN/OSSN-0060>`_.
-   Related functionality with uploading big images has been implemented with
-   Keystone trusts support.
-
-``use_user_token=True``
-  Optional. Default: True
-
-  DEPRECATED. This option will be removed in O release.
-
-  Pass the user token through for API requests to the registry.
-
-  If 'use_user_token' is not in effect then admin credentials can be
-  specified (see below). If admin credentials are specified then they are
-  used to generate a token; this token rather than the original user's
-  token is used for requests to the registry.
-
-``admin_user=USER``
-  DEPRECATED. This option will be removed in O release.
-
-  If 'use_user_token' is not in effect then admin credentials can be
-  specified. Use this parameter to specify the username.
-
-  Optional. Default: None
-
-``admin_password=PASSWORD``
-  DEPRECATED. This option will be removed in O release.
-
-  If 'use_user_token' is not in effect then admin credentials can be
-  specified. Use this parameter to specify the password.
-
-  Optional. Default: None
-
-``admin_tenant_name=TENANTNAME``
-  DEPRECATED. This option will be removed in O release.
-
-  If 'use_user_token' is not in effect then admin credentials can be
-  specified. Use this parameter to specify the tenant name.
-
-  Optional. Default: None
-
-``auth_url=URL``
-  DEPRECATED. This option will be removed in O release.
-
-  If 'use_user_token' is not in effect then admin credentials can be
-  specified. Use this parameter to specify the Keystone endpoint.
-
-  Optional. Default: None
-
-``auth_strategy=STRATEGY``
-  DEPRECATED. This option will be removed in O release.
-
-  If 'use_user_token' is not in effect then admin credentials can be
-  specified. Use this parameter to specify the auth strategy.
-
-  Optional. Default: noauth
-
-``auth_region=REGION``
-  DEPRECATED. This option will be removed in O release.
-
-  If 'use_user_token' is not in effect then admin credentials can be
-  specified. Use this parameter to specify the region.
-
-  Optional. Default: None
-
 
 Configuring Logging in Glance
 -----------------------------
@@ -1598,56 +1464,6 @@ One main configuration file option affects the image cache.
   designed to be run via cron on a regular basis. See more about this
   executable in :ref:`Controlling the Growth of the Image Cache <image-cache>`
 
-.. _configuring-the-glance-registry:
-
-Configuring the Glance Registry
--------------------------------
-
-There are a number of configuration options in Glance that control how
-this registry server operates. These configuration options are specified in the
-``glance-registry.conf`` configuration file in the section ``[DEFAULT]``.
-
-**IMPORTANT NOTE**: The glance-registry service is only used in conjunction
-with the glance-api service when clients are using the v1 REST API. See
-`Configuring Glance APIs`_ for more info.
-
-``sql_connection=CONNECTION_STRING``
-  Optional. Default: ``None``
-
-  Can be specified in configuration files. Can also be specified on the
-  command-line for the ``glance-manage`` program.
-
-  Sets the SQLAlchemy connection string to use when connecting to the registry
-  database. Please see the documentation for
-  `SQLAlchemy connection strings <http://docs.sqlalchemy.org/en/latest/core/connections.html>`_
-  online. You must urlencode any special characters in CONNECTION_STRING.
-
-  Use ``--sql-connection`` when specified on command line.
-
-``sql_timeout=SECONDS``
-  Optional. Default: ``3600``
-
-  Can only be specified in configuration files.
-
-  Sets the number of seconds after which SQLAlchemy should reconnect to the
-  datastore if no activity has been made on the connection.
-
-``enable_v1_registry=<True|False>``
-  Optional and DEPRECATED. Default: ``True``
-
-``enable_v2_registry=<True|False>``
-  Optional and DEPRECATED. Default: ``True``
-
-  .. include:: ../deprecate-registry.inc
-
-  Defines which version(s) of the Registry API will be enabled.
-  If the Glance API server parameter ``enable_v1_api`` has been set to ``True``
-  the ``enable_v1_registry`` has to be ``True`` as well.
-  If the Glance API server parameter ``enable_v2_api`` has been
-  set to ``True`` and the parameter ``data_api`` has been set to
-  ``glance.db.registry.api`` the ``enable_v2_registry`` has to be
-  set to ``True``
-
 Configuring Notifications
 -------------------------
 
@@ -1701,18 +1517,8 @@ specified, glance API service will not start.**
 Configuring Glance APIs
 -----------------------
 
-The glance-api service implements versions 1 and 2 of
-the OpenStack Images API. Disable any version of
-the Images API using the following options:
-
-``enable_v1_api=<True|False>``
-  Optional. Default: ``True``
-
-``enable_v2_api=<True|False>``
-  Optional. Default: ``True``
-
-  **IMPORTANT NOTE**: To use v2 registry in v2 API, you must set
-  ``data_api`` to glance.db.registry.api in glance-api.conf.
+The glance-api service implements versions 2 of the OpenStack Images API.
+Currently there are no options to enable or disable specific API versions.
 
 Configuring Glance Tasks
 ------------------------
@@ -1757,7 +1563,7 @@ execution profiling at wsgi main entry and SQL execution profiling at DB
 module, the more fine-grained trace point is being worked on.
 
 The config value ``enabled`` is used to determine whether fully enable
-profiling feature for glance-api and glance-registry service.
+profiling feature for glance-api service.
 
 ``enabled=<True|False>``
   Optional. Default: ``False``
@@ -1775,15 +1581,14 @@ profiling feature for glance-api and glance-registry service.
   even profiling feature is enabled.
 
   **IMPORTANT NOTE**: previously HMAC keys (as well as enabled parameter) were
-  placed at `/etc/glance/api-paste.ini` and `/etc/glance/registry-paste.ini`
-  files for Glance API and Glance Registry services respectively. Starting with
-  osprofiler 0.3.1 release there is no need to set these arguments in the
-  `*-paste.ini` files. This functionality is still supported, although the
-  config values are having larger priority.
+  placed at `/etc/glance/api-paste.ini`  file for Glance API service
+  respectively. Starting with osprofiler 0.3.1 release there is no need to set
+  these arguments in the `*-paste.ini` files. This functionality is still
+  supported, although the config values are having larger priority.
 
   The config value ``trace_sqlalchemy`` is used to determine whether fully
   enable sqlalchemy engine based SQL execution profiling feature for glance-api
-  and glance-registry services.
+  service.
 
 ``trace_sqlalchemy=<True|False>``
   Optional. Default: ``False``
@@ -1834,15 +1639,15 @@ Configuring the Health Check
 
 This setting allows an operator to configure the endpoint URL that will
 provide information to load balancer if given API endpoint at the node should
-be available or not. Both Glance API and Glance Registry servers can be
-configured to expose a health check URL.
+be available or not. Glance API server can be configured to expose a health
+check URL.
 
 To enable the health check middleware, it must occur in the beginning of the
 application pipeline.
 
 The health check middleware should be placed in your
-``glance-api-paste.ini`` / ``glance-registry-paste.ini`` in a section
-titled ``[filter:healthcheck]``. It should look like this::
+``glance-api-paste.ini`` in a section titled ``[filter:healthcheck]``.
+It should look like this::
 
   [filter:healthcheck]
   paste.filter_factory = oslo_middleware:Healthcheck.factory
