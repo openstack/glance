@@ -31,8 +31,6 @@
 
 # -- General configuration ------------------------------------------------
 
-import openstackdocstheme
-
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.0'
 
@@ -40,6 +38,7 @@ import openstackdocstheme
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'openstackdocstheme',
     'reno.sphinxext',
 ]
 
@@ -93,13 +92,19 @@ exclude_patterns = []
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
+
+# openstackdocstheme options
+openstackdocs_repo_name = 'openstack/glance'
+openstackdocs_bug_project = 'glance'
+openstackdocs_auto_name = False
+openstackdocs_bug_tag = 'releasenotes'
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -112,10 +117,6 @@ html_theme = 'openstackdocs'
 # further.  For a list of options available for each theme, see the
 # documentation.
 # html_theme_options = {}
-
-# Add any paths that contain custom themes here, relative to this directory.
-# html_theme_path = []
-html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

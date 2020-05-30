@@ -92,12 +92,12 @@ add_module_names = False
 show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # openstackdocstheme options
-repository_name = 'openstack/glance'
-bug_project = 'glance'
-bug_tag = 'api-ref'
+openstackdocs_repo_name = 'openstack/glance'
+openstackdocs_bug_project = 'glance'
+openstackdocs_bug_tag = 'api-ref'
 
 # -- Options for man page output ----------------------------------------------
 
@@ -140,11 +140,6 @@ bug_tag = 'api-ref'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
-
-# If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-# using the given strftime format.
-# html_last_updated_fmt = '%b %d, %Y'
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.

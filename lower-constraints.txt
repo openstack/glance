@@ -55,7 +55,6 @@ msgpack==0.5.6
 netaddr==0.7.19
 netifaces==0.10.6
 networkx==1.11
-openstackdocstheme==1.20.0
 os-api-ref==1.4.0
 os-client-config==1.29.0
 os-testr==1.0.0
@@ -104,7 +103,6 @@ python-swiftclient==3.2.0
 pytz==2018.3
 PyYAML==3.12
 qpid-python==0.26
-reno==2.5.0
 repoze.lru==0.7
 requests==2.14.2
 requestsexceptions==1.4.0
@@ -116,8 +114,6 @@ simplegeneric==0.8.1
 six==1.10.0
 smmap2==2.0.3
 snowballstemmer==1.2.1
-Sphinx==1.6.2
-sphinxcontrib-websupport==1.0.1
 sqlalchemy-migrate==0.11.0
 SQLAlchemy==1.0.10
 sqlparse==0.2.2

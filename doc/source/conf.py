@@ -51,9 +51,9 @@ extensions = ['stevedore.sphinxext',
               ]
 
 # openstackdocstheme options
-repository_name = 'openstack/glance'
-bug_project = 'glance'
-bug_tag = 'documentation'
+openstackdocs_repo_name = 'openstack/glance'
+openstackdocs_bug_project = 'glance'
+openstackdocs_bug_tag = 'documentation'
 
 # sphinxcontrib.apidoc options
 apidoc_module_dir = '../../glance'
@@ -137,7 +137,7 @@ add_module_names = True
 show_authors = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['glance.']
