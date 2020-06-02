@@ -1,15 +1,4 @@
 - job:
-    name: glance-dsvm-grenade-multinode
-    parent: legacy-dsvm-base-multinode
-    run: playbooks/legacy/glance-dsvm-grenade-multinode/run.yaml
-    post-run: playbooks/legacy/glance-dsvm-grenade-multinode/post.yaml
-    timeout: 10800
-    required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-      - openstack/glance
-
-- job:
     name: glance-code-constants-check
     parent: tox
     description: |
@@ -272,7 +261,7 @@
         - glance-tox-functional-py37-glance_store-tips
         - glance-tox-functional-py36-glance_store-tips
         - barbican-simple-crypto-devstack-tempest
-        - glance-dsvm-grenade-multinode
+        - grenade-multinode
         - tempest-pg-full:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-full-py3-opensuse15:
