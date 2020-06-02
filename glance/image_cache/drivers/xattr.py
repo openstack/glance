@@ -50,8 +50,6 @@ $image_cache_dir/
   invalid/
   queue/
 """
-
-from __future__ import absolute_import
 from contextlib import contextmanager
 import errno
 import os

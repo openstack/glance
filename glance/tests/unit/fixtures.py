@@ -12,7 +12,6 @@
 
 """Fixtures for Glance unit tests."""
 # NOTE(mriedem): This is needed for importing from fixtures.
-from __future__ import absolute_import
 
 import logging as std_logging
 import os

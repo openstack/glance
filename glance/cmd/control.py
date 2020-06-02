@@ -18,9 +18,6 @@ Helper script for starting/stopping/reloading Glance server programs.
 Thanks for some of the code, Swifties ;)
 """
 
-from __future__ import print_function
-from __future__ import with_statement
-
 import argparse
 import fcntl
 import os
