@@ -674,6 +674,10 @@ def _get_available_stores():
     stores = []
     # Remove reserved stores from the available stores list
     for store in available_stores:
+        # NOTE (abhishekk): http store is readonly and should be
+        # excluded from the list.
+        if available_stores[store] == 'http':
+            continue
         if store not in wsgi.RESERVED_STORES:
             stores.append(store)
 

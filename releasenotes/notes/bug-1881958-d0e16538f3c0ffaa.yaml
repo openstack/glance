@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Bug 1881958_: read-only http store should not be used if --all-stores specified for import/copy image workflow
+
+    .. _1881958: https://bugs.launchpad.net/glance/+bug/1881958

@@ -230,7 +230,9 @@ is already present in some of the available stores then those stores
 will be silently excluded from the list of all configured stores, whereas
 if ``all_stores`` is False, ``stores`` are specified in explicitly in
 request body and if image data is present in any of the specified store
-then the request will be rejected.
+then the request will be rejected. In case of ``all_stores`` is specified
+in request body and cloud operator has also configured a read-only
+``http`` store then it will be excluded explicitly.
 
 Image will be copied to staging area from one of the available locations
 and then import processing will be continued using import workflow as

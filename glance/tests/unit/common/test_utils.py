@@ -521,6 +521,26 @@ class TestUtils(test_utils.BaseTestCase):
             mock_get_store.assert_any_call("ceph2")
             self.assertEqual(mock_get_store.call_count, 2)
 
+    def test_get_stores_from_request_excludes_readonly_store(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd",
+            "http": "http"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+        body = {"all_stores": True}
+        req = webob.Request.blank("/some_request")
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            result = sorted(utils.get_stores_from_request(req, body))
+            self.assertNotIn("http", result)
+            self.assertEqual(["ceph1", "ceph2"], result)
+            mock_get_store.assert_any_call("ceph1")
+            mock_get_store.assert_any_call("ceph2")
+            self.assertEqual(mock_get_store.call_count, 2)
+
     def test_get_stores_from_request_raises_bad_request_with_all_stores(self):
         enabled_backends = {
             "ceph1": "rbd",
