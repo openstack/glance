@@ -14,10 +14,10 @@
 #    under the License.
 
 from unittest import mock
+from unittest.mock import patch
 import uuid
 
 import glance_store
-from mock import patch
 from oslo_config import cfg
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range

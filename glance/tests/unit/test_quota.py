@@ -14,9 +14,9 @@
 #    under the License.
 import copy
 from unittest import mock
+from unittest.mock import patch
 import uuid
 
-from mock import patch
 from oslo_utils import encodeutils
 from oslo_utils import units
 

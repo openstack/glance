@@ -12,7 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from mock import patch
+from unittest.mock import patch
+
 from oslo_policy import policy
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import http_client as http
