@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-04-09 18:19+0000\n"
+"POT-Creation-Date: 2020-06-09 14:43+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1134,10 +1134,6 @@ msgstr "Ungültige HTTP-Umleitung erhalten."
 #, python-format
 msgid "Redirecting to %(uri)s for authorization."
 msgstr "Umleitung auf %(uri)s für Autorisierung."
-
-#, python-format
-msgid "Registry service can't use %s"
-msgstr "Registrierungsdienst kann %s nicht verwenden"
 
 #, python-format
 msgid "Registry was not configured correctly on API server. Reason: %(reason)s"
