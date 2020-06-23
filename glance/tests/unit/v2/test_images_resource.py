@@ -4563,7 +4563,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         self.assertEqual(http.CREATED, response.status_int)
         header_value = response.headers.get(header_name)
         self.assertIsNotNone(header_value)
-        self.assertItemsEqual(enabled_methods, header_value.split(','))
+        self.assertCountEqual(enabled_methods, header_value.split(','))
 
         # check single method
         self.config(enabled_import_methods=['swift-party-time'])
