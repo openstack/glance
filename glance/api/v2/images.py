@@ -30,6 +30,7 @@ from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
+from glance.api import authorization
 from glance.api import common
 from glance.api import policy
 from glance.common import exception
@@ -131,6 +132,9 @@ class ImagesController(object):
             if not getattr(image, 'disk_format', None):
                 msg = _("'disk_format' needs to be set before import")
                 raise exception.Conflict(msg)
+            if not authorization.is_image_mutable(req.context, image):
+                raise webob.exc.HTTPForbidden(
+                    explanation=_("Operation not permitted"))
 
             stores = [None]
             if CONF.enabled_backends:

@@ -139,6 +139,7 @@ class FakeImage(object):
         self.container_format = container_format
         self.disk_format = disk_format
         self.locations = locations
+        self.owner = unit_test_utils.TENANT1
 
 
 class TestImagesController(base.IsolatedUnitTest):
@@ -2944,18 +2945,20 @@ class TestImagesController(base.IsolatedUnitTest):
 
         self.assertEqual(UUID4, output)
 
-    def test_image_import_not_allowed(self):
-        request = unit_test_utils.get_fake_request()
-        # NOTE(abhishekk): For coverage purpose setting tenant to
-        # None. It is not expected to do in normal scenarios.
-        request.context.project_id = None
-        with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
-            mock_get.return_value = FakeImage(status='uploading')
-            self.assertRaises(webob.exc.HTTPForbidden,
-                              self.controller.import_image,
-                              request, UUID4, {'method': {'name':
-                                                          'glance-direct'}})
+    @mock.patch.object(glance.domain.TaskFactory, 'new_task')
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    def test_image_import_not_allowed(self, mock_get, mock_new_task):
+        # NOTE(danms): FakeImage is owned by utils.TENANT1. Try to do the
+        # import as TENANT2 and we should get an HTTPForbidden
+        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        mock_get.return_value = FakeImage(status='uploading')
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.import_image,
+                          request, UUID4, {'method': {'name':
+                                                      'glance-direct'}})
+        # NOTE(danms): Make sure we failed early and never even created
+        # a task
+        mock_new_task.assert_not_called()
 
     def test_delete_encryption_key_no_encryption_key(self):
         request = unit_test_utils.get_fake_request()
@@ -5433,7 +5436,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                                'stores': ["fast"]})
 
     def test_copy_image_in_existing_store(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(tenant=TENANT3)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.controller.import_image, request, UUID6,
                           {'method': {'name': 'copy-image'},
