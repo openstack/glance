@@ -426,6 +426,19 @@ def _sort_images(images, sort_key, sort_dir):
     return images
 
 
+def image_set_property_atomic(image_id, name, value):
+    try:
+        image = DATA['images'][image_id]
+    except KeyError:
+        LOG.warn(_LW('Could not find image %s'), image_id)
+        raise exception.ImageNotFound()
+
+    prop = _image_property_format(image_id,
+                                  name,
+                                  value)
+    image['properties'].append(prop)
+
+
 def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]

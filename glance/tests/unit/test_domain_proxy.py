@@ -50,6 +50,7 @@ class FakeRepo(object):
     add = fake_method
     save = fake_method
     remove = fake_method
+    set_property_atomic = fake_method
 
 
 class TestProxyRepoPlain(test_utils.BaseTestCase):
@@ -80,6 +81,17 @@ class TestProxyRepoPlain(test_utils.BaseTestCase):
 
     def test_remove(self):
         self._test_method('add', None, 'flying')
+
+    def test_set_property_atomic(self):
+        image = mock.MagicMock()
+        image.image_id = 'foo'
+        self._test_method('set_property_atomic', None, image, 'foo', 'bar')
+
+    def test_set_property_nonimage(self):
+        self.assertRaises(
+            AssertionError,
+            self._test_method,
+            'set_property_atomic', None, 'notimage', 'foo', 'bar')
 
 
 class TestProxyRepoWrapping(test_utils.BaseTestCase):
