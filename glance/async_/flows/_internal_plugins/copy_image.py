@@ -59,7 +59,26 @@ class _CopyImage(task.Task):
             self.image_id)
 
         if os.path.exists(file_path):
-            return file_path, 0
+            # NOTE (abhishekk): If previous copy-image operation is failed
+            # due to power failure, network failure or any other reason and
+            # the image data here is partial then clear the staging area and
+            # re-stage the fresh image data.
+            # Ref: https://bugs.launchpad.net/glance/+bug/1885003
+            size_in_staging = os.path.getsize(file_path)
+            if image.size == size_in_staging:
+                return file_path, 0
+            else:
+                LOG.debug(("Found partial image data in staging "
+                           "%(fn)s, deleting it to re-stage "
+                           "again"), {'fn': file_path})
+                try:
+                    os.unlink(file_path)
+                except OSError as e:
+                    LOG.error(_LE("Deletion of staged "
+                                  "image data from %(fn)s has failed because "
+                                  "[Errno %(en)d]"), {'fn': file_path,
+                                                      'en': e.errno})
+                    raise
 
         # At first search image in default_backend
         default_store = CONF.glance_store.default_backend
