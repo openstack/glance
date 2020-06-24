@@ -326,9 +326,11 @@ all-stores-succeed-in-request:
   type: boolean
 checksum:
   description: |
-    Hash that is used over the image data. The Image
-    service uses this value for verification.  The value might be
-    ``null`` (JSON null data type).
+    An MD5 hash over the image data. The value might be ``null`` (JSON null data type),
+    as this field is no longer populated by the Image Service beginning with the 
+    Victoria release. It remains present for backward compatibility with legacy
+    images. To validate image data, instead use the secure multihash fields 
+    ``os_hash_algo`` and ``os_hash_value``.
   in: body
   required: true
   type: string
