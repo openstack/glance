@@ -133,13 +133,18 @@ class Gateway(object):
             notifier_task_stub_repo, context)
         return authorized_task_stub_repo
 
-    def get_task_executor_factory(self, context):
+    def get_task_executor_factory(self, context, admin_context=None):
         task_repo = self.get_task_repo(context)
         image_repo = self.get_repo(context)
         image_factory = self.get_image_factory(context)
+        if admin_context:
+            admin_repo = self.get_repo(admin_context)
+        else:
+            admin_repo = None
         return glance.domain.TaskExecutorFactory(task_repo,
                                                  image_repo,
-                                                 image_factory)
+                                                 image_factory,
+                                                 admin_repo=admin_repo)
 
     def get_metadef_namespace_factory(self, context):
         ns_factory = glance.domain.MetadefNamespaceFactory()

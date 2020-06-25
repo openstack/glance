@@ -87,13 +87,16 @@ CONF.register_opts(taskflow_executor_opts, group='taskflow_executor')
 
 class TaskExecutor(glance.async_.TaskExecutor):
 
-    def __init__(self, context, task_repo, image_repo, image_factory):
+    def __init__(self, context, task_repo, image_repo, image_factory,
+                 admin_repo=None):
         self.context = context
         self.task_repo = task_repo
         self.image_repo = image_repo
         self.image_factory = image_factory
+        self.admin_repo = admin_repo
         super(TaskExecutor, self).__init__(context, task_repo, image_repo,
-                                           image_factory)
+                                           image_factory,
+                                           admin_repo=admin_repo)
 
     @staticmethod
     def _fetch_an_executor():
@@ -122,6 +125,9 @@ class TaskExecutor(glance.async_.TaskExecutor):
                 'image_factory': self.image_factory,
                 'backend': task_input.get('backend')
             }
+
+            if self.admin_repo:
+                kwds['admin_repo'] = self.admin_repo
 
             if task.type == "import":
                 uri = script_utils.validate_location_uri(

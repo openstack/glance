@@ -46,13 +46,18 @@ class TaskExecutor(object):
             glance.domain.Image object into ORM semantics
         image_factory: glance.domain.ImageFactory object to be used for
             creating new images for certain types of tasks viz. import, cloning
+        admin_repo: glance.db.ImageRepo object which acts as a translator for
+            glance.domain.Image object into ORM semantics, but with an admin
+            context (optional)
     """
 
-    def __init__(self, context, task_repo, image_repo, image_factory):
+    def __init__(self, context, task_repo, image_repo, image_factory,
+                 admin_repo=None):
         self.context = context
         self.task_repo = task_repo
         self.image_repo = image_repo
         self.image_factory = image_factory
+        self.admin_repo = admin_repo
 
     def begin_processing(self, task_id):
         task = self.task_repo.get(task_id)

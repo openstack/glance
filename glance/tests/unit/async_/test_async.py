@@ -55,6 +55,15 @@ class TestTaskExecutor(test_utils.BaseTestCase):
         # assert the call
         mock_run.assert_called_once_with(task_id, task_type)
 
+    def test_with_admin_repo(self):
+        admin_repo = mock.MagicMock()
+        executor = glance.async_.TaskExecutor(self.context,
+                                              self.task_repo,
+                                              self.image_repo,
+                                              self.image_factory,
+                                              admin_repo=admin_repo)
+        self.assertEqual(admin_repo, executor.admin_repo)
+
 
 class TestImportTaskFlow(test_utils.BaseTestCase):
 
