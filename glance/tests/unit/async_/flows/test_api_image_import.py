@@ -18,7 +18,9 @@ from unittest import mock
 from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 
+from glance.api import authorization
 import glance.async_.flows.api_image_import as import_flow
+from glance.common import exception
 from glance.common.exception import ImportTaskError
 from glance import context
 from glance import gateway
@@ -260,3 +262,33 @@ class TestVerifyImageStateTask(test_utils.BaseTestCase):
 
         # Except for copy-image, image state should revert to queued
         mock_repo.save_image.assert_called_once()
+
+
+class TestImportCopyImageTask(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(TestImportCopyImageTask, self).setUp()
+
+        self.context = context.RequestContext(user_id=TENANT1,
+                                              project_id=TENANT1,
+                                              overwrite=False)
+
+    @mock.patch("glance.async_.flows.api_image_import.image_import")
+    def test_copy_as_non_owner(self, mock_import):
+        img_repo_db = mock.MagicMock()
+        img_repo = authorization.ImageRepoProxy(img_repo_db, self.context)
+
+        fake_req = {"method": {"name": "copy-image"},
+                    "backend": ['cheap']}
+
+        # FIXME(danms): Right now, this fails with Forbidden because we
+        # don't own the image
+        self.assertRaises(exception.Forbidden,
+                          import_flow.get_flow,
+                          task_id=TASK_ID1,
+                          task_type=TASK_TYPE,
+                          task_repo=mock.MagicMock(),
+                          image_repo=img_repo,
+                          image_id=IMAGE_ID1,
+                          import_req=fake_req,
+                          backend=['cheap'])
