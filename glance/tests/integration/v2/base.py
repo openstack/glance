@@ -55,14 +55,10 @@ pipeline = versionnegotiation gzip context rootapp
 [composite:rootapp]
 paste.composite_factory = glance.api:root_app_factory
 /: apiversions
-/v1: apiv1app
 /v2: apiv2app
 
 [app:apiversions]
 paste.app_factory = glance.api.versions:create_resource
-
-[app:apiv1app]
-paste.app_factory = glance.api.v1.router:API.factory
 
 [app:apiv2app]
 paste.app_factory = glance.api.v2.router:API.factory

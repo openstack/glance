@@ -1,4 +1,4 @@
-# Copyright 2011 OpenStack Foundation
+# Copyright 2020 Red Hat, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,19 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 from glance.common import wsgi
 
 
-class API(wsgi.Router):
+def init(mapper):
+    reject_resource = wsgi.Resource(wsgi.RejectMethodController())
+    mapper.connect("/v1", controller=reject_resource,
+                   action="reject")
 
-    """WSGI router for Glance v1 API requests."""
+
+class API(wsgi.Router):
+    """WSGI entry point for satisfy grenade."""
 
     def __init__(self, mapper):
-        reject_method_resource = wsgi.Resource(wsgi.RejectMethodController())
+        mapper = mapper or wsgi.APIMapper()
 
-        mapper.connect("/",
-                       controller=reject_method_resource,
-                       action="reject")
+        init(mapper)
 
         super(API, self).__init__(mapper)

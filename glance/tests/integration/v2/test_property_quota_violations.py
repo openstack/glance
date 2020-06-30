@@ -28,7 +28,6 @@ class TestPropertyQuotaViolations(base.ApiTest):
     def __init__(self, *args, **kwargs):
         super(TestPropertyQuotaViolations, self).__init__(*args, **kwargs)
         self.api_flavor = 'noauth'
-        self.registry_flavor = 'fakeauth'
 
     def _headers(self, custom_headers=None):
         base_headers = {

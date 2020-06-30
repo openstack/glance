@@ -159,16 +159,6 @@ Related Options:
 """)),
 ]
 
-_DEPRECATE_GLANCE_V1_MSG = _('The Images (Glance) version 1 API has been '
-                             'DEPRECATED in the Newton release and will be '
-                             'removed on or after Pike release, following '
-                             'the standard OpenStack deprecation policy. '
-                             'Hence, the configuration options specific to '
-                             'the Images (Glance) v1 API are hereby '
-                             'deprecated and subject to removal. Operators '
-                             'are advised to deploy the Images (Glance) v2 '
-                             'API.')
-
 common_opts = [
     cfg.BoolOpt('allow_additional_image_properties', default=True,
                 deprecated_for_removal=True,

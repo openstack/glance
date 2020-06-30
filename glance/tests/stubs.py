@@ -73,12 +73,8 @@ def stub_out_store_server(stubs, base_dir, **kwargs):
         def close(self):
             return True
 
-        def _clean_url(self, url):
-            # TODO(bcwaldon): Fix the hack that strips off v1
-            return url.replace('/v1', '', 1) if url.startswith('/v1') else url
-
         def putrequest(self, method, url):
-            self.req = webob.Request.blank(self._clean_url(url))
+            self.req = webob.Request.blank(url)
             if self.stub_force_sendfile:
                 fake_sendfile = FakeSendFile(self.req)
                 stubs.Set(sendfile, 'sendfile', fake_sendfile.sendfile)
@@ -100,7 +96,7 @@ def stub_out_store_server(stubs, base_dir, **kwargs):
             self.req.body += data.split("\r\n")[1]
 
         def request(self, method, url, body=None, headers=None):
-            self.req = webob.Request.blank(self._clean_url(url))
+            self.req = webob.Request.blank(url)
             self.req.method = method
             if headers:
                 self.req.headers = headers

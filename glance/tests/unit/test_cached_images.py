@@ -16,8 +16,8 @@
 import testtools
 import webob
 
-from glance.api import cached_images
 from glance.api import policy
+from glance.api.v2 import cached_images
 from glance.common import exception
 from glance import image_cache
 
@@ -71,7 +71,7 @@ class FakeCache(image_cache.ImageCache):
         return 1
 
 
-class FakeController(cached_images.Controller):
+class FakeController(cached_images.CacheController):
     def __init__(self):
         self.cache = FakeCache()
         self.policy = FakePolicyEnforcer()
@@ -80,7 +80,7 @@ class FakeController(cached_images.Controller):
 class TestController(testtools.TestCase):
     def test_initialization_without_conf(self):
         self.assertRaises(exception.BadDriverConfiguration,
-                          cached_images.Controller)
+                          cached_images.CacheController)
 
 
 class TestCachedImages(testtools.TestCase):
