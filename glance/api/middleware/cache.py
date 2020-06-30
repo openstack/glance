@@ -38,7 +38,6 @@ import glance.db
 from glance.i18n import _LE, _LI
 from glance import image_cache
 from glance import notifier
-import glance.registry.client.v1.api as registry
 
 LOG = logging.getLogger(__name__)
 
@@ -106,19 +105,6 @@ class CacheFilter(wsgi.Middleware):
             LOG.debug("User not permitted to perform '%s' action", action)
             raise webob.exc.HTTPForbidden(explanation=e.msg, request=req)
 
-    def _get_v1_image_metadata(self, request, image_id):
-        """
-        Retrieves image metadata using registry for v1 api and creates
-        dictionary-like mash-up of image core and custom properties.
-        """
-        try:
-            image_metadata = registry.get_image_metadata(request.context,
-                                                         image_id)
-            return utils.create_mashup_dict(image_metadata)
-        except exception.NotFound as e:
-            LOG.debug("No metadata found for image '%s'", image_id)
-            raise webob.exc.HTTPNotFound(explanation=e.msg, request=request)
-
     def _get_v2_image_metadata(self, request, image_id):
         """
         Retrieves image and for v2 api and creates adapter like object
@@ -183,7 +169,7 @@ class CacheFilter(wsgi.Middleware):
             return method(request, image_id, image_iterator, image_metadata)
         except exception.ImageNotFound:
             msg = _LE("Image cache contained image file for image '%s', "
-                      "however the registry did not contain metadata for "
+                      "however the database did not contain metadata for "
                       "that image!") % image_id
             LOG.error(msg)
             self.cache.delete_cached_image(image_id)

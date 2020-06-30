@@ -279,59 +279,6 @@ Related options:
     * None
 
 """)),
-    # TODO(abashmak): Add choices parameter to this option:
-    # choices('glance.db.sqlalchemy.api',
-    #         'glance.db.registry.api',
-    #         'glance.db.simple.api')
-    # This will require a fix to the functional tests which
-    # set this option to a test version of the registry api module:
-    # (glance.tests.functional.v2.registry_data_api), in order to
-    # bypass keystone authentication for the Registry service.
-    # All such tests are contained in:
-    # glance/tests/functional/v2/test_images.py
-    cfg.StrOpt('data_api',
-               default='glance.db.sqlalchemy.api',
-                       deprecated_for_removal=True,
-                       deprecated_since="Queens",
-                       deprecated_reason=_("""
-Glance registry service is deprecated for removal.
-
-More information can be found from the spec:
-http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
-"""),
-               help=_("""
-Python module path of data access API.
-
-Specifies the path to the API to use for accessing the data model.
-This option determines how the image catalog data will be accessed.
-
-Possible values:
-    * glance.db.sqlalchemy.api
-    * glance.db.registry.api
-    * glance.db.simple.api
-
-If this option is set to ``glance.db.sqlalchemy.api`` then the image
-catalog data is stored in and read from the database via the
-SQLAlchemy Core and ORM APIs.
-
-Setting this option to ``glance.db.registry.api`` will force all
-database access requests to be routed through the Registry service.
-This avoids data access from the Glance API nodes for an added layer
-of security, scalability and manageability.
-
-NOTE: In v2 OpenStack Images API, the registry service is optional.
-In order to use the Registry API in v2, the option
-``enable_v2_registry`` must be set to ``True``.
-
-Finally, when this configuration option is set to
-``glance.db.simple.api``, image catalog data is stored in and read
-from an in-memory data structure. This is primarily used for testing.
-
-Related options:
-    * enable_v2_api
-    * enable_v2_registry
-
-""")),
     cfg.IntOpt('limit_param_default', default=25, min=1,
                help=_("""
 The default number of results to return for a request.
@@ -530,58 +477,9 @@ When this option is set to ``True``, Glance service will respond
 to requests on registered endpoints conforming to the v2 OpenStack
 Images API.
 
-NOTES:
-    * If this option is disabled, then the ``enable_v2_registry``
-      option, which is enabled by default, is also recommended
-      to be disabled.
-
 Possible values:
     * True
     * False
-
-Related options:
-    * enable_v2_registry
-
-""")),
-    cfg.BoolOpt('enable_v1_registry',
-                default=True,
-                deprecated_reason=_DEPRECATE_GLANCE_V1_MSG,
-                deprecated_since='Newton',
-                help=_("""
-                    DEPRECATED FOR REMOVAL
-""")),
-    cfg.BoolOpt('enable_v2_registry',
-                default=True,
-                deprecated_for_removal=True,
-                deprecated_since="Queens",
-                deprecated_reason=_("""
-Glance registry service is deprecated for removal.
-
-More information can be found from the spec:
-http://specs.openstack.org/openstack/glance-specs/specs/queens/approved/glance/deprecate-registry.html
-"""),
-                help=_("""
-Deploy the v2 API Registry service.
-
-When this option is set to ``True``, the Registry service
-will be enabled in Glance for v2 API requests.
-
-NOTES:
-    * Use of Registry is optional in v2 API, so this option
-      must only be enabled if both ``enable_v2_api`` is set to
-      ``True`` and the ``data_api`` option is set to
-      ``glance.db.registry.api``.
-
-    * If deploying only the v1 OpenStack Images API, this option,
-      which is enabled by default, should be disabled.
-
-Possible values:
-    * True
-    * False
-
-Related options:
-    * enable_v2_api
-    * data_api
 
 """)),
     cfg.HostAddressOpt('pydev_worker_debug_host',

@@ -51,10 +51,9 @@ CONF = cfg.CONF
 
 ALL_COMMANDS = ['start', 'status', 'stop', 'shutdown', 'restart',
                 'reload', 'force-reload']
-ALL_SERVERS = ['api', 'registry', 'scrubber']
-RELOAD_SERVERS = ['glance-api', 'glance-registry']
-GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-registry',
-                             'glance-scrubber']
+ALL_SERVERS = ['api', 'scrubber']
+RELOAD_SERVERS = ['glance-api']
+GRACEFUL_SHUTDOWN_SERVERS = ['glance-api', 'glance-scrubber']
 MAX_DESCRIPTORS = 32768
 MAX_MEMORY = 2 * units.Gi  # 2 GB
 USAGE = """%(prog)s [options] <SERVER> <COMMAND> [CONFPATH]

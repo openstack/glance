@@ -141,24 +141,23 @@ class ImageDataController(object):
             image = image_repo.get(image_id)
             image.status = 'saving'
             try:
-                if CONF.data_api == 'glance.db.registry.api':
-                    # create a trust if backend is registry
-                    try:
-                        # request user plugin for current token
-                        user_plugin = req.environ.get('keystone.token_auth')
-                        roles = []
-                        # use roles from request environment because they
-                        # are not transformed to lower-case unlike cxt.roles
-                        for role_info in req.environ.get(
-                                'keystone.token_info')['token']['roles']:
-                            roles.append(role_info['name'])
-                        refresher = trust_auth.TokenRefresher(user_plugin,
-                                                              cxt.project_id,
-                                                              roles)
-                    except Exception as e:
-                        LOG.info(_LI("Unable to create trust: %s "
-                                     "Use the existing user token."),
-                                 encodeutils.exception_to_unicode(e))
+                # create a trust if backend is registry
+                try:
+                    # request user plugin for current token
+                    user_plugin = req.environ.get('keystone.token_auth')
+                    roles = []
+                    # use roles from request environment because they
+                    # are not transformed to lower-case unlike cxt.roles
+                    for role_info in req.environ.get(
+                            'keystone.token_info')['token']['roles']:
+                        roles.append(role_info['name'])
+                    refresher = trust_auth.TokenRefresher(user_plugin,
+                                                          cxt.project_id,
+                                                          roles)
+                except Exception as e:
+                    LOG.info(_LI("Unable to create trust: %s "
+                                 "Use the existing user token."),
+                             encodeutils.exception_to_unicode(e))
 
                 image_repo.save(image, from_state='queued')
                 image.set_data(data, size, backend=backend)

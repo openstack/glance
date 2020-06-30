@@ -96,7 +96,6 @@ class BaseServer(object):
         self.process_pid = None
         self.server_module = None
         self.stop_kill = False
-        self.use_user_token = True
         self.send_identity_credentials = False
 
     def write_conf(self, **kwargs):
@@ -401,8 +400,6 @@ class ApiServer(Server):
         default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
-        self.data_api = kwargs.get("data_api",
-                                   "glance.db.sqlalchemy.api")
         self.user_storage_quota = '0'
         self.lock_path = self.test_dir
 
@@ -417,7 +414,6 @@ default_log_levels = eventlet.wsgi.server=DEBUG
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-use_user_token = %(use_user_token)s
 send_identity_credentials = %(send_identity_credentials)s
 log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
@@ -428,7 +424,6 @@ scrub_time = %(scrub_time)s
 send_identity_headers = %(send_identity_headers)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
-data_api = %(data_api)s
 sql_connection = %(sql_connection)s
 show_image_direct_url = %(show_image_direct_url)s
 show_multiple_locations = %(show_multiple_locations)s
@@ -579,8 +574,6 @@ class ApiServerForMultipleBackend(Server):
         default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
                                              default_sql_connection)
-        self.data_api = kwargs.get("data_api",
-                                   "glance.db.sqlalchemy.api")
         self.user_storage_quota = '0'
         self.lock_path = self.test_dir
 
@@ -595,7 +588,6 @@ default_log_levels = eventlet.wsgi.server=DEBUG
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-use_user_token = %(use_user_token)s
 send_identity_credentials = %(send_identity_credentials)s
 log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
@@ -606,7 +598,6 @@ scrub_time = %(scrub_time)s
 send_identity_headers = %(send_identity_headers)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
-data_api = %(data_api)s
 sql_connection = %(sql_connection)s
 show_image_direct_url = %(show_image_direct_url)s
 show_multiple_locations = %(show_multiple_locations)s

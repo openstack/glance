@@ -35,33 +35,6 @@ CONF = cfg.CONF
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
-@mock.patch('oslo_utils.importutils.import_module')
-class TestDbUtilities(test_utils.BaseTestCase):
-    def setUp(self):
-        super(TestDbUtilities, self).setUp()
-        self.config(data_api='silly pants')
-        self.api = mock.Mock()
-
-    def test_get_api_calls_configure_if_present(self, import_module):
-        import_module.return_value = self.api
-        self.assertEqual(glance.db.get_api(), self.api)
-        import_module.assert_called_once_with('silly pants')
-        self.api.configure.assert_called_once_with()
-
-    def test_get_api_skips_configure_if_missing(self, import_module):
-        import_module.return_value = self.api
-        del self.api.configure
-        self.assertEqual(glance.db.get_api(), self.api)
-        import_module.assert_called_once_with('silly pants')
-        self.assertFalse(hasattr(self.api, 'configure'))
-
-    def test_get_api_calls_for_v1_api(self, import_module):
-        api = glance.db.get_api(v1_mode=True)
-        self.assertNotEqual(api, self.api)
-        import_module.assert_called_once_with('glance.db.sqlalchemy.api')
-        api.configure.assert_called_once_with()
-
-
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 UUID2 = 'a85abd86-55b3-4d5b-b0b4-5d0a6e6042fc'
 UUID3 = '971ec09a-8067-4bc8-a91f-ae3557f1c4c7'

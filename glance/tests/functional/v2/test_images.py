@@ -43,13 +43,11 @@ class TestImages(functional.FunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
-        self.api_server.data_api = 'glance.db.sqlalchemy.api'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)
             setattr(self, 'http_server%d' % i, ret[1])
             setattr(self, 'http_port%d' % i, ret[2])
-        self.api_server.use_user_token = True
         self.api_server.send_identity_credentials = True
 
     def tearDown(self):
@@ -3341,7 +3339,6 @@ class TestImages(functional.FunctionalTest):
         self.api_server.deployment_flavor = 'fakeauth'
 
         kwargs = self.__dict__.copy()
-        kwargs['use_user_token'] = True
         self.start_servers(**kwargs)
 
         owners = ['admin', 'tenant1', 'tenant2', 'none']
@@ -4361,7 +4358,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server_multiple_backend.deployment_flavor = 'noauth'
-        self.api_server_multiple_backend.data_api = 'glance.db.sqlalchemy.api'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)
@@ -6151,7 +6147,6 @@ class TestMultiStoreImageMembers(functional.MultipleBackendFunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server_multiple_backend.deployment_flavor = 'noauth'
-        self.api_server_multiple_backend.data_api = 'glance.db.sqlalchemy.api'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)

@@ -27,57 +27,15 @@ import routes
 import webob
 
 from glance.api.middleware import context
-from glance.api.v1 import router
+from glance.api.v2 import router
 import glance.common.client
-from glance.registry.api import v1 as rserver
-from glance.tests import utils
 
 
 DEBUG = False
 
 
-class FakeRegistryConnection(object):
-
-    def __init__(self, registry=None):
-        self.registry = registry or rserver
-
-    def __call__(self, *args, **kwargs):
-        # NOTE(flaper87): This method takes
-        # __init__'s place in the chain.
-        return self
-
-    def connect(self):
-        return True
-
-    def close(self):
-        return True
-
-    def request(self, method, url, body=None, headers=None):
-        self.req = webob.Request.blank("/" + url.lstrip("/"))
-        self.req.method = method
-        if headers:
-            self.req.headers = headers
-        if body:
-            self.req.body = body
-
-    def getresponse(self):
-        mapper = routes.Mapper()
-        server = self.registry.API(mapper)
-        # NOTE(markwash): we need to pass through context auth information if
-        # we have it.
-        if 'X-Auth-Token' in self.req.headers:
-            api = utils.FakeAuthMiddleware(server)
-        else:
-            api = context.UnauthenticatedContextMiddleware(server)
-        webob_res = self.req.get_response(api)
-
-        return utils.FakeHTTPResponse(status=webob_res.status_int,
-                                      headers=webob_res.headers,
-                                      data=webob_res.body)
-
-
-def stub_out_registry_and_store_server(stubs, base_dir, **kwargs):
-    """Mocks calls to 127.0.0.1 on 9191 and 9292 for testing.
+def stub_out_store_server(stubs, base_dir, **kwargs):
+    """Mocks calls to 127.0.0.1 on 9292 for testing.
 
     Done so that a real Glance server does not need to be up and
     running

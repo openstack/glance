@@ -26,7 +26,6 @@ from oslo_db import options
 import glance.common.client
 from glance.common import config
 import glance.db.sqlalchemy.api
-import glance.registry.client.v1.client
 from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 
@@ -93,27 +92,6 @@ paste.filter_factory =
 paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
 """
 
-TESTING_REGISTRY_PASTE_CONF = """
-[pipeline:glance-registry]
-pipeline = unauthenticated-context registryapp
-
-[pipeline:glance-registry-fakeauth]
-pipeline = fakeauth context registryapp
-
-[app:registryapp]
-paste.app_factory = glance.registry.api.v1:API.factory
-
-[filter:context]
-paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
-
-[filter:unauthenticated-context]
-paste.filter_factory =
- glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
-
-[filter:fakeauth]
-paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
-"""
-
 CONF = cfg.CONF
 
 
@@ -126,13 +104,6 @@ class ApiTest(test_utils.BaseTestCase):
         self._setup_database()
         self._setup_stores()
         self._setup_property_protection()
-        self.glance_registry_app = self._load_paste_app(
-            'glance-registry',
-            flavor=getattr(self, 'registry_flavor', ''),
-            conf=getattr(self, 'registry_paste_conf',
-                         TESTING_REGISTRY_PASTE_CONF),
-        )
-        self._connect_registry_client()
         self.glance_api_app = self._load_paste_app(
             'glance-api',
             flavor=getattr(self, 'api_flavor', ''),
@@ -202,15 +173,6 @@ class ApiTest(test_utils.BaseTestCase):
             conf_file.flush()
         return config.load_paste_app(name, flavor=flavor,
                                      conf_file=conf_file_path)
-
-    def _connect_registry_client(self):
-        def get_connection_type(self2):
-            def wrapped(*args, **kwargs):
-                return test_utils.HttplibWsgiAdapter(self.glance_registry_app)
-            return wrapped
-
-        self.mock_object(glance.common.client.BaseClient,
-                         'get_connection_type', get_connection_type)
 
     def tearDown(self):
         glance.db.sqlalchemy.api.clear_db_env()

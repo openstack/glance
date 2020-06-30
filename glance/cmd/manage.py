@@ -547,9 +547,7 @@ def main():
         logging.register_options(CONF)
         CONF.set_default(name='use_stderr', default=True)
         cfg_files = cfg.find_config_files(project='glance',
-                                          prog='glance-registry')
-        cfg_files.extend(cfg.find_config_files(project='glance',
-                                               prog='glance-api'))
+                                          prog='glance-api')
         cfg_files.extend(cfg.find_config_files(project='glance',
                                                prog='glance-manage'))
         config.parse_args(default_config_files=cfg_files)

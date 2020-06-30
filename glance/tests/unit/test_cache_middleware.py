@@ -102,14 +102,6 @@ class TestCacheMiddlewareChecksumVerification(base.IsolatedUnitTest):
         self.request = webob.Request.blank('')
         self.request.context = self.context
 
-    def test_checksum_v1_header(self):
-        cache_filter = ChecksumTestCacheFilter()
-        headers = {"x-image-meta-checksum": "1234567890"}
-        resp = webob.Response(request=self.request, headers=headers)
-        cache_filter._process_GET_response(resp, None)
-
-        self.assertEqual("1234567890", cache_filter.cache.image_checksum)
-
     def test_checksum_v2_header(self):
         cache_filter = ChecksumTestCacheFilter()
         headers = {
@@ -276,15 +268,15 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         context has not 'download_image' role.
         """
 
-        def fake_get_v1_image_metadata(*args, **kwargs):
+        def fake_get_v2_image_metadata(*args, **kwargs):
             return {'status': 'active', 'properties': {}}
 
         image_id = 'test1'
-        request = webob.Request.blank('/v1/images/%s' % image_id)
+        request = webob.Request.blank('/v2/images/%s/file' % image_id)
         request.context = context.RequestContext()
 
         cache_filter = ProcessRequestTestCacheFilter()
-        cache_filter._get_v1_image_metadata = fake_get_v1_image_metadata
+        cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
 
         enforcer = self._enforcer_from_rules({'download_image': '!'})
         cache_filter.policy = enforcer

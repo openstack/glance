@@ -79,7 +79,6 @@ class TestScrubber(functional.FunctionalTest):
         """
         self.cleanup()
         kwargs = self.__dict__.copy()
-        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=True,
                            metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
@@ -115,7 +114,6 @@ class TestScrubber(functional.FunctionalTest):
         """
         self.cleanup()
         kwargs = self.__dict__.copy()
-        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=False,
                            metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
@@ -164,7 +162,6 @@ class TestScrubber(functional.FunctionalTest):
         # Start servers.
         self.cleanup()
         kwargs = self.__dict__.copy()
-        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=False,
                            default_store='file', **kwargs)
 
@@ -242,7 +239,6 @@ class TestScrubber(functional.FunctionalTest):
     def test_scrubber_restore_image(self):
         self.cleanup()
         kwargs = self.__dict__.copy()
-        kwargs['use_user_token'] = True
         self.start_servers(delayed_delete=True, daemon=False,
                            metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)

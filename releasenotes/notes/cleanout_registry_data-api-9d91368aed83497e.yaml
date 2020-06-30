@@ -1,0 +1,10 @@
+---
+deprecations:
+  - |
+    This release removes endpoints and config options related
+    to glance-registry. Including but not limited to config
+    option 'data-api' which has no production supported
+    options left. SimpleDB has not been supported since
+    moving DB migrations to alembic and registry is removed.
+    All registry specific options and config files have been
+    removed. 'glance-registry' command has been removed.
