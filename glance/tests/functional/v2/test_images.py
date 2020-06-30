@@ -36,6 +36,23 @@ TENANT3 = str(uuid.uuid4())
 TENANT4 = str(uuid.uuid4())
 
 
+def get_auth_header(tenant, tenant_id=None, role='', headers=None):
+    """Return headers to authenticate as a specific tenant.
+
+    :param tenant: Tenant for the auth token
+    :param tenant_id: Optional tenant ID for the X-Tenant-Id header
+    :param role: Optional user role
+    :param headers: Optional list of headers to add to
+    """
+    if not headers:
+        headers = {}
+    auth_token = 'user:%s:%s' % (tenant, role)
+    headers.update({'X-Auth-Token': auth_token})
+    if tenant_id:
+        headers.update({'X-Tenant-Id': tenant_id})
+    return headers
+
+
 class TestImages(functional.FunctionalTest):
 
     def setUp(self):
@@ -3941,14 +3958,9 @@ class TestImageMembers(functional.FunctionalTest):
 
     def test_image_member_lifecycle(self):
 
-        def get_header(tenant, role=''):
-            auth_token = 'user:%s:%s' % (tenant, role)
-            headers = {'X-Auth-Token': auth_token}
-            return headers
-
         # Image list should be empty
         path = self._url('/v2/images')
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
@@ -3973,14 +3985,14 @@ class TestImageMembers(functional.FunctionalTest):
 
         # Image list should contain 6 images for tenant1
         path = self._url('/v2/images')
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(6, len(images))
 
         # Image list should contain 3 images for TENANT3
         path = self._url('/v2/images')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(3, len(images))
@@ -3988,7 +4000,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Add Image member for tenant1-shared image
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
         body = jsonutils.dumps({'member': TENANT3})
-        response = requests.post(path, headers=get_header('tenant1'),
+        response = requests.post(path, headers=get_auth_header('tenant1'),
                                  data=body)
         self.assertEqual(http.OK, response.status_code)
         image_member = jsonutils.loads(response.text)
@@ -4000,7 +4012,7 @@ class TestImageMembers(functional.FunctionalTest):
 
         # Image list should contain 3 images for TENANT3
         path = self._url('/v2/images')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(3, len(images))
@@ -4008,21 +4020,21 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should contain 0 shared images for TENANT3
         # because default is accepted
         path = self._url('/v2/images?visibility=shared')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # Image list should contain 4 images for TENANT3 with status pending
         path = self._url('/v2/images?member_status=pending')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(4, len(images))
 
         # Image list should contain 4 images for TENANT3 with status all
         path = self._url('/v2/images?member_status=all')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(4, len(images))
@@ -4030,7 +4042,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should contain 1 image for TENANT3 with status pending
         # and visibility shared
         path = self._url('/v2/images?member_status=pending&visibility=shared')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(1, len(images))
@@ -4039,7 +4051,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should contain 0 image for TENANT3 with status rejected
         # and visibility shared
         path = self._url('/v2/images?member_status=rejected&visibility=shared')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
@@ -4047,7 +4059,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should contain 0 image for TENANT3 with status accepted
         # and visibility shared
         path = self._url('/v2/images?member_status=accepted&visibility=shared')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
@@ -4055,14 +4067,14 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should contain 0 image for TENANT3 with status accepted
         # and visibility private
         path = self._url('/v2/images?visibility=private')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # Image tenant2-shared's image members list should contain no members
         path = self._url('/v2/images/%s/members' % image_fixture[7]['id'])
-        response = requests.get(path, headers=get_header('tenant2'))
+        response = requests.get(path, headers=get_auth_header('tenant2'))
         self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(0, len(body['members']))
@@ -4071,13 +4083,14 @@ class TestImageMembers(functional.FunctionalTest):
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'accepted'})
-        response = requests.put(path, headers=get_header('tenant1'), data=body)
+        response = requests.put(path, headers=get_auth_header('tenant1'),
+                                data=body)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Tenant 1, who is the owner can get status of its own image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual('pending', body['status'])
@@ -4087,7 +4100,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Tenant 3, who is the member can get status of its own status
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual('pending', body['status'])
@@ -4097,14 +4110,15 @@ class TestImageMembers(functional.FunctionalTest):
         # Tenant 2, who not the owner cannot get status of image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
-        response = requests.get(path, headers=get_header('tenant2'))
+        response = requests.get(path, headers=get_auth_header('tenant2'))
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Tenant 3 can change status of image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'accepted'})
-        response = requests.put(path, headers=get_header(TENANT3), data=body)
+        response = requests.put(path, headers=get_auth_header(TENANT3),
+                                data=body)
         self.assertEqual(http.OK, response.status_code)
         image_member = jsonutils.loads(response.text)
         self.assertEqual(image_fixture[3]['id'], image_member['image_id'])
@@ -4114,7 +4128,7 @@ class TestImageMembers(functional.FunctionalTest):
         # Image list should contain 4 images for TENANT3 because status is
         # accepted
         path = self._url('/v2/images')
-        response = requests.get(path, headers=get_header(TENANT3))
+        response = requests.get(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(4, len(images))
@@ -4123,20 +4137,22 @@ class TestImageMembers(functional.FunctionalTest):
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'invalid-status'})
-        response = requests.put(path, headers=get_header(TENANT3), data=body)
+        response = requests.put(path, headers=get_auth_header(TENANT3),
+                                data=body)
         self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         # Owner cannot change status of image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
         body = jsonutils.dumps({'status': 'accepted'})
-        response = requests.put(path, headers=get_header('tenant1'), data=body)
+        response = requests.put(path, headers=get_auth_header('tenant1'),
+                                data=body)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Add Image member for tenant2-shared image
         path = self._url('/v2/images/%s/members' % image_fixture[7]['id'])
         body = jsonutils.dumps({'member': TENANT4})
-        response = requests.post(path, headers=get_header('tenant2'),
+        response = requests.post(path, headers=get_auth_header('tenant2'),
                                  data=body)
         self.assertEqual(http.OK, response.status_code)
         image_member = jsonutils.loads(response.text)
@@ -4148,76 +4164,77 @@ class TestImageMembers(functional.FunctionalTest):
         # Add Image member to public image
         path = self._url('/v2/images/%s/members' % image_fixture[2]['id'])
         body = jsonutils.dumps({'member': TENANT2})
-        response = requests.post(path, headers=get_header('tenant1'),
+        response = requests.post(path, headers=get_auth_header('tenant1'),
                                  data=body)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Add Image member to private image
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
         body = jsonutils.dumps({'member': TENANT2})
-        response = requests.post(path, headers=get_header('tenant1'),
+        response = requests.post(path, headers=get_auth_header('tenant1'),
                                  data=body)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Add Image member to community image
         path = self._url('/v2/images/%s/members' % image_fixture[0]['id'])
         body = jsonutils.dumps({'member': TENANT2})
-        response = requests.post(path, headers=get_header('tenant1'),
+        response = requests.post(path, headers=get_auth_header('tenant1'),
                                  data=body)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image tenant1-shared's members list should contain 1 member
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(1, len(body['members']))
 
         # Admin can see any members
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
-        response = requests.get(path, headers=get_header('tenant1', 'admin'))
+        response = requests.get(path, headers=get_auth_header('tenant1',
+                                                              role='admin'))
         self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(1, len(body['members']))
 
         # Image members not found for private image not owned by TENANT 1
         path = self._url('/v2/images/%s/members' % image_fixture[7]['id'])
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Image members forbidden for public image
         path = self._url('/v2/images/%s/members' % image_fixture[2]['id'])
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertIn("Only shared images have members", response.text)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image members forbidden for community image
         path = self._url('/v2/images/%s/members' % image_fixture[0]['id'])
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertIn("Only shared images have members", response.text)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image members forbidden for private image
         path = self._url('/v2/images/%s/members' % image_fixture[1]['id'])
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertIn("Only shared images have members", response.text)
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Image Member Cannot delete Image membership
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
-        response = requests.delete(path, headers=get_header(TENANT3))
+        response = requests.delete(path, headers=get_auth_header(TENANT3))
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Delete Image member
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
-        response = requests.delete(path, headers=get_header('tenant1'))
+        response = requests.delete(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # Now the image has no members
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.OK, response.status_code)
         body = jsonutils.loads(response.text)
         self.assertEqual(0, len(body['members']))
@@ -4226,49 +4243,49 @@ class TestImageMembers(functional.FunctionalTest):
         path = self._url('/v2/images/%s/members' % image_fixture[3]['id'])
         for i in range(10):
             body = jsonutils.dumps({'member': str(uuid.uuid4())})
-            response = requests.post(path, headers=get_header('tenant1'),
+            response = requests.post(path, headers=get_auth_header('tenant1'),
                                      data=body)
             self.assertEqual(http.OK, response.status_code)
 
         body = jsonutils.dumps({'member': str(uuid.uuid4())})
-        response = requests.post(path, headers=get_header('tenant1'),
+        response = requests.post(path, headers=get_auth_header('tenant1'),
                                  data=body)
         self.assertEqual(http.REQUEST_ENTITY_TOO_LARGE, response.status_code)
 
         # Get Image member should return not found for public image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[2]['id'],
                                                        TENANT3))
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Get Image member should return not found for community image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
                                                        TENANT3))
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Get Image member should return not found for private image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
-        response = requests.get(path, headers=get_header('tenant1'))
+        response = requests.get(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Delete Image member should return forbidden for public image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[2]['id'],
                                                        TENANT3))
-        response = requests.delete(path, headers=get_header('tenant1'))
+        response = requests.delete(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Delete Image member should return forbidden for community image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[0]['id'],
                                                        TENANT3))
-        response = requests.delete(path, headers=get_header('tenant1'))
+        response = requests.delete(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Delete Image member should return forbidden for private image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[1]['id'],
                                                        TENANT3))
-        response = requests.delete(path, headers=get_header('tenant1'))
+        response = requests.delete(path, headers=get_auth_header('tenant1'))
         self.assertEqual(http.FORBIDDEN, response.status_code)
 
         self.stop_servers()
@@ -6181,11 +6198,8 @@ class TestMultiStoreImageMembers(functional.MultipleBackendFunctionalTest):
 
         try:
             def get_header(tenant, tenant_id=None, role=''):
-                auth_token = 'user:%s:%s' % (tenant, role)
-                headers = {'X-Auth-Token': auth_token}
-                if tenant_id:
-                    headers.update({'X-Tenant-Id': tenant_id})
-                return self._headers(custom_headers=headers)
+                return self._headers(custom_headers=get_auth_header(
+                    tenant, tenant_id, role))
 
             # Image list should be empty
             path = self._url('/v2/images')
