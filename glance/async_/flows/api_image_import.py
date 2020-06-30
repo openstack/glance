@@ -435,8 +435,14 @@ def get_flow(**kwargs):
 
     flow.add(_VerifyStaging(task_id, task_type, task_repo, file_uri))
 
-    for plugin in import_plugins.get_import_plugins(**kwargs):
-        flow.add(plugin)
+    # Note(jokke): The plugins were designed to act on the image data or
+    # metadata during the import process before the image goes active. It
+    # does not make sense to try to execute them during 'copy-image'.
+    if import_method != 'copy-image':
+        for plugin in import_plugins.get_import_plugins(**kwargs):
+            flow.add(plugin)
+    else:
+        LOG.debug("Skipping plugins on 'copy-image' job.")
 
     for idx, store in enumerate(stores, 1):
         set_active = (not all_stores_must_succeed) or (idx == len(stores))

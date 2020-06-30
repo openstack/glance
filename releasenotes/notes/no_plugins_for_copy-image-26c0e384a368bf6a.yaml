@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    * Bug 1885725_: 'copy-image' import job should not run additional plugins
+
+    .. _1885725: https://code.launchpad.net/bugs/1885725
