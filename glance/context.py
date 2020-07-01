@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+
 from oslo_context import context
 
 from glance.api import policy
@@ -71,6 +73,18 @@ class RequestContext(context.RequestContext):
     def can_see_deleted(self):
         """Admins can see deleted by default"""
         return self.show_deleted or self.is_admin
+
+    def elevated(self):
+        """Return a copy of this context with admin flag set."""
+
+        context = copy.copy(self)
+        context.roles = copy.deepcopy(self.roles)
+        if 'admin' not in context.roles:
+            context.roles.append('admin')
+
+        context.is_admin = True
+
+        return context
 
 
 def get_admin_context(show_deleted=False):
