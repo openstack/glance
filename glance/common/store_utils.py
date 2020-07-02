@@ -27,7 +27,6 @@ from glance import scrubber
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
-CONF.import_opt('use_user_token', 'glance.registry.client')
 
 RESTRICTED_URI_SCHEMAS = frozenset(['file', 'filesystem', 'swift+config'])
 
@@ -93,8 +92,7 @@ def schedule_delayed_delete_from_backend(context, image_id, location):
 
     db_queue = scrubber.get_scrub_queue()
 
-    if not CONF.use_user_token:
-        context = None
+    context = None
 
     ret = db_queue.add_location(image_id, location)
     if ret:

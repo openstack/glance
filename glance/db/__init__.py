@@ -34,22 +34,8 @@ CONF.import_opt('image_size_cap', 'glance.common.config')
 CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
-def get_api(v1_mode=False):
-    """
-    When using v2_registry with v2_api or alone, it is essential that the opt
-    'data_api' be set to 'glance.db.registry.api'. This requires us to
-    differentiate what this method returns as the db api. i.e., we do not want
-    to return 'glance.db.registry.api' for a call from v1 api.
-    Reference bug #1516706
-    """
-    if v1_mode:
-        # prevent v1_api from talking to v2_registry.
-        if CONF.data_api == 'glance.db.simple.api':
-            api = importutils.import_module(CONF.data_api)
-        else:
-            api = importutils.import_module('glance.db.sqlalchemy.api')
-    else:
-        api = importutils.import_module(CONF.data_api)
+def get_api():
+    api = importutils.import_module('glance.db.sqlalchemy.api')
 
     if hasattr(api, 'configure'):
         api.configure()

@@ -14,7 +14,6 @@
 
 __all__ = [
     'list_api_opts',
-    'list_registry_opts',
     'list_scrubber_opts',
     'list_cache_opts',
     'list_manage_opts',
@@ -42,9 +41,6 @@ import glance.common.wsgi
 import glance.image_cache
 import glance.image_cache.drivers.sqlite
 import glance.notifier
-import glance.registry
-import glance.registry.client
-import glance.registry.client.v1.api
 import glance.scrubber
 
 
@@ -64,10 +60,6 @@ _api_opts = [
         glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,
         glance.notifier.notifier_opts,
-        glance.registry.registry_addr_opts,
-        glance.registry.client.registry_client_ctx_opts,
-        glance.registry.client.registry_client_opts,
-        glance.registry.client.v1.api.registry_client_ctx_opts,
         glance.scrubber.scrubber_opts))),
     ('image_format', glance.common.config.image_format_opts),
     ('task', glance.common.config.task_opts),
@@ -78,9 +70,6 @@ _api_opts = [
      glance.common.location_strategy.store_type.store_type_opts),
     profiler.list_opts()[0],
     ('paste_deploy', glance.common.config.paste_deploy_opts)
-]
-_registry_opts = [
-    (None, []),
 ]
 _scrubber_opts = [
     (None, list(itertools.chain(
@@ -93,10 +82,7 @@ _cache_opts = [
     (None, list(itertools.chain(
         glance.common.config.common_opts,
         glance.image_cache.drivers.sqlite.sqlite_opts,
-        glance.image_cache.image_cache_opts,
-        glance.registry.registry_addr_opts,
-        glance.registry.client.registry_client_opts,
-        glance.registry.client.registry_client_ctx_opts))),
+        glance.image_cache.image_cache_opts))),
 ]
 _manage_opts = [
     (None, [])
@@ -127,13 +113,6 @@ def list_api_opts():
     """
 
     return [(g, copy.deepcopy(o)) for g, o in _api_opts]
-
-
-def list_registry_opts():
-    """Return a list of oslo_config options available in Glance Registry
-    service.
-    """
-    return [(g, copy.deepcopy(o)) for g, o in _registry_opts]
 
 
 def list_scrubber_opts():
