@@ -253,7 +253,7 @@
               - ^\.zuul\.yaml$
         - tempest-full:
             irrelevant-files: *tempest-irrelevant-files
-        - neutron-grenade:
+        - grenade:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-full-py3:
             irrelevant-files: *tempest-irrelevant-files
@@ -266,7 +266,7 @@
         - openstack-tox-functional-py37
         - tempest-full:
             irrelevant-files: *tempest-irrelevant-files
-        - neutron-grenade:
+        - grenade:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-full-py3:
             irrelevant-files: *tempest-irrelevant-files
