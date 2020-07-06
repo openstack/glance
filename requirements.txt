@@ -3,11 +3,11 @@
 # process, which may cause wedges in the gate later.
 
 pbr!=2.1.0,>=2.0.0 # Apache-2.0
-defusedxml>=0.5.0 # PSF
+defusedxml>=0.6.0 # PSF
 
 # < 0.8.0/0.8 does not work, see https://bugs.launchpad.net/bugs/1153983
 SQLAlchemy!=1.1.5,!=1.1.6,!=1.1.7,!=1.1.8,>=1.0.10 # MIT
-eventlet!=0.23.0,!=0.25.0,>=0.22.0 # MIT
+eventlet>=0.25.1 # MIT
 PasteDeploy>=1.5.0 # MIT
 Routes>=2.3.1 # MIT
 WebOb>=1.8.1 # MIT
@@ -36,7 +36,7 @@ pyOpenSSL>=17.1.0 # Apache-2.0
 # Required by openstack.common libraries
 six>=1.10.0 # MIT
 
-oslo.db>=4.27.0 # Apache-2.0
+oslo.db>=5.0.0 # Apache-2.0
 oslo.i18n>=3.15.3 # Apache-2.0
 oslo.log>=3.36.0 # Apache-2.0
 oslo.messaging>=5.29.0,!=9.0.0 # Apache-2.0
