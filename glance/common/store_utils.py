@@ -180,21 +180,34 @@ def _get_store_id_from_uri(uri):
         return
 
 
-def update_store_in_locations(locations, image_id):
+def update_store_in_locations(image, image_repo):
+    for loc in image.locations:
+        if (not loc['metadata'].get(
+                'store') or loc['metadata'].get(
+                'store') not in CONF.enabled_backends):
+            store_id = _get_store_id_from_uri(loc['url'])
+            if store_id:
+                if 'store' in loc['metadata']:
+                    old_store = loc['metadata']['store']
+                    if old_store != store_id:
+                        LOG.debug("Store '%(old)s' has changed to "
+                                  "'%(new)s' by operator, updating "
+                                  "the same in the location of image "
+                                  "'%(id)s'", {'old': old_store,
+                                               'new': store_id,
+                                               'id': image.image_id})
+
+                loc['metadata']['store'] = store_id
+                image_repo.save(image)
+
+
+def get_updated_store_location(locations):
     for loc in locations:
         store_id = _get_store_id_from_uri(loc['url'])
         if store_id:
-            if 'store' in loc['metadata']:
-                old_store = loc['metadata']['store']
-                if old_store != store_id:
-                    LOG.debug("Store '%(old)s' has changed to "
-                              "'%(new)s' by operator, updating "
-                              "the same in the location of image "
-                              "'%(id)s'", {'old': old_store,
-                                           'new': store_id,
-                                           'id': image_id})
-
             loc['metadata']['store'] = store_id
+
+    return locations
 
 
 def get_dir_separator():
