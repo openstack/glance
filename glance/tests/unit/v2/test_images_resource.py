@@ -5172,7 +5172,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPConflict,
                           self.controller.import_image,
-                          request, UUID1,
+                          request, UUID2,
                           {'method': {'name': 'glance-direct'}})
 
     def test_image_lazy_loading_store(self):
