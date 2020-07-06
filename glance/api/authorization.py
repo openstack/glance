@@ -32,12 +32,12 @@ LOG = logging.getLogger(__name__)
 def lazy_update_store_info(func):
     """Update store information in location metadata"""
     @functools.wraps(func)
-    def wrapped(context, image, **kwargs):
+    def wrapped(context, image, image_repo, **kwargs):
         if CONF.enabled_backends:
             store_utils.update_store_in_locations(
-                image.locations, image.image_id)
+                image, image_repo)
 
-        return func(context, image, **kwargs)
+        return func(context, image, image_repo, **kwargs)
 
     return wrapped
 
@@ -54,7 +54,7 @@ def is_image_mutable(context, image):
 
 
 @lazy_update_store_info
-def proxy_image(context, image):
+def proxy_image(context, image, image_repo):
     if is_image_mutable(context, image):
         return ImageProxy(image, context)
     else:
@@ -127,11 +127,11 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def get(self, image_id):
         image = self.image_repo.get(image_id)
-        return proxy_image(self.context, image)
+        return proxy_image(self.context, image, self.image_repo)
 
     def list(self, *args, **kwargs):
         images = self.image_repo.list(*args, **kwargs)
-        return [proxy_image(self.context, i) for i in images]
+        return [proxy_image(self.context, i, self.image_repo) for i in images]
 
 
 def _validate_image_accepts_members(visibility):
