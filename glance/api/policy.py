@@ -16,13 +16,7 @@
 
 """Policy Engine For Glance"""
 
-# TODO(smcginnis) update this once six has support for collections.abc
-# (https://github.com/benjaminp/six/pull/241) or clean up once we drop py2.7.
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
+from collections import abc
 import copy
 
 from oslo_config import cfg
@@ -390,7 +384,7 @@ class TaskFactoryProxy(glance.domain.proxy.TaskFactory):
             task_proxy_kwargs=proxy_kwargs)
 
 
-class ImageTarget(Mapping):
+class ImageTarget(abc.Mapping):
     SENTINEL = object()
 
     def __init__(self, target):

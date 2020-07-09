@@ -14,13 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# TODO(smcginnis) update this once six has support for collections.abc
-# (https://github.com/benjaminp/six/pull/241) or clean up once we drop py2.7.
-try:
-    from collections.abc import MutableMapping
-except ImportError:
-    from collections import MutableMapping
-
+from collections import abc
 import datetime
 import uuid
 
@@ -293,7 +287,7 @@ class Image(object):
         raise NotImplementedError()
 
 
-class ExtraProperties(MutableMapping, dict):
+class ExtraProperties(abc.MutableMapping, dict):
 
     def __getitem__(self, key):
         return dict.__getitem__(self, key)

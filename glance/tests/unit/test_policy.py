@@ -14,17 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# TODO(smcginnis) update this once six has support for collections.abc
-# (https://github.com/benjaminp/six/pull/241) or clean up once we drop py2.7.
-try:
-    from collections.abc import Iterable
-except ImportError:
-    from collections import Iterable
+from collections import abc
 from unittest import mock
 
 import hashlib
 import os.path
-
 import oslo_config.cfg
 
 import glance.api.policy
@@ -37,7 +31,7 @@ from glance.tests import utils as test_utils
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 
 
-class IterableMock(mock.Mock, Iterable):
+class IterableMock(mock.Mock, abc.Iterable):
 
     def __iter__(self):
         while False:
