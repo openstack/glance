@@ -35,7 +35,7 @@ httplib2==0.9.1
 idna==2.6
 iso8601==0.1.11
 Jinja2==2.10
-jsonschema==2.6.0
+jsonschema==3.2.0
 keystoneauth1==3.4.0
 keystonemiddleware==4.17.0
 kombu==4.3.0
