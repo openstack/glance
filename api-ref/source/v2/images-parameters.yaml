@@ -275,12 +275,12 @@ updated_at-in-query:
 visibility-in-query:
   description: |
     Filters the response by an image visibility value.  A valid value is
-    ``public``, ``private``, ``community``, or ``shared``.  (Note that if you
-    filter on ``shared``, the images included in the response will only be
-    those where your member status is ``accepted`` unless you explicitly
-    include a ``member_status`` filter in the request.)  If you omit this
-    parameter, the response shows ``public``, ``private``, and those ``shared``
-    images with a member status of ``accepted``.
+    ``public``, ``private``, ``community``, ``shared``, or ``all``.  (Note
+    that if you filter on ``shared``, the images included in the response
+    will only be those where your member status is ``accepted`` unless you
+    explicitly include a ``member_status`` filter in the request.)  If you
+    omit this parameter, the response shows ``public``, ``private``, and those
+    ``shared`` images with a member status of ``accepted``.
   in: query
   required: false
   type: string
