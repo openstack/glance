@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The deprecated 'enable_v2_api' config option has been
+    removed.

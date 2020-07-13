@@ -3657,22 +3657,6 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         base_headers.update(custom_headers or {})
         return base_headers
 
-    def test_v2_not_enabled(self):
-        self.api_server.enable_v2_api = False
-        self.start_servers(**self.__dict__.copy())
-        path = self._url('/v2/images')
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
-        self.stop_servers()
-
-    def test_v2_enabled(self):
-        self.api_server.enable_v2_api = True
-        self.start_servers(**self.__dict__.copy())
-        path = self._url('/v2/images')
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(http.OK, response.status_code)
-        self.stop_servers()
-
     def test_image_direct_url_visible(self):
 
         self.api_server.show_image_direct_url = True

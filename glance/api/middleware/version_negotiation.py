@@ -72,19 +72,18 @@ class VersionNegotiationFilter(wsgi.Middleware):
 
     def _get_allowed_versions(self):
         allowed_versions = {}
-        if CONF.enable_v2_api:
-            allowed_versions['v2'] = 2
-            allowed_versions['v2.0'] = 2
-            allowed_versions['v2.1'] = 2
-            allowed_versions['v2.2'] = 2
-            allowed_versions['v2.3'] = 2
-            allowed_versions['v2.4'] = 2
-            allowed_versions['v2.5'] = 2
-            allowed_versions['v2.6'] = 2
-            allowed_versions['v2.7'] = 2
-            allowed_versions['v2.9'] = 2
-            if CONF.enabled_backends:
-                allowed_versions['v2.8'] = 2
+        allowed_versions['v2'] = 2
+        allowed_versions['v2.0'] = 2
+        allowed_versions['v2.1'] = 2
+        allowed_versions['v2.2'] = 2
+        allowed_versions['v2.3'] = 2
+        allowed_versions['v2.4'] = 2
+        allowed_versions['v2.5'] = 2
+        allowed_versions['v2.6'] = 2
+        allowed_versions['v2.7'] = 2
+        allowed_versions['v2.9'] = 2
+        if CONF.enabled_backends:
+            allowed_versions['v2.8'] = 2
         return allowed_versions
 
     def _match_version_string(self, subject):

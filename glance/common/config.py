@@ -458,30 +458,6 @@ Related options:
     * None
 
 """)),
-    cfg.BoolOpt('enable_v2_api',
-                default=True,
-                deprecated_reason=_('The Images (Glance) version 1 API has '
-                                    'been DEPRECATED in the Newton release. '
-                                    'It will be removed on or after Pike '
-                                    'release, following the standard '
-                                    'OpenStack deprecation policy. Once we '
-                                    'remove the Images (Glance) v1 API, only '
-                                    'the Images (Glance) v2 API can be '
-                                    'deployed and will be enabled by default '
-                                    'making this option redundant.'),
-                deprecated_since='Newton',
-                help=_("""
-Deploy the v2 OpenStack Images API.
-
-When this option is set to ``True``, Glance service will respond
-to requests on registered endpoints conforming to the v2 OpenStack
-Images API.
-
-Possible values:
-    * True
-    * False
-
-""")),
     cfg.HostAddressOpt('pydev_worker_debug_host',
                        sample_default='localhost',
                        help=_("""

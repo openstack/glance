@@ -100,7 +100,6 @@ class TestApiVersions(functional.FunctionalTest):
         self.assertEqual(versions, content)
 
     def test_v2_api_configuration(self):
-        self.api_server.enable_v2_api = True
         self.start_servers(**self.__dict__.copy())
 
         url = 'http://127.0.0.1:%d/v%%s/' % self.api_port

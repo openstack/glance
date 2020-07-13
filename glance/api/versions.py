@@ -76,27 +76,26 @@ class Controller(object):
             }
 
         version_objs = []
-        if CONF.enable_v2_api:
-            if CONF.enabled_backends:
-                version_objs.extend([
-                    build_version_object(2.10, 'v2', 'CURRENT'),
-                    build_version_object(2.9, 'v2', 'SUPPORTED'),
-                    build_version_object(2.8, 'v2', 'SUPPORTED')
-                ])
-            else:
-                version_objs.extend([
-                    build_version_object(2.9, 'v2', 'CURRENT'),
-                ])
+        if CONF.enabled_backends:
             version_objs.extend([
-                build_version_object(2.7, 'v2', 'SUPPORTED'),
-                build_version_object(2.6, 'v2', 'SUPPORTED'),
-                build_version_object(2.5, 'v2', 'SUPPORTED'),
-                build_version_object(2.4, 'v2', 'SUPPORTED'),
-                build_version_object(2.3, 'v2', 'SUPPORTED'),
-                build_version_object(2.2, 'v2', 'SUPPORTED'),
-                build_version_object(2.1, 'v2', 'SUPPORTED'),
-                build_version_object(2.0, 'v2', 'SUPPORTED'),
+                build_version_object(2.10, 'v2', 'CURRENT'),
+                build_version_object(2.9, 'v2', 'SUPPORTED'),
+                build_version_object(2.8, 'v2', 'SUPPORTED')
             ])
+        else:
+            version_objs.extend([
+                build_version_object(2.9, 'v2', 'CURRENT'),
+            ])
+        version_objs.extend([
+            build_version_object(2.7, 'v2', 'SUPPORTED'),
+            build_version_object(2.6, 'v2', 'SUPPORTED'),
+            build_version_object(2.5, 'v2', 'SUPPORTED'),
+            build_version_object(2.4, 'v2', 'SUPPORTED'),
+            build_version_object(2.3, 'v2', 'SUPPORTED'),
+            build_version_object(2.2, 'v2', 'SUPPORTED'),
+            build_version_object(2.1, 'v2', 'SUPPORTED'),
+            build_version_object(2.0, 'v2', 'SUPPORTED'),
+        ])
 
         status = explicit and http_client.OK or http_client.MULTIPLE_CHOICES
         response = webob.Response(request=req,
