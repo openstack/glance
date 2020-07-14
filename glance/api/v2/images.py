@@ -632,13 +632,15 @@ class ImagesController(object):
 
         val_data = self._validate_validation_data(image, value)
         # NOTE(abhishekk): get glance store based on location uri
+        updated_location = value
         if CONF.enabled_backends:
-            store_utils.update_store_in_locations(value, image.image_id)
+            updated_location = store_utils.get_updated_store_location(
+                value)
 
         try:
             # NOTE(flwang): _locations_proxy's setattr method will check if
             # the update is acceptable.
-            image.locations = value
+            image.locations = updated_location
             if image.status == 'queued':
                 for k, v in val_data.items():
                     setattr(image, k, v)
@@ -662,8 +664,10 @@ class ImagesController(object):
 
         val_data = self._validate_validation_data(image, [value])
         # NOTE(abhishekk): get glance store based on location uri
+        updated_location = value
         if CONF.enabled_backends:
-            store_utils.update_store_in_locations([value], image.image_id)
+            updated_location = store_utils.get_updated_store_location(
+                [value])[0]
 
         pos = self._get_locations_op_pos(path_pos,
                                          len(image.locations), True)
@@ -671,7 +675,7 @@ class ImagesController(object):
             msg = _("Invalid position for adding a location.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
         try:
-            image.locations.insert(pos, value)
+            image.locations.insert(pos, updated_location)
             if image.status == 'queued':
                 for k, v in val_data.items():
                     setattr(image, k, v)
