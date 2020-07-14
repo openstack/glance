@@ -2960,6 +2960,52 @@ class TestImagesController(base.IsolatedUnitTest):
         # a task
         mock_new_task.assert_not_called()
 
+    @mock.patch('glance.context.RequestContext.elevated')
+    @mock.patch.object(glance.api.authorization, 'is_image_mutable')
+    @mock.patch.object(glance.domain.TaskFactory, 'new_task')
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    def test_image_import_copy_allowed_by_policy(self, mock_get,
+                                                 mock_new_task,
+                                                 mock_policy_check,
+                                                 mock_elevated,
+                                                 allowed=True):
+        # NOTE(danms): FakeImage is owned by utils.TENANT1. Try to do the
+        # import as TENANT2, but with a policy exception
+        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        mock_get.return_value = FakeImage(status='active', locations=[])
+
+        # FIXME(danms): This should control whatever policy knob we make,
+        # but for now control the strict check we have.
+        mock_policy_check.return_value = allowed
+
+        req_body = {'method': {'name': 'copy-image'},
+                    'stores': ['cheap']}
+
+        with mock.patch.object(
+                self.controller.gateway,
+                'get_task_executor_factory',
+                side_effect=self.controller.gateway.get_task_executor_factory
+        ) as mock_tef:
+            self.controller.import_image(request, UUID4, req_body)
+            # Make sure we passed an admin context to our task executor factory
+            mock_tef.assert_called_once_with(
+                request.context,
+                admin_context=mock_elevated.return_value)
+
+        expected_input = {'image_id': UUID4,
+                          'import_req': mock.ANY,
+                          'backend': mock.ANY}
+        mock_new_task.assert_called_with(task_type='api_image_import',
+                                         owner=TENANT2,
+                                         task_input=expected_input)
+
+    def test_image_import_copy_not_allowed_by_policy(self):
+        # Make sure that if the policy check fails, we fail a copy-image with
+        # Forbidden
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.test_image_import_copy_allowed_by_policy,
+                          allowed=False)
+
     def test_delete_encryption_key_no_encryption_key(self):
         request = unit_test_utils.get_fake_request()
         fake_encryption_key = self.controller._key_manager.store(

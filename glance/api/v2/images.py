@@ -102,7 +102,6 @@ class ImagesController(object):
     def import_image(self, req, image_id, body):
         image_repo = self.gateway.get_repo(req.context)
         task_factory = self.gateway.get_task_factory(req.context)
-        executor_factory = self.gateway.get_task_executor_factory(req.context)
         task_repo = self.gateway.get_task_repo(req.context)
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
@@ -184,6 +183,17 @@ class ImagesController(object):
         task_input = {'image_id': image_id,
                       'import_req': body,
                       'backend': stores}
+
+        if import_method == 'copy-image':
+            # If this is a copy-image import and we passed the policy check,
+            # grab an admin context for the task so it can manipulate metadata
+            # as admin.
+            admin_context = req.context.elevated()
+        else:
+            admin_context = None
+
+        executor_factory = self.gateway.get_task_executor_factory(
+            req.context, admin_context=admin_context)
 
         if (import_method == 'web-download' and
                 not utils.validate_import_uri(uri)):

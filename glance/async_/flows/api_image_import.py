@@ -76,6 +76,188 @@ CONF.register_opts(api_import_opts, group='image_import_opts')
 # need to duplicate what we have already for example in base_import.py.
 
 
+class ImportActionWrapper(object):
+    """Wrapper for all the image metadata operations we do during an import.
+
+    This is used to consolidate the changes we make to image metadata during
+    an import operation, and can be used with an admin-capable repo to
+    enable non-owner controlled modification of that data if desired.
+
+    Use this as a context manager to make multiple changes followed by
+    a save of the image in one operation. An _ImportActions object is
+    yielded from the context manager, which defines the available operations.
+
+    :param image_repo: The ImageRepo we should use to fetch/save the image
+    :param image-id: The ID of the image we should be altering
+    """
+
+    def __init__(self, image_repo, image_id):
+        self._image_repo = image_repo
+        self._image_id = image_id
+
+    def __enter__(self):
+        self._image = self._image_repo.get(self._image_id)
+        self._image_previous_status = self._image.status
+        return _ImportActions(self._image)
+
+    def __exit__(self, type, value, traceback):
+        if type is not None:
+            # NOTE(danms): Do not save the image if we raised in context
+            return
+
+        if self._image_previous_status != self._image.status:
+            LOG.debug('Image %(image_id)s status changing from '
+                      '%(old_status)s to %(new_status)s',
+                      {'image_id': self._image_id,
+                       'old_status': self._image_previous_status,
+                       'new_status': self._image.status})
+        self._image_repo.save(self._image, self._image_previous_status)
+
+
+class _ImportActions(object):
+    """Actions available for being performed on an image during import.
+
+    This defines the available actions that can be performed on an image
+    during import, which may be done with an image owned by another user.
+
+    Do not instantiate this object directly, get it from ImportActionWrapper.
+    """
+
+    IMPORTING_STORES_KEY = 'os_glance_importing_to_stores'
+    IMPORT_FAILED_KEY = 'os_glance_failed_import'
+
+    def __init__(self, image):
+        self._image = image
+
+    @property
+    def image_id(self):
+        return self._image.image_id
+
+    @property
+    def image_status(self):
+        return self._image.status
+
+    def merge_store_list(self, list_key, stores, subtract=False):
+        stores = set([store for store in stores if store])
+        existing = set(
+            self._image.extra_properties.get(list_key, '').split(','))
+
+        if subtract:
+            if stores - existing:
+                LOG.debug('Stores %(stores)s not in %(key)s for '
+                          'image %(image_id)s',
+                          {'stores': ','.join(sorted(stores - existing)),
+                           'key': list_key,
+                           'image_id': self.image_id})
+            merged_stores = existing - stores
+        else:
+            merged_stores = existing | stores
+
+        stores_list = ','.join(sorted((store for store in
+                                       merged_stores if store)))
+        self._image.extra_properties[list_key] = stores_list
+        LOG.debug('Image %(image_id)s %(key)s=%(stores)s',
+                  {'image_id': self.image_id,
+                   'key': list_key,
+                   'stores': stores_list})
+
+    def add_importing_stores(self, stores):
+        """Add a list of stores to the importing list.
+
+        Add stores to os_glance_importing_to_stores
+
+        :param stores: A list of store names
+        """
+        self.merge_store_list(self.IMPORTING_STORES_KEY, stores)
+
+    def remove_importing_stores(self, stores):
+        """Remove a list of stores from the importing list.
+
+        Remove stores from os_glance_importing_to_stores
+
+        :param stores: A list of store names
+        """
+        self.merge_store_list(self.IMPORTING_STORES_KEY, stores, subtract=True)
+
+    def add_failed_stores(self, stores):
+        """Add a list of stores to the failed list.
+
+        Add stores to os_glance_failed_import
+
+        :param stores: A list of store names
+        """
+        self.merge_store_list(self.IMPORT_FAILED_KEY, stores)
+
+    def remove_failed_stores(self, stores):
+        """Remove a list of stores from the failed list.
+
+        Remove stores from os_glance_failed_import
+
+        :param stores: A list of store names
+        """
+        self.merge_store_list(self.IMPORT_FAILED_KEY, stores, subtract=True)
+
+    def set_image_data(self, uri, task_id, backend, set_active):
+        """Populate image with data on a specific backend.
+
+        This is used during an image import operation to populate the data
+        in a given store for the image. If this object wraps an admin-capable
+        image_repo, then this will be done with admin credentials on behalf
+        of a user already determined to be able to perform this operation
+        (such as a copy-image import of an existing image owned by another
+        user).
+
+        :param uri: Source URL for image data
+        :param task_id: The task responsible for this operation
+        :param backend: The backend store to target the data
+        :param set_active: Whether or not to set the image to 'active'
+                           state after the operation completes
+        """
+        return image_import.set_image_data(self._image, uri, task_id,
+                                           backend=backend,
+                                           set_active=set_active)
+
+    def set_image_status(self, status):
+        """Set the image status.
+
+        :param status: The new status of the image
+        """
+        self._image.status = status
+
+    def remove_location_for_store(self, backend):
+        """Remove a location from an image given a backend store.
+
+        Given a backend store, remove the corresponding location from the
+        image's set of locations. If the last location is removed, remove
+        the image checksum, hash information, and size.
+
+        :param backend: The backend store to remove from the image
+        """
+
+        for i, location in enumerate(self._image.locations):
+            if location.get('metadata', {}).get('store') == backend:
+                try:
+                    self._image.locations.pop(i)
+                except (store_exceptions.NotFound,
+                        store_exceptions.Forbidden):
+                    msg = (_("Error deleting from store %(store)s when "
+                             "reverting.") % {'store': backend})
+                    LOG.warning(msg)
+                # NOTE(yebinama): Some store drivers doesn't document which
+                # exceptions they throw.
+                except Exception:
+                    msg = (_("Unexpected exception when deleting from store "
+                             "%(store)s.") % {'store': backend})
+                    LOG.warning(msg)
+                else:
+                    if len(self._image.locations) == 0:
+                        self._image.checksum = None
+                        self._image.os_hash_algo = None
+                        self._image.os_hash_value = None
+                        self._image.size = None
+                break
+
+
 class _DeleteFromFS(task.Task):
 
     def __init__(self, task_id, task_type):
@@ -189,13 +371,12 @@ class _VerifyStaging(task.Task):
 
 class _ImportToStore(task.Task):
 
-    def __init__(self, task_id, task_type, image_repo, uri, image_id, backend,
-                 all_stores_must_succeed, set_active):
+    def __init__(self, task_id, task_type, action_wrapper, uri,
+                 backend, all_stores_must_succeed, set_active):
         self.task_id = task_id
         self.task_type = task_type
-        self.image_repo = image_repo
+        self.action_wrapper = action_wrapper
         self.uri = uri
-        self.image_id = image_id
         self.backend = backend
         self.all_stores_must_succeed = all_stores_must_succeed
         self.set_active = set_active
@@ -205,7 +386,6 @@ class _ImportToStore(task.Task):
     def execute(self, file_path=None):
         """Bringing the imported image to back end store
 
-        :param image_id: Glance Image ID
         :param file_path: path to the image file
         """
         # NOTE(flaper87): Let's dance... and fall
@@ -248,14 +428,19 @@ class _ImportToStore(task.Task):
         # NOTE(jokke): The different options here are kind of pointless as we
         # will need the file path anyways for our delete workflow for now.
         # For future proofing keeping this as is.
-        image = self.image_repo.get(self.image_id)
-        if image.status == "deleted":
+
+        with self.action_wrapper as action:
+            self._execute(action, file_path)
+
+    def _execute(self, action, file_path):
+
+        if action.image_status == "deleted":
             raise exception.ImportTaskError("Image has been deleted, aborting"
                                             " import.")
         try:
-            image_import.set_image_data(image, file_path or self.uri,
-                                        self.task_id, backend=self.backend,
-                                        set_active=self.set_active)
+            action.set_image_data(file_path or self.uri,
+                                  self.task_id, backend=self.backend,
+                                  set_active=self.set_active)
         # NOTE(yebinama): set_image_data catches Exception and raises from
         # them. Can't be more specific on exceptions catched.
         except Exception:
@@ -266,25 +451,10 @@ class _ImportToStore(task.Task):
                    {'task_id': self.task_id, 'task_type': self.task_type})
             LOG.warning(msg)
             if self.backend is not None:
-                failed_import = image.extra_properties.get(
-                    'os_glance_failed_import', '').split(',')
-                failed_import.append(self.backend)
-                image.extra_properties['os_glance_failed_import'] = ','.join(
-                    failed_import).lstrip(',')
+                action.add_failed_stores([self.backend])
+
         if self.backend is not None:
-            importing = image.extra_properties.get(
-                'os_glance_importing_to_stores', '').split(',')
-            try:
-                importing.remove(self.backend)
-                image.extra_properties[
-                    'os_glance_importing_to_stores'] = ','.join(
-                    importing).lstrip(',')
-            except ValueError:
-                LOG.debug("Store %s not found in property "
-                          "os_glance_importing_to_stores.", self.backend)
-        # NOTE(flaper87): We need to save the image again after
-        # the locations have been set in the image.
-        self.image_repo.save(image)
+            action.remove_importing_stores([self.backend])
 
     def revert(self, result, **kwargs):
         """
@@ -292,40 +462,16 @@ class _ImportToStore(task.Task):
 
         :param result: taskflow result object
         """
-        image = self.image_repo.get(self.image_id)
-        for i, location in enumerate(image.locations):
-            if location.get('metadata', {}).get('store') == self.backend:
-                try:
-                    image.locations.pop(i)
-                except (store_exceptions.NotFound,
-                        store_exceptions.Forbidden):
-                    msg = (_("Error deleting from store %{store}s when "
-                             "reverting.") % {'store': self.backend})
-                    LOG.warning(msg)
-                # NOTE(yebinama): Some store drivers doesn't document which
-                # exceptions they throw.
-                except Exception:
-                    msg = (_("Unexpected exception when deleting from store"
-                             "%{store}s.") % {'store': self.backend})
-                    LOG.warning(msg)
-                else:
-                    if len(image.locations) == 0:
-                        image.checksum = None
-                        image.os_hash_algo = None
-                        image.os_hash_value = None
-                        image.size = None
-                    self.image_repo.save(image)
-                break
+        with self.action_wrapper as action:
+            action.remove_location_for_store(self.backend)
 
 
 class _SaveImage(task.Task):
 
-    def __init__(self, task_id, task_type, image_repo, image_id,
-                 import_method):
+    def __init__(self, task_id, task_type, action_wrapper, import_method):
         self.task_id = task_id
         self.task_type = task_type
-        self.image_repo = image_repo
-        self.image_id = image_id
+        self.action_wrapper = action_wrapper
         self.import_method = import_method
         super(_SaveImage, self).__init__(
             name='%s-SaveImage-%s' % (task_type, task_id))
@@ -335,15 +481,14 @@ class _SaveImage(task.Task):
 
         :param image_id: Glance Image ID
         """
-        new_image = self.image_repo.get(self.image_id)
-        if (self.import_method != 'copy-image'
-                and new_image.status == 'importing'):
-            # NOTE(flaper87): THIS IS WRONG!
-            # we should be doing atomic updates to avoid
-            # race conditions. This happens in other places
-            # too.
-            new_image.status = 'active'
-        self.image_repo.save(new_image)
+        with self.action_wrapper as action:
+            if (self.import_method != 'copy-image'
+                    and action.image_status == 'importing'):
+                # NOTE(flaper87): THIS IS WRONG!
+                # we should be doing atomic updates to avoid
+                # race conditions. This happens in other places
+                # too.
+                action.set_image_status('active')
 
 
 class _CompleteTask(task.Task):
@@ -402,6 +547,7 @@ def get_flow(**kwargs):
     task_type = kwargs.get('task_type')
     task_repo = kwargs.get('task_repo')
     image_repo = kwargs.get('image_repo')
+    admin_repo = kwargs.get('admin_repo')
     image_id = kwargs.get('image_id')
     import_method = kwargs.get('import_req')['method']['name']
     uri = kwargs.get('import_req')['method'].get('uri')
@@ -412,6 +558,10 @@ def get_flow(**kwargs):
     separator = ''
     if not CONF.enabled_backends and not CONF.node_staging_uri.endswith('/'):
         separator = '/'
+
+    # Instantiate an action wrapper with the admin repo if we got one,
+    # otherwise with the regular repo.
+    action_wrapper = ImportActionWrapper(admin_repo or image_repo, image_id)
 
     if not uri and import_method in ['glance-direct', 'copy-image']:
         if CONF.enabled_backends:
@@ -452,9 +602,8 @@ def get_flow(**kwargs):
         import_task = lf.Flow(task_name)
         import_to_store = _ImportToStore(task_id,
                                          task_name,
-                                         image_repo,
+                                         action_wrapper,
                                          file_uri,
-                                         image_id,
                                          store,
                                          all_stores_must_succeed,
                                          set_active)
@@ -466,8 +615,7 @@ def get_flow(**kwargs):
 
     save_task = _SaveImage(task_id,
                            task_type,
-                           image_repo,
-                           image_id,
+                           action_wrapper,
                            import_method)
     flow.add(save_task)
 
@@ -477,16 +625,10 @@ def get_flow(**kwargs):
                                   image_id)
     flow.add(complete_task)
 
-    image = image_repo.get(image_id)
-    from_state = image.status
-    if import_method != 'copy-image':
-        image.status = 'importing'
-
-    image.extra_properties[
-        'os_glance_importing_to_stores'] = ','.join((store for store in
-                                                     stores if
-                                                     store is not None))
-    image.extra_properties['os_glance_failed_import'] = ''
-    image_repo.save(image, from_state=from_state)
+    with action_wrapper as action:
+        if import_method != 'copy-image':
+            action.set_image_status('importing')
+        action.add_importing_stores(stores)
+        action.remove_failed_stores(stores)
 
     return flow
