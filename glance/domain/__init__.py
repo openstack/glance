@@ -491,10 +491,11 @@ class TaskFactory(object):
 class TaskExecutorFactory(object):
     eventlet_deprecation_warned = False
 
-    def __init__(self, task_repo, image_repo, image_factory):
+    def __init__(self, task_repo, image_repo, image_factory, admin_repo=None):
         self.task_repo = task_repo
         self.image_repo = image_repo
         self.image_factory = image_factory
+        self.admin_repo = admin_repo
 
     def new_task_executor(self, context):
         try:
@@ -520,7 +521,8 @@ class TaskExecutorFactory(object):
             return executor(context,
                             self.task_repo,
                             self.image_repo,
-                            self.image_factory)
+                            self.image_factory,
+                            admin_repo=self.admin_repo)
         except ImportError:
             with excutils.save_and_reraise_exception():
                 LOG.exception(_LE("Failed to load the %s executor provided "
