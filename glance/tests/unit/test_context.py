@@ -171,3 +171,32 @@ class TestContext(utils.BaseTestCase):
                                      project_domain_id="project-domain")
         self.assertEqual('user tenant domain user-domain project-domain',
                          ctx.to_dict()["user_identity"])
+
+    def test_elevated(self):
+        """Make sure we get a whole admin-capable context from elevated()."""
+        ctx = context.RequestContext(service_catalog=['foo'],
+                                     user_id='dan',
+                                     project_id='openstack',
+                                     roles=['member'])
+        admin = ctx.elevated()
+        self.assertEqual('dan', admin.user_id)
+        self.assertEqual('openstack', admin.project_id)
+        self.assertEqual(sorted(['member', 'admin']),
+                         sorted(admin.roles))
+        self.assertEqual(['foo'], admin.service_catalog)
+        self.assertTrue(admin.is_admin)
+
+    def test_elevated_again(self):
+        """Make sure a second elevation looks the same."""
+        ctx = context.RequestContext(service_catalog=['foo'],
+                                     user_id='dan',
+                                     project_id='openstack',
+                                     roles=['member'])
+        admin = ctx.elevated()
+        admin = admin.elevated()
+        self.assertEqual('dan', admin.user_id)
+        self.assertEqual('openstack', admin.project_id)
+        self.assertEqual(sorted(['member', 'admin']),
+                         sorted(admin.roles))
+        self.assertEqual(['foo'], admin.service_catalog)
+        self.assertTrue(admin.is_admin)
