@@ -56,7 +56,6 @@ class TestTasksApi(base.ApiTest):
     def __init__(self, *args, **kwargs):
         super(TestTasksApi, self).__init__(*args, **kwargs)
         self.api_flavor = 'fakeauth'
-        self.registry_flavor = 'fakeauth'
 
     def _wait_on_task_execution(self, max_wait=5):
         """Wait until all the tasks have finished execution and are in

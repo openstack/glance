@@ -36,7 +36,6 @@ import glance.common.config
 import glance.common.location_strategy
 import glance.common.location_strategy.store_type
 import glance.common.property_utils
-import glance.common.rpc
 import glance.common.wsgi
 import glance.image_cache
 import glance.image_cache.drivers.sqlite
@@ -51,7 +50,6 @@ _api_opts = [
         glance.common.config.common_opts,
         glance.common.location_strategy.location_strategy_opts,
         glance.common.property_utils.property_opts,
-        glance.common.rpc.rpc_opts,
         glance.common.wsgi.bind_opts,
         glance.common.wsgi.eventlet_opts,
         glance.common.wsgi.socket_opts,

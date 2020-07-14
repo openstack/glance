@@ -89,7 +89,6 @@ def no_translate_debug_logs(logical_line, filename):
         "glance/domain",
         "glance/image_cache",
         "glance/quota",
-        "glance/registry",
         "glance/store",
         "glance/tests",
     ]
