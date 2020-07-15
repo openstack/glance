@@ -21,7 +21,6 @@ image_policies = [
     policy.RuleDefault(name="modify_image", check_str="rule:default"),
     policy.RuleDefault(name="publicize_image", check_str="role:admin"),
     policy.RuleDefault(name="communitize_image", check_str="rule:default"),
-    policy.RuleDefault(name="copy_from", check_str="rule:default"),
 
     policy.RuleDefault(name="download_image", check_str="rule:default"),
     policy.RuleDefault(name="upload_image", check_str="rule:default"),
