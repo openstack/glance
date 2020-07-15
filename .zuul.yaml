@@ -208,6 +208,26 @@
       python_version: 3.6
       tox_envlist: functional-py36
 
+- job:
+    name: tempest-integrated-storage-import-workflow
+    parent: tempest-integrated-storage
+    description: |
+      The regular tempest-integrated-storage job but with glance metadata injection
+    post-run: playbooks/post-check-metadata-injection.yaml
+    vars:
+      devstack_localrc:
+        GLANCE_STANDALONE: True
+        GLANCE_USE_IMPORT_WORKFLOW: True
+      devstack_local_conf:
+        post-config:
+          $GLANCE_IMAGE_IMPORT_CONF:
+            image_import_opts:
+              image_import_plugins: "['inject_image_metadata']"
+            inject_metadata_properties:
+              ignore_user_roles:
+              inject: |
+                "glance_devstack_test":"doyouseeme?"
+
 - project:
     templates:
       - check-requirements
@@ -239,6 +259,8 @@
               - ^\.zuul\.yaml$
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
+        - tempest-integrated-storage-import-workflow:
+            irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-ipv6-only:
@@ -249,6 +271,8 @@
         - openstack-tox-functional-py36
         - openstack-tox-functional-py38
         - tempest-integrated-storage:
+            irrelevant-files: *tempest-irrelevant-files
+        - tempest-integrated-storage-import-workflow:
             irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files

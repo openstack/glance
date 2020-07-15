@@ -1,0 +1,12 @@
+- hosts: controller
+  tasks:
+    - name: Run glance validation script
+      shell:
+        executable: /bin/bash
+        cmd: |
+          set -xe
+          source /opt/stack/devstack/openrc
+          # NOTE(danms): just dump the image so we can see it in case the check fails
+          openstack image show $(openstack image list -f csv -c ID -c Name --quote none | grep cirros | cut -d , -f 1)
+          openstack image list -f value -c Name --property 'glance_devstack_test=doyouseeme?' | grep cirros
+      environment: '{{ zuul | zuul_legacy_vars }}'
