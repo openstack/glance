@@ -40,6 +40,8 @@ image_policies = [
 
     policy.RuleDefault(name="deactivate", check_str="rule:default"),
     policy.RuleDefault(name="reactivate", check_str="rule:default"),
+
+    policy.RuleDefault(name="copy_image", check_str="role:admin"),
 ]
 
 

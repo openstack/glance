@@ -2961,12 +2961,10 @@ class TestImagesController(base.IsolatedUnitTest):
         mock_new_task.assert_not_called()
 
     @mock.patch('glance.context.RequestContext.elevated')
-    @mock.patch.object(glance.api.authorization, 'is_image_mutable')
     @mock.patch.object(glance.domain.TaskFactory, 'new_task')
     @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
     def test_image_import_copy_allowed_by_policy(self, mock_get,
                                                  mock_new_task,
-                                                 mock_policy_check,
                                                  mock_elevated,
                                                  allowed=True):
         # NOTE(danms): FakeImage is owned by utils.TENANT1. Try to do the
@@ -2974,9 +2972,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(tenant=TENANT2)
         mock_get.return_value = FakeImage(status='active', locations=[])
 
-        # FIXME(danms): This should control whatever policy knob we make,
-        # but for now control the strict check we have.
-        mock_policy_check.return_value = allowed
+        self.policy.rules = {'copy_image': allowed}
 
         req_body = {'method': {'name': 'copy-image'},
                     'stores': ['cheap']}

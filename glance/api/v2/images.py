@@ -131,7 +131,14 @@ class ImagesController(object):
             if not getattr(image, 'disk_format', None):
                 msg = _("'disk_format' needs to be set before import")
                 raise exception.Conflict(msg)
-            if not authorization.is_image_mutable(req.context, image):
+
+            # NOTE(danms): For copy-image only, we check policy to decide
+            # if the user should be able to do this. Otherwise, we forbid
+            # the import if the user is not the owner.
+            if import_method == 'copy-image':
+                self.policy.enforce(req.context, 'copy_image',
+                                    dict(policy.ImageTarget(image)))
+            elif not authorization.is_image_mutable(req.context, image):
                 raise webob.exc.HTTPForbidden(
                     explanation=_("Operation not permitted"))
 
@@ -174,6 +181,8 @@ class ImagesController(object):
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
         if (not all_stores_must_succeed) and (not CONF.enabled_backends):
             msg = (_("All_stores_must_succeed can only be set with "
