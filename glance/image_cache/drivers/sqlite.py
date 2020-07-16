@@ -16,8 +16,6 @@
 """
 Cache driver that uses SQLite to store information about cached images
 """
-
-from __future__ import absolute_import
 from contextlib import contextmanager
 import os
 import sqlite3
