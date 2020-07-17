@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Bug 1887994_: Mixed message in admin docs to deploy under httpd
+
+    .. _1887994: https://bugs.launchpad.net/glance/+bug/1887994
