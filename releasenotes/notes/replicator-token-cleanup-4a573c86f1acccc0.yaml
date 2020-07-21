@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    The ``glance-replicator`` options ``mastertoken`` and ``slavetoken`` were
+    deprecated in the Pike release cycle. These options have now been removed.
+    The options ``sourcetoken`` and ``targettoken`` should be used instead.
