@@ -14,8 +14,6 @@
 #    under the License.
 
 """Functional test cases testing glance client redirect-following."""
-import os
-
 import eventlet.patcher
 from six.moves import http_client as http
 import webob.dec
@@ -86,10 +84,6 @@ class TestClientRedirects(functional.FunctionalTest):
         super(TestClientRedirects, self).setUp()
         self.port_one = utils.get_unused_port()
         self.port_two = utils.get_unused_port()
-        self.image_cache_dir = os.path.join(self.test_dir,
-                                            'cache')
-        self.config(image_cache_dir=self.image_cache_dir)
-        self.config(image_cache_driver='sqlite')
         server_one = wsgi.Server()
         server_two = wsgi.Server()
         self.config(bind_host='127.0.0.1')
