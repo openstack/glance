@@ -70,6 +70,7 @@ class _ConvertImage(task.Task):
         self.image_repo = image_repo
         self.image_id = image_id
         self.dest_path = ""
+        self.python = CONF.wsgi.python_interpreter
         super(_ConvertImage, self).__init__(
             name='%s-Convert_Image-%s' % (task_type, task_id))
 
@@ -88,6 +89,7 @@ class _ConvertImage(task.Task):
                                            "--output=json",
                                            src_path,
                                            prlimit=utils.QEMU_IMG_PROC_LIMITS,
+                                           python_exec=self.python,
                                            log_errors=putils.LOG_ALL_ERRORS,)
         except OSError as exc:
             with excutils.save_and_reraise_exception():

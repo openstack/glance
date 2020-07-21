@@ -242,6 +242,13 @@
           $GLANCE_API_CONF:
             DEFAULT:
               enabled_import_methods: "[\"copy-image\", \"glance-direct\"]"
+            wsgi:
+              python_interpreter: /usr/bin/python3
+          $GLANCE_IMAGE_IMPORT_CONF:
+            image_import_opts:
+              image_import_plugins: "['image_conversion']"
+            image_conversion:
+              output_format: raw
 
 - project:
     templates:
