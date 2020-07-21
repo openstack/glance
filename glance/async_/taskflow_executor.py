@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import futurist
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
@@ -104,13 +103,8 @@ class TaskExecutor(glance.async_.TaskExecutor):
             return None
         else:
             max_workers = CONF.taskflow_executor.max_workers
-            try:
-                return futurist.GreenThreadPoolExecutor(
-                    max_workers=max_workers)
-            except RuntimeError:
-                # NOTE(harlowja): I guess eventlet isn't being made
-                # useable, well just use native threads then (or try to).
-                return futurist.ThreadPoolExecutor(max_workers=max_workers)
+            threadpool_cls = glance.async_.get_threadpool_model()
+            return threadpool_cls(max_workers).pool
 
     def _get_flow(self, task):
         try:

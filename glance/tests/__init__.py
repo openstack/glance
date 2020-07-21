@@ -30,6 +30,10 @@ if os.name == 'nt':
 else:
     eventlet.patcher.monkey_patch()
 
+import glance.async_
+# NOTE(danms): Default to eventlet threading for tests
+glance.async_.set_threadpool_model('eventlet')
+
 # See http://code.google.com/p/python-nose/issues/detail?id=373
 # The code below enables tests to work with i18n _() blocks
 import six.moves.builtins as __builtin__

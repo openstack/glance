@@ -65,12 +65,16 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         sys.argv = self.__argv_backup
         super(TestGlanceApiCmd, self).tearDown()
 
+    @mock.patch('glance.async_.set_threadpool_model',)
     @mock.patch.object(prefetcher, 'Prefetcher')
-    def test_supported_default_store(self, mock_prefetcher):
+    def test_supported_default_store(self, mock_prefetcher, mock_set_model):
         self.config(group='glance_store', default_store='file')
         glance.cmd.api.main()
+        # Make sure we declared the system threadpool model as eventlet
+        mock_set_model.assert_called_once_with('eventlet')
 
     @mock.patch.object(prefetcher, 'Prefetcher')
+    @mock.patch('glance.async_.set_threadpool_model', new=mock.MagicMock())
     def test_worker_creation_failure(self, mock_prefetcher):
         failure = exc.WorkerCreationFailure(reason='test')
         self.mock_object(glance.common.wsgi.Server, 'start',

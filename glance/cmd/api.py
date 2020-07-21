@@ -62,6 +62,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import osprofiler.initializer
 
+import glance.async_
 from glance.common import config
 from glance.common import exception
 from glance.common import wsgi
@@ -106,6 +107,9 @@ def main():
                 service="api",
                 host=CONF.bind_host
             )
+
+        # NOTE(danms): Configure system-wide threading model to use eventlet
+        glance.async_.set_threadpool_model('eventlet')
 
         # NOTE(abhishekk): Added initialize_prefetcher KW argument to Server
         # object so that prefetcher object should only be initialized in case

@@ -15,10 +15,12 @@
 
 from unittest import mock
 
+import futurist
 import glance_store
 from oslo_config import cfg
 from taskflow import engines
 
+import glance.async_
 from glance.async_ import taskflow_executor
 from glance.common.scripts.image_import import main as image_import
 from glance import domain
@@ -31,6 +33,10 @@ TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 class TestTaskExecutor(test_utils.BaseTestCase):
 
     def setUp(self):
+        # NOTE(danms): Makes sure that we have a model set to something
+        glance.async_._THREADPOOL_MODEL = None
+        glance.async_.set_threadpool_model('eventlet')
+
         super(TestTaskExecutor, self).setUp()
 
         glance_store.register_opts(CONF)
@@ -67,6 +73,15 @@ class TestTaskExecutor(test_utils.BaseTestCase):
             self.task_repo,
             self.image_repo,
             self.image_factory)
+
+    def test_fetch_an_executor_parallel(self):
+        self.config(engine_mode='parallel', group='taskflow_executor')
+        pool = self.executor._fetch_an_executor()
+        self.assertIsInstance(pool, futurist.GreenThreadPoolExecutor)
+
+    def test_fetch_an_executor_serial(self):
+        pool = self.executor._fetch_an_executor()
+        self.assertIsNone(pool)
 
     def test_begin_processing(self):
         with mock.patch.object(engines, 'load') as load_mock:

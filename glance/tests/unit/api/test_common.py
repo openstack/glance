@@ -14,6 +14,7 @@
 #    under the License.
 
 import testtools
+from unittest import mock
 import webob
 
 import glance.api.common
@@ -124,3 +125,27 @@ class TestSizeCheckedIter(testtools.TestCase):
         self.assertEqual('CD', next(checked_image))
         self.assertEqual('E', next(checked_image))
         self.assertRaises(exception.GlanceException, next, checked_image)
+
+
+class TestThreadPool(testtools.TestCase):
+    @mock.patch('glance.async_.get_threadpool_model')
+    def test_get_thread_pool(self, mock_gtm):
+        get_thread_pool = glance.api.common.get_thread_pool
+
+        pool1 = get_thread_pool('pool1', size=123)
+        get_thread_pool('pool2', size=456)
+        pool1a = get_thread_pool('pool1')
+
+        # Two calls for the same pool should return the exact same thing
+        self.assertEqual(pool1, pool1a)
+
+        # Only two calls to get new threadpools should have been made
+        mock_gtm.return_value.assert_has_calls(
+            [mock.call(123), mock.call(456)])
+
+    @mock.patch('glance.async_.get_threadpool_model')
+    def test_get_thread_pool_log(self, mock_gtm):
+        with mock.patch.object(glance.api.common, 'LOG') as mock_log:
+            glance.api.common.get_thread_pool('test-pool')
+            mock_log.debug.assert_called_once_with(
+                'Initializing named threadpool %r', 'test-pool')

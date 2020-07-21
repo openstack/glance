@@ -16,6 +16,7 @@
 
 from unittest import mock
 
+import futurist
 import glance_store as store
 from oslo_config import cfg
 from taskflow.patterns import linear_flow
@@ -206,3 +207,90 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         self.assertIn('CopyImage', flow_comp)
+
+
+@mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
+class TestSystemThreadPoolModel(test_utils.BaseTestCase):
+    def test_eventlet_model(self):
+        model_cls = glance.async_.EventletThreadPoolModel
+        self.assertEqual(futurist.GreenThreadPoolExecutor,
+                         model_cls.get_threadpool_executor_class())
+
+    def test_native_model(self):
+        model_cls = glance.async_.NativeThreadPoolModel
+        self.assertEqual(futurist.ThreadPoolExecutor,
+                         model_cls.get_threadpool_executor_class())
+
+    @mock.patch('glance.async_.ThreadPoolModel.get_threadpool_executor_class')
+    def test_base_model_spawn(self, mock_gte):
+        pool_cls = mock.MagicMock()
+        pool_cls.configure_mock(__name__='fake')
+        mock_gte.return_value = pool_cls
+
+        model = glance.async_.ThreadPoolModel()
+        result = model.spawn(print, 'foo', bar='baz')
+
+        pool = pool_cls.return_value
+
+        # Make sure the default size was passed to the executor
+        pool_cls.assert_called_once_with(1)
+
+        # Make sure we submitted the function to the executor
+        pool.submit.assert_called_once_with(print, 'foo', bar='baz')
+
+        # This isn't used anywhere, but make sure we get the future
+        self.assertEqual(pool.submit.return_value, result)
+
+    @mock.patch('glance.async_.ThreadPoolModel.get_threadpool_executor_class')
+    def test_base_model_init_with_size(self, mock_gte):
+        mock_gte.return_value.__name__ = 'TestModel'
+        with mock.patch.object(glance.async_, 'LOG') as mock_log:
+            glance.async_.ThreadPoolModel(123)
+            mock_log.debug.assert_called_once_with(
+                'Creating threadpool model %r with size %i',
+                'TestModel', 123)
+        mock_gte.return_value.assert_called_once_with(123)
+
+    def test_set_threadpool_model_native(self):
+        glance.async_.set_threadpool_model('native')
+        self.assertEqual(glance.async_.NativeThreadPoolModel,
+                         glance.async_._THREADPOOL_MODEL)
+
+    def test_set_threadpool_model_eventlet(self):
+        glance.async_.set_threadpool_model('eventlet')
+        self.assertEqual(glance.async_.EventletThreadPoolModel,
+                         glance.async_._THREADPOOL_MODEL)
+
+    def test_set_threadpool_model_unknown(self):
+        # Unknown threadpool models are not tolerated
+        self.assertRaises(RuntimeError,
+                          glance.async_.set_threadpool_model,
+                          'danthread9000')
+
+    def test_set_threadpool_model_again(self):
+        # Setting the model to the same thing is fine
+        glance.async_.set_threadpool_model('native')
+        glance.async_.set_threadpool_model('native')
+
+    def test_set_threadpool_model_different(self):
+        glance.async_.set_threadpool_model('native')
+        # The model cannot be switched at runtime
+        self.assertRaises(RuntimeError,
+                          glance.async_.set_threadpool_model,
+                          'eventlet')
+
+    def test_set_threadpool_model_log(self):
+        with mock.patch.object(glance.async_, 'LOG') as mock_log:
+            glance.async_.set_threadpool_model('eventlet')
+            mock_log.info.assert_called_once_with(
+                'Threadpool model set to %r', 'EventletThreadPoolModel')
+
+    def test_get_threadpool_model(self):
+        glance.async_.set_threadpool_model('native')
+        self.assertEqual(glance.async_.NativeThreadPoolModel,
+                         glance.async_.get_threadpool_model())
+
+    def test_get_threadpool_model_unset(self):
+        # If the model is not set, we get an AssertionError
+        self.assertRaises(AssertionError,
+                          glance.async_.get_threadpool_model)

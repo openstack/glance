@@ -21,8 +21,8 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import units
 
+import glance.async_
 from glance.common import exception
-from glance.common import wsgi
 from glance.i18n import _, _LE, _LW
 
 LOG = logging.getLogger(__name__)
@@ -197,20 +197,33 @@ def memoize(lock_name):
     return memoizer_wrapper
 
 
-def get_thread_pool(lock_name, size=1024):
-    """Initializes eventlet thread pool.
+# NOTE(danms): This is the default pool size that will be used for
+# the get_thread_pool() cache wrapper below. This is a global here
+# because it needs to be overridden for the pure-wsgi mode in
+# wsgi_app.py where native threads are used.
+DEFAULT_POOL_SIZE = 1024
+
+
+def get_thread_pool(lock_name, size=None):
+    """Initializes thread pool.
 
     If thread pool is present in cache, then returns it from cache
     else create new pool, stores it in cache and return newly created
     pool.
 
     @param lock_name:  Name of the lock.
-    @param size: Size of eventlet pool.
+    @param size: Size of pool.
 
-    @return: eventlet pool
+    @return: ThreadPoolModel
     """
+
+    if size is None:
+        size = DEFAULT_POOL_SIZE
+
     @memoize(lock_name)
     def _get_thread_pool():
-        return wsgi.get_asynchronous_eventlet_pool(size=size)
+        threadpool_cls = glance.async_.get_threadpool_model()
+        LOG.debug('Initializing named threadpool %r', lock_name)
+        return threadpool_cls(size)
 
     return _get_thread_pool

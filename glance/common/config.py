@@ -566,11 +566,27 @@ Related options:
         * [DEFAULT]/node_staging_uri""")),
 ]
 
+wsgi_opts = [
+    cfg.IntOpt('task_pool_threads',
+               default=16,
+               min=1,
+               help=_("""
+The number of threads (per worker process) in the pool for processing
+asynchronous tasks. This controls how many asynchronous tasks (i.e. for
+image interoperable import) each worker can run at a time. If this is
+too large, you *may* have increased memory footprint per worker and/or you
+may overwhelm other system resources such as disk or outbound network
+bandwidth. If this is too small, image import requests will have to wait
+until a thread becomes available to begin processing.""")),
+]
+
+
 CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(image_format_opts, group='image_format')
 CONF.register_opts(task_opts, group='task')
 CONF.register_opts(common_opts)
+CONF.register_opts(wsgi_opts, group='wsgi')
 policy.Enforcer(CONF)
 
 

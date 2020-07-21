@@ -293,11 +293,12 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.get, request, UUID4)
 
+    @mock.patch('glance.api.common.get_thread_pool')
     @mock.patch.object(glance.gateway.Gateway, 'get_task_factory')
     @mock.patch.object(glance.gateway.Gateway, 'get_task_executor_factory')
     @mock.patch.object(glance.gateway.Gateway, 'get_task_repo')
     def test_create(self, mock_get_task_repo, mock_get_task_executor_factory,
-                    mock_get_task_factory):
+                    mock_get_task_factory, mock_get_thread_pool):
         # setup
         request = unit_test_utils.get_fake_request()
         task = {
@@ -332,6 +333,12 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertEqual(1, get_task_repo.add.call_count)
         self.assertEqual(
             1, get_task_executor_factory.new_task_executor.call_count)
+
+        # Make sure that we spawned the task's run method
+        mock_get_thread_pool.assert_called_once_with('tasks_pool')
+        mock_get_thread_pool.return_value.spawn.assert_called_once_with(
+            new_task.run,
+            get_task_executor_factory.new_task_executor.return_value)
 
     @mock.patch('glance.common.scripts.utils.get_image_data_iter')
     @mock.patch('glance.common.scripts.utils.validate_location_uri')

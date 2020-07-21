@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import futurist
 from oslo_log import log as logging
 
 from glance.i18n import _LE
@@ -75,3 +76,109 @@ class TaskExecutor(object):
         LOG.error(msg)
         task.fail(_LE("Internal error occurred while trying to process task."))
         self.task_repo.save(task)
+
+
+class ThreadPoolModel(object):
+    """Base class for an abstract ThreadPool.
+
+    Do not instantiate this directly, use one of the concrete
+    implementations.
+    """
+
+    DEFAULTSIZE = 1
+
+    @staticmethod
+    def get_threadpool_executor_class():
+        """Returns a futurist.ThreadPoolExecutor class."""
+        pass
+
+    def __init__(self, size=None):
+        if size is None:
+            size = self.DEFAULTSIZE
+
+        threadpool_cls = self.get_threadpool_executor_class()
+        LOG.debug('Creating threadpool model %r with size %i',
+                  threadpool_cls.__name__, size)
+        self.pool = threadpool_cls(size)
+
+    def spawn(self, fn, *args, **kwargs):
+        """Spawn a function with args using the thread pool."""
+        LOG.debug('Spawning with %s: %s(%s, %s)' % (
+            self.get_threadpool_executor_class().__name__,
+            fn, args, kwargs))
+        return self.pool.submit(fn, *args, **kwargs)
+
+
+class EventletThreadPoolModel(ThreadPoolModel):
+    """A ThreadPoolModel suitable for use with evenlet/greenthreads."""
+    DEFAULTSIZE = 1024
+
+    @staticmethod
+    def get_threadpool_executor_class():
+        return futurist.GreenThreadPoolExecutor
+
+
+class NativeThreadPoolModel(ThreadPoolModel):
+    """A ThreadPoolModel suitable for use with native threads."""
+    DEFAULTSIZE = 16
+
+    @staticmethod
+    def get_threadpool_executor_class():
+        return futurist.ThreadPoolExecutor
+
+
+_THREADPOOL_MODEL = None
+
+
+def set_threadpool_model(thread_type):
+    """Set the system-wide threadpool model.
+
+    This sets the type of ThreadPoolModel to use globally in the process.
+    It should be called very early in init, and only once.
+
+    :param thread_type: A string indicating the threading type in use,
+                        either "eventlet" or "native"
+    :raises: RuntimeError if the model is already set or some thread_type
+             other than one of the supported ones is provided.
+    """
+    global _THREADPOOL_MODEL
+
+    if thread_type == 'native':
+        model = NativeThreadPoolModel
+    elif thread_type == 'eventlet':
+        model = EventletThreadPoolModel
+    else:
+        raise RuntimeError(
+            ('Invalid thread type %r '
+             '(must be "native" or "eventlet")') % (thread_type))
+
+    if _THREADPOOL_MODEL is model:
+        # Re-setting the same model is fine...
+        return
+
+    if _THREADPOOL_MODEL is not None:
+        # ...changing it is not.
+        raise RuntimeError('Thread model is already set')
+
+    LOG.info('Threadpool model set to %r', model.__name__)
+    _THREADPOOL_MODEL = model
+
+
+def get_threadpool_model():
+    """Returns the system-wide threadpool model class.
+
+    This must be called after set_threadpool_model() whenever
+    some code needs to know what the threadpool implementation is.
+
+    This may only be called after set_threadpool_model() has been
+    called to set the desired threading mode. If it is called before
+    the model is set, it will raise AssertionError. This would likely
+    be the case if this got run in a test before the model was
+    initialized, or if glance modules that use threading were imported
+    and run from some other code without setting the model first.
+
+    :raises: AssertionError if the model has not yet been set.
+    """
+    global _THREADPOOL_MODEL
+    assert _THREADPOOL_MODEL
+    return _THREADPOOL_MODEL

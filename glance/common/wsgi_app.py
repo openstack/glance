@@ -17,6 +17,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import osprofiler.initializer
 
+from glance.api import common
+import glance.async_
 from glance.common import config
 from glance.common import store_utils
 from glance.i18n import _
@@ -70,6 +72,17 @@ def init_app():
     config_files = _get_config_files()
     CONF([], project='glance', default_config_files=config_files)
     logging.setup(CONF, "glance")
+
+    # NOTE(danms): We are running inside uwsgi or mod_wsgi, so no eventlet;
+    # use native threading instead.
+    glance.async_.set_threadpool_model('native')
+
+    # NOTE(danms): Change the default threadpool size since we
+    # are dealing with native threads and not greenthreads.
+    # Right now, the only pool of default size is tasks_pool,
+    # so if others are created this will need to change to be
+    # more specific.
+    common.DEFAULT_POOL_SIZE = CONF.wsgi.task_pool_threads
 
     if CONF.enabled_backends:
         if store_utils.check_reserved_stores(CONF.enabled_backends):

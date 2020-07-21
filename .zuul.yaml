@@ -228,6 +228,21 @@
               inject: |
                 "glance_devstack_test":"doyouseeme?"
 
+- job:
+    name: tempest-integrated-storage-wsgi-import
+    parent: tempest-integrated-storage
+    description: |
+      The regular tempest-integrated-storage job but with glance in wsgi mode
+    vars:
+      devstack_localrc:
+        GLANCE_STANDALONE: False
+        GLANCE_USE_IMPORT_WORKFLOW: True
+      devstack_local_conf:
+        post-config:
+          $GLANCE_API_CONF:
+            DEFAULT:
+              enabled_import_methods: "[\"copy-image\", \"glance-direct\"]"
+
 - project:
     templates:
       - check-requirements
@@ -260,6 +275,8 @@
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import-workflow:
+            irrelevant-files: *tempest-irrelevant-files
+        - tempest-integrated-storage-wsgi-import:
             irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files

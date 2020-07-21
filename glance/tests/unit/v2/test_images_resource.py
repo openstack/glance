@@ -14,7 +14,6 @@
 #    under the License.
 
 import datetime
-import eventlet
 import hashlib
 import os
 from unittest import mock
@@ -726,20 +725,21 @@ class TestImagesController(base.IsolatedUnitTest):
                               self.controller.import_image, request, UUID4,
                               {'method': {'name': 'glance-direct'}})
 
-    def test_image_import_raises_bad_request(self):
+    @mock.patch('glance.api.common.get_thread_pool')
+    def test_image_import_raises_bad_request(self, mock_gpt):
         request = unit_test_utils.get_fake_request()
         with mock.patch.object(
                 glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             # NOTE(abhishekk): Due to
             # https://bugs.launchpad.net/glance/+bug/1712463 taskflow is not
-            # executing. Once it is fixed instead of mocking spawn_n method
+            # executing. Once it is fixed instead of mocking spawn method
             # we should mock execute method of _ImportToStore task.
-            with mock.patch.object(eventlet.GreenPool, 'spawn_n',
-                                   side_effect=ValueError):
-                self.assertRaises(webob.exc.HTTPBadRequest,
-                                  self.controller.import_image, request, UUID4,
-                                  {'method': {'name': 'glance-direct'}})
+            mock_gpt.return_value.spawn.side_effect = ValueError
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'glance-direct'}})
+            self.assertTrue(mock_gpt.return_value.spawn.called)
 
     def test_image_import_invalid_uri_filtering(self):
         request = unit_test_utils.get_fake_request()
@@ -2935,7 +2935,10 @@ class TestImagesController(base.IsolatedUnitTest):
         pos = self.controller._get_locations_op_pos('1', None, True)
         self.assertIsNone(pos)
 
-    def test_image_import(self):
+    @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.domain.TaskExecutorFactory, 'new_task_executor')
+    @mock.patch('glance.api.common.get_thread_pool')
+    def test_image_import(self, mock_gtp, mock_nte, mock_nt):
         request = unit_test_utils.get_fake_request()
         with mock.patch.object(
                 glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
@@ -2944,6 +2947,12 @@ class TestImagesController(base.IsolatedUnitTest):
                 request, UUID4, {'method': {'name': 'glance-direct'}})
 
         self.assertEqual(UUID4, output)
+
+        # Make sure we grabbed a thread pool, and that we asked it
+        # to spawn the task's run method with it.
+        mock_gtp.assert_called_once_with('tasks_pool')
+        mock_gtp.return_value.spawn.assert_called_once_with(
+            mock_nt.return_value.run, mock_nte.return_value)
 
     @mock.patch.object(glance.domain.TaskFactory, 'new_task')
     @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')

@@ -62,6 +62,14 @@ else:
 CONF = cfg.CONF
 
 
+import glance.async_
+# NOTE(danms): Default to eventlet threading for tests
+try:
+    glance.async_.set_threadpool_model('eventlet')
+except RuntimeError:
+    pass
+
+
 @six.add_metaclass(abc.ABCMeta)
 class BaseServer(object):
     """
