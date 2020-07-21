@@ -229,11 +229,13 @@
         post-config:
           $GLANCE_IMAGE_IMPORT_CONF:
             image_import_opts:
-              image_import_plugins: "['inject_image_metadata']"
+              image_import_plugins: "['inject_image_metadata', 'image_conversion']"
             inject_metadata_properties:
               ignore_user_roles:
               inject: |
                 "glance_devstack_test":"doyouseeme?"
+            image_conversion:
+              output_format: raw
 
 - job:
     name: tempest-integrated-storage-wsgi-import
