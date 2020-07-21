@@ -19,8 +19,6 @@ import os
 import socket
 import time
 
-import fixtures
-
 from glance.common import wsgi
 from glance.tests import functional
 
@@ -28,12 +26,8 @@ from glance.tests import functional
 class TestWSGIServer(functional.FunctionalTest):
     """WSGI server tests."""
     def test_client_socket_timeout(self):
-        test_dir = self.useFixture(fixtures.TempDir()).path
-        image_cache_dir = os.path.join(test_dir, 'cache')
         self.config(workers=0)
         self.config(client_socket_timeout=1)
-        self.config(image_cache_dir=image_cache_dir)
-        self.config(image_cache_driver="sqlite")
         """Verify connections are timed out as per 'client_socket_timeout'"""
         greetings = b'Hello, World!!!'
 
