@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import atexit
 import os
 
 import glance_store
@@ -28,6 +29,7 @@ CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 CONF.import_opt("enabled_backends", "glance.common.wsgi")
 logging.register_options(CONF)
+LOG = logging.getLogger(__name__)
 
 CONFIG_FILES = ['glance-api-paste.ini',
                 'glance-image-import.conf',
@@ -67,6 +69,16 @@ def _setup_os_profiler():
                                               host=CONF.bind_host)
 
 
+def drain_threadpools():
+    # NOTE(danms): If there are any other named pools that we need to
+    # drain before exit, they should be in this list.
+    pools_to_drain = ['tasks_pool']
+    for pool_name in pools_to_drain:
+        pool_model = common.get_thread_pool(pool_name)
+        LOG.info('Waiting for remaining threads in pool %r', pool_name)
+        pool_model.pool.shutdown()
+
+
 def init_app():
     config.set_config_defaults()
     config_files = _get_config_files()
@@ -76,6 +88,7 @@ def init_app():
     # NOTE(danms): We are running inside uwsgi or mod_wsgi, so no eventlet;
     # use native threading instead.
     glance.async_.set_threadpool_model('native')
+    atexit.register(drain_threadpools)
 
     # NOTE(danms): Change the default threadpool size since we
     # are dealing with native threads and not greenthreads.
