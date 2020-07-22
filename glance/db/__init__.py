@@ -206,6 +206,10 @@ class ImageRepo(object):
         new_values = self.db_api.image_destroy(self.context, image.image_id)
         image.updated_at = new_values['updated_at']
 
+    def set_property_atomic(self, image, name, value):
+        self.db_api.image_set_property_atomic(
+            image.image_id, name, value)
+
 
 class ImageProxy(glance.domain.proxy.Image):
 

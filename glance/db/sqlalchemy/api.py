@@ -778,6 +778,62 @@ def _update_values(image_ref, values):
             setattr(image_ref, k, values[k])
 
 
+def image_set_property_atomic(image_id, name, value):
+    """
+    Atomically set an image property to a value.
+
+    This will only succeed if the property does not currently exist
+    and it was created successfully. This can be used by multiple
+    competing threads to ensure that only one of those threads
+    succeeded in creating the property.
+
+    Note that ImageProperty objects are marked as deleted=$id and so we must
+    first try to atomically update-and-undelete such a property, if it
+    exists. If that does not work, we should try to create the property. The
+    latter should fail with DBDuplicateEntry because of the UniqueConstraint
+    across ImageProperty(image_id, name).
+
+    :param image_id: The ID of the image on which to create the property
+    :param name: The property name
+    :param value: The value to set for the property
+    :raises Duplicate: If the property already exists
+    """
+    session = get_session()
+    with session.begin():
+        connection = session.connection()
+        table = models.ImageProperty.__table__
+
+        # This should be:
+        #   UPDATE image_properties SET value=$value, deleted=0
+        #     WHERE name=$name AND deleted!=0
+        result = connection.execute(table.update().where(
+            sa_sql.and_(table.c.name == name,
+                        table.c.image_id == image_id,
+                        table.c.deleted != 0)).values(
+                            value=value, deleted=0))
+        if result.rowcount == 1:
+            # Found and updated a deleted property, so we win
+            return
+
+        # There might have been no deleted property, or the property
+        # exists and is undeleted, so try to create it and use that
+        # to determine if we've lost the race or not.
+
+        try:
+            connection.execute(table.insert(),
+                               dict(deleted=False,
+                                    created_at=timeutils.utcnow(),
+                                    image_id=image_id,
+                                    name=name,
+                                    value=value))
+        except db_exception.DBDuplicateEntry:
+            # Lost the race to create the new property
+            raise exception.Duplicate()
+
+        # If we got here, we created a new row, UniqueConstraint would have
+        # caused us to fail if we lost the race
+
+
 @retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
        stop_max_attempt_number=50)
 @utils.no_4byte_params
