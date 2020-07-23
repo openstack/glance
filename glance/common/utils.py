@@ -613,11 +613,16 @@ def stash_conf_values():
     conf = {
         'bind_host': CONF.bind_host,
         'bind_port': CONF.bind_port,
-        'tcp_keepidle': CONF.cert_file,
         'backlog': CONF.backlog,
-        'key_file': CONF.key_file,
-        'cert_file': CONF.cert_file
     }
+
+    # Note(jokke): As we can still support termination with PY27 we
+    # need to add the possible certs in that specific case. This is
+    # only needed prior Ussuri which doesn't support PY27 anymore.
+    if six.PY2:
+        conf['key_file'] = CONF.key_file,
+        conf['cert_file'] = CONF.cert_file
+        conf['tcp_keepidle'] = CONF.cert_file,
 
     return conf
 

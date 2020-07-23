@@ -19,6 +19,7 @@ import time
 
 import psutil
 import requests
+import six
 from six.moves import http_client as http
 
 from glance.tests import functional
@@ -145,87 +146,88 @@ class TestReload(functional.FunctionalTest):
                 if check_pids(pre_pids['api'], post_pids['api']):
                     break
 
-        # Test changing from http to https
-        # This recycles the existing socket
-        path = self._url('http', '/')
-        response = requests.get(path)
-        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
-        del response  # close socket so that process audit is reliable
+        if six.PY2:
+            # Test changing from http to https
+            # This recycles the existing socket
+            path = self._url('http', '/')
+            response = requests.get(path)
+            self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
+            del response  # close socket so that process audit is reliable
 
-        pre_pids['api'] = self._get_children('api')
-        key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
-        set_config_value(self._conffile('api'), 'key_file', key_file)
-        cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
-        set_config_value(self._conffile('api'), 'cert_file', cert_file)
-        cmd = "kill -HUP %s" % self._get_parent('api')
-        execute(cmd, raise_error=True)
+            pre_pids['api'] = self._get_children('api')
+            key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
+            set_config_value(self._conffile('api'), 'key_file', key_file)
+            cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
+            set_config_value(self._conffile('api'), 'cert_file', cert_file)
+            cmd = "kill -HUP %s" % self._get_parent('api')
+            execute(cmd, raise_error=True)
 
-        msg = 'http to https timeout'
-        for _ in self.ticker(msg):
-            post_pids['api'] = self._get_children('api')
-            if check_pids(pre_pids['api'], post_pids['api']):
-                break
+            msg = 'http to https timeout'
+            for _ in self.ticker(msg):
+                post_pids['api'] = self._get_children('api')
+                if check_pids(pre_pids['api'], post_pids['api']):
+                    break
 
-        ca_file = os.path.join(TEST_VAR_DIR, 'ca.crt')
-        path = self._url('https', '/')
-        response = requests.get(path, verify=ca_file)
-        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
-        del response
+            ca_file = os.path.join(TEST_VAR_DIR, 'ca.crt')
+            path = self._url('https', '/')
+            response = requests.get(path, verify=ca_file)
+            self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
+            del response
 
-        # Test https restart
-        # This recycles the existing socket
-        pre_pids['api'] = self._get_children('api')
-        cmd = "kill -HUP %s" % self._get_parent('api')
-        execute(cmd, raise_error=True)
+            # Test https restart
+            # This recycles the existing socket
+            pre_pids['api'] = self._get_children('api')
+            cmd = "kill -HUP %s" % self._get_parent('api')
+            execute(cmd, raise_error=True)
 
-        msg = 'https restart timeout'
-        for _ in self.ticker(msg):
-            post_pids['api'] = self._get_children('api')
-            if check_pids(pre_pids['api'], post_pids['api']):
-                break
+            msg = 'https restart timeout'
+            for _ in self.ticker(msg):
+                post_pids['api'] = self._get_children('api')
+                if check_pids(pre_pids['api'], post_pids['api']):
+                    break
 
-        ca_file = os.path.join(TEST_VAR_DIR, 'ca.crt')
-        path = self._url('https', '/')
-        response = requests.get(path, verify=ca_file)
-        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
-        del response
+            ca_file = os.path.join(TEST_VAR_DIR, 'ca.crt')
+            path = self._url('https', '/')
+            response = requests.get(path, verify=ca_file)
+            self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
+            del response
 
-        # Test changing the https bind_host
-        # This requires a new socket
-        pre_pids['api'] = self._get_children('api')
-        set_config_value(self._conffile('api'), 'bind_host', '127.0.0.1')
-        cmd = "kill -HUP %s" % self._get_parent('api')
-        execute(cmd, raise_error=True)
+            # Test changing the https bind_host
+            # This requires a new socket
+            pre_pids['api'] = self._get_children('api')
+            set_config_value(self._conffile('api'), 'bind_host', '127.0.0.1')
+            cmd = "kill -HUP %s" % self._get_parent('api')
+            execute(cmd, raise_error=True)
 
-        msg = 'https bind_host timeout'
-        for _ in self.ticker(msg):
-            post_pids['api'] = self._get_children('api')
-            if check_pids(pre_pids['api'], post_pids['api']):
-                break
+            msg = 'https bind_host timeout'
+            for _ in self.ticker(msg):
+                post_pids['api'] = self._get_children('api')
+                if check_pids(pre_pids['api'], post_pids['api']):
+                    break
 
-        path = self._url('https', '/')
-        response = requests.get(path, verify=ca_file)
-        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
-        del response
+            path = self._url('https', '/')
+            response = requests.get(path, verify=ca_file)
+            self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
+            del response
 
-        # Test https -> http
-        # This recycles the existing socket
-        pre_pids['api'] = self._get_children('api')
-        set_config_value(self._conffile('api'), 'key_file', '')
-        set_config_value(self._conffile('api'), 'cert_file', '')
-        cmd = "kill -HUP %s" % self._get_parent('api')
-        execute(cmd, raise_error=True)
+            # Test https -> http
+            # This recycles the existing socket
+            pre_pids['api'] = self._get_children('api')
+            set_config_value(self._conffile('api'), 'key_file', '')
+            set_config_value(self._conffile('api'), 'cert_file', '')
+            cmd = "kill -HUP %s" % self._get_parent('api')
+            execute(cmd, raise_error=True)
 
-        msg = 'https to http timeout'
-        for _ in self.ticker(msg):
-            post_pids['api'] = self._get_children('api')
-            if check_pids(pre_pids['api'], post_pids['api']):
-                break
+            msg = 'https to http timeout'
+            for _ in self.ticker(msg):
+                post_pids['api'] = self._get_children('api')
+                if check_pids(pre_pids['api'], post_pids['api']):
+                    break
 
-        path = self._url('http', '/')
-        response = requests.get(path)
-        self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
-        del response
+            path = self._url('http', '/')
+            response = requests.get(path)
+            self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
+            del response
 
         # Test changing the http bind_host
         # This requires a new socket
