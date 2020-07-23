@@ -36,10 +36,44 @@ The clearest we can say is just don't do it.
 mod_proxy_uwsgi
 '''''''''''''''
 
-This has not been doable since Ussuri as we only support Python 3.
+.. WARNING::
 
-In theory the same applies as mod_wsgi but even without chunked encoding the
-code is still broken under uwsgi.
+    Running Glance under HTTPD in this configuration will only work on Python 2
+    if you use ``Transfer-Encoding: chunked``. Also if running with Python 2
+    Apache will be buffering the chunked encoding before passing the request
+    on to uWSGI. See bug: https://github.com/unbit/uwsgi/issues/1540
+    The async tasks, namely (by default) admin only tasks API and Interoperable
+    Image Import will not work under uWSGI even with proxying. There might be
+    problems with reload and graceful shutdowns of the service that are not
+    documented elsewhere. Treat this as any uWSGI deployment, not supported.
+
+Instead of running uWSGI as a webserver listening on a local port and then
+having Apache HTTP proxy all the incoming requests with mod_proxy. The
+normally recommended way of deploying the uWSGI server with Apache HTTPD is to
+use mod_proxy_uwsgi and set up a local socket file for uWSGI to listen on.
+Apache will send the requests using the uwsgi protocol over this local socket
+file. However, there are issues with doing this and using chunked-encoding, so
+this is not recommended for use with Glance.
+
+You can work around these issues by configuring your Apache proxy to buffer the
+chunked data and send the full content length to the uWSGI server. You do this
+by adding::
+
+    SetEnv proxy-sendcl 1
+
+to the apache config file using mod_proxy_uwsgi. For more details on using
+mod_proxy_uwsgi see the official docs:
+http://uwsgi-docs.readthedocs.io/en/latest/Apache.html?highlight=mod_uwsgi_proxy#mod-proxy-uwsgi
+
+There are some additional considerations when doing this though. Having Apache
+locally buffer the chunked data to disk before passing it to uWSGI means you'll
+need to have sufficient disk space in /tmp (or whatever you set TMPDIR to) to
+store all the disk files. The other aspect to consider is that this buffering
+can take some time to write the images to disk. To prevent random failures
+you'll likely have to increase timeout values in the uWSGI configuration file
+to ensure uWSGI will wait long enough for this to happen. (Depending on the
+uploaded image file sizes it may be necessary to set the timeouts to multiple
+minutes.)
 
 mod_wsgi
 --------
