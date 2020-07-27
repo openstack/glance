@@ -394,10 +394,11 @@ class _VerifyStaging(task.Task):
 
 class _ImportToStore(task.Task):
 
-    def __init__(self, task_id, task_type, action_wrapper, uri,
+    def __init__(self, task_id, task_type, task_repo, action_wrapper, uri,
                  backend, all_stores_must_succeed, set_active):
         self.task_id = task_id
         self.task_type = task_type
+        self.task_repo = task_repo
         self.action_wrapper = action_wrapper
         self.uri = uri
         self.backend = backend
@@ -489,6 +490,20 @@ class _ImportToStore(task.Task):
                       {'image_id': action.image_id,
                        'copied': total_bytes // units.Mi})
             self.last_status = timeutils.now()
+
+        task = script_utils.get_task(self.task_repo, self.task_id)
+        if task is None:
+            LOG.error(
+                'Status callback for task %(task)s found no task object!',
+                {'task': self.task_id})
+            raise exception.TaskNotFound(self.task_id)
+        if task.status != 'processing':
+            LOG.error('Task %(task)s expected "processing" status, '
+                      'but found "%(status)s"; aborting.')
+            raise exception.TaskAbortedError()
+
+        task.message = _('Copied %i MiB') % (total_bytes // units.Mi)
+        self.task_repo.save(task)
 
     def revert(self, result, **kwargs):
         """
@@ -637,6 +652,7 @@ def get_flow(**kwargs):
         import_task = lf.Flow(task_name)
         import_to_store = _ImportToStore(task_id,
                                          task_name,
+                                         task_repo,
                                          action_wrapper,
                                          file_uri,
                                          store,

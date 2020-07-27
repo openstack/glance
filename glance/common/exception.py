@@ -359,6 +359,10 @@ class ImportTaskError(TaskException, Invalid):
     message = _("An import task exception occurred")
 
 
+class TaskAbortedError(ImportTaskError):
+    message = _("Task was aborted externally")
+
+
 class DuplicateLocation(Duplicate):
     message = _("The location %(location)s already exists")
 
