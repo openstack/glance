@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import functools
 import os
 
 import glance_store as store_api
@@ -20,6 +21,8 @@ from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
+from oslo_utils import timeutils
+from oslo_utils import units
 import six
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
@@ -203,7 +206,8 @@ class _ImportActions(object):
         """
         self.merge_store_list(self.IMPORT_FAILED_KEY, stores, subtract=True)
 
-    def set_image_data(self, uri, task_id, backend, set_active):
+    def set_image_data(self, uri, task_id, backend, set_active,
+                       callback=None):
         """Populate image with data on a specific backend.
 
         This is used during an image import operation to populate the data
@@ -218,10 +222,17 @@ class _ImportActions(object):
         :param backend: The backend store to target the data
         :param set_active: Whether or not to set the image to 'active'
                            state after the operation completes
+        :param callback: A callback function with signature:
+                         fn(action, chunk_bytes, total_bytes)
+                         which should be called while processing the image
+                         approximately every minute.
         """
+        if callback:
+            callback = functools.partial(callback, self)
         return image_import.set_image_data(self._image, uri, task_id,
                                            backend=backend,
-                                           set_active=set_active)
+                                           set_active=set_active,
+                                           callback=callback)
 
     def set_image_status(self, status):
         """Set the image status.
@@ -392,6 +403,7 @@ class _ImportToStore(task.Task):
         self.backend = backend
         self.all_stores_must_succeed = all_stores_must_succeed
         self.set_active = set_active
+        self.last_status = 0
         super(_ImportToStore, self).__init__(
             name='%s-ImportToStore-%s' % (task_type, task_id))
 
@@ -445,6 +457,7 @@ class _ImportToStore(task.Task):
             self._execute(action, file_path)
 
     def _execute(self, action, file_path):
+        self.last_status = timeutils.now()
 
         if action.image_status == "deleted":
             raise exception.ImportTaskError("Image has been deleted, aborting"
@@ -452,7 +465,8 @@ class _ImportToStore(task.Task):
         try:
             action.set_image_data(file_path or self.uri,
                                   self.task_id, backend=self.backend,
-                                  set_active=self.set_active)
+                                  set_active=self.set_active,
+                                  callback=self._status_callback)
         # NOTE(yebinama): set_image_data catches Exception and raises from
         # them. Can't be more specific on exceptions catched.
         except Exception:
@@ -467,6 +481,14 @@ class _ImportToStore(task.Task):
 
         if self.backend is not None:
             action.remove_importing_stores([self.backend])
+
+    def _status_callback(self, action, chunk_bytes, total_bytes):
+        # NOTE(danms): Only log status every five minutes
+        if timeutils.now() - self.last_status > 300:
+            LOG.debug('Image import %(image_id)s copied %(copied)i MiB',
+                      {'image_id': action.image_id,
+                       'copied': total_bytes // units.Mi})
+            self.last_status = timeutils.now()
 
     def revert(self, result, **kwargs):
         """

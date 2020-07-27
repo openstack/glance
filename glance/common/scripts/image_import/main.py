@@ -137,12 +137,18 @@ def create_image(image_repo, image_factory, image_properties, task_id):
     return image
 
 
-def set_image_data(image, uri, task_id, backend=None, set_active=True):
+def set_image_data(image, uri, task_id, backend=None, set_active=True,
+                   callback=None):
     data_iter = None
     try:
         LOG.info(_LI("Task %(task_id)s: Got image data uri %(data_uri)s to be "
                  "imported"), {"data_uri": uri, "task_id": task_id})
         data_iter = script_utils.get_image_data_iter(uri)
+        if callback:
+            # If a callback was provided, wrap our data iterator to call
+            # the function every 60 seconds.
+            data_iter = script_utils.CallbackIterator(
+                data_iter, callback, min_interval=60)
         image.set_data(data_iter, backend=backend, set_active=set_active)
     except Exception as e:
         with excutils.save_and_reraise_exception():

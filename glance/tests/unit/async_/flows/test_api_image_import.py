@@ -143,7 +143,8 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
         action.set_image_data.assert_called_once_with(
             mock.sentinel.path,
             TASK_ID1, backend='store1',
-            set_active=True)
+            set_active=True,
+            callback=image_import._status_callback)
         action.remove_importing_stores(['store1'])
 
     def test_execute_body_with_store_no_path(self):
@@ -161,7 +162,8 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
         action.set_image_data.assert_called_once_with(
             'http://url',
             TASK_ID1, backend='store1',
-            set_active=True)
+            set_active=True,
+            callback=image_import._status_callback)
         action.remove_importing_stores(['store1'])
 
     def test_execute_body_without_store(self):
@@ -179,8 +181,62 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
         action.set_image_data.assert_called_once_with(
             mock.sentinel.path,
             TASK_ID1, backend=None,
-            set_active=True)
+            set_active=True,
+            callback=image_import._status_callback)
         action.remove_importing_stores.assert_not_called()
+
+    @mock.patch('glance.async_.flows.api_image_import.LOG.debug')
+    @mock.patch('oslo_utils.timeutils.now')
+    def test_status_callback_limits_rate(self, mock_now, mock_log):
+        img_repo = mock.MagicMock()
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
+                                                  wrapper,
+                                                  "http://url",
+                                                  None, False,
+                                                  True)
+
+        expected_calls = []
+        log_call = mock.call('Image import %(image_id)s copied %(copied)i MiB',
+                             {'image_id': IMAGE_ID1,
+                              'copied': 0})
+        action = mock.MagicMock(image_id=IMAGE_ID1)
+
+        mock_now.return_value = 1000
+        image_import._status_callback(action, 32, 32)
+        # First call will emit immediately because we only ran __init__
+        # which sets the last status to zero
+        expected_calls.append(log_call)
+        mock_log.assert_has_calls(expected_calls)
+
+        image_import._status_callback(action, 32, 64)
+        # Second call will not emit any other logs because no time
+        # has passed
+        mock_log.assert_has_calls(expected_calls)
+
+        mock_now.return_value += 190
+        image_import._status_callback(action, 32, 96)
+        # Third call will not emit any other logs because not enough
+        # time has passed
+        mock_log.assert_has_calls(expected_calls)
+
+        mock_now.return_value += 300
+        image_import._status_callback(action, 32, 128)
+        # Fourth call will emit because we crossed five minutes
+        expected_calls.append(log_call)
+        mock_log.assert_has_calls(expected_calls)
+
+        mock_now.return_value += 150
+        image_import._status_callback(action, 32, 128)
+        # Fifth call will not emit any other logs because not enough
+        # time has passed
+        mock_log.assert_has_calls(expected_calls)
+
+        mock_now.return_value += 3600
+        image_import._status_callback(action, 32, 128)
+        # Sixth call will emit because we crossed five minutes
+        expected_calls.append(log_call)
+        mock_log.assert_has_calls(expected_calls)
 
     def test_raises_when_image_deleted(self):
         img_repo = mock.MagicMock()
@@ -525,7 +581,29 @@ class TestImportActions(test_utils.BaseTestCase):
                              mock.sentinel.backend, mock.sentinel.set_active))
         mock_sid.assert_called_once_with(
             self.image, mock.sentinel.uri, mock.sentinel.task_id,
-            backend=mock.sentinel.backend, set_active=mock.sentinel.set_active)
+            backend=mock.sentinel.backend, set_active=mock.sentinel.set_active,
+            callback=None)
+
+    @mock.patch.object(image_import, 'set_image_data')
+    def test_set_image_data_with_callback(self, mock_sid):
+        def fake_set_image_data(image, uri, task_id, backend=None,
+                                set_active=False,
+                                callback=None):
+            callback(mock.sentinel.chunk, mock.sentinel.total)
+
+        mock_sid.side_effect = fake_set_image_data
+
+        callback = mock.MagicMock()
+        self.actions.set_image_data(mock.sentinel.uri, mock.sentinel.task_id,
+                                    mock.sentinel.backend,
+                                    mock.sentinel.set_active,
+                                    callback=callback)
+
+        # Make sure our callback was triggered through the functools.partial
+        # to include the original params and the action wrapper
+        callback.assert_called_once_with(self.actions,
+                                         mock.sentinel.chunk,
+                                         mock.sentinel.total)
 
     def test_remove_location_for_store(self):
         self.image.locations = [
