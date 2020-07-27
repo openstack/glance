@@ -124,3 +124,83 @@ class TestScriptsUtils(test_utils.BaseTestCase):
         location = 'cinder://'
         self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
+
+
+class TestCallbackIterator(test_utils.BaseTestCase):
+    def test_iterator_iterates(self):
+        # Include a zero-length generation to make sure we don't trigger
+        # the callback when nothing new has happened.
+        items = ['1', '2', '', '3']
+        callback = mock.MagicMock()
+        cb_iter = script_utils.CallbackIterator(iter(items), callback)
+        iter_items = list(cb_iter)
+        callback.assert_has_calls([mock.call(1, 1),
+                                   mock.call(1, 2),
+                                   mock.call(1, 3)])
+        self.assertEqual(items, iter_items)
+
+        # Make sure we don't call the callback on close if we
+        # have processed all the data
+        callback.reset_mock()
+        cb_iter.close()
+        callback.assert_not_called()
+
+    @mock.patch('oslo_utils.timeutils.StopWatch')
+    def test_iterator_iterates_granularly(self, mock_sw):
+        items = ['1', '2', '3']
+        callback = mock.MagicMock()
+        mock_sw.return_value.expired.side_effect = [False, True, False]
+        cb_iter = script_utils.CallbackIterator(iter(items), callback,
+                                                min_interval=30)
+        iter_items = list(cb_iter)
+        self.assertEqual(items, iter_items)
+        # The timer only fired once, but we should still expect the final
+        # chunk to be emitted.
+        callback.assert_has_calls([mock.call(2, 2),
+                                   mock.call(1, 3)])
+
+        mock_sw.assert_called_once_with(30)
+        mock_sw.return_value.start.assert_called_once_with()
+        mock_sw.return_value.restart.assert_called_once_with()
+
+        # Make sure we don't call the callback on close if we
+        # have processed all the data
+        callback.reset_mock()
+        cb_iter.close()
+        callback.assert_not_called()
+
+    def test_proxy_close(self):
+        callback = mock.MagicMock()
+        source = mock.MagicMock()
+        del source.close
+        # NOTE(danms): This will generate AttributeError if it
+        # tries to call close after the del above.
+        script_utils.CallbackIterator(source, callback).close()
+
+        source = mock.MagicMock()
+        source.close.return_value = 'foo'
+        script_utils.CallbackIterator(source, callback).close()
+        source.close.assert_called_once_with()
+
+        # We didn't process any data, so no callback should be expected
+        callback.assert_not_called()
+
+    @mock.patch('oslo_utils.timeutils.StopWatch')
+    def test_proxy_read(self, mock_sw):
+        items = ['1', '2', '3']
+        source = mock.MagicMock()
+        source.read.side_effect = items
+        callback = mock.MagicMock()
+        mock_sw.return_value.expired.side_effect = [False, True, False]
+        cb_iter = script_utils.CallbackIterator(source, callback,
+                                                min_interval=30)
+        results = [cb_iter.read(1) for i in range(len(items))]
+        self.assertEqual(items, results)
+        # The timer only fired once while reading, so we only expect
+        # one callback.
+        callback.assert_has_calls([mock.call(2, 2)])
+        cb_iter.close()
+        # If we close with residue since the last callback, we should
+        # call the callback with that.
+        callback.assert_has_calls([mock.call(2, 2),
+                                   mock.call(1, 3)])

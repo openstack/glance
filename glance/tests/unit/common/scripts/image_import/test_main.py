@@ -122,3 +122,29 @@ class TestImageImport(test_utils.BaseTestCase):
         self.assertEqual(1, mock_set_img_data.call_count)
         mock_delete_data.assert_called_once_with(
             mock_create_image().context, image_id, 'location')
+
+    @mock.patch('oslo_utils.timeutils.StopWatch')
+    @mock.patch('glance.common.scripts.utils.get_image_data_iter')
+    def test_set_image_data_with_callback(self, mock_gidi, mock_sw):
+        data = [b'0' * 60, b'0' * 50, b'0' * 10, b'0' * 150]
+        result_data = []
+        mock_gidi.return_value = iter(data)
+        mock_sw.return_value.expired.side_effect = [False, True, False,
+                                                    False]
+        image = mock.MagicMock()
+        callback = mock.MagicMock()
+
+        def fake_set_data(data_iter, **kwargs):
+            for chunk in data_iter:
+                result_data.append(chunk)
+
+        image.set_data.side_effect = fake_set_data
+        image_import_script.set_image_data(image, 'http://fake', None,
+                                           callback=callback)
+
+        mock_gidi.assert_called_once_with('http://fake')
+        self.assertEqual(data, result_data)
+        # Since we only fired the timer once, only two calls expected
+        # for the four reads we did, including the final obligatory one
+        callback.assert_has_calls([mock.call(110, 110),
+                                   mock.call(160, 270)])
