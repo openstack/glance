@@ -101,13 +101,16 @@ class ImportActionWrapper(object):
     :param image-id: The ID of the image we should be altering
     """
 
-    def __init__(self, image_repo, image_id):
+    def __init__(self, image_repo, image_id, task_id):
         self._image_repo = image_repo
         self._image_id = image_id
+        self._task_id = task_id
 
     def __enter__(self):
         self._image = self._image_repo.get(self._image_id)
         self._image_previous_status = self._image.status
+        self._assert_task_lock(self._image)
+
         return _ImportActions(self._image)
 
     def __exit__(self, type, value, traceback):
@@ -122,6 +125,43 @@ class ImportActionWrapper(object):
                        'old_status': self._image_previous_status,
                        'new_status': self._image.status})
         self._image_repo.save(self._image, self._image_previous_status)
+
+    @property
+    def image_id(self):
+        return self._image_id
+
+    def drop_lock_for_task(self):
+        """Delete the import lock for our task.
+
+        This is an atomic operation and thus does not require a context
+        for the image save. Note that after calling this method, no
+        further actions will be allowed on the image.
+
+        :raises: NotFound if the image was not locked by the expected task.
+        """
+        image = self._image_repo.get(self._image_id)
+        self._image_repo.delete_property_atomic(image,
+                                                'os_glance_import_task',
+                                                self._task_id)
+
+    def _assert_task_lock(self, image):
+        task_lock = image.extra_properties.get('os_glance_import_task')
+        if task_lock != self._task_id:
+            LOG.error('Image %(image)s import task %(task)s attempted to '
+                      'take action on image, but other task %(other)s holds '
+                      'the lock; Aborting.',
+                      {'image': self._image_id,
+                       'task': self._task_id,
+                       'other': task_lock})
+            raise exception.TaskAbortedError()
+
+    def assert_task_lock(self):
+        """Assert that we own the task lock on the image.
+
+        :raises: TaskAbortedError if we do not
+        """
+        image = self._image_repo.get(self._image_id)
+        self._assert_task_lock(image)
 
 
 class _ImportActions(object):
@@ -317,6 +357,41 @@ class _DeleteFromFS(task.Task):
                               "image data has failed because "
                               "it cannot be found at %(fn)s"), {
                     'fn': file_path})
+
+
+class _ImageLock(task.Task):
+    def __init__(self, task_id, task_type, action_wrapper):
+        self.task_id = task_id
+        self.task_type = task_type
+        self.action_wrapper = action_wrapper
+        super(_ImageLock, self).__init__(
+            name='%s-ImageLock-%s' % (task_type, task_id))
+
+    def execute(self):
+        self.action_wrapper.assert_task_lock()
+        LOG.debug('Image %(image)s import task %(task)s lock confirmed',
+                  {'image': self.action_wrapper.image_id,
+                   'task': self.task_id})
+
+    def revert(self, result, **kwargs):
+        """Drop our claim on the image.
+
+        If we have failed, we need to drop our import_task lock on the image
+        so that something else can have a try. Note that we may have been
+        preempted so we should only drop *our* lock.
+        """
+        try:
+            self.action_wrapper.drop_lock_for_task()
+        except exception.NotFound:
+            LOG.warning('Image %(image)s import task %(task)s lost its '
+                        'lock during execution!',
+                        {'image': self.action_wrapper.image_id,
+                         'task': self.task_id})
+        else:
+            LOG.debug('Image %(image)s import task %(task)s dropped '
+                      'its lock after failure',
+                      {'image': self.action_wrapper.image_id,
+                       'task': self.task_id})
 
 
 class _VerifyStaging(task.Task):
@@ -548,24 +623,17 @@ class _VerifyImageState(task.Task):
 
 class _CompleteTask(task.Task):
 
-    def __init__(self, task_id, task_type, task_repo, image_id):
+    def __init__(self, task_id, task_type, task_repo, action_wrapper):
         self.task_id = task_id
         self.task_type = task_type
         self.task_repo = task_repo
-        self.image_id = image_id
+        self.action_wrapper = action_wrapper
         super(_CompleteTask, self).__init__(
             name='%s-CompleteTask-%s' % (task_type, task_id))
 
-    def execute(self):
-        """Finishing the task flow
-
-        :param image_id: Glance Image ID
-        """
-        task = script_utils.get_task(self.task_repo, self.task_id)
-        if task is None:
-            return
+    def _finish_task(self, task):
         try:
-            task.succeed({'image_id': self.image_id})
+            task.succeed({'image_id': self.action_wrapper.image_id})
         except Exception as e:
             # Note: The message string contains Error in it to indicate
             # in the task.message that it's a error message for the user.
@@ -583,6 +651,28 @@ class _CompleteTask(task.Task):
                                  'e': encodeutils.exception_to_unicode(e)})
         finally:
             self.task_repo.save(task)
+
+    def _drop_lock(self):
+        try:
+            self.action_wrapper.drop_lock_for_task()
+        except exception.NotFound:
+            # NOTE(danms): This would be really bad, but there is probably
+            # not much point in reverting all the way back if we got this
+            # far. Log the carnage for forensics.
+            LOG.error('Image %(image)s import task %(task)s did not hold the '
+                      'lock upon completion!',
+                      {'image': self.action_wrapper.image_id,
+                       'task': self.task_id})
+
+    def execute(self):
+        """Finishing the task flow
+
+        :param image_id: Glance Image ID
+        """
+        task = script_utils.get_task(self.task_repo, self.task_id)
+        if task is not None:
+            self._finish_task(task)
+        self._drop_lock()
 
         LOG.info(_LI("%(task_id)s of %(task_type)s completed"),
                  {'task_id': self.task_id, 'task_type': self.task_type})
@@ -616,7 +706,8 @@ def get_flow(**kwargs):
 
     # Instantiate an action wrapper with the admin repo if we got one,
     # otherwise with the regular repo.
-    action_wrapper = ImportActionWrapper(admin_repo or image_repo, image_id)
+    action_wrapper = ImportActionWrapper(admin_repo or image_repo, image_id,
+                                         task_id)
 
     if not uri and import_method in ['glance-direct', 'copy-image']:
         if CONF.enabled_backends:
@@ -626,6 +717,8 @@ def get_flow(**kwargs):
             uri = separator.join((CONF.node_staging_uri, str(image_id)))
 
     flow = lf.Flow(task_type, retry=retry.AlwaysRevert())
+
+    flow.add(_ImageLock(task_id, task_type, action_wrapper))
 
     if import_method in ['web-download', 'copy-image']:
         internal_plugin = internal_plugins.get_import_plugin(**kwargs)
@@ -678,7 +771,7 @@ def get_flow(**kwargs):
     complete_task = _CompleteTask(task_id,
                                   task_type,
                                   task_repo,
-                                  image_id)
+                                  action_wrapper)
     flow.add(complete_task)
 
     with action_wrapper as action:

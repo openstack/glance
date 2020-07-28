@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import hashlib
 import os
 import re
@@ -25,6 +26,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
 from oslo_utils import encodeutils
+from oslo_utils import timeutils as oslo_timeutils
 import six
 from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
@@ -98,6 +100,90 @@ class ImagesController(object):
 
         return image
 
+    def _bust_import_lock(self, admin_image_repo, admin_task_repo,
+                          image, task, task_id):
+        if task:
+            # FIXME(danms): It would be good if we had a 'canceled' or
+            # 'aborted' status here.
+            try:
+                task.fail('Expired lock preempted')
+                admin_task_repo.save(task)
+            except exception.InvalidTaskStatusTransition:
+                # NOTE(danms): This may happen if we try to fail a
+                # task that is in a terminal state, but where the lock
+                # was never dropped from the image. We will log the
+                # image, task, and status below so we can just ignore
+                # here.
+                pass
+
+        try:
+            admin_image_repo.delete_property_atomic(
+                image, 'os_glance_import_task', task_id)
+        except exception.NotFound:
+            LOG.warning('Image %(image)s has stale import task %(task)s '
+                        'but we lost the race to remove it.',
+                        {'image': image.image_id,
+                         'task': task_id})
+            # We probably lost the race to expire the old lock, but
+            # act like it is not yet expired to avoid a retry loop.
+            raise exception.Conflict('Image has active task')
+
+        LOG.warning('Image %(image)s has stale import task %(task)s '
+                    'in status %(status)s from %(owner)s; removed lock '
+                    'because it had expired.',
+                    {'image': image.image_id,
+                     'task': task_id,
+                     'status': task and task.status or 'missing',
+                     'owner': task and task.owner or 'unknown owner'})
+
+    def _enforce_import_lock(self, req, image):
+        admin_context = req.context.elevated()
+        admin_image_repo = self.gateway.get_repo(admin_context)
+        admin_task_repo = self.gateway.get_task_repo(admin_context)
+        other_task = image.extra_properties['os_glance_import_task']
+
+        expiry = datetime.timedelta(minutes=60)
+        bustable_states = ('pending', 'processing', 'success', 'failure')
+
+        try:
+            task = admin_task_repo.get(other_task)
+        except exception.NotFound:
+            # NOTE(danms): This could happen if we failed to do an import
+            # a long time ago, and the task record has since been culled from
+            # the database, but the task id is still in the lock field.
+            LOG.warning('Image %(image)s has non-existent import '
+                        'task %(task)s; considering it stale',
+                        {'image': image.image_id,
+                         'task': other_task})
+            task = None
+            age = 0
+        else:
+            age = oslo_timeutils.utcnow() - task.updated_at
+            if task.status == 'pending':
+                # NOTE(danms): Tasks in pending state could be queued,
+                # blocked or otherwise right-about-to-get-going, so we
+                # double the expiry time for safety. We will report
+                # time remaining below, so this is not too obscure.
+                expiry *= 2
+
+        if not task or (task.status in bustable_states and age >= expiry):
+            self._bust_import_lock(admin_image_repo, admin_task_repo,
+                                   image, task, other_task)
+            return
+
+        if task.status in bustable_states:
+            LOG.warning('Image %(image)s has active import task %(task)s in '
+                        'status %(status)s; lock remains valid for %(expire)i '
+                        'more seconds',
+                        {'image': image.image_id,
+                         'task': task.task_id,
+                         'status': task.status,
+                         'expire': (expiry - age).total_seconds()})
+        else:
+            LOG.debug('Image %(image)s has import task %(task)s in status '
+                      '%(status)s and does not qualify for expiry.')
+        raise exception.Conflict('Image has active task')
+
     @utils.mutating
     def import_image(self, req, image_id, body):
         image_repo = self.gateway.get_repo(req.context)
@@ -135,6 +221,11 @@ class ImagesController(object):
             if not authorization.is_image_mutable(req.context, image):
                 raise webob.exc.HTTPForbidden(
                     explanation=_("Operation not permitted"))
+
+            if 'os_glance_import_task' in image.extra_properties:
+                # NOTE(danms): This will raise exception.Conflict if the
+                # lock is present and valid, or return if absent or invalid.
+                self._enforce_import_lock(req, image)
 
             stores = [None]
             if CONF.enabled_backends:
@@ -195,6 +286,17 @@ class ImagesController(object):
             import_task = task_factory.new_task(task_type='api_image_import',
                                                 owner=req.context.owner,
                                                 task_input=task_input)
+
+            # NOTE(danms): Try to grab the lock for this task
+            try:
+                image_repo.set_property_atomic(image,
+                                               'os_glance_import_task',
+                                               import_task.task_id)
+            except exception.Duplicate:
+                msg = (_("New operation on image '%s' is not permitted as "
+                         "prior operation is still in progress") % image_id)
+                raise exception.Conflict(msg)
+
             task_repo.add(import_task)
             task_executor = executor_factory.new_task_executor(req.context)
             pool = common.get_thread_pool("tasks_eventlet_pool")
@@ -715,7 +817,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                             'size', 'virtual_size', 'direct_url', 'self',
                             'file', 'schema', 'id', 'os_hash_algo',
                             'os_hash_value')
-    _reserved_properties = ('location', 'deleted', 'deleted_at')
+    _reserved_properties = ('location', 'deleted', 'deleted_at',
+                            'os_glance_import_task')
     _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'virtual_size', 'status', 'tags', 'owner',
