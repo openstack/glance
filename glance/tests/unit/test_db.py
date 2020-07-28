@@ -457,6 +457,27 @@ class TestImageRepo(test_utils.BaseTestCase):
         image = self.image_repo.get(image.image_id)
         self.assertEqual({'foo': 'bar'}, image.extra_properties)
 
+    def test_image_delete_property_atomic(self):
+        image_id = uuid.uuid4()
+        image = _db_fixture(image_id, name='test')
+
+        self.assertRaises(exception.NotFound,
+                          self.db.image_delete_property_atomic,
+                          image_id, 'foo', 'bar')
+        self.db.image_create(self.context, image)
+        self.db.image_set_property_atomic(image_id, 'foo', 'bar')
+        self.db.image_delete_property_atomic(image_id, 'foo', 'bar')
+        image = self.image_repo.get(image_id)
+        self.assertEqual({}, image.extra_properties)
+
+    def test_delete_property_atomic(self):
+        image = self.image_repo.get(UUID1)
+        self.image_repo.set_property_atomic(image, 'foo', 'bar')
+        image = self.image_repo.get(image.image_id)
+        self.image_repo.delete_property_atomic(image, 'foo', 'bar')
+        image = self.image_repo.get(image.image_id)
+        self.assertEqual({}, image.extra_properties)
+
 
 class TestEncryptedLocations(test_utils.BaseTestCase):
     def setUp(self):

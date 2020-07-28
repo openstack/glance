@@ -224,6 +224,10 @@ class ImageRepo(object):
         self.db_api.image_set_property_atomic(
             image.image_id, name, value)
 
+    def delete_property_atomic(self, image, name, value):
+        self.db_api.image_delete_property_atomic(
+            image.image_id, name, value)
+
 
 class ImageProxy(glance.domain.proxy.Image):
 
