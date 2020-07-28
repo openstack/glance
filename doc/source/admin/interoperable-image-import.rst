@@ -214,7 +214,12 @@ Configuring the copy-image method
 
 For the ``copy-image`` method, make sure that ``copy-image`` is included
 in the list specified by your ``enabled_import_methods`` setting as well
-as you have multiple glance backends configured in your environment.
+as you have multiple glance backends configured in your environment. To
+allow copy-image operation to be performed by users on images they do
+not own, you can set the `copy_image` policy to something other than
+the default, for example::
+
+    "copy_image": "'public':%(visibility)s"
 
 .. _iir_plugins:
 
@@ -222,6 +227,13 @@ Copying existing-image in multiple stores
 -----------------------------------------
 Starting with Ussuri release, it is possible to copy existing image data
 into multiple stores using interoperable image import workflow.
+
+Basically user will be able to copy only those images which are
+owned by him. Unless the copying of unowned images are allowed by
+cloud operator by enforcing policy check, user will get Forbidden
+(Operation not permitted response) for such copy operations. Even if
+copying of unowned images is allowed by enforcing policy, ownership of
+the image remains unchanged.
 
 Operator or end user can either copy the existing image by specifying
 ``all_stores`` as True in request body or by passing list of desired

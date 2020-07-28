@@ -284,6 +284,11 @@ If you are using the ``copy-image`` import method:
   the user. In case of a partial success, the locations added to the
   image will be the stores where the data has been correctly uploaded.
 
+- By default, you may perform the copy-image operation only on images that
+  you own. This action is governed by policy, so some users may be granted
+  permission to copy unowned images. Consult your cloud's local
+  documentation for details.
+
 **Synchronous Postconditions**
 
 - With correct permissions, you can see the image status as
