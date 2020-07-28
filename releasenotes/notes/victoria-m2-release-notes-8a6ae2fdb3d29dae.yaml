@@ -1,0 +1,41 @@
+---
+features:
+  - |
+    Added policy support to allow copying image to multiple stores,
+    even if those images are not owned by the current user's project.
+
+fixes:
+  - |
+    Bug 1888349_: glance-cache-manage utility is broken
+  - |
+    Bug 1886374_: Improve lazy loading mechanism for multiple stores
+  - |
+    Bug 1885003_: Interrupted copy-image may break a subsequent operation
+  - |
+    Bug 1884587_: image import copy-image API should reflect proper authorization
+  - |
+    Bug 1876419_: Failed to parse json file /etc/glance/metadefs/compute-vmware.json
+  - |
+    Bug 1856581_: metadefs: OS::Glance::CommonImageProperties out of date
+  - |
+    Bug 1843576_: Glance metadefs is missing Image property hw_vif_multiqueue_enabled
+  - |
+    Bug 1856578_: docs: image schema customization restrictions
+  - |
+    Bug 1808814_: admin docs: interoperable image import revision for stein
+  - |
+    Bug 1870336_: Update 'common image properties' doc
+  - |
+    Bug 1888713_: Async tasks, image import not supported in pure-WSGI mode
+
+    .. _1888349: https://code.launchpad.net/bugs/1888349
+    .. _1886374: https://code.launchpad.net/bugs/1886374
+    .. _1885003: https://code.launchpad.net/bugs/1885003
+    .. _1884587: https://code.launchpad.net/bugs/1884587
+    .. _1876419: https://code.launchpad.net/bugs/1876419
+    .. _1856581: https://code.launchpad.net/bugs/1856581
+    .. _1843576: https://code.launchpad.net/bugs/1843576
+    .. _1856578: https://code.launchpad.net/bugs/1856578
+    .. _1808814: https://code.launchpad.net/bugs/1808814
+    .. _1870336: https://code.launchpad.net/bugs/1870336
+    .. _1888713: https://code.launchpad.net/bugs/1888713
