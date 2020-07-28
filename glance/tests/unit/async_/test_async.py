@@ -88,13 +88,15 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
 
     def _get_flow(self, import_req=None):
         inputs = {
-            'task_id': mock.MagicMock(),
+            'task_id': mock.sentinel.task_id,
             'task_type': mock.MagicMock(),
             'task_repo': mock.MagicMock(),
             'image_repo': mock.MagicMock(),
             'image_id': mock.MagicMock(),
             'import_req': import_req or mock.MagicMock()
         }
+        inputs['image_repo'].get.return_value = mock.MagicMock(
+            extra_properties={'os_glance_import_task': mock.sentinel.task_id})
         flow = api_image_import.get_flow(**inputs)
         return flow
 
@@ -116,8 +118,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow()
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 5 tasks
-        self.assertEqual(5, len(flow_comp))
+        # assert flow has 6 tasks
+        self.assertEqual(6, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
 
@@ -135,8 +137,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow(import_req=import_req)
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 6 tasks
-        self.assertEqual(6, len(flow_comp))
+        # assert flow has 7 tasks
+        self.assertEqual(7, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         self.assertIn('WebDownload', flow_comp)
@@ -157,8 +159,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow(import_req=import_req)
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 6 tasks
-        self.assertEqual(6, len(flow_comp))
+        # assert flow has 7 tasks
+        self.assertEqual(7, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         self.assertIn('CopyImage', flow_comp)
@@ -174,8 +176,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow()
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 8 tasks (base_flow + plugins)
-        self.assertEqual(8, len(flow_comp))
+        # assert flow has 9 tasks (base_flow + plugins)
+        self.assertEqual(9, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         for c in self.import_plugins:
@@ -202,8 +204,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow(import_req=import_req)
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 6 tasks
-        self.assertEqual(6, len(flow_comp))
+        # assert flow has 7 tasks
+        self.assertEqual(7, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         self.assertIn('CopyImage', flow_comp)

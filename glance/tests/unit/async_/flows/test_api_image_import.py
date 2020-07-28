@@ -63,6 +63,8 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
 
         self.mock_task_repo = mock.MagicMock()
         self.mock_image_repo = mock.MagicMock()
+        self.mock_image_repo.get.return_value.extra_properties = {
+            'os_glance_import_task': TASK_ID1}
 
     @mock.patch('glance.async_.flows.api_image_import._VerifyStaging.__init__')
     @mock.patch('taskflow.patterns.linear_flow.Flow.add')
@@ -102,6 +104,61 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
                        import_req=self.gd_task_input['import_req'])
 
 
+class TestImageLock(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestImageLock, self).setUp()
+        self.img_repo = mock.MagicMock()
+
+    @mock.patch('glance.async_.flows.api_image_import.LOG')
+    def test_execute_confirms_lock(self, mock_log):
+        self.img_repo.get.return_value.extra_properties = {
+            'os_glance_import_task': TASK_ID1}
+        wrapper = import_flow.ImportActionWrapper(self.img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        imagelock = import_flow._ImageLock(TASK_ID1, TASK_TYPE, wrapper)
+        imagelock.execute()
+        mock_log.debug.assert_called_once_with('Image %(image)s import task '
+                                               '%(task)s lock confirmed',
+                                               {'image': IMAGE_ID1,
+                                                'task': TASK_ID1})
+
+    @mock.patch('glance.async_.flows.api_image_import.LOG')
+    def test_execute_confirms_lock_not_held(self, mock_log):
+        wrapper = import_flow.ImportActionWrapper(self.img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        imagelock = import_flow._ImageLock(TASK_ID1, TASK_TYPE, wrapper)
+        self.assertRaises(exception.TaskAbortedError,
+                          imagelock.execute)
+
+    @mock.patch('glance.async_.flows.api_image_import.LOG')
+    def test_revert_drops_lock(self, mock_log):
+        wrapper = import_flow.ImportActionWrapper(self.img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        imagelock = import_flow._ImageLock(TASK_ID1, TASK_TYPE, wrapper)
+        with mock.patch.object(wrapper, 'drop_lock_for_task') as mock_drop:
+            imagelock.revert(None)
+            mock_drop.assert_called_once_with()
+        mock_log.debug.assert_called_once_with('Image %(image)s import task '
+                                               '%(task)s dropped its lock '
+                                               'after failure',
+                                               {'image': IMAGE_ID1,
+                                                'task': TASK_ID1})
+
+    @mock.patch('glance.async_.flows.api_image_import.LOG')
+    def test_revert_drops_lock_missing(self, mock_log):
+        wrapper = import_flow.ImportActionWrapper(self.img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        imagelock = import_flow._ImageLock(TASK_ID1, TASK_TYPE, wrapper)
+        with mock.patch.object(wrapper, 'drop_lock_for_task') as mock_drop:
+            mock_drop.side_effect = exception.NotFound()
+            imagelock.revert(None)
+        mock_log.warning.assert_called_once_with('Image %(image)s import task '
+                                                 '%(task)s lost its lock '
+                                                 'during execution!',
+                                                 {'image': IMAGE_ID1,
+                                                  'task': TASK_ID1})
+
+
 class TestImportToStoreTask(test_utils.BaseTestCase):
 
     def setUp(self):
@@ -137,7 +194,8 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
         img_repo = mock.MagicMock()
         img_repo.get.return_value = image
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
@@ -157,7 +215,8 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
         img_repo = mock.MagicMock()
         img_repo.get.return_value = image
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
@@ -177,7 +236,8 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
         img_repo = mock.MagicMock()
         img_repo.get.return_value = image
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
@@ -198,7 +258,8 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
         img_repo = mock.MagicMock()
         task_repo = mock.MagicMock()
         task_repo.get.return_value.status = 'processing'
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
@@ -250,7 +311,8 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
     def test_raises_when_image_deleted(self):
         img_repo = mock.MagicMock()
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
@@ -265,13 +327,15 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
     def test_remove_store_from_property(self, mock_import):
         img_repo = mock.MagicMock()
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
                                                   "store1", True,
                                                   True)
-        extra_properties = {"os_glance_importing_to_stores": "store1,store2"}
+        extra_properties = {"os_glance_importing_to_stores": "store1,store2",
+                            "os_glance_import_task": TASK_ID1}
         image = self.img_factory.new_image(image_id=UUID1,
                                            extra_properties=extra_properties)
         img_repo.get.return_value = image
@@ -282,13 +346,15 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
     def test_revert_updates_status_keys(self):
         img_repo = mock.MagicMock()
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
                                                   "store1", True,
                                                   True)
-        extra_properties = {"os_glance_importing_to_stores": "store1,store2"}
+        extra_properties = {"os_glance_importing_to_stores": "store1,store2",
+                            "os_glance_import_task": TASK_ID1}
         image = self.img_factory.new_image(image_id=UUID1,
                                            extra_properties=extra_properties)
         img_repo.get.return_value = image
@@ -313,13 +379,16 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
     def test_raises_when_all_stores_must_succeed(self, mock_import):
         img_repo = mock.MagicMock()
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
                                                   "store1", True,
                                                   True)
-        image = self.img_factory.new_image(image_id=UUID1)
+        extra_properties = {'os_glance_import_task': TASK_ID1}
+        image = self.img_factory.new_image(image_id=UUID1,
+                                           extra_properties=extra_properties)
         img_repo.get.return_value = image
         mock_import.set_image_data.side_effect = \
             cursive_exception.SignatureVerificationError(
@@ -331,13 +400,16 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
     def test_doesnt_raise_when_not_all_stores_must_succeed(self, mock_import):
         img_repo = mock.MagicMock()
         task_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(img_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         image_import = import_flow._ImportToStore(TASK_ID1, TASK_TYPE,
                                                   task_repo, wrapper,
                                                   "http://url",
                                                   "store1", False,
                                                   True)
-        image = self.img_factory.new_image(image_id=UUID1)
+        extra_properties = {'os_glance_import_task': TASK_ID1}
+        image = self.img_factory.new_image(image_id=UUID1,
+                                           extra_properties=extra_properties)
         img_repo.get.return_value = image
         mock_import.set_image_data.side_effect = \
             cursive_exception.SignatureVerificationError(
@@ -473,7 +545,7 @@ class TestImportCopyImageTask(test_utils.BaseTestCase):
         fake_img = mock.MagicMock()
         fake_img.id = IMAGE_ID1
         fake_img.status = 'active'
-        fake_img.extra_properties = {}
+        fake_img.extra_properties = {'os_glance_import_task': TASK_ID1}
         admin_repo.get.return_value = fake_img
 
         import_flow.get_flow(task_id=TASK_ID1,
@@ -494,10 +566,13 @@ class TestImportCopyImageTask(test_utils.BaseTestCase):
 
 class TestVerifyImageStateTask(test_utils.BaseTestCase):
     def test_verify_active_status(self):
-        fake_img = mock.MagicMock(status='active')
+        fake_img = mock.MagicMock(status='active',
+                                  extra_properties={
+                                      'os_glance_import_task': TASK_ID1})
         mock_repo = mock.MagicMock()
         mock_repo.get.return_value = fake_img
-        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1)
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
 
         task = import_flow._VerifyImageState(TASK_ID1, TASK_TYPE,
                                              wrapper, 'anything!')
@@ -531,7 +606,10 @@ class TestVerifyImageStateTask(test_utils.BaseTestCase):
 class TestImportActionWrapper(test_utils.BaseTestCase):
     def test_wrapper_success(self):
         mock_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1)
+        mock_repo.get.return_value.extra_properties = {
+            'os_glance_import_task': TASK_ID1}
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
         with wrapper as action:
             self.assertIsInstance(action, import_flow._ImportActions)
         mock_repo.get.assert_called_once_with(IMAGE_ID1)
@@ -541,7 +619,10 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
 
     def test_wrapper_failure(self):
         mock_repo = mock.MagicMock()
-        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1)
+        mock_repo.get.return_value.extra_properties = {
+            'os_glance_import_task': TASK_ID1}
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
 
         class SpecificError(Exception):
             pass
@@ -561,7 +642,9 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
     def test_wrapper_logs_status(self, mock_log):
         mock_repo = mock.MagicMock()
         mock_image = mock_repo.get.return_value
-        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1)
+        mock_image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
 
         mock_image.status = 'foo'
         with wrapper as action:
@@ -574,6 +657,61 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
              'old_status': 'foo',
              'new_status': 'bar'})
         self.assertEqual('bar', mock_image.status)
+
+    def test_image_id_property(self):
+        mock_repo = mock.MagicMock()
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        self.assertEqual(IMAGE_ID1, wrapper.image_id)
+
+    def test_drop_lock_for_task(self):
+        mock_repo = mock.MagicMock()
+        mock_repo.get.return_value.extra_properties = {
+            'os_glance_import_task': TASK_ID1}
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        wrapper.drop_lock_for_task()
+        mock_repo.delete_property_atomic.assert_called_once_with(
+            mock_repo.get.return_value, 'os_glance_import_task', TASK_ID1)
+
+    def test_assert_task_lock(self):
+        mock_repo = mock.MagicMock()
+        mock_repo.get.return_value.extra_properties = {
+            'os_glance_import_task': TASK_ID1}
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        wrapper.assert_task_lock()
+
+        # Try again with a different task ID and it should fail
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  'foo')
+        self.assertRaises(exception.TaskAbortedError,
+                          wrapper.assert_task_lock)
+
+    def _grab_image(self, wrapper):
+        with wrapper:
+            pass
+
+    @mock.patch.object(import_flow, 'LOG')
+    def test_check_task_lock(self, mock_log):
+        mock_repo = mock.MagicMock()
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        image = mock.MagicMock(image_id=IMAGE_ID1)
+        image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        mock_repo.get.return_value = image
+        self._grab_image(wrapper)
+        mock_log.error.assert_not_called()
+
+        image.extra_properties['os_glance_import_task'] = 'somethingelse'
+        self.assertRaises(exception.TaskAbortedError,
+                          self._grab_image, wrapper)
+        mock_log.error.assert_called_once_with(
+            'Image %(image)s import task %(task)s attempted to take action on '
+            'image, but other task %(other)s holds the lock; Aborting.',
+            {'image': image.image_id,
+             'task': TASK_ID1,
+             'other': 'somethingelse'})
 
 
 class TestImportActions(test_utils.BaseTestCase):
@@ -767,30 +905,48 @@ class TestCompleteTask(test_utils.BaseTestCase):
         super(TestCompleteTask, self).setUp()
         self.task_repo = mock.MagicMock()
         self.task = mock.MagicMock()
+        self.wrapper = mock.MagicMock(image_id=IMAGE_ID1)
 
     def test_execute(self, mock_get_task):
         complete = import_flow._CompleteTask(TASK_ID1, TASK_TYPE,
-                                             self.task_repo, IMAGE_ID1)
+                                             self.task_repo, self.wrapper)
         mock_get_task.return_value = self.task
         complete.execute()
         mock_get_task.assert_called_once_with(self.task_repo,
                                               TASK_ID1)
         self.task.succeed.assert_called_once_with({'image_id': IMAGE_ID1})
         self.task_repo.save.assert_called_once_with(self.task)
+        self.wrapper.drop_lock_for_task.assert_called_once_with()
 
     def test_execute_no_task(self, mock_get_task):
         mock_get_task.return_value = None
         complete = import_flow._CompleteTask(TASK_ID1, TASK_TYPE,
-                                             self.task_repo, IMAGE_ID1)
+                                             self.task_repo, self.wrapper)
         complete.execute()
         self.task_repo.save.assert_not_called()
+        self.wrapper.drop_lock_for_task.assert_called_once_with()
 
     def test_execute_succeed_fails(self, mock_get_task):
         mock_get_task.return_value = self.task
         self.task.succeed.side_effect = Exception('testing')
         complete = import_flow._CompleteTask(TASK_ID1, TASK_TYPE,
-                                             self.task_repo, IMAGE_ID1)
+                                             self.task_repo, self.wrapper)
         complete.execute()
         self.task.fail.assert_called_once_with(
             _('Error: <class \'Exception\'>: testing'))
         self.task_repo.save.assert_called_once_with(self.task)
+        self.wrapper.drop_lock_for_task.assert_called_once_with()
+
+    def test_execute_drop_lock_fails(self, mock_get_task):
+        mock_get_task.return_value = self.task
+        self.wrapper.drop_lock_for_task.side_effect = exception.NotFound()
+        complete = import_flow._CompleteTask(TASK_ID1, TASK_TYPE,
+                                             self.task_repo, self.wrapper)
+        with mock.patch('glance.async_.flows.api_image_import.LOG') as m_log:
+            complete.execute()
+            m_log.error.assert_called_once_with('Image %(image)s import task '
+                                                '%(task)s did not hold the '
+                                                'lock upon completion!',
+                                                {'image': IMAGE_ID1,
+                                                 'task': TASK_ID1})
+        self.task.succeed.assert_called_once_with({'image_id': IMAGE_ID1})

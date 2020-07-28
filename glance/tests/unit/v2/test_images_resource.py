@@ -23,6 +23,7 @@ from castellan.common import exception as castellan_exception
 import glance_store as store
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from oslo_utils import fixture
 import six
 from six.moves import http_client as http
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -39,6 +40,7 @@ import glance.schema
 from glance.tests.unit import base
 from glance.tests.unit.keymgr import fake as fake_keymgr
 import glance.tests.unit.utils as unit_test_utils
+from glance.tests.unit.v2 import test_tasks_resource
 import glance.tests.utils as test_utils
 
 CONF = cfg.CONF
@@ -745,8 +747,9 @@ class TestImagesController(base.IsolatedUnitTest):
                               self.controller.import_image, request, UUID4,
                               {'method': {'name': 'glance-direct'}})
 
+    @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch('glance.api.common.get_thread_pool')
-    def test_image_import_raises_bad_request(self, mock_gpt):
+    def test_image_import_raises_bad_request(self, mock_gpt, mock_spa):
         request = unit_test_utils.get_fake_request()
         with mock.patch.object(
                 glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
@@ -2955,18 +2958,24 @@ class TestImagesController(base.IsolatedUnitTest):
         pos = self.controller._get_locations_op_pos('1', None, True)
         self.assertIsNone(pos)
 
+    @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
     @mock.patch.object(glance.domain.TaskExecutorFactory, 'new_task_executor')
     @mock.patch('glance.api.common.get_thread_pool')
-    def test_image_import(self, mock_gtp, mock_nte, mock_nt):
+    def test_image_import(self, mock_gtp, mock_nte, mock_nt, mock_spa):
         request = unit_test_utils.get_fake_request()
+        image = FakeImage(status='uploading')
         with mock.patch.object(
                 glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
-            mock_get.return_value = FakeImage(status='uploading')
+            mock_get.return_value = image
             output = self.controller.import_image(
                 request, UUID4, {'method': {'name': 'glance-direct'}})
 
         self.assertEqual(UUID4, output)
+
+        # Make sure we set the lock on the image
+        mock_spa.assert_called_once_with(UUID4, 'os_glance_import_task',
+                                         mock_nt.return_value.task_id)
 
         # Make sure we grabbed a thread pool, and that we asked it
         # to spawn the task's run method with it.
@@ -2989,12 +2998,14 @@ class TestImagesController(base.IsolatedUnitTest):
         # a task
         mock_new_task.assert_not_called()
 
+    @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch('glance.context.RequestContext.elevated')
     @mock.patch.object(glance.domain.TaskFactory, 'new_task')
     @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
     def test_image_import_copy_allowed_by_policy(self, mock_get,
                                                  mock_new_task,
                                                  mock_elevated,
+                                                 mock_spa,
                                                  allowed=True):
         # NOTE(danms): FakeImage is owned by utils.TENANT1. Try to do the
         # import as TENANT2, but with a policy exception
@@ -3030,6 +3041,150 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.test_image_import_copy_allowed_by_policy,
                           allowed=False)
+
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    def test_image_import_locked(self, mock_get):
+        task = test_tasks_resource._db_fixture(test_tasks_resource.UUID1,
+                                               status='pending')
+        self.db.task_create(None, task)
+        image = FakeImage(status='uploading')
+        # Image is locked with a valid task that has not aged out, so
+        # the lock will not be busted.
+        image.extra_properties['os_glance_import_task'] = task['id']
+        mock_get.return_value = image
+
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        req_body = {'method': {'name': 'glance-direct'}}
+
+        exc = self.assertRaises(webob.exc.HTTPConflict,
+                                self.controller.import_image,
+                                request, UUID1, req_body)
+        self.assertEqual('Image has active task', str(exc))
+
+    @mock.patch('glance.db.simple.api.image_set_property_atomic')
+    @mock.patch('glance.db.simple.api.image_delete_property_atomic')
+    @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    def test_image_import_locked_by_reaped_task(self, mock_get, mock_nt,
+                                                mock_dpi, mock_spi):
+        image = FakeImage(status='uploading')
+        # Image is locked by some other task that TaskRepo will not find
+        image.extra_properties['os_glance_import_task'] = 'missing'
+        mock_get.return_value = image
+
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        req_body = {'method': {'name': 'glance-direct'}}
+
+        mock_nt.return_value.task_id = 'mytask'
+        self.controller.import_image(request, UUID1, req_body)
+
+        # We should have atomically deleted the missing task lock
+        mock_dpi.assert_called_once_with(image.id, 'os_glance_import_task',
+                                         'missing')
+        # We should have atomically grabbed the lock with our task id
+        mock_spi.assert_called_once_with(image.id, 'os_glance_import_task',
+                                         'mytask')
+
+    @mock.patch('glance.db.simple.api.image_set_property_atomic')
+    @mock.patch('glance.db.simple.api.image_delete_property_atomic')
+    @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    def test_image_import_locked_by_bustable_task(self, mock_get, mock_nt,
+                                                  mock_dpi, mock_spi,
+                                                  task_status='processing'):
+        task = test_tasks_resource._db_fixture(
+            test_tasks_resource.UUID1,
+            status=task_status)
+        self.db.task_create(None, task)
+        image = FakeImage(status='uploading')
+        # Image is locked by a task in 'processing' state
+        image.extra_properties['os_glance_import_task'] = task['id']
+        mock_get.return_value = image
+
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        req_body = {'method': {'name': 'glance-direct'}}
+
+        # Task has only been running for ten minutes
+        time_fixture = fixture.TimeFixture(task['updated_at'] +
+                                           datetime.timedelta(minutes=10))
+        self.useFixture(time_fixture)
+
+        mock_nt.return_value.task_id = 'mytask'
+
+        # Task holds the lock, API refuses to bust it
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.import_image,
+                          request, UUID1, req_body)
+        mock_dpi.assert_not_called()
+        mock_spi.assert_not_called()
+        mock_nt.assert_not_called()
+
+        # Fast forward to 90 minutes from now
+        time_fixture.advance_time_delta(datetime.timedelta(minutes=90))
+        self.controller.import_image(request, UUID1, req_body)
+
+        # API deleted the other task's lock and locked it for us
+        mock_dpi.assert_called_once_with(image.id, 'os_glance_import_task',
+                                         task['id'])
+        mock_spi.assert_called_once_with(image.id, 'os_glance_import_task',
+                                         'mytask')
+
+    def test_image_import_locked_by_bustable_terminal_task_failure(self):
+        # Make sure we don't fail with a task status transition error
+        self.test_image_import_locked_by_bustable_task(task_status='failure')
+
+    def test_image_import_locked_by_bustable_terminal_task_success(self):
+        # Make sure we don't fail with a task status transition error
+        self.test_image_import_locked_by_bustable_task(task_status='success')
+
+    def test_bust_import_lock_race_to_delete(self):
+        image_repo = mock.MagicMock()
+        task_repo = mock.MagicMock()
+        image = mock.MagicMock()
+        task = mock.MagicMock(id='foo')
+        # Simulate a race where we tried to bust a specific lock and
+        # someone else already had, and/or re-locked it
+        image_repo.delete_property_atomic.side_effect = exception.NotFound
+        self.assertRaises(exception.Conflict,
+                          self.controller._bust_import_lock,
+                          image_repo, task_repo,
+                          image, task, task.id)
+
+    def test_enforce_lock_log_not_bustable(self, task_status='processing'):
+        task = test_tasks_resource._db_fixture(
+            test_tasks_resource.UUID1,
+            status=task_status)
+        self.db.task_create(None, task)
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        image = FakeImage()
+        image.extra_properties['os_glance_import_task'] = task['id']
+
+        # Freeze time to make this repeatable
+        time_fixture = fixture.TimeFixture(task['updated_at'] +
+                                           datetime.timedelta(minutes=55))
+        self.useFixture(time_fixture)
+
+        expected_expire = 300
+        if task_status == 'pending':
+            # NOTE(danms): Tasks in 'pending' get double the expiry time,
+            # so we'd be expecting an extra hour here.
+            expected_expire += 3600
+
+        with mock.patch.object(glance.api.v2.images, 'LOG') as mock_log:
+            self.assertRaises(exception.Conflict,
+                              self.controller._enforce_import_lock,
+                              request, image)
+            mock_log.warning.assert_called_once_with(
+                'Image %(image)s has active import task %(task)s in '
+                'status %(status)s; lock remains valid for %(expire)i '
+                'more seconds',
+                {'image': image.id,
+                 'task': task['id'],
+                 'status': task_status,
+                 'expire': expected_expire})
+
+    def test_enforce_lock_pending_takes_longer(self):
+        self.test_enforce_lock_log_not_bustable(task_status='pending')
 
     def test_delete_encryption_key_no_encryption_key(self):
         request = unit_test_utils.get_fake_request()
