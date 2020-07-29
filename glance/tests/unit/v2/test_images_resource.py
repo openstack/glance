@@ -139,6 +139,26 @@ class FakeImage(object):
         self.disk_format = disk_format
         self.locations = locations
         self.owner = unit_test_utils.TENANT1
+        self.created_at = ''
+        self.updated_at = ''
+        self.min_disk = ''
+        self.min_ram = ''
+        self.protected = False
+        self.checksum = ''
+        self.os_hash_algo = ''
+        self.os_hash_value = ''
+        self.size = 0
+        self.virtual_size = 0
+        self.visibility = 'public'
+        self.os_hidden = False
+        self.name = 'foo'
+        self.tags = []
+        self.extra_properties = {}
+
+        # NOTE(danms): This fixture looks more like the db object than
+        # the proxy model. This needs fixing all through the tests
+        # below.
+        self.image_id = self.id
 
 
 class TestImagesController(base.IsolatedUnitTest):
