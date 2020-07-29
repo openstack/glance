@@ -67,7 +67,8 @@ _api_opts = [
     ('store_type_location_strategy',
      glance.common.location_strategy.store_type.store_type_opts),
     profiler.list_opts()[0],
-    ('paste_deploy', glance.common.config.paste_deploy_opts)
+    ('paste_deploy', glance.common.config.paste_deploy_opts),
+    ('wsgi', glance.common.config.wsgi_opts),
 ]
 _scrubber_opts = [
     (None, list(itertools.chain(
