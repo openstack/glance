@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Bug 1889676_: "stores" can be set as property breaking multistore indication of stores where the images are present
+
+    .. _1889676: https://bugs.launchpad.net/glance/+bug/1889676

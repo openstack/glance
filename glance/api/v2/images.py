@@ -710,7 +710,7 @@ class ImagesController(object):
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
-    _disallowed_properties = ('direct_url', 'self', 'file', 'schema')
+    _disallowed_properties = ('direct_url', 'self', 'file', 'schema', 'stores')
     _readonly_properties = ('created_at', 'updated_at', 'status', 'checksum',
                             'size', 'virtual_size', 'direct_url', 'self',
                             'file', 'schema', 'id', 'os_hash_algo',
