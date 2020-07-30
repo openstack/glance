@@ -174,6 +174,58 @@ class TestImportToStoreTask(test_utils.BaseTestCase):
             self.fail("Exception shouldn't be raised")
 
 
+class TestDeleteFromFS(test_utils.BaseTestCase):
+    def test_delete_with_backends_deletes(self):
+        task = import_flow._DeleteFromFS(TASK_ID1, TASK_TYPE)
+        self.config(enabled_backends='file:foo')
+        with mock.patch.object(import_flow.store_api, 'delete') as mock_del:
+            task.execute(mock.sentinel.path)
+            mock_del.assert_called_once_with(
+                mock.sentinel.path,
+                'os_glance_staging_store')
+
+    def test_delete_with_backends_delete_fails(self):
+        self.config(enabled_backends='file:foo')
+        task = import_flow._DeleteFromFS(TASK_ID1, TASK_TYPE)
+        with mock.patch.object(import_flow.store_api, 'delete') as mock_del:
+            mock_del.side_effect = store_exceptions.NotFound(image=IMAGE_ID1,
+                                                             message='Testing')
+            # If we didn't swallow this we would explode here
+            task.execute(mock.sentinel.path)
+            mock_del.assert_called_once_with(
+                mock.sentinel.path,
+                'os_glance_staging_store')
+
+            # Raise something unexpected and make sure it bubbles up
+            mock_del.side_effect = RuntimeError
+            self.assertRaises(RuntimeError,
+                              task.execute, mock.sentinel.path)
+
+    @mock.patch('os.path.exists')
+    @mock.patch('os.unlink')
+    def test_delete_without_backends_exists(self, mock_unlink, mock_exists):
+        mock_exists.return_value = True
+        task = import_flow._DeleteFromFS(TASK_ID1, TASK_TYPE)
+        task.execute('1234567foo')
+        # FIXME(danms): I have no idea why the code arbitrarily snips
+        # the first seven characters from the path. Need a comment or
+        # *something*.
+        mock_unlink.assert_called_once_with('foo')
+
+        mock_unlink.reset_mock()
+        mock_unlink.side_effect = OSError(123, 'failed')
+        # Make sure we swallow the OSError and don't explode
+        task.execute('1234567foo')
+
+    @mock.patch('os.path.exists')
+    @mock.patch('os.unlink')
+    def test_delete_without_backends_missing(self, mock_unlink, mock_exists):
+        mock_exists.return_value = False
+        task = import_flow._DeleteFromFS(TASK_ID1, TASK_TYPE)
+        task.execute('foo')
+        mock_unlink.assert_not_called()
+
+
 class TestImportCopyImageTask(test_utils.BaseTestCase):
 
     def setUp(self):

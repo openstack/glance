@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Bug 1889640_: Image import might result 'active' image with no data.
+
+    .. _1889640: https://bugs.launchpad.net/glance/+bug/1889640
