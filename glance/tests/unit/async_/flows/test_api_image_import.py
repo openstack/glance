@@ -219,3 +219,44 @@ class TestDeleteFromFS(test_utils.BaseTestCase):
         task = import_flow._DeleteFromFS(TASK_ID1, TASK_TYPE)
         task.execute('foo')
         mock_unlink.assert_not_called()
+
+
+class TestVerifyImageStateTask(test_utils.BaseTestCase):
+    def test_verify_active_status(self):
+        fake_img = mock.MagicMock(status='active')
+        mock_repo = mock.MagicMock()
+        mock_repo.get.return_value = fake_img
+
+        task = import_flow._VerifyImageState(TASK_ID1, TASK_TYPE,
+                                             mock_repo, IMAGE_ID1,
+                                             'anything!')
+
+        task.execute()
+
+        fake_img.status = 'importing'
+        self.assertRaises(import_flow._NoStoresSucceeded,
+                          task.execute)
+
+    def test_revert_copy_status_unchanged(self):
+        fake_img = mock.MagicMock(status='active')
+        mock_repo = mock.MagicMock()
+        mock_repo.get.return_value = fake_img
+        task = import_flow._VerifyImageState(TASK_ID1, TASK_TYPE,
+                                             mock_repo, IMAGE_ID1,
+                                             'copy-image')
+        task.revert(mock.sentinel.result)
+
+        # If we are doing copy-image, no state update should be made
+        mock_repo.save_image.assert_not_called()
+
+    def test_reverts_state_nocopy(self):
+        fake_img = mock.MagicMock(status='importing')
+        mock_repo = mock.MagicMock()
+        mock_repo.get.return_value = fake_img
+        task = import_flow._VerifyImageState(TASK_ID1, TASK_TYPE,
+                                             mock_repo, IMAGE_ID1,
+                                             'glance-direct')
+        task.revert(mock.sentinel.result)
+
+        # Except for copy-image, image state should revert to queued
+        mock_repo.save_image.assert_called_once()
