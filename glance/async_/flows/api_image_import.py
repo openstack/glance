@@ -90,7 +90,13 @@ class _DeleteFromFS(task.Task):
         :param file_path: path to the file being deleted
         """
         if CONF.enabled_backends:
-            store_api.delete(file_path, 'os_glance_staging_store')
+            try:
+                store_api.delete(file_path, 'os_glance_staging_store')
+            except store_api.exceptions.NotFound as e:
+                LOG.error(_("After upload to backend, deletion of staged "
+                            "image data from %(fn)s has failed because "
+                            "%(em)s"), {'fn': file_path,
+                                        'em': e.message})
         else:
             # TODO(abhishekk): After removal of backend module from
             # glance_store need to change this to use multi_backend
