@@ -76,6 +76,12 @@ CONF.register_opts(api_import_opts, group='image_import_opts')
 # need to duplicate what we have already for example in base_import.py.
 
 
+class _NoStoresSucceeded(exception.GlanceException):
+
+    def __init__(self, message):
+        super(_NoStoresSucceeded, self).__init__(message)
+
+
 class ImportActionWrapper(object):
     """Wrapper for all the image metadata operations we do during an import.
 
@@ -466,29 +472,30 @@ class _ImportToStore(task.Task):
             action.remove_location_for_store(self.backend)
 
 
-class _SaveImage(task.Task):
+class _VerifyImageState(task.Task):
 
     def __init__(self, task_id, task_type, action_wrapper, import_method):
         self.task_id = task_id
         self.task_type = task_type
         self.action_wrapper = action_wrapper
         self.import_method = import_method
-        super(_SaveImage, self).__init__(
-            name='%s-SaveImage-%s' % (task_type, task_id))
+        super(_VerifyImageState, self).__init__(
+            name='%s-VerifyImageState-%s' % (task_type, task_id))
 
     def execute(self):
-        """Transition image status to active
+        """Verify we have active image
 
         :param image_id: Glance Image ID
         """
         with self.action_wrapper as action:
-            if (self.import_method != 'copy-image'
-                    and action.image_status == 'importing'):
-                # NOTE(flaper87): THIS IS WRONG!
-                # we should be doing atomic updates to avoid
-                # race conditions. This happens in other places
-                # too.
-                action.set_image_status('active')
+            if action.image_status != 'active':
+                raise _NoStoresSucceeded(_('None of the uploads finished!'))
+
+    def revert(self, result, **kwargs):
+        """Set back to queued if this wasn't copy-image job."""
+        with self.action_wrapper as action:
+            if self.import_method != 'copy-image':
+                action.set_image_status('queued')
 
 
 class _CompleteTask(task.Task):
@@ -613,11 +620,11 @@ def get_flow(**kwargs):
     delete_task = lf.Flow(task_type).add(_DeleteFromFS(task_id, task_type))
     flow.add(delete_task)
 
-    save_task = _SaveImage(task_id,
-                           task_type,
-                           action_wrapper,
-                           import_method)
-    flow.add(save_task)
+    verify_task = _VerifyImageState(task_id,
+                                    task_type,
+                                    action_wrapper,
+                                    import_method)
+    flow.add(verify_task)
 
     complete_task = _CompleteTask(task_id,
                                   task_type,

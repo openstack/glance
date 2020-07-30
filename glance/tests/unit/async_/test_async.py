@@ -80,7 +80,7 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         self.config(node_staging_uri='file:///tmp/staging')
         store.create_stores(CONF)
         self.base_flow = ['ConfigureStaging', 'ImportToStore',
-                          'DeleteFromFS', 'SaveImage',
+                          'DeleteFromFS', 'VerifyImageState',
                           'CompleteTask']
         self.import_plugins = ['Convert_Image',
                                'Decompress_Image',
