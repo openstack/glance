@@ -1,6 +1,6 @@
 ---
 fixes:
   - |
-    * Bug 1855708_: Reload broken in PY3
+    Bug 1855708_: Reload broken in PY3
 
     .. _1855708: https://bugs.launchpad.net/glance/+bug/1855708
