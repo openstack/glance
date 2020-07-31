@@ -270,6 +270,20 @@ class FakeStoreAPI(object):
         pass
 
 
+class FakeStoreAPIReader(FakeStoreAPI):
+    """A store API that actually reads from the data pipe."""
+
+    def add_to_backend_with_multihash(self, conf, image_id, data, size,
+                                      hashing_algo, scheme=None, context=None,
+                                      verifier=None):
+        for chunk in data:
+            pass
+
+        return super(FakeStoreAPIReader, self).add_to_backend_with_multihash(
+            conf, image_id, data, size, hashing_algo,
+            scheme=scheme, context=context, verifier=verifier)
+
+
 class FakePolicyEnforcer(object):
     def __init__(self, *_args, **kwargs):
         self.rules = {}

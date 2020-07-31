@@ -54,6 +54,9 @@ class ImageStub(object):
         self.os_hash_algo = None
         self.os_hash_value = None
         self.checksum = None
+        self.disk_format = 'raw'
+        self.container_format = 'bare'
+        self.virtual_size = 0
 
     def delete(self):
         self.status = 'deleted'
@@ -110,6 +113,7 @@ class TestStoreMultiBackends(utils.BaseTestCase):
         }
         image_stub = ImageStub(UUID2, status='queued', locations=[],
                                extra_properties=extra_properties)
+        image_stub.disk_format = 'iso'
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         with mock.patch.object(image, "_upload_to_store") as mloc:
@@ -237,9 +241,10 @@ class TestStoreImage(utils.BaseTestCase):
         self.mock_object(unit_test_utils.FakeStoreAPI, 'get_from_backend',
                          fake_get_from_backend)
         # This time, image1.get_data() returns the data wrapped in a
-        # LimitingReader|CooperativeReader pipeline, so peeking under
-        # the hood of those objects to get at the underlying string.
-        self.assertEqual('ZZZ', image1.get_data().data.fd)
+        # LimitingReader|CooperativeReader|InfoWrapper pipeline, so
+        # peeking under the hood of those objects to get at the
+        # underlying string.
+        self.assertEqual('ZZZ', image1.get_data().data.fd._source)
 
         image1.locations.pop(0)
         self.assertEqual(1, len(image1.locations))
@@ -248,14 +253,57 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_set_data(self):
         context = glance.context.RequestContext(user=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        store_api = unit_test_utils.FakeStoreAPIReader()
         image = glance.location.ImageProxy(image_stub, context,
-                                           self.store_api, self.store_utils)
-        image.set_data('YYYY', 4)
+                                           store_api, self.store_utils)
+        image.set_data(iter(['YYYY']), 4)
         self.assertEqual(4, image.size)
         # NOTE(markwash): FakeStore returns image_id for location
         self.assertEqual(UUID2, image.locations[0]['url'])
         self.assertEqual('Z', image.checksum)
         self.assertEqual('active', image.status)
+        self.assertEqual(4, image.virtual_size)
+
+    def test_image_set_data_inspector_no_match(self):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'qcow2'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        store_api = unit_test_utils.FakeStoreAPIReader()
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        image.set_data(iter(['YYYY']), 4)
+        self.assertEqual(4, image.size)
+        # NOTE(markwash): FakeStore returns image_id for location
+        self.assertEqual(UUID2, image.locations[0]['url'])
+        self.assertEqual('Z', image.checksum)
+        self.assertEqual('active', image.status)
+        self.assertEqual(0, image.virtual_size)
+
+    @mock.patch('glance.common.format_inspector.get_inspector')
+    def test_image_set_data_inspector_not_needed(self, mock_gi):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.virtual_size = 123
+        image_stub.disk_format = 'qcow2'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        store_api = unit_test_utils.FakeStoreAPIReader()
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        image.set_data(iter(['YYYY']), 4)
+        self.assertEqual(4, image.size)
+        # NOTE(markwash): FakeStore returns image_id for location
+        self.assertEqual(UUID2, image.locations[0]['url'])
+        self.assertEqual('Z', image.checksum)
+        self.assertEqual('active', image.status)
+        self.assertEqual(123, image.virtual_size)
+        # If the image already had virtual_size set (i.e. we're setting
+        # a new location), we should not re-calculate the value.
+        mock_gi.assert_not_called()
 
     def test_image_set_data_location_metadata(self):
         context = glance.context.RequestContext(user=USER1)
@@ -281,6 +329,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_set_data_unknown_size(self):
         context = glance.context.RequestContext(user=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'iso'
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', None)
@@ -312,7 +361,7 @@ class TestStoreImage(utils.BaseTestCase):
                                            self.store_api, self.store_utils)
         image.set_data('YYYY', 4)
         self.assertEqual('active', image.status)
-        mock_log.info.assert_called_once_with(
+        mock_log.info.assert_any_call(
             u'Successfully verified signature for image %s',
             UUID2)
 

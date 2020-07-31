@@ -15,9 +15,12 @@
 
 import hashlib
 import os
+import subprocess
+import tempfile
 import uuid
 
 from oslo_serialization import jsonutils
+from oslo_utils import units
 import requests
 import six
 from six.moves import http_client as http
@@ -888,6 +891,104 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(http.BAD_REQUEST, response.status_code)
 
         self.stop_servers()
+
+    def _create_qcow(self, size):
+        fn = tempfile.mktemp(prefix='glance-unittest-images-',
+                             suffix='.qcow')
+        subprocess.check_output(
+            'qemu-img create -f qcow %s %i' % (fn, size),
+            shell=True)
+        return fn
+
+    def test_image_upload_qcow_virtual_size_calculation(self):
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        headers = self._headers({'Content-Type': 'application/json'})
+        data = jsonutils.dumps({'name': 'myqcow', 'disk_format': 'qcow2',
+                                'container_format': 'bare'})
+        response = requests.post(self._url('/v2/images'),
+                                 headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code,
+                         'Failed to create: %s' % response.text)
+        image = response.json()
+
+        # Upload a qcow
+        fn = self._create_qcow(128 * units.Mi)
+        raw_size = os.path.getsize(fn)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(self._url('/v2/images/%s/file' % image['id']),
+                                headers=headers,
+                                data=open(fn, 'rb').read())
+        os.remove(fn)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Check the image attributes
+        response = requests.get(self._url('/v2/images/%s' % image['id']),
+                                headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        image = response.json()
+        self.assertEqual(128 * units.Mi, image['virtual_size'])
+        self.assertEqual(raw_size, image['size'])
+
+    def test_image_import_qcow_virtual_size_calculation(self):
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        headers = self._headers({'Content-Type': 'application/json'})
+        data = jsonutils.dumps({'name': 'myqcow', 'disk_format': 'qcow2',
+                                'container_format': 'bare'})
+        response = requests.post(self._url('/v2/images'),
+                                 headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code,
+                         'Failed to create: %s' % response.text)
+        image = response.json()
+
+        # Stage a qcow
+        fn = self._create_qcow(128 * units.Mi)
+        raw_size = os.path.getsize(fn)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        response = requests.put(self._url('/v2/images/%s/stage' % image['id']),
+                                headers=headers,
+                                data=open(fn, 'rb').read())
+        os.remove(fn)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Verify image is in uploading state and checksum is None
+        func_utils.verify_image_hashes_and_status(self, image['id'],
+                                                  status='uploading')
+
+        # Import image to store
+        path = self._url('/v2/images/%s/import' % image['id'])
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'glance-direct'
+        }})
+        response = requests.post(
+            self._url('/v2/images/%s/import' % image['id']),
+            headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code)
+
+        # Verify image is in active state and checksum is set
+        # NOTE(abhishekk): As import is a async call we need to provide
+        # some timelap to complete the call.
+        path = self._url('/v2/images/%s' % image['id'])
+        func_utils.wait_for_status(request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=15,
+                                   delay_sec=0.2)
+
+        # Check the image attributes
+        response = requests.get(self._url('/v2/images/%s' % image['id']),
+                                headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        image = response.json()
+        self.assertEqual(128 * units.Mi, image['virtual_size'])
+        self.assertEqual(raw_size, image['size'])
 
     def test_hidden_images(self):
         # Image list should be empty
