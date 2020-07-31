@@ -1,0 +1,11 @@
+---
+fixes:
+  - |
+    Bug 1888349_: glance-cache-manage utility is broken
+  - |
+    Bug 1886374_: Improve lazy loading mechanism for multiple stores
+
+
+    .. _1888349: https://code.launchpad.net/bugs/1888349
+    .. _1886374: https://code.launchpad.net/bugs/1886374
+
