@@ -21,7 +21,7 @@
     name: glance-tox-oslo-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-bionic
+    nodeset: ubuntu-focal
     timeout: 2400
     description: Abstract job for Glance vs. oslo libraries
     # NOTE(rosmaita): we only need functional test jobs, oslo is
@@ -62,6 +62,7 @@
     parent: glance-tox-oslo-tips-base
     description: |
       Glance py36 functional tests vs. oslo libraries masters
+    nodeset: ubuntu-bionic
     vars:
       python_version: 3.6
       tox_envlist: functional-py36
@@ -70,7 +71,7 @@
     name: glance-tox-keystone-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-bionic
+    nodeset: ubuntu-focal
     timeout: 2400
     description: Abstract job for Glance vs. keystone
     required-projects:
@@ -92,6 +93,7 @@
     parent: glance-tox-keystone-tips-base
     description: |
       Glance py36 unit tests vs. keystone masters
+    nodeset: ubuntu-bionic
     vars:
       python_version: 3.6
       tox_envlist: py36
@@ -110,6 +112,7 @@
     parent: glance-tox-keystone-tips-base
     description: |
       Glance py36 functional tests vs. keystone masters
+    nodeset: ubuntu-bionic
     vars:
       python_version: 3.6
       tox_envlist: functional-py36
@@ -118,7 +121,7 @@
     name: glance-tox-glance_store-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-bionic
+    nodeset: ubuntu-focal
     timeout: 2400
     description: Abstract job for Glance vs. glance_store
     required-projects:
@@ -138,6 +141,7 @@
     parent: glance-tox-glance_store-tips-base
     description: |
       Glance py36 unit tests vs. glance_store master
+    nodeset: ubuntu-bionic
     vars:
       python_version: 3.6
       tox_envlist: py36
@@ -156,6 +160,7 @@
     parent: glance-tox-glance_store-tips-base
     description: |
       Glance py36 functional tests vs. glance_store master
+    nodeset: ubuntu-bionic
     vars:
       python_version: 3.6
       tox_envlist: functional-py36
@@ -164,7 +169,7 @@
     name: glance-tox-cursive-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-bionic
+    nodeset: ubuntu-focal
     timeout: 2400
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
@@ -186,6 +191,7 @@
     parent: glance-tox-cursive-tips-base
     description: |
       Glance py36 unit tests vs. cursive (and related libs) master
+    nodeset: ubuntu-bionic
     vars:
       python_version: 3.6
       tox_envlist: py36
@@ -204,6 +210,7 @@
     parent: glance-tox-cursive-tips-base
     description: |
       Glance py36 functional tests vs. cursive (and related libs) master
+    nodeset: ubuntu-bionic
     vars:
       python_version: 3.6
       tox_envlist: functional-py36
