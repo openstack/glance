@@ -1,0 +1,16 @@
+---
+fixes:
+  - |
+    Bug 1888349_: glance-cache-manage utility is broken
+  - |
+    Bug 1886374_: Improve lazy loading mechanism for multiple stores
+  - |
+    Bug 1885003_: Interrupted copy-image may break a subsequent operation
+  - |
+    Bug 1884587_: image import copy-image API should reflect proper authorization
+
+
+    .. _1888349: https://code.launchpad.net/bugs/1888349
+    .. _1886374: https://code.launchpad.net/bugs/1886374
+    .. _1885003: https://code.launchpad.net/bugs/1885003
+    .. _1884587: https://code.launchpad.net/bugs/1884587
