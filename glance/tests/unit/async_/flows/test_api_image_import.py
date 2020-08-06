@@ -15,6 +15,7 @@
 
 from unittest import mock
 
+from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 
 import glance.async_.flows.api_image_import as import_flow
@@ -23,7 +24,6 @@ from glance.common.scripts.image_import import main as image_import
 from glance import context
 from glance import gateway
 import glance.tests.utils as test_utils
-from glance_store import exceptions as store_exceptions
 
 from cursive import exception as cursive_exception
 
