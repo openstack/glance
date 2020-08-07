@@ -417,7 +417,7 @@ class ApiServer(Server):
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
-default_log_levels = eventlet.wsgi.server=DEBUG
+default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
@@ -586,7 +586,7 @@ class ApiServerForMultipleBackend(Server):
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
-default_log_levels = eventlet.wsgi.server=DEBUG
+default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
