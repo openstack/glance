@@ -25,6 +25,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import fixture as time_fixture
+from oslo_utils import units
 import webob
 
 from glance.common import config
@@ -144,14 +145,16 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         LOG.debug(req.as_bytes())
         return self.api(req)
 
-    def api_put(self, url, data=None, json=None, headers=None):
+    def api_put(self, url, data=None, json=None, headers=None, body_file=None):
         headers = self._headers(headers)
         req = webob.Request.blank(url, method='PUT',
                                   headers=headers)
         if json and not data:
             data = jsonutils.dumps(json).encode()
-        if data:
+        if data and not body_file:
             req.body = data
+        elif body_file:
+            req.body_file = body_file
         return self.api(req)
 
 
@@ -166,36 +169,50 @@ class TestImageImportLocking(SynchronousAPIBase):
             '/v2/images/%s/import' % image_id,
             json=body)
 
-    def _create_and_import(self, stores=[]):
-        """Create an image, stage data, and import into the given stores.
+    def _import_direct(self, image_id, stores):
+        """Do an import of image_id to the given stores."""
+        body = {'method': {'name': 'glance-direct'},
+                'stores': stores,
+                'all_stores': False}
 
-        :returns: image_id
-        """
+        return self.api_post(
+            '/v2/images/%s/import' % image_id,
+            json=body)
+
+    def _create_and_stage(self, data_iter=None):
         resp = self.api_post('/v2/images',
                              json={'name': 'foo',
                                    'container_format': 'bare',
                                    'disk_format': 'raw'})
         image = jsonutils.loads(resp.text)
 
-        resp = self.api_put(
-            '/v2/images/%s/stage' % image['id'],
-            headers={'Content-Type': 'application/octet-stream'},
-            data=b'IMAGEDATA')
+        if data_iter:
+            resp = self.api_put(
+                '/v2/images/%s/stage' % image['id'],
+                headers={'Content-Type': 'application/octet-stream'},
+                body_file=data_iter)
+        else:
+            resp = self.api_put(
+                '/v2/images/%s/stage' % image['id'],
+                headers={'Content-Type': 'application/octet-stream'},
+                data=b'IMAGEDATA')
         self.assertEqual(204, resp.status_code)
 
-        body = {'method': {'name': 'glance-direct'}}
-        if stores:
-            body['stores'] = stores
+        return image['id']
 
-        resp = self.api_post(
-            '/v2/images/%s/import' % image['id'],
-            json=body)
+    def _create_and_import(self, stores=[], data_iter=None):
+        """Create an image, stage data, and import into the given stores.
 
+        :returns: image_id
+        """
+        image_id = self._create_and_stage(data_iter=data_iter)
+
+        resp = self._import_direct(image_id, stores)
         self.assertEqual(202, resp.status_code)
 
         # Make sure it goes active
         for i in range(0, 10):
-            image = self.api_get('/v2/images/%s' % image['id']).json
+            image = self.api_get('/v2/images/%s' % image_id).json
             if not image.get('os_glance_import_task'):
                 break
             self.addDetail('Create-Import task id',
@@ -204,7 +221,7 @@ class TestImageImportLocking(SynchronousAPIBase):
 
         self.assertEqual('active', image['status'])
 
-        return image['id']
+        return image_id
 
     def _test_import_copy(self, warp_time=False):
         self.start_server()
@@ -266,3 +283,61 @@ class TestImageImportLocking(SynchronousAPIBase):
 
     def test_import_copy_bust_lock(self):
         self._test_import_copy(warp_time=True)
+
+    @mock.patch('oslo_utils.timeutils.StopWatch.expired', new=lambda x: True)
+    def test_import_task_status(self):
+        self.start_server()
+
+        # Generate 3 MiB of data for the image, enough to get a few
+        # status messages
+        limit = 3 * units.Mi
+        image_id = self._create_and_stage(data_iter=test_utils.FakeData(limit))
+
+        # This utility function will grab the current task status at
+        # any time and stash it into a list of statuses if it finds a
+        # new one
+        statuses = []
+
+        def grab_task_status():
+            image = self.api_get('/v2/images/%s' % image_id).json
+            task_id = image['os_glance_import_task']
+            task = self.api_get('/v2/tasks/%s' % task_id).json
+            msg = task['message']
+            if msg not in statuses:
+                statuses.append(msg)
+
+        # This is the only real thing we have mocked out, which is the
+        # "upload this to glance_store" part, which we override so we
+        # can control the block size and check our task status
+        # synchronously and not depend on timers. It just reads the
+        # source data in 64KiB chunks and throws it away.
+        def fake_upload(data, *a, **k):
+            while True:
+                grab_task_status()
+
+                if not data.read(65536):
+                    break
+                time.sleep(0.1)
+
+        with mock.patch('glance.location.ImageProxy._upload_to_store') as mu:
+            mu.side_effect = fake_upload
+
+            # Start the import...
+            resp = self._import_direct(image_id, ['store2'])
+            self.assertEqual(202, resp.status_code)
+
+            # ...and wait until it finishes
+            for i in range(0, 100):
+                image = self.api_get('/v2/images/%s' % image_id).json
+                if not image.get('os_glance_import_task'):
+                    break
+                time.sleep(0.1)
+
+        # Image should be in active state and we should have gotten a
+        # new message every 1MiB in the process. We mocked StopWatch
+        # to always be expired so that we fire the callback every
+        # time.
+        self.assertEqual('active', image['status'])
+        self.assertEqual(['', 'Copied 0 MiB', 'Copied 1 MiB', 'Copied 2 MiB',
+                          'Copied 3 MiB'],
+                         statuses)
