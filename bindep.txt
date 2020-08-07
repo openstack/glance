@@ -20,4 +20,6 @@ postgresql
 postgresql-client [platform:dpkg]
 postgresql-devel [platform:rpm]
 postgresql-server [platform:rpm]
+qemu [platform:dpkg devstack build-image-dib]
+qemu-utils [platform:dpkg devstack build-image-dib]
 libpq-dev [platform:dpkg]
