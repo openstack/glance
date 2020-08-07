@@ -5553,16 +5553,19 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
             'X-Roles': 'admin'
         })
 
+        # NOTE(abhishekk): Deleting file3 image directory to trigger the
+        # failure, so that we can verify that revert call does not delete
+        # the data from existing stores
+        # NOTE(danms): Do this before we start the import, on a later store,
+        # which will cause that store to fail after we have already completed
+        # the first one.
+        os.rmdir(self.test_dir + "/images_3")
+
         data = jsonutils.dumps(
             {'method': {'name': 'copy-image'},
              'stores': ['file2', 'file3']})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code)
-
-        # NOTE(abhishekk): Deleting file3 image directory to trigger the
-        # failure, so that we can verify that revert call does not delete
-        # the data from existing stores
-        os.rmdir(self.test_dir + "/images_3")
 
         # Verify image is copied
         # NOTE(abhishekk): As import is a async call we need to provide
