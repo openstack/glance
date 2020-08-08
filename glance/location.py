@@ -27,6 +27,7 @@ from oslo_utils import encodeutils
 from oslo_utils import excutils
 
 from glance.common import exception
+from glance.common import format_inspector
 from glance.common import utils
 import glance.domain.proxy
 from glance.i18n import _, _LE, _LI, _LW
@@ -550,7 +551,30 @@ class ImageProxy(glance.domain.proxy.Image):
                 img_signature_key_type=key_type
             )
 
+        if not self.image.virtual_size:
+            inspector = format_inspector.get_inspector(self.image.disk_format)
+        else:
+            # No need to do this again
+            inspector = None
+
+        if inspector and self.image.container_format == 'bare':
+            fmt = inspector()
+            data = format_inspector.InfoWrapper(data, fmt)
+            LOG.debug('Enabling in-flight format inspection for %s', fmt)
+        else:
+            fmt = None
+
         self._upload_to_store(data, verifier, backend, size)
+
+        if fmt and fmt.format_match and fmt.virtual_size:
+            self.image.virtual_size = fmt.virtual_size
+            LOG.info('Image format matched and virtual size computed: %i',
+                     self.image.virtual_size)
+        elif fmt:
+            LOG.warning('Image format %s did not match; '
+                        'unable to calculate virtual size',
+                        self.image.disk_format)
+
         if set_active and self.image.status != 'active':
             self.image.status = 'active'
 
