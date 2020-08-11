@@ -439,6 +439,21 @@ def image_set_property_atomic(image_id, name, value):
     image['properties'].append(prop)
 
 
+def image_delete_property_atomic(image_id, name, value):
+    try:
+        image = DATA['images'][image_id]
+    except KeyError:
+        LOG.warn(_LW('Could not find image %s'), image_id)
+        raise exception.ImageNotFound()
+
+    for i, prop in enumerate(image['properties']):
+        if prop['name'] == name and prop['value'] == value:
+            del image['properties'][i]
+            return
+
+    raise exception.NotFound()
+
+
 def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]

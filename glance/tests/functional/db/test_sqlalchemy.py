@@ -172,12 +172,12 @@ class TestMetadefSqlAlchemyDriver(base_metadef.TestMetadefDriver,
         self.addCleanup(db_tests.reset)
 
 
-class TestImageAtomicUpdate(base.TestDriver,
-                            base.FunctionalInitWrapper):
+class TestImageAtomicOps(base.TestDriver,
+                         base.FunctionalInitWrapper):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
-        super(TestImageAtomicUpdate, self).setUp()
+        super(TestImageAtomicOps, self).setUp()
 
         self.addCleanup(db_tests.reset)
         self.image = self.db_api.image_create(
@@ -306,3 +306,34 @@ class TestImageAtomicUpdate(base.TestDriver,
 
         # Make sure the update affected only the intended image
         self.assertOnlyImageHasProp(image_id2, 'test_property', 'baz')
+
+    def test_delete(self):
+        """Try to double-delete a property atomically.
+
+        This should ensure that a second attempt fails.
+        """
+
+        self.db_api.image_delete_property_atomic(self.image['id'],
+                                                 'speed', '88mph')
+
+        self.assertRaises(exception.NotFound,
+                          self.db_api.image_delete_property_atomic,
+                          self.image['id'], 'speed', '88mph')
+
+    def test_delete_create_delete(self):
+        """Try to delete, re-create, and then re-delete property."""
+        self.db_api.image_delete_property_atomic(self.image['id'],
+                                                 'speed', '88mph')
+        self.db_api.image_update(self.adm_context, self.image['id'],
+                                 {'properties': {'speed': '89mph'}},
+                                 purge_props=True)
+
+        # We should no longer be able to delete the property by the *old*
+        # value
+        self.assertRaises(exception.NotFound,
+                          self.db_api.image_delete_property_atomic,
+                          self.image['id'], 'speed', '88mph')
+
+        # Only the new value should result in proper deletion
+        self.db_api.image_delete_property_atomic(self.image['id'],
+                                                 'speed', '89mph')

@@ -834,6 +834,34 @@ def image_set_property_atomic(image_id, name, value):
         # caused us to fail if we lost the race
 
 
+def image_delete_property_atomic(image_id, name, value):
+    """
+    Atomically delete an image property.
+
+    This will only succeed if the referenced image has a property set
+    to exactly the value provided.
+
+    :param image_id: The ID of the image on which to delete the property
+    :param name: The property name
+    :param value: The value the property is expected to be set to
+    :raises NotFound: If the property does not exist
+    """
+    session = get_session()
+    with session.begin():
+        connection = session.connection()
+        table = models.ImageProperty.__table__
+
+        result = connection.execute(table.delete().where(
+            sa_sql.and_(table.c.name == name,
+                        table.c.value == value,
+                        table.c.image_id == image_id,
+                        table.c.deleted == 0)))
+        if result.rowcount == 1:
+            return
+
+        raise exception.NotFound()
+
+
 @retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
        stop_max_attempt_number=50)
 @utils.no_4byte_params
