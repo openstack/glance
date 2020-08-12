@@ -5604,6 +5604,17 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertIn('file1', jsonutils.loads(response.text)['stores'])
         self.assertNotIn('file2', jsonutils.loads(response.text)['stores'])
         self.assertNotIn('file3', jsonutils.loads(response.text)['stores'])
+        fail_key = 'os_glance_failed_import'
+        pend_key = 'os_glance_importing_to_stores'
+        # NOTE(danms): This is bug #1891352, where a failed import when
+        # all_stores_must_succeed=True will leave the failed store in the
+        # importing list forever and never put it into the failed list.
+        # When the bug is fixed, this is what should happen:
+        #   self.assertEqual('file3', jsonutils.loads(response.text)[fail_key])
+        #   self.assertEqual('', jsonutils.loads(response.text)[pend_key])
+        # but until it is fixed, this asserts the *broken* behavior:
+        self.assertEqual('', jsonutils.loads(response.text)[fail_key])
+        self.assertEqual('file3', jsonutils.loads(response.text)[pend_key])
 
         # Copy newly created image to file2 and file3 stores and
         # all_stores_must_succeed set to false.
