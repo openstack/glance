@@ -5588,19 +5588,24 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code)
 
-        # Verify image is copied
-        # NOTE(abhishekk): As import is a async call we need to provide
-        # some timelap to complete the call.
-        path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_copying(request_path=path,
-                                    request_headers=self._headers(),
-                                    stores=['file2'],
-                                    max_sec=10,
-                                    delay_sec=0.2,
-                                    start_delay_sec=1,
-                                    failure_scenario=True)
+        def poll_callback(image):
+            # NOTE(danms): We need to wait for the specific
+            # arrangement we're expecting, which is that file3 has
+            # failed, nothing else is importing, and file2 has been
+            # removed from stores by the revert.
+            return not (image['os_glance_importing_to_stores'] == '' and
+                        image['os_glance_failed_import'] == 'file3' and
+                        image['stores'] == 'file1')
 
-        # Ensure data is not deleted from existing stores on failure
+        func_utils.poll_entity(self._url('/v2/images/%s' % image_id),
+                               self._headers(),
+                               poll_callback)
+
+        # Here we check that the failure of 'file3' caused 'file2' to
+        # be removed from image['stores'], and that 'file3' is reported
+        # as failed in the appropriate status list. Since the import
+        # started with 'store1' being populated, that should remain,
+        # but 'store2' should be reverted/removed.
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
