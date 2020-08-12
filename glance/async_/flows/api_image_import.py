@@ -24,6 +24,7 @@ from oslo_utils import encodeutils
 from oslo_utils import timeutils
 from oslo_utils import units
 import six
+import taskflow
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
@@ -513,6 +514,10 @@ class _ImportToStore(task.Task):
         """
         with self.action_wrapper as action:
             action.remove_location_for_store(self.backend)
+            action.remove_importing_stores([self.backend])
+            if isinstance(result, taskflow.types.failure.Failure):
+                # We are the store that failed, so add us to the failed list
+                action.add_failed_stores([self.backend])
 
 
 class _VerifyImageState(task.Task):
