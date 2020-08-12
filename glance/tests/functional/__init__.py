@@ -290,7 +290,8 @@ class PosixServer(BaseServer):
 
         if self.stop_kill:
             os.kill(self.process_pid, signal.SIGTERM)
-        rc = test_utils.wait_for_fork(self.process_pid, raise_error=False)
+        rc = test_utils.wait_for_fork(self.process_pid, raise_error=False,
+                                      force=self.stop_kill)
         return (rc, '', '')
 
 

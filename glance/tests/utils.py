@@ -20,6 +20,7 @@ import functools
 import os
 import shlex
 import shutil
+import signal
 import socket
 import subprocess
 import threading
@@ -32,6 +33,7 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
+from oslo_utils import timeutils
 import six
 from six.moves import BaseHTTPServer
 from six.moves import http_client as http
@@ -49,6 +51,7 @@ from glance.db.sqlalchemy import api as db_api
 from glance.tests.unit import fixtures as glance_fixtures
 
 CONF = cfg.CONF
+LOG = log.getLogger(__name__)
 try:
     CONF.debug
 except cfg.NoSuchOptError:
@@ -280,7 +283,8 @@ def fork_exec(cmd,
 
 def wait_for_fork(pid,
                   raise_error=True,
-                  expected_exitcode=0):
+                  expected_exitcode=0,
+                  force=True):
     """
     Wait for a process to complete
 
@@ -289,18 +293,52 @@ def wait_for_fork(pid,
     is raised.
     """
 
-    rc = 0
-    try:
-        (pid, rc) = os.waitpid(pid, 0)
-        rc = os.WEXITSTATUS(rc)
-        if rc != expected_exitcode:
-            raise RuntimeError('The exit code %d is not %d'
-                               % (rc, expected_exitcode))
-    except Exception:
-        if raise_error:
-            raise
+    # For the first period, we wait without being pushy, but after
+    # this timer expires, we start sending SIGTERM
+    term_timer = timeutils.StopWatch(5)
+    term_timer.start()
 
-    return rc
+    # After this timer expires we start sending SIGKILL
+    nice_timer = timeutils.StopWatch(7)
+    nice_timer.start()
+
+    # Process gets a maximum amount of time to exit before we fail the
+    # test
+    total_timer = timeutils.StopWatch(10)
+    total_timer.start()
+
+    while not total_timer.expired():
+        try:
+            cpid, rc = os.waitpid(pid, force and os.WNOHANG or 0)
+            if cpid == 0 and force:
+                if not term_timer.expired():
+                    # Waiting for exit on first signal
+                    pass
+                elif not nice_timer.expired():
+                    # Politely ask the process to GTFO
+                    LOG.warning('Killing child %i with SIGTERM' % pid)
+                    os.kill(pid, signal.SIGTERM)
+                else:
+                    # No more Mr. Nice Guy
+                    LOG.warning('Killing child %i with SIGKILL' % pid)
+                    os.kill(pid, signal.SIGKILL)
+                    expected_exitcode = signal.SIGKILL
+                time.sleep(1)
+                continue
+            LOG.info('waitpid(%i) returned %i,%i' % (pid, cpid, rc))
+            if rc != expected_exitcode:
+                raise RuntimeError('The exit code %d is not %d'
+                                   % (rc, expected_exitcode))
+            return rc
+        except ChildProcessError:
+            # Nothing to wait for
+            return 0
+        except Exception as e:
+            LOG.error('Got wait error: %s' % e)
+            if raise_error:
+                raise
+
+    raise RuntimeError('Gave up waiting for %i to exit!' % pid)
 
 
 def execute(cmd,
