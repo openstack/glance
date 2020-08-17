@@ -118,6 +118,15 @@ class ImportActionWrapper(object):
             # NOTE(danms): Do not save the image if we raised in context
             return
 
+        # NOTE(danms): If we were in the middle of a long-running
+        # set_data() where someone else stole our lock, we may race
+        # with them to update image locations and erase one that
+        # someone else is working on. Checking the task lock here
+        # again is not perfect exclusion, but in lieu of actual
+        # thread-safe location updating, this at least reduces the
+        # likelihood of that happening.
+        self.assert_task_lock()
+
         if self._image_previous_status != self._image.status:
             LOG.debug('Image %(image_id)s status changing from '
                       '%(old_status)s to %(new_status)s',

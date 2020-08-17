@@ -612,7 +612,8 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
                                                   TASK_ID1)
         with wrapper as action:
             self.assertIsInstance(action, import_flow._ImportActions)
-        mock_repo.get.assert_called_once_with(IMAGE_ID1)
+        mock_repo.get.assert_has_calls([mock.call(IMAGE_ID1),
+                                        mock.call(IMAGE_ID1)])
         mock_repo.save.assert_called_once_with(
             mock_repo.get.return_value,
             mock_repo.get.return_value.status)

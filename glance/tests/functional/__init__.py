@@ -1561,11 +1561,13 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
     def setup_stores(self):
         """Configures multiple backend stores.
 
-        This configures the API with two file-backed stores (store1
-        and store2) as well as a os_glance_staging_store for imports.
+        This configures the API with three file-backed stores (store1,
+        store2, and store3) as well as a os_glance_staging_store for
+        imports.
 
         """
-        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file',
+                                      'store3': 'file'})
         glance_store.register_store_opts(CONF,
                                          reserved_stores=wsgi.RESERVED_STORES)
         self.config(default_backend='store1',
@@ -1574,6 +1576,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                     group='store1')
         self.config(filesystem_store_datadir=self._store_dir('store2'),
                     group='store2')
+        self.config(filesystem_store_datadir=self._store_dir('store3'),
+                    group='store3')
         self.config(filesystem_store_datadir=self._store_dir('staging'),
                     group='os_glance_staging_store')
 
