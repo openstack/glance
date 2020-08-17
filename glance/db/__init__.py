@@ -57,6 +57,7 @@ IMAGE_ATTRS = BASE_MODEL_ATTRS | set(['name', 'status', 'size', 'virtual_size',
                                       'min_disk', 'min_ram', 'is_public',
                                       'locations', 'checksum', 'owner',
                                       'protected'])
+IMAGE_ATOMIC_PROPS = set(['os_glance_import_task'])
 
 
 class ImageRepo(object):
@@ -186,7 +187,9 @@ class ImageRepo(object):
                                                   image.image_id,
                                                   image_values,
                                                   purge_props=True,
-                                                  from_state=from_state)
+                                                  from_state=from_state,
+                                                  atomic_props=(
+                                                      IMAGE_ATOMIC_PROPS))
         except (exception.ImageNotFound, exception.Forbidden):
             msg = _("No image found with ID %s") % image.image_id
             raise exception.ImageNotFound(msg)

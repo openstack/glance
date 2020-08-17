@@ -151,14 +151,14 @@ def image_create(context, values, v1_mode=False):
 
 
 def image_update(context, image_id, values, purge_props=False,
-                 from_state=None, v1_mode=False):
+                 from_state=None, v1_mode=False, atomic_props=None):
     """
     Set the given properties on an image and update it.
 
     :raises: ImageNotFound if image does not exist.
     """
     image = _image_update(context, values, image_id, purge_props,
-                          from_state=from_state)
+                          from_state=from_state, atomic_props=atomic_props)
     if v1_mode:
         image = db_utils.mutate_image_dict_to_v1(image)
     return image
@@ -866,13 +866,19 @@ def image_delete_property_atomic(image_id, name, value):
        stop_max_attempt_number=50)
 @utils.no_4byte_params
 def _image_update(context, values, image_id, purge_props=False,
-                  from_state=None):
+                  from_state=None, atomic_props=None):
     """
     Used internally by image_create and image_update
 
     :param context: Request context
     :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
+    :param from_state: If not None, reequire the image be in this state to do
+                       the update
+    :param purge_props: If True, delete properties found in the database but
+                        not present in values
+    :param atomic_props: If non-None, refuse to create or update properties
+                         in this list
     """
 
     # NOTE(jbresnah) values is altered in this so a copy is needed
@@ -963,7 +969,7 @@ def _image_update(context, values, image_id, purge_props=False,
                                           % values['id'])
 
         _set_properties_for_image(context, image_ref, properties, purge_props,
-                                  session)
+                                  atomic_props, session)
 
         if location_data:
             _image_locations_set(context, image_ref.id, location_data,
@@ -1078,15 +1084,24 @@ def _image_locations_delete_all(context, image_id,
 
 @utils.no_4byte_params
 def _set_properties_for_image(context, image_ref, properties,
-                              purge_props=False, session=None):
+                              purge_props=False, atomic_props=None,
+                              session=None):
     """
     Create or update a set of image_properties for a given image
 
     :param context: Request context
     :param image_ref: An Image object
     :param properties: A dict of properties to set
+    :param purge_props: If True, delete properties in the database
+                        that are not in properties
+    :param atomic_props: If non-None, skip update/create/delete of properties
+                         named in this list
     :param session: A SQLAlchemy session to use (if present)
     """
+
+    if atomic_props is None:
+        atomic_props = []
+
     orig_properties = {}
     for prop_ref in image_ref.properties:
         orig_properties[prop_ref.name] = prop_ref
@@ -1095,7 +1110,11 @@ def _set_properties_for_image(context, image_ref, properties,
         prop_values = {'image_id': image_ref.id,
                        'name': name,
                        'value': value}
-        if name in orig_properties:
+        if name in atomic_props:
+            # NOTE(danms): Never update or create properties in the list
+            # of atomics
+            continue
+        elif name in orig_properties:
             prop_ref = orig_properties[name]
             _image_property_update(context, prop_ref, prop_values,
                                    session=session)
@@ -1104,7 +1123,9 @@ def _set_properties_for_image(context, image_ref, properties,
 
     if purge_props:
         for key in orig_properties.keys():
-            if key not in properties:
+            if key in atomic_props:
+                continue
+            elif key not in properties:
                 prop_ref = orig_properties[key]
                 image_property_delete(context, prop_ref.name,
                                       image_ref.id, session=session)

@@ -337,3 +337,26 @@ class TestImageAtomicOps(base.TestDriver,
         # Only the new value should result in proper deletion
         self.db_api.image_delete_property_atomic(self.image['id'],
                                                  'speed', '89mph')
+
+    def test_image_update_ignores_atomics(self):
+        image = self.db_api.image_get_all(self.adm_context)[0]
+
+        # Set two atomic properties atomically
+        self.db_api.image_set_property_atomic(image['id'],
+                                              'test1', 'foo')
+        self.db_api.image_set_property_atomic(image['id'],
+                                              'test2', 'bar')
+
+        # Try to change test1, delete test2, add test3 and test4 via
+        # normal image_update() where the first three are passed as
+        # atomic
+        self.db_api.image_update(
+            self.adm_context, image['id'],
+            {'properties': {'test1': 'baz', 'test3': 'bat', 'test4': 'yep'}},
+            purge_props=True, atomic_props=['test1', 'test2', 'test3'])
+
+        # Expect that none of the updates to the atomics are applied, but
+        # the regular property is added.
+        image = self.db_api.image_get(self.adm_context, image['id'])
+        self.assertEqual({'test1': 'foo', 'test2': 'bar', 'test4': 'yep'},
+                         self._propdict(image['properties']))
