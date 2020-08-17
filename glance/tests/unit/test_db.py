@@ -395,6 +395,44 @@ class TestImageRepo(test_utils.BaseTestCase):
                                 image)
         self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
 
+    def test_save_excludes_atomic_props(self):
+        fake_uuid = str(uuid.uuid4())
+        image = self.image_repo.get(UUID1)
+
+        # Try to set the property normally
+        image.extra_properties['os_glance_import_task'] = fake_uuid
+        self.image_repo.save(image)
+
+        # Expect it was ignored
+        image = self.image_repo.get(UUID1)
+        self.assertNotIn('os_glance_import_task', image.extra_properties)
+
+        # Set the property atomically
+        self.image_repo.set_property_atomic(image,
+                                            'os_glance_import_task', fake_uuid)
+        # Expect it is set
+        image = self.image_repo.get(UUID1)
+        self.assertEqual(fake_uuid,
+                         image.extra_properties['os_glance_import_task'])
+
+        # Try to clobber it
+        image.extra_properties['os_glance_import_task'] = 'foo'
+        self.image_repo.save(image)
+
+        # Expect it is unchanged
+        image = self.image_repo.get(UUID1)
+        self.assertEqual(fake_uuid,
+                         image.extra_properties['os_glance_import_task'])
+
+        # Try to delete it
+        del image.extra_properties['os_glance_import_task']
+        self.image_repo.save(image)
+
+        # Expect it is still present and set accordingly
+        image = self.image_repo.get(UUID1)
+        self.assertEqual(fake_uuid,
+                         image.extra_properties['os_glance_import_task'])
+
     def test_remove_image(self):
         image = self.image_repo.get(UUID1)
         previous_update_time = image.updated_at

@@ -784,7 +784,7 @@ def image_create(context, image_values, v1_mode=False):
 
 @log_call
 def image_update(context, image_id, image_values, purge_props=False,
-                 from_state=None, v1_mode=False):
+                 from_state=None, v1_mode=False, atomic_props=None):
     global DATA
     try:
         image = DATA['images'][image_id]
@@ -795,17 +795,24 @@ def image_update(context, image_id, image_values, purge_props=False,
     if location_data is not None:
         _image_locations_set(context, image_id, location_data)
 
+    if atomic_props is None:
+        atomic_props = []
+
     # replace values for properties that already exist
     new_properties = image_values.pop('properties', {})
     for prop in image['properties']:
-        if prop['name'] in new_properties:
+        if prop['name'] in atomic_props:
+            continue
+        elif prop['name'] in new_properties:
             prop['value'] = new_properties.pop(prop['name'])
         elif purge_props:
             # this matches weirdness in the sqlalchemy api
             prop['deleted'] = True
 
     image['updated_at'] = timeutils.utcnow()
-    _image_update(image, image_values, new_properties)
+    _image_update(image, image_values,
+                  {k: v for k, v in new_properties.items()
+                   if k not in atomic_props})
     DATA['images'][image_id] = image
 
     image = _normalize_locations(context, copy.deepcopy(image))
