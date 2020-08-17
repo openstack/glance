@@ -315,7 +315,7 @@
         - glance-tox-py36-glance_store-tips
         - glance-tox-functional-py38-glance_store-tips
         - glance-tox-functional-py36-glance_store-tips
-        - barbican-simple-crypto-devstack-tempest
+        - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
         - tempest-pg-full:
             irrelevant-files: *tempest-irrelevant-files
