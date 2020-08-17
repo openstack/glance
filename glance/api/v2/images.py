@@ -169,7 +169,7 @@ class ImagesController(object):
         if not task or (task.status in bustable_states and age >= expiry):
             self._bust_import_lock(admin_image_repo, admin_task_repo,
                                    image, task, other_task)
-            return
+            return task
 
         if task.status in bustable_states:
             LOG.warning('Image %(image)s has active import task %(task)s in '
@@ -184,6 +184,30 @@ class ImagesController(object):
                       '%(status)s and does not qualify for expiry.')
         raise exception.Conflict('Image has active task')
 
+    def _cleanup_stale_task_progress(self, image_repo, image, task):
+        """Cleanup stale in-progress information from a previous task.
+
+        If we stole the lock from another task, we should try to clean up
+        the in-progress status information from that task while we have
+        the lock.
+        """
+        stores = task.task_input.get('backend', [])
+        keys = ['os_glance_importing_to_stores', 'os_glance_failed_import']
+        changed = set()
+        for store in stores:
+            for key in keys:
+                values = image.extra_properties.get(key, '').split(',')
+                if store in values:
+                    values.remove(store)
+                    changed.add(key)
+                image.extra_properties[key] = ','.join(values)
+        if changed:
+            image_repo.save(image)
+            LOG.debug('Image %(image)s had stale import progress info '
+                      '%(keys)s from task %(task)s which was cleaned up',
+                      {'image': image.image_id, 'task': task.task_id,
+                       'keys': ','.join(changed)})
+
     @utils.mutating
     def import_image(self, req, image_id, body):
         image_repo = self.gateway.get_repo(req.context)
@@ -192,6 +216,7 @@ class ImagesController(object):
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
         all_stores_must_succeed = body.get('all_stores_must_succeed', True)
+        stole_lock_from_task = None
 
         try:
             image = image_repo.get(image_id)
@@ -231,7 +256,7 @@ class ImagesController(object):
             if 'os_glance_import_task' in image.extra_properties:
                 # NOTE(danms): This will raise exception.Conflict if the
                 # lock is present and valid, or return if absent or invalid.
-                self._enforce_import_lock(req, image)
+                stole_lock_from_task = self._enforce_import_lock(req, image)
 
             stores = [None]
             if CONF.enabled_backends:
@@ -315,6 +340,14 @@ class ImagesController(object):
                 msg = (_("New operation on image '%s' is not permitted as "
                          "prior operation is still in progress") % image_id)
                 raise exception.Conflict(msg)
+
+            # NOTE(danms): We now have the import lock on this image. If we
+            # busted the lock above and have a reference to that task, try
+            # to clean up the import status information left over from that
+            # execution.
+            if stole_lock_from_task:
+                self._cleanup_stale_task_progress(image_repo, image,
+                                                  stole_lock_from_task)
 
             task_repo.add(import_task)
             task_executor = executor_factory.new_task_executor(req.context)

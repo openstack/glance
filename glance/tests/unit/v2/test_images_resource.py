@@ -3085,20 +3085,31 @@ class TestImagesController(base.IsolatedUnitTest):
         mock_spi.assert_called_once_with(image.id, 'os_glance_import_task',
                                          'mytask')
 
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'save')
     @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch('glance.db.simple.api.image_delete_property_atomic')
     @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
     @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
     def test_image_import_locked_by_bustable_task(self, mock_get, mock_nt,
                                                   mock_dpi, mock_spi,
+                                                  mock_save,
                                                   task_status='processing'):
+        if task_status == 'processing':
+            # NOTE(danms): Only set task_input on one of the tested
+            # states to make sure we don't choke on a task without
+            # some of the data set yet.
+            task_input = {'backend': ['store2']}
+        else:
+            task_input = {}
         task = test_tasks_resource._db_fixture(
             test_tasks_resource.UUID1,
-            status=task_status)
+            status=task_status,
+            input=task_input)
         self.db.task_create(None, task)
         image = FakeImage(status='uploading')
         # Image is locked by a task in 'processing' state
         image.extra_properties['os_glance_import_task'] = task['id']
+        image.extra_properties['os_glance_importing_to_stores'] = 'store2'
         mock_get.return_value = image
 
         request = unit_test_utils.get_fake_request(tenant=TENANT1)
@@ -3129,6 +3140,14 @@ class TestImagesController(base.IsolatedUnitTest):
         mock_spi.assert_called_once_with(image.id, 'os_glance_import_task',
                                          'mytask')
 
+        # If we stored task_input with information about the stores
+        # and thus triggered the cleanup code, make sure that cleanup
+        # happened here.
+        if task_status == 'processing':
+            self.assertNotIn('store2',
+                             image.extra_properties[
+                                 'os_glance_importing_to_stores'])
+
     def test_image_import_locked_by_bustable_terminal_task_failure(self):
         # Make sure we don't fail with a task status transition error
         self.test_image_import_locked_by_bustable_task(task_status='failure')
@@ -3136,6 +3155,46 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_image_import_locked_by_bustable_terminal_task_success(self):
         # Make sure we don't fail with a task status transition error
         self.test_image_import_locked_by_bustable_task(task_status='success')
+
+    def test_cleanup_stale_task_progress(self):
+        img_repo = mock.MagicMock()
+        image = mock.MagicMock()
+        task = mock.MagicMock()
+
+        # No backend info from the old task, means no action
+        task.task_input = {}
+        image.extra_properties = {}
+        self.controller._cleanup_stale_task_progress(img_repo, image, task)
+        img_repo.save.assert_not_called()
+
+        # If we have info but no stores, no action
+        task.task_input = {'backend': []}
+        self.controller._cleanup_stale_task_progress(img_repo, image, task)
+        img_repo.save.assert_not_called()
+
+        # If task had stores, but image does not have those stores in
+        # the lists, no action
+        task.task_input = {'backend': ['store1', 'store2']}
+        self.controller._cleanup_stale_task_progress(img_repo, image, task)
+        img_repo.save.assert_not_called()
+
+        # If the image has stores in the lists, but not the ones we care
+        # about, make sure they are not disturbed
+        image.extra_properties = {'os_glance_failed_import': 'store3'}
+        self.controller._cleanup_stale_task_progress(img_repo, image, task)
+        img_repo.save.assert_not_called()
+
+        # Only if the image has stores that relate to our old task should
+        # take action, and only on those stores.
+        image.extra_properties = {
+            'os_glance_importing_to_stores': 'foo,store1,bar',
+            'os_glance_failed_import': 'foo,store2,bar',
+        }
+        self.controller._cleanup_stale_task_progress(img_repo, image, task)
+        img_repo.save.assert_called_once_with(image)
+        self.assertEqual({'os_glance_importing_to_stores': 'foo,bar',
+                          'os_glance_failed_import': 'foo,bar'},
+                         image.extra_properties)
 
     def test_bust_import_lock_race_to_delete(self):
         image_repo = mock.MagicMock()
