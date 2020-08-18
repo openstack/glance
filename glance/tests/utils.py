@@ -32,6 +32,7 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
+from oslo_utils import units
 import six
 from six.moves import BaseHTTPServer
 from six.moves import http_client as http
@@ -690,3 +691,44 @@ def start_standalone_http_server():
     thread.start()
 
     return thread, httpd, port
+
+
+class FakeData(object):
+    """Generate a bunch of data without storing it in memory.
+
+    This acts like a read-only file object which generates fake data
+    in chunks when read() is called or it is used as a generator. It
+    can generate an arbitrary amount of data without storing it in
+    memory.
+
+    :param length: The number of bytes to generate
+    :param chunk_size: The chunk size to return in iteration mode, or when
+                       read() is called unbounded
+
+    """
+    def __init__(self, length, chunk_size=64 * units.Ki):
+        self._max = length
+        self._chunk_size = chunk_size
+        self._len = 0
+
+    def read(self, length=None):
+        if length is None:
+            length = self._chunk_size
+
+        length = min(length, self._max - self._len)
+
+        self._len += length
+        if length == 0:
+            return b''
+        else:
+            return b'0' * length
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        r = self.read()
+        if len(r) == 0:
+            raise StopIteration()
+        else:
+            return r
