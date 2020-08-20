@@ -257,6 +257,20 @@
             image_conversion:
               output_format: raw
 
+- job:
+    name: glance-ceph-thin-provisioning
+    parent: devstack-plugin-ceph-tempest-py3
+    description: |
+      Just like devstack-plugin-ceph-tempest-py3, but with thin provisioning enabled
+    required-projects:
+      - name: openstack/glance_store
+    vars:
+      devstack_local_conf:
+        post-config:
+          $GLANCE_API_CONF:
+            glance_store:
+              rbd_thin_provisioning: True
+
 - project:
     templates:
       - check-requirements
@@ -271,7 +285,7 @@
         - openstack-tox-functional-py36
         - openstack-tox-functional-py38
         - glance-code-constants-check
-        - devstack-plugin-ceph-tempest-py3:
+        - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
               - ^(test-|)requirements.txt$
