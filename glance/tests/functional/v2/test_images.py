@@ -15,6 +15,7 @@
 
 import hashlib
 import os
+import time
 import uuid
 
 from oslo_serialization import jsonutils
@@ -5616,7 +5617,17 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
             {'method': {'name': 'copy-image'},
              'stores': ['file2', 'file3'],
              'all_stores_must_succeed': False})
-        response = requests.post(path, headers=headers, data=data)
+
+        for i in range(0, 5):
+            response = requests.post(path, headers=headers, data=data)
+            if response.status_code != http.CONFLICT:
+                break
+            # We might race with the revert of the previous task and do not
+            # really have a good way to make sure that it's done. In order
+            # to make sure we tolerate the 409 possibility when import
+            # locking is added, gracefully wait a few times before failing.
+            time.sleep(1)
+
         self.assertEqual(http.ACCEPTED, response.status_code)
 
         # Verify image is copied
