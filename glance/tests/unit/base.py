@@ -71,7 +71,8 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
         :returns: the number of how many store drivers been loaded.
         """
         self.config(enabled_backends={'fast': 'file', 'cheap': 'file',
-                                      'readonly_store': 'http'})
+                                      'readonly_store': 'http',
+                                      'fast-cinder': 'cinder'})
         store.register_store_opts(CONF)
 
         self.config(default_backend='fast',

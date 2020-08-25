@@ -39,7 +39,7 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
                           req)
 
     def test_get_stores(self):
-        available_stores = ['cheap', 'fast', 'readonly_store']
+        available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder']
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_stores(req)
         self.assertIn('stores', output)
@@ -48,7 +48,7 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
             self.assertIn(stores['id'], available_stores)
 
     def test_get_stores_read_only_store(self):
-        available_stores = ['cheap', 'fast', 'readonly_store']
+        available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder']
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_stores(req)
         self.assertIn('stores', output)
