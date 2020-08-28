@@ -274,7 +274,8 @@ class PosixServer(BaseServer):
         else:
             rc = test_utils.wait_for_fork(
                 self.process_pid,
-                expected_exitcode=expected_exitcode)
+                expected_exitcode=expected_exitcode,
+                force=False)
         # avoid an FD leak
         if self.sock:
             os.close(fd)
