@@ -14,151 +14,19 @@
 #    under the License.
 
 import datetime
-import os
 from testtools import content as ttc
-import textwrap
 import time
 from unittest import mock
-import uuid
 
-from oslo_config import cfg
-from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import fixture as time_fixture
 from oslo_utils import units
-import webob
 
-from glance.common import config
-from glance.common import wsgi
-import glance.db.sqlalchemy.api
+from glance.tests import functional
 from glance.tests import utils as test_utils
-import glance_store
-
-LOG = logging.getLogger(__name__)
-TENANT1 = str(uuid.uuid4())
-CONF = cfg.CONF
 
 
-class SynchronousAPIBase(test_utils.BaseTestCase):
-    """A test base class that provides synchronous calling into the API
-    without starting a separate server, and with a simple paste
-    pipeline. Configured with multi-store and a real database.
-    """
-
-    @mock.patch('oslo_db.sqlalchemy.enginefacade.writer.get_engine')
-    def setup_database(self, mock_get_engine):
-        db_file = 'sqlite:///%s/test-%s.db' % (self.test_dir,
-                                               uuid.uuid4())
-        self.config(connection=db_file, group='database')
-
-        # NOTE(danms): Make sure that we clear the current global
-        # database configuration, provision a temporary database file,
-        # and run migrations with our configuration to define the
-        # schema there.
-        glance.db.sqlalchemy.api.clear_db_env()
-        engine = glance.db.sqlalchemy.api.get_engine()
-        mock_get_engine.return_value = engine
-        with mock.patch('logging.config'):
-            # NOTE(danms): The alembic config in the env module will break our
-            # BaseTestCase logging setup. So mock that out to prevent it while
-            # we db_sync.
-            test_utils.db_sync(engine=engine)
-
-    def setup_simple_paste(self):
-        self.paste_config = os.path.join(self.test_dir, 'glance-api-paste.ini')
-        with open(self.paste_config, 'w') as f:
-            f.write(textwrap.dedent("""
-            [filter:context]
-            paste.filter_factory = glance.api.middleware.context:\
-                ContextMiddleware.factory
-            [filter:fakeauth]
-            paste.filter_factory = glance.tests.utils:\
-                FakeAuthMiddleware.factory
-            [pipeline:glance-api]
-            pipeline = context rootapp
-            [composite:rootapp]
-            paste.composite_factory = glance.api:root_app_factory
-            /v2: apiv2app
-            [app:apiv2app]
-            paste.app_factory = glance.api.v2.router:API.factory
-            """))
-
-    def _store_dir(self, store):
-        return os.path.join(self.test_dir, store)
-
-    def setup_stores(self):
-        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
-        glance_store.register_store_opts(CONF,
-                                         reserved_stores=wsgi.RESERVED_STORES)
-        self.config(default_backend='store1',
-                    group='glance_store')
-        self.config(filesystem_store_datadir=self._store_dir('store1'),
-                    group='store1')
-        self.config(filesystem_store_datadir=self._store_dir('store2'),
-                    group='store2')
-        self.config(filesystem_store_datadir=self._store_dir('staging'),
-                    group='os_glance_staging_store')
-
-        glance_store.create_multi_stores(CONF,
-                                         reserved_stores=wsgi.RESERVED_STORES)
-        glance_store.verify_store()
-
-    def setUp(self):
-        super(SynchronousAPIBase, self).setUp()
-
-        self.setup_database()
-        self.setup_simple_paste()
-        self.setup_stores()
-
-    def start_server(self):
-        config.set_config_defaults()
-        self.api = config.load_paste_app('glance-api',
-                                         conf_file=self.paste_config)
-
-    def _headers(self, custom_headers=None):
-        base_headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': TENANT1,
-            'Content-Type': 'application/json',
-            'X-Roles': 'admin',
-        }
-        base_headers.update(custom_headers or {})
-        return base_headers
-
-    def api_get(self, url, headers=None):
-        headers = self._headers(headers)
-        req = webob.Request.blank(url, method='GET',
-                                  headers=headers)
-        return self.api(req)
-
-    def api_post(self, url, data=None, json=None, headers=None):
-        headers = self._headers(headers)
-        req = webob.Request.blank(url, method='POST',
-                                  headers=headers)
-        if json and not data:
-            data = jsonutils.dumps(json).encode()
-            headers['Content-Type'] = 'application/json'
-        if data:
-            req.body = data
-        LOG.debug(req.as_bytes())
-        return self.api(req)
-
-    def api_put(self, url, data=None, json=None, headers=None, body_file=None):
-        headers = self._headers(headers)
-        req = webob.Request.blank(url, method='PUT',
-                                  headers=headers)
-        if json and not data:
-            data = jsonutils.dumps(json).encode()
-        if data and not body_file:
-            req.body = data
-        elif body_file:
-            req.body_file = body_file
-        return self.api(req)
-
-
-class TestImageImportLocking(SynchronousAPIBase):
+class TestImageImportLocking(functional.SynchronousAPIBase):
     def _import_copy(self, image_id, stores):
         """Do an import of image_id to the given stores."""
         body = {'method': {'name': 'copy-image'},
