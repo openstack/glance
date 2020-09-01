@@ -79,7 +79,7 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
             'glance-direct', 'web-download', 'copy-image'])
         self.config(node_staging_uri='file:///tmp/staging')
         store.create_stores(CONF)
-        self.base_flow = ['ConfigureStaging', 'ImportToStore',
+        self.base_flow = ['ImageLock', 'ConfigureStaging', 'ImportToStore',
                           'DeleteFromFS', 'VerifyImageState',
                           'CompleteTask']
         self.import_plugins = ['Convert_Image',
@@ -118,8 +118,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow()
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 6 tasks
-        self.assertEqual(6, len(flow_comp))
+        # assert flow has all the tasks
+        self.assertEqual(len(self.base_flow), len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
 
@@ -137,8 +137,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow(import_req=import_req)
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 7 tasks
-        self.assertEqual(7, len(flow_comp))
+        # assert flow has all the tasks
+        self.assertEqual(len(self.base_flow) + 1, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         self.assertIn('WebDownload', flow_comp)
@@ -159,8 +159,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow(import_req=import_req)
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 7 tasks
-        self.assertEqual(7, len(flow_comp))
+        # assert flow has all the tasks
+        self.assertEqual(len(self.base_flow) + 1, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         self.assertIn('CopyImage', flow_comp)
@@ -176,8 +176,9 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow()
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 9 tasks (base_flow + plugins)
-        self.assertEqual(9, len(flow_comp))
+        # assert flow has all the tasks (base_flow + plugins)
+        plugins = CONF.image_import_opts.image_import_plugins
+        self.assertEqual(len(self.base_flow) + len(plugins), len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         for c in self.import_plugins:
@@ -204,8 +205,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         flow = self._get_flow(import_req=import_req)
 
         flow_comp = self._get_flow_tasks(flow)
-        # assert flow has 7 tasks
-        self.assertEqual(7, len(flow_comp))
+        # assert flow has all the tasks (just base and conversion)
+        self.assertEqual(len(self.base_flow) + 1, len(flow_comp))
         for c in self.base_flow:
             self.assertIn(c, flow_comp)
         self.assertIn('CopyImage', flow_comp)
