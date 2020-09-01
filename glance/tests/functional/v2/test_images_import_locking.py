@@ -210,10 +210,8 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
 
         # After completion, we expect store1 (original) and store3 (new)
         # and that the other task is still stuck importing
-        # FIXME(danms): The stuck importing state needs fixing
         image = self.api_get('/v2/images/%s' % image_id).json
         self.assertEqual('store1,store3', image['stores'])
-        self.assertEqual('store2', image['os_glance_importing_to_stores'])
         self.assertEqual('', image['os_glance_failed_import'])
 
         # Free up the stalled task and give eventlet time to let it
@@ -227,12 +225,7 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
         # terminal state that we expect.
         image = self.api_get('/v2/images/%s' % image_id).json
         self.assertEqual('', image.get('os_glance_import_task', ''))
-        # FIXME(danms): With the strict import lock checking in
-        # ImportActionWrapper, we lose the ability to update
-        # importing_to_stores after our lock has been stolen. We
-        # should probably do something about that in the lock-busting
-        # code. We would expect this in that case:
-        # self.assertEqual('', image['os_glance_importing_to_stores'])
+        self.assertEqual('', image['os_glance_importing_to_stores'])
         self.assertEqual('', image['os_glance_failed_import'])
         self.assertEqual('store1,store3', image['stores'])
 
