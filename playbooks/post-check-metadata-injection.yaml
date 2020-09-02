@@ -4,9 +4,16 @@
       shell:
         executable: /bin/bash
         cmd: |
-          set -xe
           source /opt/stack/devstack/openrc
-          # NOTE(danms): just dump the image so we can see it in case the check fails
-          openstack image show $(openstack image list -f csv -c ID -c Name --quote none | grep cirros | cut -d , -f 1)
+          set -xe
+          cirrosimg=$(openstack image list -f csv -c ID -c Name --quote none | grep cirros | cut -d , -f 1)
+
+          echo "Dumping the cirros image for debugging..."
+          openstack image show $cirrosimg
+
+          echo "Checking that the cirros image was decorated with metdata on import..."
           openstack image list -f value -c Name --property 'glance_devstack_test=doyouseeme?' | grep cirros
+
+          echo "Checking that the cirros image was converted to raw on import..."
+          openstack image show $cirrosimg -f value -c disk_format | grep '^raw$'
       environment: '{{ zuul | zuul_legacy_vars }}'
