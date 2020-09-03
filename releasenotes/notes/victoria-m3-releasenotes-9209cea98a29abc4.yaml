@@ -1,0 +1,30 @@
+---
+features:
+  - |
+    Added support to calculate virtual size of image based on disk format
+  - |
+    Added support for sparse image upload for filesystem and rbd driver
+  - |
+    Improved performance of rbd store chunk upload
+  - |
+    Added support to configure multiple cinder stores
+
+upgrade:
+  - |
+    After upgrading, deployments using the cinder backend should
+    update their config to specify a volume type. Existing images on
+    those backends will be updated at runtime (lazily, when they are
+    first read) to a location URL that includes the store and volume
+    type information.
+
+fixes:
+  - |
+    Bug 1891190_: test_reload() functional test causes hang and jobs TIMED_OUT
+  - |
+    Bug 1891352_: Failed import of one store will remain in progress forever if all_stores_must_succeed=True
+  - |
+    Bug 1887099_: Invalid metadefs for watchdog
+
+    .. _1891190: https://code.launchpad.net/bugs/1891190
+    .. _1891352: https://code.launchpad.net/bugs/1891352
+    .. _1887099: https://code.launchpad.net/bugs/1887099

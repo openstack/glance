@@ -1,14 +1,13 @@
 ---
 fixes:
   - |
-    A change was added to the import API which provides time-based
-    locking of an image to exclude other import operations from
-    starting until the lock-holding task completes (see Bug
-    1884596_). The lock is based on the task that we start to do the
-    work, and the UUID of that task is stored in the
-    ``os_glance_import_task`` image property, which indicates who owns
-    the lock. If the task holding the lock fails to make progress for
-    60 minutes, another import operation will be allowed to steal the
-    lock and start another import operation.
+    Bug 1884596_: A change was added to the import API which provides
+    time-based locking of an image to exclude other import operations
+    from starting until the lock-holding task completes. The lock is
+    based on the task that we start to do the work, and the UUID of
+    that task is stored in the ``os_glance_import_task`` image property,
+    which indicates who owns the lock. If the task holding the lock fails
+    to make progress for 60 minutes, another import operation will be
+    allowed to steal the lock and start another import operation.
 
     .. _1884596: https://bugs.launchpad.net/glance/+bug/1884596
