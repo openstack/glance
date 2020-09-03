@@ -181,7 +181,10 @@ class ImagesController(object):
                          'expire': (expiry - age).total_seconds()})
         else:
             LOG.debug('Image %(image)s has import task %(task)s in status '
-                      '%(status)s and does not qualify for expiry.')
+                      '%(status)s and does not qualify for expiry.',
+                      {'image': image.image_id,
+                       'task': task.task_id,
+                       'status': task.status})
         raise exception.Conflict('Image has active task')
 
     def _cleanup_stale_task_progress(self, image_repo, image, task):
