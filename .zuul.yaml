@@ -243,6 +243,19 @@
               output_format: raw
 
 - job:
+    name: glance-multistore-cinder-import
+    parent: tempest-integrated-storage-import
+    voting: false
+    description: |
+      The regular import workflow job to test with multiple cinder stores
+    vars:
+      devstack_localrc:
+        USE_CINDER_FOR_GLANCE: True
+        GLANCE_ENABLE_MULTIPLE_STORES: True
+        CINDER_ENABLED_BACKENDS: lvm:lvmdriver-1,lvm:lvmdriver-2
+        GLANCE_CINDER_DEFAULT_BACKEND: lvmdriver-1
+
+- job:
     name: tempest-integrated-storage-import-standalone
     parent: tempest-integrated-storage-import
     description: |
@@ -300,6 +313,8 @@
         - tempest-integrated-storage-import:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import-standalone:
+            irrelevant-files: *tempest-irrelevant-files
+        - glance-multistore-cinder-import:
             irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
