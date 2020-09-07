@@ -54,6 +54,7 @@ msgpack==0.5.6
 netaddr==0.7.19
 netifaces==0.10.6
 networkx==2.2
+os-brick==3.1.0
 os-client-config==1.29.0
 os-win==4.0.1
 oslo.concurrency==3.26.0
@@ -65,6 +66,7 @@ oslo.log==3.36.0
 oslo.messaging==5.29.0
 oslo.middleware==3.31.0
 oslo.policy==3.6.0
+oslo.privsep==1.32.0
 oslo.reports==1.18.0
 oslo.serialization==2.25.0
 oslo.service==1.41.1
@@ -91,6 +93,7 @@ pyparsing==2.2.0
 pyperclip==1.8.0
 pysendfile==2.0.0
 python-barbicanclient==4.6.0
+python-cinderclient==4.1.0
 python-dateutil==2.7.0
 python-editor==1.0.3
 python-keystoneclient==3.8.0
@@ -116,7 +119,7 @@ stestr==2.0.0
 stevedore==1.20.0
 taskflow==4.0.0
 Tempita==0.5.2
-tenacity==4.9.0
+tenacity==6.0.0
 testrepository==0.0.18
 testresources==2.0.0
 testscenarios==0.4
