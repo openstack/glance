@@ -35,7 +35,7 @@ def lazy_update_store_info(func):
     def wrapped(context, image, image_repo, **kwargs):
         if CONF.enabled_backends:
             store_utils.update_store_in_locations(
-                image, image_repo)
+                context, image, image_repo)
 
         return func(context, image, image_repo, **kwargs)
 

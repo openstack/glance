@@ -1,0 +1,12 @@
+---
+features:
+  - |
+    Added support for cinder multiple stores.
+upgrade:
+  - |
+    During upgrade from single cinder store to multiple cinder stores, legacy
+    images location url will be updated to the new format with respect to the
+    volume type configured in the stores.
+    Legacy location url: cinder://<volume-id>
+    New location url: cinder://<store-id>/<volume-id>
+

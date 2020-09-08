@@ -14,10 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import glance_store as store
 import tempfile
 from unittest import mock
 
+import glance_store as store
+from glance_store._drivers import cinder
 from oslo_config import cfg
 from oslo_log import log as logging
 import six
@@ -26,6 +27,7 @@ import webob
 from glance.common import exception
 from glance.common import store_utils
 from glance.common import utils
+from glance.tests.unit import base
 from glance.tests import utils as test_utils
 
 
@@ -41,6 +43,7 @@ class TestStoreUtils(test_utils.BaseTestCase):
         image = mock.Mock()
         image_repo = mock.Mock()
         image_repo.save = mock.Mock()
+        context = mock.Mock()
         locations = [{
             'url': 'rbd://aaaaaaaa/images/id',
             'metadata': metadata
@@ -49,7 +52,7 @@ class TestStoreUtils(test_utils.BaseTestCase):
         with mock.patch.object(
                 store_utils, '_get_store_id_from_uri') as mock_get_store_id:
             mock_get_store_id.return_value = store_id
-            store_utils.update_store_in_locations(image, image_repo)
+            store_utils.update_store_in_locations(context, image, image_repo)
             self.assertEqual(image.locations[0]['metadata'].get(
                 'store'), expected)
             self.assertEqual(store_id_call_count, mock_get_store_id.call_count)
@@ -90,6 +93,64 @@ class TestStoreUtils(test_utils.BaseTestCase):
         self.config(enabled_backends=enabled_backends)
         self._test_update_store_in_location({}, None, None,
                                             save_call_count=0)
+
+
+class TestCinderStoreUtils(base.MultiStoreClearingUnitTest):
+    """Test glance.common.store_utils module for cinder multistore"""
+
+    @mock.patch.object(cinder.Store, 'is_image_associated_with_store')
+    @mock.patch.object(cinder.Store, 'url_prefix',
+                       new_callable=mock.PropertyMock)
+    def _test_update_cinder_store_in_location(self, mock_url_prefix,
+                                              mock_associate_store,
+                                              is_valid=True):
+        volume_id = 'db457a25-8f16-4b2c-a644-eae8d17fe224'
+        store_id = 'fast-cinder'
+        expected = 'fast-cinder'
+        image = mock.Mock()
+        image_repo = mock.Mock()
+        image_repo.save = mock.Mock()
+        context = mock.Mock()
+        mock_associate_store.return_value = is_valid
+        locations = [{
+            'url': 'cinder://%s' % volume_id,
+            'metadata': {}
+        }]
+        mock_url_prefix.return_value = 'cinder://%s' % store_id
+        image.locations = locations
+        store_utils.update_store_in_locations(context, image, image_repo)
+
+        if is_valid:
+            # This is the case where we found an image that has an
+            # old-style URL which does not include the store name,
+            # but for which we know the corresponding store that
+            # refers to the volume type that backs it. We expect that
+            # the URL should be updated to point to the store/volume from
+            # just a naked pointer to the volume, as was the old
+            # format i.e. this is the case when store is valid and location
+            # url, metadata are updated and image_repo.save is called
+            expected_url = mock_url_prefix.return_value + '/' + volume_id
+            self.assertEqual(expected_url, image.locations[0].get('url'))
+            self.assertEqual(expected, image.locations[0]['metadata'].get(
+                'store'))
+            self.assertEqual(1, image_repo.save.call_count)
+        else:
+            # Here, we've got an image backed by a volume which does
+            # not have a corresponding store specifying the volume_type.
+            # Expect that we leave these alone and do not touch the
+            # location URL since we cannot update it with a valid store i.e.
+            # this is the case when store is invalid and location url,
+            # metadata are not updated and image_repo.save is not called
+            self.assertEqual(locations[0]['url'],
+                             image.locations[0].get('url'))
+            self.assertEqual({}, image.locations[0]['metadata'])
+            self.assertEqual(0, image_repo.save.call_count)
+
+    def test_update_cinder_store_location_valid_type(self):
+        self._test_update_cinder_store_in_location()
+
+    def test_update_cinder_store_location_invalid_type(self):
+        self._test_update_cinder_store_in_location(is_valid=False)
 
 
 class TestUtils(test_utils.BaseTestCase):
