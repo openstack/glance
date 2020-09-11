@@ -300,13 +300,13 @@ all-stores-succeed-in-request:
   description: |
     A boolean parameter indicating the behavior of the import workflow when an
     error occurs.
-    When set to True, if an error occurs during the upload in at least one
+    When set to True (default), if an error occurs during the upload in at least one
     store, the worfklow fails, the data is deleted from stores where copying
     is done (not staging), and the state of the image is unchanged.
     When set to False, the workflow will fail (data deleted from stores, ...)
     only if the import fails on all stores specified by the user. In case of a
     partial success, the locations added to the image will be the stores where
-    the data has been correctly uploaded.
+    the data has been correctly uploaded. Default is True.
   in: body
   required: false
   type: boolean
