@@ -66,9 +66,50 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
             self.image_id, self.uri)
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
-            mock_iter.return_value = b"dddd"
-            web_download_task.execute()
-            mock_add.assert_called_once_with(self.image_id, b"dddd", 0)
+            mock_add.return_value = ["path", 4]
+            mock_iter.return_value.headers = {}
+            self.assertEqual(web_download_task.execute(), "path")
+            mock_add.assert_called_once_with(self.image_id,
+                                             mock_iter.return_value, 0)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_web_download_with_content_length(self, mock_add):
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        with mock.patch.object(script_utils,
+                               'get_image_data_iter') as mock_iter:
+            mock_iter.return_value.headers = {'content-length': '4'}
+            mock_add.return_value = ["path", 4]
+            self.assertEqual(web_download_task.execute(), "path")
+            mock_add.assert_called_once_with(self.image_id,
+                                             mock_iter.return_value, 0)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_web_download_with_invalid_content_length(self, mock_add):
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        with mock.patch.object(script_utils,
+                               'get_image_data_iter') as mock_iter:
+            mock_iter.return_value.headers = {'content-length': "not_valid"}
+            mock_add.return_value = ["path", 4]
+            self.assertEqual(web_download_task.execute(), "path")
+            mock_add.assert_called_once_with(self.image_id,
+                                             mock_iter.return_value, 0)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_web_download_fails_when_data_size_different(self, mock_add):
+        web_download_task = web_download._WebDownload(
+            self.task.task_id, self.task_type, self.task_repo,
+            self.image_id, self.uri)
+        with mock.patch.object(script_utils,
+                               'get_image_data_iter') as mock_iter:
+            mock_iter.return_value.headers = {'content-length': '4'}
+            mock_add.return_value = ["path", 3]
+            self.assertRaises(
+                glance.common.exception.ImportTaskError,
+                web_download_task.execute)
 
     def test_web_download_node_staging_uri_is_none(self):
         self.config(node_staging_uri=None)

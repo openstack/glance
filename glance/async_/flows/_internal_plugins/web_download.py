@@ -41,6 +41,7 @@ class _WebDownload(task.Task):
         self.image_repo = image_repo
         self.image_id = image_id
         self.uri = uri
+        self._path = None
         super(_WebDownload, self).__init__(
             name='%s-WebDownload-%s' % (task_type, task_id))
 
@@ -117,8 +118,19 @@ class _WebDownload(task.Task):
                           {"error": encodeutils.exception_to_unicode(e),
                            "task_id": self.task_id})
 
-        path = self.store.add(self.image_id, data, 0)[0]
-        return path
+        self._path, bytes_written = self.store.add(self.image_id, data, 0)[0:2]
+        try:
+            content_length = int(data.headers['content-length'])
+            if bytes_written != content_length:
+                msg = (_("Task %(task_id)s failed because downloaded data "
+                         "size %(data_size)i is different from expected %("
+                         "expected)i") %
+                       {"task_id": self.task_id, "data_size": bytes_written,
+                        "expected": content_length})
+                raise exception.ImportTaskError(msg)
+        except (KeyError, ValueError):
+            pass
+        return self._path
 
     def revert(self, result, **kwargs):
         if isinstance(result, failure.Failure):
