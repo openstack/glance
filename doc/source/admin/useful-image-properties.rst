@@ -155,12 +155,7 @@ Here is a list of useful image properties and the values they expect.
        ``xen``.
    * - All
      - ``instance_type_rxtx_factor``
-     - Optional property allows created servers to have a different bandwidth
-       cap than that defined in the network they are attached to. This factor
-       is multiplied by the ``rxtx_base`` property of the network. The
-       ``rxtx_base`` property defaults to ``1.0``, which is the same as the
-       attached network. This parameter is only available for Xen or NSX based
-       systems.
+     - Deprecated and currently unused.
      - Float (default value is ``1.0``)
    * - All
      - ``instance_uuid``
@@ -420,10 +415,10 @@ Here is a list of useful image properties and the values they expect.
 
        For hyper-V: Acceptable values are either ``hyperv-gen1`` or
        ``hyperv-gen2``.
-   * - libvirt API driver, XenAPI driver
+   * - libvirt API driver
      - ``os_type``
      - The operating system installed on the image. The ``libvirt`` API driver
-       and ``XenAPI`` driver contains logic that takes different actions
+       contains logic that takes different actions
        depending on the value of the ``os_type`` parameter of the image.
        For example, for ``os_type=windows`` images, it creates a FAT32-based
        swap partition instead of a Linux swap partition, and it limits the
@@ -533,10 +528,5 @@ Here is a list of useful image properties and the values they expect.
      - ``1``
    * - XenAPI driver
      - ``auto_disk_config``
-     - If ``true``, the root partition on the disk is automatically resized
-       before the instance boots. This value is only taken into account by
-       the Compute service when using a Xen-based hypervisor with the
-       ``XenAPI`` driver. The Compute service will only attempt to resize if
-       there is a single partition on the image, and only if the partition
-       is in ``ext3`` or ``ext4`` format.
+     - Deprecated and currently unused.
      - ``true`` or ``false``

@@ -94,6 +94,15 @@
             "description": "The kernel command line to be used by the libvirt driver, instead of the default. For linux containers (LXC), the value is used as arguments for initialization. This key is valid only for Amazon kernel, ramdisk, or machine images (aki, ari, or ami).",
             "type": "string"
         },
+        "os_type": {
+            "title": "OS Type",
+            "description": "The operating system installed on the image. The libvirt driver contains logic that takes different actions depending on the value of the os_type parameter of the image. For example, for os_type=windows images, it creates a FAT32-based swap partition instead of a Linux swap partition, and it limits the injected host name to less than 16 characters.",
+            "type": "string",
+            "enum": [
+                "linux",
+                "windows"
+            ]
+        },
         "hw_vif_model": {
             "title": "Virtual Network Interface",
             "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor configuration. libvirt driver options: KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, spapr-vlan, and virtio. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
