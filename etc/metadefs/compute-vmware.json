@@ -209,7 +209,7 @@
         },
         "hw_vif_multiqueue_enabled": {
             "title": "Multiqueue Enabled",
-        j   "description": "If true, this enables the virtio-net multiqueue feature. In this case, the driver sets the number of queues equal to the number of guest vCPUs. This makes the network performance scale across a number of vCPUs.",
+            "description": "If true, this enables the virtio-net multiqueue feature. In this case, the driver sets the number of queues equal to the number of guest vCPUs. This makes the network performance scale across a number of vCPUs.",
             "type": "string",
             "enum": ["true", "false"]
         }
