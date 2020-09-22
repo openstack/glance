@@ -1,0 +1,25 @@
+---
+prelude: |
+    The Victoria release includes some important milestones in Glance
+    development priorities.
+
+    * Added support to calculate virtual size of image based on disk format
+
+    * Added support for sparse image upload for filesystem and rbd driver of
+      glance_store
+
+    * Improved performance of rbd store chunk upload
+
+    * Fixed some important bugs around copy-image import method and importing
+      image to multiple stores
+
+    * Added support to configure multiple cinder stores
+
+fixes:
+  - |
+    Bug 1795950_: Fix cleaning of web-download image import in node_staging_uri
+  - |
+    Bug 1895663_: Image import "web-download" doesn't check on download size
+
+    .. _1795950: https://code.launchpad.net/bugs/1795950
+    .. _1895663: https://code.launchpad.net/bugs/1895663
