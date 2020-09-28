@@ -216,32 +216,11 @@
       tox_envlist: functional-py36
 
 - job:
-    name: tempest-integrated-storage-import-workflow
+    name: tempest-integrated-storage-import
     parent: tempest-integrated-storage
     description: |
       The regular tempest-integrated-storage job but with glance metadata injection
     post-run: playbooks/post-check-metadata-injection.yaml
-    vars:
-      devstack_localrc:
-        GLANCE_STANDALONE: True
-        GLANCE_USE_IMPORT_WORKFLOW: True
-      devstack_local_conf:
-        post-config:
-          $GLANCE_IMAGE_IMPORT_CONF:
-            image_import_opts:
-              image_import_plugins: "['inject_image_metadata', 'image_conversion']"
-            inject_metadata_properties:
-              ignore_user_roles:
-              inject: |
-                "glance_devstack_test":"doyouseeme?"
-            image_conversion:
-              output_format: raw
-
-- job:
-    name: tempest-integrated-storage-wsgi-import
-    parent: tempest-integrated-storage
-    description: |
-      The regular tempest-integrated-storage job but with glance in wsgi mode
     vars:
       devstack_localrc:
         GLANCE_STANDALONE: False
@@ -255,9 +234,23 @@
               python_interpreter: /usr/bin/python3
           $GLANCE_IMAGE_IMPORT_CONF:
             image_import_opts:
-              image_import_plugins: "['image_conversion']"
+              image_import_plugins: "['inject_image_metadata', 'image_conversion']"
+            inject_metadata_properties:
+              ignore_user_roles:
+              inject: |
+                "glance_devstack_test":"doyouseeme?"
             image_conversion:
               output_format: raw
+
+- job:
+    name: tempest-integrated-storage-import-standalone
+    parent: tempest-integrated-storage-import
+    description: |
+      The regular tempest-integrated-storage-import-workflow job but with glance in
+      standalone mode
+    vars:
+      devstack_localrc:
+        GLANCE_STANDALONE: True
 
 - job:
     name: glance-ceph-thin-provisioning
@@ -304,9 +297,9 @@
               - ^\.zuul\.yaml$
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
-        - tempest-integrated-storage-import-workflow:
+        - tempest-integrated-storage-import:
             irrelevant-files: *tempest-irrelevant-files
-        - tempest-integrated-storage-wsgi-import:
+        - tempest-integrated-storage-import-standalone:
             irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
@@ -320,7 +313,9 @@
         - openstack-tox-functional-py38
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
-        - tempest-integrated-storage-import-workflow:
+        - tempest-integrated-storage-import:
+            irrelevant-files: *tempest-irrelevant-files
+        - tempest-integrated-storage-import-standalone:
             irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
