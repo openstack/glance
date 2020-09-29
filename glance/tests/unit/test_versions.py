@@ -13,9 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_serialization import jsonutils
+import ddt
 from six.moves import http_client as http
 import webob
+
+from oslo_serialization import jsonutils
 
 from glance.api.middleware import version_negotiation
 from glance.api import versions
@@ -23,68 +25,100 @@ from glance.common.wsgi import Request as WsgiRequest
 from glance.tests.unit import base
 
 
-class VersionsTest(base.IsolatedUnitTest):
-
-    """Test the version information returned from the API service."""
-
-    def _get_versions_list(self, url):
+# make this public so it doesn't need to be repeated for the
+# functional tests
+def get_versions_list(url, enabled_backends=False):
+    versions = [
+        {
+            'id': 'v2.7',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.6',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.5',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.4',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.3',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.2',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.1',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.0',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+    ]
+    if enabled_backends:
         versions = [
             {
-                'id': 'v2.9',
+                'id': 'v2.11',
                 'status': 'CURRENT',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
             {
-                'id': 'v2.7',
+                'id': 'v2.10',
                 'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
             {
-                'id': 'v2.6',
+                'id': 'v2.9',
                 'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
             {
-                'id': 'v2.5',
+                'id': 'v2.8',
                 'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
-            },
-            {
-                'id': 'v2.4',
-                'status': 'SUPPORTED',
-                'links': [{'rel': 'self',
-                           'href': '%s/v2/' % url}],
-            },
-            {
-                'id': 'v2.3',
-                'status': 'SUPPORTED',
-                'links': [{'rel': 'self',
-                           'href': '%s/v2/' % url}],
-            },
-            {
-                'id': 'v2.2',
-                'status': 'SUPPORTED',
-                'links': [{'rel': 'self',
-                           'href': '%s/v2/' % url}],
-            },
-            {
-                'id': 'v2.1',
-                'status': 'SUPPORTED',
-                'links': [{'rel': 'self',
-                           'href': '%s/v2/' % url}],
-            },
-            {
-                'id': 'v2.0',
-                'status': 'SUPPORTED',
-                'links': [{'rel': 'self',
-                           'href': '%s/v2/' % url}],
-            },
-        ]
-        return versions
+            }
+        ] + versions
+    else:
+        versions.insert(0, {
+            'id': 'v2.9',
+            'status': 'CURRENT',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        })
+
+    return versions
+
+
+class VersionsTest(base.IsolatedUnitTest):
+
+    """Test the version information returned from the API service."""
 
     def test_get_version_list(self):
         req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
@@ -94,7 +128,14 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list('http://127.0.0.1:9292')
+        expected = get_versions_list('http://127.0.0.1:9292')
+        self.assertEqual(expected, results)
+
+        self.config(enabled_backends='slow:one,fast:two')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list('http://127.0.0.1:9292',
+                                     enabled_backends=True)
         self.assertEqual(expected, results)
 
     def test_get_version_list_public_endpoint(self):
@@ -106,7 +147,14 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list('https://example.com:9292')
+        expected = get_versions_list('https://example.com:9292')
+        self.assertEqual(expected, results)
+
+        self.config(enabled_backends='slow:one,fast:two')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list('https://example.com:9292',
+                                     enabled_backends=True)
         self.assertEqual(expected, results)
 
     def test_get_version_list_secure_proxy_ssl_header(self):
@@ -118,7 +166,13 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list(url)
+        expected = get_versions_list(url)
+        self.assertEqual(expected, results)
+
+        self.config(enabled_backends='slow:one,fast:two')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list(url, enabled_backends=True)
         self.assertEqual(expected, results)
 
     def test_get_version_list_secure_proxy_ssl_header_https(self):
@@ -132,7 +186,13 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list(ssl_url)
+        expected = get_versions_list(ssl_url)
+        self.assertEqual(expected, results)
+
+        self.config(enabled_backends='slow:one,fast:two')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list(ssl_url, enabled_backends=True)
         self.assertEqual(expected, results)
 
     def test_get_version_list_for_external_app(self):
@@ -143,7 +203,13 @@ class VersionsTest(base.IsolatedUnitTest):
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
         results = jsonutils.loads(res.body)['versions']
-        expected = self._get_versions_list(url)
+        expected = get_versions_list(url)
+        self.assertEqual(expected, results)
+
+        self.config(enabled_backends='slow:one,fast:two')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list(url, enabled_backends=True)
         self.assertEqual(expected, results)
 
 
@@ -203,12 +269,55 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v2_10_unsupported(self):
+    # note: these need separate unsupported/supported tests to reset the
+    # the memoized allowed_versions in the VersionNegotiationFilter instance
+    def test_request_url_v2_8_default_unsupported(self):
+        request = webob.Request.blank('/v2.8/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+    def test_request_url_v2_8_enabled_supported(self):
+        self.config(enabled_backends='slow:one,fast:two')
+        request = webob.Request.blank('/v2.8/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    def test_request_url_v2_10_default_unsupported(self):
         request = webob.Request.blank('/v2.10/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
+    def test_request_url_v2_10_enabled_supported(self):
+        self.config(enabled_backends='slow:one,fast:two')
+        request = webob.Request.blank('/v2.10/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
 
+    def test_request_url_v2_11_default_unsupported(self):
+        request = webob.Request.blank('/v2.11/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+    def test_request_url_v2_11_enabled_supported(self):
+        self.config(enabled_backends='slow:one,fast:two')
+        request = webob.Request.blank('/v2.11/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    # version 2.12 does not exist
+    def test_request_url_v2_12_default_unsupported(self):
+        request = webob.Request.blank('/v2.12/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+    def test_request_url_v2_12_enabled_unsupported(self):
+        self.config(enabled_backends='slow:one,fast:two')
+        request = webob.Request.blank('/v2.12/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+
+@ddt.ddt
 class VersionsAndNegotiationTest(VersionNegotiationTest, VersionsTest):
 
     """
@@ -230,25 +339,38 @@ class VersionsAndNegotiationTest(VersionNegotiationTest, VersionsTest):
         expected = "/%s/images" % major
         self.assertEqual(expected, request.path_info)
 
-    def test_current_is_negotiated(self):
+    # the content of the version list depends on whether
+    # CONF.enabled_backends is set or not, so check both cases
+    default = ''
+    enabled = 'slow:one,fast:two'
+
+    @ddt.data(default, enabled)
+    def test_current_is_negotiated(self, stores):
         # NOTE(rosmaita): Bug 1609571: the versions response was correct, but
         # the negotiation had not been updated for the CURRENT version.
+        self.config(enabled_backends=stores)
         to_check = self._get_list_of_version_ids('CURRENT')
         self.assertTrue(to_check)
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)
 
-    def test_supported_is_negotiated(self):
+    @ddt.data(default, enabled)
+    def test_supported_is_negotiated(self, stores):
+        self.config(enabled_backends=stores)
         to_check = self._get_list_of_version_ids('SUPPORTED')
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)
 
-    def test_deprecated_is_negotiated(self):
+    @ddt.data(default, enabled)
+    def test_deprecated_is_negotiated(self, stores):
+        self.config(enabled_backends=stores)
         to_check = self._get_list_of_version_ids('DEPRECATED')
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)
 
-    def test_experimental_is_negotiated(self):
+    @ddt.data(default, enabled)
+    def test_experimental_is_negotiated(self, stores):
+        self.config(enabled_backends=stores)
         to_check = self._get_list_of_version_ids('EXPERIMENTAL')
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)

@@ -78,9 +78,10 @@ class Controller(object):
         version_objs = []
         if CONF.enabled_backends:
             version_objs.extend([
-                build_version_object(2.10, 'v2', 'CURRENT'),
+                build_version_object(2.11, 'v2', 'CURRENT'),
+                build_version_object('2.10', 'v2', 'SUPPORTED'),
                 build_version_object(2.9, 'v2', 'SUPPORTED'),
-                build_version_object(2.8, 'v2', 'SUPPORTED')
+                build_version_object(2.8, 'v2', 'SUPPORTED'),
             ])
         else:
             version_objs.extend([

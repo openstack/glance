@@ -15,81 +15,21 @@
 
 """Version-independent api tests"""
 
-
 import httplib2
 from oslo_serialization import jsonutils
 from six.moves import http_client
 
 from glance.tests import functional
-
-
-def _generate_v2_versions(url):
-    version_list = []
-    version_list.extend([
-        {
-            'id': 'v2.9',
-            'status': 'CURRENT',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.7',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.6',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.5',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.4',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.3',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.2',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.1',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        },
-        {
-            'id': 'v2.0',
-            'status': 'SUPPORTED',
-            'links': [{'rel': 'self', 'href': url % '2'}],
-        }
-    ])
-    v2_versions = {'versions': version_list}
-    return v2_versions
-
-
-def _generate_all_versions(url):
-    v2 = _generate_v2_versions(url)
-    all_versions = {'versions': v2['versions']}
-    return all_versions
+from glance.tests.unit import test_versions as tv
 
 
 class TestApiVersions(functional.FunctionalTest):
-
     def test_version_configurations(self):
         """Test that versioning is handled properly through all channels"""
         self.start_servers(**self.__dict__.copy())
 
-        url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
-        versions = _generate_all_versions(url)
+        url = 'http://127.0.0.1:%d' % self.api_port
+        versions = {'versions': tv.get_versions_list(url)}
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -102,8 +42,41 @@ class TestApiVersions(functional.FunctionalTest):
     def test_v2_api_configuration(self):
         self.start_servers(**self.__dict__.copy())
 
-        url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
-        versions = _generate_v2_versions(url)
+        url = 'http://127.0.0.1:%d' % self.api_port
+        versions = {'versions': tv.get_versions_list(url)}
+
+        # Verify version choices returned.
+        path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
+        http = httplib2.Http()
+        response, content_json = http.request(path, 'GET')
+        self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(versions, content)
+
+
+class TestApiVersionsMultistore(functional.MultipleBackendFunctionalTest):
+    def test_version_configurations(self):
+        """Test that versioning is handled properly through all channels"""
+        self.start_servers(**self.__dict__.copy())
+
+        url = 'http://127.0.0.1:%d' % self.api_port
+        versions = {'versions': tv.get_versions_list(url,
+                                                     enabled_backends=True)}
+
+        # Verify version choices returned.
+        path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
+        http = httplib2.Http()
+        response, content_json = http.request(path, 'GET')
+        self.assertEqual(http_client.MULTIPLE_CHOICES, response.status)
+        content = jsonutils.loads(content_json.decode())
+        self.assertEqual(versions, content)
+
+    def test_v2_api_configuration(self):
+        self.start_servers(**self.__dict__.copy())
+
+        url = 'http://127.0.0.1:%d' % self.api_port
+        versions = {'versions': tv.get_versions_list(url,
+                                                     enabled_backends=True)}
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -119,8 +92,8 @@ class TestApiPaths(functional.FunctionalTest):
         super(TestApiPaths, self).setUp()
         self.start_servers(**self.__dict__.copy())
 
-        url = 'http://127.0.0.1:%d/v%%s/' % self.api_port
-        self.versions = _generate_all_versions(url)
+        url = 'http://127.0.0.1:%d' % self.api_port
+        self.versions = {'versions': tv.get_versions_list(url)}
         images = {'images': []}
         self.images_json = jsonutils.dumps(images)
 
