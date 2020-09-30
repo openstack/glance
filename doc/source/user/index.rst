@@ -14,3 +14,4 @@ Glance User Guide
    glanceclient
    glancemetadefcatalogapi
    signature
+   os_hash_algo
