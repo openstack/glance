@@ -21,6 +21,7 @@ import time
 import uuid
 
 from oslo_serialization import jsonutils
+from oslo_utils.secretutils import md5
 from oslo_utils import units
 import requests
 import six
@@ -206,7 +207,8 @@ class TestImages(functional.FunctionalTest):
                                    status='active',
                                    max_sec=10,
                                    delay_sec=0.2)
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -349,7 +351,8 @@ class TestImages(functional.FunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -726,7 +729,8 @@ class TestImages(functional.FunctionalTest):
         response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self, image_id, expect_c,
                                                   expect_h, 'active')
@@ -1165,7 +1169,8 @@ class TestImages(functional.FunctionalTest):
         image_data = b'ZZZZZ'
         response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -1178,7 +1183,8 @@ class TestImages(functional.FunctionalTest):
         image_data = b'WWWWW'
         response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image2_id,
@@ -4621,7 +4627,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    status='active',
                                    max_sec=15,
                                    delay_sec=0.2)
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -4784,7 +4791,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    status='active',
                                    max_sec=15,
                                    delay_sec=0.2)
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -4948,7 +4956,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -5111,7 +5120,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -5273,7 +5283,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -5435,7 +5446,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -5630,7 +5642,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -5888,7 +5901,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -6029,7 +6043,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -6202,7 +6217,8 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         response = requests.put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
-        expect_c = six.text_type(hashlib.md5(image_data).hexdigest())
+        expect_c = six.text_type(md5(image_data,
+                                     usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,
@@ -6738,7 +6754,8 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
         with requests.get(image_data_uri) as r:
-            expect_c = six.text_type(hashlib.md5(r.content).hexdigest())
+            expect_c = six.text_type(md5(r.content,
+                                         usedforsecurity=False).hexdigest())
             expect_h = six.text_type(hashlib.sha512(r.content).hexdigest())
         func_utils.verify_image_hashes_and_status(self,
                                                   image_id,

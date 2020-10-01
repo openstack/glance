@@ -17,13 +17,12 @@
 LRU Cache for Image Data
 """
 
-import hashlib
-
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import importutils
+from oslo_utils.secretutils import md5
 from oslo_utils import units
 
 from glance.common import exception
@@ -347,7 +346,7 @@ class ImageCache(object):
 
     def cache_tee_iter(self, image_id, image_iter, image_checksum):
         try:
-            current_checksum = hashlib.md5()
+            current_checksum = md5(usedforsecurity=False)
 
             with self.driver.open_for_write(image_id) as cache_file:
                 for chunk in image_iter:

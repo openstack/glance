@@ -15,11 +15,11 @@
 
 from contextlib import contextmanager
 import datetime
-import hashlib
 import os
 import time
 
 import fixtures
+from oslo_utils import secretutils
 from oslo_utils import units
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
@@ -409,7 +409,7 @@ class ImageCacheTestCase(object):
         image = b"12345678990abcdefghijklmnop"
         image_id = 123
 
-        md5 = hashlib.md5()
+        md5 = secretutils.md5(usedforsecurity=False)
         md5.update(image)
         checksum = md5.hexdigest()
 
