@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-06-09 14:43+0000\n"
+"POT-Creation-Date: 2020-10-02 06:38+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -176,10 +176,6 @@ msgid "An unknown task exception occurred"
 msgstr "发生未知任务异常"
 
 #, python-format
-msgid "Attempt to upload duplicate image: %s"
-msgstr "请尝试上载重复映像：%s"
-
-#, python-format
 msgid "Attribute '%(property)s' is read-only."
 msgstr "属性“%(property)s”是只读的。"
 
@@ -220,10 +216,6 @@ msgstr "可用的类别："
 #, python-format
 msgid "Bad \"%s\" query filter format. Use ISO 8601 DateTime notation."
 msgstr "无效“%s”查询过滤器格式。请使用 ISO 8601 日期时间注释。"
-
-#, python-format
-msgid "Bad Command: %s"
-msgstr "命令 %s 不正确"
 
 #, python-format
 msgid "Bad header: %(header_name)s"
@@ -267,15 +259,6 @@ msgstr "不能将位置设置为空列表。"
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr "校验和验证失败。已异常中止映像“%s”的高速缓存。"
 
-msgid "Client disconnected before sending all data to backend"
-msgstr "客户端在发送所有数据到后端时断开了连接"
-
-msgid "Command not found"
-msgstr "找不到命令"
-
-msgid "Configuration option was not valid"
-msgstr "配置选项无效"
-
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr "发生连接错误，或者对 URL %(url)s 处的授权服务的请求不正确。"
@@ -310,9 +293,6 @@ msgstr "找不到名称空间 %s"
 #, python-format
 msgid "Could not find property %s"
 msgstr "找不到属性 %s"
-
-msgid "Could not find required configuration option"
-msgstr "找不到必需的配置选项"
 
 #, python-format
 msgid "Could not find task %s"
@@ -356,10 +336,6 @@ msgstr "无法更新元数据标签：%s"
 
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "当前包含多个磁盘的 OVA 包不受支持。"
-
-#, python-format
-msgid "Data for image_id not found: %s"
-msgstr "找不到 image_id 的数据：%s"
 
 msgid "Data supplied was not valid."
 msgstr "提供的数据无效。"
@@ -413,10 +389,6 @@ msgstr "将会移除此资源的日期时间"
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr "正在拒绝尝试上载映像，因为它超过配额：%s"
 
-#, python-format
-msgid "Denying attempt to upload image larger than %d bytes."
-msgstr "正在拒绝尝试上载大小超过 %d 字节的映像。"
-
 msgid "Descriptive name for the image"
 msgstr "映像的描述性名称"
 
@@ -448,10 +420,6 @@ msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "状态应为以下格式：{\"status\": \"status\"}"
 
 #, python-format
-msgid "Failed to add image metadata. Got error: %s"
-msgstr "未能添加映像元数据。发生错误：%s"
-
-#, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "未能找到要删除的映像 %(image_id)s"
 
@@ -466,14 +434,6 @@ msgstr "未能初始化映像高速缓存数据库。发生错误：%s"
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "未能从配置读取 %s"
-
-#, python-format
-msgid "Failed to update image metadata. Got error: %s"
-msgstr "未能更新映像元数据。发生错误：%s"
-
-#, python-format
-msgid "Failed to upload image %s"
-msgstr "上传镜像 %s失败"
 
 #, python-format
 msgid ""
@@ -495,13 +455,6 @@ msgid ""
 "File based imports are not allowed. Please use a non-local source of image "
 "data."
 msgstr "不允许基于文件的导入。请使用映像数据的非本地源。"
-
-msgid "Forbidden image access"
-msgstr "禁止访问映像"
-
-#, python-format
-msgid "Forbidden upload attempt: %s"
-msgstr "已禁止进行上载尝试：%s"
 
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
@@ -541,10 +494,6 @@ msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr "映像 %(id)s 未能删除，因为它正在使用中：%(exc)s"
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "找不到映像 %(id)s"
-
-#, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have been "
 "deleted during the upload: %(error)s"
@@ -560,20 +509,6 @@ msgid ""
 "during the upload, cleaning up the chunks uploaded."
 msgstr ""
 "在上载之后，找不到映像 %s。可能已在上载期间删除该映像，正在清除已上载的区块。"
-
-#, python-format
-msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
-msgstr "上传后找不到映像 %s。此映像可能已在上传期间删除。"
-
-#, python-format
-msgid "Image %s is deactivated"
-msgstr "映像 %s 已取消激活"
-
-#, python-format
-msgid "Image %s is not active"
-msgstr "映像 %s 处于不活动状态"
 
 #, python-format
 msgid "Image %s not found."
@@ -606,14 +541,6 @@ msgstr "对于映像 %(id)s，超过映像标记限制：%(e)s："
 #, python-format
 msgid "Image upload problem: %s"
 msgstr "发生映像上载问题：%s"
-
-#, python-format
-msgid "Image with identifier %s already exists!"
-msgstr "具有标识 %s 的映像已存在！"
-
-#, python-format
-msgid "Image with identifier %s not found"
-msgstr "找不到具有标识 %s 的映像"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -665,9 +592,6 @@ msgid ""
 "Invalid filter value %s. There is no comma before opening quotation mark."
 msgstr "无效过滤器值 %s。左引号之前没有逗号。"
 
-msgid "Invalid image id format"
-msgstr "映像标识格式无效"
-
 #, python-format
 msgid "Invalid int value for age_in_days: %(age_in_days)s"
 msgstr "age_in_days的无效整形值：%(age_in_days)s"
@@ -698,13 +622,6 @@ msgstr "无效的位置：%s"
 
 msgid "Invalid marker format"
 msgstr "标记符格式无效"
-
-msgid "Invalid marker. Image could not be found."
-msgstr "标记符无效。找不到映像。"
-
-#, python-format
-msgid "Invalid membership association: %s"
-msgstr "成员资格关联无效：%s"
 
 #, python-format
 msgid ""
@@ -821,9 +738,6 @@ msgstr "成员不能为空"
 msgid "Member to be added not specified"
 msgstr "未指定要添加的成员"
 
-msgid "Membership could not be found."
-msgstr "找不到成员资格。"
-
 #, python-format
 msgid ""
 "Metadata definition namespace %(namespace)s is protected and cannot be "
@@ -890,9 +804,6 @@ msgstr ""
 "对于区域 %(region)s，存在多个“映像”服务匹配项。这通常意味着需要区域并且尚未提"
 "供一个区域。"
 
-msgid "No authenticated user"
-msgstr "不存在任何已认证的用户"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "找不到任何具有标识 %s 的映像"
@@ -900,9 +811,6 @@ msgstr "找不到任何具有标识 %s 的映像"
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr "在映像 %(img)s 中找不到标识为 %(loc)s 的位置"
-
-msgid "No permission to share that image"
-msgstr "不存在任何用于共享该映像的许可权"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1086,9 +994,6 @@ msgstr "移除原有pid文件%s"
 msgid "Request body must be a JSON array of operation objects."
 msgstr "请求主体必须是由操作对象组成的 JSON 数组。"
 
-msgid "Request must be a list of commands"
-msgstr "请求必须为命令列表"
-
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
 "possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
@@ -1161,18 +1066,6 @@ msgstr "不允许状态从 %(cur_status)s 转变为 %(new_status)s"
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "正在通过信号 (%(sig)s) 停止 %(serv)s (pid %(pid)s)"
 
-#, python-format
-msgid "Store for image_id not found: %s"
-msgstr "找不到用于 image_id 的存储器：%s"
-
-#, python-format
-msgid ""
-"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
-"(%(actual)s) did not match. Setting image status to 'killed'."
-msgstr ""
-"提供的 %(attr)s (%(supplied)s) 与所上载映像 (%(actual)s) 生成的 %(attr)s 不匹"
-"配。正在将映像状态设置为“已终止”。"
-
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "“container_format”映像属性支持的值"
 
@@ -1220,23 +1113,6 @@ msgstr ""
 
 msgid "The Store URI was malformed."
 msgstr "存储器 URI 的格式不正确。"
-
-msgid ""
-"The URL to the keystone service. If \"use_user_token\" is not in effect and "
-"using keystone auth, then URL of keystone can be specified."
-msgstr ""
-"keystone 服务的 URL。如果“use_user_token”没有生效并且正在使用 keystone 认证，"
-"那么可指定 keystone 的 URL。"
-
-msgid ""
-"The administrators password. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr "管理员密码。如果“use_user_token”没有生效，那么可指定管理凭证。"
-
-msgid ""
-"The administrators user name. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr "管理员用户名。如果“use_user_token”没有生效，那么可指定管理凭证。"
 
 #, python-format
 msgid "The cert file you specified %s does not exist"
@@ -1370,13 +1246,6 @@ msgstr "任务 JSON blob 所需的参数"
 msgid "The provided image is too large."
 msgstr "提供的映像太大。"
 
-msgid ""
-"The region for the authentication service. If \"use_user_token\" is not in "
-"effect and using keystone auth, then region name can be specified."
-msgstr ""
-"用于认证服务的区域。如果“use_user_token”没有生效并且正在使用 keystone 认证，"
-"那么可指定区域名称。"
-
 msgid "The request returned 500 Internal Server Error."
 msgstr "该请求返回了“500 内部服务器错误”。"
 
@@ -1474,22 +1343,11 @@ msgstr "已删除映像位置的状态只能设置为“pending_delete”或“d
 msgid "The status of this image member"
 msgstr "此映像成员的状态"
 
-msgid ""
-"The strategy to use for authentication. If \"use_user_token\" is not in "
-"effect, then auth strategy can be specified."
-msgstr "要用于认证的策略。如果“use_user_token”没有生效，那么可指定认证策略。"
-
 #, python-format
 msgid ""
 "The target member %(member_id)s is already associated with image "
 "%(image_id)s."
 msgstr "目标成员 %(member_id)s 已关联映像 %(image_id)s。"
-
-msgid ""
-"The tenant name of the administrative user. If \"use_user_token\" is not in "
-"effect, then admin tenant name can be specified."
-msgstr ""
-"管理用户的租户名称。如果“use_user_token”没有生效，那么可指定管理员租户名称。"
 
 msgid "The type of task represented by this content"
 msgstr "此内容表示的任务的类型"
@@ -1614,37 +1472,12 @@ msgstr "排序方向未知，必须为“降序”或“升序”"
 msgid "Unrecognized JSON Schema draft version"
 msgstr "无法识别 JSON 模式草稿版本"
 
-msgid "Unrecognized changes-since value"
-msgstr "无法识别 changes-since 值"
-
-#, python-format
-msgid "Unsupported sort_dir. Acceptable values: %s"
-msgstr "sort_dir 不受支持。可接受值：%s"
-
-#, python-format
-msgid "Unsupported sort_key. Acceptable values: %s"
-msgstr "sort_key 不受支持。可接受值：%s"
-
 msgid "Virtual size of image in bytes"
 msgstr "映像的虚拟大小，以字节计"
 
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "用来等待 pid %(pid)s (%(file)s) 终止的时间已达到 15 秒；正在放弃"
-
-msgid ""
-"Whether to pass through the user token when making requests to the registry. "
-"To prevent failures with token expiration during big files upload, it is "
-"recommended to set this parameter to False.If \"use_user_token\" is not in "
-"effect, then admin credentials can be specified."
-msgstr ""
-"向注册表进行请求时是否传递用户令牌。为了防止在上载大文件期间因令牌到期而产生"
-"故障，建议将此参数设置为 False。如果“use_user_token”未生效，那么可以指定管理"
-"凭证。"
-
-#, python-format
-msgid "Wrong command structure: %s"
-msgstr "命令结构 %s 不正确"
 
 msgid "You are not authenticated."
 msgstr "您未经认证。"
@@ -1810,9 +1643,6 @@ msgstr "定制属性 (%(props)s) 与基本基准冲突"
 msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
 msgstr "在此平台上，eventlet“poll”和“selects”主数据中心都不可用"
 
-msgid "is_public must be None, True, or False"
-msgstr "is_public 必须为“无”、True 或 False"
-
 msgid "limit param must be an integer"
 msgstr "limit 参数必须为整数"
 
@@ -1825,9 +1655,6 @@ msgstr "映像内容的 md5 散列。"
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() 已获取意外的关键字 %s"
-
-msgid "protected must be True, or False"
-msgstr "protected 必须为 True 或 False"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"

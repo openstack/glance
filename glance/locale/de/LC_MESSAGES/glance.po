@@ -8,13 +8,12 @@
 # Laera Loris <llaera@outlook.com>, 2013
 # Robert Simai, 2014
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
-# Robert Simai <robert.simai@suse.com>, 2016. #zanata
 # Andreas Jaeger <jaegerandi@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-06-09 14:43+0000\n"
+"POT-Creation-Date: 2020-10-02 06:38+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -187,10 +186,6 @@ msgid "An unknown task exception occurred"
 msgstr "Eine unbekannte Taskausnahme ist aufgetreten"
 
 #, python-format
-msgid "Attempt to upload duplicate image: %s"
-msgstr "Versuch doppeltes Abbild hochzuladen: %s"
-
-#, python-format
 msgid "Attribute '%(property)s' is read-only."
 msgstr "Attribut '%(property)s' ist schreibgeschützt."
 
@@ -241,10 +236,6 @@ msgstr ""
 "Notation."
 
 #, python-format
-msgid "Bad Command: %s"
-msgstr "Fehlerhaftes Kommando: %s"
-
-#, python-format
 msgid "Bad header: %(header_name)s"
 msgstr "Fehlerhafter Header: %(header_name)s"
 
@@ -290,17 +281,6 @@ msgstr ""
 "Verifizierung von Kontrollsumme fehlgeschlagen. Zwischenspeichern von Image "
 "'%s' abgebrochen."
 
-msgid "Client disconnected before sending all data to backend"
-msgstr ""
-"Die Verbindung zum Client wurde beendet, bevor alle Daten zum Backend "
-"geschickt wurden"
-
-msgid "Command not found"
-msgstr "Kommando nicht gefunden"
-
-msgid "Configuration option was not valid"
-msgstr "Konfigurationsoption war nicht gültig"
-
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr ""
@@ -339,9 +319,6 @@ msgstr "Namensbereich %s konnte nicht gefunden werden"
 msgid "Could not find property %s"
 msgstr "Eigenschaft %s konnte nicht gefunden werden"
 
-msgid "Could not find required configuration option"
-msgstr "Erforderliche Konfigurationsoption konnte nicht gefunden werden"
-
 #, python-format
 msgid "Could not find task %s"
 msgstr "Task %s konnte nicht gefunden werden"
@@ -352,10 +329,6 @@ msgstr "Abbild konnte nicht aktualisiert werden: %s"
 
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "Zurzeit werden OVA-Pakete mit mehreren Platten nicht unterstützt. "
-
-#, python-format
-msgid "Data for image_id not found: %s"
-msgstr "Daten für image_id nicht gefunden: %s"
 
 msgid "Data supplied was not valid."
 msgstr "Angegebene Daten waren nicht gültig."
@@ -411,12 +384,6 @@ msgstr ""
 "Versuch, das Abbild hochzuladen, wird verweigert, weil es das Kontingent "
 "überschreitet: %s"
 
-#, python-format
-msgid "Denying attempt to upload image larger than %d bytes."
-msgstr ""
-"Versuch, Abbild hochzuladen, das größer ist als %d Bytes, wird nicht "
-"zugelassen."
-
 msgid "Descriptive name for the image"
 msgstr "Beschreibender Name für das Abbild"
 
@@ -458,10 +425,6 @@ msgstr ""
 "Status mit Angabe im folgenden Format erwartet: {\"status\": \"status\"}"
 
 #, python-format
-msgid "Failed to add image metadata. Got error: %s"
-msgstr "Abbildmetadaten wurden nicht hinzugefügt. Fehler: %s"
-
-#, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "Zu löschendes Abbild %(image_id)s wurde nicht gefunden"
 
@@ -477,14 +440,6 @@ msgstr ""
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "Fehler beim Lesen von %s aus Konfiguration"
-
-#, python-format
-msgid "Failed to update image metadata. Got error: %s"
-msgstr "Abbildmetadaten wurden nicht aktualisiert. Fehler: %s"
-
-#, python-format
-msgid "Failed to upload image %s"
-msgstr "Fehler beim Hochladen des Abbildes %s"
 
 #, python-format
 msgid ""
@@ -512,13 +467,6 @@ msgid ""
 msgstr ""
 "Dateibasierte Importe sind nicht zulässig. Verwenden Sie eine "
 "Imagedatenquelle, die nicht lokal ist."
-
-msgid "Forbidden image access"
-msgstr "Unzulässiger Zugriff auf Abbild"
-
-#, python-format
-msgid "Forbidden upload attempt: %s"
-msgstr "Unerlaubter Uploadversuch: %s"
 
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
@@ -563,10 +511,6 @@ msgstr ""
 "Abbild %(id)s konnte nicht gelöscht werden, da es verwendet wird: %(exc)s"
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "Abbild %(id)s nicht gefunden"
-
-#, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have been "
 "deleted during the upload: %(error)s"
@@ -586,22 +530,6 @@ msgstr ""
 "Abbild %s konnte nach dem Upload nicht gefunden werden. Das Abbild wurde "
 "möglicherweise beim Upload gelöscht. Die hochgeladenen Blöcke werden "
 "bereinigt."
-
-#, python-format
-msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
-msgstr ""
-"Abbild %s konnte nach dem Hochladen nicht gefunden werden. Das Abbild ist "
-"möglicherweise beim Hochladen gelöscht worden."
-
-#, python-format
-msgid "Image %s is deactivated"
-msgstr "Abbild %s ist deaktiviert"
-
-#, python-format
-msgid "Image %s is not active"
-msgstr "Abbild %s ist nicht aktiv"
 
 #, python-format
 msgid "Image %s not found."
@@ -636,14 +564,6 @@ msgstr "Grenzwert für Abbildschlagwort für Abbild %(id)s überschritten: %(e)s
 #, python-format
 msgid "Image upload problem: %s"
 msgstr "Problem beim Abbildupload: %s"
-
-#, python-format
-msgid "Image with identifier %s already exists!"
-msgstr "Abbild mit ID %s ist bereits vorhanden!"
-
-#, python-format
-msgid "Image with identifier %s not found"
-msgstr "Abbild mit ID %s nicht gefunden"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -700,9 +620,6 @@ msgid ""
 msgstr ""
 "Ungültiger Filterwert %s. Vor dem öffnenden Anführungszeichen ist kein Komma."
 
-msgid "Invalid image id format"
-msgstr "Ungültiges Abbild-ID-Format"
-
 msgid "Invalid location"
 msgstr "Ungültige Position"
 
@@ -727,13 +644,6 @@ msgstr "Unbekannte Stellen: %s"
 
 msgid "Invalid marker format"
 msgstr "Ungültiges Markerformat"
-
-msgid "Invalid marker. Image could not be found."
-msgstr "Ungültiger Marker. Abbild konnte nicht gefunden werden."
-
-#, python-format
-msgid "Invalid membership association: %s"
-msgstr "Ungültige Mitgliedschaftszuordnung: %s"
 
 #, python-format
 msgid ""
@@ -860,9 +770,6 @@ msgstr "Mitglied darf nicht leer sein"
 msgid "Member to be added not specified"
 msgstr "Hinzuzufügendes Element nicht angegeben"
 
-msgid "Membership could not be found."
-msgstr "Mitgliedschaft konnte nicht gefunden werden."
-
 #, python-format
 msgid ""
 "Metadata definition namespace %(namespace)s is protected and cannot be "
@@ -942,9 +849,6 @@ msgstr ""
 "im Allgemeinen darauf hin, dass eine Region erforderlich ist und dass Sie "
 "keine angegeben haben."
 
-msgid "No authenticated user"
-msgstr "Kein authentifizierter Benutzer"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "Es wurde kein Abbild mit der ID %s gefunden"
@@ -952,9 +856,6 @@ msgstr "Es wurde kein Abbild mit der ID %s gefunden"
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr "Keine Position mit ID %(loc)s von Abbild %(img)s gefunden"
-
-msgid "No permission to share that image"
-msgstr "Keine Berechtigung dieses Abbild freizugeben"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1157,9 +1058,6 @@ msgid "Request body must be a JSON array of operation objects."
 msgstr ""
 "Anforderungshauptteil muss eine JSON-Array mit Operationsobjekten sein."
 
-msgid "Request must be a list of commands"
-msgstr "Die Anfrage muss eine Liste von Kommandos sein"
-
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
 "possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
@@ -1238,19 +1136,6 @@ msgstr ""
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "%(serv)s (PID %(pid)s) wird mit Signal (%(sig)s) gestoppt"
 
-#, python-format
-msgid "Store for image_id not found: %s"
-msgstr "Speicher für image_id nicht gefunden: %s"
-
-#, python-format
-msgid ""
-"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
-"(%(actual)s) did not match. Setting image status to 'killed'."
-msgstr ""
-"Angaben für %(attr)s (%(supplied)s) und %(attr)s, die aus dem hochgeladenen "
-"Abbild (%(actual)s) generiert wurden, stimmten nicht überein. Abbildstatus "
-"wird auf 'killed' gesetzt."
-
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "Unterstützte Werte für das 'container_format' Abbild-Attribut"
 
@@ -1299,28 +1184,6 @@ msgstr ""
 
 msgid "The Store URI was malformed."
 msgstr "Die Speicher-URI war fehlerhaft."
-
-msgid ""
-"The URL to the keystone service. If \"use_user_token\" is not in effect and "
-"using keystone auth, then URL of keystone can be specified."
-msgstr ""
-"Die URL des Keystone-Service. Wenn \"use_user_token\" nicht wirksam ist und "
-"die Keystone-Authentifizierung verwendet wird, kann die Keystone-URL "
-"angegeben werden. "
-
-msgid ""
-"The administrators password. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"Das Administratorkennwort. Wenn \"use_user_token\" nicht wirksam ist, können "
-"Berechtigungsnachweise für den Administrator angegeben werden. "
-
-msgid ""
-"The administrators user name. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"Der Administratorname. Wenn \"use_user_token\" nicht wirksam ist, können "
-"Berechtigungsnachweise für den Administrator angegeben werden. "
 
 #, python-format
 msgid "The cert file you specified %s does not exist"
@@ -1477,14 +1340,6 @@ msgstr "Die für die Task erforderlichen Parameter, JSON-Blob-Objekt"
 msgid "The provided image is too large."
 msgstr "Das angegebene Abbild ist zu groß."
 
-msgid ""
-"The region for the authentication service. If \"use_user_token\" is not in "
-"effect and using keystone auth, then region name can be specified."
-msgstr ""
-"Die Region für den Authentifizierungsservice. Wenn \"use_user_token\" nicht "
-"wirksam ist und die Keystone-Authentifizierung verwendet wird, kann der "
-"Regionsname angegeben werden. "
-
 msgid "The request returned 500 Internal Server Error."
 msgstr ""
 "Die Anforderung hat eine Nachricht vom Typ '500 - interner Serverfehler' "
@@ -1599,13 +1454,6 @@ msgstr ""
 msgid "The status of this image member"
 msgstr "Der Status dieses Abbildelements"
 
-msgid ""
-"The strategy to use for authentication. If \"use_user_token\" is not in "
-"effect, then auth strategy can be specified."
-msgstr ""
-"Die für die Authentifizierung zu verwendende Strategie. Wenn \"use_user_token"
-"\" nicht wirksam ist, kann die Authentifizierungsstrategie angegeben werden. "
-
 #, python-format
 msgid ""
 "The target member %(member_id)s is already associated with image "
@@ -1613,13 +1461,6 @@ msgid ""
 msgstr ""
 "Das Zielmitglied %(member_id)s ist dem Abbild %(image_id)s bereits "
 "zugeordnet."
-
-msgid ""
-"The tenant name of the administrative user. If \"use_user_token\" is not in "
-"effect, then admin tenant name can be specified."
-msgstr ""
-"Der Nutzername des Benutzers mit Verwaltungsaufgaben. Wenn \"use_user_token"
-"\" nicht wirksam ist, kann der Administratornutzername angegeben werden. "
 
 msgid "The type of task represented by this content"
 msgstr "Der Typ der durch diesen Inhalt dargestellten Task"
@@ -1763,17 +1604,6 @@ msgstr "Unbekannte Sortierrichtung; muss 'desc' oder 'asc' sein"
 msgid "Unrecognized JSON Schema draft version"
 msgstr "Unerkannte JSON-Schemaentwurfsversion"
 
-msgid "Unrecognized changes-since value"
-msgstr "Unerkannter Wert für 'changes-since'"
-
-#, python-format
-msgid "Unsupported sort_dir. Acceptable values: %s"
-msgstr "Nicht unterstützter Wert für 'sort_dir'. Zulässige Werte: %s"
-
-#, python-format
-msgid "Unsupported sort_key. Acceptable values: %s"
-msgstr "Nicht unterstützter Wert für 'sort_key'. Zulässige Werte: %s"
-
 msgid "Virtual size of image in bytes"
 msgstr "Virtuelle Größe des Abbildes in Byte"
 
@@ -1782,22 +1612,6 @@ msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
 "Es wurde 15 Sekunden auf den Abbruch von PID %(pid)s (%(file)s) gewartet; "
 "Abbruch"
-
-msgid ""
-"Whether to pass through the user token when making requests to the registry. "
-"To prevent failures with token expiration during big files upload, it is "
-"recommended to set this parameter to False.If \"use_user_token\" is not in "
-"effect, then admin credentials can be specified."
-msgstr ""
-"Gibt an, ob das Benutzertoken durchlaufen werden soll, wenn Anforderungen an "
-"die Registry gesendet werden. Um Fehler mit dem Ablauf des Tokens beim "
-"Hochladen von großen Dateien zu verhindern, wird empfohlen, diesen Parameter "
-"auf False festzulegen. Wenn \"use_user_token\" nicht wirksam ist, können "
-"Berechtigungsnachweise für den Administrator angegeben werden."
-
-#, python-format
-msgid "Wrong command structure: %s"
-msgstr "Falsche Kommandostruktur: %s"
 
 msgid "You are not authenticated."
 msgstr "Sie sind nicht authentifiziert."
@@ -1974,9 +1788,6 @@ msgstr ""
 "Hub weder für Eventlet 'poll' noch für 'selects' ist auf dieser Plattform "
 "verfügbar"
 
-msgid "is_public must be None, True, or False"
-msgstr "'is_public' muss 'None', 'True' oder 'False' sein"
-
 msgid "limit param must be an integer"
 msgstr "'limit'-Parameter muss eine Ganzzahl sein"
 
@@ -1989,9 +1800,6 @@ msgstr "md5-Hashwert von Abbildinhalten. "
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() hat unerwartete Schlüsselwörter %s erhalten"
-
-msgid "protected must be True, or False"
-msgstr "'protected' muss 'True' oder 'False' sein"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"

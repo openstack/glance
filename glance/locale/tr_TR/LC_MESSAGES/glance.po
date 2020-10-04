@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-06-09 14:43+0000\n"
+"POT-Creation-Date: 2020-10-02 06:38+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -156,10 +156,6 @@ msgid "An unknown task exception occurred"
 msgstr "Bilinmeyen bir görev olağandışı durumu oluştu"
 
 #, python-format
-msgid "Attempt to upload duplicate image: %s"
-msgstr "Çift imaj yüklemeyi dene: %s"
-
-#, python-format
 msgid "Attribute '%(property)s' is read-only."
 msgstr "'%(property)s' özniteliği salt okunurdur."
 
@@ -193,10 +189,6 @@ msgstr "Yetkilendirme başarısız oldu."
 
 msgid "Available categories:"
 msgstr "Kullanılabilir kategoriler:"
-
-#, python-format
-msgid "Bad Command: %s"
-msgstr "Hatalı Komut: %s"
 
 #, python-format
 msgid "Bad header: %(header_name)s"
@@ -236,17 +228,6 @@ msgstr ""
 "Sağlama doğrulama başarısız oldu. '%s' imajını önbelleğe alma işlemi "
 "durduruldu."
 
-msgid "Client disconnected before sending all data to backend"
-msgstr ""
-"İstemci tüm verileri art alanda çalışan uygulamaya göndermeden önce "
-"bağlantıyı kesti"
-
-msgid "Command not found"
-msgstr "Komut bulunamadı"
-
-msgid "Configuration option was not valid"
-msgstr "Yapılandırma seçeneği geçerli değildi."
-
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr ""
@@ -280,9 +261,6 @@ msgstr "%s ad alanı bulunamadı"
 msgid "Could not find property %s"
 msgstr "%s özelliği bulunamadı"
 
-msgid "Could not find required configuration option"
-msgstr "Gerekli yapılandırma seçeneği bulunamadı"
-
 #, python-format
 msgid "Could not find task %s"
 msgstr "%s görevi bulunamadı"
@@ -313,10 +291,6 @@ msgstr "Bu kaynağın kaldırılacağı tarih zaman"
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr "İmaj yükleme girişimi kotayı aştığından dolayı reddediliyor: %s"
 
-#, python-format
-msgid "Denying attempt to upload image larger than %d bytes."
-msgstr "%d bayttan büyük bir imajın yükleme girişimi reddediliyor."
-
 msgid "Descriptive name for the image"
 msgstr "İmaj için açıklayıcı ad"
 
@@ -330,10 +304,6 @@ msgstr ""
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Depolama yapılandırmasında hata. Depolamak için imaj ekleme devre dışıdır."
-
-#, python-format
-msgid "Failed to add image metadata. Got error: %s"
-msgstr "İmaj metadata ekleme işlemi başarısız oldu. Alınan hata: %s"
 
 #, python-format
 msgid "Failed to find image %(image_id)s to delete"
@@ -350,14 +320,6 @@ msgstr "İmaj önbellek veritabanı başlatılamadı. Alınan hata: %s"
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "Yapılandırmadan %s okunamadı"
-
-#, python-format
-msgid "Failed to update image metadata. Got error: %s"
-msgstr "İmaj metadata güncelleme işlemi başarısız oldu: Alınan hata: %s"
-
-#, python-format
-msgid "Failed to upload image %s"
-msgstr "%s imajı yükleme işlemi başarısız oldu"
 
 #, python-format
 msgid ""
@@ -381,10 +343,6 @@ msgid ""
 msgstr ""
 "Dosya tabanlı içeri aktarmlara izin verilmez. Lütfen imaj verilerinin yerel "
 "olmayan bir kaynağını kullanın."
-
-#, python-format
-msgid "Forbidden upload attempt: %s"
-msgstr "Yükleme girişimi yasak: %s"
 
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
@@ -426,10 +384,6 @@ msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr "%(id)s imajı kullanımda olduğundan dolayı silinemedi: %(exc)s"
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "%(id)s imajı bulunamadı"
-
-#, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have been "
 "deleted during the upload: %(error)s"
@@ -448,14 +402,6 @@ msgid ""
 msgstr ""
 "%s imajı yüklendikten sonra bulunamadı. İmaj yükleme sırasında silinmiş, "
 "yüklenen parçalar temizlenmiş olabilir."
-
-#, python-format
-msgid "Image %s is deactivated"
-msgstr "%s imajı devrede değil"
-
-#, python-format
-msgid "Image %s is not active"
-msgstr "%s imajı etkin değil"
 
 #, python-format
 msgid "Image %s not found."
@@ -490,14 +436,6 @@ msgstr "%(id)s imajı için etiket sınırı aşıldı: %(e)s:"
 #, python-format
 msgid "Image upload problem: %s"
 msgstr "İmaj yükleme sorunu: %s"
-
-#, python-format
-msgid "Image with identifier %s already exists!"
-msgstr "%s tanımlayıcısı ile imaj zaten mevcut!"
-
-#, python-format
-msgid "Image with identifier %s not found"
-msgstr "%s tanımlayıcısı ile imaj bulunamadı"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -537,9 +475,6 @@ msgstr "Özellik koruma dosyasında geçersiz yapılandırma."
 msgid "Invalid content type %(content_type)s"
 msgstr "Geçersiz içerik türü %(content_type)s"
 
-msgid "Invalid image id format"
-msgstr "Geçersiz imaj id biçimi"
-
 msgid "Invalid location"
 msgstr "Geçersiz konum"
 
@@ -564,13 +499,6 @@ msgstr "Geçersiz konumlar: %s"
 
 msgid "Invalid marker format"
 msgstr "Geçersiz işaretçi biçimi"
-
-msgid "Invalid marker. Image could not be found."
-msgstr "Geçersiz işaretçi. İmaj bulunamadı."
-
-#, python-format
-msgid "Invalid membership association: %s"
-msgstr "Geçersiz üyelik ilişkisi: %s"
 
 #, python-format
 msgid ""
@@ -676,9 +604,6 @@ msgstr "Üye boş olamaz"
 msgid "Member to be added not specified"
 msgstr "Eklenecek üye belirtilmemiş"
 
-msgid "Membership could not be found."
-msgstr "Üyelik bulunamadı."
-
 #, python-format
 msgid ""
 "Metadata definition namespace %(namespace)s is protected and cannot be "
@@ -746,9 +671,6 @@ msgstr ""
 "%(region)s bölgesi için birden fazla 'image' servisi eşleşir. Bu genellikle, "
 "bir bölgenin gerekli olduğu ve sağlamadığınız anlamına gelir."
 
-msgid "No authenticated user"
-msgstr "Kimlik denetimi yapılmamış kullanıcı"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "%s bilgileri ile hiçbir imaj bulunamadı"
@@ -756,9 +678,6 @@ msgstr "%s bilgileri ile hiçbir imaj bulunamadı"
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr "%(img)s imajından %(loc)s bilgisi ile hiçbir konum bulunamadı"
-
-msgid "No permission to share that image"
-msgstr "Bu imajı paylaşma izni yok"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -945,9 +864,6 @@ msgstr "Bozuk pid dosyası %s kaldırılıyor"
 msgid "Request body must be a JSON array of operation objects."
 msgstr "İstek vücudu işlem nesnelerinin bir JSON dizisi olmalıdır."
 
-msgid "Request must be a list of commands"
-msgstr "İstek komutların bir listesi olmalıdır"
-
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
 "possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
@@ -1016,18 +932,6 @@ msgstr ""
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "(%(sig)s) sinyali ile %(serv)s (pid %(pid)s) durduruluyor"
 
-#, python-format
-msgid "Store for image_id not found: %s"
-msgstr "image_id için depo bulunamadı: %s"
-
-#, python-format
-msgid ""
-"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
-"(%(actual)s) did not match. Setting image status to 'killed'."
-msgstr ""
-"Verilen %(attr)s (%(supplied)s) ve yüklenen imajdan (%(actual)s) oluşturulan "
-"%(attr)s uyuşmadı. Görüntü durumu ayarlama 'killed'."
-
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "'container_format' imaj özniteliği için desteklenen değerler"
 
@@ -1077,28 +981,6 @@ msgstr ""
 
 msgid "The Store URI was malformed."
 msgstr "Depo URI'si bozulmuş."
-
-msgid ""
-"The URL to the keystone service. If \"use_user_token\" is not in effect and "
-"using keystone auth, then URL of keystone can be specified."
-msgstr ""
-"Keystone hizmeti için URL. Eğer \"use_user_token\" yürürlükte değilse ve "
-"keystone kimlik doğrulaması kullanılıyorsa, o zaman keystone URL'i "
-"belirtilebilir."
-
-msgid ""
-"The administrators password. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"Yönetici parolası. Eğer \"use_user_token\" yürürlükte değilse, o zaman "
-"yönetici kimlik bilgileri belirtilebilir."
-
-msgid ""
-"The administrators user name. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"Yönetici kullanıcı adı. Eğer \"use_user_token\" yürürlükte değilse, o zaman "
-"yönetici kimlik bilgileri belirtilebilir."
 
 #, python-format
 msgid "The cert file you specified %s does not exist"
@@ -1238,14 +1120,6 @@ msgstr "JSON blob, görev tarafından istenen parameteler"
 msgid "The provided image is too large."
 msgstr "Getirilen imaj çok büyük."
 
-msgid ""
-"The region for the authentication service. If \"use_user_token\" is not in "
-"effect and using keystone auth, then region name can be specified."
-msgstr ""
-"Kimlik doğrulama servisi için bölge. Eğer \"use_user_token\" yürürlükte "
-"değilse ve keystone kimlik doğrulaması kullanılıyorsa, bölge adı "
-"belirtilebilir."
-
 msgid "The request returned 500 Internal Server Error."
 msgstr "İstek geri 500 İç Sunucu Hatası döndürdü."
 
@@ -1350,26 +1224,12 @@ msgstr ""
 msgid "The status of this image member"
 msgstr "Bu imaj üyesinin durumu"
 
-msgid ""
-"The strategy to use for authentication. If \"use_user_token\" is not in "
-"effect, then auth strategy can be specified."
-msgstr ""
-"Kimlik doğrulama için kullanılacak strateji. Eğer \"use_user_token\" "
-"yürürlükte değilse, o zaman kimlik doğrulama stratejisi belirtilebilir."
-
 #, python-format
 msgid ""
 "The target member %(member_id)s is already associated with image "
 "%(image_id)s."
 msgstr ""
 "Hedef üye %(member_id)s, %(image_id)s imajı ile zaten ilişkilendirilmiştir."
-
-msgid ""
-"The tenant name of the administrative user. If \"use_user_token\" is not in "
-"effect, then admin tenant name can be specified."
-msgstr ""
-"İdari kullaıcının kiracı adı. Eğer \"use_user_token\" yürürlükte değilse, o "
-"zaman yönetici kiracı adı belirtilebilir."
 
 msgid "The type of task represented by this content"
 msgstr "Bu içerik ile sunulan görev türü"
@@ -1481,37 +1341,10 @@ msgstr "Bilinmeyen sıralama yönü, 'desc' or 'asc' olmalıdır"
 msgid "Unrecognized JSON Schema draft version"
 msgstr "Tanınmayan JSON Şeması taslak sürümü"
 
-msgid "Unrecognized changes-since value"
-msgstr "Belli bir zamandan sonraki tanınmayan değişiklik değeri"
-
-#, python-format
-msgid "Unsupported sort_dir. Acceptable values: %s"
-msgstr "Desteklenmeyen sort_dir. Kabul edilen değerler: %s"
-
-#, python-format
-msgid "Unsupported sort_key. Acceptable values: %s"
-msgstr "Desteklenmeyen sort_key. Kabul edilen değerler: %s"
-
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
 "%(pid)s (%(file)s) pid'i öldürmek için 15 saniye beklendi; vazgeçiliyor"
-
-msgid ""
-"Whether to pass through the user token when making requests to the registry. "
-"To prevent failures with token expiration during big files upload, it is "
-"recommended to set this parameter to False.If \"use_user_token\" is not in "
-"effect, then admin credentials can be specified."
-msgstr ""
-"Kayıt defteri sunucusuna istek yaparken kullanıcı jetonunun geçirilip "
-"geçirilmemesi. Büyük dosyaların yüklenmesi sırasında jetonun süresinin sona "
-"ermesi ile oluşacak hataları engellemek için, bu parametrenin seçilmemiş "
-"olarak ayarlanması önerilir. Eğer \"use_user_token\" yürürlükte değilse, o "
-"zaman yönetici kimlik bilgileri belirtilebilir."
-
-#, python-format
-msgid "Wrong command structure: %s"
-msgstr "Hatalı komut yapısı: %s"
 
 msgid "You are not authenticated."
 msgstr "Kimliğiniz doğrulanamadı."
@@ -1667,9 +1500,6 @@ msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
 msgstr ""
 "bu platformda eventlet 'poll' ya da 'selects' havuzları kullanılabilirdir"
 
-msgid "is_public must be None, True, or False"
-msgstr "is_public Hiçbiri, Doğru ya da Yanlış olmalıdır"
-
 msgid "limit param must be an integer"
 msgstr "Sınır parametresi tam sayı olmak zorunda"
 
@@ -1679,9 +1509,6 @@ msgstr "Sınır parametresi pozitif olmak zorunda"
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() beklenmeyen anahtar sözcük %s aldı"
-
-msgid "protected must be True, or False"
-msgstr "korumalı Doğru ya da Yanlış olmalıdır"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"

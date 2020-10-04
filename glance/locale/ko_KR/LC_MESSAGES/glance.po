@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-06-09 14:43+0000\n"
+"POT-Creation-Date: 2020-10-02 06:38+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -176,10 +176,6 @@ msgid "An unknown task exception occurred"
 msgstr "알 수 없는 태스크 예외 발생"
 
 #, python-format
-msgid "Attempt to upload duplicate image: %s"
-msgstr "중복 이미지를 업로드하려고 시도 중: %s"
-
-#, python-format
 msgid "Attribute '%(property)s' is read-only."
 msgstr "'%(property)s' 속성은 읽기 전용입니다."
 
@@ -225,10 +221,6 @@ msgstr ""
 "잘못된 \"%s\" 쿼리 필터 형식입니다. ISO 8601 DateTime 표기법을 사용하십시오."
 
 #, python-format
-msgid "Bad Command: %s"
-msgstr "잘못된 명령: %s"
-
-#, python-format
 msgid "Bad header: %(header_name)s"
 msgstr "잘못된 헤더: %(header_name)s"
 
@@ -270,15 +262,6 @@ msgstr "위치를 비어 있는 목록으로 설정할 수 없습니다."
 msgid "Checksum verification failed. Aborted caching of image '%s'."
 msgstr "체크섬 검증에 실패했습니다. '%s' 이미지 캐시가 중단되었습니다."
 
-msgid "Client disconnected before sending all data to backend"
-msgstr "모든 데이터를 백엔드로 전송하기 전에 클라이언트 연결이 끊어짐"
-
-msgid "Command not found"
-msgstr "명령을 찾을 수 없음"
-
-msgid "Configuration option was not valid"
-msgstr "구성 옵션이 올바르지 않음"
-
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr "연결 오류/URL %(url)s에서 Auth 서비스에 대한 잘못된 요청입니다."
@@ -314,9 +297,6 @@ msgstr "%s 네임스페이스를 찾을 수 없음"
 msgid "Could not find property %s"
 msgstr "특성 %s을(를) 찾을 수 없음"
 
-msgid "Could not find required configuration option"
-msgstr "필요한 구성 옵션을 찾을 수 없음"
-
 #, python-format
 msgid "Could not find task %s"
 msgstr "태스크 %s을(를) 찾을 수 없음"
@@ -327,10 +307,6 @@ msgstr "이미지를 업데이트할 수 없음: %s"
 
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr "여러 디스크를 포함하는 OVA 패키지는 현재 지원되지 않습니다."
-
-#, python-format
-msgid "Data for image_id not found: %s"
-msgstr "image_id에 대한 데이터를 찾을 수 없음: %s"
 
 msgid "Data supplied was not valid."
 msgstr "제공된 데이터가 올바르지 않습니다."
@@ -384,10 +360,6 @@ msgstr "이 자원이 제거되는 Datetime"
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr "할당량을 초과하기 때문에 이미지 업로드를 거부하는 중: %s"
 
-#, python-format
-msgid "Denying attempt to upload image larger than %d bytes."
-msgstr "%d바이트를 초과하는 이미지의 업로드를 거부하는 중입니다."
-
 msgid "Descriptive name for the image"
 msgstr "이미지에 대한 설명식 이름"
 
@@ -418,10 +390,6 @@ msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "{\"status\": \"status\"} 형식의 상태가 있어야 함"
 
 #, python-format
-msgid "Failed to add image metadata. Got error: %s"
-msgstr "이미지 메타데이터 추가 실패. 오류 발생: %s"
-
-#, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "삭제할 %(image_id)s 이미지를 찾는 데 실패함"
 
@@ -436,14 +404,6 @@ msgstr "이미지 캐시 데이터베이스를 초기화하지 못했습니다. 
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "구성에서 %s을(를) 읽지 못했음"
-
-#, python-format
-msgid "Failed to update image metadata. Got error: %s"
-msgstr "이미지 메타데이터 업데이트 실패. 오류 발생: %s"
-
-#, python-format
-msgid "Failed to upload image %s"
-msgstr "이미지 %s을(를) 업로드하지 못했습니다."
 
 #, python-format
 msgid ""
@@ -470,13 +430,6 @@ msgid ""
 msgstr ""
 "파일 기반 가져오기는 허용되지 않습니다. 이미지 데이터의 로컬이 아닌 소스를 사"
 "용하십시오."
-
-msgid "Forbidden image access"
-msgstr "금지된 이미지 액세스"
-
-#, python-format
-msgid "Forbidden upload attempt: %s"
-msgstr "금지된 업로드 시도: %s"
 
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
@@ -518,10 +471,6 @@ msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr "이미지 %(id)s이(가) 사용 중이므로 이를 삭제할 수 없음: %(exc)s"
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "%(id)s 이미지를 찾을 수 없음"
-
-#, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have been "
 "deleted during the upload: %(error)s"
@@ -540,22 +489,6 @@ msgid ""
 msgstr ""
 "업로드 후에 %s 이미지를 찾을 수 없습니다. 업로드 동안 이미지가 삭제되었을 수 "
 "있습니다. 업로드된 청크를 정리합니다."
-
-#, python-format
-msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
-msgstr ""
-"업로드 후 이미지 %s을(를) 찾을 수 없습니다. 업로드 중에 이미지가 삭되었을 수 "
-"있습니다."
-
-#, python-format
-msgid "Image %s is deactivated"
-msgstr "%s 이미지가 비활성화됨"
-
-#, python-format
-msgid "Image %s is not active"
-msgstr "%s 이미지가 활성 상태가 아님"
 
 #, python-format
 msgid "Image %s not found."
@@ -589,14 +522,6 @@ msgstr "이미지 %(id)s에 대한 이미지 태그 한계 초과: %(e)s:"
 #, python-format
 msgid "Image upload problem: %s"
 msgstr "이미지 업로드 문제: %s"
-
-#, python-format
-msgid "Image with identifier %s already exists!"
-msgstr "ID가 %s인 이미지가 이미 존재합니다!"
-
-#, python-format
-msgid "Image with identifier %s not found"
-msgstr "ID가 %s인 이미지를 찾을 수 없음"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -649,9 +574,6 @@ msgid ""
 "Invalid filter value %s. There is no comma before opening quotation mark."
 msgstr "올바르지 않은 필터 값 %s입니다. 열기 따옴표 전에 쉼표가 없습니다."
 
-msgid "Invalid image id format"
-msgstr "올바르지 않은 이미지 ID 형식"
-
 msgid "Invalid location"
 msgstr "잘못된 위치"
 
@@ -676,13 +598,6 @@ msgstr "올바르지 않은 위치: %s"
 
 msgid "Invalid marker format"
 msgstr "올바르지 않은 마커 형식"
-
-msgid "Invalid marker. Image could not be found."
-msgstr "올바르지 않은 마커입니다. 이미지를 찾을 수 없습니다."
-
-#, python-format
-msgid "Invalid membership association: %s"
-msgstr "올바르지 않은 멤버십 연관: %s"
 
 #, python-format
 msgid ""
@@ -797,9 +712,6 @@ msgstr "멤버는 비어 있을 수 없음"
 msgid "Member to be added not specified"
 msgstr "추가할 멤버를 지정하지 않음"
 
-msgid "Membership could not be found."
-msgstr "멤버십을 찾을 수 없습니다."
-
 #, python-format
 msgid ""
 "Metadata definition namespace %(namespace)s is protected and cannot be "
@@ -875,9 +787,6 @@ msgstr ""
 "다중 '이미지' 서비스가 %(region)s 리젼에 일치합니다. 이는 일반적으로 리젼이 "
 "필요하지만 아직 리젼을 제공하지 않은 경우 발생합니다."
 
-msgid "No authenticated user"
-msgstr "인증된 사용자가 없음"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "ID가 %s인 이미지를 찾을 수 없음"
@@ -885,9 +794,6 @@ msgstr "ID가 %s인 이미지를 찾을 수 없음"
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr "%(img)s 이미지에서 ID가 %(loc)s인 위치를 찾을 수 없음"
-
-msgid "No permission to share that image"
-msgstr "해당 이미지를 공유한 권한이 없음"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1077,9 +983,6 @@ msgstr "시간이 경과된 pid 파일 %s을(를) 제거하는 중"
 msgid "Request body must be a JSON array of operation objects."
 msgstr "요청 본문은 오퍼레이션 오브젝트의 JSON 배열이어야 합니다."
 
-msgid "Request must be a list of commands"
-msgstr "요청은 쉼표로 구분한 목록이어야 합니다."
-
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
 "possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
@@ -1154,18 +1057,6 @@ msgstr "%(cur_status)s에서 %(new_status)s(으)로의 상태 전이가 허용�
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "신호(%(sig)s)와 함께 %(serv)s(pid %(pid)s) 중지 중"
 
-#, python-format
-msgid "Store for image_id not found: %s"
-msgstr "image_id에 대한 저장소를 찾을 수 없음: %s"
-
-#, python-format
-msgid ""
-"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
-"(%(actual)s) did not match. Setting image status to 'killed'."
-msgstr ""
-"제공된 %(attr)s (%(supplied)s) 및 %(attr)s (업로드된 이미지 %(actual)s(으)로"
-"부터 생성됨)이(가) 일치하지 않음. 이미지 상태를 '강제 종료됨'으로 설정."
-
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "'container_format' 이미지 속성에 대해 지원되는 값"
 
@@ -1213,27 +1104,6 @@ msgstr ""
 
 msgid "The Store URI was malformed."
 msgstr "저장소 URI의 형식이 올바르지 않습니다."
-
-msgid ""
-"The URL to the keystone service. If \"use_user_token\" is not in effect and "
-"using keystone auth, then URL of keystone can be specified."
-msgstr ""
-"키스톤 서비스에 대한 URL입니다. \"use_user_token\"이(가) 적용되지 않는 경우 "
-"키스톤 권한을 사용한 다음 키스톤의 URL을 지정할 수 있습니다."
-
-msgid ""
-"The administrators password. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"관리자 비밀번호입니다. \"use_user_token\"이(가) 적용되지 않는 경우 관리 신임 "
-"정보를 지정할 수 있습니다."
-
-msgid ""
-"The administrators user name. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"관리 사용자 이름입니다. \"use_user_token\"이(가) 적용되지 않는 경우 관리 신"
-"임 정보를 지정할 수 있습니다."
 
 #, python-format
 msgid "The cert file you specified %s does not exist"
@@ -1374,13 +1244,6 @@ msgstr "태스크에서 필요로 하는 매개변수, JSON blob"
 msgid "The provided image is too large."
 msgstr "제공된 이미지가 너무 큽니다."
 
-msgid ""
-"The region for the authentication service. If \"use_user_token\" is not in "
-"effect and using keystone auth, then region name can be specified."
-msgstr ""
-"인증 서비스에 대한 리젼입니다. If \"use_user_token\"이(가) 적용되지 않는 경"
-"우 키스톤 권한을 사용한 다음 리젼 이름을 지정할 수 있습니다."
-
 msgid "The request returned 500 Internal Server Error."
 msgstr "요청 시 500 내부 서버 오류가 리턴되었습니다."
 
@@ -1488,25 +1351,11 @@ msgstr ""
 msgid "The status of this image member"
 msgstr "이 이미지 멤버의 상태"
 
-msgid ""
-"The strategy to use for authentication. If \"use_user_token\" is not in "
-"effect, then auth strategy can be specified."
-msgstr ""
-"인증에 사용할 전략입니다. If \"use_user_token\"이(가) 적용되지 않는 경우인증 "
-"전략을 지정할 수 있습니다."
-
 #, python-format
 msgid ""
 "The target member %(member_id)s is already associated with image "
 "%(image_id)s."
 msgstr "대상 멤버 %(member_id)s이(가) 이미 이미지 %(image_id)s."
-
-msgid ""
-"The tenant name of the administrative user. If \"use_user_token\" is not in "
-"effect, then admin tenant name can be specified."
-msgstr ""
-"관리 사용자의 테넌트 이름입니다. \"use_user_token\"이(가) 적용되지 않는 경우"
-"관리 테넌트 이름을 지정할 수 있습니다."
 
 msgid "The type of task represented by this content"
 msgstr "이 컨텐츠에서 나타내는 태스크의 유형"
@@ -1632,38 +1481,12 @@ msgstr "알 수 없는 정렬 방향입니다. 'desc' 또는 'asc'여야 함"
 msgid "Unrecognized JSON Schema draft version"
 msgstr "인식되지 않는 JSON 스키마 드래프트 버전"
 
-msgid "Unrecognized changes-since value"
-msgstr "인식되지 않는 changes-since 값"
-
-#, python-format
-msgid "Unsupported sort_dir. Acceptable values: %s"
-msgstr "지원되지 않는 sort_dir. 허용 가능한 값: %s"
-
-#, python-format
-msgid "Unsupported sort_key. Acceptable values: %s"
-msgstr "지원되지 않는 sort_key. 허용 가능한 값: %s"
-
 msgid "Virtual size of image in bytes"
 msgstr "이미지의 가상 크기(바이트)"
 
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "pid %(pid)s(%(file)s)이 종료될 때까지 15초 대기함, 포기하는 중"
-
-msgid ""
-"Whether to pass through the user token when making requests to the registry. "
-"To prevent failures with token expiration during big files upload, it is "
-"recommended to set this parameter to False.If \"use_user_token\" is not in "
-"effect, then admin credentials can be specified."
-msgstr ""
-"레지스트리에 대해 요청을 작성할 때 사용자 토큰을 통과할지 여부입니다. 큰 파일"
-"을 업로드하는 동안 토큰 만기에 대한 실패를 방지하려면 이 매개변수를 False로 "
-"설정하는 것이 좋습니다. \"use_user_token\"이 적용되지 않은 경우 관리 신임 정"
-"보를 지정할 수 있습니다."
-
-#, python-format
-msgid "Wrong command structure: %s"
-msgstr "잘못된 명령 구조: %s"
 
 msgid "You are not authenticated."
 msgstr "인증되지 않은 사용자입니다."
@@ -1830,9 +1653,6 @@ msgstr "사용자 정의 특성 (%(props)s)이(가) 기본 특성과 충돌함"
 msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
 msgstr "이 플랫폼에서 eventlet 'poll'이나 'selects' 허브를 모두 사용할 수 없음"
 
-msgid "is_public must be None, True, or False"
-msgstr "is_public은 None, True 또는 False여야 함"
-
 msgid "limit param must be an integer"
 msgstr "limit 매개변수는 정수여야 함"
 
@@ -1845,9 +1665,6 @@ msgstr "이미지 컨텐츠의 md5 해시입니다."
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image()가 예상치 못한 키워드 %s을(를) 가져옴"
-
-msgid "protected must be True, or False"
-msgstr "protected는 True 또는 False여야 함"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"

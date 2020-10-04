@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-06-09 14:43+0000\n"
+"POT-Creation-Date: 2020-10-02 06:38+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -193,10 +193,6 @@ msgid "An unknown task exception occurred"
 msgstr "不明なタスク例外が発生しました"
 
 #, python-format
-msgid "Attempt to upload duplicate image: %s"
-msgstr "重複したイメージのアップロードを試行します: %s"
-
-#, python-format
 msgid "Attribute '%(property)s' is read-only."
 msgstr "属性 '%(property)s' は読み取り専用です。"
 
@@ -245,10 +241,6 @@ msgstr ""
 "い。"
 
 #, python-format
-msgid "Bad Command: %s"
-msgstr "正しくないコマンド: %s"
-
-#, python-format
 msgid "Bad header: %(header_name)s"
 msgstr "ヘッダーが正しくありません: %(header_name)s"
 
@@ -292,15 +284,6 @@ msgstr ""
 "チェックサムの検証に失敗しました。イメージ '%s' のキャッシュを打ち切りまし"
 "た。"
 
-msgid "Client disconnected before sending all data to backend"
-msgstr "すべてのデータをバックエンドへ送信する前にクライアントが切断されました"
-
-msgid "Command not found"
-msgstr "コマンドが見つかりません"
-
-msgid "Configuration option was not valid"
-msgstr "構成オプションが無効でした"
-
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr "接続エラー/URL %(url)s の認証サービスに対する正しくない要求。"
@@ -335,9 +318,6 @@ msgstr "名前空間 %s が見つかりませんでした"
 #, python-format
 msgid "Could not find property %s"
 msgstr "プロパティー %s が見つかりませんでした"
-
-msgid "Could not find required configuration option"
-msgstr "必要な設定オプションが見つかりませんでした"
 
 #, python-format
 msgid "Could not find task %s"
@@ -384,10 +364,6 @@ msgstr "現在、複数のディスクを含む OVA パッケージはサポー�
 
 msgid "Custom property should not be greater than 255 characters."
 msgstr "カスタムプロパティは 255 文字より大きくてはいけません。"
-
-#, python-format
-msgid "Data for image_id not found: %s"
-msgstr "image_id のデータが見つかりません: %s"
 
 msgid "Data supplied was not valid."
 msgstr "指定されたデータが無効でした。"
@@ -500,10 +476,6 @@ msgstr ""
 "イメージをアップロードしようとしましたが、割り当て量を超えてしまうため、拒否"
 "されています: %s"
 
-#, python-format
-msgid "Denying attempt to upload image larger than %d bytes."
-msgstr "%d バイトより大きいイメージのアップロード試行を拒否しています。"
-
 msgid "Descriptive name for the image"
 msgstr "イメージの記述名"
 
@@ -535,10 +507,6 @@ msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "次の形式で状態を予期: {\"status\": \"status\"}"
 
 #, python-format
-msgid "Failed to add image metadata. Got error: %s"
-msgstr "イメージメタデータを追加できませんでした。受け取ったエラー: %s"
-
-#, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "削除するイメージ %(image_id)s が見つかりませんでした"
 
@@ -558,14 +526,6 @@ msgstr "設定から %s を読み取ることができませんでした"
 #, python-format
 msgid "Failed to sync database: ERROR: %s"
 msgstr "データベースの同期に失敗しました: エラー: %s"
-
-#, python-format
-msgid "Failed to update image metadata. Got error: %s"
-msgstr "イメージメタデータを更新できませんでした。エラー: %s"
-
-#, python-format
-msgid "Failed to upload image %s"
-msgstr "イメージ %s をアップロードできませんでした"
 
 #, python-format
 msgid ""
@@ -595,13 +555,6 @@ msgid ""
 msgstr ""
 "ファイルベースのインポートは許可されません。イメージデータの非ローカルソース"
 "を使用してください。"
-
-msgid "Forbidden image access"
-msgstr "イメージにアクセスする権限がありません"
-
-#, python-format
-msgid "Forbidden upload attempt: %s"
-msgstr "禁止されているアップロードの試行: %s"
 
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
@@ -643,10 +596,6 @@ msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr "イメージ %(id)s は使用中のため削除できませんでした: %(exc)s"
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "イメージ %(id)s が見つかりません"
-
-#, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have been "
 "deleted during the upload: %(error)s"
@@ -666,22 +615,6 @@ msgstr ""
 "アップロード後にイメージ %s が見つかりませんでした。イメージはアップロード中"
 "に削除された可能性があります。アップロードされたチャンクをクリーンアップ中で"
 "す。"
-
-#, python-format
-msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
-msgstr ""
-"アップロード後にイメージ %s が見つかりませんでした。このイメージはアップロー"
-"ド中に削除された可能性があります。"
-
-#, python-format
-msgid "Image %s is deactivated"
-msgstr "イメージ %s は非アクティブ化されています"
-
-#, python-format
-msgid "Image %s is not active"
-msgstr "イメージ %s はアクティブではありません"
 
 #, python-format
 msgid "Image %s not found."
@@ -716,14 +649,6 @@ msgstr "イメージ %(id)s のイメージタグ上限を超えました: %(e)s
 #, python-format
 msgid "Image upload problem: %s"
 msgstr "イメージのアップロード問題: %s"
-
-#, python-format
-msgid "Image with identifier %s already exists!"
-msgstr "ID %s のイメージは既に存在します。"
-
-#, python-format
-msgid "Image with identifier %s not found"
-msgstr "ID %s のイメージが見つかりません"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -783,9 +708,6 @@ msgid ""
 "Invalid filter value %s. There is no comma before opening quotation mark."
 msgstr "無効なフィルター値 %s。開始引用符の前にコンマがありません。"
 
-msgid "Invalid image id format"
-msgstr "イメージ ID の形式が無効です"
-
 #, python-format
 msgid "Invalid int value for max_rows: %(max_rows)s"
 msgstr "max_rows の整数値 %(max_rows)s は無効です。"
@@ -814,13 +736,6 @@ msgstr "無効な場所: %s"
 
 msgid "Invalid marker format"
 msgstr "マーカーフォーマットが無効です"
-
-msgid "Invalid marker. Image could not be found."
-msgstr "無効なマーカーです。イメージが見つかりませんでした。"
-
-#, python-format
-msgid "Invalid membership association: %s"
-msgstr "無効なメンバーシップの関連付け: %s"
 
 #, python-format
 msgid ""
@@ -957,9 +872,6 @@ msgstr "「メンバー」は空にできません"
 msgid "Member to be added not specified"
 msgstr "追加するメンバーが指定されていません"
 
-msgid "Membership could not be found."
-msgstr "メンバーシップが見つかりませんでした。"
-
 #, python-format
 msgid ""
 "Metadata definition namespace %(namespace)s is protected and cannot be "
@@ -1042,9 +954,6 @@ msgstr ""
 msgid "Must supply a non-negative value for age."
 msgstr "存続期間には負ではない値を指定してください。"
 
-msgid "No authenticated user"
-msgstr "認証されていないユーザー"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "ID が %s であるイメージは見つかりません"
@@ -1052,9 +961,6 @@ msgstr "ID が %s であるイメージは見つかりません"
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr "イメージ %(img)s 内で ID が %(loc)s の場所は見つかりません"
-
-msgid "No permission to share that image"
-msgstr "そのイメージを共有する許可がありません"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1257,9 +1163,6 @@ msgstr "失効した pid ファイル %s を削除中"
 msgid "Request body must be a JSON array of operation objects."
 msgstr "要求本文は、操作オブジェクトの JSON 配列でなければなりません。"
 
-msgid "Request must be a list of commands"
-msgstr "要求はコマンドのリストである必要があります"
-
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
 "possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
@@ -1343,19 +1246,6 @@ msgstr "%(cur_status)s から %(new_status)s への状況遷移は許可され�
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "%(serv)s (pid %(pid)s) をシグナル (%(sig)s) により停止中"
 
-#, python-format
-msgid "Store for image_id not found: %s"
-msgstr "image_id のストアが見つかりません: %s"
-
-#, python-format
-msgid ""
-"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
-"(%(actual)s) did not match. Setting image status to 'killed'."
-msgstr ""
-"指定された %(attr)s (%(supplied)s) とアップロードされたイメージ (%(actual)s) "
-"から生成された %(attr)s が一致していませんでした。イメージの状況を「強制終了"
-"済み」に設定します。"
-
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "'container_format' イメージ属性に対してサポートされる値"
 
@@ -1403,27 +1293,6 @@ msgstr ""
 
 msgid "The Store URI was malformed."
 msgstr "ストア URI の形式に誤りがありました。"
-
-msgid ""
-"The URL to the keystone service. If \"use_user_token\" is not in effect and "
-"using keystone auth, then URL of keystone can be specified."
-msgstr ""
-"keystone サービスの URL。\"use_user_token\" が無効で、keystone 認証を使用して"
-"いる場合、keystone の URL を指定できます。"
-
-msgid ""
-"The administrators password. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"管理者パスワード。\"use_user_token\" が無効であれば、管理資格情報を指定できま"
-"す。"
-
-msgid ""
-"The administrators user name. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"管理者ユーザー名。\"use_user_token\" が無効であれば、管理資格情報を指定できま"
-"す。"
 
 #, python-format
 msgid "The cert file you specified %s does not exist"
@@ -1580,13 +1449,6 @@ msgstr "タスクによって要求されるパラメーター、JSON blob"
 msgid "The provided image is too large."
 msgstr "指定されたイメージが大きすぎます。"
 
-msgid ""
-"The region for the authentication service. If \"use_user_token\" is not in "
-"effect and using keystone auth, then region name can be specified."
-msgstr ""
-"認証サービスの領域。\"use_user_token\" が無効で、keystone 認証を使用している"
-"場合、領域名を指定できます。"
-
 msgid "The request returned 500 Internal Server Error."
 msgstr "要求で「500 Internal Server Error」が返されました。"
 
@@ -1695,13 +1557,6 @@ msgstr ""
 msgid "The status of this image member"
 msgstr "このイメージメンバーの状況"
 
-msgid ""
-"The strategy to use for authentication. If \"use_user_token\" is not in "
-"effect, then auth strategy can be specified."
-msgstr ""
-"認証に使用されるストラテジー。\"use_user_token\" が無効であれば、認証ストラテ"
-"ジーを指定できます。"
-
 #, python-format
 msgid ""
 "The target member %(member_id)s is already associated with image "
@@ -1709,13 +1564,6 @@ msgid ""
 msgstr ""
 "ターゲットメンバー %(member_id)s はイメージ %(image_id)s に既に関連付けられて"
 "います。"
-
-msgid ""
-"The tenant name of the administrative user. If \"use_user_token\" is not in "
-"effect, then admin tenant name can be specified."
-msgstr ""
-"管理ユーザーのテナント名。\"use_user_token\" が無効であれば、管理テナント名を"
-"指定できます。"
 
 msgid "The type of task represented by this content"
 msgstr "このコンテンツによって表されるタスクのタイプ"
@@ -1849,17 +1697,6 @@ msgstr "ソート方向が不明です。'desc' または 'asc' でなければ�
 msgid "Unrecognized JSON Schema draft version"
 msgstr "認識されない JSON スキーマのドラフトバージョン"
 
-msgid "Unrecognized changes-since value"
-msgstr "認識されない changes-since 値"
-
-#, python-format
-msgid "Unsupported sort_dir. Acceptable values: %s"
-msgstr "サポートされない sort_dir です。許容値: %s"
-
-#, python-format
-msgid "Unsupported sort_key. Acceptable values: %s"
-msgstr "サポートされない sort_key です。許容値: %s"
-
 #, python-format
 msgid "Upgraded database to: %(v)s, current revision(s): %(r)s"
 msgstr ""
@@ -1874,22 +1711,6 @@ msgstr "イメージの仮想サイズ (バイト)"
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "pid %(pid)s (%(file)s) が停止するまで 15 秒お待ちください。中断中です"
-
-msgid ""
-"Whether to pass through the user token when making requests to the registry. "
-"To prevent failures with token expiration during big files upload, it is "
-"recommended to set this parameter to False.If \"use_user_token\" is not in "
-"effect, then admin credentials can be specified."
-msgstr ""
-"レジストリーに対して要求を行うときに、ユーザートークンをパススルーするかどう"
-"か。サイズの大きなファイルのアップロード中のトークンの有効期限切れに伴う障害"
-"を防ぐために、このパラメーターは False に設定することが推奨されま"
-"す。\"use_user_token\" が無効である場合は、管理者のクレデンシャルを指定できま"
-"す。"
-
-#, python-format
-msgid "Wrong command structure: %s"
-msgstr "正しくないコマンド構造: %s"
 
 msgid "You are not authenticated."
 msgstr "認証されていません。"
@@ -2083,9 +1904,6 @@ msgstr ""
 "このプラットフォームでは eventlet の「poll」ハブも「selects」ハブも使用できま"
 "せん"
 
-msgid "is_public must be None, True, or False"
-msgstr "is_public は、None、True、または False でなければなりません"
-
 msgid "limit param must be an integer"
 msgstr "limit パラメーターは整数でなければなりません"
 
@@ -2098,9 +1916,6 @@ msgstr "イメージコンテンツの MD5 ハッシュ。"
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() で予期しないキーワード %s が得られました"
-
-msgid "protected must be True, or False"
-msgstr "protected は True または False でなければなりません"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"

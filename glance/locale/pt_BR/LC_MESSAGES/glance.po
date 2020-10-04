@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-06-09 14:43+0000\n"
+"POT-Creation-Date: 2020-10-02 06:38+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -184,10 +184,6 @@ msgid "An unknown task exception occurred"
 msgstr "Ocorreu uma exceção de tarefa desconhecida"
 
 #, python-format
-msgid "Attempt to upload duplicate image: %s"
-msgstr "Tentativa de fazer upload de imagem duplicada: %s"
-
-#, python-format
 msgid "Attribute '%(property)s' is read-only."
 msgstr "O atributo '%(property)s' é somente leitura."
 
@@ -236,10 +232,6 @@ msgstr ""
 "DateTime."
 
 #, python-format
-msgid "Bad Command: %s"
-msgstr "Comandos inválidos: %s"
-
-#, python-format
 msgid "Bad header: %(header_name)s"
 msgstr "Cabeçalho inválido: %(header_name)s"
 
@@ -284,15 +276,6 @@ msgstr ""
 "A soma de verificação falhou. Interrompido o armazenamento em cache da "
 "imagem '%s'."
 
-msgid "Client disconnected before sending all data to backend"
-msgstr "Cliente desconectado antes de enviar todos os dados para o backend"
-
-msgid "Command not found"
-msgstr "Comando não encontrado"
-
-msgid "Configuration option was not valid"
-msgstr "A opção de configuração não era válida"
-
 #, python-format
 msgid "Connect error/bad request to Auth service at URL %(url)s."
 msgstr ""
@@ -331,9 +314,6 @@ msgstr "Não foi possível localizar o namespace %s"
 msgid "Could not find property %s"
 msgstr "Não é possível localizar a propriedade %s"
 
-msgid "Could not find required configuration option"
-msgstr "Não foi possível localizar a opção de configuração necessária"
-
 #, python-format
 msgid "Could not find task %s"
 msgstr "Não foi possível localizar tarefa %s"
@@ -345,10 +325,6 @@ msgstr "Não foi possível atualizar a imagem: %s"
 msgid "Currently, OVA packages containing multiple disk are not supported."
 msgstr ""
 "Atualmente, os pacotes OVA que contêm diversos discos não são suportados. "
-
-#, python-format
-msgid "Data for image_id not found: %s"
-msgstr "Dados de image_id não localizados: %s"
 
 msgid "Data supplied was not valid."
 msgstr "Os dados fornecidos não eram válidos."
@@ -402,10 +378,6 @@ msgstr "Data/Hora quando este recurso deve ser objeto de remoção"
 msgid "Denying attempt to upload image because it exceeds the quota: %s"
 msgstr "Negando a tentativa de upload da imagem porque ela excede a cota: %s"
 
-#, python-format
-msgid "Denying attempt to upload image larger than %d bytes."
-msgstr "Negando tentativa de fazer upload de imagem maior que %d bytes."
-
 msgid "Descriptive name for the image"
 msgstr "Nome descritivo para a imagem"
 
@@ -439,10 +411,6 @@ msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "O estado era esperado no formato: {\"status\": \"status\"}"
 
 #, python-format
-msgid "Failed to add image metadata. Got error: %s"
-msgstr "Falha ao incluir metadados da imagem. Erro obtido: %s"
-
-#, python-format
 msgid "Failed to find image %(image_id)s to delete"
 msgstr "Falhar ao localizar a imagem %(image_id)s para excluir"
 
@@ -458,14 +426,6 @@ msgstr ""
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "Falha ao ler %s da configuração"
-
-#, python-format
-msgid "Failed to update image metadata. Got error: %s"
-msgstr "Falha ao atualizar metadados da imagem. Erro obtido: %s"
-
-#, python-format
-msgid "Failed to upload image %s"
-msgstr "Falha ao enviar imagem %s"
 
 #, python-format
 msgid ""
@@ -494,13 +454,6 @@ msgid ""
 msgstr ""
 "Importações baseadas em arquivo não são permitidas. Use uma fonte não local "
 "de dados de imagem."
-
-msgid "Forbidden image access"
-msgstr "Proibido o acesso a imagem"
-
-#, python-format
-msgid "Forbidden upload attempt: %s"
-msgstr "Tentativa de upload proibida: %s"
 
 #, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
@@ -545,10 +498,6 @@ msgstr ""
 "A imagem %(id)s não pôde ser excluída, pois ela está sendo usada: %(exc)s"
 
 #, python-format
-msgid "Image %(id)s not found"
-msgstr "Imagem %(id)s não localizada"
-
-#, python-format
 msgid ""
 "Image %(image_id)s could not be found after upload. The image may have been "
 "deleted during the upload: %(error)s"
@@ -567,22 +516,6 @@ msgid ""
 msgstr ""
 "A imagem %s não pôde ser localizada após o upload. A imagem pode ter sido "
 "excluída durante o upload, limpando os chunks transferidos por upload."
-
-#, python-format
-msgid ""
-"Image %s could not be found after upload. The image may have been deleted "
-"during the upload."
-msgstr ""
-"A imagem %s não foi encontrada após o envio. A imagem pode ter sido removida "
-"durante o envio."
-
-#, python-format
-msgid "Image %s is deactivated"
-msgstr "Imagem %s está desativada"
-
-#, python-format
-msgid "Image %s is not active"
-msgstr "A imagem %s não está ativa"
 
 #, python-format
 msgid "Image %s not found."
@@ -618,14 +551,6 @@ msgstr ""
 #, python-format
 msgid "Image upload problem: %s"
 msgstr "Problema ao fazer upload de imagem: %s"
-
-#, python-format
-msgid "Image with identifier %s already exists!"
-msgstr "A imagem o identificador %s já existe!"
-
-#, python-format
-msgid "Image with identifier %s not found"
-msgstr "Imagem com identificador %s não localizada"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -682,9 +607,6 @@ msgid ""
 msgstr ""
 "Valor de filtro inválido %s.Não há nenhuma vírgula antes da aspa de abertura."
 
-msgid "Invalid image id format"
-msgstr "Formato de ID da imagem inválido"
-
 msgid "Invalid location"
 msgstr "Local inválido"
 
@@ -709,13 +631,6 @@ msgstr "Localidades inválidas: %s"
 
 msgid "Invalid marker format"
 msgstr "Formato de marcador inválido"
-
-msgid "Invalid marker. Image could not be found."
-msgstr "Marcador inválido. A imagem não pôde ser localizada."
-
-#, python-format
-msgid "Invalid membership association: %s"
-msgstr "Associação inválida: %s"
 
 #, python-format
 msgid ""
@@ -833,9 +748,6 @@ msgstr "Membro não pode ser vazio"
 msgid "Member to be added not specified"
 msgstr "Membro a ser incluído não especificado"
 
-msgid "Membership could not be found."
-msgstr "Associação não pôde ser localizada."
-
 #, python-format
 msgid ""
 "Metadata definition namespace %(namespace)s is protected and cannot be "
@@ -914,9 +826,6 @@ msgstr ""
 "Diversas correspondências do serviço de 'imagem' para a região %(region)s. "
 "Isso geralmente significa que uma região é necessária e você não a forneceu."
 
-msgid "No authenticated user"
-msgstr "Usuário não autenticado"
-
 #, python-format
 msgid "No image found with ID %s"
 msgstr "Nenhuma imagem encontrada com o ID %s"
@@ -924,9 +833,6 @@ msgstr "Nenhuma imagem encontrada com o ID %s"
 #, python-format
 msgid "No location found with ID %(loc)s from image %(img)s"
 msgstr "Nenhum local localizado com o ID %(loc)s da imagem %(img)s"
-
-msgid "No permission to share that image"
-msgstr "Nenhum permissão para compartilhar essa imagem"
 
 #, python-format
 msgid "Not allowed to create members for image %s."
@@ -1122,9 +1028,6 @@ msgid "Request body must be a JSON array of operation objects."
 msgstr ""
 "O corpo da solicitação deve ser uma matriz JSON de objetos de operação."
 
-msgid "Request must be a list of commands"
-msgstr "Requisição deve ser uma lista de comandos"
-
 msgid ""
 "Resource type names should be aligned with Heat resource types whenever "
 "possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
@@ -1203,19 +1106,6 @@ msgstr ""
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "Parando %(serv)s (pid %(pid)s) com sinal (%(sig)s)"
 
-#, python-format
-msgid "Store for image_id not found: %s"
-msgstr "Armazenamento de image_id não localizado: %s"
-
-#, python-format
-msgid ""
-"Supplied %(attr)s (%(supplied)s) and %(attr)s generated from uploaded image "
-"(%(actual)s) did not match. Setting image status to 'killed'."
-msgstr ""
-"%(attr)s fornecido (%(supplied)s) e %(attr)s gerado da imagem transferida "
-"por upload (%(actual)s) não corresponderam. Configurando o status da imagem "
-"para 'eliminado'."
-
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "Valores suportados para o atributo de imagem 'container_format'"
 
@@ -1263,28 +1153,6 @@ msgstr ""
 
 msgid "The Store URI was malformed."
 msgstr "O URI de Armazenamento foi malformado."
-
-msgid ""
-"The URL to the keystone service. If \"use_user_token\" is not in effect and "
-"using keystone auth, then URL of keystone can be specified."
-msgstr ""
-"A URL para o serviço do keystone. Se \"use_user_token\" não estiver em vigor "
-"e utilizando uma autorização do keystone, então a URL do keystone pode ser "
-"especificada."
-
-msgid ""
-"The administrators password. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"A senha do administrador. Se \"use_user_token\" não estiver em vigor, então "
-"as credenciais do administrador podem ser especificadas."
-
-msgid ""
-"The administrators user name. If \"use_user_token\" is not in effect, then "
-"admin credentials can be specified."
-msgstr ""
-"O nome de usuário do administrador. Se \"use_user_token\" não estiver em "
-"vigor, então as credenciais do administrador podem ser especificadas."
 
 #, python-format
 msgid "The cert file you specified %s does not exist"
@@ -1427,14 +1295,6 @@ msgstr "Os parâmetros requeridos pela tarefa, blob JSON"
 msgid "The provided image is too large."
 msgstr "A imagem fornecida é muito grande."
 
-msgid ""
-"The region for the authentication service. If \"use_user_token\" is not in "
-"effect and using keystone auth, then region name can be specified."
-msgstr ""
-"A região para o serviço de autenticação. Se \"use_user_token\" não estiver "
-"em vigor e utilizando a autorização do keystone, então o nome da região pode "
-"ser especificado."
-
 msgid "The request returned 500 Internal Server Error."
 msgstr "A solicitação retornou 500 Erro Interno do Servidor."
 
@@ -1543,27 +1403,12 @@ msgstr ""
 msgid "The status of this image member"
 msgstr "O status desse membro da imagem"
 
-msgid ""
-"The strategy to use for authentication. If \"use_user_token\" is not in "
-"effect, then auth strategy can be specified."
-msgstr ""
-"A estratégia a ser utilizada para autenticação. Se \"use_user_token\" não "
-"estiver em vigor, então a estratégia de autorização pode ser especificada."
-
 #, python-format
 msgid ""
 "The target member %(member_id)s is already associated with image "
 "%(image_id)s."
 msgstr ""
 "O membro de destino %(member_id)s já está associado à imagem %(image_id)s."
-
-msgid ""
-"The tenant name of the administrative user. If \"use_user_token\" is not in "
-"effect, then admin tenant name can be specified."
-msgstr ""
-"O nome de locatário do usuário administrativo. Se \"use_user_token\" não "
-"estiver em vigor, então o nome de locatário do administrador pode ser "
-"especificado."
 
 msgid "The type of task represented by this content"
 msgstr "O tipo de tarefa representada por este conteúdo"
@@ -1693,17 +1538,6 @@ msgstr "Direção de classificação desconhecida; deve ser 'desc' ou 'asc'"
 msgid "Unrecognized JSON Schema draft version"
 msgstr "Versão rascunho do Esquema JSON não reconhecida"
 
-msgid "Unrecognized changes-since value"
-msgstr "Valor desde as alterações não reconhecido"
-
-#, python-format
-msgid "Unsupported sort_dir. Acceptable values: %s"
-msgstr "sort_dir não suportado. Valores aceitáveis: %s"
-
-#, python-format
-msgid "Unsupported sort_key. Acceptable values: %s"
-msgstr "sort_key não suportado. Valores aceitáveis: %s"
-
 msgid "Virtual size of image in bytes"
 msgstr "Tamanho virtual de imagem em bytes "
 
@@ -1711,21 +1545,6 @@ msgstr "Tamanho virtual de imagem em bytes "
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr ""
 "Esperou 15 segundos para pid %(pid)s (%(file)s) ser eliminado; desistindo"
-
-msgid ""
-"Whether to pass through the user token when making requests to the registry. "
-"To prevent failures with token expiration during big files upload, it is "
-"recommended to set this parameter to False.If \"use_user_token\" is not in "
-"effect, then admin credentials can be specified."
-msgstr ""
-"Se passar pelo token do usuário ao fazer solicitações ao registro. Para "
-"evitar falhas com expiração de token durante o upload de arquivos grandes, é "
-"recomendável configurar esse parâmetro como False. Se \"use_user_token\" não "
-"estiver em vigor, as credenciais do administrador poderão ser especificadas."
-
-#, python-format
-msgid "Wrong command structure: %s"
-msgstr "Estrutura de comandos incorreta: %s"
 
 msgid "You are not authenticated."
 msgstr "Você não está autenticado."
@@ -1901,9 +1720,6 @@ msgstr ""
 "nem o hub 'poll' nem o 'selects' do eventlet estão disponíveis nesta "
 "plataforma"
 
-msgid "is_public must be None, True, or False"
-msgstr "is_public deve ser Nenhum, True ou False"
-
 msgid "limit param must be an integer"
 msgstr "o parâmetro limit deve ser um número inteiro"
 
@@ -1916,9 +1732,6 @@ msgstr "Hash md5 do conteúdo da imagem."
 #, python-format
 msgid "new_image() got unexpected keywords %s"
 msgstr "new_image() obteve palavras-chave inesperadas %s"
-
-msgid "protected must be True, or False"
-msgstr "protegido deve ser True, ou False"
 
 #, python-format
 msgid "unable to launch %(serv)s. Got error: %(e)s"
