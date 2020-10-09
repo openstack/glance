@@ -6,18 +6,21 @@
     "protected": true,
     "resource_type_associations": [
         {
-            "name": "OS::Glance::Image"
+            "name": "OS::Glance::Image",
+            "prefix": "hw_"
         },
         {
             "name": "OS::Cinder::Volume",
+            "prefix": "hw_",
             "properties_target": "image"
         },
         {
-            "name": "OS::Nova::Flavor"
+            "name": "OS::Nova::Flavor",
+            "prefix": "hw:"
         }
     ],
     "properties": {
-        "hw_watchdog_action": {
+        "watchdog_action": {
             "title": "Watchdog Action",
             "description": "For the libvirt driver, you can enable and set the behavior of a virtual hardware watchdog device for each flavor. Watchdog devices keep an eye on the guest server, and carry out the configured action, if the server hangs. The watchdog uses the i6300esb device (emulating a PCI Intel 6300ESB). If hw_watchdog_action is not specified, the watchdog is disabled. Watchdog behavior set using a specific image's properties will override behavior set using flavors.",
             "type": "string",
