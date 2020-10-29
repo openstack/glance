@@ -250,12 +250,6 @@ of an *Image* object.
 Glance Database Backends
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Migration Backends
-------------------
-
-.. list-plugins:: glance.database.migration_backend
-   :detailed:
-
 Metadata Backends
 -----------------
 
