@@ -172,8 +172,6 @@ class DbCommands(object):
         Place an existing database under migration control and upgrade it.
         """
 
-        alembic_migrations.place_database_under_alembic_control()
-
         a_config = alembic_migrations.get_alembic_config()
         alembic_command.upgrade(a_config, version)
         heads = alembic_migrations.get_current_alembic_heads()
