@@ -145,15 +145,15 @@ class DbCommands(object):
 
         # This flags let's us bypass trigger setup & teardown for non-rolling
         # upgrades. We set this as a global variable immediately before handing
-        # off to sqlalchemy-migrate, because we can't pass arguments directly
-        # to migrations that depend on it.
+        # off to alembic, because we can't pass arguments directly to
+        # migrations that depend on it.
         USE_TRIGGERS = False
 
         curr_heads = alembic_migrations.get_current_alembic_heads()
         contract = alembic_migrations.get_alembic_branch_head(
             db_migration.CONTRACT_BRANCH)
 
-        if (contract in curr_heads):
+        if contract in curr_heads:
             print(_('Database is up to date. No migrations needed.'))
             sys.exit()
 
