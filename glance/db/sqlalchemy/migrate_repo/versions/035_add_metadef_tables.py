@@ -17,7 +17,7 @@ from sqlalchemy.schema import (
     Column, ForeignKey, Index, MetaData, Table, UniqueConstraint)  # noqa
 
 from glance.common import timeutils
-from glance.db.sqlalchemy.migrate_repo.schema import (
+from glance.db.sqlalchemy.schema import (
     Boolean, DateTime, Integer, String, Text, create_tables)  # noqa
 
 

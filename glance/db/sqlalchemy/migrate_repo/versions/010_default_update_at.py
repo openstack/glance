@@ -15,7 +15,7 @@
 
 from sqlalchemy import MetaData
 
-from glance.db.sqlalchemy.migrate_repo.schema import from_migration_import
+from glance.db.sqlalchemy.schema import from_migration_import
 
 
 def get_images_table(meta):

@@ -15,7 +15,7 @@
 import six
 import sqlalchemy
 
-from glance.db.sqlalchemy.migrate_repo import schema
+from glance.db.sqlalchemy import schema
 
 
 def upgrade(migrate_engine):

@@ -17,7 +17,7 @@ from alembic import op
 from sqlalchemy.schema import (
     Column, PrimaryKeyConstraint, ForeignKeyConstraint, UniqueConstraint)
 
-from glance.db.sqlalchemy.migrate_repo.schema import (
+from glance.db.sqlalchemy.schema import (
     Boolean, DateTime, Integer, String, Text)  # noqa
 from glance.db.sqlalchemy.models import JSONEncodedDict
 
