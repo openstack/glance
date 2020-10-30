@@ -19,10 +19,11 @@ Create Date: 2017-01-27 12:58:16.647499
 """
 
 from alembic import op
-from sqlalchemy import Column, Enum, MetaData, Table
+from sqlalchemy import Column, Enum, MetaData
 
 from glance.cmd import manage
 from glance.db import migration
+from glance.db.sqlalchemy.schema import Boolean
 
 # revision identifiers, used by Alembic.
 revision = 'ocata_expand01'
@@ -139,8 +140,10 @@ def _add_triggers(engine):
 def _change_nullability_and_default_on_is_public(meta):
     # NOTE(hemanthm): we mark is_public as nullable so that when new versions
     # add data only to be visibility column, is_public can be null.
-    images = Table('images', meta, autoload=True)
-    images.c.is_public.alter(nullable=True, server_default=None)
+    with op.batch_alter_table('images') as batch_op:
+        batch_op.alter_column(
+            'is_public', nullable=True, server_default=None,
+            existing_type=Boolean())
 
 
 def upgrade():
