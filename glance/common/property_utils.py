@@ -72,7 +72,7 @@ If the value is ``roles``, the property protection file must
 contain a comma separated list of user roles indicating
 permissions for each of the CRUD operations on each property
 being protected. If set to ``policies``, a policy defined in
-policy.json is used to express property protections for each
+policy.yaml is used to express property protections for each
 of the CRUD operations. Examples of how property protections
 are enforced based on ``roles`` or ``policies`` can be found at:
 https://docs.openstack.org/glance/latest/admin/property-protections.html#examples
@@ -196,7 +196,7 @@ class PropertyRules(object):
         create = glance_creator
         then the corresponding policy rule would be:
         "prop_a:create": "rule:glance_creator"
-        where glance_creator is defined in policy.json. For example:
+        where glance_creator is defined in policy.yaml. For example:
         "glance_creator": "role:admin or role:glance_create_user"
         """
         rule = "rule:%s" % rule

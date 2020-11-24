@@ -1,0 +1,161 @@
+# Defines the default rule used for policies that historically had an
+# empty policy in the supplied policy.yaml file.
+#"default": ""
+
+# Defines the rule for the is_admin:True check.
+#"context_is_admin": "role:admin"
+
+# add_image
+"add_image": ""
+
+# delete_image
+"delete_image": ""
+
+# get_image
+"get_image": ""
+
+# get_images
+"get_images": ""
+
+# modify_image
+"modify_image": ""
+
+# publicize_image
+"publicize_image": ""
+
+# communitize_image
+"communitize_image": ""
+
+# download_image
+"download_image": ""
+
+# upload_image
+"upload_image": ""
+
+# delete_image_location
+"delete_image_location": ""
+
+# get_image_location
+"get_image_location": ""
+
+# set_image_location
+"set_image_location": ""
+
+# add_member
+"add_member": ""
+
+# delete_member
+"delete_member": ""
+
+# get_member
+"get_member": ""
+
+# get_members
+"get_members": ""
+
+# modify_member
+"modify_member": ""
+
+# manage_image_cache
+"manage_image_cache": ""
+
+# deactivate
+"deactivate": ""
+
+# reactivate
+"reactivate": ""
+
+# get_task
+"get_task": "role:admin"
+
+# get_tasks
+"get_tasks": "role:admin"
+
+# add_task
+"add_task": "role:admin"
+
+# modify_task
+"modify_task": "role:admin"
+
+# get_metadef_namespace
+"get_metadef_namespace": ""
+
+# get_metadef_namespaces
+"get_metadef_namespaces": ""
+
+# modify_metadef_namespace
+"modify_metadef_namespace": ""
+
+# add_metadef_namespace
+"add_metadef_namespace": ""
+
+# delete_metadef_namespace
+"delete_metadef_namespace": ""
+
+# get_metadef_object
+"get_metadef_object": ""
+
+# get_metadef_objects
+"get_metadef_objects": ""
+
+# modify_metadef_object
+"modify_metadef_object": ""
+
+# add_metadef_object
+"add_metadef_object": ""
+
+# delete_metadef_object
+"delete_metadef_object": ""
+
+# list_metadef_resource_types
+"list_metadef_resource_types": ""
+
+# get_metadef_resource_type
+"get_metadef_resource_type": ""
+
+# add_metadef_resource_type_association
+"add_metadef_resource_type_association": ""
+
+# remove_metadef_resource_type_association
+"remove_metadef_resource_type_association": ""
+
+# get_metadef_property
+"get_metadef_property": ""
+
+# get_metadef_properties
+"get_metadef_properties": ""
+
+# modify_metadef_property
+"modify_metadef_property": ""
+
+# add_metadef_property
+"add_metadef_property": ""
+
+# remove_metadef_property
+"remove_metadef_property": ""
+
+# get_metadef_tag
+"get_metadef_tag": ""
+
+# get_metadef_tags
+"get_metadef_tags": ""
+
+# modify_metadef_tag
+"modify_metadef_tag": ""
+
+# add_metadef_tag
+"add_metadef_tag": ""
+
+# add_metadef_tags
+"add_metadef_tags": ""
+
+# delete_metadef_tag
+"delete_metadef_tag": ""
+
+# delete_metadef_tags
+"delete_metadef_tags": ""
+
+# WARNING: Below rules are either deprecated rules
+# or extra rules in policy file, it is strongly
+# recommended to switch to new rules.
+"glance_creator": "role:admin or role:spl_role"

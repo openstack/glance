@@ -95,7 +95,7 @@ class BaseTestCase(testtools.TestCase):
         self.useFixture(glance_fixtures.StandardLogging())
 
     def set_policy(self):
-        conf_file = "policy.json"
+        conf_file = "policy.yaml"
         self.policy_file = self._copy_data_file(conf_file, self.conf_dir)
         self.config(policy_file=self.policy_file, group='oslo_policy')
 

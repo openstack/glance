@@ -804,7 +804,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('policy.json', conf_dir)
+        self.copy_data_file('policy.yaml', conf_dir)
         self.copy_data_file('property-protections.conf', conf_dir)
         self.copy_data_file('property-protections-policies.conf', conf_dir)
         self.property_file_roles = os.path.join(conf_dir,
@@ -812,7 +812,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         property_policies = 'property-protections-policies.conf'
         self.property_file_policies = os.path.join(conf_dir,
                                                    property_policies)
-        self.policy_file = os.path.join(conf_dir, 'policy.json')
+        self.policy_file = os.path.join(conf_dir, 'policy.yaml')
 
         self.api_server = ApiServer(self.test_dir,
                                     self.api_port,
@@ -1153,7 +1153,7 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('policy.json', conf_dir)
+        self.copy_data_file('policy.yaml', conf_dir)
         self.copy_data_file('property-protections.conf', conf_dir)
         self.copy_data_file('property-protections-policies.conf', conf_dir)
         self.property_file_roles = os.path.join(conf_dir,
@@ -1161,7 +1161,7 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         property_policies = 'property-protections-policies.conf'
         self.property_file_policies = os.path.join(conf_dir,
                                                    property_policies)
-        self.policy_file = os.path.join(conf_dir, 'policy.json')
+        self.policy_file = os.path.join(conf_dir, 'policy.yaml')
 
         self.api_server_multiple_backend = ApiServerForMultipleBackend(
             self.test_dir, self.api_port, self.policy_file, sock=api_sock)
