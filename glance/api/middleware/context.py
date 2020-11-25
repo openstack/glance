@@ -56,41 +56,6 @@ Related options:
 
 """)),
 
-    cfg.StrOpt('admin_role',
-               default=('__NOT_A_ROLE_07697c71e6174332989d3d5f2a7d2e7c'
-                        '_NOT_A_ROLE__'),
-               deprecated_for_removal=True,
-               deprecated_since="Ussuri",
-               deprecated_reason=_("""
-This option is redundant as its goal can be achieved via policy file
-configuration.  Additionally, it can override any configured policies,
-leading to unexpected behavior and difficulty in policy configuration.
-The option will be removed early in the Victoria development cycle,
-following the standard OpenStack deprecation policy.
-
-Because this can be a security issue, the default value of this
-configuration option has been changed in this release.
-
-Please see the 'Deprecation Notes' section of the Ussuri Glance
-Release Notes for more information.
-"""),
-               help=_("""
-Role used to identify an authenticated user as administrator.
-
-Provide a string value representing a Keystone role to identify an
-administrative user. Users with this role will be granted
-administrative privileges.
-
-NOTE: The default value for this option has changed in this release.
-
-Possible values:
-    * A string value which is a valid Keystone role
-
-Related options:
-    * None
-
-""")),
-
     cfg.BoolOpt('allow_anonymous_access', default=False,
                 help=_("""
 Allow limited access to unauthenticated users.
@@ -220,9 +185,6 @@ class ContextMiddleware(BaseContextMiddleware):
         # case insensitive. This seems to no longer be the case and should be
         # fixed.
         ctxt.roles = [r.lower() for r in ctxt.roles]
-
-        if CONF.admin_role.strip().lower() in ctxt.roles:
-            ctxt.is_admin = True
 
         return ctxt
 

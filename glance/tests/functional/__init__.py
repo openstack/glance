@@ -745,7 +745,6 @@ class ScrubberDaemon(Server):
         self.policy_default_rule = 'default'
 
         self.send_identity_headers = False
-        self.admin_role = 'admin'
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s

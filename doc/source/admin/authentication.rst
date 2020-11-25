@@ -114,9 +114,3 @@ configuration file, select the appropriate deployment flavor by adding a
 
   [paste_deploy]
   flavor = keystone
-
-.. note::
-  If your authentication service uses a role other than ``admin`` to identify
-  which users should be granted admin-level privileges, you must define it
-  in the ``admin_role`` config attribute in both ``glance-registry.conf`` and
-  ``glance-api.conf``.

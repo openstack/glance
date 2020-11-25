@@ -56,11 +56,11 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         self._build_middleware().process_request(req)
         self.assertFalse(req.context.is_admin)
 
-        # if we change the admin_role attribute, we should be able to use it
-        req = self._build_request()
-        self.config(admin_role='role1')
-        self._build_middleware().process_request(req)
-        self.assertTrue(req.context.is_admin)
+        # the admin_role config option was removed in Wallaby
+        from oslo_config.cfg import NoSuchOptError
+        self.assertRaises(NoSuchOptError,
+                          self.config,
+                          admin_role='role1')
 
     def test_roles_case_insensitive(self):
         # accept role from request
@@ -68,24 +68,11 @@ class TestContextMiddleware(base.IsolatedUnitTest):
         self._build_middleware().process_request(req)
         self.assertTrue(req.context.is_admin)
 
-        # accept role from config
-        req = self._build_request(roles=['role1'])
-        self.config(admin_role='rOLe1')
-        self._build_middleware().process_request(req)
-        self.assertTrue(req.context.is_admin)
-
     def test_roles_stripping(self):
         # stripping extra spaces in request
         req = self._build_request(roles=['\trole1'])
-        self.config(admin_role='role1')
         self._build_middleware().process_request(req)
-        self.assertTrue(req.context.is_admin)
-
-        # stripping extra spaces in config
-        req = self._build_request(roles=['\trole1\n'])
-        self.config(admin_role=' role1\t')
-        self._build_middleware().process_request(req)
-        self.assertTrue(req.context.is_admin)
+        self.assertIn('role1', req.context.roles)
 
     def test_anonymous_access_enabled(self):
         req = self._build_request(identity_status='Nope')

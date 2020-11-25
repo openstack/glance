@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    The Glance API configuration option ``admin_role``, having been deprecated
+    in the Ussuri release, is now removed.  If present in a configuration file,
+    it will be silently ignored.
