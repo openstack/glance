@@ -24,6 +24,7 @@ import oslo_config.cfg
 import glance.api.policy
 from glance.common import exception
 import glance.context
+from glance.policies import base as base_policy
 from glance.tests.unit import base
 import glance.tests.unit.utils as unit_test_utils
 from glance.tests import utils as test_utils
@@ -927,3 +928,14 @@ class TestContextPolicyEnforcer(base.IsolatedUnitTest):
                                                      'demo',
                                                      False,
                                                      False)
+
+
+class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
+
+    def test_project_member_check_string(self):
+        self.assertEqual('role:member and project_id:%(project_id)s',
+                         base_policy.PROJECT_MEMBER)
+
+    def test_project_reader_check_string(self):
+        self.assertEqual('role:reader and project_id:%(project_id)s',
+                         base_policy.PROJECT_READER)
