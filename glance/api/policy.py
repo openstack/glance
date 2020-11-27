@@ -127,20 +127,73 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def get(self, image_id):
         image = super(ImageRepoProxy, self).get(image_id)
-        self.policy.enforce(self.context, 'get_image',
-                            dict(ImageTarget(image)))
+        target = self._build_image_target(image)
+        try:
+            self.policy.enforce(self.context, 'get_image', target)
+        except exception.Forbidden:
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # image is outside of this user's project
+            msg = _("No image found with ID %s") % image_id
+            raise exception.NotFound(msg)
         return image
 
+    def _build_image_target(self, image):
+        """Build a policy enforcement target for an image.
+
+        :param image: An instance of `glance.domain.Image`
+        :returns: a dictionary representing the image for policy enforcement
+
+        """
+        target = dict(ImageTarget(image))
+        target['project_id'] = image.owner
+
+        # We do this so that members of the image can pass the policy for
+        # getting an image shared with their project. An alternative would be
+        # to update the image owner, or project_id, to match the member ID,
+        # tricking the policy enforcer into thinking image members are actually
+        # image owners. But, that feels less clear without understanding the
+        # code that makes that assumption, especially for operators reading
+        # check strings. Using this approach forces the check_str to be more
+        # descriptive.
+        members = self.image_repo.db_api.image_member_find(
+            self.context, image_id=image.image_id)
+        # FIXME(lbragstad): Remove this if statement if/when oslo.policy
+        # supports lists of target attributes via substitution, allowing us to
+        # do something like:
+        #
+        # target['member_ids'] = set(m['member'] for m in members)
+        for member in members:
+            if member['member'] == self.context.project_id:
+                target['member_id'] = member['member']
+                break
+        return target
+
     def list(self, *args, **kwargs):
-        self.policy.enforce(self.context, 'get_images', {})
+        # FIXME(lbragstad): This is a hack to get policy to pass because we
+        # don't have a reasonable target to use for all images. We set the
+        # target project_id to the context project_id, which effectively
+        # ensures the context project_id matches itself in policy enforcement.
+        #
+        # A more accurate and cleaner way to implement this, and filtering,
+        # would be to query all images from the database, build a target for
+        # each image, and then iterate over each image and call policy
+        # enforcement. If the user passes policy enforcement, append the image
+        # to the list of filtered images. If not, the image should be removed
+        # from the list of images returned to the user.
+        target = {'project_id': self.context.project_id}
+        self.policy.enforce(self.context, 'get_images', target)
         return super(ImageRepoProxy, self).list(*args, **kwargs)
 
     def save(self, image, from_state=None):
-        self.policy.enforce(self.context, 'modify_image', dict(image.target))
+        target = dict(image.target)
+        target['project_id'] = target.get('owner', None)
+        self.policy.enforce(self.context, 'modify_image', target)
         return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
-        self.policy.enforce(self.context, 'add_image', dict(image.target))
+        target = dict(image.target)
+        target['project_id'] = target.get('owner', None)
+        self.policy.enforce(self.context, 'add_image', target)
         return super(ImageRepoProxy, self).add(image)
 
 
@@ -166,8 +219,9 @@ class ImageProxy(glance.domain.proxy.Image):
 
     @visibility.setter
     def visibility(self, value):
-        _enforce_image_visibility(self.policy, self.context, value,
-                                  self.target)
+        target = dict(self.target)
+        target['project_id'] = target.get('owner', None)
+        _enforce_image_visibility(self.policy, self.context, value, target)
         self.image.visibility = value
 
     @property
@@ -188,25 +242,31 @@ class ImageProxy(glance.domain.proxy.Image):
         self.image.locations = new_locations
 
     def delete(self):
-        self.policy.enforce(self.context, 'delete_image', dict(self.target))
+        target = dict(self.target)
+        target['project_id'] = target.get('owner', None)
+        self.policy.enforce(self.context, 'delete_image', target)
         return self.image.delete()
 
     def deactivate(self):
         LOG.debug('Attempting deactivate')
-        target = ImageTarget(self.image)
+        target = dict(ImageTarget(self.image))
+        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'deactivate', target=target)
         LOG.debug('Deactivate allowed, continue')
         self.image.deactivate()
 
     def reactivate(self):
         LOG.debug('Attempting reactivate')
-        target = ImageTarget(self.image)
+        target = dict(ImageTarget(self.image))
+        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'reactivate', target=target)
         LOG.debug('Reactivate allowed, continue')
         self.image.reactivate()
 
     def get_data(self, *args, **kwargs):
-        self.policy.enforce(self.context, 'download_image', self.target)
+        target = dict(ImageTarget(self.image))
+        target['project_id'] = target.get('owner', None)
+        self.policy.enforce(self.context, 'download_image', target)
         return self.image.get_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
@@ -234,8 +294,14 @@ class ImageFactoryProxy(glance.domain.proxy.ImageFactory):
                                                 proxy_kwargs=proxy_kwargs)
 
     def new_image(self, **kwargs):
+        # If we reversed the order of this method and did the policy
+        # enforcement on the way out instead of before we build the image
+        # target reference, we could use the actual image as a target instead
+        # of building a faux target with one attribute.
+        target = {}
+        target['project_id'] = kwargs.get('owner', None)
         _enforce_image_visibility(self.policy, self.context,
-                                  kwargs.get('visibility'), {})
+                                  kwargs.get('visibility'), target)
         return super(ImageFactoryProxy, self).new_image(**kwargs)
 
 
@@ -258,23 +324,46 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
         self.policy = policy
 
     def add(self, member):
-        self.policy.enforce(self.context, 'add_member', self.target)
+        target = dict(self.target)
+        target['project_id'] = self.context.project_id
+        self.policy.enforce(self.context, 'add_member', target)
         self.member_repo.add(member)
 
     def get(self, member_id):
-        self.policy.enforce(self.context, 'get_member', self.target)
+        # NOTE(lbragstad): We set the project_id of the target to be the
+        # project_id of the context object, which is effectively a no-op
+        # because we're checking the context.project_id matches the
+        # context.project_id. This is a bandaid to allow project-members and
+        # project-readers to view shared images owned by their project, or to
+        # view images shared with them by another project. Glance's database
+        # layer filters the images by ownership and membership, based on the
+        # context object and administrative checks. If or when that code is
+        # pulled into a higher level and if we have a list of members for an
+        # image, we can write a more accurate target.
+        target = dict(self.target)
+        # We can't set the project_id as the image project_id because that
+        # wouldn't allow image members to pass the policy check. We need the
+        # list of image members to build an accurate target.
+        target['project_id'] = self.context.project_id
+        self.policy.enforce(self.context, 'get_member', target)
         return self.member_repo.get(member_id)
 
     def save(self, member, from_state=None):
-        self.policy.enforce(self.context, 'modify_member', self.target)
+        target = dict(self.target)
+        target['project_id'] = self.context.project_id
+        self.policy.enforce(self.context, 'modify_member', target)
         self.member_repo.save(member, from_state=from_state)
 
     def list(self, *args, **kwargs):
-        self.policy.enforce(self.context, 'get_members', self.target)
+        target = dict(self.target)
+        target['project_id'] = self.context.project_id
+        self.policy.enforce(self.context, 'get_members', target)
         return self.member_repo.list(*args, **kwargs)
 
     def remove(self, member):
-        self.policy.enforce(self.context, 'delete_member', self.target)
+        target = dict(self.target)
+        target['project_id'] = self.context.project_id
+        self.policy.enforce(self.context, 'delete_member', target)
         self.member_repo.remove(member)
 
 
@@ -297,7 +386,11 @@ class ImageLocationsProxy(object):
 
     def _get_checker(action, func_name):
         def _checker(self, *args, **kwargs):
-            self.policy.enforce(self.context, action, {})
+            target = {}
+            if self.context.project_id:
+                target['project_id'] = self.context.project_id
+
+            self.policy.enforce(self.context, action, target)
             method = getattr(self.locations, func_name)
             return method(*args, **kwargs)
         return _checker
@@ -410,6 +503,15 @@ class ImageTarget(abc.Mapping):
         self.target = target
         self._target_keys = [k for k in dir(ImageProxy)
                              if not k.startswith('__')
+                             # NOTE(lbragstad): The locations attributes is an
+                             # instance of ImageLocationsProxy, which isn't
+                             # serialized into anything oslo.policy can use. If
+                             # we need to use locations in policies, we need to
+                             # modify how we represent those location objects
+                             # before we call enforcement with target
+                             # information. Omitting for not until that is a
+                             # necessity.
+                             if not k == 'locations'
                              if not callable(getattr(ImageProxy, k))]
 
     def __getitem__(self, key):

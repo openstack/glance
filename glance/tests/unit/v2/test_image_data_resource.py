@@ -48,7 +48,7 @@ class FakeImage(object):
 
     def __init__(self, image_id=None, data=None, checksum=None, size=0,
                  virtual_size=0, locations=None, container_format='bear',
-                 disk_format='rawr', status=None):
+                 disk_format='rawr', status=None, owner=None):
         self.image_id = image_id
         self.data = data
         self.checksum = checksum
@@ -57,6 +57,7 @@ class FakeImage(object):
         self.locations = locations
         self.container_format = container_format
         self.disk_format = disk_format
+        self.owner = owner
         self._status = status
         self.extra_properties = {}
 
@@ -180,7 +181,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_upload(self):
         request = unit_test_utils.get_fake_request()
-        image = FakeImage('abcd')
+        image = FakeImage('abcd', owner='tenant1')
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
         self.assertEqual('YYYY', image.data)
@@ -214,12 +215,15 @@ class TestImagesController(base.StoreClearingUnitTest):
     @mock.patch.object(glance.api.policy.Enforcer, 'enforce')
     def test_upload_image_forbidden(self, mock_enforce):
         request = unit_test_utils.get_fake_request()
+        image = FakeImage('abcd', owner='tenant1')
+        self.image_repo.result = image
         mock_enforce.side_effect = exception.Forbidden
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.upload,
                           request, unit_test_utils.UUID2, 'YYYY', 4)
+        expected_target = {'project_id': 'tenant1'}
         mock_enforce.assert_called_once_with(request.context,
                                              "upload_image",
-                                             {})
+                                             expected_target)
 
     def test_upload_invalid(self):
         request = unit_test_utils.get_fake_request()
