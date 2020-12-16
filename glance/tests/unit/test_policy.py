@@ -348,6 +348,31 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         self.config(enforce_scope=False, group='oslo_policy')
         self.assertTrue(self._test_enforce_scope())
 
+    def test_ensure_context_object_is_passed_to_policy_enforcement(self):
+        # The oslo.policy Enforcer does some useful translation for us if we
+        # pass it an oslo.context.RequestContext object. This prevents us from
+        # having to handle the translation to a valid credential dictionary in
+        # glance.
+        context = glance.context.RequestContext()
+        mock_enforcer = self.mock_object(common_policy.Enforcer, 'enforce')
+
+        enforcer = glance.api.policy.Enforcer()
+        enforcer.register_default(
+            common_policy.RuleDefault(name='foo', check_str='role:bar')
+        )
+
+        enforcer.enforce(context, 'foo', {})
+        mock_enforcer.assert_called_once_with('foo', {}, context,
+                                              do_raise=True,
+                                              exc=exception.Forbidden,
+                                              action='foo')
+
+        # Reset the mock and make sure glance.api.policy.Enforcer.check()
+        # behaves the same way.
+        mock_enforcer.reset_mock()
+        enforcer.check(context, 'foo', {})
+        mock_enforcer.assert_called_once_with('foo', {}, context)
+
 
 class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
 
