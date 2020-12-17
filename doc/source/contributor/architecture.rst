@@ -81,5 +81,3 @@ Following components are present in the Glance architecture:
 
 * **Registry Layer** - optional layer that is used to organise secure
     communication between the domain and the DAL by using a separate service.
-
-  .. include:: ../deprecate-registry.inc

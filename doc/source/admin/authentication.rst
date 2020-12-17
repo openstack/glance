@@ -33,16 +33,13 @@ Configuring the Glance servers to use Keystone
 ----------------------------------------------
 
 Keystone is integrated with Glance through the use of middleware. The
-default configuration files for both the Glance API and the Glance
-Registry use a single piece of middleware called ``unauthenticated-context``,
-which generates a request context containing blank authentication
-information. In order to configure Glance to use Keystone, the
-``authtoken`` and ``context`` middlewares must be deployed in place of the
-``unauthenticated-context`` middleware. The ``authtoken`` middleware performs
-the authentication token validation and retrieves actual user authentication
-information. It can be found in the Keystone distribution.
-
-.. include:: ../deprecate-registry.inc
+default configuration file for the Glance API uses a single piece of middleware
+called ``unauthenticated-context``, which generates a request context
+containing blank authentication information. In order to configure Glance to
+use Keystone, the ``authtoken`` and ``context`` middlewares must be deployed in
+place of the ``unauthenticated-context`` middleware. The ``authtoken``
+middleware performs the authentication token validation and retrieves actual
+user authentication information. It can be found in the Keystone distribution.
 
 
 Configuring Glance API to use Keystone
@@ -90,27 +87,3 @@ with ``authtoken`` and ``context``::
 
   [pipeline:glance-api]
   pipeline = versionnegotiation authtoken context apiv1app
-
-
-Configuring Glance Registry to use Keystone
--------------------------------------------
-
-.. include:: ../deprecate-registry.inc
-
-Configuring Glance Registry to use Keystone is also relatively
-straight forward.  The same middleware needs to be added
-to ``glance-registry-paste.ini`` as was needed by Glance API;
-see above for an example of the ``authtoken`` configuration.
-
-Again, to enable using Keystone authentication, the appropriate
-application pipeline must be selected.  By default, it looks like::
-
-  [pipeline:glance-registry-keystone]
-  pipeline = authtoken context registryapp
-
-To enable the above application pipeline, in your main ``glance-registry.conf``
-configuration file, select the appropriate deployment flavor by adding a
-``flavor`` attribute in the ``paste_deploy`` group::
-
-  [paste_deploy]
-  flavor = keystone

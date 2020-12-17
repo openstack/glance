@@ -74,7 +74,6 @@ correctly.
   store, points to where the data is kept.
 - ``filesystem_store_datadirs`` This is used to point to multiple
   filesystem stores.
-- ``registry_host`` The URL to the Glance registry.
 - ``cache_prefetcher_interval`` The interval in seconds to run periodic
   job 'cache_images'.
 

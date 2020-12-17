@@ -53,17 +53,6 @@ glance-api
      .. _`Control Plane API endpoints deployment via WSGI`: https://governance.openstack.org/tc/goals/pike/deploy-api-in-wsgi.html
      .. _`Glance Release Notes`: https://docs.openstack.org/releasenotes/glance/index.html
 
-glance-registry
-  Stores, processes, and retrieves metadata about images. Metadata
-  includes items such as size and type.
-
-  .. warning::
-
-     The registry is a private internal service meant for use by
-     OpenStack Image service. Do not expose this service to users.
-
-  .. include:: ../deprecate-registry.inc
-
 Database
   Stores image metadata and you can choose your database depending on
   your preference. Most deployments use MySQL or SQLite.
