@@ -380,8 +380,8 @@ class ResourceTest(test_utils.BaseTestCase):
     def test_response_headers_encoded(self):
         # prepare environment
         for_openstack_comrades = (
-            u'\u0417\u0430 \u043e\u043f\u0435\u043d\u0441\u0442\u0435\u043a, '
-            u'\u0442\u043e\u0432\u0430\u0440\u0438\u0449\u0438')
+            '\u0417\u0430 \u043e\u043f\u0435\u043d\u0441\u0442\u0435\u043a, '
+            '\u0442\u043e\u0432\u0430\u0440\u0438\u0449\u0438')
 
         class FakeController(object):
             def index(self, shirt, pants=None):

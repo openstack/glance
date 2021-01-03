@@ -499,10 +499,10 @@ def parse_valid_host_port(host_port):
 
 
 try:
-    REGEX_4BYTE_UNICODE = re.compile(u'[\U00010000-\U0010ffff]')
+    REGEX_4BYTE_UNICODE = re.compile('[\U00010000-\U0010ffff]')
 except re.error:
     # UCS-2 build case
-    REGEX_4BYTE_UNICODE = re.compile(u'[\uD800-\uDBFF][\uDC00-\uDFFF]')
+    REGEX_4BYTE_UNICODE = re.compile('[\uD800-\uDBFF][\uDC00-\uDFFF]')
 
 
 def no_4byte_params(f):

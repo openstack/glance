@@ -348,8 +348,8 @@ class TestUtils(test_utils.BaseTestCase):
         actual = utils.image_meta_to_http_headers(image_meta)
         actual_test2 = utils.image_meta_to_http_headers(
             image_meta_properties)
-        self.assertEqual({'x-image-meta-x-image-meta-size': u'test'}, actual)
-        self.assertEqual({'x-image-meta-property-test': u'test'},
+        self.assertEqual({'x-image-meta-x-image-meta-size': 'test'}, actual)
+        self.assertEqual({'x-image-meta-property-test': 'test'},
                          actual_test2)
 
     def test_create_mashup_dict_with_different_core_custom_properties(self):
@@ -435,7 +435,7 @@ class TestUtils(test_utils.BaseTestCase):
     def test_valid_hostname_fail(self):
         invalid_inputs = ['localhost.localdomain',
                           '192.168.0.1',
-                          u'\u2603',
+                          '\u2603',
                           'glance02.stack42.local']
 
         for input_str in invalid_inputs:
@@ -454,7 +454,7 @@ class TestUtils(test_utils.BaseTestCase):
         invalid_inputs = ['localhost',
                           '192.168.0.1',
                           '999.88.77.6',
-                          u'\u2603.local',
+                          '\u2603.local',
                           'glance02.stack42']
 
         for input_str in invalid_inputs:
@@ -489,8 +489,8 @@ class TestUtils(test_utils.BaseTestCase):
                          '172.17.17.1:99999',
                          '290.12.52.80:5673',
                          'absurd inputs happen',
-                         u'\u2601',
-                         u'\u2603:8080',
+                         '\u2601',
+                         '\u2603:8080',
                          'fe80::1',
                          '[fe80::2]',
                          '<fe80::3>:5673',

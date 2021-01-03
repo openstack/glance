@@ -129,14 +129,14 @@ class TestNamespaceProperties(metadef_base.MetadefFunctionalTestBase):
         # Returned property should match the created property
         property_object = jsonutils.loads(response.text)
         checked_keys = set([
-            u'name',
-            u'type',
-            u'title',
-            u'description',
-            u'default',
-            u'minimum',
-            u'maximum',
-            u'readonly',
+            'name',
+            'type',
+            'title',
+            'description',
+            'default',
+            'minimum',
+            'maximum',
+            'readonly',
         ])
         self.assertEqual(set(property_object.keys()), checked_keys)
         expected_metadata_property = {

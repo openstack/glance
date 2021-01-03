@@ -283,7 +283,7 @@ class TestImageMembersController(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.create,
                           request, image_id=UUID5,
-                          member_id=u'\U0001f693')
+                          member_id='\U0001f693')
 
     def test_update_done_by_member(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT4)

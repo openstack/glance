@@ -72,9 +72,9 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
         # Returned tag should match the created tag
         metadata_tag = jsonutils.loads(response.text)
         checked_keys = set([
-            u'name',
-            u'created_at',
-            u'updated_at'
+            'name',
+            'created_at',
+            'updated_at'
         ])
         self.assertEqual(checked_keys, set(metadata_tag.keys()))
         expected_metadata_tag = {
@@ -83,7 +83,7 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
 
         # Simple key values
         checked_values = set([
-            u'name'
+            'name'
         ])
         for key, value in expected_metadata_tag.items():
             if(key in checked_values):

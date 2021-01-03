@@ -405,7 +405,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                         'name': 'prop1',
                         'additionalItems': None,
                         'confidential': None,
-                        'title': u'title',
+                        'title': 'title',
                         'default': None,
                         'pattern': None,
                         'enum': None,
@@ -417,7 +417,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                         'uniqueItems': None,
                         'maxLength': None,
                         'items': None,
-                        'type': u'string',
+                        'type': 'string',
                         'description': None
                     }],
                     'required': [],
@@ -457,7 +457,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     @mock.patch('glance.api.v2.metadef_namespaces.LOG')
     @mock.patch('glance.notifier.MetadefNamespaceRepoProxy.remove')
     def test_cleanup_namespace_exception(self, mock_remove, mock_log):
-        mock_remove.side_effect = Exception(u'Mock remove was called')
+        mock_remove.side_effect = Exception('Mock remove was called')
         fake_gateway = glance.gateway.Gateway(db_api=self.db,
                                               notifier=self.notifier,
                                               policy_enforcer=self.policy)
@@ -471,8 +471,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
         called_msg = 'Failed to delete namespace %(namespace)s.' \
                      'Exception: %(exception)s'
-        called_args = {'exception': u'Mock remove was called',
-                       'namespace': u'FakeNamespace'}
+        called_args = {'exception': 'Mock remove was called',
+                       'namespace': 'FakeNamespace'}
         mock_log.error.assert_called_with((called_msg, called_args))
         mock_remove.assert_called_once_with(mock.ANY)
 
@@ -701,7 +701,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = namespaces.Namespace()
-        namespace.namespace = u'\U0001f693'
+        namespace.namespace = '\U0001f693'
 
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.namespace_controller.create, request,
@@ -915,7 +915,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = self.namespace_controller.show(request, NAMESPACE1)
-        namespace.namespace = u'\U0001f693'
+        namespace.namespace = '\U0001f693'
 
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.namespace_controller.update, request,
@@ -1095,7 +1095,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(roles=['admin'])
 
         property = properties.PropertyType()
-        property.name = u'\U0001f693'
+        property.name = '\U0001f693'
         property.type = 'string'
         property.title = 'title'
 
@@ -1289,7 +1289,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
         property = self.property_controller.show(request, NAMESPACE3,
                                                  PROPERTY1)
-        property.name = u'\U0001f693'
+        property.name = '\U0001f693'
         property.type = 'string'
         property.title = 'title'
 
@@ -1522,7 +1522,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = objects.MetadefObject()
-        object.name = u'\U0001f693'
+        object.name = '\U0001f693'
         object.required = []
         object.properties = {}
 
@@ -1638,7 +1638,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = self.object_controller.show(request, NAMESPACE1, OBJECT1)
-        object.name = u'\U0001f693'
+        object.name = '\U0001f693'
 
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.object_controller.update, request,
@@ -2012,7 +2012,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.tag_controller.create,
-                          request, NAMESPACE1, u'\U0001f693')
+                          request, NAMESPACE1, '\U0001f693')
 
     def test_tag_create_tags(self):
         request = unit_test_utils.get_fake_request(roles=['admin'])
@@ -2270,7 +2270,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(roles=['admin'])
 
         tag = self.tag_controller.show(request, NAMESPACE1, TAG1)
-        tag.name = u'\U0001f693'
+        tag.name = '\U0001f693'
 
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.tag_controller.update, request, tag,

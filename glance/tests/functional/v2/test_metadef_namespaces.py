@@ -54,16 +54,16 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
         # Tenant
         namespace = jsonutils.loads(response.text)
         checked_keys = set([
-            u'namespace',
-            u'display_name',
-            u'description',
-            u'visibility',
-            u'self',
-            u'schema',
-            u'protected',
-            u'owner',
-            u'created_at',
-            u'updated_at'
+            'namespace',
+            'display_name',
+            'description',
+            'visibility',
+            'self',
+            'schema',
+            'protected',
+            'owner',
+            'created_at',
+            'updated_at'
         ])
         self.assertEqual(set(namespace.keys()), checked_keys)
         expected_namespace = {

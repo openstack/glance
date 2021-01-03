@@ -75,7 +75,7 @@ policy_generator_config_file = [
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2010-present, OpenStack Foundation.'
+copyright = '2010-present, OpenStack Foundation.'
 
 exclude_patterns = [
     # The man directory includes some snippet files that are included
@@ -104,27 +104,27 @@ modindex_common_prefix = ['glance.']
 # -- Options for man page output --------------------------------------------
 
 # Grouping the document tree for man pages.
-# List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
+# List of tuples 'sourcefile', 'target', 'title', 'Authors name', 'manual'
 
 man_pages = [
-    ('cli/glanceapi', 'glance-api', u'Glance API Server',
-     [u'OpenStack'], 1),
-    ('cli/glancecachecleaner', 'glance-cache-cleaner', u'Glance Cache Cleaner',
-     [u'OpenStack'], 1),
-    ('cli/glancecachemanage', 'glance-cache-manage', u'Glance Cache Manager',
-     [u'OpenStack'], 1),
+    ('cli/glanceapi', 'glance-api', 'Glance API Server',
+     ['OpenStack'], 1),
+    ('cli/glancecachecleaner', 'glance-cache-cleaner', 'Glance Cache Cleaner',
+     ['OpenStack'], 1),
+    ('cli/glancecachemanage', 'glance-cache-manage', 'Glance Cache Manager',
+     ['OpenStack'], 1),
     ('cli/glancecacheprefetcher', 'glance-cache-prefetcher',
-     u'Glance Cache Pre-fetcher', [u'OpenStack'], 1),
-    ('cli/glancecachepruner', 'glance-cache-pruner', u'Glance Cache Pruner',
-     [u'OpenStack'], 1),
-    ('cli/glancecontrol', 'glance-control', u'Glance Daemon Control Helper ',
-     [u'OpenStack'], 1),
-    ('cli/glancemanage', 'glance-manage', u'Glance Management Utility',
-     [u'OpenStack'], 1),
-    ('cli/glancereplicator', 'glance-replicator', u'Glance Replicator',
-     [u'OpenStack'], 1),
-    ('cli/glancescrubber', 'glance-scrubber', u'Glance Scrubber Service',
-     [u'OpenStack'], 1)
+     'Glance Cache Pre-fetcher', ['OpenStack'], 1),
+    ('cli/glancecachepruner', 'glance-cache-pruner', 'Glance Cache Pruner',
+     ['OpenStack'], 1),
+    ('cli/glancecontrol', 'glance-control', 'Glance Daemon Control Helper ',
+     ['OpenStack'], 1),
+    ('cli/glancemanage', 'glance-manage', 'Glance Management Utility',
+     ['OpenStack'], 1),
+    ('cli/glancereplicator', 'glance-replicator', 'Glance Replicator',
+     ['OpenStack'], 1),
+    ('cli/glancescrubber', 'glance-scrubber', 'Glance Scrubber Service',
+     ['OpenStack'], 1)
 ]
 
 
@@ -158,6 +158,6 @@ html_use_index = True
 # (source start file, target name, title, author,
 # documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'Glance.tex', u'Glance Documentation',
-     u'Glance Team', 'manual'),
+    ('index', 'Glance.tex', 'Glance Documentation',
+     'Glance Team', 'manual'),
 ]
