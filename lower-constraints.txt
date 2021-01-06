@@ -23,7 +23,7 @@ debtcollector==1.2.0
 decorator==4.3.0
 defusedxml==0.6.0
 dnspython==1.16.0
-doc8==0.6.0
+doc8==0.8.1
 docutils==0.14
 entrypoints==0.3
 eventlet==0.25.1
