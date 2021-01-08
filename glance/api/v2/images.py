@@ -26,6 +26,7 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import timeutils as oslo_timeutils
+import requests
 import six
 from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
@@ -40,9 +41,10 @@ from glance.common import store_utils
 from glance.common import timeutils
 from glance.common import utils
 from glance.common import wsgi
+from glance import context as glance_context
 import glance.db
 import glance.gateway
-from glance.i18n import _, _LI, _LW
+from glance.i18n import _, _LE, _LI, _LW
 import glance.notifier
 import glance.schema
 
@@ -54,6 +56,24 @@ CONF.import_opt('container_formats', 'glance.common.config',
                 group='image_format')
 CONF.import_opt('show_multiple_locations', 'glance.common.config')
 CONF.import_opt('hashing_algorithm', 'glance.common.config')
+
+
+def proxy_response_error(orig_code, orig_explanation):
+    """Construct a webob.exc.HTTPError exception on the fly.
+
+    The webob.exc.HTTPError classes are statically defined, intended
+    to be straight subclasses of HTTPError, specifically with *class*
+    level definitions of things we need to be dynamic. This method
+    returns an exception class instance with those values set
+    programmatically so we can raise it to mimic the response we
+    got from a remote.
+    """
+
+    class ProxiedResponse(webob.exc.HTTPError):
+        code = orig_code
+        title = orig_explanation
+
+    return ProxiedResponse()
 
 
 class ImagesController(object):
@@ -210,6 +230,75 @@ class ImagesController(object):
                       {'image': image.image_id, 'task': task.task_id,
                        'keys': ','.join(changed)})
 
+    def _proxy_request_to_stage_host(self, image, req, body=None):
+        """Proxy a request to a staging host.
+
+        When an image was staged on another worker, that worker may record its
+        worker_self_reference_url on the image, indicating that other workers
+        should proxy requests to it while the image is staged. This method
+        replays our current request against the remote host, returns the
+        result, and performs any response error translation required.
+
+        The remote request-id is used to replace the one on req.context so that
+        a client sees the proper id used for the actual action.
+
+        :param image: The Image from the repo
+        :param req: The webob.Request from the current request
+        :param body: The request body or None
+        :returns: The result from the remote host
+        :raises: webob.exc.HTTPClientError matching the remote's error, or
+                 webob.exc.HTTPServerError if we were unable to contact the
+                 remote host.
+        """
+
+        stage_host = image.extra_properties['os_glance_stage_host']
+        LOG.info(_LI('Proxying %s request to host %s '
+                     'which has image staged'),
+                 req.method, stage_host)
+        client = glance_context.get_ksa_client(req.context)
+        url = '%s%s' % (stage_host, req.path)
+        req_id_hdr = 'x-openstack-request-id'
+        request_method = getattr(client, req.method.lower())
+        try:
+            r = request_method(url, json=body, timeout=60)
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.ConnectTimeout) as e:
+            LOG.error(_LE('Failed to proxy to %r: %s'), url, e)
+            raise webob.exc.HTTPGatewayTimeout('Stage host is unavailable')
+        except requests.exceptions.RequestException as e:
+            LOG.error(_LE('Failed to proxy to %r: %s'), url, e)
+            raise webob.exc.HTTPBadGateway('Stage host is unavailable')
+        req_id_hdr = 'x-openstack-request-id'
+        if req_id_hdr in r.headers:
+            LOG.debug('Replying with remote request id %s' % (
+                r.headers[req_id_hdr]))
+            req.context.request_id = r.headers[req_id_hdr]
+        if r.status_code // 100 != 2:
+            raise proxy_response_error(r.status_code, r.reason)
+        return image.image_id
+
+    @property
+    def self_url(self):
+        """Return the URL we expect to point to us.
+
+        If this is set to a per-worker URL in worker_self_reference_url,
+        that takes precedence. Otherwise we fall back to public_endpoint.
+        """
+        return CONF.worker_self_reference_url or CONF.public_endpoint
+
+    def is_proxyable(self, image):
+        """Decide if an action is proxyable to a stage host.
+
+        If the image has a staging host recorded with a URL that does not match
+        ours, then we can proxy our request to that host.
+
+        :param image: The Image from the repo
+        :returns: bool indicating proxyable status
+        """
+        return (
+            'os_glance_stage_host' in image.extra_properties and
+            image.extra_properties['os_glance_stage_host'] != self.self_url)
+
     @utils.mutating
     def import_image(self, req, image_id, body):
         ctxt = req.context
@@ -307,6 +396,12 @@ class ImagesController(object):
             msg = (_("All_stores_must_succeed can only be set with "
                      "enabled_backends %s") % uri)
             raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        if self.is_proxyable(image) and import_method == 'glance-direct':
+            # NOTE(danms): Image is staged on another worker; proxy the
+            # import request to that worker with the user's token, as if
+            # they had called it themselves.
+            return self._proxy_request_to_stage_host(image, req, body)
 
         task_input = {'image_id': image_id,
                       'import_req': body,
@@ -634,11 +729,59 @@ class ImagesController(object):
 
         image_repo.save(image)
 
+    def _delete_image_on_remote(self, image, req):
+        """Proxy an image delete to a staging host.
+
+        When an image is staged and then deleted, the staging host still
+        has local residue that needs to be cleaned up. If the request to
+        delete arrived here, but we are not the stage host, we need to
+        proxy it to the appropriate host.
+
+        If the delete succeeds, we return None (per DELETE semantics),
+        indicating to the caller that it was handled.
+
+        If the delete fails on the remote end, we allow the
+        HTTPClientError to bubble to our caller, which will return the
+        error to the client.
+
+        If we fail to contact the remote server, we catch the
+        HTTPServerError raised by our proxy method, verify that the
+        image still exists, and return it. That indicates to the
+        caller that it should proceed with the regular delete logic,
+        which will satisfy the client's request, but leave the residue
+        on the stage host (which is unavoidable).
+
+        :param image: The Image from the repo
+        :param req: The webob.Request for this call
+        :returns: None if successful, or a refreshed image if the proxy failed.
+        :raises: webob.exc.HTTPClientError if so raised by the remote server.
+        """
+        try:
+            self._proxy_request_to_stage_host(image, req)
+        except webob.exc.HTTPServerError:
+            # This means we would have raised a 50x error, indicating
+            # we did not succeed with the request to the remote host.
+            # In this case, refresh the image from the repo, and if it
+            # is not deleted, allow the regular delete process to
+            # continue on the local worker to match the user's
+            # expectations. If the image is already deleted, the caller
+            # will catch this NotFound like normal.
+            return self.gateway.get_repo(req.context).get(image.image_id)
+
     @utils.mutating
     def delete(self, req, image_id):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
+            if self.is_proxyable(image):
+                # NOTE(danms): Image is staged on another worker; proxy the
+                # delete request to that worker with the user's token, as if
+                # they had called it themselves.
+                image = self._delete_image_on_remote(image, req)
+                if image is None:
+                    # Delete was proxied, so we are done here.
+                    return
+
             # NOTE(abhishekk): Delete the data from staging area
             if CONF.enabled_backends:
                 separator, staging_dir = store_utils.get_dir_separator()
@@ -1325,6 +1468,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
+    # These properties will be filtered out from the response and not
+    # exposed to the client
+    _hidden_properties = ['os_glance_stage_host']
+
     def __init__(self, schema=None):
         super(ResponseSerializer, self).__init__()
         self.schema = schema or get_schema()
@@ -1344,7 +1491,8 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                 return []
 
         try:
-            image_view = dict(image.extra_properties)
+            image_view = {k: v for k, v in dict(image.extra_properties).items()
+                          if k not in self._hidden_properties}
             attributes = ['name', 'disk_format', 'container_format',
                           'visibility', 'size', 'virtual_size', 'status',
                           'checksum', 'protected', 'min_ram', 'min_disk',
