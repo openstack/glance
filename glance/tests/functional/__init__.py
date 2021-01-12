@@ -34,6 +34,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+from testtools import content as ttc
 import textwrap
 import time
 from unittest import mock
@@ -1683,3 +1684,67 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         :returns: A webob.Response object
         """
         return self.api_request('DELETE', url, heaers=headers)
+
+    def _import_copy(self, image_id, stores):
+        """Do an import of image_id to the given stores."""
+        body = {'method': {'name': 'copy-image'},
+                'stores': stores,
+                'all_stores': False}
+
+        return self.api_post(
+            '/v2/images/%s/import' % image_id,
+            json=body)
+
+    def _import_direct(self, image_id, stores):
+        """Do an import of image_id to the given stores."""
+        body = {'method': {'name': 'glance-direct'},
+                'stores': stores,
+                'all_stores': False}
+
+        return self.api_post(
+            '/v2/images/%s/import' % image_id,
+            json=body)
+
+    def _create_and_stage(self, data_iter=None):
+        resp = self.api_post('/v2/images',
+                             json={'name': 'foo',
+                                   'container_format': 'bare',
+                                   'disk_format': 'raw'})
+        image = jsonutils.loads(resp.text)
+
+        if data_iter:
+            resp = self.api_put(
+                '/v2/images/%s/stage' % image['id'],
+                headers={'Content-Type': 'application/octet-stream'},
+                body_file=data_iter)
+        else:
+            resp = self.api_put(
+                '/v2/images/%s/stage' % image['id'],
+                headers={'Content-Type': 'application/octet-stream'},
+                data=b'IMAGEDATA')
+        self.assertEqual(204, resp.status_code)
+
+        return image['id']
+
+    def _create_and_import(self, stores=[], data_iter=None):
+        """Create an image, stage data, and import into the given stores.
+
+        :returns: image_id
+        """
+        image_id = self._create_and_stage(data_iter=data_iter)
+
+        resp = self._import_direct(image_id, stores)
+        self.assertEqual(202, resp.status_code)
+
+        # Make sure it goes active
+        for i in range(0, 10):
+            image = self.api_get('/v2/images/%s' % image_id).json
+            if not image.get('os_glance_import_task'):
+                break
+            self.addDetail('Create-Import task id',
+                           ttc.text_content(image['os_glance_import_task']))
+            time.sleep(1)
+
+        self.assertEqual('active', image['status'])
+
+        return image_id
