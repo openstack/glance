@@ -222,9 +222,13 @@
       The regular tempest-integrated-storage job but with glance metadata injection
     post-run: playbooks/post-check-metadata-injection.yaml
     vars:
+      zuul_copy_output:
+        /etc/glance-remote: logs
       devstack_localrc:
         GLANCE_STANDALONE: False
         GLANCE_USE_IMPORT_WORKFLOW: True
+      devstack_services:
+        g-api-r: true
       devstack_local_conf:
         post-config:
           $GLANCE_API_CONF:
@@ -262,6 +266,8 @@
       The regular tempest-integrated-storage-import-workflow job but with glance in
       standalone mode
     vars:
+      devstack_services:
+        g-api-r: false
       devstack_localrc:
         GLANCE_STANDALONE: True
 
