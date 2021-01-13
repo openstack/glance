@@ -14,11 +14,16 @@
 #    under the License.
 
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from unittest import mock
+
+from oslo_config import cfg
 from six.moves import range
 
 from glance import context
 from glance.tests.unit import utils as unit_utils
 from glance.tests import utils
+
+CONF = cfg.CONF
 
 
 def _fake_image(owner, is_public):
@@ -200,3 +205,22 @@ class TestContext(utils.BaseTestCase):
                          sorted(admin.roles))
         self.assertEqual(['foo'], admin.service_catalog)
         self.assertTrue(admin.is_admin)
+
+    @mock.patch('keystoneauth1.token_endpoint.Token')
+    @mock.patch('keystoneauth1.session.Session')
+    def test_get_ksa_client(self, mock_session, mock_token):
+        # Make sure we can get a keystoneauth1 client from our context
+        # with the token auth as expected.
+        ctx = context.RequestContext(auth_token='token')
+        # NOTE(danms): The auth config group and options are
+        # dynamically registered.  Tickling enough of the relevant
+        # code to make that happen would significantly inflate the
+        # amount of code here for no real gain, so we just mock the
+        # CONF object.
+        CONF.register_group(cfg.OptGroup('keystone_authtoken'))
+        with mock.patch.object(CONF, 'keystone_authtoken') as ksat:
+            ksat.identity_uri = 'http://keystone'
+            client = context.get_ksa_client(ctx)
+        self.assertEqual(mock_session.return_value, client)
+        mock_session.assert_called_once_with(auth=mock_token.return_value)
+        mock_token.assert_called_once_with('http://keystone', 'token')
