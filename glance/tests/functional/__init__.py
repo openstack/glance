@@ -1683,7 +1683,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         :param headers: Optional updates to the default set of headers
         :returns: A webob.Response object
         """
-        return self.api_request('DELETE', url, heaers=headers)
+        return self.api_request('DELETE', url, headers=headers)
 
     def _import_copy(self, image_id, stores):
         """Do an import of image_id to the given stores."""
