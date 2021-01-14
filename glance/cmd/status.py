@@ -33,10 +33,10 @@ class Checks(upgradecheck.UpgradeCommands):
         """Check that the removed sheepdog backend store is not configured."""
         glance_store.register_opts(CONF)
         sheepdog_present = False
-        if 'sheepdog' in getattr(CONF, 'enabled_backends', {}):
+        if 'sheepdog' in (getattr(CONF, 'enabled_backends') or {}):
             sheepdog_present = True
 
-        if 'sheepdog' in getattr(CONF.glance_store, 'stores', []):
+        if 'sheepdog' in (getattr(CONF.glance_store, 'stores') or []):
             sheepdog_present = True
 
         if sheepdog_present:
