@@ -872,8 +872,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                             'size', 'virtual_size', 'direct_url', 'self',
                             'file', 'schema', 'id', 'os_hash_algo',
                             'os_hash_value')
-    _reserved_properties = ('location', 'deleted', 'deleted_at',
-                            'os_glance_import_task')
+    _reserved_properties = ('location', 'deleted', 'deleted_at')
+    _reserved_namespaces = ('os_glance',)
     _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'virtual_size', 'status', 'tags', 'owner',
@@ -938,6 +938,13 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                 msg = (_("Custom property should not be greater than 255 "
                          "characters."))
                 raise webob.exc.HTTPBadRequest(explanation=msg)
+
+            if key in self._reserved_properties:
+                msg = _("Attribute '%s' is reserved.") % key
+                raise webob.exc.HTTPForbidden(msg)
+            if any(key.startswith(ns) for ns in self._reserved_namespaces):
+                msg = _("Attribute '%s' is reserved.") % key
+                raise webob.exc.HTTPForbidden(msg)
 
         return dict(image=image, extra_properties=properties, tags=tags)
 
@@ -1033,6 +1040,9 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if path_root in self._reserved_properties:
             msg = _("Attribute '%s' is reserved.") % path_root
             raise webob.exc.HTTPForbidden(explanation=six.text_type(msg))
+        if any(path_root.startswith(ns) for ns in self._reserved_namespaces):
+            msg = _("Attribute '%s' is reserved.") % path_root
+            raise webob.exc.HTTPForbidden(explanation=msg)
 
         if change['op'] == 'remove':
             return

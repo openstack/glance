@@ -3662,6 +3662,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             {'self': 'http://example.com'},
             {'file': 'http://example.com'},
             {'schema': 'http://example.com'},
+            {'os_glance_foo': 'foo'},
         ]
 
         for body in bodies:
@@ -3953,6 +3954,10 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         samples = {
             'deleted': False,
             'deleted_at': ISOTIME,
+            'os_glance_import_task': 'foo',
+            'os_glance_anything': 'bar',
+            'os_glance_': 'baz',
+            'os_glance': 'bat',
         }
 
         for key, value in samples.items():
