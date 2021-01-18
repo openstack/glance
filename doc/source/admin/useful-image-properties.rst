@@ -30,6 +30,10 @@ Some important points to keep in mind:
   image properties, should that be desirable.  See the
   :ref:`property-protections` section of this Guide for more information.
 
+* Glance reserves properties namespaced with the ``os_glance`` prefix
+  for its own use and will refuse attempts by API users to set or
+  change them.
+
 * You can use a plugin to the interoperable image import process to set
   specific properties on non-admin images imported into Glance.  See
   :ref:`iir_plugins` for more information.  See the original spec,

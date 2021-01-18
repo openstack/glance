@@ -28,7 +28,9 @@ There are two types of image properties in Glance:
 
 Access to meta properties through Glance's public API calls may be
 restricted to certain sets of users, using a property protections configuration
-file.
+file. Glance also reserves the ``os_glance`` namespace of meta properties for
+its own use, and will refuse to let an API user set any property prefixed as
+such.
 
 This document explains exactly how property protections are configured and what
 they apply to.

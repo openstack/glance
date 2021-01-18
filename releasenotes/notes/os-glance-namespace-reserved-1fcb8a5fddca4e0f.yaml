@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    Glance now prevents setting or modifying image properties that are
+    within the ``os_glance`` reserved namespace. Previously, individual
+    properties (such as ``os_glance_importing_to_stores``) were
+    inconsistently disallowed, but now the entire namespace is
+    enforced.

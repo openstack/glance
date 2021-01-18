@@ -42,6 +42,10 @@ Here's some important information about image properties:
   situation of the image (which, in turn, indicates what you can do with the
   image), and its *visibility*, which indicates who has access to the image.
 
+* Some properties are used internally by glance and API users are not
+  allowed to set or modify them. Examples of these are *id*, *status*,
+  and anything prefixed with the *os_glance* namespace.
+
 .. note::
    In addition to image properties, there's usually a data payload that is
    accessible via the image.  In order to give image consumers some guarantees
@@ -191,7 +195,7 @@ Request
 Additionally, you may include additional properties specified as key:value
 pairs, where the value must be a string data type.  Keys are limited
 to 255 chars in length.  Available key names may be limited by the cloud's
-property protection configuration.
+property protection configuration and reserved namespaces like *os_glance*.
 
 Request Example
 ---------------
@@ -562,6 +566,9 @@ fail with a 403 (Forbidden) response code:
 
 - An attempt to delete the only image location, or to replace the image
   locations with an empty list *(since Image API v2.4)*.
+
+- An attempt to set or modify a property with a reserved name, such as
+  anything prefixed with the *os_glance* namespace.
 
 Attempting to add a location path to an image that is not in ``queued`` or
 ``active`` state will result in a 409 (Conflict) response code

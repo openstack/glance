@@ -135,7 +135,8 @@ follows:
 The administrator can configure any property as protected, which
 limits which policies or user roles can perform CRUD operations on that
 property. Protected properties are generally additional properties to
-which only administrators have access.
+which only administrators have access. Further, Glance itself reserves
+properties namespaced with the ``os_glance`` prefix for its own use.
 
 For unprotected image properties, the administrator can manage
 core properties and the image owner can manage additional properties.
