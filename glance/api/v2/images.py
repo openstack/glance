@@ -873,7 +873,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
                             'file', 'schema', 'id', 'os_hash_algo',
                             'os_hash_value')
     _reserved_properties = ('location', 'deleted', 'deleted_at')
-    _reserved_namespaces = ('os_glance',)
+    _reserved_namespaces = (common.GLANCE_RESERVED_NS,)
     _base_properties = ('checksum', 'created_at', 'container_format',
                         'disk_format', 'id', 'min_disk', 'min_ram', 'name',
                         'size', 'virtual_size', 'status', 'tags', 'owner',

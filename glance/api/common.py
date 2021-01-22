@@ -28,6 +28,7 @@ from glance.i18n import _, _LE, _LW
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
+GLANCE_RESERVED_NS = 'os_glance'
 _CACHED_THREAD_POOL = {}
 
 

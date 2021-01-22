@@ -99,10 +99,14 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                                              item_proxy_class=ImageProxy,
                                              item_proxy_kwargs=proxy_kwargs)
 
-    def _enforce_image_property_quota(self, attempted):
+    def _enforce_image_property_quota(self, properties):
         if CONF.image_property_quota < 0:
             # If value is negative, allow unlimited number of properties
             return
+
+        attempted = len(
+            [x for x in properties.keys()
+             if not x.startswith(glance.api.common.GLANCE_RESERVED_NS)])
 
         maximum = CONF.image_property_quota
         if attempted > maximum:
@@ -113,11 +117,11 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def save(self, image, from_state=None):
         if image.added_new_properties():
-            self._enforce_image_property_quota(len(image.extra_properties))
+            self._enforce_image_property_quota(image.extra_properties)
         return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
-        self._enforce_image_property_quota(len(image.extra_properties))
+        self._enforce_image_property_quota(image.extra_properties)
         return super(ImageRepoProxy, self).add(image)
 
 

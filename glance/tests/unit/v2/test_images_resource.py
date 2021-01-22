@@ -1076,6 +1076,26 @@ class TestImagesController(base.IsolatedUnitTest):
                           self.controller.update, request,
                           UUID1, changes)
 
+    def test_update_reserved_not_counted_in_quota(self):
+        self.config(image_property_quota=1)
+        request = unit_test_utils.get_fake_request()
+        self.db.image_update(None, UUID1, {'properties': {
+            'os_glance_foo': '123', 'os_glance_bar': 456}})
+
+        changes = [
+            {'op': 'add', 'path': ['foo'], 'value': 'baz'},
+        ]
+        # Should succeed
+        self.controller.update(request, UUID1, changes)
+
+        changes = [
+            {'op': 'add', 'path': ['snitch'], 'value': 'golden'},
+        ]
+        # Should fail, over quota
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.update, request,
+                          UUID1, changes)
+
     def test_update_add_and_remove_too_many_properties(self):
         request = unit_test_utils.get_fake_request()
 
