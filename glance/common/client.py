@@ -17,7 +17,7 @@
 # http://code.activestate.com/recipes/
 #   577548-https-httplib-client-connection-with-certificate-v/
 
-import collections
+import collections.abc
 import copy
 import errno
 import functools
@@ -567,7 +567,7 @@ class BaseClient(object):
                 not self.use_ssl)
 
     def _iterable(self, body):
-        return isinstance(body, collections.Iterable)
+        return isinstance(body, collections.abc.Iterable)
 
     def get_status_code(self, response):
         """
