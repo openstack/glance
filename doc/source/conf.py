@@ -33,6 +33,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'oslo_config.sphinxext',
     'oslo_config.sphinxconfiggen',
+    'oslo_policy.sphinxpolicygen',
     'openstackdocstheme',
     'sphinxcontrib.apidoc',
 ]
@@ -63,6 +64,10 @@ config_generator_config_file = [
      '_static/glance-manage'),
     ('../../etc/oslo-config-generator/glance-scrubber.conf',
      '_static/glance-scrubber'),
+]
+
+policy_generator_config_file = [
+    ('../../etc/glance-policy-generator.conf', '_static/glance'),
 ]
 
 # The master toctree document.
