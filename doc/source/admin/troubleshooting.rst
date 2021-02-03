@@ -143,10 +143,10 @@ core properties and the image owner can manage additional properties.
 
 **To configure property protection**
 
-To configure property protection, edit the ``policy.json`` file. This file
+To configure property protection, edit the ``policy.yaml`` file. This file
 can also be used to set policies for Image service actions.
 
-#. Define roles or policies in the ``policy.json`` file:
+#. Define roles or policies in the ``policy.yaml`` file:
 
    .. code-block:: json
 
@@ -377,7 +377,7 @@ For a list of flavors that are available on your system, run:
 
 By default, administrative users can configure the flavors. You can
 change this behavior by redefining the access controls for
-``compute_extension:flavormanage`` in ``/etc/nova/policy.json`` on the
+``compute_extension:flavormanage`` in ``/etc/nova/policy.yaml`` on the
 ``compute-api`` server.
 
 

@@ -437,7 +437,7 @@ this plugin to inject the properties automatically upon image import.
 
    You can guarantee that your end users must use interoperable image import by
    restricting the ``upload_image`` policy appropriately in the Glance
-   ``policy.json`` file.  By default, this policy is unrestricted (that is,
+   ``policy.yaml`` file.  By default, this policy is unrestricted (that is,
    any authorized user may make the image upload call).
 
    For example, to allow only admin or service users to make the image upload
@@ -534,7 +534,7 @@ converting the images to their end users.
 
    You can guarantee that your end users must use interoperable image import by
    restricting the ``upload_image`` policy appropriately in the Glance
-   ``policy.json`` file.  By default, this policy is unrestricted (that is,
+   ``policy.yaml`` file.  By default, this policy is unrestricted (that is,
    any authorized user may make the image upload call).
 
    For example, to allow only admin or service users to make the image upload
@@ -612,7 +612,7 @@ only compressed images.
 
    You can guarantee that your end users must use interoperable image import by
    restricting the ``upload_image`` policy appropriately in the Glance
-   ``policy.json`` file.  By default, this policy is unrestricted (that is,
+   ``policy.yaml`` file.  By default, this policy is unrestricted (that is,
    any authorized user may make the image upload call).
 
    For example, to allow only admin or service users to make the image upload

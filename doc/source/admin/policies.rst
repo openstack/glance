@@ -17,6 +17,14 @@
 Policies
 ========
 
+.. warning::
+
+   JSON formatted policy file is deprecated since Glance 22.0.0 (Wallaby).
+   This `oslopolicy-convert-json-to-yaml`__ tool will migrate your existing
+   JSON-formatted policy file to YAML in a backward-compatible way.
+
+.. __: https://docs.openstack.org/oslo.policy/latest/cli/oslopolicy-convert-json-to-yaml.html
+
 Glance's public API calls may be restricted to certain sets of users using a
 policy configuration file. This document explains exactly how policies are
 configured and what they apply to.

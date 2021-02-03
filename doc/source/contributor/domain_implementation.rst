@@ -107,7 +107,7 @@ Policy
 The fourth layer of the domain model is responsible for:
 
 #. Defining access rules to perform actions with an image. The rules are
-   defined in the :file:`etc/policy.json` file.
+   defined in the :file:`etc/policy.yaml` file.
 #. Monitoring of the rules implementation.
 
 .. _quota:

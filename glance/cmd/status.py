@@ -16,6 +16,7 @@ import sys
 
 import glance_store
 from oslo_config import cfg
+from oslo_upgradecheck import common_checks
 from oslo_upgradecheck import upgradecheck
 
 from glance.common import wsgi  # noqa
@@ -50,6 +51,9 @@ class Checks(upgradecheck.UpgradeCommands):
     _upgrade_checks = (
         # Added in Ussuri
         ('Sheepdog Driver Removal', _check_sheepdog_store),
+        # Added in Wallaby
+        ('Policy File JSON to YAML Migration',
+         (common_checks.check_policy_json, {'conf': CONF})),
     )
 
 
