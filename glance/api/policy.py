@@ -64,11 +64,14 @@ class Enforcer(policy.Enforcer):
         """
         if registered and action not in self.registered_rules:
             raise policy.PolicyNotRegistered(action)
-        return super(Enforcer, self).enforce(action, target,
-                                             context.to_policy_values(),
-                                             do_raise=True,
-                                             exc=exception.Forbidden,
-                                             action=action)
+        try:
+            return super(Enforcer, self).enforce(action, target,
+                                                 context.to_policy_values(),
+                                                 do_raise=True,
+                                                 exc=exception.Forbidden,
+                                                 action=action)
+        except policy.InvalidScope:
+            raise exception.Forbidden(action=action)
 
     def check(self, context, action, target, registered=True):
         """Verifies that the action is valid on the target in this context.
