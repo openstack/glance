@@ -21,6 +21,7 @@ import glance_store as store_api
 from oslo_config import cfg
 
 from glance.async_.flows._internal_plugins import copy_image
+from glance.async_.flows import api_image_import
 import glance.common.exception as exception
 from glance import domain
 import glance.tests.unit.utils as unit_test_utils
@@ -93,6 +94,11 @@ class TestCopyImageTask(test_utils.BaseTestCase):
         self.task = self.task_factory.new_task(self.task_type, TENANT1,
                                                task_time_to_live=task_ttl,
                                                task_input=task_input)
+        self.task_id = self.task.task_id
+        self.action_wrapper = api_image_import.ImportActionWrapper(
+            self.image_repo, self.image_id, self.task_id)
+        self.image_repo.get.return_value = mock.MagicMock(
+            extra_properties={'os_glance_import_task': self.task_id})
 
         stores = {'cheap': 'file', 'fast': 'file'}
         self.config(enabled_backends=stores)
@@ -126,7 +132,7 @@ class TestCopyImageTask(test_utils.BaseTestCase):
         mock_store_api.return_value = self.staging_store
         copy_image_task = copy_image._CopyImage(
             self.task.task_id, self.task_type, self.image_repo,
-            self.image_id)
+            self.action_wrapper)
         with mock.patch.object(self.image_repo, 'get') as get_mock:
             get_mock.return_value = mock.MagicMock(
                 image_id=self.images[0]['id'],
@@ -152,7 +158,7 @@ class TestCopyImageTask(test_utils.BaseTestCase):
 
         copy_image_task = copy_image._CopyImage(
             self.task.task_id, self.task_type, self.image_repo,
-            self.image_id)
+            self.action_wrapper)
         with mock.patch.object(self.image_repo, 'get') as get_mock:
             get_mock.return_value = mock.MagicMock(
                 image_id=self.images[0]['id'],
@@ -182,7 +188,7 @@ class TestCopyImageTask(test_utils.BaseTestCase):
 
         copy_image_task = copy_image._CopyImage(
             self.task.task_id, self.task_type, self.image_repo,
-            self.image_id)
+            self.action_wrapper)
         with mock.patch.object(self.image_repo, 'get') as get_mock:
             get_mock.return_value = mock.MagicMock(
                 image_id=self.images[0]['id'],
@@ -206,7 +212,7 @@ class TestCopyImageTask(test_utils.BaseTestCase):
         mock_store_api.return_value = self.staging_store
         copy_image_task = copy_image._CopyImage(
             self.task.task_id, self.task_type, self.image_repo,
-            self.image_id)
+            self.action_wrapper)
         with mock.patch.object(self.image_repo, 'get') as get_mock:
             get_mock.side_effect = exception.NotFound()
 

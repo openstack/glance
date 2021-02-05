@@ -730,7 +730,8 @@ def get_flow(**kwargs):
     flow.add(_ImageLock(task_id, task_type, action_wrapper))
 
     if import_method in ['web-download', 'copy-image']:
-        internal_plugin = internal_plugins.get_import_plugin(**kwargs)
+        internal_plugin = internal_plugins.get_import_plugin(
+            **dict(kwargs, action_wrapper=action_wrapper))
         flow.add(internal_plugin)
         if CONF.enabled_backends:
             separator, staging_dir = store_utils.get_dir_separator()
