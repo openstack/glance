@@ -21,6 +21,7 @@ import glance_store
 from oslo_concurrency import processutils
 from oslo_config import cfg
 
+import glance.async_.flows.api_image_import as import_flow
 import glance.async_.flows.plugins.image_conversion as image_conversion
 from glance.async_ import utils as async_utils
 from glance.common import utils
@@ -79,24 +80,32 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                                task_time_to_live=task_ttl,
                                                task_input=task_input)
 
+        self.image.extra_properties = {
+            'os_glance_import_task': self.task.task_id}
+        self.wrapper = import_flow.ImportActionWrapper(self.img_repo,
+                                                       self.image_id,
+                                                       self.task.task_id)
+
     @mock.patch.object(os, 'remove')
     def test_image_convert_success(self, mock_os_remove):
         mock_os_remove.return_value = None
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
-                                                       self.img_repo,
-                                                       self.image_id)
+                                                       self.wrapper)
 
         self.task_repo.get.return_value = self.task
         image = mock.MagicMock(image_id=self.image_id, virtual_size=None,
+                               extra_properties={
+                                   'os_glance_import_task': self.task.task_id},
                                disk_format='qcow2')
         self.img_repo.get.return_value = image
 
         with mock.patch.object(processutils, 'execute') as exc_mock:
             exc_mock.return_value = ("", None)
             with mock.patch.object(json, 'loads') as jloads_mock:
-                jloads_mock.return_value = {'format': 'raw'}
+                jloads_mock.return_value = {'format': 'raw',
+                                            'virtual-size': 123}
                 image_convert.execute('file:///test/path.raw')
 
                 # NOTE(hemanthm): Asserting that the source format is passed
@@ -106,12 +115,15 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 self.assertIn('-f', exc_mock.call_args[0])
                 self.assertEqual("qcow2", image.disk_format)
 
+        self.assertEqual('bare', image.container_format)
+        self.assertEqual('qcow2', image.disk_format)
+        self.assertEqual(123, image.virtual_size)
+
     def _setup_image_convert_info_fail(self):
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
-                                                       self.img_repo,
-                                                       self.image_id)
+                                                       self.wrapper)
 
         self.task_repo.get.return_value = self.task
         image = mock.MagicMock(image_id=self.image_id, virtual_size=None,
@@ -235,8 +247,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
-                                                       self.img_repo,
-                                                       self.image_id)
+                                                       self.wrapper)
 
         self.task_repo.get.return_value = self.task
 
