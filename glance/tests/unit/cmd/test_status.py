@@ -65,3 +65,12 @@ class TestUpgradeChecks(test_utils.BaseTestCase):
         self.config(stores='sheepdog', group='glance_store')
         self.assertEqual(self.checker._check_sheepdog_store().code,
                          upgradecheck.Code.FAILURE)
+
+    def test_owner_is_tenant_removal(self):
+        self.config(owner_is_tenant=True)
+        self.assertEqual(self.checker._check_owner_is_tenant().code,
+                         upgradecheck.Code.SUCCESS)
+
+        self.config(owner_is_tenant=False)
+        self.assertEqual(self.checker._check_owner_is_tenant().code,
+                         upgradecheck.Code.FAILURE)

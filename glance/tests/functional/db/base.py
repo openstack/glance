@@ -1096,11 +1096,9 @@ class DriverTests(object):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_token='user:%s:user' % TENANT1,
-                                       owner_is_tenant=True)
-        ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
-                                       auth_token='user:%s:user' % TENANT2,
-                                       owner_is_tenant=False)
+                                       auth_token='user:%s:user' % TENANT1)
+        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+                                       auth_token='user:%s:user' % TENANT2)
         UUIDX = str(uuid.uuid4())
         # We need a shared image and context.owner should not match image
         # owner
@@ -1149,11 +1147,9 @@ class DriverTests(object):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                       auth_token='user:%s:user' % TENANT1,
-                                       owner_is_tenant=True)
-        ctxt2 = context.RequestContext(is_admin=False, user=TENANT2,
-                                       auth_token='user:%s:user' % TENANT2,
-                                       owner_is_tenant=False)
+                                       auth_token='user:%s:user' % TENANT1)
+        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+                                       auth_token='user:%s:user' % TENANT2)
         UUIDX = str(uuid.uuid4())
         # We need a shared image and context.owner should not match image
         # owner
@@ -1180,10 +1176,10 @@ class DriverTests(object):
         TENANT2 = str(uuid.uuid4())
         owners_ctxt = context.RequestContext(is_admin=False, tenant=TENANT1,
                                              auth_token='user:%s:user'
-                                             % TENANT1, owner_is_tenant=True)
+                                             % TENANT1)
         viewing_ctxt = context.RequestContext(is_admin=False, user=TENANT2,
                                               auth_token='user:%s:user'
-                                              % TENANT2, owner_is_tenant=False)
+                                              % TENANT2)
         UUIDX = str(uuid.uuid4())
         # We need a community image and context.owner should not match image
         # owner

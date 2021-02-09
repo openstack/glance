@@ -579,8 +579,7 @@ The list of metadata headers that Glance accepts are listed below.
 
   This header is optional and only meaningful for admins.
 
-  Glance normally sets the owner of an image to be the tenant or user
-  (depending on the "owner_is_tenant" configuration option) of the
+  Glance sets the owner of an image to be the tenant of the
   authenticated user issuing the request. However, if the authenticated user
   has the Admin role, this default may be overridden by setting this header to
   null or to a string identifying the owner of the image.
@@ -628,10 +627,10 @@ See more about image statuses here: :ref:`image-statuses`
 List Image Memberships
 **********************
 
-We want to see a list of the other system tenants (or users, if
-"owner_is_tenant" is False) that may access a given virtual machine image that
-the Glance server knows about. We take the `uri` field of the image data,
-append ``/members`` to it, and issue a ``GET`` request on the resulting URL.
+We want to see a list of the other system tenants that may access a given
+virtual machine image that the Glance server knows about. We take the `uri`
+field of the image data, append ``/members`` to it, and issue a ``GET`` request
+on the resulting URL.
 
 Continuing from the example above, in order to get the memberships for the
 first image returned, we can issue a ``GET`` request to the Glance
