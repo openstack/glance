@@ -284,12 +284,22 @@ class _ImportActions(object):
                                            set_active=set_active,
                                            callback=callback)
 
-    def set_image_status(self, status):
-        """Set the image status.
+    def set_image_attribute(self, **attrs):
+        """Set an image attribute.
 
-        :param status: The new status of the image
+        This allows setting various image attributes which will be saved
+        upon exiting the ImportActionWrapper context.
+
+        :param attrs: kwarg list of attributes to set on the image
+        :raises: AttributeError if an attribute outside the set of allowed
+                 ones is present in attrs.
         """
-        self._image.status = status
+        allowed = ['status', 'disk_format', 'container_format',
+                   'virtual_size']
+        for attr, value in attrs.items():
+            if attr not in allowed:
+                raise AttributeError('Setting %s is not allowed' % attr)
+            setattr(self._image, attr, value)
 
     def remove_location_for_store(self, backend):
         """Remove a location from an image given a backend store.
@@ -627,7 +637,7 @@ class _VerifyImageState(task.Task):
         """Set back to queued if this wasn't copy-image job."""
         with self.action_wrapper as action:
             if self.import_method != 'copy-image':
-                action.set_image_status('queued')
+                action.set_image_attribute(status='queued')
 
 
 class _CompleteTask(task.Task):
@@ -717,6 +727,7 @@ def get_flow(**kwargs):
     # otherwise with the regular repo.
     action_wrapper = ImportActionWrapper(admin_repo or image_repo, image_id,
                                          task_id)
+    kwargs['action_wrapper'] = action_wrapper
 
     if not uri and import_method in ['glance-direct', 'copy-image']:
         if CONF.enabled_backends:
@@ -730,8 +741,7 @@ def get_flow(**kwargs):
     flow.add(_ImageLock(task_id, task_type, action_wrapper))
 
     if import_method in ['web-download', 'copy-image']:
-        internal_plugin = internal_plugins.get_import_plugin(
-            **dict(kwargs, action_wrapper=action_wrapper))
+        internal_plugin = internal_plugins.get_import_plugin(**kwargs)
         flow.add(internal_plugin)
         if CONF.enabled_backends:
             separator, staging_dir = store_utils.get_dir_separator()
@@ -786,7 +796,7 @@ def get_flow(**kwargs):
 
     with action_wrapper as action:
         if import_method != 'copy-image':
-            action.set_image_status('importing')
+            action.set_image_attribute(status='importing')
         action.add_importing_stores(stores)
         action.remove_failed_stores(stores)
 

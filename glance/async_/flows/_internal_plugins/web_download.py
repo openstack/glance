@@ -145,7 +145,7 @@ class _WebDownload(task.Task):
             # of the _ImportToStore() tasks could have run, so we need
             # to move all stores out of "importing" and into "failed".
             with self.action_wrapper as action:
-                action.set_image_status('queued')
+                action.set_image_attribute(status='queued')
                 action.remove_importing_stores(self.stores)
                 action.add_failed_stores(self.stores)
 
