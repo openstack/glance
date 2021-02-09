@@ -689,6 +689,47 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
             self.assertRaises(AttributeError,
                               action.set_image_attribute, id='foo')
 
+    @mock.patch.object(import_flow, 'LOG')
+    def test_set_image_extra_properties(self, mock_log):
+        mock_repo = mock.MagicMock()
+        mock_image = mock_repo.get.return_value
+        mock_image.image_id = IMAGE_ID1
+        mock_image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        mock_image.status = 'bar'
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        # One banned property
+        with wrapper as action:
+            action.set_image_extra_properties({'os_glance_foo': 'bar'})
+        self.assertEqual({'os_glance_import_task': TASK_ID1},
+                         mock_image.extra_properties)
+
+        mock_log.warning.assert_called()
+        mock_log.warning.reset_mock()
+
+        # Two banned properties
+        with wrapper as action:
+            action.set_image_extra_properties({'os_glance_foo': 'bar',
+                                               'os_glance_baz': 'bat'})
+        self.assertEqual({'os_glance_import_task': TASK_ID1},
+                         mock_image.extra_properties)
+
+        mock_log.warning.assert_called()
+        mock_log.warning.reset_mock()
+
+        # One banned and one allowed property
+        with wrapper as action:
+            action.set_image_extra_properties({'foo': 'bar',
+                                               'os_glance_foo': 'baz'})
+        self.assertEqual({'foo': 'bar',
+                          'os_glance_import_task': TASK_ID1},
+                         mock_image.extra_properties)
+
+        mock_log.warning.assert_called_once_with(
+            'Dropping %(key)s=%(val)s during metadata injection for %(image)s',
+            {'key': 'os_glance_foo', 'val': 'baz',
+             'image': IMAGE_ID1})
+
     def test_drop_lock_for_task(self):
         mock_repo = mock.MagicMock()
         mock_repo.get.return_value.extra_properties = {
