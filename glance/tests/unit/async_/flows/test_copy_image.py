@@ -137,6 +137,7 @@ class TestCopyImageTask(test_utils.BaseTestCase):
             get_mock.return_value = mock.MagicMock(
                 image_id=self.images[0]['id'],
                 locations=self.images[0]['locations'],
+                extra_properties={'os_glance_import_task': self.task.task_id},
                 status=self.images[0]['status']
             )
             with mock.patch.object(store_api, 'get') as get_data:
@@ -164,6 +165,7 @@ class TestCopyImageTask(test_utils.BaseTestCase):
                 image_id=self.images[0]['id'],
                 locations=self.images[0]['locations'],
                 status=self.images[0]['status'],
+                extra_properties={'os_glance_import_task': self.task.task_id},
                 size=4
             )
             with mock.patch.object(store_api, 'get') as get_data:
@@ -194,6 +196,7 @@ class TestCopyImageTask(test_utils.BaseTestCase):
                 image_id=self.images[0]['id'],
                 locations=self.images[0]['locations'],
                 status=self.images[0]['status'],
+                extra_properties={'os_glance_import_task': self.task.task_id},
                 size=4
             )
             copy_image_task.execute()

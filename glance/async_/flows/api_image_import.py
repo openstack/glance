@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import copy
 import functools
 import os
 
@@ -192,6 +193,18 @@ class _ImportActions(object):
     @property
     def image_id(self):
         return self._image.image_id
+
+    @property
+    def image_size(self):
+        return self._image.size
+
+    @property
+    def image_locations(self):
+        # Return a copy of this complex structure to make sure we do
+        # not allow the plugin to mutate this underneath us for our
+        # later save.  If this needs to be a thing in the future, we
+        # should have moderated access like all the other things here.
+        return copy.deepcopy(self._image.locations)
 
     @property
     def image_status(self):

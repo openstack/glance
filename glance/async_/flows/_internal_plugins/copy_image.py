@@ -46,11 +46,14 @@ class _CopyImage(task.Task):
             'os_glance_staging_store')
 
     def execute(self):
+        with self.action_wrapper as action:
+            return self._execute(action)
+
+    def _execute(self, action):
         """Create temp file into store and return path to it
 
         :param image_id: Glance Image ID
         """
-        image = self.image_repo.get(self.image_id)
         # NOTE (abhishekk): If ``all_stores_must_succeed`` is set to True
         # and copying task fails then we keep data in staging area as it
         # is so that if second call is made to copy the same image then
@@ -66,7 +69,7 @@ class _CopyImage(task.Task):
             # re-stage the fresh image data.
             # Ref: https://bugs.launchpad.net/glance/+bug/1885003
             size_in_staging = os.path.getsize(file_path)
-            if image.size == size_in_staging:
+            if action.image_size == size_in_staging:
                 return file_path, 0
             else:
                 LOG.debug(("Found partial image data in staging "
@@ -83,7 +86,7 @@ class _CopyImage(task.Task):
 
         # At first search image in default_backend
         default_store = CONF.glance_store.default_backend
-        for loc in image.locations:
+        for loc in action.image_locations:
             if loc['metadata'].get('store') == default_store:
                 try:
                     return self._copy_to_staging_store(loc)
@@ -95,7 +98,7 @@ class _CopyImage(task.Task):
                     break
 
         available_backends = CONF.enabled_backends
-        for loc in image.locations:
+        for loc in action.image_locations:
             image_backend = loc['metadata'].get('store')
             if (image_backend in available_backends.keys()
                     and image_backend != default_store):
