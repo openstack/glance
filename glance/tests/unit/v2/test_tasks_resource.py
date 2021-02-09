@@ -56,6 +56,9 @@ def _db_fixture(task_id, **kwargs):
         'input': {},
         'result': None,
         'owner': None,
+        'image_id': 'fake_image_id',
+        'user_id': 'fake_user',
+        'request_id': 'fake_request_id',
         'message': None,
         'expires_at': default_datetime + datetime.timedelta(days=365),
         'created_at': default_datetime,
@@ -79,7 +82,10 @@ def _domain_fixture(task_id, **kwargs):
         'updated_at': kwargs.get('updated_at', default_datetime),
         'task_input': kwargs.get('task_input', {}),
         'message': kwargs.get('message'),
-        'result': kwargs.get('result')
+        'result': kwargs.get('result'),
+        'image_id': kwargs.get('image_id'),
+        'user_id': kwargs.get('user_id'),
+        'request_id': kwargs.get('request_id'),
     }
     task = glance.domain.Task(**task_properties)
     return task
@@ -726,19 +732,31 @@ class TestTasksSerializer(test_utils.BaseTestCase):
         self.fixtures = [
             _domain_fixture(UUID1, type='import', status='pending',
                             task_input={'loc': 'fake'}, result={},
-                            owner=TENANT1, message='', created_at=DATETIME,
+                            owner=TENANT1, image_id='fake_image_id',
+                            user_id='fake_user',
+                            request_id='fake_request_id',
+                            message='', created_at=DATETIME,
                             updated_at=DATETIME),
             _domain_fixture(UUID2, type='import', status='processing',
                             task_input={'loc': 'bake'}, owner=TENANT2,
+                            image_id='fake_image_id',
+                            user_id='fake_user',
+                            request_id='fake_request_id',
                             message='', created_at=DATETIME,
                             updated_at=DATETIME, result={}),
             _domain_fixture(UUID3, type='import', status='success',
                             task_input={'loc': 'foo'}, owner=TENANT3,
+                            image_id='fake_image_id',
+                            user_id='fake_user',
+                            request_id='fake_request_id',
                             message='', created_at=DATETIME,
                             updated_at=DATETIME, result={},
                             expires_at=DATETIME),
             _domain_fixture(UUID4, type='import', status='failure',
                             task_input={'loc': 'boo'}, owner=TENANT4,
+                            image_id='fake_image_id',
+                            user_id='fake_user',
+                            request_id='fake_request_id',
                             message='', created_at=DATETIME,
                             updated_at=DATETIME, result={},
                             expires_at=DATETIME),
@@ -843,6 +861,9 @@ class TestTasksSerializer(test_utils.BaseTestCase):
             'expires_at': ISOTIME,
             'self': '/v2/tasks/%s' % UUID4,
             'schema': '/v2/schemas/task',
+            'image_id': 'fake_image_id',
+            'user_id': 'fake_user',
+            'request_id': 'fake_request_id',
         }
         response = webob.Response()
         self.serializer.get(response, self.fixtures[3])
@@ -863,6 +884,9 @@ class TestTasksSerializer(test_utils.BaseTestCase):
             'updated_at': ISOTIME,
             'self': '/v2/tasks/%s' % UUID1,
             'schema': '/v2/schemas/task',
+            'image_id': 'fake_image_id',
+            'user_id': 'fake_user',
+            'request_id': 'fake_request_id',
         }
         response = webob.Response()
         self.serializer.get(response, self.fixtures[0])
@@ -882,6 +906,9 @@ class TestTasksSerializer(test_utils.BaseTestCase):
             'updated_at': ISOTIME,
             'self': '/v2/tasks/%s' % UUID2,
             'schema': '/v2/schemas/task',
+            'image_id': 'fake_image_id',
+            'user_id': 'fake_user',
+            'request_id': 'fake_request_id',
         }
         response = webob.Response()
 

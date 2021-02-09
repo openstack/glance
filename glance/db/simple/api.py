@@ -177,6 +177,9 @@ def _task_format(task_id, **values):
         'updated_at': dt,
         'deleted_at': None,
         'deleted': False,
+        'image_id': None,
+        'request_id': None,
+        'user_id': None,
     }
     task.update(values)
     return task
@@ -922,7 +925,8 @@ def task_create(context, values):
     required_attributes = ['type', 'status', 'input']
     allowed_attributes = ['id', 'type', 'status', 'input', 'result', 'owner',
                           'message', 'expires_at', 'created_at',
-                          'updated_at', 'deleted_at', 'deleted']
+                          'updated_at', 'deleted_at', 'deleted',
+                          'image_id', 'request_id', 'user_id']
 
     if task_id in DATA['tasks']:
         raise exception.Duplicate()

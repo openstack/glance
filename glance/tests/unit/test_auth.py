@@ -871,8 +871,12 @@ class TestImmutableTask(utils.BaseTestCase):
         task_factory = glance.domain.TaskFactory()
         self.context = glance.context.RequestContext(tenant=TENANT2)
         task_type = 'import'
+        image_id = 'fake_image_id'
+        user_id = 'fake_user'
+        request_id = 'fake_request_id'
         owner = TENANT2
-        task = task_factory.new_task(task_type, owner)
+        task = task_factory.new_task(task_type, owner, image_id,
+                                     user_id, request_id)
         self.task = authorization.ImmutableTaskProxy(task)
 
     def _test_change(self, attr, value):
@@ -938,8 +942,12 @@ class TestImmutableTaskStub(utils.BaseTestCase):
         task_factory = glance.domain.TaskFactory()
         self.context = glance.context.RequestContext(tenant=TENANT2)
         task_type = 'import'
+        image_id = 'fake_image_id'
+        user_id = 'fake_user'
+        request_id = 'fake_request_id'
         owner = TENANT2
-        task = task_factory.new_task(task_type, owner)
+        task = task_factory.new_task(task_type, owner, image_id,
+                                     user_id, request_id)
         self.task = authorization.ImmutableTaskStubProxy(task)
 
     def _test_change(self, attr, value):
@@ -992,6 +1000,9 @@ class TestTaskFactoryProxy(utils.BaseTestCase):
         self.task_type = 'import'
         self.task_input = '{"loc": "fake"}'
         self.owner = 'foo'
+        self.image_id = 'fake_image_id'
+        self.user_id = 'fake_user'
+        self.request_id = 'fake_request_id'
 
         self.request1 = unittest_utils.get_fake_request(tenant=TENANT1)
         self.request2 = unittest_utils.get_fake_request(tenant=TENANT2)
@@ -999,7 +1010,9 @@ class TestTaskFactoryProxy(utils.BaseTestCase):
     def test_task_create_default_owner(self):
         owner = self.request1.context.owner
         task = self.task_factory.new_task(task_type=self.task_type,
-                                          owner=owner)
+                                          owner=owner, image_id=self.image_id,
+                                          user_id=self.user_id,
+                                          request_id=self.request_id)
         self.assertEqual(TENANT1, task.owner)
 
     def test_task_create_wrong_owner(self):
@@ -1007,14 +1020,18 @@ class TestTaskFactoryProxy(utils.BaseTestCase):
                           self.task_factory.new_task,
                           task_type=self.task_type,
                           task_input=self.task_input,
-                          owner=self.owner)
+                          owner=self.owner, image_id=self.image_id,
+                          user_id=self.user_id,
+                          request_id=self.request_id)
 
     def test_task_create_owner_as_None(self):
         self.assertRaises(exception.Forbidden,
                           self.task_factory.new_task,
                           task_type=self.task_type,
                           task_input=self.task_input,
-                          owner=None)
+                          owner=None, image_id=self.image_id,
+                          user_id=self.user_id,
+                          request_id=self.request_id)
 
     def test_task_create_admin_context_owner_as_None(self):
         self.context.is_admin = True
@@ -1022,7 +1039,9 @@ class TestTaskFactoryProxy(utils.BaseTestCase):
                           self.task_factory.new_task,
                           task_type=self.task_type,
                           task_input=self.task_input,
-                          owner=None)
+                          owner=None, image_id=self.image_id,
+                          user_id=self.user_id,
+                          request_id=self.request_id)
 
 
 class TestTaskRepoProxy(utils.BaseTestCase):
@@ -1049,11 +1068,17 @@ class TestTaskRepoProxy(utils.BaseTestCase):
         super(TestTaskRepoProxy, self).setUp()
         task_factory = glance.domain.TaskFactory()
         task_type = 'import'
+        image_id = 'fake_image_id'
+        user_id = 'fake_user'
+        request_id = 'fake_request_id'
         owner = None
         self.fixtures = [
-            task_factory.new_task(task_type, owner),
-            task_factory.new_task(task_type, owner),
-            task_factory.new_task(task_type, owner),
+            task_factory.new_task(task_type, owner, image_id,
+                                  user_id, request_id),
+            task_factory.new_task(task_type, owner, image_id,
+                                  user_id, request_id),
+            task_factory.new_task(task_type, owner, image_id,
+                                  user_id, request_id),
         ]
         self.context = glance.context.RequestContext(tenant=TENANT1)
         task_repo = self.TaskRepoStub(self.fixtures)

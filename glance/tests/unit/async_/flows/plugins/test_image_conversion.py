@@ -74,7 +74,11 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         task_ttl = CONF.task.task_time_to_live
 
         self.task_type = 'import'
+        request_id = 'fake_request_id'
+        user_id = 'fake_user'
         self.task = self.task_factory.new_task(self.task_type, TENANT1,
+                                               self.image_id, user_id,
+                                               request_id,
                                                task_time_to_live=task_ttl,
                                                task_input=task_input)
 

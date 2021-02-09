@@ -800,13 +800,20 @@ class TestTaskRepo(test_utils.BaseTestCase):
 
     def test_add_task(self):
         task_type = 'import'
-        task = self.task_factory.new_task(task_type, None,
+        image_id = 'fake_image_id'
+        user_id = 'fake_user'
+        request_id = 'fake_request_id'
+        task = self.task_factory.new_task(task_type, None, image_id,
+                                          user_id, request_id,
                                           task_input=self.fake_task_input)
         self.assertEqual(task.updated_at, task.created_at)
         self.task_repo.add(task)
         retrieved_task = self.task_repo.get(task.task_id)
         self.assertEqual(task.updated_at, retrieved_task.updated_at)
         self.assertEqual(self.fake_task_input, retrieved_task.task_input)
+        self.assertEqual(image_id, task.image_id)
+        self.assertEqual(user_id, task.user_id)
+        self.assertEqual(request_id, task.request_id)
 
     def test_save_task(self):
         task = self.task_repo.get(UUID1)
