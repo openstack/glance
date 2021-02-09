@@ -22,6 +22,7 @@ from oslo_concurrency import processutils
 from oslo_config import cfg
 
 import glance.async_.flows.plugins.image_conversion as image_conversion
+from glance.async_ import utils as async_utils
 from glance.common import utils
 from glance import domain
 from glance import gateway
@@ -104,6 +105,129 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 # https://bugs.launchpad.net/glance/+bug/1449062/comments/72
                 self.assertIn('-f', exc_mock.call_args[0])
                 self.assertEqual("qcow2", image.disk_format)
+
+    def _setup_image_convert_info_fail(self):
+        image_convert = image_conversion._ConvertImage(self.context,
+                                                       self.task.task_id,
+                                                       self.task_type,
+                                                       self.img_repo,
+                                                       self.image_id)
+
+        self.task_repo.get.return_value = self.task
+        image = mock.MagicMock(image_id=self.image_id, virtual_size=None,
+                               extra_properties={
+                                   'os_glance_import_task': self.task.task_id},
+                               disk_format='qcow2')
+        self.img_repo.get.return_value = image
+        return image_convert
+
+    def test_image_convert_fails_inspection(self):
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.side_effect = OSError('fail')
+            self.assertRaises(OSError,
+                              convert.execute, 'file:///test/path.raw')
+            exc_mock.assert_called_once_with(
+                'qemu-img', 'info',
+                '--output=json',
+                '/test/path.raw',
+                prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
+                python_exec=convert.python,
+                log_errors=processutils.LOG_ALL_ERRORS)
+        # Make sure we did not update the image
+        self.img_repo.save.assert_not_called()
+
+    def test_image_convert_inspection_reports_error(self):
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = '', 'some error'
+            self.assertRaises(RuntimeError,
+                              convert.execute, 'file:///test/path.raw')
+            exc_mock.assert_called_once_with(
+                'qemu-img', 'info',
+                '--output=json',
+                '/test/path.raw',
+                prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
+                python_exec=convert.python,
+                log_errors=processutils.LOG_ALL_ERRORS)
+        # Make sure we did not update the image
+        self.img_repo.save.assert_not_called()
+
+    def test_image_convert_fails(self):
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.side_effect = [('{"format":"raw"}', ''),
+                                    OSError('convert_fail')]
+            self.assertRaises(OSError,
+                              convert.execute, 'file:///test/path.raw')
+            exc_mock.assert_has_calls(
+                [mock.call('qemu-img', 'info',
+                           '--output=json',
+                           '/test/path.raw',
+                           prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
+                           python_exec=convert.python,
+                           log_errors=processutils.LOG_ALL_ERRORS),
+                 mock.call('qemu-img', 'convert', '-f', 'raw', '-O', 'qcow2',
+                           '/test/path.raw', '/test/path.raw.qcow2',
+                           log_errors=processutils.LOG_ALL_ERRORS)])
+        # Make sure we did not update the image
+        self.img_repo.save.assert_not_called()
+
+    def test_image_convert_reports_fail(self):
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.side_effect = [('{"format":"raw"}', ''),
+                                    ('', 'some error')]
+            self.assertRaises(RuntimeError,
+                              convert.execute, 'file:///test/path.raw')
+            exc_mock.assert_has_calls(
+                [mock.call('qemu-img', 'info',
+                           '--output=json',
+                           '/test/path.raw',
+                           prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
+                           python_exec=convert.python,
+                           log_errors=processutils.LOG_ALL_ERRORS),
+                 mock.call('qemu-img', 'convert', '-f', 'raw', '-O', 'qcow2',
+                           '/test/path.raw', '/test/path.raw.qcow2',
+                           log_errors=processutils.LOG_ALL_ERRORS)])
+        # Make sure we did not update the image
+        self.img_repo.save.assert_not_called()
+
+    def test_image_convert_fails_source_format(self):
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = ('{}', '')
+            exc = self.assertRaises(RuntimeError,
+                                    convert.execute, 'file:///test/path.raw')
+            self.assertIn('Source format not reported', str(exc))
+            exc_mock.assert_called_once_with(
+                'qemu-img', 'info',
+                '--output=json',
+                '/test/path.raw',
+                prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
+                python_exec=convert.python,
+                log_errors=processutils.LOG_ALL_ERRORS)
+        # Make sure we did not update the image
+        self.img_repo.save.assert_not_called()
+
+    def test_image_convert_same_format_does_nothing(self):
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = (
+                '{"format": "qcow2", "virtual-size": 123}', '')
+            convert.execute('file:///test/path.qcow')
+            # Make sure we only called qemu-img for inspection, not conversion
+            exc_mock.assert_called_once_with(
+                'qemu-img', 'info',
+                '--output=json',
+                '/test/path.qcow',
+                prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
+                python_exec=convert.python,
+                log_errors=processutils.LOG_ALL_ERRORS)
+
+        # Make sure we set the virtual_size before we exited
+        image = self.img_repo.get.return_value
+        self.assertEqual(123, image.virtual_size)
 
     @mock.patch.object(os, 'remove')
     def test_image_convert_revert_success(self, mock_os_remove):
