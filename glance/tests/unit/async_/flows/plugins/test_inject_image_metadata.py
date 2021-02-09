@@ -52,14 +52,16 @@ class TestInjectImageMetadataTask(test_utils.BaseTestCase):
         self.context = mock.MagicMock()
         self.img_repo = mock.MagicMock()
         self.task_repo = mock.MagicMock()
-        self.image_id = mock.MagicMock()
+        self.image_id = UUID1
 
         self.gateway = gateway.Gateway()
         self.task_factory = domain.TaskFactory()
         self.img_factory = self.gateway.get_image_factory(self.context)
         self.image = self.img_factory.new_image(image_id=UUID1,
                                                 disk_format='qcow2',
-                                                container_format='bare')
+                                                container_format='bare',
+                                                extra_properties={})
+        self.img_repo.get.return_value = self.image
 
         task_input = {
             "import_from": "http://cloud.foo/image.qcow2",
@@ -83,16 +85,10 @@ class TestInjectImageMetadataTask(test_utils.BaseTestCase):
         self.config(inject={"test": "abc"},
                     group='inject_metadata_properties')
 
-        with mock.patch.object(self.img_repo, 'get') as get_mock:
-            image = mock.MagicMock(image_id=self.image_id,
-                                   extra_properties={"test": "abc"})
-            get_mock.return_value = image
-
-            with mock.patch.object(self.img_repo, 'save') as save_mock:
-                inject_image_metadata.execute()
-                get_mock.assert_called_once_with(self.image_id)
-                save_mock.assert_called_once_with(image)
-                self.assertEqual({"test": "abc"}, image.extra_properties)
+        inject_image_metadata.execute()
+        self.img_repo.get.assert_called_once_with(self.image_id)
+        self.img_repo.save.assert_called_once_with(self.image)
+        self.assertEqual({"test": "abc"}, self.image.extra_properties)
 
     def test_inject_image_metadata_using_admin_user(self):
         context = test_unit_utils.get_fake_context(roles='admin')
@@ -104,12 +100,8 @@ class TestInjectImageMetadataTask(test_utils.BaseTestCase):
                     group='inject_metadata_properties')
 
         inject_image_metadata.execute()
-
-        with mock.patch.object(self.img_repo, 'get') as get_mock:
-            get_mock.assert_not_called()
-
-        with mock.patch.object(self.img_repo, 'save') as save_mock:
-            save_mock.assert_not_called()
+        self.img_repo.get.assert_called_once_with(UUID1)
+        self.img_repo.save.assert_called_once_with(self.image)
 
     def test_inject_image_metadata_empty(self):
         context = test_unit_utils.get_fake_context(roles='member')
@@ -120,9 +112,5 @@ class TestInjectImageMetadataTask(test_utils.BaseTestCase):
         self.config(inject={}, group='inject_metadata_properties')
 
         inject_image_metadata.execute()
-
-        with mock.patch.object(self.img_repo, 'get') as get_mock:
-            get_mock.assert_not_called()
-
-        with mock.patch.object(self.img_repo, 'save') as save_mock:
-            save_mock.assert_not_called()
+        self.img_repo.get.assert_not_called()
+        self.img_repo.save.assert_not_called()
