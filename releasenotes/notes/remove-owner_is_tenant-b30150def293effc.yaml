@@ -1,0 +1,9 @@
+---
+upgrade:
+  - The ``owner_is_tenant`` configuration option, which was deprecated in
+    Rocky, has been removed in this release.  As announced in the spec
+    `Deprecate owner_is_tenant
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/implemented/glance/spec-lite-deprecate-owner_is_tenant.html>`_,
+    given that an operator survey indicated that this option was only
+    used in its default value of ``True``, no database migration is
+    included in this release.

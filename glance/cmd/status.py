@@ -19,6 +19,7 @@ from oslo_config import cfg
 from oslo_upgradecheck import common_checks
 from oslo_upgradecheck import upgradecheck
 
+from glance.common import removed_config
 from glance.common import wsgi  # noqa
 
 CONF = cfg.CONF
@@ -29,6 +30,10 @@ FAILURE = upgradecheck.Code.FAILURE
 
 class Checks(upgradecheck.UpgradeCommands):
     """Programmable upgrade checks."""
+
+    def __init__(self, *args, **kwargs):
+        super(upgradecheck.UpgradeCommands).__init__(*args, **kwargs)
+        removed_config.register_removed_options()
 
     def _check_sheepdog_store(self):
         """Check that the removed sheepdog backend store is not configured."""
@@ -48,12 +53,23 @@ class Checks(upgradecheck.UpgradeCommands):
 
         return upgradecheck.Result(SUCCESS)
 
+    def _check_owner_is_tenant(self):
+        if CONF.owner_is_tenant is False:
+            return upgradecheck.Result(
+                FAILURE,
+                'The "owner_is_tenant" option has been removed and there is '
+                'no upgrade path for installations that had this option set '
+                'to False.')
+        return upgradecheck.Result(SUCCESS)
+
     _upgrade_checks = (
         # Added in Ussuri
         ('Sheepdog Driver Removal', _check_sheepdog_store),
         # Added in Wallaby
         ('Policy File JSON to YAML Migration',
          (common_checks.check_policy_json, {'conf': CONF})),
+        # Removed in Wallaby
+        ('Config option owner_is_tenant removal', _check_owner_is_tenant),
     )
 
 

@@ -28,8 +28,7 @@ class RequestContext(context.RequestContext):
 
     """
 
-    def __init__(self, owner_is_tenant=True, service_catalog=None,
-                 policy_enforcer=None, **kwargs):
+    def __init__(self, service_catalog=None, policy_enforcer=None, **kwargs):
         # TODO(mriedem): Remove usage of user and tenant from old tests.
         if 'tenant' in kwargs:
             # Prefer project_id if passed, otherwise alias tenant as project_id
@@ -40,7 +39,6 @@ class RequestContext(context.RequestContext):
             user = kwargs.pop('user')
             kwargs['user_id'] = kwargs.get('user_id', user)
         super(RequestContext, self).__init__(**kwargs)
-        self.owner_is_tenant = owner_is_tenant
         self.service_catalog = service_catalog
         self.policy_enforcer = policy_enforcer or policy.Enforcer()
         if not self.is_admin:
@@ -67,7 +65,7 @@ class RequestContext(context.RequestContext):
     @property
     def owner(self):
         """Return the owner to correlate with an image."""
-        return self.project_id if self.owner_is_tenant else self.user_id
+        return self.project_id
 
     @property
     def can_see_deleted(self):

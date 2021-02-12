@@ -12,24 +12,14 @@ to create, list, update, and delete image members.
 .. note::
 
    An image member is an identifier for a consumer with whom the image is
-   shared.  In most OpenStack clouds, where the value of the ``owner`` property
+   shared.  In OpenStack clouds, where the value of the ``owner`` property
    of an image is a project ID, the appropriate identifier to use for the
-   ``member_id`` is the consumer's project ID (also known as the "tenant ID").
-   In these clouds, image sharing is project-to-project, and all the individual
-   users in the consuming project have access to the image.
+   ``member_id`` is the consumer's project ID (which used to be called the
+   "tenant ID").
 
-   * Some deployments may choose instead to have the identifier of the user who
-     created the image as the value of the ``owner`` property.  In such clouds,
-     the appropriate identifier to use for the ``member_id`` is the user ID of
-     the person with whom you want to share the image.  In these clouds, image
-     sharing is user-to-user.
-
-   * Note that you, as an image owner, do not have a choice about what value to
-     use for the ``member_id``.  If, like most OpenStack clouds, your cloud
-     uses the tenant ID for the image ``owner``, sharing will not work if you
-     use a user ID as the ``member_id`` of an image (and vice-versa).
-
-   * Please consult your cloud's local documentation for details.
+   * Image sharing is project-to-project.  Thus *all the individual users
+     in the consuming project have access to the image*.  You cannot share
+     an image with only one specific user in the target project.
 
 When an image is shared, the member is given immediate access to the image.
 In order to prevent spamming other users' image lists, a shared image does not
