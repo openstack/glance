@@ -1,0 +1,10 @@
+---
+deprecations:
+  - |
+    The policy check that we ran when an image is not found is
+    removed. This previously allowed an operator to override the
+    behavior of a 404 to be a 403, in contrast to the API
+    documentation and design goals of defaulting to 404 for
+    information-hiding reasons. This check is no longer run in the
+    case of a NotFound result from the database, so any policy
+    attempting to control that behavior will be ignored from now on.

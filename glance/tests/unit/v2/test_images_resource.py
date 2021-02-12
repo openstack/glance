@@ -3478,10 +3478,12 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
                           request)
 
     def test_show_unauthorized(self):
+        # Make sure that if policy says we can't see the image that we get a
+        # NotFound result instead of a Forbidden one.
         rules = {"get_image": False}
         self.policy.set_rules(rules)
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.show,
+        self.assertRaises(webob.exc.HTTPNotFound, self.controller.show,
                           request, image_id=UUID2)
 
     def test_create_image_unauthorized(self):

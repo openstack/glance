@@ -114,14 +114,9 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                                              item_proxy_kwargs=proxy_kwargs)
 
     def get(self, image_id):
-        try:
-            image = super(ImageRepoProxy, self).get(image_id)
-        except exception.NotFound:
-            self.policy.enforce(self.context, 'get_image', {})
-            raise
-        else:
-            self.policy.enforce(self.context, 'get_image',
-                                dict(ImageTarget(image)))
+        image = super(ImageRepoProxy, self).get(image_id)
+        self.policy.enforce(self.context, 'get_image',
+                            dict(ImageTarget(image)))
         return image
 
     def list(self, *args, **kwargs):

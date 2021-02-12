@@ -1940,7 +1940,7 @@ class TestImages(functional.FunctionalTest):
 
         headers['X-Tenant-Id'] = TENANT2
         response = requests.get(path, headers=headers)
-        self.assertEqual(http.FORBIDDEN, response.status_code)
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
         self.stop_servers()
 
