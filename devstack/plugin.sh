@@ -15,7 +15,7 @@
 function configure_enforce_scope {
     iniset $GLANCE_CONF_DIR/glance-api.conf oslo_policy enforce_scope true
     iniset $GLANCE_CONF_DIR/glance-api.conf oslo_policy enforce_new_defaults true
-    sudo systemctl restart devstack@keystone
+    sudo systemctl restart devstack@g-api
 }
 
 function configure_protection_tests {
