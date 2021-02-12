@@ -579,7 +579,7 @@ The list of metadata headers that Glance accepts are listed below.
 
   This header is optional and only meaningful for admins.
 
-  Glance sets the owner of an image to be the tenant of the
+  Glance sets the owner of an image to be the project of the
   authenticated user issuing the request. However, if the authenticated user
   has the Admin role, this default may be overridden by setting this header to
   null or to a string identifying the owner of the image.
@@ -627,10 +627,9 @@ See more about image statuses here: :ref:`image-statuses`
 List Image Memberships
 **********************
 
-We want to see a list of the other system tenants that may access a given
-virtual machine image that the Glance server knows about. We take the `uri`
-field of the image data, append ``/members`` to it, and issue a ``GET`` request
-on the resulting URL.
+We want to see a list of projects that may access a given virtual machine image
+that the Glance server knows about. We take the `uri` field of the image data,
+append ``/members`` to it, and issue a ``GET`` request on the resulting URL.
 
 Continuing from the example above, in order to get the memberships for the
 first image returned, we can issue a ``GET`` request to the Glance
@@ -639,20 +638,20 @@ server for
 And we will get back JSON data such as the following::
 
   {'members': [
-   {'member_id': 'tenant1',
+   {'member_id': 'project1',
     'can_share': false}
    ...]}
 
-The `member_id` field identifies a tenant with which the image is shared. If
-that tenant is authorized to further share the image, the `can_share` field is
+The `member_id` field identifies a project with which the image is shared. If
+that project is authorized to further share the image, the `can_share` field is
 `true`.
 
 
 List Shared Images
 ******************
 
-We want to see a list of images which are shared with a given tenant. We issue
-a ``GET`` request to ``http://glance.openstack.example.org/v1/shared-images/tenant1``. We
+We want to see a list of images which are shared with a given project. We issue
+a ``GET`` request to ``http://glance.openstack.example.org/v1/shared-images/project1``. We
 will get back JSON data such as the following::
 
   {'shared_images': [
@@ -660,17 +659,17 @@ will get back JSON data such as the following::
     'can_share': false}
    ...]}
 
-The `image_id` field identifies an image shared with the tenant named by
-*member_id*. If the tenant is authorized to further share the image, the
+The `image_id` field identifies an image shared with the project named by
+*member_id*. If the project is authorized to further share the image, the
 `can_share` field is `true`.
 
 
 Add a Member to an Image
 ************************
 
-We want to authorize a tenant to access a private image. We issue a ``PUT``
+We want to authorize a project to access a private image. We issue a ``PUT``
 request to
-``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/tenant1``.
+``http://glance.openstack.example.org/v1/images/71c675ab-d94f-49cd-a114-e12490b328d9/members/project1``.
 With no body, this will add the membership to the image, leaving existing
 memberships unmodified and defaulting new memberships to have `can_share`
 set to `false`. We may also optionally attach a body of the following form::
@@ -687,8 +686,8 @@ will return a 204 ("No Content") status code.
 Remove a Member from an Image
 *****************************
 
-We want to revoke a tenant's right to access a private image. We issue a
-``DELETE`` request to ``http://glance.openstack.example.org/v1/images/1/members/tenant1``.
+We want to revoke a project's right to access a private image. We issue a
+``DELETE`` request to ``http://glance.openstack.example.org/v1/images/1/members/project1``.
 This query will return a 204 ("No Content") status code.
 
 
@@ -701,7 +700,7 @@ request to
 with a body of the following form::
 
   {'memberships': [
-   {'member_id': 'tenant1',
+   {'member_id': 'project1',
     'can_share': false}
    ...]}
 
@@ -752,7 +751,7 @@ Distinctions from Version 1.x API Calls
 
   { "member": "<MEMBER_ID>" }
 
-  where the {memberId} is the tenant ID of the image member.
+  where the {memberId} is the project ID of the image member.
 
   The member status of a newly created image member is ``pending``.
 
@@ -768,7 +767,7 @@ New API Calls
   { "status": "<STATUS_VALUE>" }
 
   where <STATUS_VALUE> is ``pending``, ``accepted``, or ``rejected``.
-  The {memberId} is the tenant ID of the image member.
+  The {memberId} is the project ID of the image member.
 
 Images v2 Stores API
 --------------------
