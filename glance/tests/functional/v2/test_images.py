@@ -5434,6 +5434,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
              'stores': ['file1']})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code)
+        import_reqid = response.headers['X-Openstack-Request-Id']
 
         # Verify image is in active state and checksum is set
         # NOTE(abhishekk): As import is a async call we need to provide
@@ -5465,6 +5466,19 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         self.assertIn('file1', jsonutils.loads(response.text)['stores'])
 
+        # Ensure image has one task associated with it
+        path = self._url('/v2/images/%s/tasks' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        tasks = jsonutils.loads(response.text)['tasks']
+        self.assertEqual(1, len(tasks))
+        for task in tasks:
+            self.assertEqual(image_id, task['image_id'])
+            user_id = response.request.headers.get(
+                'X-User-Id')
+            self.assertEqual(user_id, task['user_id'])
+            self.assertEqual(import_reqid, task['request_id'])
+
         # Copy newly created image to file2 and file3 stores
         path = self._url('/v2/images/%s/import' % image_id)
         headers = self._headers({
@@ -5477,6 +5491,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
              'stores': ['file2', 'file3']})
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code)
+        copy_reqid = response.headers['X-Openstack-Request-Id']
 
         # Verify image is copied
         # NOTE(abhishekk): As import is a async call we need to provide
@@ -5495,6 +5510,20 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         self.assertIn('file2', jsonutils.loads(response.text)['stores'])
         self.assertIn('file3', jsonutils.loads(response.text)['stores'])
+
+        # Ensure image has two tasks associated with it
+        path = self._url('/v2/images/%s/tasks' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        tasks = jsonutils.loads(response.text)['tasks']
+        self.assertEqual(2, len(tasks))
+        expected_reqids = [copy_reqid, import_reqid]
+        for task in tasks:
+            self.assertEqual(image_id, task['image_id'])
+            user_id = response.request.headers.get(
+                'X-User-Id')
+            self.assertEqual(user_id, task['user_id'])
+            self.assertEqual(expected_reqids.pop(), task['request_id'])
 
         # Deleting image should work
         path = self._url('/v2/images/%s' % image_id)

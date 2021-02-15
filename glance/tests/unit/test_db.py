@@ -55,6 +55,11 @@ CHECKSUM = '93264c3edf5972c9f1cb309543d38a5c'
 CHCKSUM1 = '43264c3edf4972c9f1cb309543d38a55'
 
 
+TASK_ID_1 = 'b3006bd0-461e-4228-88ea-431c14e918b4'
+TASK_ID_2 = '07b6b562-6770-4c8b-a649-37a515144ce9'
+TASK_ID_3 = '72d16bb6-4d70-48a5-83fe-14bb842dc737'
+
+
 def _db_fixture(id, **kwargs):
     obj = {
         'id': id,
@@ -89,17 +94,24 @@ def _db_image_member_fixture(image_id, member_id, **kwargs):
     return obj
 
 
-def _db_task_fixture(task_id, type, status, **kwargs):
+def _db_task_fixture(task_id, **kwargs):
+    default_datetime = timeutils.utcnow()
     obj = {
         'id': task_id,
-        'type': type,
-        'status': status,
-        'input': None,
+        'status': kwargs.get('status', 'pending'),
+        'type': 'import',
+        'input': kwargs.get('input', {}),
         'result': None,
         'owner': None,
+        'image_id': kwargs.get('image_id'),
+        'user_id': kwargs.get('user_id'),
+        'request_id': kwargs.get('request_id'),
         'message': None,
-        'deleted': False,
-        'expires_at': timeutils.utcnow() + datetime.timedelta(days=365)
+        'expires_at': default_datetime + datetime.timedelta(days=365),
+        'created_at': default_datetime,
+        'updated_at': default_datetime,
+        'deleted_at': None,
+        'deleted': False
     }
     obj.update(kwargs)
     return obj
@@ -136,6 +148,53 @@ class TestImageRepo(test_utils.BaseTestCase):
         ]
         [self.db.image_create(None, image) for image in self.images]
 
+        # Create tasks associated with image
+        self.tasks = [
+            _db_task_fixture(
+                TASK_ID_1, image_id=UUID1, status='completed',
+                input={
+                    "image_id": UUID1,
+                    "import_req": {
+                        "method": {
+                            "name": "glance-direct"
+                        },
+                        "backend": ["fake-store"]
+                    },
+                },
+                user_id=USER1,
+                request_id='fake-request-id',
+            ),
+            _db_task_fixture(
+                TASK_ID_2, image_id=UUID1, status='completed',
+                input={
+                    "image_id": UUID1,
+                    "import_req": {
+                        "method": {
+                            "name": "copy-image"
+                        },
+                        "all_stores": True,
+                        "all_stores_must_succeed": False,
+                        "backend": ["fake-store", "fake_store_1"]
+                    },
+                },
+                user_id=USER1,
+                request_id='fake-request-id',
+            ),
+            _db_task_fixture(
+                TASK_ID_3, status='completed',
+                input={
+                    "image_id": UUID2,
+                    "import_req": {
+                        "method": {
+                            "name": "glance-direct"
+                        },
+                        "backend": ["fake-store"]
+                    },
+                },
+            ),
+        ]
+        [self.db.task_create(None, task) for task in self.tasks]
+
         self.db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
 
     def _create_image_members(self):
@@ -155,6 +214,18 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.assertEqual('active', image.status)
         self.assertEqual(256, image.size)
         self.assertEqual(TENANT1, image.owner)
+
+    def test_tasks_get_by_image(self):
+        tasks = self.db.tasks_get_by_image(self.context, UUID1)
+        self.assertEqual(2, len(tasks))
+        for task in tasks:
+            self.assertEqual(USER1, task['user_id'])
+            self.assertEqual('fake-request-id', task['request_id'])
+            self.assertEqual(UUID1, task['image_id'])
+
+    def test_tasks_get_by_image_not_exists(self):
+        tasks = self.db.tasks_get_by_image(self.context, UUID3)
+        self.assertEqual(0, len(tasks))
 
     def test_location_value(self):
         image = self.image_repo.get(UUID3)

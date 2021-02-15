@@ -35,6 +35,7 @@ import glance.api.v2.image_actions
 import glance.api.v2.images
 from glance.common import exception
 from glance.common import store_utils
+from glance.common import timeutils
 from glance import domain
 import glance.schema
 from glance.tests.unit import base
@@ -73,6 +74,11 @@ MULTIHASH1 = hashlib.sha512(b'glance').hexdigest()
 MULTIHASH2 = hashlib.sha512(b'image_service').hexdigest()
 
 
+TASK_ID_1 = 'b3006bd0-461e-4228-88ea-431c14e918b4'
+TASK_ID_2 = '07b6b562-6770-4c8b-a649-37a515144ce9'
+TASK_ID_3 = '72d16bb6-4d70-48a5-83fe-14bb842dc737'
+
+
 def _db_fixture(id, **kwargs):
     obj = {
         'id': id,
@@ -94,6 +100,29 @@ def _db_fixture(id, **kwargs):
         'deleted': False,
         'min_ram': None,
         'min_disk': None,
+    }
+    obj.update(kwargs)
+    return obj
+
+
+def _db_task_fixtures(task_id, **kwargs):
+    default_datetime = timeutils.utcnow()
+    obj = {
+        'id': task_id,
+        'status': kwargs.get('status', 'pending'),
+        'type': 'import',
+        'input': kwargs.get('input', {}),
+        'result': None,
+        'owner': None,
+        'image_id': kwargs.get('image_id'),
+        'user_id': kwargs.get('user_id'),
+        'request_id': kwargs.get('request_id'),
+        'message': None,
+        'expires_at': default_datetime + datetime.timedelta(days=365),
+        'created_at': default_datetime,
+        'updated_at': default_datetime,
+        'deleted_at': None,
+        'deleted': False
     }
     obj.update(kwargs)
     return obj
@@ -226,6 +255,53 @@ class TestImagesController(base.IsolatedUnitTest):
                         updated_at=DATETIME + datetime.timedelta(seconds=3)),
         ]
         [self.db.image_create(None, image) for image in self.images]
+
+        # Create tasks associated with image
+        self.tasks = [
+            _db_task_fixtures(
+                TASK_ID_1, image_id=UUID1, status='completed',
+                input={
+                    "image_id": UUID1,
+                    "import_req": {
+                        "method": {
+                            "name": "glance-direct"
+                        },
+                        "backend": ["fake-store"]
+                    },
+                },
+                user_id='fake-user-id',
+                request_id='fake-request-id',
+            ),
+            _db_task_fixtures(
+                TASK_ID_2, image_id=UUID1, status='completed',
+                input={
+                    "image_id": UUID1,
+                    "import_req": {
+                        "method": {
+                            "name": "copy-image"
+                        },
+                        "all_stores": True,
+                        "all_stores_must_succeed": False,
+                        "backend": ["fake-store", "fake_store_1"]
+                    },
+                },
+                user_id='fake-user-id',
+                request_id='fake-request-id',
+            ),
+            _db_task_fixtures(
+                TASK_ID_3, status='completed',
+                input={
+                    "image_id": UUID2,
+                    "import_req": {
+                        "method": {
+                            "name": "glance-direct"
+                        },
+                        "backend": ["fake-store"]
+                    },
+                },
+            ),
+        ]
+        [self.db.task_create(None, task) for task in self.tasks]
 
         self.db.image_tag_set_all(None, UUID1, ['ping', 'pong'])
 
@@ -696,6 +772,29 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(TENANT1, request.context.project_id)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, UUID4)
+
+    def test_get_task_info(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.get_task_info(request, image_id=UUID1)
+        # NOTE Here we have only tasks associated with the image and not
+        # other task which has not stored image_id, user_id and
+        # request_id in tasks database table.
+        self.assertEqual(2, len(output['tasks']))
+        for task in output['tasks']:
+            self.assertEqual(UUID1, task['image_id'])
+            self.assertEqual('fake-user-id', task['user_id'])
+            self.assertEqual('fake-request-id', task['request_id'])
+
+    def test_get_task_info_no_tasks(self):
+        request = unit_test_utils.get_fake_request()
+        output = self.controller.get_task_info(request, image_id=UUID2)
+        self.assertEqual([], output['tasks'])
+
+    def test_get_task_info_raises_not_found(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          self.controller.get_task_info, request,
+                          'fake-image-id')
 
     def test_image_import_raises_conflict_if_container_format_is_none(self):
         request = unit_test_utils.get_fake_request()

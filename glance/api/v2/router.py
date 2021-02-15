@@ -416,6 +416,11 @@ class API(wsgi.Router):
                        action='show',
                        conditions={'method': ['GET']},
                        body_reject=True)
+        mapper.connect('/images/{image_id}/tasks',
+                       controller=images_resource,
+                       action='get_task_info',
+                       conditions={'method': ['GET']},
+                       body_reject=True)
         mapper.connect('/images/{image_id}',
                        controller=images_resource,
                        action='delete',
