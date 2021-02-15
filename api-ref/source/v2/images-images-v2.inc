@@ -314,6 +314,48 @@ Response Example
    :language: json
 
 
+Show tasks associated with image
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. rest_method::  GET /v2/images/{image_id}/tasks
+
+Shows tasks associated with an image.
+*(Since Image API v2.12)*
+
+The response body contains list of tasks, possibly empty, associated
+with the specified image.
+
+Preconditions
+
+- The image must exist.
+
+Normal response codes: 200
+
+Error response codes: 404
+
+
+Request
+-------
+
+.. rest_parameters:: images-parameters.yaml
+
+   - image_id: image_id-in-path
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: images-parameters.yaml
+
+   - tasks: tasks
+
+Response Example
+----------------
+
+.. literalinclude:: samples/image-tasks-show-response.json
+   :language: json
+
+
 List images
 ~~~~~~~~~~~
 

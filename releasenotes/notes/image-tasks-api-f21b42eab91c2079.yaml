@@ -1,0 +1,12 @@
+---
+features:
+  - |
+    While fixing race condition issue during victoria we started
+    updating 'message' property of the task which helps calculate
+    time based on last updated time of task to burst the lock as well
+    as show how much data has been copied of that image. As glance
+    task API's are restricted from use by normal users we are adding
+    new API /v2/images/{image_id}/tasks which will return all tasks
+    associated with that image. In addition to task information
+    this API will also return `request-id` and `user-id` to help
+    users in debugging.
