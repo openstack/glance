@@ -69,15 +69,16 @@ class TasksController(object):
     def create(self, req, task):
         # NOTE(rosmaita): access to this call is enforced in the deserializer
 
-        task_factory = self.gateway.get_task_factory(req.context)
-        executor_factory = self.gateway.get_task_executor_factory(req.context)
-        task_repo = self.gateway.get_task_repo(req.context)
+        ctxt = req.context
+        task_factory = self.gateway.get_task_factory(ctxt)
+        executor_factory = self.gateway.get_task_executor_factory(ctxt)
+        task_repo = self.gateway.get_task_repo(ctxt)
         try:
             new_task = task_factory.new_task(task_type=task['type'],
-                                             owner=req.context.owner,
+                                             owner=ctxt.owner,
                                              task_input=task['input'])
             task_repo.add(new_task)
-            task_executor = executor_factory.new_task_executor(req.context)
+            task_executor = executor_factory.new_task_executor(ctxt)
             pool = common.get_thread_pool("tasks_pool")
             pool.spawn(new_task.run, task_executor)
         except exception.Forbidden as e:
