@@ -28,7 +28,7 @@ from glance.tests.unit import base
 # make this public so it doesn't need to be repeated for the
 # functional tests
 def get_versions_list(url, enabled_backends=False):
-    versions = [
+    image_versions = [
         {
             'id': 'v2.7',
             'status': 'SUPPORTED',
@@ -79,10 +79,16 @@ def get_versions_list(url, enabled_backends=False):
         },
     ]
     if enabled_backends:
-        versions = [
+        image_versions = [
+            {
+                'id': 'v2.12',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': '%s/v2/' % url}],
+            },
             {
                 'id': 'v2.11',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
@@ -104,16 +110,16 @@ def get_versions_list(url, enabled_backends=False):
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             }
-        ] + versions
+        ] + image_versions
     else:
-        versions.insert(0, {
+        image_versions.insert(0, {
             'id': 'v2.9',
             'status': 'CURRENT',
             'links': [{'rel': 'self',
                        'href': '%s/v2/' % url}],
         })
 
-    return versions
+    return image_versions
 
 
 class VersionsTest(base.IsolatedUnitTest):
@@ -304,15 +310,26 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    # version 2.12 does not exist
     def test_request_url_v2_12_default_unsupported(self):
         request = webob.Request.blank('/v2.12/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v2_12_enabled_unsupported(self):
+    def test_request_url_v2_12_enabled_supported(self):
         self.config(enabled_backends='slow:one,fast:two')
         request = webob.Request.blank('/v2.12/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    # version 2.13 does not exist
+    def test_request_url_v2_13_default_unsupported(self):
+        request = webob.Request.blank('/v2.13/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+    def test_request_url_v2_13_enabled_unsupported(self):
+        self.config(enabled_backends='slow:one,fast:two')
+        request = webob.Request.blank('/v2.13/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
