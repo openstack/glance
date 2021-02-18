@@ -205,10 +205,12 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         self.assertEqual('cinder://store1/%s' % self.vol_id,
                          image['locations'][0]['url'])
         self.assertEqual('store1', image['locations'][0]['metadata']['store'])
-        mocked_cc.assert_called_once()
-        mock_open.assert_called_once()
-        mock_chown.assert_called_once()
-        mock_connector.get_connector_properties.assert_called_once()
+        # NOTE(whoami-rajat): These are internals called by glance_store, so
+        # we want to make sure they got hit, but not be too strict about how.
+        mocked_cc.assert_called()
+        mock_open.assert_called()
+        mock_chown.assert_called()
+        mock_connector.get_connector_properties.assert_called()
 
     @mock.patch.object(cinderclient, 'Client')
     @mock.patch.object(cinder.Store, 'temporary_chown')
@@ -245,10 +247,9 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         # verify the image location url is consistent
         self.assertEqual('cinder://store1/%s' % self.vol_id,
                          image['locations'][0]['url'])
-        mock_open.assert_called_once()
-        mock_chown.assert_called_once()
-        mock_connector.get_connector_properties.assert_called_once()
+        # NOTE(whoami-rajat): These are internals called by glance_store, so
+        # we want to make sure they got hit, but not be too strict about how.
         mocked_cc.assert_called()
-        # first call when creating volume and second call when migrating
-        # the image (setting up multiple stores)
-        self.assertEqual(2, mocked_cc.call_count)
+        mock_open.assert_called()
+        mock_chown.assert_called()
+        mock_connector.get_connector_properties.assert_called()
