@@ -108,6 +108,14 @@ def main():
                 host=CONF.bind_host
             )
 
+        if CONF.enforce_secure_rbac != CONF.oslo_policy.enforce_new_defaults:
+            fail_message = (
+                "[DEFAULT] enforce_secure_rbac does not match "
+                "[oslo_policy] enforce_new_defaults. Please set both to "
+                "True to enable secure RBAC personas. Otherwise, make sure "
+                "both are False.")
+            raise exception.ServerError(fail_message)
+
         # NOTE(danms): Configure system-wide threading model to use eventlet
         glance.async_.set_threadpool_model('eventlet')
 

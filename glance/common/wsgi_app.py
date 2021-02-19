@@ -21,6 +21,7 @@ import osprofiler.initializer
 from glance.api import common
 import glance.async_
 from glance.common import config
+from glance.common import exception
 from glance.common import store_utils
 from glance.i18n import _
 from glance import notifier
@@ -69,6 +70,16 @@ def _setup_os_profiler():
                                               host=CONF.bind_host)
 
 
+def _validate_policy_enforcement_configuration():
+    if CONF.enforce_secure_rbac != CONF.oslo_policy.enforce_new_defaults:
+        fail_message = (
+            "[DEFAULT] enforce_secure_rbac does not match "
+            "[oslo_policy] enforce_new_defaults. Please set both to "
+            "True to enable secure RBAC personas. Otherwise, make sure "
+            "both are False.")
+        raise exception.ServerError(fail_message)
+
+
 def drain_threadpools():
     # NOTE(danms): If there are any other named pools that we need to
     # drain before exit, they should be in this list.
@@ -112,4 +123,5 @@ def init_app():
         glance_store.verify_default_store()
 
     _setup_os_profiler()
+    _validate_policy_enforcement_configuration()
     return config.load_paste_app('glance-api')

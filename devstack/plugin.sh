@@ -15,6 +15,7 @@
 function configure_enforce_scope {
     iniset $GLANCE_CONF_DIR/glance-api.conf oslo_policy enforce_scope true
     iniset $GLANCE_CONF_DIR/glance-api.conf oslo_policy enforce_new_defaults true
+    iniset $GLANCE_CONF_DIR/glance-api.conf DEFAULT enforce_secure_rbac true
     sudo systemctl restart devstack@g-api
 }
 
