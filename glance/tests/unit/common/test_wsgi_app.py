@@ -63,3 +63,17 @@ class TestWsgiAppInit(test_utils.BaseTestCase):
             # Make sure that shutdown() was called on the tasks_pool
             # ThreadPoolExecutor
             mock_shutdown.assert_called_once_with()
+
+    @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
+    @mock.patch('glance.common.config.load_paste_app')
+    @mock.patch('glance.common.wsgi_app._get_config_files')
+    @mock.patch('threading.Thread')
+    @mock.patch('glance.housekeeping.StagingStoreCleaner')
+    def test_runs_staging_cleanup(self, mock_cleaner, mock_Thread, mock_conf,
+                                  mock_load):
+        mock_conf.return_value = []
+        wsgi_app.init_app()
+        mock_Thread.assert_called_once_with(
+            target=mock_cleaner().clean_orphaned_staging_residue,
+            daemon=True)
+        mock_Thread.return_value.start.assert_called_once_with()
