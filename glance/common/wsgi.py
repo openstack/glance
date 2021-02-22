@@ -55,6 +55,8 @@ from glance.common import config
 from glance.common import exception
 from glance.common import store_utils
 from glance.common import utils
+import glance.db
+from glance import housekeeping
 from glance import i18n
 from glance.i18n import _, _LE, _LI, _LW
 
@@ -502,14 +504,18 @@ class BaseServer(object):
         self.default_port = default_port
         self.configure()
         self.start_wsgi()
+
+        cleaner = housekeeping.StagingStoreCleaner(glance.db.get_api())
+        self.pool.spawn_n(cleaner.clean_orphaned_staging_residue)
+
         if self.initialize_prefetcher:
             self.cache_images()
 
     def start_wsgi(self):
         workers = get_num_workers()
+        self.pool = self.create_pool()
         if workers == 0:
             # Useful for profiling, test, debug etc.
-            self.pool = self.create_pool()
             self.pool.spawn_n(self._single_run, self.application, self.sock)
             return
         else:

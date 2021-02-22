@@ -11,14 +11,18 @@
 # under the License.
 
 import os
+import threading
 
 import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
 import osprofiler.initializer
 
+from glance.api import common
 from glance.common import config
 from glance.common import store_utils
+import glance.db
+from glance import housekeeping
 from glance.i18n import _
 from glance import notifier
 
@@ -26,6 +30,7 @@ CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 CONF.import_opt("enabled_backends", "glance.common.wsgi")
 logging.register_options(CONF)
+LOG = logging.getLogger(__name__)
 
 CONFIG_FILES = ['glance-api-paste.ini',
                 'glance-image-import.conf',
@@ -65,6 +70,27 @@ def _setup_os_profiler():
                                               host=CONF.bind_host)
 
 
+def drain_threadpools():
+    # NOTE(danms): If there are any other named pools that we need to
+    # drain before exit, they should be in this list.
+    pools_to_drain = ['tasks_pool']
+    for pool_name in pools_to_drain:
+        pool_model = common.get_thread_pool(pool_name)
+        LOG.info('Waiting for remaining threads in pool %r', pool_name)
+        pool_model.pool.shutdown()
+
+
+def run_staging_cleanup():
+    cleaner = housekeeping.StagingStoreCleaner(glance.db.get_api())
+    # NOTE(danms): Start thread as a daemon. It is still a
+    # single-shot, but this will not block our shutdown if it is
+    # running.
+    cleanup_thread = threading.Thread(
+        target=cleaner.clean_orphaned_staging_residue,
+        daemon=True)
+    cleanup_thread.start()
+
+
 def init_app():
     config.set_config_defaults()
     config_files = _get_config_files()
@@ -84,6 +110,8 @@ def init_app():
         glance_store.register_opts(CONF)
         glance_store.create_stores(CONF)
         glance_store.verify_default_store()
+
+    run_staging_cleanup()
 
     _setup_os_profiler()
     return config.load_paste_app('glance-api')
