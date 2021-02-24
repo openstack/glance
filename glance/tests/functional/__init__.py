@@ -418,6 +418,9 @@ class ApiServer(Server):
 
         self.send_identity_headers = False
 
+        self.node_staging_uri = 'file://%s' % os.path.join(
+            self.test_dir, 'staging')
+
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG
@@ -450,6 +453,7 @@ image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
 allow_additional_image_properties = True
+node_staging_uri=%(node_staging_uri)s
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
