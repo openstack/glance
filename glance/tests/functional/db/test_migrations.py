@@ -15,6 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import collections
 import os
 
 from alembic import command as alembic_command
@@ -29,6 +30,60 @@ from glance.db.sqlalchemy.alembic_migrations import versions
 from glance.db.sqlalchemy import models
 from glance.db.sqlalchemy import models_metadef
 import glance.tests.utils as test_utils
+
+
+class TestVersions(test_utils.BaseTestCase):
+    def test_phase_and_naming(self):
+        """Test that migrations follow the conventional rules.
+
+        Each release should have at least one file for each of the required
+        phases, if it has one for any of them. They should also be named
+        in a consistent way going forward.
+        """
+
+        # These are the phases that we require. Each release should have a
+        # version for each of these phases, even if some are empty.
+        required_phases = set(['expand', 'migrate', 'contract'])
+
+        # The initial migration is special, and mitaka was not done according
+        # to convention. Both of those are exceptions to these rules which
+        # need not be enforced.
+        # NOTE(danms): Do not add anything else to this list! New migrations
+        # should follow the rules!
+        exception_releases = ['liberty', 'mitaka']
+
+        versions_path, _ = os.path.split(versions.__file__)
+        version_files = os.listdir(versions_path)
+        version_files += os.listdir(os.path.join(versions_path,
+                                                 '..', 'data_migrations'))
+        releases = collections.defaultdict(set)
+        for version_file in [v for v in version_files if v[0] != '_']:
+            # Exception releases get ignored
+            if any([version_file.startswith(prefix)
+                    for prefix in exception_releases]):
+                continue
+
+            # File format should be release_phaseNN_description.py
+            try:
+                _rest = ''  # noqa
+                release, phasever, _rest = version_file.split('_', 2)
+            except ValueError:
+                release = phasever = ''
+            phase = ''.join(x for x in phasever if x.isalpha())
+            # Grab the non-numeric part of phaseNN
+            if phase not in required_phases:
+                # Help make sure that going forward developers stick to the
+                # consistent format.
+                self.fail('Migration files should be in the form of: '
+                          'release_phaseNN_some_description.py '
+                          '(while processing %r)' % version_file)
+            releases[release].add(phase)
+
+        for release, phases in releases.items():
+            missing = required_phases - phases
+            if missing:
+                self.fail('Release %s missing migration phases %s' % (
+                    release, ','.join(missing)))
 
 
 class AlembicMigrationsMixin(object):
