@@ -225,6 +225,7 @@ class Task(BASE, GlanceBase):
                       Index('ix_tasks_status', 'status'),
                       Index('ix_tasks_owner', 'owner'),
                       Index('ix_tasks_deleted', 'deleted'),
+                      Index('ix_tasks_image_id', 'image_id'),
                       Index('ix_tasks_updated_at', 'updated_at'))
 
     id = Column(String(36), primary_key=True,
@@ -233,6 +234,9 @@ class Task(BASE, GlanceBase):
     status = Column(String(30), nullable=False)
     owner = Column(String(255), nullable=False)
     expires_at = Column(DateTime, nullable=True)
+    image_id = Column(String(36), nullable=True)
+    request_id = Column(String(64), nullable=True)
+    user_id = Column(String(64), nullable=True)
 
 
 class TaskInfo(BASE, models.ModelBase):
