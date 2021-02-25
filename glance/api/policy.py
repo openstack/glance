@@ -449,14 +449,17 @@ class TaskRepoProxy(glance.domain.proxy.TaskRepo):
                              task_proxy_class=TaskProxy,
                              task_proxy_kwargs=proxy_kwargs)
 
+    # TODO(lbragstad): Move this to the tasks api itself
     def get(self, task_id):
         self.policy.enforce(self.context, 'get_task', {})
         return super(TaskRepoProxy, self).get(task_id)
 
+    # TODO(lbragstad): Move this to the tasks api itself
     def add(self, task):
         self.policy.enforce(self.context, 'add_task', {})
         super(TaskRepoProxy, self).add(task)
 
+    # TODO(lbragstad): Remove this after Xena
     def save(self, task):
         self.policy.enforce(self.context, 'modify_task', {})
         super(TaskRepoProxy, self).save(task)
