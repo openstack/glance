@@ -20,6 +20,7 @@ from unittest import mock
 import hashlib
 import os.path
 import oslo_config.cfg
+from oslo_policy import policy as common_policy
 
 import glance.api.policy
 from glance.common import exception
@@ -320,6 +321,32 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         context = glance.context.RequestContext(roles=[])
         self.assertRaises(exception.Forbidden,
                           enforcer.enforce, context, 'get_image', {})
+
+    def _test_enforce_scope(self):
+        policy_name = 'foo'
+        rule = common_policy.RuleDefault(
+            name=policy_name, check_str='role:bar', scope_types=['system'])
+
+        enforcer = glance.api.policy.Enforcer()
+        enforcer.register_default(rule)
+
+        context = glance.context.RequestContext(
+            user_id='user', project_id='project', roles=['bar'])
+        target = {}
+        return enforcer.enforce(context, policy_name, target)
+
+    def test_policy_enforcer_raises_forbidden_when_enforcing_scope(self):
+        # Make sure we raise an exception if the context scope doesn't match
+        # the scope of the rule when oslo.policy is configured to raise an
+        # exception.
+        self.config(enforce_scope=True, group='oslo_policy')
+        self.assertRaises(exception.Forbidden, self._test_enforce_scope)
+
+    def test_policy_enforcer_does_not_raise_forbidden(self):
+        # Make sure we don't raise an exception for mismatched scopes unless
+        # oslo.policy is configured to do so.
+        self.config(enforce_scope=False, group='oslo_policy')
+        self.assertTrue(self._test_enforce_scope())
 
 
 class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
