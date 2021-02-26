@@ -213,9 +213,10 @@ class ImagesController(object):
 
     @utils.mutating
     def import_image(self, req, image_id, body):
-        image_repo = self.gateway.get_repo(req.context)
-        task_factory = self.gateway.get_task_factory(req.context)
-        task_repo = self.gateway.get_task_repo(req.context)
+        ctxt = req.context
+        image_repo = self.gateway.get_repo(ctxt)
+        task_factory = self.gateway.get_task_factory(ctxt)
+        task_repo = self.gateway.get_task_repo(ctxt)
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
         all_stores_must_succeed = body.get('all_stores_must_succeed', True)
@@ -250,9 +251,9 @@ class ImagesController(object):
             # if the user should be able to do this. Otherwise, we forbid
             # the import if the user is not the owner.
             if import_method == 'copy-image':
-                self.policy.enforce(req.context, 'copy_image',
+                self.policy.enforce(ctxt, 'copy_image',
                                     dict(policy.ImageTarget(image)))
-            elif not authorization.is_image_mutable(req.context, image):
+            elif not authorization.is_image_mutable(ctxt, image):
                 raise webob.exc.HTTPForbidden(
                     explanation=_("Operation not permitted"))
 
@@ -316,12 +317,12 @@ class ImagesController(object):
             # If this is a copy-image import and we passed the policy check,
             # grab an admin context for the task so it can manipulate metadata
             # as admin.
-            admin_context = req.context.elevated()
+            admin_context = ctxt.elevated()
         else:
             admin_context = None
 
         executor_factory = self.gateway.get_task_executor_factory(
-            req.context, admin_context=admin_context)
+            ctxt, admin_context=admin_context)
 
         if (import_method == 'web-download' and
                 not utils.validate_import_uri(uri)):
@@ -331,7 +332,7 @@ class ImagesController(object):
 
         try:
             import_task = task_factory.new_task(task_type='api_image_import',
-                                                owner=req.context.owner,
+                                                owner=ctxt.owner,
                                                 task_input=task_input)
 
             # NOTE(danms): Try to grab the lock for this task
@@ -353,7 +354,7 @@ class ImagesController(object):
                                                   stole_lock_from_task)
 
             task_repo.add(import_task)
-            task_executor = executor_factory.new_task_executor(req.context)
+            task_executor = executor_factory.new_task_executor(ctxt)
             pool = common.get_thread_pool("tasks_pool")
             pool.spawn(import_task.run, task_executor)
         except exception.Forbidden as e:
