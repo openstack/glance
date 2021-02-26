@@ -441,6 +441,19 @@ class ImagesController(object):
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
+    def get_task_info(self, req, image_id):
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            # NOTE (abhishekk): Just to check image is valid
+            image = image_repo.get(image_id)
+        except (exception.NotFound, exception.Forbidden):
+            raise webob.exc.HTTPNotFound()
+
+        tasks = self.db_api.tasks_get_by_image(req.context,
+                                               image.image_id)
+
+        return {"tasks": tasks}
+
     @utils.mutating
     def update(self, req, image_id, changes):
         image_repo = self.gateway.get_repo(req.context)

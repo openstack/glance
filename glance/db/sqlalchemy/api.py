@@ -1661,6 +1661,43 @@ def task_get(context, task_id, session=None, force_show_deleted=False):
     return _task_format(task_ref, task_ref.info)
 
 
+def tasks_get_by_image(context, image_id, session=None):
+    """Fetch all tasks associated with image_id"""
+    tasks = []
+    session = session or get_session()
+    _task_soft_delete(context, session=session)
+
+    query = session.query(models.Task).options(
+        sa_orm.joinedload(models.Task.info)
+    ).filter_by(image_id=image_id)
+
+    expires_at = models.Task.expires_at
+    query = query.filter(expires_at >= timeutils.utcnow())
+    updated_at = models.Task.updated_at
+    query.filter(
+        updated_at <= (timeutils.utcnow() +
+                       datetime.timedelta(hours=CONF.task.task_time_to_live)))
+
+    if not context.can_see_deleted:
+        query = query.filter_by(deleted=False)
+
+    try:
+        task_refs = query.all()
+    except sa_orm.exc.NoResultFound:
+        LOG.debug("No task found for image with ID %s", image_id)
+        return tasks
+
+    for task_ref in task_refs:
+        # Make sure the task is visible
+        if not _is_task_visible(context, task_ref):
+            msg = "Task %s is not visible, excluding" % task_ref.id
+            LOG.debug(msg)
+            continue
+        tasks.append(_task_format(task_ref, task_ref.info))
+
+    return tasks
+
+
 def task_delete(context, task_id, session=None):
     """Delete a task"""
     session = session or get_session()

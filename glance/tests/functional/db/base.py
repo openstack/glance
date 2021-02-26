@@ -1726,6 +1726,77 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertEqual(fixture['message'], task['message'])
         self.assertEqual(expires_at, task['expires_at'])
 
+    def _test_task_get_by_image(self, expired=False, deleted=False,
+                                other_owner=False):
+        expires_at = timeutils.utcnow()
+        if expired is False:
+            expires_at += datetime.timedelta(hours=1)
+        elif expired is None:
+            # This is the case where we haven't even processed the task
+            # to give it an expiry time.
+            expires_at = None
+        image_id = str(uuid.uuid4())
+        fixture = {
+            'owner': other_owner and 'notme!' or self.context.owner,
+            'type': 'import',
+            'status': 'pending',
+            'input': '{"loc": "fake"}',
+            'result': "{'image_id': %s}" % image_id,
+            'message': 'blah',
+            'expires_at': expires_at,
+            'image_id': image_id,
+            'user_id': 'me',
+            'request_id': 'reqid',
+        }
+
+        new_task = self.db_api.task_create(self.adm_context, fixture)
+        if deleted:
+            self.db_api.task_delete(self.context, new_task['id'])
+        return (new_task['id'],
+                self.db_api.tasks_get_by_image(self.context, image_id))
+
+    def test_task_get_by_image_not_expired(self):
+        # Make sure we get back the task
+        task_id, tasks = self._test_task_get_by_image(expired=False)
+        self.assertEqual(1, len(tasks))
+        self.assertEqual(task_id, tasks[0]['id'])
+
+    def test_task_get_by_image_expired(self):
+        # Make sure we do not retrieve the expired task
+        task_id, tasks = self._test_task_get_by_image(expired=True)
+        self.assertEqual(0, len(tasks))
+
+        # We should have deleted the task while querying for it, so make
+        # sure that our task is now marked as deleted.
+        tasks = self.db_api.task_get_all(self.adm_context)
+        self.assertEqual(1, len(tasks))
+        self.assertEqual(task_id, tasks[0]['id'])
+        self.assertTrue(tasks[0]['deleted'])
+
+    def test_task_get_by_image_no_expiry(self):
+        # Make sure we do not retrieve the expired task
+        task_id, tasks = self._test_task_get_by_image(expired=None)
+        self.assertEqual(0, len(tasks))
+
+        # The task should not have been retrieved at all above,
+        # but it's also not deleted because it doesn't have an expiry,
+        # so it should still be in the DB.
+        tasks = self.db_api.task_get_all(self.adm_context)
+        self.assertEqual(1, len(tasks))
+        self.assertEqual(task_id, tasks[0]['id'])
+        self.assertFalse(tasks[0]['deleted'])
+        self.assertIsNone(tasks[0]['expires_at'])
+
+    def test_task_get_by_image_deleted(self):
+        task_id, tasks = self._test_task_get_by_image(deleted=True)
+        # We cannot see the deleted tasks
+        self.assertEqual(0, len(tasks))
+
+    def test_task_get_by_image_not_mine(self):
+        task_id, tasks = self._test_task_get_by_image(other_owner=True)
+        # We cannot see tasks we do not own
+        self.assertEqual(0, len(tasks))
+
     def test_task_get_all(self):
         now = timeutils.utcnow()
         then = now + datetime.timedelta(days=365)

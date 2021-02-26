@@ -170,16 +170,16 @@ def _task_format(task_id, **values):
     task = {
         'id': task_id,
         'type': 'import',
-        'status': 'pending',
+        'status': values.get('status', 'pending'),
         'owner': None,
         'expires_at': None,
         'created_at': dt,
         'updated_at': dt,
         'deleted_at': None,
         'deleted': False,
-        'image_id': None,
-        'request_id': None,
-        'user_id': None,
+        'image_id': values.get('image_id', None),
+        'request_id': values.get('request_id', None),
+        'user_id': values.get('user_id', None),
     }
     task.update(values)
     return task
@@ -485,6 +485,18 @@ def image_get(context, image_id, session=None, force_show_deleted=False,
     if v1_mode:
         image = db_utils.mutate_image_dict_to_v1(image)
     return image
+
+
+@log_call
+def tasks_get_by_image(context, image_id):
+    db_tasks = DATA['tasks']
+    tasks = []
+    for task in db_tasks:
+        if db_tasks[task]['image_id'] == image_id:
+            if _is_task_visible(context, db_tasks[task]):
+                tasks.append(db_tasks[task])
+
+    return tasks
 
 
 @log_call
