@@ -356,6 +356,7 @@ class Task(object):
     _supported_task_status = ('pending', 'processing', 'success', 'failure')
 
     def __init__(self, task_id, task_type, status, owner,
+                 image_id, user_id, request_id,
                  expires_at, created_at, updated_at,
                  task_input, result, message):
 
@@ -379,6 +380,9 @@ class Task(object):
         self.task_input = task_input
         self.result = result
         self.message = message
+        self.image_id = image_id
+        self.request_id = request_id
+        self.user_id = user_id
 
     @property
     def status(self):
@@ -449,7 +453,8 @@ class Task(object):
 class TaskStub(object):
 
     def __init__(self, task_id, task_type, status, owner,
-                 expires_at, created_at, updated_at):
+                 expires_at, created_at, updated_at,
+                 image_id, user_id, request_id):
         self.task_id = task_id
         self._status = status
         self.type = task_type
@@ -457,6 +462,9 @@ class TaskStub(object):
         self.expires_at = expires_at
         self.created_at = created_at
         self.updated_at = updated_at
+        self.image_id = image_id
+        self.request_id = request_id
+        self.user_id = user_id
 
     @property
     def status(self):
@@ -465,8 +473,8 @@ class TaskStub(object):
 
 class TaskFactory(object):
 
-    def new_task(self, task_type, owner,
-                 task_input=None, **kwargs):
+    def new_task(self, task_type, owner, image_id, user_id,
+                 request_id, task_input=None, **kwargs):
         task_id = str(uuid.uuid4())
         status = 'pending'
         # Note(nikhil): expires_at would be set on the task, only when it
@@ -479,12 +487,15 @@ class TaskFactory(object):
             task_type,
             status,
             owner,
+            image_id,
+            user_id,
+            request_id,
             expires_at,
             created_at,
             updated_at,
             task_input,
             kwargs.get('result'),
-            kwargs.get('message')
+            kwargs.get('message'),
         )
 
 

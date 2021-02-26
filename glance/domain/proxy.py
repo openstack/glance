@@ -237,6 +237,9 @@ class Task(object):
     task_input = _proxy('base', 'task_input')
     result = _proxy('base', 'result')
     message = _proxy('base', 'message')
+    image_id = _proxy('base', 'image_id')
+    request_id = _proxy('base', 'request_id')
+    user_id = _proxy('base', 'user_id')
 
     def begin_processing(self):
         self.base.begin_processing()

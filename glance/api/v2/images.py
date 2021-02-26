@@ -1,4 +1,3 @@
-# Copyright 2012 OpenStack Foundation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -333,7 +332,10 @@ class ImagesController(object):
         try:
             import_task = task_factory.new_task(task_type='api_image_import',
                                                 owner=ctxt.owner,
-                                                task_input=task_input)
+                                                task_input=task_input,
+                                                image_id=image_id,
+                                                user_id=ctxt.user_id,
+                                                request_id=ctxt.request_id)
 
             # NOTE(danms): Try to grab the lock for this task
             try:

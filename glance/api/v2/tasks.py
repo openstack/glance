@@ -74,9 +74,13 @@ class TasksController(object):
         executor_factory = self.gateway.get_task_executor_factory(ctxt)
         task_repo = self.gateway.get_task_repo(ctxt)
         try:
-            new_task = task_factory.new_task(task_type=task['type'],
-                                             owner=ctxt.owner,
-                                             task_input=task['input'])
+            new_task = task_factory.new_task(
+                task_type=task['type'],
+                owner=ctxt.owner,
+                task_input=task['input'],
+                image_id=task['input'].get('image_id'),
+                user_id=ctxt.user_id,
+                request_id=ctxt.request_id)
             task_repo.add(new_task)
             task_executor = executor_factory.new_task_executor(ctxt)
             pool = common.get_thread_pool("tasks_pool")
@@ -281,6 +285,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             'self': self._get_task_location(task),
             'schema': '/v2/schemas/task'
         }
+        if task.image_id:
+            task_view['image_id'] = task.image_id
+        if task.request_id:
+            task_view['request_id'] = task.request_id
+        if task.user_id:
+            task_view['user_id'] = task.user_id
         if task.expires_at:
             task_view['expires_at'] = timeutils.isotime(task.expires_at)
         task_view = schema.filter(task_view)  # domain
@@ -374,6 +384,18 @@ _TASK_SCHEMA = {
     "message": {
         "description": _("Human-readable informative message only included"
                          " when appropriate (usually on failure)"),
+        "type": "string",
+    },
+    "image_id": {
+        "description": _("Image associated with the task"),
+        "type": "string",
+    },
+    "request_id": {
+        "description": _("Human-readable informative request-id"),
+        "type": "string",
+    },
+    "user_id": {
+        "description": _("User associated with the task"),
         "type": "string",
     },
     "expires_at": {

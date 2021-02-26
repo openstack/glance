@@ -1807,7 +1807,10 @@ def _task_format(task_ref, task_info_ref=None):
         'created_at': task_ref['created_at'],
         'updated_at': task_ref['updated_at'],
         'deleted_at': task_ref['deleted_at'],
-        'deleted': task_ref['deleted']
+        'deleted': task_ref['deleted'],
+        'image_id': task_ref['image_id'],
+        'request_id': task_ref['request_id'],
+        'user_id': task_ref['user_id'],
     }
 
     if task_info_ref:

@@ -325,7 +325,11 @@ class TestTaskFactory(test_utils.BaseTestCase):
         task_type = 'import'
         owner = TENANT1
         task_input = 'input'
+        image_id = 'fake_image_id'
+        user_id = 'fake_user'
+        request_id = 'fake_request_id'
         task = self.task_factory.new_task(task_type, owner,
+                                          image_id, user_id, request_id,
                                           task_input=task_input,
                                           result='test_result',
                                           message='test_message')
@@ -339,15 +343,21 @@ class TestTaskFactory(test_utils.BaseTestCase):
         self.assertEqual(task_input, task.task_input)
         self.assertEqual('test_message', task.message)
         self.assertEqual('test_result', task.result)
+        self.assertEqual(image_id, task.image_id)
+        self.assertEqual(user_id, task.user_id)
+        self.assertEqual(request_id, task.request_id)
 
     def test_new_task_invalid_type(self):
         task_type = 'blah'
+        image_id = 'fake_image_id'
+        user_id = 'fake_user'
+        request_id = 'fake_request_id'
         owner = TENANT1
         self.assertRaises(
             exception.InvalidTaskType,
             self.task_factory.new_task,
             task_type,
-            owner,
+            owner, image_id, user_id, request_id
         )
 
 
@@ -357,10 +367,14 @@ class TestTask(test_utils.BaseTestCase):
         super(TestTask, self).setUp()
         self.task_factory = domain.TaskFactory()
         task_type = 'import'
+        image_id = 'fake_image_id'
+        user_id = 'fake_user'
+        request_id = 'fake_request_id'
         owner = TENANT1
         task_ttl = CONF.task.task_time_to_live
         self.task = self.task_factory.new_task(task_type,
-                                               owner,
+                                               owner, image_id, user_id,
+                                               request_id,
                                                task_time_to_live=task_ttl)
 
     def test_task_invalid_status(self):
@@ -373,6 +387,9 @@ class TestTask(test_utils.BaseTestCase):
             task_type='import',
             status=status,
             owner=None,
+            image_id='fake_image_id',
+            user_id='fake_user',
+            request_id='fake_request_id',
             expires_at=None,
             created_at=timeutils.utcnow(),
             updated_at=timeutils.utcnow(),
@@ -485,6 +502,9 @@ class TestTaskStub(test_utils.BaseTestCase):
         self.task_type = 'import'
         self.owner = TENANT1
         self.task_ttl = CONF.task.task_time_to_live
+        self.image_id = 'fake_image_id'
+        self.user_id = 'fake_user'
+        self.request_id = 'fake_request_id'
 
     def test_task_stub_init(self):
         self.task_factory = domain.TaskFactory()
@@ -495,7 +515,10 @@ class TestTaskStub(test_utils.BaseTestCase):
             self.owner,
             'expires_at',
             'created_at',
-            'updated_at'
+            'updated_at',
+            self.image_id,
+            self.user_id,
+            self.request_id,
         )
         self.assertEqual(self.task_id, task.task_id)
         self.assertEqual(self.task_type, task.type)
@@ -504,6 +527,9 @@ class TestTaskStub(test_utils.BaseTestCase):
         self.assertEqual('expires_at', task.expires_at)
         self.assertEqual('created_at', task.created_at)
         self.assertEqual('updated_at', task.updated_at)
+        self.assertEqual(self.image_id, task.image_id)
+        self.assertEqual(self.user_id, task.user_id)
+        self.assertEqual(self.request_id, task.request_id)
 
     def test_task_stub_get_status(self):
         status = 'pending'
@@ -514,7 +540,10 @@ class TestTaskStub(test_utils.BaseTestCase):
             self.owner,
             'expires_at',
             'created_at',
-            'updated_at'
+            'updated_at',
+            self.image_id,
+            self.user_id,
+            self.request_id,
         )
         self.assertEqual(status, task.status)
 

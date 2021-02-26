@@ -102,7 +102,10 @@ class TestTasks(functional.FunctionalTest):
                             u'status',
                             u'type',
                             u'result',
-                            u'updated_at'])
+                            u'updated_at',
+                            u'request_id',
+                            u'user_id',
+                            ])
         self.assertEqual(checked_keys, set(task.keys()))
         expected_task = {
             'status': 'pending',

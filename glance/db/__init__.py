@@ -343,6 +343,9 @@ class TaskRepo(object):
             task_input=db_task['input'],
             result=db_task['result'],
             message=db_task['message'],
+            image_id=db_task['image_id'],
+            user_id=db_task['user_id'],
+            request_id=db_task['request_id'],
         )
 
     def _format_task_stub_from_db(self, db_task):
@@ -354,6 +357,9 @@ class TaskRepo(object):
             expires_at=db_task['expires_at'],
             created_at=db_task['created_at'],
             updated_at=db_task['updated_at'],
+            image_id=db_task['image_id'],
+            user_id=db_task['user_id'],
+            request_id=db_task['request_id'],
         )
 
     def _format_task_to_db(self, task):
@@ -367,6 +373,9 @@ class TaskRepo(object):
                 'expires_at': task.expires_at,
                 'created_at': task.created_at,
                 'updated_at': task.updated_at,
+                'image_id': task.image_id,
+                'request_id': task.request_id,
+                'user_id': task.user_id,
                 }
         return task
 

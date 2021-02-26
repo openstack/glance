@@ -3053,7 +3053,10 @@ class TestImagesController(base.IsolatedUnitTest):
                           'backend': mock.ANY}
         mock_new_task.assert_called_with(task_type='api_image_import',
                                          owner=TENANT2,
-                                         task_input=expected_input)
+                                         task_input=expected_input,
+                                         image_id=UUID4,
+                                         user_id=request.context.user_id,
+                                         request_id=request.context.request_id)
 
     def test_image_import_copy_not_allowed_by_policy(self):
         # Make sure that if the policy check fails, we fail a copy-image with
