@@ -650,6 +650,12 @@ tags-in-request:
   in: body
   required: false
   type: array
+tasks:
+  description: |
+    A list of *task* objects, associated with the given image.
+  in: body
+  required: true
+  type: array
 updated_at:
   description: |
     The date and time when the resource was updated.
