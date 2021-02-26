@@ -66,7 +66,7 @@ class Enforcer(policy.Enforcer):
             raise policy.PolicyNotRegistered(action)
         try:
             return super(Enforcer, self).enforce(action, target,
-                                                 context.to_policy_values(),
+                                                 context,
                                                  do_raise=True,
                                                  exc=exception.Forbidden,
                                                  action=action)
@@ -85,7 +85,7 @@ class Enforcer(policy.Enforcer):
             raise policy.PolicyNotRegistered(action)
         return super(Enforcer, self).enforce(action,
                                              target,
-                                             context.to_policy_values())
+                                             context)
 
     def check_is_admin(self, context):
         """Check if the given context is associated with an admin role,

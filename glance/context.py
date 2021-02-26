@@ -52,12 +52,6 @@ class RequestContext(context.RequestContext):
         })
         return d
 
-    def to_policy_values(self):
-        pdict = super(RequestContext, self).to_policy_values()
-        pdict['user_id'] = self.user_id
-        pdict['project_id'] = self.project_id
-        return pdict
-
     @classmethod
     def from_dict(cls, values):
         return cls(**values)
