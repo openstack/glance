@@ -1,0 +1,12 @@
+---
+features:
+  - |
+    Glance now supports the ``glance-direct`` import method without
+    needing shared storage common to all API workers. By telling each
+    API worker the URL by which it can be reached directly (from the
+    other workers), a shared staging directory can be avoided while
+    still allowing users to upload their data for import. See the
+    ``worker_self_reference_url`` config option for more details, as
+    well as the `Interoperable Image Import
+    <https://docs.openstack.org/glance/latest/admin/interoperable-image-import.html>`_
+    docs.
