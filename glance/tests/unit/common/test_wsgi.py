@@ -637,6 +637,30 @@ class ServerTest(test_utils.BaseTestCase):
             self.assertEqual(expected_workers,
                              len(server.children))
 
+    def test_invalid_staging_uri(self):
+        self.config(node_staging_uri='http://good.luck')
+        server = wsgi.Server()
+        with mock.patch.object(server, 'start_wsgi'):
+            # Make sure a stating URI with an bad scheme will abort startup
+            self.assertRaises(exception.GlanceException,
+                              server.start, 'fake-application', 34567)
+
+    @mock.patch('os.path.exists')
+    def test_missing_staging_dir(self, mock_exists):
+        mock_exists.return_value = False
+        server = wsgi.Server()
+        with mock.patch.object(server, 'start_wsgi'):
+            # Since we are mocking out start_wsgi, create a fake pool ourselves
+            server.pool = mock.MagicMock()
+            with mock.patch.object(wsgi, 'LOG') as mock_log:
+                server.start('fake-application', 34567)
+                mock_exists.assert_called_once_with('/tmp/staging/')
+                # Make sure a missing staging directory will log a warning.
+                mock_log.warning.assert_called_once_with(
+                    'Import methods are enabled but staging directory '
+                    '%(path)s does not exist; Imports will fail!',
+                    {'path': '/tmp/staging/'})
+
 
 class TestHelpers(test_utils.BaseTestCase):
 

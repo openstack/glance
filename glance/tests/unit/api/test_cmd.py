@@ -83,6 +83,17 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         exit = self.assertRaises(SystemExit, glance.cmd.api.main)
         self.assertEqual(2, exit.code)
 
+    @mock.patch('glance.async_.set_threadpool_model', new=mock.MagicMock())
+    def test_cleaner_store_config_assertion(self):
+        failure = exc.GlanceException('This is what happens with http://')
+        self.config(node_staging_uri='http://good.luck')
+        self.mock_object(glance.common.wsgi.Server, 'start',
+                         self._raise(failure))
+        # Make sure that a failure to run the wsgi.Server will call our
+        # clean print-and-abort handler.
+        exit = self.assertRaises(SystemExit, glance.cmd.api.main)
+        self.assertEqual(99, exit.code)
+
     @mock.patch.object(glance.common.config, 'parse_cache_args')
     @mock.patch.object(logging, 'setup')
     @mock.patch.object(glance.image_cache.ImageCache, 'init_driver')

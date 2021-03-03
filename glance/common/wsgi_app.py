@@ -24,7 +24,7 @@ import glance.async_
 from glance.common import config
 from glance.common import store_utils
 from glance import housekeeping
-from glance.i18n import _
+from glance.i18n import _, _LW
 from glance import notifier
 
 CONF = cfg.CONF
@@ -140,6 +140,15 @@ def init_app():
         glance_store.register_opts(CONF)
         glance_store.create_stores(CONF)
         glance_store.verify_default_store()
+
+    # NOTE(danms): This may raise GlanceException if the staging store is
+    # not configured properly, which will bubble up to the WSGI server,
+    # aborting application load as desired.
+    staging = housekeeping.staging_store_path()
+    if not os.path.exists(staging) and CONF.enabled_import_methods:
+        LOG.warning(_LW('Import methods are enabled but staging directory '
+                        '%(path)s does not exist; Imports will fail!'),
+                    {'path': staging})
 
     run_staging_cleanup()
 
