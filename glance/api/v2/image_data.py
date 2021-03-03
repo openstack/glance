@@ -39,6 +39,7 @@ import glance.notifier
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
+CONF.import_opt('public_endpoint', 'glance.api.versions')
 
 
 class ImageDataController(object):
@@ -348,6 +349,14 @@ class ImageDataController(object):
             except glance_store.Duplicate:
                 msg = _("The image %s has data on staging") % image_id
                 raise webob.exc.HTTPConflict(explanation=msg)
+
+            # NOTE(danms): Record this worker's
+            # worker_self_reference_url in the image metadata so we
+            # know who has the staging data.
+            self_url = CONF.worker_self_reference_url or CONF.public_endpoint
+            if self_url:
+                image.extra_properties['os_glance_stage_host'] = self_url
+            image_repo.save(image, from_state='uploading')
 
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)

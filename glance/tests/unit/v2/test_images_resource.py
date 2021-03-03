@@ -16,6 +16,7 @@
 import datetime
 import hashlib
 import os
+import requests
 from unittest import mock
 import uuid
 
@@ -30,6 +31,7 @@ from six.moves import http_client as http
 from six.moves import range
 import testtools
 import webob
+import webob.exc
 
 import glance.api.v2.image_actions
 import glance.api.v2.images
@@ -872,6 +874,184 @@ class TestImagesController(base.IsolatedUnitTest):
                               self.controller.import_image, request, UUID4,
                               {'method': {'name': 'web-download',
                                           'uri': 'fake_uri'}})
+
+    @mock.patch('glance.context.get_ksa_client')
+    def test_image_import_proxies(self, mock_client):
+        # Make sure that we proxy to the remote side when we need to
+        self.config(
+            worker_self_reference_url='http://glance-worker2.openstack.org')
+        request = unit_test_utils.get_fake_request(
+            '/v2/images/%s/import' % UUID4)
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            mock_get.return_value.extra_properties['os_glance_stage_host'] = (
+                'https://glance-worker1.openstack.org')
+            remote_hdrs = {'x-openstack-request-id': 'remote-req'}
+            mock_resp = mock.MagicMock(location='/target',
+                                       status_code=202,
+                                       reason='Thanks',
+                                       headers=remote_hdrs)
+            mock_client.return_value.post.return_value = mock_resp
+            r = self.controller.import_image(
+                request, UUID4,
+                {'method': {'name': 'glance-direct'}})
+
+            # Make sure we returned the ID like expected normally
+            self.assertEqual(UUID4, r)
+
+            # Make sure we called the expected remote URL and passed
+            # the body.
+            mock_client.return_value.post.assert_called_once_with(
+                ('https://glance-worker1.openstack.org'
+                 '/v2/images/%s/import') % UUID4,
+                json={'method': {'name': 'glance-direct'}},
+                timeout=60)
+
+            # Make sure the remote request-id is returned to us
+            self.assertEqual('remote-req', request.context.request_id)
+
+    @mock.patch('glance.context.get_ksa_client')
+    def test_image_delete_proxies(self, mock_client):
+        # Make sure that we proxy to the remote side when we need to
+        self.config(
+            worker_self_reference_url='http://glance-worker2.openstack.org')
+        request = unit_test_utils.get_fake_request(
+            '/v2/images/%s' % UUID4, method='DELETE')
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            mock_get.return_value.extra_properties['os_glance_stage_host'] = (
+                'https://glance-worker1.openstack.org')
+            remote_hdrs = {'x-openstack-request-id': 'remote-req'}
+            mock_resp = mock.MagicMock(location='/target',
+                                       status_code=202,
+                                       reason='Thanks',
+                                       headers=remote_hdrs)
+            mock_client.return_value.delete.return_value = mock_resp
+            self.controller.delete(request, UUID4)
+
+            # Make sure we called the expected remote URL and passed
+            # the body.
+            mock_client.return_value.delete.assert_called_once_with(
+                ('https://glance-worker1.openstack.org'
+                 '/v2/images/%s') % UUID4,
+                json=None, timeout=60)
+
+    @mock.patch('glance.context.get_ksa_client')
+    def test_image_import_proxies_error(self, mock_client):
+        # Make sure that errors from the remote worker are proxied to our
+        # client with the proper code and message
+        self.config(
+            worker_self_reference_url='http://glance-worker2.openstack.org')
+        request = unit_test_utils.get_fake_request(
+            '/v2/images/%s/import' % UUID4)
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            mock_get.return_value.extra_properties['os_glance_stage_host'] = (
+                'https://glance-worker1.openstack.org')
+            mock_resp = mock.MagicMock(location='/target',
+                                       status_code=456,
+                                       reason='No thanks')
+            mock_client.return_value.post.return_value = mock_resp
+            exc = self.assertRaises(webob.exc.HTTPError,
+                                    self.controller.import_image,
+                                    request, UUID4,
+                                    {'method': {'name': 'glance-direct'}})
+            self.assertEqual('456 No thanks', exc.status)
+            mock_client.return_value.post.assert_called_once_with(
+                ('https://glance-worker1.openstack.org'
+                 '/v2/images/%s/import') % UUID4,
+                json={'method': {'name': 'glance-direct'}},
+                timeout=60)
+
+    @mock.patch('glance.context.get_ksa_client')
+    def test_image_delete_proxies_error(self, mock_client):
+        # Make sure that errors from the remote worker are proxied to our
+        # client with the proper code and message
+        self.config(
+            worker_self_reference_url='http://glance-worker2.openstack.org')
+        request = unit_test_utils.get_fake_request(
+            '/v2/images/%s' % UUID4, method='DELETE')
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='uploading')
+            mock_get.return_value.extra_properties['os_glance_stage_host'] = (
+                'https://glance-worker1.openstack.org')
+            remote_hdrs = {'x-openstack-request-id': 'remote-req'}
+            mock_resp = mock.MagicMock(location='/target',
+                                       status_code=456,
+                                       reason='No thanks',
+                                       headers=remote_hdrs)
+            mock_client.return_value.delete.return_value = mock_resp
+            exc = self.assertRaises(webob.exc.HTTPError,
+                                    self.controller.delete, request, UUID4)
+            self.assertEqual('456 No thanks', exc.status)
+
+            # Make sure we called the expected remote URL and passed
+            # the body.
+            mock_client.return_value.delete.assert_called_once_with(
+                ('https://glance-worker1.openstack.org'
+                 '/v2/images/%s') % UUID4,
+                json=None, timeout=60)
+
+    @mock.patch('glance.context.get_ksa_client')
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'remove')
+    def test_image_delete_deletes_locally_on_error(self, mock_remove, mock_get,
+                                                   mock_client):
+        # Make sure that if the proxy delete fails due to a connection error
+        # that we continue with the delete ourselves.
+        self.config(
+            worker_self_reference_url='http://glance-worker2.openstack.org')
+        request = unit_test_utils.get_fake_request(
+            '/v2/images/%s' % UUID4, method='DELETE')
+
+        image = FakeImage(status='uploading')
+        mock_get.return_value = image
+        image.extra_properties['os_glance_stage_host'] = (
+            'https://glance-worker1.openstack.org')
+        image.delete = mock.MagicMock()
+
+        mock_client.return_value.delete.side_effect = (
+            requests.exceptions.ConnectTimeout)
+
+        self.controller.delete(request, UUID4)
+
+        # Make sure we called delete on our image
+        mock_get.return_value.delete.assert_called_once_with()
+        mock_remove.assert_called_once_with(image)
+
+        # Make sure we called the expected remote URL and passed
+        # the body.
+        mock_client.return_value.delete.assert_called_once_with(
+            ('https://glance-worker1.openstack.org'
+             '/v2/images/%s') % UUID4,
+            json=None, timeout=60)
+
+    @mock.patch('glance.context.get_ksa_client')
+    def test_image_import_no_proxy_non_direct(self, mock_client):
+        # Make sure that we won't take the proxy path for import methods
+        # other than glance-direct
+        self.config(
+            worker_self_reference_url='http://glance-worker2.openstack.org')
+        request = unit_test_utils.get_fake_request(
+            '/v2/images/%s/import' % UUID4)
+        with mock.patch.object(
+                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='queued')
+            mock_get.return_value.extra_properties['os_glance_stage_host'] = (
+                'https://glance-worker1.openstack.org')
+            # This will fail validation after the point at which we would
+            # have proxied to the remote side, just to avoid task setup.
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.controller.import_image,
+                              request, UUID4,
+                              {'method': {'name': 'web-download',
+                                          'url': 'not-a-url'}})
+            # Make sure we did not try to proxy this web-download request
+            mock_client.return_value.post.assert_not_called()
 
     def test_create(self):
         request = unit_test_utils.get_fake_request()
@@ -5044,6 +5224,17 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         self.assertEqual(http.ACCEPTED, response.status_int)
         self.assertEqual('0', response.headers['Content-Length'])
 
+    def test_image_stage_host_hidden(self):
+        # Make sure that os_glance_stage_host is not exposed to clients
+        response = webob.Response()
+        self.serializer.show(response,
+                             mock.MagicMock(extra_properties={
+                                 'foo': 'bar',
+                                 'os_glance_stage_host': 'http://foo'}))
+        actual = jsonutils.loads(response.body)
+        self.assertIn('foo', actual)
+        self.assertNotIn('os_glance_stage_host', actual)
+
 
 class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
 
@@ -5879,3 +6070,36 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                                  'stores': ["cheap"]})
 
         self.assertEqual(UUID7, output)
+
+
+class TestProxyHelpers(base.IsolatedUnitTest):
+    def test_proxy_response_error(self):
+        e = glance.api.v2.images.proxy_response_error(123, 'Foo')
+        self.assertIsInstance(e, webob.exc.HTTPError)
+        self.assertEqual(123, e.code)
+        self.assertEqual('123 Foo', e.status)
+
+    def test_is_proxyable(self):
+        controller = glance.api.v2.images.ImagesController(None, None,
+                                                           None, None)
+        self.config(worker_self_reference_url='http://worker1')
+        mock_image = mock.MagicMock(extra_properties={})
+
+        self.assertFalse(controller.is_proxyable(mock_image))
+
+        mock_image.extra_properties['os_glance_stage_host'] = 'http://worker1'
+        self.assertFalse(controller.is_proxyable(mock_image))
+
+        mock_image.extra_properties['os_glance_stage_host'] = 'http://worker2'
+        self.assertTrue(controller.is_proxyable(mock_image))
+
+    def test_self_url(self):
+        controller = glance.api.v2.images.ImagesController(None, None,
+                                                           None, None)
+        self.assertIsNone(controller.self_url)
+
+        self.config(public_endpoint='http://lb.example.com')
+        self.assertEqual('http://lb.example.com', controller.self_url)
+
+        self.config(worker_self_reference_url='http://worker1.example.com')
+        self.assertEqual('http://worker1.example.com', controller.self_url)

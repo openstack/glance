@@ -324,6 +324,15 @@ class _ImportActions(object):
                         self._image.size = None
                 break
 
+    def pop_extra_property(self, name):
+        """Delete the named extra_properties value, if present.
+
+        If the image.extra_properties dict contains the named key,
+        delete it.
+        :param name: The key to delete.
+        """
+        self._image.extra_properties.pop(name, None)
+
 
 class _DeleteFromFS(task.Task):
 
@@ -788,5 +797,6 @@ def get_flow(**kwargs):
             action.set_image_status('importing')
         action.add_importing_stores(stores)
         action.remove_failed_stores(stores)
+        action.pop_extra_property('os_glance_stage_host')
 
     return flow

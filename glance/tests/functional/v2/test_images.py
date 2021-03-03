@@ -20,6 +20,7 @@ import tempfile
 import time
 import uuid
 
+import fixtures
 from oslo_serialization import jsonutils
 from oslo_utils.secretutils import md5
 from oslo_utils import units
@@ -6880,3 +6881,123 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         self.assertIn('file2', jsonutils.loads(response.text)['stores'])
+
+
+class TestImportProxy(functional.SynchronousAPIBase):
+    """Test the image import proxy-to-stage-worker behavior.
+
+    This is done as a SynchronousAPIBase test with one mock for a couple of
+    reasons:
+
+    1. The main functional tests can't handle a call with a token
+       inside because of their paste config. Even if they did, they would
+       not be able to validate it.
+    2. The main functional tests don't support multiple API workers with
+       separate config and making them work that way is non-trivial.
+
+    Functional tests are fairly synthetic and fixing or hacking over
+    the above push us only further so. Using theh Synchronous API
+    method is vastly easier, easier to verify, and tests the
+    integration across the API calls, which is what is important.
+    """
+
+    def setUp(self):
+        super(TestImportProxy, self).setUp()
+        # Emulate a keystoneauth1 client for service-to-service communication
+        self.ksa_client = self.useFixture(
+            fixtures.MockPatch('glance.context.get_ksa_client')).mock
+
+    def test_import_proxy(self):
+        resp = requests.Response()
+        resp.status_code = 202
+        resp.headers['x-openstack-request-id'] = 'req-remote'
+        self.ksa_client.return_value.post.return_value = resp
+
+        # Stage it on worker1
+        self.config(worker_self_reference_url='http://worker1')
+        self.start_server()
+        image_id = self._create_and_stage()
+
+        # Make sure we can't see the stage host key
+        image = self.api_get('/v2/images/%s' % image_id).json
+        self.assertIn('container_format', image)
+        self.assertNotIn('os_glance_stage_host', image)
+
+        # Import call goes to worker2
+        self.config(worker_self_reference_url='http://worker2')
+        self.start_server()
+        r = self._import_direct(image_id, ['store1'])
+
+        # Assert that it was proxied back to worker1
+        self.assertEqual(202, r.status_code)
+        self.assertEqual('req-remote', r.headers['x-openstack-request-id'])
+        self.ksa_client.return_value.post.assert_called_once_with(
+            'http://worker1/v2/images/%s/import' % image_id,
+            timeout=60,
+            json={'method': {'name': 'glance-direct'},
+                  'stores': ['store1'],
+                  'all_stores': False})
+
+    def test_import_proxy_fail_on_remote(self):
+        resp = requests.Response()
+        resp.url = '/v2'
+        resp.status_code = 409
+        resp.reason = 'Something Failed (tm)'
+        self.ksa_client.return_value.post.return_value = resp
+        self.ksa_client.return_value.delete.return_value = resp
+
+        # Stage it on worker1
+        self.config(worker_self_reference_url='http://worker1')
+        self.start_server()
+        image_id = self._create_and_stage()
+
+        # Import call goes to worker2
+        self.config(worker_self_reference_url='http://worker2')
+        self.start_server()
+        r = self._import_direct(image_id, ['store1'])
+
+        # Make sure we see the relevant details from worker1
+        self.assertEqual(409, r.status_code)
+        self.assertEqual('409 Something Failed (tm)', r.status)
+
+        # For a 40x, we should get the same on delete
+        r = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(409, r.status_code)
+        self.assertEqual('409 Something Failed (tm)', r.status)
+
+    def _test_import_proxy_fail_requests(self, error, status):
+        self.ksa_client.return_value.post.side_effect = error
+        self.ksa_client.return_value.delete.side_effect = error
+
+        # Stage it on worker1
+        self.config(worker_self_reference_url='http://worker1')
+        self.start_server()
+        image_id = self._create_and_stage()
+
+        # Import call goes to worker2
+        self.config(worker_self_reference_url='http://worker2')
+        self.start_server()
+        r = self._import_direct(image_id, ['store1'])
+        self.assertEqual(status, r.status)
+        self.assertIn(b'Stage host is unavailable', r.body)
+
+        # Make sure we can still delete it
+        r = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(204, r.status_code)
+        r = self.api_get('/v2/images/%s' % image_id)
+        self.assertEqual(404, r.status_code)
+
+    def test_import_proxy_connection_refused(self):
+        self._test_import_proxy_fail_requests(
+            requests.exceptions.ConnectionError(),
+            '504 Gateway Timeout')
+
+    def test_import_proxy_connection_timeout(self):
+        self._test_import_proxy_fail_requests(
+            requests.exceptions.ConnectTimeout(),
+            '504 Gateway Timeout')
+
+    def test_import_proxy_connection_unknown_error(self):
+        self._test_import_proxy_fail_requests(
+            requests.exceptions.RequestException(),
+            '502 Bad Gateway')

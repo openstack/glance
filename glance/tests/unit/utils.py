@@ -70,6 +70,7 @@ def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
 
     req = wsgi.Request.blank(path)
     req.method = method
+    req.headers = {'x-openstack-request-id': 'my-req'}
 
     kwargs = {
         'user': user,

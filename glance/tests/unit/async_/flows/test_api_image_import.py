@@ -63,8 +63,11 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
 
         self.mock_task_repo = mock.MagicMock()
         self.mock_image_repo = mock.MagicMock()
-        self.mock_image_repo.get.return_value.extra_properties = {
-            'os_glance_import_task': TASK_ID1}
+        self.mock_image = self.mock_image_repo.get.return_value
+        self.mock_image.extra_properties = {
+            'os_glance_import_task': TASK_ID1,
+            'os_glance_stage_host': 'http://glance2',
+        }
 
     @mock.patch('glance.async_.flows.api_image_import._VerifyStaging.__init__')
     @mock.patch('taskflow.patterns.linear_flow.Flow.add')
@@ -102,6 +105,17 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
                        import_req=self.wd_task_input['import_req'])
         self._pass_uri(uri=test_uri, file_uri=expected_uri,
                        import_req=self.gd_task_input['import_req'])
+
+    def test_get_flow_pops_stage_host(self):
+        import_flow.get_flow(task_id=TASK_ID1, task_type=TASK_TYPE,
+                             task_repo=self.mock_task_repo,
+                             image_repo=self.mock_image_repo,
+                             image_id=IMAGE_ID1,
+                             import_req=self.gd_task_input['import_req'])
+        self.assertNotIn('os_glance_stage_host',
+                         self.mock_image.extra_properties)
+        self.assertIn('os_glance_import_task',
+                      self.mock_image.extra_properties)
 
 
 class TestImageLock(test_utils.BaseTestCase):
@@ -898,6 +912,17 @@ class TestImportActions(test_utils.BaseTestCase):
             mock_log.warning.assert_called_once_with(
                 _('Unexpected exception when deleting from store foo.'))
             mock_log.warning.reset_mock()
+
+    def test_pop_extra_property(self):
+        self.image.extra_properties = {'foo': '1', 'bar': 2}
+
+        # Should remove, if present
+        self.actions.pop_extra_property('foo')
+        self.assertEqual({'bar': 2}, self.image.extra_properties)
+
+        # Should not raise if missing
+        self.actions.pop_extra_property('baz')
+        self.assertEqual({'bar': 2}, self.image.extra_properties)
 
 
 @mock.patch('glance.common.scripts.utils.get_task')

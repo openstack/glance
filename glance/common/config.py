@@ -589,6 +589,26 @@ roles in keystone (e.g., `admin`, `member`, and `reader`).
 
 Related options:
     * [oslo_policy]/enforce_new_defaults
+""")),
+    cfg.StrOpt('worker_self_reference_url',
+               default=None,
+               help=_("""
+The URL to this worker.
+
+If this is set, other glance workers will know how to contact this one
+directly if needed. For image import, a single worker stages the image
+and other workers need to be able to proxy the import request to the
+right one.
+
+If unset, this will be considered to be `public_endpoint`, which
+normally would be set to the same value on all workers, effectively
+disabling the proxying behavior.
+
+Possible values:
+    * A URL by which this worker is reachable from other workers
+
+Related options:
+    * public_endpoint
 
 """)),
 ]
