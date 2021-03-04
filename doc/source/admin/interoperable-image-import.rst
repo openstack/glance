@@ -47,9 +47,12 @@ be set:
 
 * in the default options group:
 
-  * ``node_staging_uri`` must specify a location writable by the glance
-    user.  If you have multiple Glance API nodes, this should be a
-    reference to a shared filesystem available to all the nodes.
+  * ``node_staging_uri`` as a ``file:///path/to/dir`` URI (in the
+    single-store case) or
+    ``[os_glance_staging_store]/filesystem_store_datadir`` as a path
+    (in the multi-store case) must specify a location writable by the
+    glance user. See `Staging Directory Configuration`_ for more
+    details and recommendations.
 
   * ``enabled_import_methods`` must specify the import methods you are exposing
     at your installation.  The default value for this setting is
@@ -100,6 +103,57 @@ You control which methods are available to API users by the
 ``enabled_import_methods`` configuration option in the default section of the
 **glance-api.conf** file.
 
+Staging Directory Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All of the import methods require a staging directory to be
+configured. This is essentially a temporary scratch location where the
+image can be staged (by the user via ``glance-direct``), downloaded
+(by ``web-download``), or pulled from an existing store (as in
+``copy-image``) before being copied to a given store location. In the
+single-store case, this location is specified by a local filesystem
+URI in the ``node_staging_uri`` configuration option, like this:
+
+.. code-block:: ini
+
+   [DEFAULTS]
+   node_staging_uri = file:///var/lib/glance/staging
+
+In the multistore case, as described in :ref:`reserved_stores`, the
+staging store should be configured with the path:
+
+.. code-block:: ini
+
+   [os_glance_staging_store]
+   filesystem_store_datadir = /var/lib/glance/staging
+
+The staging directory for each worker must be configured for all
+import methods, and can be either local (recommended) or shared. In
+the case of a shared location, all Glance API workers will be
+dependent on the shared storage availability, will compete for IO
+resources, and may introduce additional network traffic. If `local`
+storage is chosen, you must configure each worker with the URL by
+which the other workers can reach it directly. This allows one worker
+behind a load balancer to stage an image in one request, and another
+worker to handle the subsequent import request. As an example:
+
+.. code-block:: ini
+
+   [DEFAULTS]
+   worker_self_reference_url = https://glance01.example.com:8000
+
+This assumes you have several glance-api workers named ``glance01``,
+``glance02``, etc behind your load balancer.
+
+Note that ``public_endpoint`` will be used as the default if
+``worker_self_reference_url`` is not set. As this will generally be
+set to the same value across all workers, the result is that all
+workers will assume the same identity and thus revert to
+shared-staging behavior. If ``public_endpoint`` is set differently for
+one or a group of workers, they will be considered isolated and thus
+not sharing staging storage.
+
+
 Configuring the glance-direct method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -107,19 +161,17 @@ For the ``glance-direct`` method, make sure that ``glance-direct`` is included
 in the list specified by your ``enabled_import_methods`` setting, and that all
 the options described above are set properly.
 
+Note that in order to use ``glance-direct``, the
+``worker_self_reference_url`` configuration option must be set as
+above, or all Glance API workers must have their staging directory
+mounted to a common location (such as an NFS server).
+
 Configuring the web-download method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To enable the ``web-download`` import method, make sure that it is included in
 the list of methods in the ``enabled_import_methods`` option, and that all the
 options described above are set properly.
-
-.. note::
-   You must configure the ``node_staging_uri`` for the ``web-download`` import
-   method because that is where Glance will store the downloaded content.
-   This gives you the opportunity to have the image data be processed by the
-   same plugin chain for each of the import methods.  See :ref:`iir_plugins`
-   for more information.
 
 Additionally, you have the following configuration available.
 

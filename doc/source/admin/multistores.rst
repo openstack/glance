@@ -126,6 +126,8 @@ Please keep the following points in mind.
   enforced in the code.)
 
 
+.. _reserved_stores:
+
 Reserved Stores
 ---------------
 
