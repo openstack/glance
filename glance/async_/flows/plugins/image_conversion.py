@@ -102,7 +102,14 @@ class _ConvertImage(task.Task):
             raise RuntimeError(stderr)
 
         metadata = json.loads(stdout)
-        source_format = metadata.get('format')
+        try:
+            source_format = metadata['format']
+        except KeyError:
+            msg = ("Failed to do introspection as part of image "
+                   "conversion for %(iid)s: Source format not reported")
+            LOG.error(msg, {'iid': self.image_id})
+            raise RuntimeError(msg)
+
         virtual_size = metadata.get('virtual-size', 0)
         image = self.image_repo.get(self.image_id)
         image.virtual_size = virtual_size
