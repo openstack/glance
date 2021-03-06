@@ -73,7 +73,8 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download(self, mock_add):
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_add.return_value = ["path", 4]
@@ -85,7 +86,8 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_with_content_length(self, mock_add):
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_iter.return_value.headers = {'content-length': '4'}
@@ -97,7 +99,8 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_with_invalid_content_length(self, mock_add):
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_iter.return_value.headers = {'content-length': "not_valid"}
@@ -109,7 +112,8 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_fails_when_data_size_different(self, mock_add):
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_iter.return_value.headers = {'content-length': '4'}
@@ -122,7 +126,8 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
         self.config(node_staging_uri=None)
         self.assertRaises(glance.common.exception.BadTaskConfiguration,
                           web_download._WebDownload, self.task.task_id,
-                          self.task_type, self.uri, self.action_wrapper)
+                          self.task_type, self.uri, self.action_wrapper,
+                          ['foo'])
 
     @mock.patch.object(cfg.ConfigOpts, "set_override")
     def test_web_download_node_store_initialization_failed(self,
@@ -131,12 +136,14 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
             mock_load_store.return_value = None
             self.assertRaises(glance.common.exception.BadTaskConfiguration,
                               web_download._WebDownload, self.task.task_id,
-                              self.task_type, self.uri, self.action_wrapper)
+                              self.task_type, self.uri, self.action_wrapper,
+                              ['foo'])
             mock_override.assert_called()
 
     def test_web_download_failed(self):
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         with mock.patch.object(script_utils,
                                "get_image_data_iter") as mock_iter:
             mock_iter.side_effect = glance.common.exception.NotFound
@@ -184,8 +191,12 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
     @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
     def test_web_download_revert_with_failure(self, mock_store_api,
                                               mock_add):
+        image = self.image_repo.get.return_value
+        image.extra_properties['os_glance_importing_to_stores'] = 'foo'
+        image.extra_properties['os_glance_failed_import'] = ''
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_iter.return_value.headers = {'content-length': '4'}
@@ -200,6 +211,10 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
         # NOTE(danms): Since we told revert that we were not at fault,
         # we should not have updated the image.
         self.image_repo.save.assert_not_called()
+        self.assertEqual(
+            'foo', image.extra_properties['os_glance_importing_to_stores'])
+        self.assertEqual(
+            '', image.extra_properties['os_glance_failed_import'])
 
     @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
     def test_web_download_revert_without_failure_multi_store(self,
@@ -210,7 +225,8 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
         }
         self.config(enabled_backends=enabled_backends)
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         web_download_task._path = "/path/to_downloaded_data"
         web_download_task.revert("/path/to_downloaded_data")
         mock_store_api.delete.assert_called_once_with(
@@ -221,24 +237,33 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
                                                            mock_store_api):
         image = self.image_repo.get.return_value
         image.status = 'importing'
+        image.extra_properties['os_glance_importing_to_stores'] = 'foo'
+        image.extra_properties['os_glance_failed_import'] = ''
         result = failure.Failure.from_exception(
             glance.common.exception.ImportTaskError())
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         web_download_task.revert(result)
         mock_store_api.delete_from_backend.assert_not_called()
 
         # NOTE(danms): Since we told revert that we were the problem,
-        # we should have updated the image status
+        # we should have updated the image status and moved the stores
+        # to the failed list.
         self.image_repo.save.assert_called_once_with(image, 'importing')
         self.assertEqual('queued', image.status)
+        self.assertEqual(
+            '', image.extra_properties['os_glance_importing_to_stores'])
+        self.assertEqual(
+            'foo', image.extra_properties['os_glance_failed_import'])
 
     @mock.patch("glance.async_.flows._internal_plugins.web_download.store_api")
     def test_web_download_revert_with_failure_with_path(self, mock_store_api):
         result = failure.Failure.from_exception(
             glance.common.exception.ImportTaskError())
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         web_download_task._path = "/path/to_downloaded_data"
         web_download_task.revert(result)
         mock_store_api.delete_from_backend.assert_called_once_with(
@@ -250,7 +275,8 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
             glance.common.exception.ImportTaskError())
         mock_store_api.delete_from_backend.side_effect = Exception
         web_download_task = web_download._WebDownload(
-            self.task.task_id, self.task_type, self.uri, self.action_wrapper)
+            self.task.task_id, self.task_type, self.uri, self.action_wrapper,
+            ['foo'])
         web_download_task._path = "/path/to_downloaded_data"
         # this will verify that revert does not break because of failure
         # while deleting data in staging area

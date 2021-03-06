@@ -35,12 +35,13 @@ class _WebDownload(task.Task):
 
     default_provides = 'file_uri'
 
-    def __init__(self, task_id, task_type, uri, action_wrapper):
+    def __init__(self, task_id, task_type, uri, action_wrapper, stores):
         self.task_id = task_id
         self.task_type = task_type
         self.image_id = action_wrapper.image_id
         self.uri = uri
         self.action_wrapper = action_wrapper
+        self.stores = stores
         self._path = None
         super(_WebDownload, self).__init__(
             name='%s-WebDownload-%s' % (task_type, task_id))
@@ -140,8 +141,13 @@ class _WebDownload(task.Task):
                        'image_id': self.image_id})
             # NOTE(abhishekk): Revert image state back to 'queued' as
             # something went wrong.
+            # NOTE(danms): If we failed to stage the image, then none
+            # of the _ImportToStore() tasks could have run, so we need
+            # to move all stores out of "importing" and into "failed".
             with self.action_wrapper as action:
                 action.set_image_status('queued')
+                action.remove_importing_stores(self.stores)
+                action.add_failed_stores(self.stores)
 
         # NOTE(abhishekk): Deleting partial image data from staging area
         if self._path is not None:
@@ -171,7 +177,8 @@ def get_flow(**kwargs):
     task_type = kwargs.get('task_type')
     uri = kwargs.get('import_req')['method'].get('uri')
     action_wrapper = kwargs.get('action_wrapper')
+    stores = kwargs.get('backend', [None])
 
     return lf.Flow(task_type).add(
-        _WebDownload(task_id, task_type, uri, action_wrapper),
+        _WebDownload(task_id, task_type, uri, action_wrapper, stores),
     )
