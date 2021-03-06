@@ -35,12 +35,12 @@ class _WebDownload(task.Task):
 
     default_provides = 'file_uri'
 
-    def __init__(self, task_id, task_type, image_repo, image_id, uri):
+    def __init__(self, task_id, task_type, uri, action_wrapper):
         self.task_id = task_id
         self.task_type = task_type
-        self.image_repo = image_repo
-        self.image_id = image_id
+        self.image_id = action_wrapper.image_id
         self.uri = uri
+        self.action_wrapper = action_wrapper
         self._path = None
         super(_WebDownload, self).__init__(
             name='%s-WebDownload-%s' % (task_type, task_id))
@@ -140,9 +140,8 @@ class _WebDownload(task.Task):
                        'image_id': self.image_id})
             # NOTE(abhishekk): Revert image state back to 'queued' as
             # something went wrong.
-            image = self.image_repo.get(self.image_id)
-            image.status = 'queued'
-            self.image_repo.save(image)
+            with self.action_wrapper as action:
+                action.set_image_status('queued')
 
         # NOTE(abhishekk): Deleting partial image data from staging area
         if self._path is not None:
@@ -166,13 +165,13 @@ def get_flow(**kwargs):
     :param task_type: Type of the task.
     :param image_repo: Image repository used.
     :param uri: URI the image data is downloaded from.
+    :param action_wrapper: An api_image_import.ActionWrapper.
     """
     task_id = kwargs.get('task_id')
     task_type = kwargs.get('task_type')
-    image_repo = kwargs.get('image_repo')
-    image_id = kwargs.get('image_id')
     uri = kwargs.get('import_req')['method'].get('uri')
+    action_wrapper = kwargs.get('action_wrapper')
 
     return lf.Flow(task_type).add(
-        _WebDownload(task_id, task_type, image_repo, image_id, uri),
+        _WebDownload(task_id, task_type, uri, action_wrapper),
     )
