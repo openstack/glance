@@ -604,7 +604,7 @@ class TestVerifyImageStateTask(test_utils.BaseTestCase):
         task.revert(mock.sentinel.result)
 
         # If we are doing copy-image, no state update should be made
-        wrapper.__enter__.return_value.set_image_status.assert_not_called()
+        wrapper.__enter__.return_value.set_image_attribute.assert_not_called()
 
     def test_reverts_state_nocopy(self):
         wrapper = mock.MagicMock()
@@ -614,7 +614,7 @@ class TestVerifyImageStateTask(test_utils.BaseTestCase):
 
         # Except for copy-image, image state should revert to queued
         action = wrapper.__enter__.return_value
-        action.set_image_status.assert_called_once_with('queued')
+        action.set_image_attribute.assert_called_once_with(status='queued')
 
 
 class TestImportActionWrapper(test_utils.BaseTestCase):
@@ -663,7 +663,7 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
 
         mock_image.status = 'foo'
         with wrapper as action:
-            action.set_image_status('bar')
+            action.set_image_attribute(status='bar')
 
         mock_log.debug.assert_called_once_with(
             'Image %(image_id)s status changing from '
@@ -678,6 +678,30 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
         wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
                                                   TASK_ID1)
         self.assertEqual(IMAGE_ID1, wrapper.image_id)
+
+    def test_set_image_attribute(self):
+        mock_repo = mock.MagicMock()
+        mock_image = mock_repo.get.return_value
+        mock_image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        mock_image.status = 'bar'
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        with wrapper as action:
+            action.set_image_attribute(status='foo', virtual_size=123)
+        mock_repo.save.assert_called_once_with(mock_image, 'bar')
+        self.assertEqual('foo', mock_image.status)
+        self.assertEqual(123, mock_image.virtual_size)
+
+    def test_set_image_attribute_disallowed(self):
+        mock_repo = mock.MagicMock()
+        mock_image = mock_repo.get.return_value
+        mock_image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        mock_image.status = 'bar'
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        with wrapper as action:
+            self.assertRaises(AttributeError,
+                              action.set_image_attribute, id='foo')
 
     def test_drop_lock_for_task(self):
         mock_repo = mock.MagicMock()
