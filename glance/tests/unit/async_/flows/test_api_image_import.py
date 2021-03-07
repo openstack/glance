@@ -744,6 +744,35 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
             {'key': 'os_glance_foo', 'val': 'baz',
              'image': IMAGE_ID1})
 
+    def test_image_size(self):
+        mock_repo = mock.MagicMock()
+        mock_image = mock_repo.get.return_value
+        mock_image.image_id = IMAGE_ID1
+        mock_image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        mock_image.size = 123
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        with wrapper as action:
+            self.assertEqual(123, action.image_size)
+
+    def test_image_locations(self):
+        mock_repo = mock.MagicMock()
+        mock_image = mock_repo.get.return_value
+        mock_image.image_id = IMAGE_ID1
+        mock_image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        mock_image.locations = {'some': {'complex': ['structure']}}
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        with wrapper as action:
+            self.assertEqual({'some': {'complex': ['structure']}},
+                             action.image_locations)
+            # Mutate our copy
+            action.image_locations['foo'] = 'bar'
+
+        # Make sure we did not mutate the image itself
+        self.assertEqual({'some': {'complex': ['structure']}},
+                         mock_image.locations)
+
     def test_drop_lock_for_task(self):
         mock_repo = mock.MagicMock()
         mock_repo.get.return_value.extra_properties = {
