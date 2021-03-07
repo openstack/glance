@@ -1,0 +1,10 @@
+---
+upgrade:
+  - |
+    The ``inject_image_metadata`` task will no longer allow setting
+    properties in the reserved ``os_glance_*`` namespace, in line with
+    the blanket prohibition on such via the API. It has always been
+    dangerous to do this, so no operator should have any such
+    configuration in production. If any keys in this namespace are
+    set, they will be dropped (and logged) during the injection
+    process.

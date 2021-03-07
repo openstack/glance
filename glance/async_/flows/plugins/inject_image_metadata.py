@@ -54,12 +54,12 @@ CONF.register_opts(inject_metadata_opts, group='inject_metadata_properties')
 
 class _InjectMetadataProperties(task.Task):
 
-    def __init__(self, context, task_id, task_type, image_repo, image_id):
+    def __init__(self, context, task_id, task_type, action_wrapper):
         self.context = context
         self.task_id = task_id
         self.task_type = task_type
-        self.image_repo = image_repo
-        self.image_id = image_id
+        self.action_wrapper = action_wrapper
+        self.image_id = action_wrapper.image_id
         super(_InjectMetadataProperties, self).__init__(
             name='%s-InjectMetadataProperties-%s' % (task_type, task_id))
 
@@ -75,9 +75,8 @@ class _InjectMetadataProperties(task.Task):
             properties = CONF.inject_metadata_properties.inject
 
             if properties:
-                image = self.image_repo.get(self.image_id)
-                image.extra_properties.update(properties)
-                self.image_repo.save(image)
+                with self.action_wrapper as action:
+                    action.set_image_extra_properties(properties)
 
 
 def get_flow(**kwargs):
@@ -91,11 +90,9 @@ def get_flow(**kwargs):
     """
     task_id = kwargs.get('task_id')
     task_type = kwargs.get('task_type')
-    image_repo = kwargs.get('image_repo')
-    image_id = kwargs.get('image_id')
     context = kwargs.get('context')
+    action_wrapper = kwargs.get('action_wrapper')
 
     return lf.Flow(task_type).add(
-        _InjectMetadataProperties(context, task_id, task_type, image_repo,
-                                  image_id),
+        _InjectMetadataProperties(context, task_id, task_type, action_wrapper),
     )

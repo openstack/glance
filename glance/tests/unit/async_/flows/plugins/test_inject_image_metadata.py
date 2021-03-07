@@ -19,6 +19,7 @@ from unittest import mock
 import glance_store
 from oslo_config import cfg
 
+import glance.async_.flows.api_image_import as import_flow
 import glance.async_.flows.plugins.inject_image_metadata as inject_metadata
 from glance.common import utils
 from glance import domain
@@ -78,42 +79,44 @@ class TestInjectImageMetadataTask(test_utils.BaseTestCase):
                                                UUID1, user_id, request_id,
                                                task_time_to_live=task_ttl,
                                                task_input=task_input)
+        self.image.extra_properties = {
+            'os_glance_import_task': self.task.task_id}
+        self.img_repo.get.return_value = self.image
+        self.wrapper = import_flow.ImportActionWrapper(self.img_repo,
+                                                       self.image_id,
+                                                       self.task.task_id)
 
     def test_inject_image_metadata_using_non_admin_user(self):
         context = test_unit_utils.get_fake_context(roles='member')
         inject_image_metadata = inject_metadata._InjectMetadataProperties(
-            context, self.task.task_id, self.task_type, self.img_repo,
-            self.image_id)
+            context, self.task.task_id, self.task_type, self.wrapper)
 
         self.config(inject={"test": "abc"},
                     group='inject_metadata_properties')
 
         inject_image_metadata.execute()
-        self.img_repo.get.assert_called_once_with(self.image_id)
-        self.img_repo.save.assert_called_once_with(self.image)
-        self.assertEqual({"test": "abc"}, self.image.extra_properties)
+        self.img_repo.save.assert_called_once_with(self.image, 'queued')
+        self.assertEqual({"test": "abc",
+                          "os_glance_import_task": self.task.task_id},
+                         self.image.extra_properties)
 
     def test_inject_image_metadata_using_admin_user(self):
         context = test_unit_utils.get_fake_context(roles='admin')
         inject_image_metadata = inject_metadata._InjectMetadataProperties(
-            context, self.task.task_id, self.task_type, self.img_repo,
-            self.image_id)
+            context, self.task.task_id, self.task_type, self.wrapper)
 
         self.config(inject={"test": "abc"},
                     group='inject_metadata_properties')
 
         inject_image_metadata.execute()
-        self.img_repo.get.assert_called_once_with(UUID1)
-        self.img_repo.save.assert_called_once_with(self.image)
+        self.img_repo.save.assert_called_once_with(self.image, 'queued')
 
     def test_inject_image_metadata_empty(self):
         context = test_unit_utils.get_fake_context(roles='member')
         inject_image_metadata = inject_metadata._InjectMetadataProperties(
-            context, self.task.task_id, self.task_type, self.img_repo,
-            self.image_id)
+            context, self.task.task_id, self.task_type, self.wrapper)
 
         self.config(inject={}, group='inject_metadata_properties')
 
         inject_image_metadata.execute()
-        self.img_repo.get.assert_not_called()
         self.img_repo.save.assert_not_called()
