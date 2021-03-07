@@ -62,19 +62,22 @@ class _ConvertImage(task.Task):
 
     default_provides = 'file_path'
 
-    def __init__(self, context, task_id, task_type,
-                 image_repo, image_id):
+    def __init__(self, context, task_id, task_type, action_wrapper):
         self.context = context
         self.task_id = task_id
         self.task_type = task_type
-        self.image_repo = image_repo
-        self.image_id = image_id
+        self.action_wrapper = action_wrapper
+        self.image_id = action_wrapper.image_id
         self.dest_path = ""
         self.python = CONF.wsgi.python_interpreter
         super(_ConvertImage, self).__init__(
             name='%s-Convert_Image-%s' % (task_type, task_id))
 
     def execute(self, file_path, **kwargs):
+        with self.action_wrapper as action:
+            return self._execute(action, file_path, **kwargs)
+
+    def _execute(self, action, file_path, **kwargs):
 
         target_format = CONF.image_conversion.output_format
         # TODO(jokke): Once we support other schemas we need to take them into
@@ -111,13 +114,11 @@ class _ConvertImage(task.Task):
             raise RuntimeError(msg)
 
         virtual_size = metadata.get('virtual-size', 0)
-        image = self.image_repo.get(self.image_id)
-        image.virtual_size = virtual_size
+        action.set_image_attribute(virtual_size=virtual_size)
 
         if source_format == target_format:
             LOG.debug("Source is already in target format, "
                       "not doing conversion for %s", self.image_id)
-            self.image_repo.save(image)
             return file_path
 
         try:
@@ -135,9 +136,8 @@ class _ConvertImage(task.Task):
         if stderr:
             raise RuntimeError(stderr)
 
-        image.disk_format = target_format
-        image.container_format = 'bare'
-        self.image_repo.save(image)
+        action.set_image_attribute(disk_format=target_format,
+                                   container_format='bare')
 
         os.remove(src_path)
 
@@ -161,14 +161,13 @@ def get_flow(**kwargs):
     :param task_type: Type of the task.
     :param image_repo: Image repository used.
     :param image_id: Image ID
+    :param action_wrapper: An api_image_import.ActionWrapper.
     """
     context = kwargs.get('context')
     task_id = kwargs.get('task_id')
     task_type = kwargs.get('task_type')
-    image_repo = kwargs.get('image_repo')
-    image_id = kwargs.get('image_id')
+    action_wrapper = kwargs.get('action_wrapper')
 
     return lf.Flow(task_type).add(
-        _ConvertImage(context, task_id, task_type,
-                      image_repo, image_id),
+        _ConvertImage(context, task_id, task_type, action_wrapper)
     )
