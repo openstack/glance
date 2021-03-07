@@ -29,6 +29,7 @@ from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
 
+from glance.api import common as api_common
 import glance.async_.flows._internal_plugins as internal_plugins
 import glance.async_.flows.plugins as import_plugins
 from glance.common import exception
@@ -300,6 +301,24 @@ class _ImportActions(object):
             if attr not in allowed:
                 raise AttributeError('Setting %s is not allowed' % attr)
             setattr(self._image, attr, value)
+
+    def set_image_extra_properties(self, properties):
+        """Merge values into image extra_properties.
+
+        This allows a plugin to set additional properties on the image,
+        as long as those are outside the reserved namespace. Any keys
+        in the internal namespace will be dropped (and logged).
+
+        :param properties: A dict of properties to be merged in
+        """
+        for key, value in properties.items():
+            if key.startswith(api_common.GLANCE_RESERVED_NS):
+                LOG.warning(('Dropping %(key)s=%(val)s during metadata '
+                             'injection for %(image)s'),
+                            {'key': key, 'val': value,
+                             'image': self.image_id})
+            else:
+                self._image.extra_properties[key] = value
 
     def remove_location_for_store(self, backend):
         """Remove a location from an image given a backend store.
