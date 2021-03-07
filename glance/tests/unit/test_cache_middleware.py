@@ -15,6 +15,7 @@
 from unittest.mock import patch
 
 from oslo_policy import policy
+from oslo_utils.fixture import uuidsentinel as uuids
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import http_client as http
 from six.moves import range
@@ -26,11 +27,13 @@ import glance.api.policy
 from glance.common import exception
 from glance import context
 from glance.tests.unit import base
+from glance.tests.unit import test_policy
 from glance.tests.unit import utils as unit_test_utils
 
 
 class ImageStub(object):
-    def __init__(self, image_id, extra_properties=None, visibility='private'):
+    def __init__(self, image_id, owner, extra_properties=None,
+                 visibility='private'):
         if extra_properties is None:
             extra_properties = {}
         self.image_id = image_id
@@ -40,6 +43,19 @@ class ImageStub(object):
         self.checksum = 'c1234'
         self.size = 123456789
         self.os_hash_algo = None
+        self.container_format = 'bare'
+        self.disk_format = 'raw'
+        self.updated_at = self.created_at = None
+        self.name = 'foo'
+        self.min_disk = self.min_ram = 0
+        self.protected = False
+        self.os_hidden = False
+        self.checksum = 0
+        self.os_hash_algo = 'md5'
+        self.os_hash_value = None
+        self.owner = owner
+        self.virtual_size = 0
+        self.tags = []
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):
@@ -195,7 +211,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         """
         Test verify_metadata updates metadata which is ImageTarget instance
         """
-        image = ImageStub('test1')
+        image = ImageStub('test1', uuids.owner)
         image.size = 0
         image_meta = glance.api.policy.ImageTarget(image)
         self._test_verify_metadata_zero_size(image_meta)
@@ -208,7 +224,6 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         image_id = 'test1'
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext()
-        request.environ['api.cache.image'] = ImageStub(image_id)
 
         image_meta = {
             'id': image_id,
@@ -231,6 +246,11 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             'properties': {},
         }
 
+        image = ImageStub(image_id, request.context.project_id)
+        request.environ['api.cache.image'] = image
+        for k, v in image_meta.items():
+            setattr(image, k, v)
+
         cache_filter = ProcessRequestTestCacheFilter()
         response = cache_filter._process_v2_request(
             request, image_id, dummy_img_iterator, image_meta)
@@ -247,7 +267,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         image_id = 'test1'
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext()
-        image = ImageStub(image_id)
+        image = ImageStub(image_id, request.context.project_id)
         image.checksum = None
         request.environ['api.cache.image'] = image
 
@@ -295,7 +315,8 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         }
 
         def fake_get_v2_image_metadata(*args, **kwargs):
-            image = ImageStub(image_id, extra_properties=extra_properties)
+            image = ImageStub(image_id, request.context.project_id,
+                              extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
             return glance.api.policy.ImageTarget(image)
 
@@ -325,7 +346,8 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         }
 
         def fake_get_v2_image_metadata(*args, **kwargs):
-            image = ImageStub(image_id, extra_properties=extra_properties)
+            image = ImageStub(image_id, request.context.project_id,
+                              extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
             return glance.api.policy.ImageTarget(image)
 
@@ -368,7 +390,8 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
             return ('test1', 'GET', 'v2')
 
         def fake_get_v2_image_metadata(*args, **kwargs):
-            image = ImageStub(image_id, extra_properties=extra_properties)
+            image = test_policy.ImageStub(
+                image_id, extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
             return glance.api.policy.ImageTarget(image)
 
@@ -404,7 +427,8 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
             return ('test1', 'GET', 'v2')
 
         def fake_get_v2_image_metadata(*args, **kwargs):
-            image = ImageStub(image_id, extra_properties=extra_properties)
+            image = ImageStub(image_id, request.context.project_id,
+                              extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
             return glance.api.policy.ImageTarget(image)
 
