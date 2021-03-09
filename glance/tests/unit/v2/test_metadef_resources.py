@@ -19,6 +19,7 @@ from unittest import mock
 from oslo_serialization import jsonutils
 import webob
 
+from glance.api import policy
 from glance.api.v2 import metadef_namespaces as namespaces
 from glance.api.v2 import metadef_objects as objects
 from glance.api.v2 import metadef_properties as properties
@@ -143,7 +144,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def setUp(self):
         super(TestMetadefsControllers, self).setUp()
         self.db = unit_test_utils.FakeDB(initialize=False)
-        self.policy = unit_test_utils.FakePolicyEnforcer()
+        self.policy = policy.Enforcer()
         self.notifier = unit_test_utils.FakeNotifier()
         self._create_namespaces()
         self._create_properties()
@@ -220,7 +221,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
          for namespace, tag in self.tags]
 
     def _create_namespaces_resource_types(self):
-        req = unit_test_utils.get_fake_request(is_admin=True)
+        req = unit_test_utils.get_fake_request(roles=['admin'])
         self.ns_resource_types = [
             (NAMESPACE1, _db_namespace_resource_type_fixture(RESOURCE_TYPE1)),
             (NAMESPACE3, _db_namespace_resource_type_fixture(RESOURCE_TYPE1)),
@@ -263,7 +264,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(expected, actual)
 
     def test_namespace_index_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         output = self.namespace_controller.index(request)
         output = output.to_dict()
         self.assertEqual(5, len(output['namespaces']))
@@ -329,7 +330,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(expected, actual)
 
     def test_namespace_show_with_property_prefix(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE2
         rt.prefix = 'pref'
@@ -402,7 +403,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         fake_gateway = glance.gateway.Gateway(db_api=self.db,
                                               notifier=self.notifier,
                                               policy_enforcer=self.policy)
-        req = unit_test_utils.get_fake_request()
+        req = unit_test_utils.get_fake_request(roles=['admin'])
         ns_factory = fake_gateway.get_metadef_namespace_factory(
             req.context)
         ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
@@ -425,7 +426,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         fake_gateway = glance.gateway.Gateway(db_api=self.db,
                                               notifier=self.notifier,
                                               policy_enforcer=self.policy)
-        req = unit_test_utils.get_fake_request()
+        req = unit_test_utils.get_fake_request(roles=['admin'])
         ns_factory = fake_gateway.get_metadef_namespace_factory(
             req.context)
         ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
@@ -454,7 +455,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           self.namespace_controller.show, request, NAMESPACE2)
 
     def test_namespace_delete(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        request = unit_test_utils.get_fake_request(tenant=TENANT2,
+                                                   roles=['admin'])
         self.namespace_controller.delete(request, NAMESPACE2)
         self.assertNotificationLog("metadef_namespace.delete",
                                    [{'namespace': NAMESPACE2}])
@@ -463,7 +465,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_delete_notification_disabled(self):
         self.config(disabled_notifications=["metadef_namespace.delete"])
-        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        request = unit_test_utils.get_fake_request(tenant=TENANT2,
+                                                   roles=['admin'])
         self.namespace_controller.delete(request, NAMESPACE2)
         self.assertNotificationsLog([])
         self.assertRaises(webob.exc.HTTPNotFound,
@@ -471,7 +474,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_delete_notification_group_disabled(self):
         self.config(disabled_notifications=["metadef_namespace"])
-        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        request = unit_test_utils.get_fake_request(tenant=TENANT2,
+                                                   roles=['admin'])
         self.namespace_controller.delete(request, NAMESPACE2)
         self.assertNotificationsLog([])
         self.assertRaises(webob.exc.HTTPNotFound,
@@ -479,7 +483,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_delete_notification_create_disabled(self):
         self.config(disabled_notifications=["metadef_namespace.create"])
-        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        request = unit_test_utils.get_fake_request(tenant=TENANT2,
+                                                   roles=['admin'])
         self.namespace_controller.delete(request, NAMESPACE2)
         self.assertNotificationLog("metadef_namespace.delete",
                                    [{'namespace': NAMESPACE2}])
@@ -501,7 +506,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_delete_non_visible_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.namespace_controller.delete(request, NAMESPACE2)
         self.assertNotificationLog("metadef_namespace.delete",
                                    [{'namespace': NAMESPACE2}])
@@ -516,14 +521,15 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_delete_protected_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.namespace_controller.delete, request,
                           NAMESPACE1)
         self.assertNotificationsLog([])
 
     def test_namespace_delete_with_contents(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.namespace_controller.delete(request, NAMESPACE3)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.show, request, NAMESPACE3)
@@ -534,7 +540,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           OBJECT1)
 
     def test_namespace_delete_properties(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.namespace_controller.delete_properties(request, NAMESPACE3)
 
         output = self.property_controller.index(request, NAMESPACE3)
@@ -553,7 +560,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_delete_properties_other_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.namespace_controller.delete_properties(request, NAMESPACE3)
 
         output = self.property_controller.index(request, NAMESPACE3)
@@ -571,7 +578,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_delete_objects(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.namespace_controller.delete_objects(request, NAMESPACE3)
 
         output = self.object_controller.index(request, NAMESPACE3)
@@ -589,7 +597,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_delete_objects_other_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.namespace_controller.delete_objects(request, NAMESPACE3)
 
         output = self.object_controller.index(request, NAMESPACE3)
@@ -608,7 +616,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_delete_tags(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.namespace_controller.delete_tags(request, NAMESPACE3)
 
         output = self.tag_controller.index(request, NAMESPACE3)
@@ -626,7 +635,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_delete_tags_other_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.namespace_controller.delete_tags(request, NAMESPACE3)
 
         output = self.tag_controller.index(request, NAMESPACE3)
@@ -644,7 +653,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_create(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
@@ -657,7 +666,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(NAMESPACE4, namespace.namespace)
 
     def test_namespace_create_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = namespaces.Namespace()
         namespace.namespace = u'\U0001f693'
@@ -667,7 +676,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           namespace)
 
     def test_namespace_create_duplicate(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = namespaces.Namespace()
         namespace.namespace = 'new-namespace'
@@ -688,7 +697,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_create_different_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
@@ -702,7 +711,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(NAMESPACE4, namespace.namespace)
 
     def test_namespace_create_with_related_resources(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE4
@@ -796,7 +805,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         ])
 
     def test_namespace_create_conflict(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE1
@@ -806,7 +815,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_update(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         namespace = self.namespace_controller.show(request, NAMESPACE1)
 
         namespace.protected = False
@@ -840,7 +849,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_namespace_update_non_visible_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         namespace = self.namespace_controller.show(request, NAMESPACE2)
 
         namespace.protected = False
@@ -854,7 +863,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertFalse(namespace.protected)
 
     def test_namespace_update_name(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         namespace = self.namespace_controller.show(request, NAMESPACE1)
 
         namespace.namespace = NAMESPACE4
@@ -871,7 +880,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           self.namespace_controller.show, request, NAMESPACE1)
 
     def test_namespace_update_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         namespace = self.namespace_controller.show(request, NAMESPACE1)
         namespace.namespace = u'\U0001f693'
@@ -881,7 +890,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           namespace, NAMESPACE1)
 
     def test_namespace_update_name_conflict(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         namespace = self.namespace_controller.show(request, NAMESPACE1)
         namespace.namespace = NAMESPACE2
         self.assertRaises(webob.exc.HTTPConflict,
@@ -945,12 +954,13 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_property_show_non_visible_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
         output = self.property_controller.show(request, NAMESPACE1, PROPERTY1)
         self.assertEqual(PROPERTY1, output.name)
 
     def test_property_delete(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.property_controller.delete(request, NAMESPACE3, PROPERTY1)
         self.assertNotificationLog("metadef_property.delete",
                                    [{'name': PROPERTY1,
@@ -961,7 +971,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_property_delete_disabled_notification(self):
         self.config(disabled_notifications=["metadef_property.delete"])
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.property_controller.delete(request, NAMESPACE3, PROPERTY1)
         self.assertNotificationsLog([])
         self.assertRaises(webob.exc.HTTPNotFound,
@@ -976,7 +987,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_property_delete_other_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.property_controller.delete(request, NAMESPACE3, PROPERTY1)
         self.assertNotificationLog("metadef_property.delete",
                                    [{'name': PROPERTY1,
@@ -1007,14 +1018,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_property_delete_admin_protected(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.property_controller.delete, request, NAMESPACE1,
                           PROPERTY1)
         self.assertNotificationsLog([])
 
     def test_property_create(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         property = properties.PropertyType()
         property.name = PROPERTY2
@@ -1037,7 +1048,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_property_create_overlimit_name(self):
         request = unit_test_utils.get_fake_request('/metadefs/namespaces/'
                                                    'Namespace3/'
-                                                   'properties')
+                                                   'properties',
+                                                   roles=['admin'])
         request.body = jsonutils.dump_as_bytes({
             'name': 'a' * 81, 'type': 'string', 'title': 'fake'})
 
@@ -1048,7 +1060,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                       "schema['properties']['name']", exc.explanation)
 
     def test_property_create_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         property = properties.PropertyType()
         property.name = u'\U0001f693'
@@ -1060,7 +1072,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           request, NAMESPACE1, property)
 
     def test_property_create_with_operators(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         property = properties.PropertyType()
         property.name = PROPERTY2
@@ -1082,7 +1094,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(['<or>'], property.operators)
 
     def test_property_create_conflict(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         property = properties.PropertyType()
         property.name = PROPERTY1
@@ -1109,7 +1121,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_property_create_non_visible_namespace_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
 
         property = properties.PropertyType()
         property.name = PROPERTY2
@@ -1131,7 +1143,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual('title', property.title)
 
     def test_property_create_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         property = properties.PropertyType()
         property.name = PROPERTY1
@@ -1144,7 +1156,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_property_create_duplicate(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         property = properties.PropertyType()
         property.name = 'new-property'
@@ -1158,7 +1170,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           NAMESPACE1, property)
 
     def test_property_update(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         property = self.property_controller.show(request, NAMESPACE3,
                                                  PROPERTY1)
@@ -1185,7 +1198,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual('title123', property.title)
 
     def test_property_update_name(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         property = self.property_controller.show(request, NAMESPACE3,
                                                  PROPERTY1)
@@ -1214,7 +1228,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual('title', property.title)
 
     def test_property_update_conflict(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         property = self.property_controller.show(request, NAMESPACE3,
                                                  PROPERTY1)
@@ -1227,7 +1242,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_property_update_with_overlimit_name(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         request.body = jsonutils.dump_as_bytes({
             'name': 'a' * 81, 'type': 'string', 'title': 'fake'})
         exc = self.assertRaises(webob.exc.HTTPBadRequest,
@@ -1237,7 +1252,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                       "schema['properties']['name']", exc.explanation)
 
     def test_property_update_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         property = self.property_controller.show(request, NAMESPACE3,
                                                  PROPERTY1)
@@ -1250,7 +1266,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           NAMESPACE3, PROPERTY1, property)
 
     def test_property_update_non_existing(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         property = properties.PropertyType()
         property.name = PROPERTY1
@@ -1263,7 +1280,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_property_update_namespace_non_existing(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         property = properties.PropertyType()
         property.name = PROPERTY1
@@ -1319,13 +1337,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_object_show_non_visible_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
 
         output = self.object_controller.show(request, NAMESPACE1, OBJECT1)
         self.assertEqual(OBJECT1, output.name)
 
     def test_object_delete(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.object_controller.delete(request, NAMESPACE3, OBJECT1)
         self.assertNotificationLog("metadef_object.delete",
                                    [{'name': OBJECT1,
@@ -1335,7 +1354,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_object_delete_disabled_notification(self):
         self.config(disabled_notifications=["metadef_object.delete"])
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.object_controller.delete(request, NAMESPACE3, OBJECT1)
         self.assertNotificationsLog([])
         self.assertRaises(webob.exc.HTTPNotFound, self.object_controller.show,
@@ -1349,7 +1369,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_object_delete_other_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.object_controller.delete(request, NAMESPACE3, OBJECT1)
         self.assertNotificationLog("metadef_object.delete",
                                    [{'name': OBJECT1,
@@ -1379,14 +1399,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_object_delete_admin_protected(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.object_controller.delete, request, NAMESPACE1,
                           OBJECT1)
         self.assertNotificationsLog([])
 
     def test_object_create(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = OBJECT2
@@ -1408,7 +1428,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_create_invalid_properties(self):
         request = unit_test_utils.get_fake_request('/metadefs/namespaces/'
                                                    'Namespace3/'
-                                                   'objects')
+                                                   'objects',
+                                                   roles=['admin'])
         body = {
             "name": "My Object",
             "description": "object1 description.",
@@ -1429,7 +1450,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_object_create_overlimit_name(self):
         request = unit_test_utils.get_fake_request('/metadefs/namespaces/'
                                                    'Namespace3/'
-                                                   'objects')
+                                                   'objects',
+                                                   roles=['admin'])
         request.body = jsonutils.dump_as_bytes({'name': 'a' * 81})
 
         exc = self.assertRaises(webob.exc.HTTPBadRequest,
@@ -1439,7 +1461,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                       "schema['properties']['name']", exc.explanation)
 
     def test_object_create_duplicate(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = 'New-Object'
@@ -1452,7 +1474,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           NAMESPACE3)
 
     def test_object_create_conflict(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = OBJECT1
@@ -1465,7 +1487,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_object_create_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = u'\U0001f693'
@@ -1477,7 +1499,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           object, NAMESPACE1)
 
     def test_object_create_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = PROPERTY1
@@ -1504,7 +1526,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_object_create_non_visible_namespace_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = OBJECT2
@@ -1523,7 +1545,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual({}, object.properties)
 
     def test_object_create_missing_properties(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = OBJECT2
@@ -1541,7 +1563,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual({}, object.properties)
 
     def test_object_update(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         object = self.object_controller.show(request, NAMESPACE3, OBJECT1)
         object.name = OBJECT1
@@ -1562,7 +1585,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual('description', object.description)
 
     def test_object_update_name(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = self.object_controller.show(request, NAMESPACE1, OBJECT1)
         object.name = OBJECT2
@@ -1580,7 +1603,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(OBJECT2, object.name)
 
     def test_object_update_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         object = self.object_controller.show(request, NAMESPACE1, OBJECT1)
         object.name = u'\U0001f693'
@@ -1590,7 +1613,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           object, NAMESPACE1, OBJECT1)
 
     def test_object_update_with_overlimit_name(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         request.body = jsonutils.dump_as_bytes(
             {"properties": {}, "name": "a" * 81, "required": []})
         exc = self.assertRaises(webob.exc.HTTPBadRequest,
@@ -1599,7 +1622,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                       "schema['properties']['name']", exc.explanation)
 
     def test_object_update_conflict(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         object = self.object_controller.show(request, NAMESPACE3, OBJECT1)
         object.name = OBJECT2
@@ -1609,7 +1633,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_object_update_non_existing(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = OBJECT1
@@ -1622,7 +1647,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_object_update_namespace_non_existing(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         object = objects.MetadefObject()
         object.name = OBJECT1
@@ -1666,7 +1692,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_resource_type_show_non_visible_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
 
         output = self.rt_controller.show(request, NAMESPACE2)
         self.assertEqual(2, len(output.resource_type_associations))
@@ -1681,7 +1707,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           request, NAMESPACE4)
 
     def test_resource_type_association_delete(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.rt_controller.delete(request, NAMESPACE3, RESOURCE_TYPE1)
         self.assertNotificationLog("metadef_resource_type.delete",
                                    [{'name': RESOURCE_TYPE1,
@@ -1691,7 +1718,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_resource_type_association_delete_disabled_notification(self):
         self.config(disabled_notifications=["metadef_resource_type.delete"])
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.rt_controller.delete(request, NAMESPACE3, RESOURCE_TYPE1)
         self.assertNotificationsLog([])
         output = self.rt_controller.show(request, NAMESPACE3)
@@ -1704,7 +1732,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_resource_type_association_delete_other_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.rt_controller.delete(request, NAMESPACE3, RESOURCE_TYPE1)
         self.assertNotificationLog("metadef_resource_type.delete",
                                    [{'name': RESOURCE_TYPE1,
@@ -1713,13 +1741,13 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(0, len(output.resource_type_associations))
 
     def test_resource_type_association_delete_non_existing(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound, self.rt_controller.delete,
                           request, NAMESPACE1, RESOURCE_TYPE2)
         self.assertNotificationsLog([])
 
     def test_resource_type_association_delete_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound, self.rt_controller.delete,
                           request, NAMESPACE4, RESOURCE_TYPE1)
         self.assertNotificationsLog([])
@@ -1731,13 +1759,22 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_resource_type_association_delete_protected_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPForbidden, self.rt_controller.delete,
                           request, NAMESPACE1, RESOURCE_TYPE1)
         self.assertNotificationsLog([])
 
     def test_resource_type_association_create(self):
         request = unit_test_utils.get_fake_request()
+
+        rt = resource_types.ResourceTypeAssociation()
+        rt.name = RESOURCE_TYPE2
+        rt.prefix = 'pref'
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.rt_controller.create, request, rt, NAMESPACE1)
+
+    def test_resource_type_association_create_admin(self):
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE2
@@ -1755,7 +1792,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(expected, actual)
 
     def test_resource_type_association_create_conflict(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE1
@@ -1765,7 +1802,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_resource_type_association_create_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE1
@@ -1775,7 +1812,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_resource_type_association_create_non_existing_resource_type(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE3
@@ -1796,7 +1833,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_resource_type_association_create_non_visible_namesp_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
 
         rt = resource_types.ResourceTypeAssociation()
         rt.name = RESOURCE_TYPE2
@@ -1850,13 +1887,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_tag_show_non_visible_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
 
         output = self.tag_controller.show(request, NAMESPACE1, TAG1)
         self.assertEqual(TAG1, output.name)
 
     def test_tag_delete(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.tag_controller.delete(request, NAMESPACE3, TAG1)
         self.assertNotificationLog("metadef_tag.delete",
                                    [{'name': TAG1,
@@ -1866,7 +1904,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_tag_delete_disabled_notification(self):
         self.config(disabled_notifications=["metadef_tag.delete"])
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
         self.tag_controller.delete(request, NAMESPACE3, TAG1)
         self.assertNotificationsLog([])
         self.assertRaises(webob.exc.HTTPNotFound, self.tag_controller.show,
@@ -1880,7 +1919,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_tag_delete_other_owner_admin(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.tag_controller.delete(request, NAMESPACE3, TAG1)
         self.assertNotificationLog("metadef_tag.delete",
                                    [{'name': TAG1,
@@ -1889,14 +1928,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           request, NAMESPACE3, TAG1)
 
     def test_tag_delete_non_existing(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.tag_controller.delete, request, NAMESPACE5,
                           TAG1)
         self.assertNotificationsLog([])
 
     def test_tag_delete_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.tag_controller.delete, request, NAMESPACE4,
                           TAG1)
@@ -1910,14 +1949,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_tag_delete_admin_protected(self):
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.tag_controller.delete, request, NAMESPACE1,
                           TAG1)
         self.assertNotificationsLog([])
 
     def test_tag_create(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         tag = self.tag_controller.create(request, NAMESPACE1, TAG2)
         self.assertEqual(TAG2, tag.name)
         self.assertNotificationLog("metadef_tag.create",
@@ -1928,7 +1967,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(TAG2, tag.name)
 
     def test_tag_create_overlimit_name(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         exc = self.assertRaises(webob.exc.HTTPBadRequest,
                                 self.tag_controller.create,
@@ -1937,14 +1976,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                       "schema['properties']['name']", exc.explanation)
 
     def test_tag_create_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         self.assertRaises(webob.exc.HTTPBadRequest,
                           self.tag_controller.create,
                           request, NAMESPACE1, u'\U0001f693')
 
     def test_tag_create_tags(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         metadef_tags = tags.MetadefTags()
         metadef_tags.tags = _db_tags_fixture()
@@ -1964,7 +2003,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         )
 
     def test_tag_create_duplicate_tags(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         metadef_tags = tags.MetadefTags()
         metadef_tags.tags = _db_tags_fixture([TAG4, TAG5, TAG4])
@@ -1975,7 +2014,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_tag_create_duplicate_with_pre_existing_tags(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         metadef_tags = tags.MetadefTags()
         metadef_tags.tags = _db_tags_fixture([TAG1, TAG2, TAG3])
@@ -2010,14 +2049,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(expected, actual)
 
     def test_tag_create_conflict(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPConflict,
                           self.tag_controller.create, request,
                           NAMESPACE1, TAG1)
         self.assertNotificationsLog([])
 
     def test_tag_create_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.tag_controller.create, request,
                           NAMESPACE4, TAG1)
@@ -2032,7 +2071,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_tag_create_non_visible_namespace_admin(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2,
-                                                   is_admin=True)
+                                                   roles=['admin'])
         tag = self.tag_controller.create(request, NAMESPACE1, TAG2)
         self.assertEqual(TAG2, tag.name)
         self.assertNotificationLog("metadef_tag.create",
@@ -2043,7 +2082,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(TAG2, tag.name)
 
     def test_tag_update(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         tag = self.tag_controller.show(request, NAMESPACE3, TAG1)
         tag.name = TAG3
@@ -2057,7 +2097,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(TAG3, property.name)
 
     def test_tag_update_name(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         tag = self.tag_controller.show(request, NAMESPACE1, TAG1)
         tag.name = TAG2
@@ -2071,7 +2111,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertEqual(TAG2, tag.name)
 
     def test_tag_update_with_4byte_character(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
 
         tag = self.tag_controller.show(request, NAMESPACE1, TAG1)
         tag.name = u'\U0001f693'
@@ -2090,7 +2130,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                       "schema['properties']['name']", exc.explanation)
 
     def test_tag_update_conflict(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(tenant=TENANT3,
+                                                   roles=['admin'])
 
         tag = self.tag_controller.show(request, NAMESPACE3, TAG1)
         tag.name = TAG2

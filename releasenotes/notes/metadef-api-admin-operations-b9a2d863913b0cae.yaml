@@ -1,0 +1,9 @@
+---
+security:
+  - |
+    The default policy for the `metadef` API has changed from "open to
+    everyone" to "only admins can create and modify resources". We
+    believe that this is by far the most common use-case and the only
+    sane default. See Bug 1916926_ for more details.
+
+    .. _1916926: https://bugs.launchpad.net/glance/+bug/1916926/

@@ -5,6 +5,9 @@
 # Defines the rule for the is_admin:True check.
 #"context_is_admin": "role:admin"
 
+# Default for admin-only metadef rules
+"metadef_admin": "role:admin"
+
 # add_image
 "add_image": ""
 
@@ -84,13 +87,13 @@
 "get_metadef_namespaces": ""
 
 # modify_metadef_namespace
-"modify_metadef_namespace": ""
+"modify_metadef_namespace": "rule:metadef_admin"
 
 # add_metadef_namespace
-"add_metadef_namespace": ""
+"add_metadef_namespace": "rule:metadef_admin"
 
 # delete_metadef_namespace
-"delete_metadef_namespace": ""
+"delete_metadef_namespace": "rule:metadef_admin"
 
 # get_metadef_object
 "get_metadef_object": ""
@@ -99,13 +102,13 @@
 "get_metadef_objects": ""
 
 # modify_metadef_object
-"modify_metadef_object": ""
+"modify_metadef_object": "rule:metadef_admin"
 
 # add_metadef_object
-"add_metadef_object": ""
+"add_metadef_object": "rule:metadef_admin"
 
 # delete_metadef_object
-"delete_metadef_object": ""
+"delete_metadef_object": "rule:metadef_admin"
 
 # list_metadef_resource_types
 "list_metadef_resource_types": ""
@@ -114,10 +117,10 @@
 "get_metadef_resource_type": ""
 
 # add_metadef_resource_type_association
-"add_metadef_resource_type_association": ""
+"add_metadef_resource_type_association": "rule:metadef_admin"
 
 # remove_metadef_resource_type_association
-"remove_metadef_resource_type_association": ""
+"remove_metadef_resource_type_association": "rule:metadef_admin"
 
 # get_metadef_property
 "get_metadef_property": ""
@@ -126,13 +129,13 @@
 "get_metadef_properties": ""
 
 # modify_metadef_property
-"modify_metadef_property": ""
+"modify_metadef_property": "rule:metadef_admin"
 
 # add_metadef_property
-"add_metadef_property": ""
+"add_metadef_property": "rule:metadef_admin"
 
 # remove_metadef_property
-"remove_metadef_property": ""
+"remove_metadef_property": "rule:metadef_admin"
 
 # get_metadef_tag
 "get_metadef_tag": ""
@@ -141,19 +144,19 @@
 "get_metadef_tags": ""
 
 # modify_metadef_tag
-"modify_metadef_tag": ""
+"modify_metadef_tag": "rule:metadef_admin"
 
 # add_metadef_tag
-"add_metadef_tag": ""
+"add_metadef_tag": "rule:metadef_admin"
 
 # add_metadef_tags
-"add_metadef_tags": ""
+"add_metadef_tags": "rule:metadef_admin"
 
 # delete_metadef_tag
-"delete_metadef_tag": ""
+"delete_metadef_tag": "rule:metadef_admin"
 
 # delete_metadef_tags
-"delete_metadef_tags": ""
+"delete_metadef_tags": "rule:metadef_admin"
 
 # WARNING: Below rules are either deprecated rules
 # or extra rules in policy file, it is strongly
