@@ -114,13 +114,7 @@ def wait_for_copying(request_path, request_headers, stores=[],
             raise Exception("Received {} response from server".format(
                 resp.status_code))
         entity = jsonutils.loads(resp.text)
-        all_copied = False
-        for store in stores:
-            if store in entity['stores']:
-                all_copied = True
-            else:
-                all_copied = False
-
+        all_copied = all([store in entity['stores'] for store in stores])
         if all_copied:
             return
 
