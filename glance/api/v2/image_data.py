@@ -138,8 +138,9 @@ class ImageDataController(object):
         refresher = None
         cxt = req.context
         try:
-            self.policy.enforce(cxt, 'upload_image', {})
             image = image_repo.get(image_id)
+            target = {'project_id': image.owner}
+            self.policy.enforce(cxt, 'upload_image', target)
             image.status = 'saving'
             try:
                 # create a trust if backend is registry

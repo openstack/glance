@@ -14,13 +14,55 @@ from oslo_policy import policy
 
 # Generic check string for checking if a user is authorized on a particular
 # project, specifically with the member role.
-PROJECT_MEMBER = 'role:member and project_id:%(project_id)s'
-
+PROJECT_MEMBER = 'role:member and (project_id:%(project_id)s)'
 # Generic check string for checking if a user is authorized on a particular
 # project but with read-only access. For example, this persona would be able to
 # list private images owned by a project but cannot make any writeable changes
 # to those images.
-PROJECT_READER = 'role:reader and project_id:%(project_id)s'
+PROJECT_READER = 'role:reader and (project_id:%(project_id)s)'
+
+# Make sure the member_id of the supplied target matches the project_id from
+# the context object, which is derived from keystone tokens.
+IMAGE_MEMBER_CHECK = 'project_id:%(member_id)s'
+# Check if the visibility of the image supplied in the target matches
+# "community"
+COMMUNITY_VISIBILITY_CHECK = '"community":%(visibility)s'
+# Check if the visibility of the image supplied in the target matches "public"
+PUBLIC_VISIBILITY_CHECK = '"public":%(visibility)s'
+
+PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC = (
+    f'role:member and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK} '
+    f'or {COMMUNITY_VISIBILITY_CHECK} or {PUBLIC_VISIBILITY_CHECK})'
+)
+PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC = (
+    f'role:reader and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK} '
+    f'or {COMMUNITY_VISIBILITY_CHECK} or {PUBLIC_VISIBILITY_CHECK})'
+)
+
+# FIXME(lbragstad): These are composite check strings that represents glance's
+# authorization code, some of which is implemented in the authorization wrapper
+# and some is in the database driver.
+#
+# These check strings do not support tenancy with the `admin` role. This means
+# anyone with the `admin` role on any project can execute a policy, which is
+# typical in OpenStack services. Eventually, these check strings will be
+# superceded by check strings that implement scope checking and system-scope
+# for applicable APIs (e.g., making an image public). But, we have a lot of
+# cleanup to do in different parts of glance to sweep all the authorization
+# code into a single layer before we can safely consume system-scope and
+# implement scope checking. This refactoring also needs significant API testing
+# to ensure we don't leave doors open to unintended users, or expose
+# authoritative regressions. In the mean time, we can use the following check
+# strings to offer formal support for project membership and a read-only
+# variant consistent with other OpenStack services.
+ADMIN_OR_PROJECT_MEMBER = f'role:admin or ({PROJECT_MEMBER})'
+ADMIN_OR_PROJECT_READER = f'role:admin or ({PROJECT_READER})'
+ADMIN_OR_PROJECT_READER_GET_IMAGE = (
+    f'role:admin or ({PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC})'
+)
+ADMIN_OR_PROJECT_MEMBER_DOWNLOAD_IMAGE = (
+    f'role:admin or ({PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC})'
+)
 
 
 rules = [
