@@ -12,6 +12,7 @@
 
 import atexit
 import os
+import threading
 
 import glance_store
 from oslo_config import cfg
@@ -23,6 +24,7 @@ import glance.async_
 from glance.common import config
 from glance.common import exception
 from glance.common import store_utils
+from glance import housekeeping
 from glance.i18n import _
 from glance import notifier
 
@@ -90,6 +92,17 @@ def drain_threadpools():
         pool_model.pool.shutdown()
 
 
+def run_staging_cleanup():
+    cleaner = housekeeping.StagingStoreCleaner(glance.db.get_api())
+    # NOTE(danms): Start thread as a daemon. It is still a
+    # single-shot, but this will not block our shutdown if it is
+    # running.
+    cleanup_thread = threading.Thread(
+        target=cleaner.clean_orphaned_staging_residue,
+        daemon=True)
+    cleanup_thread.start()
+
+
 def init_app():
     config.set_config_defaults()
     config_files = _get_config_files()
@@ -121,6 +134,8 @@ def init_app():
         glance_store.register_opts(CONF)
         glance_store.create_stores(CONF)
         glance_store.verify_default_store()
+
+    run_staging_cleanup()
 
     _setup_os_profiler()
     _validate_policy_enforcement_configuration()
