@@ -1,0 +1,51 @@
+---
+features:
+  - |
+    Glance's default policies now use the `member` role on projects to protect
+    writeable and readable image actions. Support was also added for read-only
+    access to image resources when the `reader` role is granted to users on a
+    project. Administrative operations, like creating public images, is still
+    protected using the `admin` role on a project. Administrative actions will
+    be updated in the future to consume system-scope.
+
+    We encourage you to compare any existing overrides in your deployment with
+    the new defaults. You can use `oslopolicy-sample-generator --namespace
+    glance` to generate the default policies and use them for comparison.
+
+    The secure RBAC personas implemented in Wallaby are marked as experimental.
+    They will become stable in a future release. You can read more about the
+    various personas in keystone's `Administrator Guide
+    <https://docs.openstack.org/keystone/latest/admin/service-api-protection.html>`_.
+
+    To enable this functionality, you must specify `glance-api.conf
+    [DEFAULT] enable_secure_rbac=True` and `glance-api.conf [oslo_policy]
+    enforce_new_defaults=True`. Glance will refuse to start if misconfigured.
+upgrade:
+  - |
+    Glance now provides more granular RBAC access to the images API via default
+    personas. This work is marked as experimental in Wallaby, and will be
+    supported in a future release.
+
+    Existing authorization and policies will continue to work, but we encourage
+    operators to review the new policies and consolidate any redundant
+    overrides with the new defaults if possible. Please review the feature
+    section above for more details.
+deprecations:
+  - |
+    The policies protecting the image API have been deprecated in favor of more
+    consistent defaults that use the `member` and `reader` default roles from
+    keystone. If your deployment relies on overriding the default policies,
+    please review the new defaults and how they may impact your deployment.
+
+    The unused `modify_task` policy has been deprecated for
+    removal. It was never honored or checked as part of an API
+    operation. As a result, it has been deprecated for removal since
+    overriding it has no direct impact on the tasks API, which remains
+    a deprecated, admin-only API.
+security:
+  - |
+    Glance now ships experimental policies that support read-only image
+    permissions. Users with the `reader` role on a project will be able to view
+    generic image data, without the ability to make writeable changes using the
+    images API. Please review the features section above for more information
+    on enabling this functionality.
