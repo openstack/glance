@@ -105,8 +105,8 @@ class CacheFilter(wsgi.Middleware):
             # update the project_id attribute of the target to match the owner.
             # If the target isn't of dict() type already, we should explicitly
             # handle that here. We take a similar approach in the policy layer
-            # (glance.api.policy) to make sure we're build accurate image
-            # targets.
+            # (glance.api.policy) to make sure we build an accurate image
+            # target.
             target = dict(target)
         target['project_id'] = target.get('owner', None)
         try:
