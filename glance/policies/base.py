@@ -14,12 +14,12 @@ from oslo_policy import policy
 
 # Generic check string for checking if a user is authorized on a particular
 # project, specifically with the member role.
-PROJECT_MEMBER = 'role:member and (project_id:%(project_id)s)'
+PROJECT_MEMBER = 'role:member and project_id:%(project_id)s'
 # Generic check string for checking if a user is authorized on a particular
 # project but with read-only access. For example, this persona would be able to
 # list private images owned by a project but cannot make any writeable changes
 # to those images.
-PROJECT_READER = 'role:reader and (project_id:%(project_id)s)'
+PROJECT_READER = 'role:reader and project_id:%(project_id)s'
 
 # Make sure the member_id of the supplied target matches the project_id from
 # the context object, which is derived from keystone tokens.
