@@ -1,0 +1,12 @@
+---
+fixes:
+  - |
+    Bug 1913625_: Glance will leak staging data
+  - |
+    Bug 1914826_: web-download with invalid url does not report error
+  - |
+    Bug 1916011_: test_migrate_image_after_upgrade failing because of glance cinder store change
+
+    .. _1913625: https://code.launchpad.net/bugs/1913625
+    .. _1914826: https://code.launchpad.net/bugs/1914826
+    .. _1916011: https://code.launchpad.net/bugs/1916011
