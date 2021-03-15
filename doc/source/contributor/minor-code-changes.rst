@@ -95,8 +95,8 @@ alias warn and solves the issue in single place for all projects using it.
 These changes are not accepted due to the huge amount of refactoring they
 cause for no reason.
 
-Gratuitious use of oslo libraries
----------------------------------
+Gratuitous use of oslo libraries
+--------------------------------
 
 We are big fans of the oslo libraries and all the hard work the Oslo team does
 to keep common code reusable and easily consumable.  But that doesn't mean that
