@@ -55,6 +55,10 @@ constraints, and the resource types to which it can be associated.  See
 <http://docs.openstack.org/developer/glance/metadefs-concepts.html>`_ in the
 Glance Developer documentation for more information.
 
+.. note:: By default, only admins can manipulate the data exposed by
+          this API, but all users may list and show public
+          resources. This changed from a default of "open to all" in
+          the Wallaby release.
 
 .. include:: metadefs-namespaces.inc
 .. include:: metadefs-resourcetypes.inc

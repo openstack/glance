@@ -43,6 +43,17 @@ the property is applied to different types of resources, such as "hw\_" for
 images and "hw:" for flavors.  So, on an image, the user would know to set the
 property as "hw_cpu_cores=1".
 
+.. note:: Resource manipulation via this API is restricted to admins
+          by default since the Wallaby release. This API does not
+          provide limits suitable for exposure to all users, and can
+          also leak information between users unintentionally. Even as
+          an admin, be careful with the names you use for resources
+          you create that are intended to be private, in order to
+          avoid unintentional exposure. See Bug 1916926_ for more
+          information.
+
+.. _1916926: https://bugs.launchpad.net/glance/+bug/1916926/
+
 Terminology
 -----------
 
