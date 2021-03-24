@@ -7,7 +7,6 @@
       tox_envlist: gateonly
     irrelevant-files:
       - ^(test-|)requirements.txt$
-      - ^lower-constraints.txt$
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
@@ -277,7 +276,6 @@
     templates:
       - check-requirements
       - integrated-gate-storage
-      - openstack-lower-constraints-jobs
       - openstack-python3-victoria-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
@@ -291,7 +289,6 @@
             voting: false
             irrelevant-files: &tempest-irrelevant-files
               - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^glance/hacking/.*$
