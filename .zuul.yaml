@@ -26,7 +26,6 @@
       tox_envlist: gateonly
     irrelevant-files:
       - ^(test-|)requirements.txt$
-      - ^lower-constraints.txt$
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
@@ -210,7 +209,6 @@
       - check-requirements
       - integrated-gate
       - integrated-gate-py3
-      - openstack-lower-constraints-jobs
       - openstack-python-jobs
       - openstack-python3-train-jobs
       - periodic-stable-jobs
@@ -227,7 +225,6 @@
             voting: false
             irrelevant-files: &tempest-irrelevant-files
               - ^(test-|)requirements.txt$
-              - ^lower-constraints.txt$
               - ^.*\.rst$
               - ^api-ref/.*$
               - ^glance/hacking/.*$
