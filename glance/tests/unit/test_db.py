@@ -22,6 +22,7 @@ from oslo_config import cfg
 from oslo_db import exception as db_exc
 from oslo_utils import encodeutils
 from oslo_utils import timeutils
+from sqlalchemy import orm as sa_orm
 
 from glance.common import crypt
 from glance.common import exception
@@ -938,3 +939,39 @@ class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
                 api.image_destroy(None, 'fake-id')
             except TestException:
                 self.assertEqual(3, sess.call_count)
+
+
+class TestImageDeleteRace(test_utils.BaseTestCase):
+
+    @mock.patch.object(api, 'LOG')
+    def test_image_property_delete_stale_data(self, mock_LOG):
+        mock_context = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_result = (mock_session.query.return_value.
+                       filter_by.return_value.
+                       one.return_value)
+        mock_result.delete.side_effect = sa_orm.exc.StaleDataError('myerror')
+        # StaleDataError should not be raised
+        r = api.image_property_delete(mock_context, 'myprop', 'myimage',
+                                      session=mock_session)
+        # We should not get the property back
+        self.assertIsNone(r)
+        # Make sure we logged it
+        mock_LOG.debug.assert_called_once_with(
+            'StaleDataError while deleting property %(prop)r '
+            'from image %(image)r likely means we raced during delete: '
+            '%(err)s', {'prop': 'myprop', 'image': 'myimage',
+                        'err': 'myerror'})
+
+    def test_image_property_delete_exception(self):
+        mock_context = mock.MagicMock()
+        mock_session = mock.MagicMock()
+        mock_result = (mock_session.query.return_value.
+                       filter_by.return_value.
+                       one.return_value)
+        mock_result.delete.side_effect = RuntimeError
+        # Any other exception should be raised
+        self.assertRaises(RuntimeError,
+                          api.image_property_delete,
+                          mock_context, 'myprop', 'myimage',
+                          session=mock_session)
