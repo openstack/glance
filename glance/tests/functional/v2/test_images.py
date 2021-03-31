@@ -235,7 +235,6 @@ class TestImages(functional.FunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
-        self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -4817,7 +4816,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
-        self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -4980,7 +4978,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download_different_backend(self):
-        self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5144,7 +5141,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_multi_stores(self):
-        self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5759,7 +5755,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_multi_stores_specifying_all_stores(self):
-        self.config(node_staging_uri="file:///tmp/staging/")
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
