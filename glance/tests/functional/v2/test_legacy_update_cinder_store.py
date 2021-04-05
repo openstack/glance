@@ -44,30 +44,35 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestLegacyUpdateCinderStore, self).setUp()
         self.vol_id = uuid.uuid4()
+        self.volume = FakeObject(
+            id=self.vol_id,
+            status='available',
+            size=1,
+            reserve=mock.MagicMock(),
+            # FIXME(danms): Remove this after glance store
+            # moves past 2.3.0
+            begin_detaching=mock.MagicMock(),
+            initialize_connection=mock.MagicMock(),
+            terminate_connection=mock.MagicMock(),
+            encrypted=False,
+            unreserve=mock.MagicMock(),
+            delete=mock.MagicMock(),
+            # FIXME(danms): Remove this after glance store
+            # moves past 2.3.0
+            attach=mock.MagicMock(),
+            update_all_metadata=mock.MagicMock(),
+            update_readonly_flag=mock.MagicMock())
+        self.volume.manager = FakeObject(get=lambda id: self.volume)
         self.cinder_store_mock = FakeObject(
+            attachments=mock.MagicMock(),
             client=mock.MagicMock(), volumes=FakeObject(
+                initialize_connection=mock.MagicMock(),
+                terminate_connection=mock.MagicMock(),
+                begin_detaching=mock.MagicMock(),
                 get=lambda v_id: FakeObject(volume_type='fast'),
                 detach=mock.MagicMock(),
                 create=lambda size_gb, name, metadata, volume_type:
-                FakeObject(
-                    id=self.vol_id, manager=FakeObject(
-                        get=lambda vol_id: FakeObject(
-                            manager=FakeObject(
-                                get=lambda vol_id: FakeObject(
-                                    status='in-use',
-                                    begin_detaching=mock.MagicMock(),
-                                    terminate_connection=mock.MagicMock())),
-                            id=vol_id,
-                            status='available',
-                            size=1,
-                            reserve=mock.MagicMock(),
-                            initialize_connection=mock.MagicMock(),
-                            encrypted=False,
-                            unreserve=mock.MagicMock(),
-                            delete=mock.MagicMock(),
-                            attach=mock.MagicMock(),
-                            update_all_metadata=mock.MagicMock(),
-                            update_readonly_flag=mock.MagicMock())))))
+                self.volume))
 
     def setup_stores(self):
         pass
@@ -187,17 +192,24 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
 
         return image_id
 
+    def _mock_wait_volume_status(self, volume, status_transition,
+                                 status_expected):
+        volume.status = status_expected
+        return volume
+
     @mock.patch.object(cinderclient, 'Client')
     @mock.patch.object(cinder.Store, 'temporary_chown')
     @mock.patch.object(cinder, 'connector')
     @mock.patch.object(cinder, 'open')
-    def test_create_image(self, mock_open, mock_connector,
+    @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
+    def test_create_image(self, mock_wait, mock_open, mock_connector,
                           mock_chown, mocked_cc):
         # setup multiple cinder stores
         self.setup_multiple_stores()
         self.start_server()
 
         mocked_cc.return_value = self.cinder_store_mock
+        mock_wait.side_effect = self._mock_wait_volume_status
         # create an image
         image_id = self._create_and_import(stores=['store1'])
         image = self.api_get('/v2/images/%s' % image_id).json
@@ -216,8 +228,10 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(cinder.Store, 'temporary_chown')
     @mock.patch.object(cinder, 'connector')
     @mock.patch.object(cinder, 'open')
-    def test_migrate_image_after_upgrade(self, mock_open, mock_connector,
-                                         mock_chown, mocked_cc):
+    @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
+    def test_migrate_image_after_upgrade(self, mock_wait, mock_open,
+                                         mock_connector, mock_chown,
+                                         mocked_cc):
         """Test to check if an image is successfully migrated when we
 
         upgrade from a single cinder store to multiple cinder stores.
@@ -226,6 +240,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         self.setup_single_store()
         self.start_server()
         mocked_cc.return_value = self.cinder_store_mock
+        mock_wait.side_effect = self._mock_wait_volume_status
 
         # create image in single store
         image_id = self._create_and_import(stores=['store1'])
