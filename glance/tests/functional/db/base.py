@@ -1774,13 +1774,13 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertTrue(tasks[0]['deleted'])
 
     def test_task_get_by_image_no_expiry(self):
-        # Make sure we do not retrieve the expired task
+        # Make sure we find the task that has expires_at=NULL
         task_id, tasks = self._test_task_get_by_image(expired=None)
-        self.assertEqual(0, len(tasks))
+        self.assertEqual(1, len(tasks))
 
-        # The task should not have been retrieved at all above,
-        # but it's also not deleted because it doesn't have an expiry,
-        # so it should still be in the DB.
+        # The task should have been retrieved above, and it's also not
+        # deleted because it doesn't have an expiry, so it should
+        # still be in the DB.
         tasks = self.db_api.task_get_all(self.adm_context)
         self.assertEqual(1, len(tasks))
         self.assertEqual(task_id, tasks[0]['id'])

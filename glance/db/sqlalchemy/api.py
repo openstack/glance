@@ -1672,7 +1672,8 @@ def tasks_get_by_image(context, image_id, session=None):
     ).filter_by(image_id=image_id)
 
     expires_at = models.Task.expires_at
-    query = query.filter(expires_at >= timeutils.utcnow())
+    query = query.filter(sa_sql.or_(expires_at == None,
+                                    expires_at >= timeutils.utcnow()))
     updated_at = models.Task.updated_at
     query.filter(
         updated_at <= (timeutils.utcnow() +
