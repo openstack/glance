@@ -16,6 +16,7 @@ Getting Started
     :maxdepth: 2
 
     contributing
+    core_reviewer_guidelines
 
 Development Policies
 --------------------
