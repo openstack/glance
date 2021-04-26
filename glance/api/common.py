@@ -152,6 +152,11 @@ def check_quota(context, image_size, db_api, image_id=None):
     :returns:
     """
 
+    # NOTE(danms): If keystone quotas are enabled, those take
+    # precedence and this check is a no-op.
+    if CONF.use_keystone_limits:
+        return
+
     remaining = get_remaining_quota(context, db_api, image_id=image_id)
 
     if remaining is None:

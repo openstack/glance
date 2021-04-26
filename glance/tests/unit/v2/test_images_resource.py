@@ -3261,7 +3261,9 @@ class TestImagesController(base.IsolatedUnitTest):
     @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
     @mock.patch.object(glance.domain.TaskExecutorFactory, 'new_task_executor')
     @mock.patch('glance.api.common.get_thread_pool')
-    def test_image_import(self, mock_gtp, mock_nte, mock_nt, mock_spa):
+    @mock.patch('glance.quota.keystone.enforce_image_size_total')
+    def test_image_import(self, mock_enforce, mock_gtp, mock_nte, mock_nt,
+                          mock_spa):
         request = unit_test_utils.get_fake_request()
         image = FakeImage(status='uploading')
         with mock.patch.object(
@@ -3271,6 +3273,10 @@ class TestImagesController(base.IsolatedUnitTest):
                 request, UUID4, {'method': {'name': 'glance-direct'}})
 
         self.assertEqual(UUID4, output)
+
+        # Make sure we checked quota
+        mock_enforce.assert_called_once_with(request.context,
+                                             request.context.project_id)
 
         # Make sure we set the lock on the image
         mock_spa.assert_called_once_with(UUID4, 'os_glance_import_task',
@@ -3296,6 +3302,17 @@ class TestImagesController(base.IsolatedUnitTest):
         # NOTE(danms): Make sure we failed early and never even created
         # a task
         mock_new_task.assert_not_called()
+
+    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch('glance.quota.keystone.enforce_image_size_total')
+    def test_image_import_quota_fail(self, mock_enforce, mock_get):
+        request = unit_test_utils.get_fake_request()
+        mock_get.return_value = FakeImage(status='uploading')
+        mock_enforce.side_effect = exception.LimitExceeded('test')
+        self.assertRaises(webob.exc.HTTPRequestEntityTooLarge,
+                          self.controller.import_image,
+                          request, UUID4,
+                          {'method': {'name': 'glance-direct'}})
 
     @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch('glance.context.RequestContext.elevated')

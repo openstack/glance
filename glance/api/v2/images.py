@@ -46,6 +46,7 @@ import glance.db
 import glance.gateway
 from glance.i18n import _, _LE, _LI, _LW
 import glance.notifier
+from glance.quota import keystone as ks_quota
 import glance.schema
 
 LOG = logging.getLogger(__name__)
@@ -309,6 +310,12 @@ class ImagesController(object):
         uri = body.get('method').get('uri')
         all_stores_must_succeed = body.get('all_stores_must_succeed', True)
         stole_lock_from_task = None
+
+        try:
+            ks_quota.enforce_image_size_total(req.context, req.context.owner)
+        except exception.LimitExceeded as e:
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
+                                                      request=req)
 
         try:
             image = image_repo.get(image_id)

@@ -22,6 +22,7 @@ from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
+from oslo_utils import excutils
 from oslo_utils import timeutils
 from oslo_utils import units
 import six
@@ -38,6 +39,7 @@ from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
 from glance.common import store_utils
 from glance.i18n import _, _LE, _LI
+from glance.quota import keystone as ks_quota
 
 
 LOG = logging.getLogger(__name__)
@@ -738,6 +740,27 @@ class _CompleteTask(task.Task):
                  {'task_id': self.task_id, 'task_type': self.task_type})
 
 
+def assert_quota(context, task_repo, task_id, stores,
+                 action_wrapper, enforce_quota_fn,
+                 **enforce_kwargs):
+    try:
+        enforce_quota_fn(context, context.owner, **enforce_kwargs)
+    except exception.LimitExceeded as e:
+        with excutils.save_and_reraise_exception():
+            with action_wrapper as action:
+                action.remove_importing_stores(stores)
+                if action.image_status == 'importing':
+                    action.set_image_attribute(status='queued')
+            action_wrapper.drop_lock_for_task()
+            task = script_utils.get_task(task_repo, task_id)
+            if task is None:
+                LOG.error(_LE('Failed to find task %r to update after '
+                              'quota failure'), task_id)
+            else:
+                task.fail(str(e))
+                task_repo.save(task)
+
+
 def get_flow(**kwargs):
     """Return task flow
 
@@ -838,8 +861,19 @@ def get_flow(**kwargs):
     with action_wrapper as action:
         if import_method != 'copy-image':
             action.set_image_attribute(status='importing')
+        image_size = (action.image_size or 0) // units.Mi
         action.add_importing_stores(stores)
         action.remove_failed_stores(stores)
         action.pop_extra_property('os_glance_stage_host')
+
+    # After we have marked the image as intended, check quota to make
+    # sure we are not over a limit, otherwise we roll back.
+    if import_method == 'glance-direct':
+        # We know the size of the image in staging, so we can check
+        # against available image_size_total quota.
+        assert_quota(kwargs['context'], task_repo, task_id,
+                     stores, action_wrapper,
+                     ks_quota.enforce_image_size_total,
+                     delta=image_size)
 
     return flow

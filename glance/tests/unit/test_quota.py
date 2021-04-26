@@ -183,6 +183,30 @@ class TestImageQuota(test_utils.BaseTestCase):
         self._quota_exceeded_size(str(quota), data, deleted=False,
                                   size=quota - 1)
 
+    def test_quota_exceeded_keystone_quotas(self):
+        # Set our global limit to a tiny ten bytes
+        self.config(user_storage_quota='10B')
+        context = FakeContext()
+        db_api = unit_test_utils.FakeDB()
+        store_api = unit_test_utils.FakeStoreAPI()
+        store = unit_test_utils.FakeStoreUtils(store_api)
+        base_image = FakeImage()
+        base_image.image_id = 'id'
+        image = glance.quota.ImageProxy(base_image, context, db_api, store)
+
+        # With keystone quotas disabled, a 100 byte image should fail the
+        # global limit.
+        data = '*' * 100
+        self.assertRaises(exception.StorageQuotaFull,
+                          image.set_data,
+                          data,
+                          size=len(data))
+
+        # If we turn on keystone quotas, the global limit gets ignored
+        # so the same image no longer fails.
+        self.config(use_keystone_limits=True)
+        image.set_data(data, size=len(data))
+
     def test_append_location(self):
         new_location = {'url': 'file:///a/path', 'metadata': {},
                         'status': 'active'}

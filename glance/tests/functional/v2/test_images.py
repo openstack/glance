@@ -21,6 +21,7 @@ import time
 import uuid
 
 import fixtures
+from oslo_limit import exception as ol_exc
 from oslo_serialization import jsonutils
 from oslo_utils.secretutils import md5
 from oslo_utils import units
@@ -31,6 +32,7 @@ from six.moves import http_client as http
 from six.moves import range
 from six.moves import urllib
 
+from glance.quota import keystone as ks_quota
 from glance.tests import functional
 from glance.tests.functional import ft_utils as func_utils
 from glance.tests import utils as test_utils
@@ -7022,3 +7024,137 @@ class TestImportProxy(functional.SynchronousAPIBase):
         self._test_import_proxy_fail_requests(
             requests.exceptions.RequestException(),
             '502 Bad Gateway')
+
+
+def get_enforcer_class(limits):
+    class FakeEnforcer:
+        def __init__(self, callback):
+            self._callback = callback
+
+        def enforce(self, project_id, values):
+            for name, delta in values.items():
+                current = self._callback(project_id, values.keys())
+                if current.get(name) + delta > limits.get(name, 0):
+                    raise ol_exc.ProjectOverLimit(
+                        project_id=project_id,
+                        over_limit_info_list=[ol_exc.OverLimitInfo(
+                            name, limits.get(name), current.get(name), delta)])
+
+    return FakeEnforcer
+
+
+class TestKeystoneQuotas(functional.SynchronousAPIBase):
+    def setUp(self):
+        super(TestKeystoneQuotas, self).setUp()
+        self.config(use_keystone_limits=True)
+        self.config(filesystem_store_datadir='/tmp/foo',
+                    group='os_glance_tasks_store')
+
+        self.enforcer_mock = self.useFixture(
+            fixtures.MockPatchObject(ks_quota, 'limit')).mock
+
+    def set_limit(self, limits):
+        self.enforcer_mock.Enforcer = get_enforcer_class(limits)
+
+    def test_upload(self):
+        # Set a quota of 5MiB
+        self.set_limit({'image_size_total': 5})
+        self.start_server()
+
+        # First upload of 3MiB is good
+        image_id = self._create_and_upload(
+            data_iter=test_utils.FakeData(3 * units.Mi))
+
+        # Second upload of 3MiB is allowed to complete, but leaves us
+        # over-quota
+        self._create_and_upload(
+            data_iter=test_utils.FakeData(3 * units.Mi))
+
+        # Third upload of any size fails because we are now over quota
+        self._create_and_upload(expected_code=413)
+
+        # Delete one image, which should put us under quota
+        self.api_delete('/v2/images/%s' % image_id)
+
+        # Upload should now succeed
+        self._create_and_upload()
+
+    def test_import(self):
+        # Set a quota of 5MiB
+        self.set_limit({'image_size_total': 5})
+        self.start_server()
+
+        # First upload of 3MiB is good
+        image_id = self._create_and_upload(
+            data_iter=test_utils.FakeData(3 * units.Mi))
+
+        # Second upload of 3MiB is allowed to complete, but leaves us
+        # over-quota
+        self._create_and_upload(data_iter=test_utils.FakeData(3 * units.Mi))
+
+        # Attempt to import of any size fails because we are now over quota
+        self._create_and_import(stores=['store1'], expected_code=413)
+
+        # Delete one image, which should put us under quota
+        self.api_delete('/v2/images/%s' % image_id)
+
+        # Import should now succeed
+        self._create_and_import(stores=['store1'])
+
+    def test_import_would_go_over(self):
+        # Set a quota limit of 5MiB
+        self.set_limit({'image_size_total': 5})
+        self.start_server()
+
+        # First upload of 3MiB is good
+        image_id = self._create_and_upload(
+            data_iter=test_utils.FakeData(3 * units.Mi))
+
+        # Stage a 3MiB image for later import
+        import_id = self._create_and_stage(
+            data_iter=test_utils.FakeData(3 * units.Mi))
+
+        # Import should fail the task because it would put us over our
+        # 5MiB quota
+        self._import_direct(import_id, ['store1'])
+        image = self._wait_for_import(import_id)
+        task = self._get_latest_task(import_id)
+        self.assertEqual('failure', task['status'])
+        self.assertIn(('image_size_total is over limit of 5 due to '
+                       'current usage 3 and delta 3'), task['message'])
+
+        # Delete the first image to make space
+        resp = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Stage a 3MiB image for later import (this must be done
+        # because a failed import cannot go back to 'uploading' status)
+        import_id = self._create_and_stage(
+            data_iter=test_utils.FakeData(3 * units.Mi))
+        # Make sure the import is possible now
+        resp = self._import_direct(import_id, ['store1'])
+        self.assertEqual(202, resp.status_code)
+        image = self._wait_for_import(import_id)
+        self.assertEqual('active', image['status'])
+        task = self._get_latest_task(import_id)
+        self.assertEqual('success', task['status'])
+
+    def test_copy(self):
+        # Set a quota of 5MiB
+        self.set_limit({'image_size_total': 5})
+        self.start_server()
+
+        # First import of 3MiB is good
+        image_id = self._create_and_import(
+            stores=['store1'],
+            data_iter=test_utils.FakeData(3 * units.Mi))
+
+        # Second copy is allowed to complete, but leaves us us at
+        # 6MiB of total usage, over quota
+        req = self._import_copy(image_id, ['store2'])
+        self.assertEqual(202, req.status_code)
+        self._wait_for_import(image_id)
+
+        # Third copy should fail because we're over quota
+        req = self._import_copy(image_id, ['store3'])
+        self.assertEqual(413, req.status_code)

@@ -34,6 +34,7 @@ import glance.db
 import glance.gateway
 from glance.i18n import _, _LE, _LI
 import glance.notifier
+from glance.quota import keystone as ks_quota
 
 
 LOG = logging.getLogger(__name__)
@@ -121,6 +122,12 @@ class ImageDataController(object):
 
     @utils.mutating
     def upload(self, req, image_id, data, size):
+        try:
+            ks_quota.enforce_image_size_total(req.context, req.context.owner)
+        except exception.LimitExceeded as e:
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
+                                                      request=req)
+
         backend = None
         if CONF.enabled_backends:
             backend = req.headers.get('x-image-meta-store',

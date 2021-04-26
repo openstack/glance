@@ -79,6 +79,7 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
                        "task_repo": self.mock_task_repo,
                        "image_repo": self.mock_image_repo,
                        "image_id": IMAGE_ID1,
+                       "context": mock.MagicMock(),
                        "import_req": import_req}
 
         mock_lf_init.return_value = None
@@ -111,11 +112,67 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
                              task_repo=self.mock_task_repo,
                              image_repo=self.mock_image_repo,
                              image_id=IMAGE_ID1,
+                             context=mock.MagicMock(),
                              import_req=self.gd_task_input['import_req'])
         self.assertNotIn('os_glance_stage_host',
                          self.mock_image.extra_properties)
         self.assertIn('os_glance_import_task',
                       self.mock_image.extra_properties)
+
+    def test_assert_quota_no_task(self):
+        ignored = mock.MagicMock()
+        task_repo = mock.MagicMock()
+        task_repo.get.return_value = None
+        task_id = 'some-task'
+        enforce_fn = mock.MagicMock()
+        enforce_fn.side_effect = exception.LimitExceeded
+        with mock.patch.object(import_flow, 'LOG') as mock_log:
+            self.assertRaises(exception.LimitExceeded,
+                              import_flow.assert_quota,
+                              ignored, task_repo, task_id,
+                              [], ignored, enforce_fn)
+        task_repo.get.assert_called_once_with('some-task')
+        # Make sure we logged instead of crashed if no task was found
+        mock_log.error.assert_called_once_with('Failed to find task %r to '
+                                               'update after quota failure',
+                                               'some-task')
+        task_repo.save.assert_not_called()
+
+    def test_assert_quota(self):
+        ignored = mock.MagicMock()
+        task_repo = mock.MagicMock()
+        task_id = 'some-task'
+        enforce_fn = mock.MagicMock()
+        enforce_fn.side_effect = exception.LimitExceeded
+        wrapper = mock.MagicMock()
+        action = wrapper.__enter__.return_value
+        action.image_status = 'importing'
+        self.assertRaises(exception.LimitExceeded,
+                          import_flow.assert_quota,
+                          ignored, task_repo, task_id,
+                          ['store1'], wrapper, enforce_fn)
+        action.remove_importing_stores.assert_called_once_with(['store1'])
+        action.set_image_attribute.assert_called_once_with(status='queued')
+        task_repo.get.assert_called_once_with('some-task')
+        task_repo.save.assert_called_once_with(task_repo.get.return_value)
+
+    def test_assert_quota_copy(self):
+        ignored = mock.MagicMock()
+        task_repo = mock.MagicMock()
+        task_id = 'some-task'
+        enforce_fn = mock.MagicMock()
+        enforce_fn.side_effect = exception.LimitExceeded
+        wrapper = mock.MagicMock()
+        action = wrapper.__enter__.return_value
+        action.image_status = 'active'
+        self.assertRaises(exception.LimitExceeded,
+                          import_flow.assert_quota,
+                          ignored, task_repo, task_id,
+                          ['store1'], wrapper, enforce_fn)
+        action.remove_importing_stores.assert_called_once_with(['store1'])
+        action.set_image_attribute.assert_not_called()
+        task_repo.get.assert_called_once_with('some-task')
+        task_repo.save.assert_called_once_with(task_repo.get.return_value)
 
 
 class TestImageLock(test_utils.BaseTestCase):
