@@ -1570,6 +1570,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                     group='store3')
         self.config(filesystem_store_datadir=self._store_dir('staging'),
                     group='os_glance_staging_store')
+        self.config(filesystem_store_datadir=self._store_dir('tasks'),
+                    group='os_glance_tasks_store')
 
         glance_store.create_multi_stores(CONF,
                                          reserved_stores=wsgi.RESERVED_STORES)
@@ -1705,7 +1707,39 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             '/v2/images/%s/import' % image_id,
             json=body)
 
-    def _create_and_stage(self, data_iter=None):
+    def _import_web_download(self, image_id, stores, url):
+        """Do an import of image_id to the given stores."""
+        body = {'method': {'name': 'web-download',
+                           'uri': url},
+                'stores': stores,
+                'all_stores': False}
+
+        return self.api_post(
+            '/v2/images/%s/import' % image_id,
+            json=body)
+
+    def _create_and_upload(self, data_iter=None, expected_code=204):
+        resp = self.api_post('/v2/images',
+                             json={'name': 'foo',
+                                   'container_format': 'bare',
+                                   'disk_format': 'raw'})
+        image = jsonutils.loads(resp.text)
+
+        if data_iter:
+            resp = self.api_put(
+                '/v2/images/%s/file' % image['id'],
+                headers={'Content-Type': 'application/octet-stream'},
+                body_file=data_iter)
+        else:
+            resp = self.api_put(
+                '/v2/images/%s/file' % image['id'],
+                headers={'Content-Type': 'application/octet-stream'},
+                data=b'IMAGEDATA')
+        self.assertEqual(expected_code, resp.status_code)
+
+        return image['id']
+
+    def _create_and_stage(self, data_iter=None, expected_code=204):
         resp = self.api_post('/v2/images',
                              json={'name': 'foo',
                                    'container_format': 'bare',
@@ -1722,22 +1756,12 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                 '/v2/images/%s/stage' % image['id'],
                 headers={'Content-Type': 'application/octet-stream'},
                 data=b'IMAGEDATA')
-        self.assertEqual(204, resp.status_code)
+        self.assertEqual(expected_code, resp.status_code)
 
         return image['id']
 
-    def _create_and_import(self, stores=[], data_iter=None):
-        """Create an image, stage data, and import into the given stores.
-
-        :returns: image_id
-        """
-        image_id = self._create_and_stage(data_iter=data_iter)
-
-        resp = self._import_direct(image_id, stores)
-        self.assertEqual(202, resp.status_code)
-
-        # Make sure it goes active
-        for i in range(0, 10):
+    def _wait_for_import(self, image_id, retries=10):
+        for i in range(0, retries):
             image = self.api_get('/v2/images/%s' % image_id).json
             if not image.get('os_glance_import_task'):
                 break
@@ -1745,6 +1769,38 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                            ttc.text_content(image['os_glance_import_task']))
             time.sleep(1)
 
+        self.assertIsNone(image.get('os_glance_import_task'),
+                          'Timed out waiting for task to complete')
+
+        return image
+
+    def _create_and_import(self, stores=[], data_iter=None, expected_code=202):
+        """Create an image, stage data, and import into the given stores.
+
+        :returns: image_id
+        """
+        image_id = self._create_and_stage(data_iter=data_iter)
+
+        resp = self._import_direct(image_id, stores)
+        self.assertEqual(expected_code, resp.status_code)
+
+        if expected_code >= 400:
+            return image_id
+
+        # Make sure it becomes active
+        image = self._wait_for_import(image_id)
         self.assertEqual('active', image['status'])
 
         return image_id
+
+    def _get_latest_task(self, image_id):
+        tasks = self.api_get('/v2/images/%s/tasks' % image_id).json['tasks']
+        tasks = sorted(tasks, key=lambda t: t['updated_at'])
+        self.assertGreater(len(tasks), 0)
+        return tasks[-1]
+
+    def _create(self):
+        return self.api_post('/v2/images',
+                             json={'name': 'foo',
+                                   'container_format': 'bare',
+                                   'disk_format': 'raw'})
