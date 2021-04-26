@@ -308,6 +308,13 @@ class ImageDataController(object):
 
     @utils.mutating
     def stage(self, req, image_id, data, size):
+        try:
+            ks_quota.enforce_image_staging_total(req.context,
+                                                 req.context.owner)
+        except exception.LimitExceeded as e:
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
+                                                      request=req)
+
         image_repo = self.gateway.get_repo(req.context)
         image = None
 

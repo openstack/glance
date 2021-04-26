@@ -7140,8 +7140,9 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         self.assertEqual('success', task['status'])
 
     def test_copy(self):
-        # Set a quota of 5MiB
-        self.set_limit({'image_size_total': 5})
+        # Set a size quota of 5MiB, with more staging quota than we need.
+        self.set_limit({'image_size_total': 5,
+                        'image_stage_total': 15})
         self.start_server()
 
         # First import of 3MiB is good
@@ -7154,7 +7155,61 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         req = self._import_copy(image_id, ['store2'])
         self.assertEqual(202, req.status_code)
         self._wait_for_import(image_id)
+        self.assertEqual('success', self._get_latest_task(image_id)['status'])
 
-        # Third copy should fail because we're over quota
+        # Third copy should fail because we're over total size quota.
         req = self._import_copy(image_id, ['store3'])
         self.assertEqual(413, req.status_code)
+
+        # Set our size quota to have enough space, but restrict our
+        # staging quota to below the required size to stage the image
+        # before copy. This request should succeed, but the copy task
+        # should fail the staging quota check.
+        self.set_limit({'image_size_total': 15,
+                        'image_stage_total': 5})
+        req = self._import_copy(image_id, ['store3'])
+        self.assertEqual(202, req.status_code)
+        self._wait_for_import(image_id)
+        self.assertEqual('failure', self._get_latest_task(image_id)['status'])
+
+        # If we increase our stage quota, we should now be able to copy.
+        self.set_limit({'image_size_total': 15,
+                        'image_stage_total': 10})
+        req = self._import_copy(image_id, ['store3'])
+        self.assertEqual(202, req.status_code)
+        self._wait_for_import(image_id)
+        self.assertEqual('success', self._get_latest_task(image_id)['status'])
+
+    def test_stage(self):
+        # Set a quota of 5MiB
+        self.set_limit({'image_size_total': 15,
+                        'image_stage_total': 5})
+        self.start_server()
+
+        # Stage 6MiB, which is allowed to complete, but leaves us over
+        # quota
+        image_id = self._create_and_stage(
+            data_iter=test_utils.FakeData(6 * units.Mi))
+
+        # Second stage fails because we are out of quota
+        self._create_and_stage(expected_code=413)
+
+        # Make sure that a web-download fails to actually run.
+        image_id2 = self._create().json['id']
+        req = self._import_web_download(image_id2, ['store1'],
+                                        'http://example.com/foo.img')
+        self.assertEqual(202, req.status_code)
+        self._wait_for_import(image_id2)
+        task = self._get_latest_task(image_id2)
+        self.assertEqual('failure', task['status'])
+        self.assertIn('image_stage_total is over limit', task['message'])
+
+        # Finish importing one of the images, which should put us under quota
+        # for staging
+        req = self._import_direct(image_id, ['store1'])
+        self.assertEqual(202, req.status_code)
+        self._wait_for_import(image_id)
+
+        # Stage should now succeed because we have freed up quota
+        self._create_and_stage(
+            data_iter=test_utils.FakeData(6 * units.Mi))

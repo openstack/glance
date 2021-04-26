@@ -875,5 +875,12 @@ def get_flow(**kwargs):
                      stores, action_wrapper,
                      ks_quota.enforce_image_size_total,
                      delta=image_size)
+    elif import_method in ('copy-image', 'web-download'):
+        # The copy-image and web-download methods will use staging space to
+        # do their work, so check that quota.
+        assert_quota(kwargs['context'], task_repo, task_id,
+                     stores, action_wrapper,
+                     ks_quota.enforce_image_staging_total,
+                     delta=image_size)
 
     return flow
