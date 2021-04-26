@@ -22,6 +22,7 @@
 """Defines interface for DB access."""
 
 import datetime
+import itertools
 import threading
 
 from oslo_config import cfg
@@ -744,6 +745,40 @@ def _image_get_disk_usage_by_owner(owner, session, image_id=None):
         locations = [l for l in i.locations if l['status'] != 'deleted']
         total += (i.size * len(locations))
     return total
+
+
+def _image_get_staging_usage_by_owner(owner, session):
+    # NOTE(danms): We could do this in a single query, but I think it is
+    # easier to understand as two that we concatenate while generating
+    # results.
+
+    # Images in uploading or importing state are consuming staging
+    # space.
+    query = session.query(models.Image)
+    query = query.filter(models.Image.owner == owner)
+    query = query.filter(models.Image.size > 0)
+    query = query.filter(models.Image.status.in_(('uploading',
+                                                  'importing')))
+    importing_images = query.all()
+
+    # Images with non-empty os_glance_importing_to_stores properties
+    # may also be consuming staging space. Filter our deleted images
+    # or importing ones included in the above query.
+    props = session.query(models.ImageProperty).filter(
+        models.ImageProperty.name == 'os_glance_importing_to_stores',
+        models.ImageProperty.value != '').subquery()
+    query = session.query(models.Image)
+    query = query.join(props, props.c.image_id == models.Image.id)
+    query = query.filter(models.Image.owner == owner)
+    query = query.filter(models.Image.size > 0)
+    query = query.filter(~models.Image.status.in_(('uploading',
+                                                   'importing',
+                                                   'killed',
+                                                   'deleted')))
+    copying_images = query.all()
+
+    return sum(i.size for i in itertools.chain(importing_images,
+                                               copying_images))
 
 
 def _validate_image(values, mandatory_status=True):
@@ -1552,6 +1587,11 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
     total_size = _image_get_disk_usage_by_owner(
         owner_id, session, image_id=image_id)
     return total_size
+
+
+def user_get_staging_usage(context, owner_id, session=None):
+    session = session or get_session()
+    return _image_get_staging_usage_by_owner(owner_id, session)
 
 
 def _task_info_format(task_info_ref):

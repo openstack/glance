@@ -16,8 +16,10 @@
 
 from oslo_config import cfg
 from oslo_db import options
+from oslo_utils.fixture import uuidsentinel as uuids
 
 from glance.common import exception
+from glance import context as glance_context
 import glance.db.sqlalchemy.api
 from glance.db.sqlalchemy import models as db_models
 from glance.db.sqlalchemy import models_metadef as metadef_models
@@ -360,3 +362,59 @@ class TestImageAtomicOps(base.TestDriver,
         image = self.db_api.image_get(self.adm_context, image['id'])
         self.assertEqual({'test1': 'foo', 'test2': 'bar', 'test4': 'yep'},
                          self._propdict(image['properties']))
+
+
+class TestImageStorageUsage(base.TestDriver,
+                            base.FunctionalInitWrapper):
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestImageStorageUsage, self).setUp()
+        self.addCleanup(db_tests.reset)
+
+        self.contexts = {}
+
+        for owner in (uuids.owner1, uuids.owner2):
+            ctxt = glance_context.RequestContext(project_id=owner)
+            self.contexts[owner] = ctxt
+            statuses = ['queued', 'active', 'uploading', 'importing',
+                        'deleted']
+            for status in statuses:
+                for num in range(0, 2):
+                    # Make the size of each image differ by status
+                    # so we can make sure we count the right one.
+                    size = statuses.index(status) * 100
+                    image = self.db_api.image_create(
+                        ctxt,
+                        {'status': status,
+                         'owner': owner,
+                         'size': size,
+                         'name': 'test-%s-%i' % (status, num)})
+                    if status == 'active':
+                        # Active images get one location, active if they
+                        # are the first. The first image is also copying
+                        # to another store.
+                        loc_status = num == 0 and 'active' or 'deleted'
+                        self.db_api.image_location_add(
+                            ctxt, image['id'],
+                            {'url': 'foo://bar',
+                             'metadata': {},
+                             'status': loc_status})
+                        self.db_api.image_set_property_atomic(
+                            image['id'],
+                            'os_glance_importing_to_stores',
+                            num == 0 and 'fakestore' or '')
+
+    def test_get_staging_usage(self):
+        for owner, ctxt in self.contexts.items():
+            usage = self.db_api.user_get_staging_usage(ctxt, ctxt.owner)
+            # Each user has two staged images of size 200 each, plus one
+            # active image of size 100 that is copying, and two importing
+            # of size 300.
+            self.assertEqual(1100, usage)
+
+    def test_get_storage_usage(self):
+        for owner, ctxt in self.contexts.items():
+            usage = self.db_api.user_get_storage_usage(ctxt, ctxt.owner)
+            # Each user has two active images of size 100 each, but only one
+            # has an active location.
+            self.assertEqual(100, usage)
