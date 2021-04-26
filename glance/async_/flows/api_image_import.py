@@ -309,7 +309,7 @@ class _ImportActions(object):
                  ones is present in attrs.
         """
         allowed = ['status', 'disk_format', 'container_format',
-                   'virtual_size']
+                   'virtual_size', 'size']
         for attr, value in attrs.items():
             if attr not in allowed:
                 raise AttributeError('Setting %s is not allowed' % attr)

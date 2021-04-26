@@ -90,9 +90,11 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                                        self.image_id,
                                                        self.task.task_id)
 
+    @mock.patch.object(os, 'stat')
     @mock.patch.object(os, 'remove')
-    def test_image_convert_success(self, mock_os_remove):
+    def test_image_convert_success(self, mock_os_remove, mock_os_stat):
         mock_os_remove.return_value = None
+        mock_os_stat.return_value.st_size = 123
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
@@ -109,7 +111,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             exc_mock.return_value = ("", None)
             with mock.patch.object(json, 'loads') as jloads_mock:
                 jloads_mock.return_value = {'format': 'raw',
-                                            'virtual-size': 123}
+                                            'virtual-size': 456}
                 image_convert.execute('file:///test/path.raw')
 
                 # NOTE(hemanthm): Asserting that the source format is passed
@@ -121,7 +123,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
         self.assertEqual('bare', image.container_format)
         self.assertEqual('qcow2', image.disk_format)
-        self.assertEqual(123, image.virtual_size)
+        self.assertEqual(456, image.virtual_size)
+        self.assertEqual(123, image.size)
 
     def _setup_image_convert_info_fail(self):
         image_convert = image_conversion._ConvertImage(self.context,

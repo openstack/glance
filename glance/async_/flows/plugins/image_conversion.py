@@ -25,7 +25,7 @@ from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
 from glance.async_ import utils
-from glance.i18n import _
+from glance.i18n import _, _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -138,6 +138,10 @@ class _ConvertImage(task.Task):
 
         action.set_image_attribute(disk_format=target_format,
                                    container_format='bare')
+        new_size = os.stat(dest_path).st_size
+        action.set_image_attribute(size=new_size)
+        LOG.info(_LI('Updated image %s size=%i disk_format=%s'),
+                 self.image_id, new_size, target_format)
 
         os.remove(src_path)
 
