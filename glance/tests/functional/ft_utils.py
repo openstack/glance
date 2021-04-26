@@ -24,7 +24,7 @@ from six.moves import http_client as http
 
 def verify_image_hashes_and_status(
         test_obj, image_id, checksum=None, os_hash_value=None, status=None,
-        os_hash_algo='sha512'):
+        os_hash_algo='sha512', size=None):
     """Makes image-detail request and checks response.
 
     :param test_obj: The test object; expected to have _url() and
@@ -47,6 +47,7 @@ def verify_image_hashes_and_status(
                              image['os_hash_algo'])
     test_obj.assertEqual(os_hash_value, image['os_hash_value'])
     test_obj.assertEqual(status, image['status'])
+    test_obj.assertEqual(size, image['size'])
 
 
 def wait_for_status(request_path, request_headers, status='active',
