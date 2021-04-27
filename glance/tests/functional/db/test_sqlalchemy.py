@@ -418,3 +418,10 @@ class TestImageStorageUsage(base.TestDriver,
             # Each user has two active images of size 100 each, but only one
             # has an active location.
             self.assertEqual(100, usage)
+
+    def test_get_image_count(self):
+        for owner, ctxt in self.contexts.items():
+            count = self.db_api.user_get_image_count(ctxt, ctxt.owner)
+            # Each user has two active images, two staged images, two
+            # importing, and two queued images
+            self.assertEqual(8, count)

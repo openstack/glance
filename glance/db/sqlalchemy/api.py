@@ -781,6 +781,13 @@ def _image_get_staging_usage_by_owner(owner, session):
                                                copying_images))
 
 
+def _image_get_count_by_owner(owner, session):
+    query = session.query(models.Image)
+    query = query.filter(models.Image.owner == owner)
+    query = query.filter(~models.Image.status.in_(['killed', 'deleted']))
+    return query.count()
+
+
 def _validate_image(values, mandatory_status=True):
     """
     Validates the incoming data and raises a Invalid exception
@@ -1592,6 +1599,11 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
 def user_get_staging_usage(context, owner_id, session=None):
     session = session or get_session()
     return _image_get_staging_usage_by_owner(owner_id, session)
+
+
+def user_get_image_count(context, owner_id, session=None):
+    session = session or get_session()
+    return _image_get_count_by_owner(owner_id, session)
 
 
 def _task_info_format(task_info_ref):
