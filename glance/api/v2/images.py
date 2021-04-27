@@ -94,6 +94,7 @@ class ImagesController(object):
         image_factory = self.gateway.get_image_factory(req.context)
         image_repo = self.gateway.get_repo(req.context)
         try:
+            ks_quota.enforce_image_count_total(req.context, req.context.owner)
             image = image_factory.new_image(extra_properties=extra_properties,
                                             tags=tags, **image)
             image_repo.add(image)

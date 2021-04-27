@@ -7058,7 +7058,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
 
     def test_upload(self):
         # Set a quota of 5MiB
-        self.set_limit({'image_size_total': 5})
+        self.set_limit({'image_size_total': 5,
+                        'image_count_total': 10})
         self.start_server()
 
         # First upload of 3MiB is good
@@ -7081,7 +7082,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
 
     def test_import(self):
         # Set a quota of 5MiB
-        self.set_limit({'image_size_total': 5})
+        self.set_limit({'image_size_total': 5,
+                        'image_count_total': 10})
         self.start_server()
 
         # First upload of 3MiB is good
@@ -7103,7 +7105,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
 
     def test_import_would_go_over(self):
         # Set a quota limit of 5MiB
-        self.set_limit({'image_size_total': 5})
+        self.set_limit({'image_size_total': 5,
+                        'image_count_total': 10})
         self.start_server()
 
         # First upload of 3MiB is good
@@ -7142,6 +7145,7 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
     def test_copy(self):
         # Set a size quota of 5MiB, with more staging quota than we need.
         self.set_limit({'image_size_total': 5,
+                        'image_count_total': 10,
                         'image_stage_total': 15})
         self.start_server()
 
@@ -7183,7 +7187,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
     def test_stage(self):
         # Set a quota of 5MiB
         self.set_limit({'image_size_total': 15,
-                        'image_stage_total': 5})
+                        'image_stage_total': 5,
+                        'image_count_total': 10})
         self.start_server()
 
         # Stage 6MiB, which is allowed to complete, but leaves us over
@@ -7213,3 +7218,25 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # Stage should now succeed because we have freed up quota
         self._create_and_stage(
             data_iter=test_utils.FakeData(6 * units.Mi))
+
+    def test_create(self):
+        # Set a quota of 2 images
+        self.set_limit({'image_size_total': 15,
+                        'image_count_total': 2})
+        self.start_server()
+
+        # Create one image
+        image_id = self._create().json['id']
+
+        # Create a second. This leaves us *at* quota
+        self._create()
+
+        # Attempt to create a third is rejected as OverLimit
+        resp = self._create()
+        self.assertEqual(413, resp.status_code)
+
+        # Delete one image, which should put us under quota
+        self.api_delete('/v2/images/%s' % image_id)
+
+        # Now we can create that third image
+        self._create()

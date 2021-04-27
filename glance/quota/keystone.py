@@ -29,6 +29,7 @@ limit.opts.register_opts(CONF)
 
 QUOTA_IMAGE_SIZE_TOTAL = 'image_size_total'
 QUOTA_IMAGE_STAGING_TOTAL = 'image_stage_total'
+QUOTA_IMAGE_COUNT_TOTAL = 'image_count_total'
 
 
 def _enforce_some(context, project_id, quota_value_fns, deltas):
@@ -112,3 +113,15 @@ def enforce_image_staging_total(context, project_id, delta=0):
         context, project_id, QUOTA_IMAGE_STAGING_TOTAL,
         lambda: db.user_get_staging_usage(context, project_id) // units.Mi,
         delta=delta)
+
+
+def enforce_image_count_total(context, project_id):
+    """Enforce the image_count_total quota.
+
+    This enforces the total count of non-deleted images owned by the
+    supplied project_id.
+    """
+    _enforce_one(
+        context, project_id, QUOTA_IMAGE_COUNT_TOTAL,
+        lambda: db.user_get_image_count(context, project_id),
+        delta=1)
