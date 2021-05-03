@@ -20,6 +20,7 @@ import time
 import httplib2
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from oslo_utils.fixture import uuidsentinel as uuids
 from six.moves import http_client
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -38,8 +39,21 @@ class TestScrubber(functional.FunctionalTest):
 
     def setUp(self):
         super(TestScrubber, self).setUp()
+        self.api_server.deployment_flavor = 'noauth'
+        self.api_server.send_identity_credentials = True
         self.admin_context = context.get_admin_context(show_deleted=True)
         CONF.set_override('sql_connection', self.api_server.sql_connection)
+
+    def _headers(self, custom_headers=None):
+        base_headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': uuids.TENANT1,
+            'X-Roles': 'member',
+        }
+        base_headers.update(custom_headers or {})
+        return base_headers
 
     def _send_create_image_http_request(self, path, body=None):
         headers = {
@@ -50,19 +64,22 @@ class TestScrubber(functional.FunctionalTest):
                         'name': 'test_image',
                         'visibility': 'public'}
         body = jsonutils.dumps(body)
-        return httplib2.Http().request(path, 'POST', body, headers)
+        return httplib2.Http().request(path, 'POST', body,
+                                       self._headers(headers))
 
     def _send_upload_image_http_request(self, path, body=None):
         headers = {
             "Content-Type": "application/octet-stream"
         }
-        return httplib2.Http().request(path, 'PUT', body, headers)
+        return httplib2.Http().request(path, 'PUT', body,
+                                       self._headers(headers))
 
     def _send_http_request(self, path, method):
         headers = {
             "Content-Type": "application/json"
         }
-        return httplib2.Http().request(path, method, None, headers)
+        return httplib2.Http().request(path, method, None,
+                                       self._headers(headers))
 
     def _get_pending_delete_image(self, image_id):
         # In Glance V2, there is no way to get the 'pending_delete' image from
