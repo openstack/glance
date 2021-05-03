@@ -15,7 +15,10 @@
 
 from unittest import mock
 
+from glance.api import authorization
+from glance.api import property_protections
 from glance import gateway
+from glance import notifier
 import glance.tests.utils as test_utils
 
 
@@ -67,3 +70,23 @@ class TestGateway(test_utils.BaseTestCase):
                 admin_repo=mock.sentinel.admin_repo)
 
         _test()
+
+    @mock.patch('glance.api.policy.ImageRepoProxy')
+    def test_get_repo(self, mock_proxy):
+        repo = self.gateway.get_repo(self.context)
+        self.assertIsInstance(repo, authorization.ImageRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.ImageRepoProxy')
+    def test_get_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_repo(self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.ImageRepoProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.common.property_utils.PropertyRules._load_rules')
+    def test_get_repo_without_auth_with_pp(self, mock_load):
+        self.config(property_protection_file='foo')
+        repo = self.gateway.get_repo(self.context, authorization_layer=False)
+        self.assertIsInstance(repo,
+                              property_protections.ProtectedImageRepoProxy)

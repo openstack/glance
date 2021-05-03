@@ -67,27 +67,42 @@ class Gateway(object):
             policy_member_factory, context)
         return authorized_image_factory
 
-    def get_repo(self, context):
-        image_repo = glance.db.ImageRepo(context, self.db_api)
-        store_image_repo = glance.location.ImageRepoProxy(
-            image_repo, context, self.store_api, self.store_utils)
-        quota_image_repo = glance.quota.ImageRepoProxy(
-            store_image_repo, context, self.db_api, self.store_utils)
-        policy_image_repo = policy.ImageRepoProxy(
-            quota_image_repo, context, self.policy)
-        notifier_image_repo = glance.notifier.ImageRepoProxy(
-            policy_image_repo, context, self.notifier)
+    def get_repo(self, context, authorization_layer=True):
+        """Get the layered ImageRepo model.
+
+        This is where we construct the "the onion" by layering
+        ImageRepo models on top of each other, starting with the DB at
+        the bottom.
+
+        NB: Code that has implemented policy checks fully above this
+        layer should pass authorization_layer=False to ensure that no
+        conflicts with old checks happen. Legacy code should continue
+        passing True until legacy checks are no longer needed.
+
+        :param context: The RequestContext
+        :param authorization_layer: Controls whether or not we add the legacy
+                                    glance.authorization and glance.policy
+                                    layers.
+        :returns: An ImageRepo-like object
+
+        """
+        repo = glance.db.ImageRepo(context, self.db_api)
+        repo = glance.location.ImageRepoProxy(
+            repo, context, self.store_api, self.store_utils)
+        repo = glance.quota.ImageRepoProxy(
+            repo, context, self.db_api, self.store_utils)
+        if authorization_layer:
+            repo = policy.ImageRepoProxy(repo, context, self.policy)
+        repo = glance.notifier.ImageRepoProxy(
+            repo, context, self.notifier)
         if property_utils.is_property_protection_enabled():
             property_rules = property_utils.PropertyRules(self.policy)
-            pir = property_protections.ProtectedImageRepoProxy(
-                notifier_image_repo, context, property_rules)
-            authorized_image_repo = authorization.ImageRepoProxy(
-                pir, context)
-        else:
-            authorized_image_repo = authorization.ImageRepoProxy(
-                notifier_image_repo, context)
+            repo = property_protections.ProtectedImageRepoProxy(
+                repo, context, property_rules)
+        if authorization_layer:
+            repo = authorization.ImageRepoProxy(repo, context)
 
-        return authorized_image_repo
+        return repo
 
     def get_member_repo(self, image, context):
         image_member_repo = glance.db.ImageMemberRepo(
