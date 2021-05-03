@@ -65,6 +65,10 @@ class TestWSGIServer(functional.FunctionalTest):
 
 
 class StagingCleanupBase:
+    def _configure_api_server(self):
+        self.my_api_server.deployment_flavor = 'noauth'
+        self.my_api_server.send_identity_credentials = True
+
     def _url(self, path):
         return 'http://127.0.0.1:%d%s' % (self.api_port, path)
 
@@ -164,6 +168,7 @@ class TestStagingCleanupMultistore(functional.MultipleBackendFunctionalTest,
     def setUp(self):
         super(TestStagingCleanupMultistore, self).setUp()
         self.my_api_server = self.api_server_multiple_backend
+        self._configure_api_server()
 
 
 class TestStagingCleanupSingleStore(functional.FunctionalTest,
@@ -175,3 +180,4 @@ class TestStagingCleanupSingleStore(functional.FunctionalTest,
     def setUp(self):
         super(TestStagingCleanupSingleStore, self).setUp()
         self.my_api_server = self.api_server
+        self._configure_api_server()
