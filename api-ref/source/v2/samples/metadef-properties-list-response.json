@@ -59,15 +59,15 @@
             "type": "integer"
         },
         "hw_vif_model": {
-            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the configured hypervisor. KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, and virtio. VMware: e1000, e1000e, VirtualE1000, VirtualE1000e, VirtualPCNet32, VirtualSriovEthernetCard, and VirtualVmxnet. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
+            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the configured hypervisor. KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, virtio, e1000e and vmxnet3. VMware: e1000, e1000e, VirtualE1000, VirtualE1000e, VirtualPCNet32, VirtualSriovEthernetCard, and VirtualVmxnet. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
             "enum": [
                 "e1000",
                 "ne2k_pci",
                 "pcnet",
                 "rtl8139",
                 "virtio",
-                "e1000",
                 "e1000e",
+                "vmxnet3",
                 "VirtualE1000",
                 "VirtualE1000e",
                 "VirtualPCNet32",
