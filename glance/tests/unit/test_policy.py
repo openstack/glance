@@ -1105,3 +1105,10 @@ class TestImageTarget(base.IsolatedUnitTest):
         image = ImageStub()
         target = glance.api.policy.ImageTarget(image)
         self.assertNotIn('locations', list(target))
+
+    def test_image_target_project_id_alias(self):
+        image = ImageStub()
+        target = glance.api.policy.ImageTarget(image)
+        self.assertIn('project_id', target)
+        self.assertEqual(image.owner, target['project_id'])
+        self.assertEqual(image.owner, target['owner'])

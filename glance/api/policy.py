@@ -186,13 +186,11 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
 
     def save(self, image, from_state=None):
         target = dict(image.target)
-        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'modify_image', target)
         return super(ImageRepoProxy, self).save(image, from_state=from_state)
 
     def add(self, image):
         target = dict(image.target)
-        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'add_image', target)
         return super(ImageRepoProxy, self).add(image)
 
@@ -220,7 +218,6 @@ class ImageProxy(glance.domain.proxy.Image):
     @visibility.setter
     def visibility(self, value):
         target = dict(self.target)
-        target['project_id'] = target.get('owner', None)
         _enforce_image_visibility(self.policy, self.context, value, target)
         self.image.visibility = value
 
@@ -243,14 +240,12 @@ class ImageProxy(glance.domain.proxy.Image):
 
     def delete(self):
         target = dict(self.target)
-        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'delete_image', target)
         return self.image.delete()
 
     def deactivate(self):
         LOG.debug('Attempting deactivate')
         target = dict(ImageTarget(self.image))
-        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'deactivate', target=target)
         LOG.debug('Deactivate allowed, continue')
         self.image.deactivate()
@@ -258,14 +253,12 @@ class ImageProxy(glance.domain.proxy.Image):
     def reactivate(self):
         LOG.debug('Attempting reactivate')
         target = dict(ImageTarget(self.image))
-        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'reactivate', target=target)
         LOG.debug('Reactivate allowed, continue')
         self.image.reactivate()
 
     def get_data(self, *args, **kwargs):
         target = dict(ImageTarget(self.image))
-        target['project_id'] = target.get('owner', None)
         self.policy.enforce(self.context, 'download_image', target)
         return self.image.get_data(*args, **kwargs)
 
@@ -551,10 +544,14 @@ class ImageTarget(abc.Mapping):
             yield key
         for key in getattr(self.target, 'extra_properties', {}).keys():
             yield key
+        for alias in ['project_id']:
+            yield alias
 
     def key_transforms(self, key):
         if key == 'id':
             key = 'image_id'
+        elif key == 'project_id':
+            key = 'owner'
 
         return key
 
