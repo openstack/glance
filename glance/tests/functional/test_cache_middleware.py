@@ -22,10 +22,10 @@ to the backend store.
 
 import os
 import shutil
-import uuid
 
 import httplib2
 from oslo_serialization import jsonutils
+from oslo_utils.fixture import uuidsentinel as uuids
 from oslo_utils import units
 from six.moves import http_client
 
@@ -38,6 +38,18 @@ FIVE_KB = 5 * units.Ki
 
 class BaseCacheMiddlewareTest(object):
 
+    def _headers(self, extra=None):
+        headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': uuids.tenant,
+            'X-Roles': 'member',
+        }
+        if extra:
+            headers.update(extra)
+        return headers
+
     @skip_if_disabled
     def test_cache_middleware_transparent_v2(self):
         """Ensure the v2 API image transfer calls trigger caching"""
@@ -47,7 +59,7 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = {'content-type': 'application/json'}
+        headers = self._headers({'content-type': 'application/json'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
@@ -63,7 +75,7 @@ class BaseCacheMiddlewareTest(object):
 
         path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
-        headers = {'content-type': 'application/octet-stream'}
+        headers = self._headers({'content-type': 'application/octet-stream'})
         image_data = "*" * FIVE_KB
         response, content = http.request(path, 'PUT',
                                          headers=headers,
@@ -77,7 +89,7 @@ class BaseCacheMiddlewareTest(object):
 
         # Grab the image
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.OK, response.status)
 
         # Verify image now in cache
@@ -90,7 +102,7 @@ class BaseCacheMiddlewareTest(object):
         path = "http://%s:%d/v2/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
-        response, content = http.request(path, 'DELETE')
+        response, content = http.request(path, 'DELETE', headers=headers)
         self.assertEqual(http_client.NO_CONTENT, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
@@ -109,7 +121,7 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = {'content-type': 'application/json'}
+        headers = self._headers({'content-type': 'application/json'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
@@ -125,7 +137,7 @@ class BaseCacheMiddlewareTest(object):
 
         path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
-        headers = {'content-type': 'application/octet-stream'}
+        headers = self._headers({'content-type': 'application/octet-stream'})
         image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         response, content = http.request(path, 'PUT',
                                          headers=headers,
@@ -141,14 +153,7 @@ class BaseCacheMiddlewareTest(object):
         http = httplib2.Http()
         # range download request
         range_ = 'bytes=3-5'
-        headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': str(uuid.uuid4()),
-            'X-Roles': 'member',
-            'Range': range_
-        }
+        headers = self._headers({'Range': range_})
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
         self.assertEqual(b'DEF', content)
@@ -158,14 +163,7 @@ class BaseCacheMiddlewareTest(object):
         # image downloads in requests. This test is included to ensure that
         # we prevent regression.
         content_range = 'bytes 3-5/*'
-        headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': str(uuid.uuid4()),
-            'X-Roles': 'member',
-            'Content-Range': content_range
-        }
+        headers = self._headers({'Content-Range': content_range})
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
         self.assertEqual(b'DEF', content)
@@ -189,7 +187,7 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = {'content-type': 'application/json'}
+        headers = self._headers({'content-type': 'application/json'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
@@ -205,7 +203,7 @@ class BaseCacheMiddlewareTest(object):
 
         path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
-        headers = {'content-type': 'application/octet-stream'}
+        headers = self._headers({'content-type': 'application/octet-stream'})
         image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         response, content = http.request(path, 'PUT',
                                          headers=headers,
@@ -219,7 +217,7 @@ class BaseCacheMiddlewareTest(object):
 
         # Download the entire image
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.OK, response.status)
         self.assertEqual(b'ABCDEFGHIJKLMNOPQRSTUVWXYZ', content)
 
@@ -236,15 +234,8 @@ class BaseCacheMiddlewareTest(object):
         # from cache
         # range download request
         range_ = 'bytes=3-5'
-        headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': str(uuid.uuid4()),
-            'X-Roles': 'member',
-            'Range': range_,
-            'content-type': 'application/json'
-        }
+        headers = self._headers({'Range': range_,
+                                 'content-type': 'application/json'})
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
         self.assertEqual(b'DEF', content)
@@ -256,15 +247,8 @@ class BaseCacheMiddlewareTest(object):
         # image downloads in requests. This test is included to ensure that
         # we prevent regression.
         content_range = 'bytes 3-5/*'
-        headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': str(uuid.uuid4()),
-            'X-Roles': 'member',
-            'Content-Range': content_range,
-            'content-type': 'application/json'
-        }
+        headers = self._headers({'Content-Range': content_range,
+                                 'content-type': 'application/json'})
         response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
         self.assertEqual(b'DEF', content)
@@ -285,7 +269,7 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = {'content-type': 'application/json'}
+        headers = self._headers({'content-type': 'application/json'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
@@ -301,7 +285,7 @@ class BaseCacheMiddlewareTest(object):
 
         path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
                                                    image_id)
-        headers = {'content-type': 'application/octet-stream'}
+        headers = self._headers({'content-type': 'application/octet-stream'})
         image_data = "*" * FIVE_KB
         response, content = http.request(path, 'PUT',
                                          headers=headers,
@@ -319,7 +303,7 @@ class BaseCacheMiddlewareTest(object):
 
         # Grab the image
         http = httplib2.Http()
-        response, content = http.request(path, 'GET')
+        response, content = http.request(path, 'GET', headers=headers)
         self.assertEqual(http_client.FORBIDDEN, response.status)
 
         # Now, we delete the image from the server and verify that
@@ -327,7 +311,7 @@ class BaseCacheMiddlewareTest(object):
         path = "http://%s:%d/v2/images/%s" % ("127.0.0.1", self.api_port,
                                               image_id)
         http = httplib2.Http()
-        response, content = http.request(path, 'DELETE')
+        response, content = http.request(path, 'DELETE', headers=headers)
         self.assertEqual(http_client.NO_CONTENT, response.status)
 
         self.assertFalse(os.path.exists(image_cached_path))
@@ -410,6 +394,7 @@ class TestImageCacheSqlite(functional.FunctionalTest,
         super(TestImageCacheSqlite, self).setUp()
 
         self.api_server.deployment_flavor = "caching"
+        self.api_server.send_identity_credentials = True
 
     def tearDown(self):
         super(TestImageCacheSqlite, self).tearDown()

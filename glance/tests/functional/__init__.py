@@ -479,7 +479,7 @@ pipeline =
     rootapp
 
 [pipeline:glance-api-caching]
-pipeline = cors healthcheck versionnegotiation gzip unauthenticated-context
+pipeline = cors healthcheck versionnegotiation gzip context
  cache rootapp
 
 [pipeline:glance-api-cachemanagement]
