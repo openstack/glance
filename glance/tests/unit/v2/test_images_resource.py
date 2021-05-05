@@ -1579,7 +1579,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           another_request, created_image.image_id, changes)
 
-        another_request = unit_test_utils.get_fake_request(roles=['spl_role'])
+        another_request = unit_test_utils.get_fake_request(roles=['member',
+                                                                  'spl_role'])
         output = self.controller.update(another_request,
                                         created_image.image_id, changes)
         self.assertEqual('bar',
@@ -1845,7 +1846,8 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        another_request = unit_test_utils.get_fake_request(roles=['joe_soap'])
+        another_request = unit_test_utils.get_fake_request(roles=['member',
+                                                                  'joe_soap'])
         changes = [
             {'op': 'replace', 'path': ['x_all_permitted'], 'value': 'baz'},
         ]
@@ -1911,11 +1913,12 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
+        another_request = unit_test_utils.get_fake_request(roles=['member',
+                                                                  'fake_role'])
         changes = [
             {'op': 'replace', 'path': ['x_none_update'], 'value': 'baz'},
         ]
-        self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           another_request, created_image.image_id, changes)
 
     def test_delete_locked_down_protected_prop(self):
@@ -1927,11 +1930,12 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
+        another_request = unit_test_utils.get_fake_request(roles=['member',
+                                                                  'fake_role'])
         changes = [
             {'op': 'remove', 'path': ['x_none_delete']}
         ]
-        self.assertRaises(webob.exc.HTTPConflict, self.controller.update,
+        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           another_request, created_image.image_id, changes)
 
     def test_update_replace_locations_non_empty(self):
