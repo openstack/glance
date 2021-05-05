@@ -35,6 +35,7 @@ import webob.exc
 from glance.api import authorization
 from glance.api import common
 from glance.api import policy
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import location_strategy
 from glance.common import store_utils
@@ -562,14 +563,17 @@ class ImagesController(object):
 
     @utils.mutating
     def update(self, req, image_id, changes):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         try:
             image = image_repo.get(image_id)
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
 
             for change in changes:
                 change_method_name = '_do_%s' % change['op']
                 change_method = getattr(self, change_method_name)
-                change_method(req, image, change)
+                change_method(req, image, api_pol, change)
 
             if changes:
                 image_repo.save(image)
@@ -595,7 +599,7 @@ class ImagesController(object):
 
         return image
 
-    def _do_replace(self, req, image, change):
+    def _do_replace(self, req, image, api_pol, change):
         path = change['path']
         path_root = path[0]
         value = change['value']
@@ -603,11 +607,13 @@ class ImagesController(object):
             msg = _("Cannot set locations to empty list.")
             raise webob.exc.HTTPForbidden(msg)
         elif path_root == 'locations' and value:
+            api_pol.update_locations()
             self._do_replace_locations(image, value)
         elif path_root == 'owner' and req.context.is_admin == False:
             msg = _("Owner can't be updated by non admin.")
             raise webob.exc.HTTPForbidden(msg)
         else:
+            api_pol.update_property(path_root, value)
             if hasattr(image, path_root):
                 setattr(image, path_root, value)
             elif path_root in image.extra_properties:
@@ -616,14 +622,16 @@ class ImagesController(object):
                 msg = _("Property %s does not exist.")
                 raise webob.exc.HTTPConflict(msg % path_root)
 
-    def _do_add(self, req, image, change):
+    def _do_add(self, req, image, api_pol, change):
         path = change['path']
         path_root = path[0]
         value = change['value']
         json_schema_version = change.get('json_schema_version', 10)
         if path_root == 'locations':
+            api_pol.update_locations()
             self._do_add_locations(image, path[1], value)
         else:
+            api_pol.update_property(path_root, value)
             if ((hasattr(image, path_root) or
                     path_root in image.extra_properties)
                     and json_schema_version == 4):
@@ -634,15 +642,17 @@ class ImagesController(object):
             else:
                 image.extra_properties[path_root] = value
 
-    def _do_remove(self, req, image, change):
+    def _do_remove(self, req, image, api_pol, change):
         path = change['path']
         path_root = path[0]
         if path_root == 'locations':
+            api_pol.delete_locations()
             try:
                 self._do_remove_locations(image, path[1])
             except exception.Forbidden as e:
                 raise webob.exc.HTTPForbidden(e.msg)
         else:
+            api_pol.update_property(path_root)
             if hasattr(image, path_root):
                 msg = _("Property %s may not be removed.")
                 raise webob.exc.HTTPForbidden(msg % path_root)

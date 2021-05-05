@@ -1409,7 +1409,8 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_update_format_properties(self):
         statuses_for_immutability = ['active', 'saving', 'killed']
-        request = unit_test_utils.get_fake_request(is_admin=True)
+        request = unit_test_utils.get_fake_request(roles=['admin'],
+                                                   is_admin=True)
         for status in statuses_for_immutability:
             image = {
                 'id': str(uuid.uuid4()),

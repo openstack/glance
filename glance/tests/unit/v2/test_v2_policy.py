@@ -54,3 +54,88 @@ class APIPolicyBase(utils.BaseTestCase):
         # Check fails
         self.enforcer.enforce.side_effect = exception.Forbidden
         self.assertFalse(self.policy.check('_enforce', 'fake_rule'))
+
+
+class APIImagePolicy(APIPolicyBase):
+    def setUp(self):
+        super(APIImagePolicy, self).setUp()
+        self.image = mock.MagicMock()
+        self.policy = policy.ImageAPIPolicy(self.context, self.image,
+                                            enforcer=self.enforcer)
+
+    def test_enforce(self):
+        self.assertRaises(webob.exc.HTTPNotFound,
+                          super(APIImagePolicy, self).test_enforce)
+
+    @mock.patch('glance.api.policy._enforce_image_visibility')
+    def test_enforce_visibility(self, mock_enf):
+        # Visibility passes
+        self.policy._enforce_visibility('something')
+        mock_enf.assert_called_once_with(self.enforcer,
+                                         self.context,
+                                         'something',
+                                         mock.ANY)
+
+        # Make sure that Forbidden gets caught and translated
+        mock_enf.side_effect = exception.Forbidden
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.policy._enforce_visibility, 'something')
+
+        # Any other exception comes straight through
+        mock_enf.side_effect = exception.ImageNotFound
+        self.assertRaises(exception.ImageNotFound,
+                          self.policy._enforce_visibility, 'something')
+
+    def test_update_property(self):
+        with mock.patch.object(self.policy, '_enforce') as mock_enf:
+            self.policy.update_property('foo', None)
+            mock_enf.assert_called_once_with('modify_image')
+
+        with mock.patch.object(self.policy, '_enforce_visibility') as mock_enf:
+            self.policy.update_property('visibility', 'foo')
+            mock_enf.assert_called_once_with('foo')
+
+    def test_update_locations(self):
+        self.policy.update_locations()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'set_image_location',
+                                                      mock.ANY)
+
+    def test_delete_locations(self):
+        self.policy.delete_locations()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'delete_image_location',
+                                                      mock.ANY)
+
+    def test_enforce_exception_behavior(self):
+        with mock.patch.object(self.policy.enforcer, 'enforce') as mock_enf:
+            # First make sure we can update if allowed
+            self.policy.update_property('foo', None)
+            self.assertTrue(mock_enf.called)
+
+            # Make sure that if modify_image and get_image both return
+            # Forbidden then we should get NotFound. This is because
+            # we are not allowed to delete the image, nor see that it
+            # even exists.
+            mock_enf.reset_mock()
+            mock_enf.side_effect = exception.Forbidden
+            self.assertRaises(webob.exc.HTTPNotFound,
+                              self.policy.update_property, 'foo', None)
+            # Make sure we checked modify_image, and then get_image.
+            mock_enf.assert_has_calls([
+                mock.call(mock.ANY, 'modify_image', mock.ANY),
+                mock.call(mock.ANY, 'get_image', mock.ANY)])
+
+            # Make sure that if modify_image is disallowed, but
+            # get_image is allowed, that we get Forbidden. This is
+            # because we are allowed to see the image, but not modify
+            # it, so 403 indicates that without confusing the user and
+            # returning "not found" for an image they are able to GET.
+            mock_enf.reset_mock()
+            mock_enf.side_effect = [exception.Forbidden, lambda *a: None]
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.policy.update_property, 'foo', None)
+            # Make sure we checked modify_image, and then get_image.
+            mock_enf.assert_has_calls([
+                mock.call(mock.ANY, 'modify_image', mock.ANY),
+                mock.call(mock.ANY, 'get_image', mock.ANY)])
