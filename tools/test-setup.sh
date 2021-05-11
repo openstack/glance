@@ -15,6 +15,34 @@ DB_ROOT_PW=${MYSQL_ROOT_PW:-insecure_slave}
 DB_USER=openstack_citest
 DB_PW=openstack_citest
 
+function set_conf_line {
+    # parameters: file regex value
+    # check if the regex occurs in the file
+    # If so, replace with the value.
+    # If not, append the value to the end of the file.
+    sudo sh -c "grep -q -e '$2' $1 && \
+            sed -i 's|$2|$3|g' $1 || \
+            echo '$3' >> $1"
+}
+
+if $(egrep -q "^.*(centos:centos:|cloudlinux:cloudlinux:|redhat:enterprise_linux:)[78].*$" /etc/*release); then
+    # mysql needs to be started on centos/rhel
+    sudo systemctl restart mariadb.service
+
+    # postgres setup for centos
+    # make sure to use scram-sha-256 instead of md5 for fips!
+    sudo postgresql-setup --initdb
+    PG_CONF=/var/lib/pgsql/data/postgresql.conf
+    set_conf_line $PG_CONF '^password_encryption =.*' 'password_encryption = scram-sha-256'
+
+    PG_HBA=/var/lib/pgsql/data/pg_hba.conf
+    set_conf_line $PG_HBA '^local[ \t]*all[ \t]*all.*' 'local all all peer'
+    set_conf_line $PG_HBA '^host[ \t]*all[ \t]*all[ \t]*127.0.0.1\/32.*' 'host all all 127.0.0.1/32 scram-sha-256'
+    set_conf_line $PG_HBA '^host[ \t]*all[ \t]*all[ \t]*::1\/128.*' 'host all all ::1/128 scram-sha-256'
+
+    sudo systemctl restart postgresql.service
+fi
+
 sudo -H mysqladmin -u root password $DB_ROOT_PW
 
 # It's best practice to remove anonymous users from the database.  If
