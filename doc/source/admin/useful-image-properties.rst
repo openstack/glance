@@ -96,6 +96,7 @@ Here is a list of useful image properties and the values they expect.
 
   One of:
 
+  * ``aarch64`` - `ARM 64-bit <https://en.wikipedia.org/wiki/AArch64>`_
   * ``alpha`` - `DEC 64-bit RISC <https://en.wikipedia.org/wiki/DEC_Alpha>`_
   * ``armv7l`` - `ARM Cortex-A7 MPCore <https://en.wikipedia.org/wiki/ARM_architecture>`_
   * ``cris`` - `Ethernet, Token Ring, AXis—Code Reduced Instruction Set <https://en.wikipedia.org/wiki/ETRAX_CRIS>`_
