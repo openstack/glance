@@ -28,11 +28,18 @@ from glance.tests.unit import base
 
 # make this public so it doesn't need to be repeated for the
 # functional tests
-def get_versions_list(url, enabled_backends=False):
+def get_versions_list(url, enabled_backends=False,
+                      enabled_cache=False):
     image_versions = [
         {
             'id': 'v2.13',
             'status': 'CURRENT',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
+            'id': 'v2.9',
+            'status': 'SUPPORTED',
             'links': [{'rel': 'self',
                        'href': '%s/v2/' % url}],
         },
@@ -88,6 +95,12 @@ def get_versions_list(url, enabled_backends=False):
     if enabled_backends:
         image_versions = [
             {
+                'id': 'v2.13',
+                'status': 'CURRENT',
+                'links': [{'rel': 'self',
+                           'href': '%s/v2/' % url}],
+            },
+            {
                 'id': 'v2.12',
                 'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
@@ -117,14 +130,16 @@ def get_versions_list(url, enabled_backends=False):
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             }
-        ] + image_versions
-    else:
+        ] + image_versions[2:]
+
+    if enabled_cache:
         image_versions.insert(0, {
-            'id': 'v2.9',
-            'status': 'SUPPORTED',
+            'id': 'v2.14',
+            'status': 'CURRENT',
             'links': [{'rel': 'self',
                        'href': '%s/v2/' % url}],
         })
+        image_versions[1]['status'] = 'SUPPORTED'
 
     return image_versions
 
@@ -151,6 +166,14 @@ class VersionsTest(base.IsolatedUnitTest):
                                      enabled_backends=True)
         self.assertEqual(expected, results)
 
+        self.config(image_cache_dir='/tmp/cache')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list('http://127.0.0.1:9292',
+                                     enabled_backends=True,
+                                     enabled_cache=True)
+        self.assertEqual(expected, results)
+
     def test_get_version_list_public_endpoint(self):
         req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
         req.accept = 'application/json'
@@ -170,6 +193,14 @@ class VersionsTest(base.IsolatedUnitTest):
                                      enabled_backends=True)
         self.assertEqual(expected, results)
 
+        self.config(image_cache_dir='/tmp/cache')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list('https://example.com:9292',
+                                     enabled_backends=True,
+                                     enabled_cache=True)
+        self.assertEqual(expected, results)
+
     def test_get_version_list_secure_proxy_ssl_header(self):
         self.config(secure_proxy_ssl_header='HTTP_X_FORWARDED_PROTO')
         url = 'http://localhost:9292'
@@ -186,6 +217,14 @@ class VersionsTest(base.IsolatedUnitTest):
         res = versions.Controller().index(req)
         results = jsonutils.loads(res.body)['versions']
         expected = get_versions_list(url, enabled_backends=True)
+        self.assertEqual(expected, results)
+
+        self.config(image_cache_dir='/tmp/cache')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list(url,
+                                     enabled_backends=True,
+                                     enabled_cache=True)
         self.assertEqual(expected, results)
 
     def test_get_version_list_secure_proxy_ssl_header_https(self):
@@ -208,6 +247,14 @@ class VersionsTest(base.IsolatedUnitTest):
         expected = get_versions_list(ssl_url, enabled_backends=True)
         self.assertEqual(expected, results)
 
+        self.config(image_cache_dir='/tmp/cache')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list(ssl_url,
+                                     enabled_backends=True,
+                                     enabled_cache=True)
+        self.assertEqual(expected, results)
+
     def test_get_version_list_for_external_app(self):
         url = 'http://customhost:9292/app/api'
         req = webob.Request.blank('/', base_url=url)
@@ -224,6 +271,13 @@ class VersionsTest(base.IsolatedUnitTest):
         results = jsonutils.loads(res.body)['versions']
         expected = get_versions_list(url, enabled_backends=True)
         self.assertEqual(expected, results)
+
+        self.config(image_cache_dir='/tmp/cache')
+        res = versions.Controller().index(req)
+        results = jsonutils.loads(res.body)['versions']
+        expected = get_versions_list(url,
+                                     enabled_backends=True,
+                                     enabled_cache=True)
 
 
 class VersionNegotiationTest(base.IsolatedUnitTest):
@@ -333,15 +387,21 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    # version 2.14 does not exist
-    def test_request_url_v2_14_default_unsupported(self):
+    def test_request_url_v2_14_enabled_supported(self):
+        self.config(image_cache_dir='/tmp/cache')
         request = webob.Request.blank('/v2.14/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    # version 2.15 does not exist
+    def test_request_url_v2_15_default_unsupported(self):
+        request = webob.Request.blank('/v2.15/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v2_14_enabled_unsupported(self):
-        self.config(enabled_backends='slow:one,fast:two')
-        request = webob.Request.blank('/v2.14/images')
+    def test_request_url_v2_15_enabled_unsupported(self):
+        self.config(image_cache_dir='/tmp/cache')
+        request = webob.Request.blank('/v2.15/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 

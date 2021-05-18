@@ -13,6 +13,7 @@
 import itertools
 
 from glance.policies import base
+from glance.policies import cache
 from glance.policies import image
 from glance.policies import metadef
 from glance.policies import tasks
@@ -24,4 +25,5 @@ def list_rules():
         image.list_rules(),
         tasks.list_rules(),
         metadef.list_rules(),
+        cache.list_rules(),
     )

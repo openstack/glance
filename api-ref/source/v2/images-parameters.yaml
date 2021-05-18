@@ -1,4 +1,12 @@
 # variables in header
+cache-clear-header:
+  description: |
+    A keyword indicating 'cache', 'queue' or empty string to indicate the delete
+    API to delete images from cache or queue or delete from both.   If this header
+    is missing then all cached and queued images for caching will be deleted.
+  in: header
+  required: false
+  type: string
 Content-Length:
   description: |
     The length of the body in octets (8-bit bytes)

@@ -1390,8 +1390,8 @@ configuration file, select the appropriate deployment flavor like so::
   [paste_deploy]
   flavor = caching
 
-Enabling the Image Cache Management Middleware
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Enabling the Image Cache Management Middleware (DEPRECATED)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There is an optional ``cachemanage`` middleware that allows you to
 directly interact with cache images. Use this flavor in place of the
@@ -1401,6 +1401,11 @@ can chose: ``cachemanagement``, ``keystone+cachemanagement`` and
 
   [paste_deploy]
   flavor = keystone+cachemanagement
+
+The new cache management endpoints were introduced in Images API v. 2.13.
+If cache middleware is configured the new endpoints will be active and
+there is no need to use the cachemanagement middleware unless the old
+`glance-cache-manage` tooling is desired to be still used.
 
 Configuration Options Affecting the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
