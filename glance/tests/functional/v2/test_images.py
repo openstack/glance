@@ -7074,7 +7074,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
     def test_upload(self):
         # Set a quota of 5MiB
         self.set_limit({'image_size_total': 5,
-                        'image_count_total': 10})
+                        'image_count_total': 10,
+                        'image_count_uploading': 10})
         self.start_server()
 
         # First upload of 3MiB is good
@@ -7098,7 +7099,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
     def test_import(self):
         # Set a quota of 5MiB
         self.set_limit({'image_size_total': 5,
-                        'image_count_total': 10})
+                        'image_count_total': 10,
+                        'image_count_uploading': 10})
         self.start_server()
 
         # First upload of 3MiB is good
@@ -7121,7 +7123,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
     def test_import_would_go_over(self):
         # Set a quota limit of 5MiB
         self.set_limit({'image_size_total': 5,
-                        'image_count_total': 10})
+                        'image_count_total': 10,
+                        'image_count_uploading': 10})
         self.start_server()
 
         # First upload of 3MiB is good
@@ -7161,7 +7164,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # Set a size quota of 5MiB, with more staging quota than we need.
         self.set_limit({'image_size_total': 5,
                         'image_count_total': 10,
-                        'image_stage_total': 15})
+                        'image_stage_total': 15,
+                        'image_count_uploading': 10})
         self.start_server()
 
         # First import of 3MiB is good
@@ -7185,7 +7189,9 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # before copy. This request should succeed, but the copy task
         # should fail the staging quota check.
         self.set_limit({'image_size_total': 15,
-                        'image_stage_total': 5})
+                        'image_count_total': 10,
+                        'image_stage_total': 5,
+                        'image_count_uploading': 10})
         req = self._import_copy(image_id, ['store3'])
         self.assertEqual(202, req.status_code)
         self._wait_for_import(image_id)
@@ -7193,7 +7199,9 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
 
         # If we increase our stage quota, we should now be able to copy.
         self.set_limit({'image_size_total': 15,
-                        'image_stage_total': 10})
+                        'image_count_total': 10,
+                        'image_stage_total': 10,
+                        'image_count_uploading': 10})
         req = self._import_copy(image_id, ['store3'])
         self.assertEqual(202, req.status_code)
         self._wait_for_import(image_id)
@@ -7203,7 +7211,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # Set a quota of 5MiB
         self.set_limit({'image_size_total': 15,
                         'image_stage_total': 5,
-                        'image_count_total': 10})
+                        'image_count_total': 10,
+                        'image_count_uploading': 10})
         self.start_server()
 
         # Stage 6MiB, which is allowed to complete, but leaves us over
@@ -7237,7 +7246,8 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
     def test_create(self):
         # Set a quota of 2 images
         self.set_limit({'image_size_total': 15,
-                        'image_count_total': 2})
+                        'image_count_total': 2,
+                        'image_count_uploading': 10})
         self.start_server()
 
         # Create one image
@@ -7255,3 +7265,67 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
 
         # Now we can create that third image
         self._create()
+
+    def test_uploading_methods(self):
+        self.set_limit({'image_size_total': 100,
+                        'image_stage_total': 100,
+                        'image_count_total': 100,
+                        'image_count_uploading': 1})
+        self.start_server()
+
+        # Create and stage one image. We are now at quota for count_uploading.
+        image_id = self._create_and_stage()
+
+        # Make sure we can not stage any more images.
+        self._create_and_stage(expected_code=413)
+
+        # Make sure we can not upload any more images.
+        self._create_and_upload(expected_code=413)
+
+        # Finish importing one of the images, which should put us under quota
+        # for count_uploading.
+        resp = self._import_direct(image_id, ['store1'])
+        self.assertEqual(202, resp.status_code)
+        self.assertEqual('active', self._wait_for_import(image_id)['status'])
+
+        # Make sure we can upload now.
+        self._create_and_upload()
+
+        # Stage another, which should put us at quota for count_uploading.
+        image_id2 = self._create_and_stage()
+
+        # Start a copy. The request should succeed (because async) but
+        # the task should ultimately fail because we are over quota.
+        # NOTE(danms): It would be nice to try to do another copy or
+        # upload while this is running, but since the task is fully
+        # async and the copy happens quickly, we can't really time it
+        # to avoid an unstable test (without some mocking).
+        resp = self._import_copy(image_id, ['store2'])
+        self.assertEqual(202, resp.status_code)
+        self._wait_for_import(image_id)
+        task = self._get_latest_task(image_id)
+        self.assertEqual('failure', task['status'])
+        self.assertIn('Resource image_count_uploading is over limit',
+                      task['message'])
+
+        # Finish the staged import.
+        self._import_direct(image_id2, ['store1'])
+        self.assertEqual(202, resp.status_code)
+        self._wait_for_import(image_id2)
+
+        # Make sure we can upload again after the import finishes.
+        self._create_and_upload()
+
+        # Re-try the copy that should now succeed and wait for it to
+        # finish.
+        resp = self._import_copy(image_id, ['store2'])
+        self.assertEqual(202, resp.status_code)
+        self._wait_for_import(image_id)
+        task = self._get_latest_task(image_id)
+        self.assertEqual('success', task['status'])
+
+        # Make sure we can still upload.
+        self._create_and_upload()
+
+        # Make sure we can still import.
+        self._create_and_import(stores=['store1'])

@@ -469,6 +469,9 @@ class ImagesController(object):
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.InvalidImageStatusTransition as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
+        except exception.LimitExceeded as e:
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
+                                                      request=req)
         except ValueError as e:
             LOG.debug("Cannot import data for image %(id)s: %(e)s",
                       {'id': image_id,

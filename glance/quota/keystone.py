@@ -30,6 +30,7 @@ limit.opts.register_opts(CONF)
 QUOTA_IMAGE_SIZE_TOTAL = 'image_size_total'
 QUOTA_IMAGE_STAGING_TOTAL = 'image_stage_total'
 QUOTA_IMAGE_COUNT_TOTAL = 'image_count_total'
+QUOTA_IMAGE_COUNT_UPLOADING = 'image_count_uploading'
 
 
 def _enforce_some(context, project_id, quota_value_fns, deltas):
@@ -125,3 +126,19 @@ def enforce_image_count_total(context, project_id):
         context, project_id, QUOTA_IMAGE_COUNT_TOTAL,
         lambda: db.user_get_image_count(context, project_id),
         delta=1)
+
+
+def enforce_image_count_uploading(context, project_id):
+    """Enforce the image_count_uploading quota.
+
+    This enforces the total count of images in any state of upload by
+    the supplied project_id.
+
+    :param delta: This defaults to one, but should be zero when checking
+                  an operation on an image that already counts against this
+                  quota (i.e. a stage operation of an existing queue image).
+    """
+    _enforce_one(
+        context, project_id, QUOTA_IMAGE_COUNT_UPLOADING,
+        lambda: db.user_get_uploading_count(context, project_id),
+        delta=0)

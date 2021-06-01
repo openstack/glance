@@ -137,6 +137,8 @@ class TaskExecutor(glance.async_.TaskExecutor):
             raise exception.ImportTaskError(message=exc.reason)
         except (exception.BadStoreUri, exception.Invalid) as exc:
             raise exception.ImportTaskError(message=exc.msg)
+        except exception.LimitExceeded as exc:
+            raise exception.ImportTaskError(message=exc.msg)
         except RuntimeError:
             raise NotImplementedError()
         except Exception as e:

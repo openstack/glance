@@ -169,6 +169,8 @@ class ImageDataController(object):
                              encodeutils.exception_to_unicode(e))
 
                 image_repo.save(image, from_state='queued')
+                ks_quota.enforce_image_count_uploading(req.context,
+                                                       req.context.owner)
                 image.set_data(data, size, backend=backend)
 
                 try:
@@ -275,6 +277,12 @@ class ImageDataController(object):
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
+        except exception.LimitExceeded as e:
+            LOG.error(str(e))
+            self._restore(image_repo, image)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
+                                                      request=req)
+
         except glance_store.StorageWriteDenied as e:
             msg = _("Insufficient permissions on image "
                     "storage media: %s") % encodeutils.exception_to_unicode(e)
@@ -357,6 +365,8 @@ class ImageDataController(object):
             image = image_repo.get(image_id)
             image.status = 'uploading'
             image_repo.save(image, from_state='queued')
+            ks_quota.enforce_image_count_uploading(req.context,
+                                                   req.context.owner)
             try:
                 uri, size, id, store_info = staging_store.add(
                     image_id, utils.LimitingReader(
@@ -399,6 +409,12 @@ class ImageDataController(object):
             LOG.debug(msg)
             self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
+                                                      request=req)
+
+        except exception.LimitExceeded as e:
+            LOG.debug(str(e))
+            self._unstage(image_repo, image, staging_store)
+            raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
                                                       request=req)
 
         except glance_store.StorageWriteDenied as e:

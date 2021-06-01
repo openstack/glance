@@ -882,5 +882,8 @@ def get_flow(**kwargs):
                      stores, action_wrapper,
                      ks_quota.enforce_image_staging_total,
                      delta=image_size)
+        assert_quota(kwargs['context'], task_repo, task_id,
+                     stores, action_wrapper,
+                     ks_quota.enforce_image_count_uploading)
 
     return flow
