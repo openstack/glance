@@ -425,3 +425,10 @@ class TestImageStorageUsage(base.TestDriver,
             # Each user has two active images, two staged images, two
             # importing, and two queued images
             self.assertEqual(8, count)
+
+    def test_get_uploading_count(self):
+        for owner, ctxt in self.contexts.items():
+            count = self.db_api.user_get_uploading_count(ctxt, ctxt.owner)
+            # Each user has two staged images, one image being copied,
+            # and two importing.
+            self.assertEqual(5, count)

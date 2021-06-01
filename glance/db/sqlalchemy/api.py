@@ -788,6 +788,33 @@ def _image_get_count_by_owner(owner, session):
     return query.count()
 
 
+def _image_get_uploading_count_by_owner(owner, session):
+    """Return a count of the images uploading or importing."""
+
+    importing_statuses = ('saving', 'uploading', 'importing')
+
+    # Images in any state indicating uploading, including through image_upload
+    # or importing count for this.
+    query = session.query(models.Image)
+    query = query.filter(models.Image.owner == owner)
+    query = query.filter(models.Image.status.in_(importing_statuses))
+    uploading = query.count()
+
+    # Images that are not in the above list, but are not deleted and
+    # in the process of doing a copy count for this.
+    props = session.query(models.ImageProperty).filter(
+        models.ImageProperty.name == 'os_glance_importing_to_stores',
+        models.ImageProperty.value != '').subquery()
+    query = session.query(models.Image)
+    query = query.join(props, props.c.image_id == models.Image.id)
+    query = query.filter(models.Image.owner == owner)
+    query = query.filter(~models.Image.status.in_(importing_statuses +
+                                                  ('killed', 'deleted')))
+    copying = query.count()
+
+    return uploading + copying
+
+
 def _validate_image(values, mandatory_status=True):
     """
     Validates the incoming data and raises a Invalid exception
@@ -1604,6 +1631,11 @@ def user_get_staging_usage(context, owner_id, session=None):
 def user_get_image_count(context, owner_id, session=None):
     session = session or get_session()
     return _image_get_count_by_owner(owner_id, session)
+
+
+def user_get_uploading_count(context, owner_id, session=None):
+    session = session or get_session()
+    return _image_get_uploading_count_by_owner(owner_id, session)
 
 
 def _task_info_format(task_info_ref):
