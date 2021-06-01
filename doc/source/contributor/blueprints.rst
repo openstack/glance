@@ -64,7 +64,7 @@ potential lite spec by reaching out to other people involved in the
 project. This usually happens by posting mails on the relevant mailing
 lists (e.g. `openstack-discuss <http://lists.openstack.org>`_ - include
 [glance] in the subject) or on #openstack-glance IRC channel on
-Freenode. If current ongoing code reviews are related to your feature,
+OFTC. If current ongoing code reviews are related to your feature,
 posting comments/questions on gerrit may also be a way to engage. Some
 amount of interaction with Glance developers will give you an idea of
 the plausibility and form of your lite spec before you submit it. That

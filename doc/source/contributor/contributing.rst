@@ -42,13 +42,13 @@ Communication
 
 IRC
     People working on the Glance project may be found in the
-    ``#openstack-glance`` channel on Freenode during working hours
+    ``#openstack-glance`` channel on OFTC during working hours
     in their timezone.  The channel is logged, so if you ask a question
     when no one is around, you can check the log to see if it's been
     answered: http://eavesdrop.openstack.org/irclogs/%23openstack-glance/
 
 weekly meeting
-    Thursdays at 14:00 UTC in ``#openstack-meeting-4`` on Freenode.
+    Thursdays at 14:00 UTC in ``#openstack-meeting`` on OFTC.
     Meetings are logged: http://eavesdrop.openstack.org/meetings/glance/
 
     More information (including a link to the Agenda, some pointers on
