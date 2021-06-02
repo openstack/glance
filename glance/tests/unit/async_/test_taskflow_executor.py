@@ -143,3 +143,15 @@ class TestTaskExecutor(test_utils.BaseTestCase):
                          'backend': None,
                          'admin_repo': admin_repo,
                          'uri': 'http://cloud.foo/image.qcow2'})
+
+    @mock.patch('stevedore.driver.DriverManager')
+    @mock.patch.object(taskflow_executor, 'LOG')
+    def test_get_flow_fails(self, mock_log, mock_driver):
+        mock_driver.side_effect = IndexError('fail')
+        executor = taskflow_executor.TaskExecutor(self.context,
+                                                  self.task_repo,
+                                                  self.image_repo,
+                                                  self.image_factory)
+        self.assertRaises(IndexError, executor._get_flow, self.task)
+        mock_log.exception.assert_called_once_with(
+            'Task initialization failed: %s', 'fail')

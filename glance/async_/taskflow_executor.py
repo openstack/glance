@@ -139,6 +139,9 @@ class TaskExecutor(glance.async_.TaskExecutor):
             raise exception.ImportTaskError(message=exc.msg)
         except RuntimeError:
             raise NotImplementedError()
+        except Exception as e:
+            LOG.exception(_LE('Task initialization failed: %s'), str(e))
+            raise
 
     def begin_processing(self, task_id):
         try:
