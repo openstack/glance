@@ -569,6 +569,7 @@ class TestImportCopyImageTask(test_utils.BaseTestCase):
                              admin_repo=admin_repo,
                              image_id=IMAGE_ID1,
                              import_req=fake_req,
+                             context=self.context,
                              backend=['cheap'])
 
         # Assert that we saved the image with the admin repo instead of the

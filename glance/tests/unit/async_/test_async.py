@@ -93,7 +93,8 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
             'task_repo': mock.MagicMock(),
             'image_repo': mock.MagicMock(),
             'image_id': mock.MagicMock(),
-            'import_req': import_req or mock.MagicMock()
+            'import_req': import_req or mock.MagicMock(),
+            'context': mock.MagicMock(),
         }
         inputs['image_repo'].get.return_value = mock.MagicMock(
             extra_properties={'os_glance_import_task': mock.sentinel.task_id})
