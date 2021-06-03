@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Glance now has per-tenant quota support based on Keystone unified
+    limits for resources like image and staging storage, among other
+    things. For more information about how to configure and use these
+    quotas, refer to the relevant section of the `Administrator Guide
+    <https://docs.openstack.org/glance/latest/admin/quotas.html>`_.

@@ -769,6 +769,34 @@ New API Calls
   where <STATUS_VALUE> is ``pending``, ``accepted``, or ``rejected``.
   The {memberId} is the project ID of the image member.
 
+Resource Limits
+---------------
+
+A user should always expect that an HTTP 413 error could result from
+any operation, indicating that a resource consumption limit has been
+exceeded. Some of the common situations are detailed below:
+
+* Creating an image: If your administrator has limited the total
+  number of images that you can have, an image create may fail. Delete
+  another image to proceed.
+* Uploading data to an image: If you have exceeded the total amount of
+  image storage space allocated to you, then an upload may be
+  rejected. To proceed, delete another image of sufficient
+  size. Images with multiple locations count multiple times against
+  your quota, so deleting a location may also free up space. There is
+  also a quota on the number of upload operations (staging, copying,
+  and uploading all count against this) so you may need to wait for
+  other operations to complete before proceeding.
+* Staging data for an image: There is a separate quota on the amount
+  of data you may have staged at any given point. To proceed, finish
+  importing other images first or delete an image with staged data.
+* Importing an image: If importing an image from staging to its final
+  destination would overrun your total image storage quota, then the
+  import may fail. To proceed, delete other images to make space.
+
+Of course, in all over-limit situations, requesting more quota from
+your administrator may be an option.
+
 Images v2 Stores API
 --------------------
 

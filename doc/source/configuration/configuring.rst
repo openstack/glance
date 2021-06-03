@@ -1346,6 +1346,13 @@ Configuring Glance User Storage Quota
 The following configuration option is specified in the
 ``glance-api.conf`` configuration file in the section ``[DEFAULT]``.
 
+.. note::
+
+   As of the Xena release, Glance supports :ref:`per-tenant <config-per-tenant-quotas>`
+   quotas with more granularity than the global limit provided by this
+   option. You may want to enable per-tenant quotas and leave this
+   unset.
+
 ``user_storage_quota``
   Optional. Default: 0 (Unlimited).
 
@@ -1356,6 +1363,18 @@ The following configuration option is specified in the
 
   Example values would be,
       user_storage_quota=20GB
+
+
+.. _config-per-tenant-quotas:
+
+Configuring Glance Per-Tenant Quotas
+------------------------------------
+
+Glance can utilize per-tenant resource limits set in Keystone to
+enforce quotas on users. These limits must be registered with defaults
+in Keystone, with optional per-tenant overrides, prior to enabling
+them in Glance. To instruct glance to use limits in Keystone, set
+``[DEFAULT]/use_keystone_limits=True`` in ``glance-api.conf``.
 
 Configuring the Image Cache
 ---------------------------

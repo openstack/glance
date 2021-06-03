@@ -166,6 +166,8 @@ create a database, service credentials, and API endpoints.
 
    .. end
 
+.. include:: register-quotas.rst
+
 Install and configure components
 --------------------------------
 
@@ -247,6 +249,7 @@ Install and configure components
 
      .. end
 
+   .. include:: configure-quotas.rst
 
 3. Populate the Image service database:
 

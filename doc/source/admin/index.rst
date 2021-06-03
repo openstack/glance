@@ -24,3 +24,4 @@ Glance Administration Guide
    manage-images
    useful-image-properties
    requirements
+   quotas
