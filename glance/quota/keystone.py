@@ -142,3 +142,29 @@ def enforce_image_count_uploading(context, project_id):
         context, project_id, QUOTA_IMAGE_COUNT_UPLOADING,
         lambda: db.user_get_uploading_count(context, project_id),
         delta=0)
+
+
+def get_usage(context, project_id=None):
+    if not CONF.use_keystone_limits:
+        return {}
+
+    if not project_id:
+        project_id = context.project_id
+
+    usages = {
+        QUOTA_IMAGE_SIZE_TOTAL: lambda: db.user_get_storage_usage(
+            context, project_id) // units.Mi,
+        QUOTA_IMAGE_STAGING_TOTAL: lambda: db.user_get_staging_usage(
+            context, project_id) // units.Mi,
+        QUOTA_IMAGE_COUNT_TOTAL: lambda: db.user_get_image_count(
+            context, project_id),
+        QUOTA_IMAGE_COUNT_UPLOADING: lambda: db.user_get_uploading_count(
+            context, project_id),
+    }
+
+    def callback(project_id, resource_names):
+        return {name: usages[name]()
+                for name in resource_names}
+
+    enforcer = limit.Enforcer(callback)
+    return enforcer.calculate_usage(project_id, list(usages.keys()))

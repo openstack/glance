@@ -1,0 +1,20 @@
+{
+    "usage": {
+        "image_size_total": {
+            "limit": 1024,
+            "usage": 256
+        },
+        "image_count_total": {
+            "limit": 10,
+            "usage": 2
+        },
+        "image_stage_total": {
+            "limit": 512,
+            "usage": 0
+        },
+        "image_count_uploading": {
+            "limit": 2,
+            "usage": 0
+        }
+    }
+}
