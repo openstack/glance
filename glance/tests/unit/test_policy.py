@@ -96,6 +96,7 @@ class ImageStub(object):
         self.virtual_size = 0
         self.tags = []
         self.os_hidden = os_hidden
+        self.member = self.owner
 
     def delete(self):
         self.status = 'deleted'
@@ -1115,3 +1116,21 @@ class TestImageTarget(base.IsolatedUnitTest):
         self.assertIn('project_id', target)
         self.assertEqual(image.owner, target['project_id'])
         self.assertEqual(image.owner, target['owner'])
+
+    def test_image_target_transforms(self):
+        fake_image = mock.MagicMock()
+        fake_image.image_id = mock.sentinel.image_id
+        fake_image.owner = mock.sentinel.owner
+        fake_image.member = mock.sentinel.member
+
+        target = glance.api.policy.ImageTarget(fake_image)
+
+        # Make sure the key transforms work
+        self.assertEqual(mock.sentinel.image_id, target['id'])
+        self.assertEqual(mock.sentinel.owner, target['project_id'])
+        self.assertEqual(mock.sentinel.member, target['member_id'])
+
+        # Also make sure the base properties still work
+        self.assertEqual(mock.sentinel.image_id, target['image_id'])
+        self.assertEqual(mock.sentinel.owner, target['owner'])
+        self.assertEqual(mock.sentinel.member, target['member'])

@@ -17,8 +17,10 @@ from unittest import mock
 
 from glance.api import authorization
 from glance.api import property_protections
+from glance import context
 from glance import gateway
 from glance import notifier
+from glance.tests.unit import utils as unit_test_utils
 import glance.tests.utils as test_utils
 
 
@@ -90,3 +92,24 @@ class TestGateway(test_utils.BaseTestCase):
         repo = self.gateway.get_repo(self.context, authorization_layer=False)
         self.assertIsInstance(repo,
                               property_protections.ProtectedImageRepoProxy)
+
+    def test_get_repo_member_property(self):
+        """Test that the image.member property is propagated all the way from
+        the DB to the top of the gateway repo stack.
+        """
+        db_api = unit_test_utils.FakeDB()
+        gw = gateway.Gateway(db_api=db_api)
+
+        # Get the UUID1 image as TENANT1
+        ctxt = context.RequestContext(tenant=unit_test_utils.TENANT1)
+        repo = gw.get_repo(ctxt)
+        image = repo.get(unit_test_utils.UUID1)
+        # We own the image, so member is None
+        self.assertIsNone(image.member)
+
+        # Get the UUID1 image as TENANT2
+        ctxt = context.RequestContext(tenant=unit_test_utils.TENANT2)
+        repo = gw.get_repo(ctxt)
+        image = repo.get(unit_test_utils.UUID1)
+        # We are a member, so member is our tenant id
+        self.assertEqual(unit_test_utils.TENANT2, image.member)

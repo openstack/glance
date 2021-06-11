@@ -56,6 +56,7 @@ class ImageStub(object):
         self.owner = owner
         self.virtual_size = 0
         self.tags = []
+        self.member = self.owner
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):
