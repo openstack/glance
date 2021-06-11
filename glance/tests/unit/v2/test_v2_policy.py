@@ -139,3 +139,15 @@ class APIImagePolicy(APIPolicyBase):
             mock_enf.assert_has_calls([
                 mock.call(mock.ANY, 'modify_image', mock.ANY),
                 mock.call(mock.ANY, 'get_image', mock.ANY)])
+
+    def test_get_image(self):
+        self.policy.get_image()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'get_image',
+                                                      mock.ANY)
+
+    def test_get_images(self):
+        self.policy.get_images()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'get_images',
+                                                      mock.ANY)

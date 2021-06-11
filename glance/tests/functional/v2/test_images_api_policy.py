@@ -160,3 +160,47 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         self.assertEqual(2,
                          len(self.api_get(
                              '/v2/images/%s' % image_id).json['locations']))
+
+    def test_image_get(self):
+        self.start_server()
+
+        image_id = self._create_and_upload()
+
+        # Make sure we can get the image
+        image = self.api_get('/v2/images/%s' % image_id).json
+        self.assertEqual(image_id, image['id'])
+
+        # Make sure we can list the image
+        images = self.api_get('/v2/images').json['images']
+        self.assertEqual(1, len(images))
+        self.assertEqual(image_id, images[0]['id'])
+
+        # Now disable get_images but allow get_image
+        self.set_policy_rules({'get_images': '!',
+                               'get_image': ''})
+
+        # We should not be able to list, but still fetch the image by id
+        resp = self.api_get('/v2/images')
+        self.assertEqual(403, resp.status_code)
+        image = self.api_get('/v2/images/%s' % image_id).json
+        self.assertEqual(image_id, image['id'])
+
+        # Now disable get_image but allow get_images
+        self.set_policy_rules({'get_images': '',
+                               'get_image': '!'})
+
+        # We should be able to list, but not actually see the image in the list
+        images = self.api_get('/v2/images').json['images']
+        self.assertEqual(0, len(images))
+        resp = self.api_get('/v2/images/%s' % image_id)
+        self.assertEqual(404, resp.status_code)
+
+        # Now disable both get_image and get_images
+        self.set_policy_rules({'get_images': '!',
+                               'get_image': '!'})
+
+        # We should not be able to list or fetch by id
+        resp = self.api_get('/v2/images')
+        self.assertEqual(403, resp.status_code)
+        resp = self.api_get('/v2/images/%s' % image_id)
+        self.assertEqual(404, resp.status_code)

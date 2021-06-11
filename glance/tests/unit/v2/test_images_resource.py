@@ -388,6 +388,30 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(expected, actual)
         self.assertNotIn('next_marker', output)
 
+    def test_index_marker_would_be_disallowed(self):
+        self.config(limit_param_default=1, api_limit_max=10)
+        request = unit_test_utils.get_fake_request(is_admin=True)
+
+        def fake_enforce(context, action, target=None, **kw):
+            assert target is not None
+            if target['project_id'] != TENANT1:
+                raise exception.Forbidden()
+
+        # As admin, list three images. By default, this should leave
+        # us on UUID3 (and as next_marker), which is owned by TENANT3
+        output = self.controller.index(request, sort_dir=['asc'], limit=3)
+        self.assertEqual(UUID3, output['next_marker'])
+        self.assertEqual(3, len(output['images']))
+
+        # Now sub in our fake policy that restricts us to TENANT1 images only.
+        # Even though we list with limit=3, we should only get two images back,
+        # and our next_marker should be UUID2 because we couldn't see UUID3.
+        with mock.patch.object(self.controller.policy, 'enforce',
+                               new=fake_enforce):
+            output = self.controller.index(request, sort_dir=['asc'], limit=3)
+        self.assertEqual(UUID2, output['next_marker'])
+        self.assertEqual(2, len(output['images']))
+
     def test_index_with_id_filter(self):
         request = unit_test_utils.get_fake_request('/images?id=%s' % UUID1)
         output = self.controller.index(request, filters={'id': UUID1})
@@ -774,6 +798,19 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(TENANT1, request.context.project_id)
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.show, request, UUID4)
+
+    def test_show_not_allowed_by_policy(self):
+        # Use admin so that we get past the check buried in the DB and
+        # only hit the policy check we are mocking.
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        with mock.patch.object(self.controller.policy, 'enforce') as mock_enf:
+            mock_enf.side_effect = webob.exc.HTTPForbidden()
+            # Make sure we get NotFound instead of Forbidden
+            exc = self.assertRaises(webob.exc.HTTPNotFound,
+                                    self.controller.show, request, UUID4)
+        # Make sure we did not leak details of the original Forbidden
+        # error into the NotFound returned to the client.
+        self.assertEqual('The resource could not be found.', str(exc))
 
     def test_get_task_info(self):
         request = unit_test_utils.get_fake_request()
@@ -1621,7 +1658,8 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        another_request = unit_test_utils.get_fake_request(roles=['member'])
+        another_request = unit_test_utils.get_fake_request(roles=['reader',
+                                                                  'member'])
         output = self.controller.show(another_request, created_image.image_id)
         self.assertEqual('bar', output.extra_properties['x_owner_foo'])
 
@@ -1638,7 +1676,8 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
+        another_request = unit_test_utils.get_fake_request(roles=['reader',
+                                                                  'fake_role'])
         output = self.controller.show(another_request, created_image.image_id)
         self.assertRaises(KeyError, output.extra_properties.__getitem__,
                           'x_owner_foo')
@@ -1759,7 +1798,8 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
-        another_request = unit_test_utils.get_fake_request(roles=['member'])
+        another_request = unit_test_utils.get_fake_request(roles=['reader',
+                                                                  'member'])
         output = self.controller.show(another_request, created_image.image_id)
         self.assertEqual('1', output.extra_properties['x_case_insensitive'])
 

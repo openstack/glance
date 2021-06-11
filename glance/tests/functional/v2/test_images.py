@@ -6857,7 +6857,7 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
             'content-type': 'application/json',
         })
         headers = get_auth_header(TENANT2, TENANT2,
-                                  role='member', headers=headers)
+                                  role='reader,member', headers=headers)
         data = jsonutils.dumps(
             {'method': {'name': 'copy-image'},
              'stores': ['file2']})
