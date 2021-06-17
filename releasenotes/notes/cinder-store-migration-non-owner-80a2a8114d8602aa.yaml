@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    The cinder store lazy migration code assumed that the user
+    performing the GET was authorized to modify the image in order to
+    perform the update. This will not be the case for shared or public
+    images where the user is not the owner or an admin, and would
+    result in a 404 to the user if a migration is needed but not
+    completed. Now, we delay the migration if we are not sufficiently
+    authorized, allowing the first GET by the owner (or an admin) to
+    perform it. See Bug 1932337_ for more information.
+
+    .. _1932337: https://bugs.launchpad.net/glance/+bug/1932337
