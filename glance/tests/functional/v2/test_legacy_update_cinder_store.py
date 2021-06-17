@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from testtools import content as ttc
-import time
 from unittest import mock
 import uuid
 
@@ -23,7 +21,6 @@ import glance_store
 from glance_store._drivers import cinder
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_serialization import jsonutils
 
 from glance.common import wsgi
 from glance.tests import functional
@@ -139,27 +136,6 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
                                          reserved_stores=wsgi.RESERVED_STORES)
         glance_store.verify_store()
 
-    def _create_and_stage(self, data_iter=None):
-        resp = self.api_post('/v2/images',
-                             json={'name': 'foo',
-                                   'container_format': 'bare',
-                                   'disk_format': 'raw'})
-        image = jsonutils.loads(resp.text)
-
-        if data_iter:
-            resp = self.api_put(
-                '/v2/images/%s/stage' % image['id'],
-                headers={'Content-Type': 'application/octet-stream'},
-                body_file=data_iter)
-        else:
-            resp = self.api_put(
-                '/v2/images/%s/stage' % image['id'],
-                headers={'Content-Type': 'application/octet-stream'},
-                data=b'IMAGEDATA')
-        self.assertEqual(204, resp.status_code)
-
-        return image['id']
-
     def _import_direct(self, image_id, stores):
         """Do an import of image_id to the given stores."""
         body = {'method': {'name': 'glance-direct'},
@@ -169,29 +145,6 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         return self.api_post(
             '/v2/images/%s/import' % image_id,
             json=body)
-
-    def _create_and_import(self, stores=[], data_iter=None):
-        """Create an image, stage data, and import into the given stores.
-
-        :returns: image_id
-        """
-        image_id = self._create_and_stage(data_iter=data_iter)
-
-        resp = self._import_direct(image_id, stores)
-        self.assertEqual(202, resp.status_code)
-
-        # Make sure it goes active
-        for i in range(0, 10):
-            image = self.api_get('/v2/images/%s' % image_id).json
-            if not image.get('os_glance_import_task'):
-                break
-            self.addDetail('Create-Import task id',
-                           ttc.text_content(image['os_glance_import_task']))
-            time.sleep(1)
-
-        self.assertEqual('active', image['status'])
-
-        return image_id
 
     def _mock_wait_volume_status(self, volume, status_transition,
                                  status_expected):
@@ -255,6 +208,64 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         cinder.keystone_sc = mock.MagicMock()
         # get the image to run lazy loading
         image = self.api_get('/v2/images/%s' % image_id).json
+        # verify the image is updated to new format
+        self.assertEqual('cinder://store1/%s' % self.vol_id,
+                         image['locations'][0]['url'])
+        self.assertEqual('store1', image['locations'][0]['metadata']['store'])
+        image = self.api_get('/v2/images/%s' % image_id).json
+        # verify the image location url is consistent
+        self.assertEqual('cinder://store1/%s' % self.vol_id,
+                         image['locations'][0]['url'])
+        # NOTE(whoami-rajat): These are internals called by glance_store, so
+        # we want to make sure they got hit, but not be too strict about how.
+        mocked_cc.assert_called()
+        mock_open.assert_called()
+        mock_chown.assert_called()
+        mock_connector.get_connector_properties.assert_called()
+
+    @mock.patch.object(cinderclient, 'Client')
+    @mock.patch.object(cinder.Store, 'temporary_chown')
+    @mock.patch.object(cinder, 'connector')
+    @mock.patch.object(cinder, 'open')
+    @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
+    def test_migrate_image_after_upgrade_not_owner(self, mock_wait, mock_open,
+                                                   mock_connector, mock_chown,
+                                                   mocked_cc):
+        """Test to check if an image is successfully migrated when we upgrade
+        from a single cinder store to multiple cinder stores, and that
+        GETs from non-owners in the meantime are not interrupted.
+        """
+        # setup single cinder store
+        self.setup_single_store()
+        self.start_server()
+        mocked_cc.return_value = self.cinder_store_mock
+        mock_wait.side_effect = self._mock_wait_volume_status
+
+        # create image in single store, owned by someone else
+        image_id = self._create_and_import(stores=['store1'],
+                                           extra={'visibility': 'public',
+                                                  'owner': 'someoneelse'})
+        image = self.api_get('/v2/images/%s' % image_id).json
+        # check the location url is in old format
+        self.assertEqual('cinder://%s' % self.vol_id,
+                         image['locations'][0]['url'])
+        self.unset_single_store()
+        # setup multiple cinder stores
+        self.setup_multiple_stores()
+        cinder.keystone_sc = mock.MagicMock()
+        # get the image to run lazy loading, but as a non-admin, non-owner
+        resp = self.api_get('/v2/images/%s' % image_id,
+                            headers={'X-Roles': 'reader'})
+
+        # FIXME(danms): This is broken behavior: the first user to GET
+        # an image after upgrade may not be an admin or the owner. As
+        # such, we should not return an error to that user for a valid image.
+        self.assertEqual(500, resp.status_code)
+        self.skipTest('Bug 1932337 is not fixed')
+
+        # FIXME(danms): Continue the test below when bug 1932337 is
+        # fixed.
+        image = resp.json
         # verify the image is updated to new format
         self.assertEqual('cinder://store1/%s' % self.vol_id,
                          image['locations'][0]['url'])

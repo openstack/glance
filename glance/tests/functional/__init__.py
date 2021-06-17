@@ -1787,7 +1787,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         return image['id']
 
     def _create_and_stage(self, data_iter=None, expected_code=204,
-                          visibility=None):
+                          visibility=None, extra={}):
         data = {
             'name': 'foo',
             'container_format': 'bare',
@@ -1796,6 +1796,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         if visibility:
             data['visibility'] = visibility
 
+        data.update(extra)
         resp = self.api_post('/v2/images',
                              json=data)
         image = jsonutils.loads(resp.text)
@@ -1829,13 +1830,14 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         return image
 
     def _create_and_import(self, stores=[], data_iter=None, expected_code=202,
-                           visibility=None):
+                           visibility=None, extra={}):
         """Create an image, stage data, and import into the given stores.
 
         :returns: image_id
         """
         image_id = self._create_and_stage(data_iter=data_iter,
-                                          visibility=visibility)
+                                          visibility=visibility,
+                                          extra=extra)
 
         resp = self._import_direct(image_id, stores)
         self.assertEqual(expected_code, resp.status_code)
