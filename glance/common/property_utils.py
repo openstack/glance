@@ -13,7 +13,6 @@
 #    under the License.
 
 import re
-import sys
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -24,11 +23,7 @@ import glance.api.policy
 from glance.common import exception
 from glance.i18n import _, _LE, _LW
 
-# SafeConfigParser was deprecated in Python 3.2
-if sys.version_info >= (3, 2):
-    CONFIG = configparser.ConfigParser()
-else:
-    CONFIG = configparser.SafeConfigParser()
+CONFIG = configparser.ConfigParser()
 
 LOG = logging.getLogger(__name__)
 
