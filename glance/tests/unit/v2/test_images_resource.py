@@ -1256,8 +1256,8 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_update_queued_image_with_hidden(self):
         request = unit_test_utils.get_fake_request()
         changes = [{'op': 'replace', 'path': ['os_hidden'], 'value': 'true'}]
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
-                          request, UUID3, changes=changes)
+        image = self.controller.update(request, UUID1, changes=changes)
+        self.assertTrue(image.os_hidden)
 
     def test_update_with_bad_min_disk(self):
         request = unit_test_utils.get_fake_request()
