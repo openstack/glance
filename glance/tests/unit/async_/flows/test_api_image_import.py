@@ -688,10 +688,12 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
         wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
                                                   TASK_ID1)
         with wrapper as action:
-            action.set_image_attribute(status='foo', virtual_size=123)
+            action.set_image_attribute(status='foo', virtual_size=123,
+                                       size=64)
         mock_repo.save.assert_called_once_with(mock_image, 'bar')
         self.assertEqual('foo', mock_image.status)
         self.assertEqual(123, mock_image.virtual_size)
+        self.assertEqual(64, mock_image.size)
 
     def test_set_image_attribute_disallowed(self):
         mock_repo = mock.MagicMock()
