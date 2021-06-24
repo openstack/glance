@@ -185,6 +185,7 @@ class TestImages(functional.FunctionalTest):
 
         # Verify image is in uploading state, hashes are None
         func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  size=len(image_data),
                                                   status='uploading')
 
         # Import image to store
@@ -215,6 +216,7 @@ class TestImages(functional.FunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(image_data),
                                                   status='active')
 
         # Ensure the size is updated to reflect the data uploaded
@@ -358,6 +360,7 @@ class TestImages(functional.FunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server
@@ -733,7 +736,8 @@ class TestImages(functional.FunctionalTest):
                                      usedforsecurity=False).hexdigest())
         expect_h = six.text_type(hashlib.sha512(image_data).hexdigest())
         func_utils.verify_image_hashes_and_status(self, image_id, expect_c,
-                                                  expect_h, 'active')
+                                                  expect_h, 'active',
+                                                  size=len(image_data))
 
         # `disk_format` and `container_format` cannot
         # be replaced when the image is active.
@@ -762,7 +766,8 @@ class TestImages(functional.FunctionalTest):
         response = requests.put(path, headers=headers, data='XXX')
         self.assertEqual(http.CONFLICT, response.status_code)
         func_utils.verify_image_hashes_and_status(self, image_id, expect_c,
-                                                  expect_h, 'active')
+                                                  expect_h, 'active',
+                                                  size=len(image_data))
 
         # Ensure the size is updated to reflect the data uploaded
         path = self._url('/v2/images/%s' % image_id)
@@ -961,7 +966,8 @@ class TestImages(functional.FunctionalTest):
 
         # Verify image is in uploading state and checksum is None
         func_utils.verify_image_hashes_and_status(self, image['id'],
-                                                  status='uploading')
+                                                  status='uploading',
+                                                  size=raw_size)
 
         # Import image to store
         path = self._url('/v2/images/%s/import' % image['id'])
@@ -1176,6 +1182,7 @@ class TestImages(functional.FunctionalTest):
                                                   image_id,
                                                   expect_c,
                                                   expect_h,
+                                                  size=len(image_data),
                                                   status='active')
         # Upload some image data to image-2
         path = self._url('/v2/images/%s/file' % image2_id)
@@ -1190,6 +1197,7 @@ class TestImages(functional.FunctionalTest):
                                                   image2_id,
                                                   expect_c,
                                                   expect_h,
+                                                  size=len(image_data),
                                                   status='active')
         # Hide image-1
         path = self._url('/v2/images/%s' % image_id)
@@ -4604,6 +4612,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
 
         # Verify image is in uploading state and checksum is None
         func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  size=len(image_data),
                                                   status='uploading')
 
         # Import image to store
@@ -4634,6 +4643,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(image_data),
                                                   status='active')
 
         # Ensure the size is updated to reflect the data uploaded
@@ -4767,6 +4777,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
 
         # Verify image is in uploading state and checksum is None
         func_utils.verify_image_hashes_and_status(self, image_id,
+                                                  size=len(image_data),
                                                   status='uploading')
 
         # Import image to file2 store (other than default backend)
@@ -4798,6 +4809,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(image_data),
                                                   status='active')
 
         # Ensure the size is updated to reflect the data uploaded
@@ -4962,6 +4974,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server
@@ -5125,6 +5138,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server
@@ -5287,6 +5301,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server
@@ -5451,6 +5466,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server
@@ -5675,6 +5691,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server
@@ -5933,6 +5950,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server
@@ -6075,6 +6093,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(image_data),
                                                   status='active')
 
         # Ensure image is created in default backend
@@ -6249,6 +6268,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(image_data),
                                                   status='active')
 
         # Ensure image is created in different backend
@@ -6786,6 +6806,7 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
                                                   image_id,
                                                   checksum=expect_c,
                                                   os_hash_value=expect_h,
+                                                  size=len(r.content),
                                                   status='active')
 
         # kill the local http server

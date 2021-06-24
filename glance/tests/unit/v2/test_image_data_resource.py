@@ -459,10 +459,11 @@ class TestImagesController(base.StoreClearingUnitTest):
         request = unit_test_utils.get_fake_request()
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
-        with mock.patch.object(filesystem.Store, 'add'):
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.return_value = ('foo://bar', 4, 'ident', {})
             self.controller.stage(request, image_id, 'YYYY', 4)
         self.assertEqual('uploading', image.status)
-        self.assertEqual(0, image.size)
+        self.assertEqual(4, image.size)
 
     def test_image_already_on_staging(self):
         image_id = str(uuid.uuid4())
@@ -470,10 +471,11 @@ class TestImagesController(base.StoreClearingUnitTest):
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(filesystem.Store, 'add') as mock_store_add:
+            mock_store_add.return_value = ('foo://bar', 4, 'ident', {})
             self.controller.stage(request, image_id, 'YYYY', 4)
             self.assertEqual('uploading', image.status)
             mock_store_add.side_effect = glance_store.Duplicate()
-            self.assertEqual(0, image.size)
+            self.assertEqual(4, image.size)
             self.assertRaises(webob.exc.HTTPConflict, self.controller.stage,
                               request, image_id, 'YYYY', 4)
 
@@ -553,9 +555,11 @@ class TestImagesController(base.StoreClearingUnitTest):
         request = unit_test_utils.get_fake_request()
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
-        self.controller.stage(request, image_id, 'YYYY', 4)
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.return_value = ('foo://bar', 4, 'ident', {})
+            self.controller.stage(request, image_id, 'YYYY', 4)
         self.assertEqual('uploading', image.status)
-        self.assertEqual(0, image.size)
+        self.assertEqual(4, image.size)
         # try staging again
         mock_store_add.side_effect = exception.InvalidImageStatusTransition(
             cur_status='uploading', new_status='uploading')
@@ -567,7 +571,8 @@ class TestImagesController(base.StoreClearingUnitTest):
         request = unit_test_utils.get_fake_request()
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
-        with mock.patch.object(filesystem.Store, 'add'):
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.return_value = ('foo://bar', 4, 'ident', {})
             self.controller.stage(request, image_id, 'YYYY', 4)
         if expected_url is None:
             self.assertNotIn('os_glance_stage_host', image.extra_properties)
