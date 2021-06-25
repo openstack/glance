@@ -204,3 +204,52 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         self.assertEqual(403, resp.status_code)
         resp = self.api_get('/v2/images/%s' % image_id)
         self.assertEqual(404, resp.status_code)
+
+    def test_image_delete(self):
+        self.start_server()
+
+        image_id = self._create_and_upload()
+
+        # Make sure we can delete the image
+        resp = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Make sure it is really gone
+        resp = self.api_get('/v2/images/%s' % image_id)
+        self.assertEqual(404, resp.status_code)
+
+        # Make sure we get a 404 trying to delete a non-existent image
+        resp = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(404, resp.status_code)
+
+        image_id = self._create_and_upload()
+
+        # Now disable delete permissions, but allow get_image
+        self.set_policy_rules({'get_image': '',
+                               'delete_image': '!'})
+
+        # Make sure delete returns 403 because we can see the image,
+        # just not delete it
+        resp = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(403, resp.status_code)
+
+        # Now disable delete permissions, including get_image
+        self.set_policy_rules({'get_image': '!',
+                               'delete_image': '!'})
+
+        # Make sure delete returns 404 because we can not see nor
+        # delete it
+        resp = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(404, resp.status_code)
+
+        # Now allow delete, but disallow get_image, just to prove that
+        # you do not need get_image in order to be granted delete, and
+        # that we only use it for error code determination if
+        # permission is denied.
+        self.set_policy_rules({'get_image': '!',
+                               'delete_image': ''})
+
+        # Make sure delete returns 204 because even though we can not
+        # see the image, we can delete it
+        resp = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(204, resp.status_code)
