@@ -804,7 +804,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('policy.yaml', conf_dir)
         self.copy_data_file('property-protections.conf', conf_dir)
         self.copy_data_file('property-protections-policies.conf', conf_dir)
         self.property_file_roles = os.path.join(conf_dir,
@@ -1153,7 +1152,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('policy.yaml', conf_dir)
         self.copy_data_file('property-protections.conf', conf_dir)
         self.copy_data_file('property-protections-policies.conf', conf_dir)
         self.property_file_roles = os.path.join(conf_dir,

@@ -59,7 +59,8 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = self._headers({'content-type': 'application/json'})
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
@@ -121,7 +122,8 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = self._headers({'content-type': 'application/json'})
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
@@ -187,7 +189,8 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = self._headers({'content-type': 'application/json'})
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
@@ -269,7 +272,8 @@ class BaseCacheMiddlewareTest(object):
         # Add an image and verify success
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         http = httplib2.Http()
-        headers = self._headers({'content-type': 'application/json'})
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
         image_entity = {
             'name': 'Image1',
             'visibility': 'public',
