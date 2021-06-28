@@ -303,6 +303,80 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.modify_image()
             self.assertFalse(m.called)
 
+    def test_deactivate_image(self):
+        self.policy.deactivate_image()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'deactivate',
+                                                      mock.ANY)
+
+    def test_deactivate_image_falls_back_to_legacy(self):
+        self.config(enforce_secure_rbac=False)
+
+        # As admin, image is mutable even if owner does not match
+        self.context.is_admin = True
+        self.context.owner = 'someuser'
+        self.image.owner = 'someotheruser'
+        self.policy.deactivate_image()
+
+        # As non-admin, owner matches, so we're good
+        self.context.is_admin = False
+        self.context.owner = 'someuser'
+        self.image.owner = 'someuser'
+        self.policy.delete_image()
+
+        # If owner does not match, we fail
+        self.image.owner = 'someotheruser'
+        self.assertRaises(exception.Forbidden,
+                          self.policy.deactivate_image)
+
+        # Make sure we are checking the legacy handler
+        with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
+            self.policy.deactivate_image()
+            m.assert_called_once_with(self.context, self.image)
+
+        # Make sure we are not checking it if enforce_secure_rbac=True
+        self.config(enforce_secure_rbac=True)
+        with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
+            self.policy.deactivate_image()
+            self.assertFalse(m.called)
+
+    def test_reactivate_image(self):
+        self.policy.reactivate_image()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'reactivate',
+                                                      mock.ANY)
+
+    def test_reactivate_image_falls_back_to_legacy(self):
+        self.config(enforce_secure_rbac=False)
+
+        # As admin, image is mutable even if owner does not match
+        self.context.is_admin = True
+        self.context.owner = 'someuser'
+        self.image.owner = 'someotheruser'
+        self.policy.reactivate_image()
+
+        # As non-admin, owner matches, so we're good
+        self.context.is_admin = False
+        self.context.owner = 'someuser'
+        self.image.owner = 'someuser'
+        self.policy.delete_image()
+
+        # If owner does not match, we fail
+        self.image.owner = 'someotheruser'
+        self.assertRaises(exception.Forbidden,
+                          self.policy.reactivate_image)
+
+        # Make sure we are checking the legacy handler
+        with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
+            self.policy.reactivate_image()
+            m.assert_called_once_with(self.context, self.image)
+
+        # Make sure we are not checking it if enforce_secure_rbac=True
+        self.config(enforce_secure_rbac=True)
+        with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
+            self.policy.reactivate_image()
+            self.assertFalse(m.called)
+
 
 class TestMetadefAPIPolicy(APIPolicyBase):
     def setUp(self):

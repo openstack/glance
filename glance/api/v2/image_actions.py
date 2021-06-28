@@ -18,6 +18,7 @@ from six.moves import http_client as http
 import webob.exc
 
 from glance.api import policy
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -42,9 +43,20 @@ class ImageActionsController(object):
 
     @utils.mutating
     def deactivate(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         try:
+            # FIXME(danms): This will still enforce the get_image policy
+            # which we don't want
             image = image_repo.get(image_id)
+
+            # NOTE(abhishekk): This is the right place to check whether user
+            # have permission to deactivate the image and remove the policy
+            # check later from the policy layer.
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
+            api_pol.deactivate_image()
+
             status = image.status
             image.deactivate()
             # not necessary to change the status if it's already 'deactivated'
@@ -61,9 +73,20 @@ class ImageActionsController(object):
 
     @utils.mutating
     def reactivate(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         try:
+            # FIXME(danms): This will still enforce the get_image policy
+            # which we don't want
             image = image_repo.get(image_id)
+
+            # NOTE(abhishekk): This is the right place to check whether user
+            # have permission to reactivate the image and remove the policy
+            # check later from the policy layer.
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
+            api_pol.reactivate_image()
+
             status = image.status
             image.reactivate()
             # not necessary to change the status if it's already 'active'

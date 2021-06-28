@@ -1741,11 +1741,18 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             '/v2/images/%s/import' % image_id,
             json=body)
 
-    def _create_and_upload(self, data_iter=None, expected_code=204):
+    def _create_and_upload(self, data_iter=None, expected_code=204,
+                           visibility=None):
+        data = {
+            'name': 'foo',
+            'container_format': 'bare',
+            'disk_format': 'raw'
+        }
+        if visibility:
+            data['visibility'] = visibility
+
         resp = self.api_post('/v2/images',
-                             json={'name': 'foo',
-                                   'container_format': 'bare',
-                                   'disk_format': 'raw'})
+                             json=data)
         self.assertEqual(201, resp.status_code, resp.text)
         image = jsonutils.loads(resp.text)
 

@@ -422,3 +422,206 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
             headers=headers,
             data=b'IMAGEDATA')
         self.assertEqual(403, resp.status_code)
+
+    def test_image_deactivate(self):
+        self.start_server()
+
+        image_id = self._create_and_upload()
+
+        # Make sure we can deactivate the image
+        resp = self.api_post('/v2/images/%s/actions/deactivate' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Make sure it is really deactivated
+        resp = self.api_get('/v2/images/%s' % image_id)
+        self.assertEqual('deactivated', resp.json['status'])
+
+        # Create another image
+        image_id = self._create_and_upload()
+
+        # Now disable deactivate permissions, but allow get_image
+        self.set_policy_rules({'get_image': '',
+                               'deactivate': '!'})
+
+        # Make sure deactivate returns 403 because we can see the image,
+        # just not deactivate it
+        resp = self.api_post('/v2/images/%s/actions/deactivate' % image_id)
+        self.assertEqual(403, resp.status_code)
+
+        # Now disable deactivate permissions, including get_image
+        self.set_policy_rules({'get_image': '!',
+                               'deactivate': '!'})
+
+        # Make sure deactivate returns 404 because we can not see nor
+        # reactivate it
+        resp = self.api_post('/v2/images/%s/actions/deactivate' % image_id)
+        self.assertEqual(404, resp.status_code)
+
+        # Now allow deactivate, but disallow get_image, just to prove that
+        # you do not need get_image in order to be granted deactivate, and
+        # that we only use it for error code determination if
+        # permission is denied.
+        self.set_policy_rules({'get_image': '!',
+                               'deactivate': ''})
+
+        # Make sure deactivate returns 204 because even though we can not
+        # see the image, we can deactivate it
+        resp = self.api_post('/v2/images/%s/actions/deactivate' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Make sure you can not deactivate image using non-admin role of
+        # different project
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': '',
+            'add_image': '',
+            'upload_image': '',
+            'add_member': '',
+            'deactivate': '',
+            'publicize_image': '',
+            'communitize_image': ''
+        })
+        headers = self._headers({
+            'X-Project-Id': 'fake-project-id',
+            'X-Roles': 'member'
+        })
+        for visibility in ('community', 'shared', 'private', 'public'):
+            image_id = self._create_and_upload(visibility=visibility)
+            resp = self.api_post(
+                '/v2/images/%s/actions/deactivate' % image_id, headers=headers)
+            # 'shared' image will return 404 until it is not shared with
+            # project accessing it
+            if visibility == 'shared':
+                self.assertEqual(404, resp.status_code)
+                # Now lets share the image and try to deactivate it
+                share_path = '/v2/images/%s/members' % image_id
+                data = {
+                    'member': 'fake-project-id'
+                }
+                response = self.api_post(share_path, json=data)
+                member = response.json
+                self.assertEqual(200, response.status_code)
+                self.assertEqual(image_id, member['image_id'])
+
+                # Now ensure deactivating image by another tenant will
+                # return 403
+                resp = self.api_post(
+                    '/v2/images/%s/actions/deactivate' % image_id,
+                    headers=headers)
+                self.assertEqual(403, resp.status_code)
+            elif visibility == 'private':
+                # private image will also return 404 as it is not visible
+                self.assertEqual(404, resp.status_code)
+            else:
+                # public and community visibility will return 403
+                self.assertEqual(403, resp.status_code)
+
+    def test_image_reactivate(self):
+        self.start_server()
+
+        image_id = self._create_and_upload()
+
+        # deactivate the image
+        resp = self.api_post('/v2/images/%s/actions/deactivate' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Make sure it is really deactivated
+        resp = self.api_get('/v2/images/%s' % image_id)
+        self.assertEqual('deactivated', resp.json['status'])
+
+        # Make sure you can reactivate the image
+        resp = self.api_post('/v2/images/%s/actions/reactivate' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Make sure it is really reactivated
+        resp = self.api_get('/v2/images/%s' % image_id)
+        self.assertEqual('active', resp.json['status'])
+
+        # Deactivate it again to test further scenarios
+        resp = self.api_post('/v2/images/%s/actions/deactivate' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Now disable reactivate permissions, but allow get_image
+        self.set_policy_rules({'get_image': '',
+                               'reactivate': '!'})
+
+        # Make sure reactivate returns 403 because we can see the image,
+        # just not reactivate it
+        resp = self.api_post('/v2/images/%s/actions/reactivate' % image_id)
+        self.assertEqual(403, resp.status_code)
+
+        # Now disable reactivate permissions, including get_image
+        self.set_policy_rules({'get_image': '!',
+                               'reactivate': '!'})
+
+        # Make sure reactivate returns 404 because we can not see nor
+        # reactivate it
+        resp = self.api_post('/v2/images/%s/actions/reactivate' % image_id)
+        self.assertEqual(404, resp.status_code)
+
+        # Now allow reactivate, but disallow get_image, just to prove that
+        # you do not need get_image in order to be granted reactivate, and
+        # that we only use it for error code determination if
+        # permission is denied.
+        self.set_policy_rules({'get_image': '!',
+                               'reactivate': ''})
+
+        # Make sure reactivate returns 204 because even though we can not
+        # see the image, we can reactivate it
+        resp = self.api_post('/v2/images/%s/actions/reactivate' % image_id)
+        self.assertEqual(204, resp.status_code)
+
+        # Make sure you can not reactivate image using non-admin role of
+        # different project
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': '',
+            'add_image': '',
+            'upload_image': '',
+            'add_member': '',
+            'deactivate': '',
+            'reactivate': '',
+            'publicize_image': '',
+            'communitize_image': ''
+        })
+        headers = self._headers({
+            'X-Project-Id': 'fake-project-id',
+            'X-Roles': 'member'
+        })
+        for visibility in ('public', 'community', 'shared', 'private'):
+            image_id = self._create_and_upload(visibility=visibility)
+            # deactivate the image
+            resp = self.api_post(
+                '/v2/images/%s/actions/deactivate' % image_id)
+            self.assertEqual(204, resp.status_code)
+
+            # try to reactivate the image
+            resp = self.api_post(
+                '/v2/images/%s/actions/reactivate' % image_id, headers=headers)
+
+            # 'shared' image will return 404 until it is not shared with
+            # project accessing it
+            if visibility == 'shared':
+                self.assertEqual(404, resp.status_code)
+                # Now lets share the image and try to reactivate it
+                share_path = '/v2/images/%s/members' % image_id
+                data = {
+                    'member': 'fake-project-id'
+                }
+                response = self.api_post(share_path, json=data)
+                member = response.json
+                self.assertEqual(200, response.status_code)
+                self.assertEqual(image_id, member['image_id'])
+
+                # Now ensure reactivating image by another tenant will
+                # return 403
+                resp = self.api_post(
+                    '/v2/images/%s/actions/reactivate' % image_id,
+                    headers=headers)
+                self.assertEqual(403, resp.status_code)
+            elif visibility == 'private':
+                # private image will also return 404 as it is not visible
+                self.assertEqual(404, resp.status_code)
+            else:
+                # public and community visibility will return 403
+                self.assertEqual(403, resp.status_code)
