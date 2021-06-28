@@ -441,14 +441,29 @@ TeraBytes respectively. Note that there should not be any space between the
 value and unit. Value ``0`` signifies no quota enforcement. Negative values
 are invalid and result in errors.
 
+This has no effect if ``use_keystone_limits`` is enabled.
+
 Possible values:
     * A string that is a valid concatenation of a non-negative integer
       representing the storage value and an optional string literal
       representing storage units as mentioned above.
 
 Related options:
-    * None
+    * use_keystone_limits
 
+""")),
+    cfg.BoolOpt('use_keystone_limits', default=False,
+                help=_("""
+Utilize per-tenant resource limits registered in Keystone.
+
+Enabling this feature will cause Glance to retrieve limits set in keystone
+for resource consumption and enforce them against API users. Before turning
+this on, the limits need to be registered in Keystone or all quotas will be
+considered to be zero, and thus reject all new resource requests.
+
+These per-tenant resource limits are independent from the static
+global ones configured in this config file. If this is enabled, the
+relevant static global limits will be ignored.
 """)),
     cfg.HostAddressOpt('pydev_worker_debug_host',
                        sample_default='localhost',
