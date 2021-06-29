@@ -10,22 +10,80 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import versionutils
 from oslo_policy import policy
+
+from glance.policies import base
+
+
+DEPRECATED_REASON = """
+The metadata API now supports project scope and default roles.
+"""
 
 
 metadef_policies = [
     policy.RuleDefault(name="metadef_default", check_str=""),
     policy.RuleDefault(name="metadef_admin", check_str="role:admin"),
-    policy.RuleDefault(name="get_metadef_namespace",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="get_metadef_namespaces",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="modify_metadef_namespace",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="add_metadef_namespace",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="delete_metadef_namespace",
-                       check_str="rule:metadef_admin"),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_namespace",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="Get a specific namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_namespace", check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_namespaces",
+        check_str=base.ADMIN_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
+        description="List namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_namespaces", check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="modify_metadef_namespace",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Modify an existing namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}',
+             'method': 'PUT'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="add_metadef_namespace",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Create a namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces',
+             'method': 'POST'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="delete_metadef_namespace",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Delete a namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}',
+             'method': 'DELETE'}
+        ],
+    ),
 
     policy.RuleDefault(name="get_metadef_object",
                        check_str="rule:metadef_default"),
