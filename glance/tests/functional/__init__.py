@@ -412,6 +412,10 @@ class ApiServer(Server):
         self.image_location_quota = 2
         self.disable_path = None
 
+        secure_rbac = bool(os.getenv('OS_GLANCE_TEST_RBAC_DEFAULTS'))
+        self.enforce_secure_rbac = secure_rbac
+        self.enforce_new_defaults = secure_rbac
+
         self.needs_database = True
         default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
@@ -456,9 +460,11 @@ image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
 allow_additional_image_properties = True
 node_staging_uri=%(node_staging_uri)s
+enforce_secure_rbac=%(enforce_secure_rbac)s
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
+enforce_new_defaults=%(enforce_new_defaults)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 [store_type_location_strategy]
@@ -1592,6 +1598,10 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         config.set_config_defaults()
         self.api = config.load_paste_app('glance-api',
                                          conf_file=self.paste_config)
+        secure_rbac = bool(os.getenv('OS_GLANCE_TEST_RBAC_DEFAULTS'))
+        self.config(enforce_secure_rbac=secure_rbac)
+        self.config(enforce_new_defaults=secure_rbac,
+                    group='oslo_policy')
 
     def _headers(self, custom_headers=None):
         base_headers = {
