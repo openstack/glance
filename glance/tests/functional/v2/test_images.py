@@ -785,7 +785,8 @@ class TestImages(functional.FunctionalTest):
         # Change the image to public so TENANT2 can see it
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.0-json-patch'
-        headers = self._headers({'content-type': media_type})
+        headers = self._headers({'content-type': media_type,
+                                 'X-Roles': 'admin'})
         data = jsonutils.dumps([{"replace": "/visibility", "value": "public"}])
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(http.OK, response.status_code, response.text)
@@ -2423,6 +2424,10 @@ class TestImages(functional.FunctionalTest):
 
     def test_property_protections_with_policies(self):
         # Enable property protection
+        rules = {
+            "glance_creator": "role:admin or role:spl_role"
+        }
+        self.set_policy_rules(rules)
         self.api_server.property_protection_file = self.property_file_policies
         self.api_server.property_protection_rule_format = 'policies'
         self.start_servers(**self.__dict__.copy())
@@ -3789,7 +3794,8 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
 
         # Create an image
         path = self._url('/v2/images')
-        headers = self._headers({'content-type': 'application/json'})
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Roles': 'admin'})
         data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
                                 'foo': 'bar', 'disk_format': 'aki',
                                 'container_format': 'aki',
@@ -4073,9 +4079,13 @@ class TestImageMembers(functional.FunctionalTest):
         for owner in owners:
             for visibility in visibilities:
                 path = self._url('/v2/images')
+                role = 'member'
+                if visibility == 'public':
+                    role = 'admin'
                 headers = self._headers({
                     'content-type': 'application/json',
                     'X-Auth-Token': 'createuser:%s:admin' % owner,
+                    'X-Roles': role,
                 })
                 data = jsonutils.dumps({
                     'name': '%s-%s' % (owner, visibility),
@@ -6385,9 +6395,14 @@ class TestMultiStoreImageMembers(functional.MultipleBackendFunctionalTest):
             for owner in owners:
                 for visibility in visibilities:
                     path = self._url('/v2/images')
+                    role = 'member'
+                    if visibility == 'public':
+                        role = 'admin'
+
                     headers = self._headers(custom_headers={
                         'content-type': 'application/json',
                         'X-Auth-Token': 'createuser:%s:admin' % owner,
+                        'X-Roles': role,
                     })
                     data = jsonutils.dumps({
                         'name': '%s-%s' % (owner, visibility),

@@ -57,7 +57,8 @@ class TestScrubber(functional.FunctionalTest):
 
     def _send_create_image_http_request(self, path, body=None):
         headers = {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-Roles": "admin",
         }
         body = body or {'container_format': 'ovf',
                         'disk_format': 'raw',
