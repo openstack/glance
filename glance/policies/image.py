@@ -31,10 +31,9 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="add_image", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="add_image", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY)
     ),
     policy.DocumentedRuleDefault(
         name="delete_image",
@@ -46,10 +45,9 @@ image_policies = [
              'method': 'DELETE'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="delete_image", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="delete_image", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="get_image",
@@ -61,10 +59,9 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_image", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="get_image", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="get_images",
@@ -76,10 +73,9 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_images", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="get_images", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="modify_image",
@@ -91,10 +87,9 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="modify_image", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="modify_image", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="publicize_image",
@@ -116,10 +111,9 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="communitize_image", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="communitize_image", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.DocumentedRuleDefault(
@@ -132,10 +126,9 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="download_image", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="download_image", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="upload_image",
@@ -147,10 +140,9 @@ image_policies = [
              'method': 'PUT'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="upload_image", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="upload_image", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.DocumentedRuleDefault(
@@ -163,10 +155,9 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="delete_image_location", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="delete_image_location", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="get_image_location",
@@ -178,10 +169,9 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_image_location", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="get_image_location", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="set_image_location",
@@ -193,10 +183,9 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="set_image_location", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="set_image_location", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.DocumentedRuleDefault(
@@ -209,10 +198,9 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="add_member", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="add_member", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="delete_member",
@@ -224,10 +212,9 @@ image_policies = [
              'method': 'DELETE'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="delete_member", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="delete_member", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="get_member",
@@ -239,10 +226,9 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_member", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="get_member", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="get_members",
@@ -254,10 +240,9 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_members", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="get_members", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="modify_member",
@@ -269,10 +254,9 @@ image_policies = [
              'method': 'PUT'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="modify_member", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="modify_member", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.RuleDefault(
@@ -295,10 +279,9 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="deactivate", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="deactivate", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="reactivate",
@@ -310,10 +293,9 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="reactivate", check_str="rule:default"
-        ),
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+            name="reactivate", check_str="rule:default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.DocumentedRuleDefault(

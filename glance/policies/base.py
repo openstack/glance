@@ -72,16 +72,17 @@ rules = [
                                    'policy in the supplied policy.json file.',
                        deprecated_rule=policy.DeprecatedRule(
                            name='default',
-                           check_str='role:admin'),
-                       deprecated_reason='In order to allow operators to '
-                       'accept the default policies from code by not defining '
-                       'them in the policy file, while still working with old '
-                       'policy files that rely on the ``default`` rule for '
-                       'policies that are not specified in the policy file, '
-                       'the ``default`` rule must now be explicitly set to '
-                       '``"role:admin"`` when that is the desired default for '
-                       'unspecified rules.',
-                       deprecated_since='Ussuri'),
+                           check_str='role:admin',
+                           deprecated_reason='In order to allow operators to '
+                           'accept the default policies from code by not '
+                           'defining them in the policy file, while still '
+                           'working with old policy files that rely on the '
+                           '``default`` rule for policies that are '
+                           'not specified in the policy file, the ``default`` '
+                           'rule must now be explicitly set to '
+                           '``"role:admin"`` when that is the desired default '
+                           'for unspecified rules.',
+                           deprecated_since='Ussuri')),
     policy.RuleDefault(name='context_is_admin', check_str='role:admin',
                        description='Defines the rule for the is_admin:True '
                                    'check.'),
