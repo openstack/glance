@@ -149,14 +149,60 @@ metadef_policies = [
         ],
     ),
 
-    policy.RuleDefault(name="list_metadef_resource_types",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="get_metadef_resource_type",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="add_metadef_resource_type_association",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="remove_metadef_resource_type_association",
-                       check_str="rule:metadef_admin"),
+    policy.DocumentedRuleDefault(
+        name="list_metadef_resource_types",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="List meta definition resource types.",
+        operations=[
+            {'path': '/v2/metadefs/resource_types',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="list_metadef_resource_types",
+            check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_resource_type",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="Get meta definition resource types associations.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/resource_types',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_resource_type",
+            check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="add_metadef_resource_type_association",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Create meta definition resource types association.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/resource_types',
+             'method': 'POST'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="remove_metadef_resource_type_association",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Delete meta definition resource types association.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/resource_types'
+                     '/{name}',
+             'method': 'POST'}
+        ],
+    ),
+
 
     policy.RuleDefault(name="get_metadef_property",
                        check_str="rule:metadef_default"),
