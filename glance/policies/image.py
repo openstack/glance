@@ -16,7 +16,7 @@ from glance.policies import base
 
 
 DEPRECATED_REASON = """
-The image API now supports and default roles.
+The image API now supports roles.
 """
 
 
