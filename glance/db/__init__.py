@@ -182,17 +182,13 @@ class ImageRepo(object):
         if (image_values['size'] is not None
            and image_values['size'] > CONF.image_size_cap):
             raise exception.ImageSizeLimitExceeded
-        try:
-            new_values = self.db_api.image_update(self.context,
-                                                  image.image_id,
-                                                  image_values,
-                                                  purge_props=True,
-                                                  from_state=from_state,
-                                                  atomic_props=(
-                                                      IMAGE_ATOMIC_PROPS))
-        except (exception.ImageNotFound, exception.Forbidden):
-            msg = _("No image found with ID %s") % image.image_id
-            raise exception.ImageNotFound(msg)
+        new_values = self.db_api.image_update(self.context,
+                                              image.image_id,
+                                              image_values,
+                                              purge_props=True,
+                                              from_state=from_state,
+                                              atomic_props=(
+                                                  IMAGE_ATOMIC_PROPS))
         self.db_api.image_tag_set_all(self.context, image.image_id,
                                       image.tags)
         image.updated_at = new_values['updated_at']
