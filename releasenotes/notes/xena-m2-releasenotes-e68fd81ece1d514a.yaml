@@ -1,0 +1,12 @@
+---
+fixes:
+  - |
+    Bug 1916052_: Unable to create trust errors in glance-api
+  - |
+    Bug 1934673_: Policy deprecations falsely claims defaulting to role based policies
+  - |
+    Bug 1922928_: Image tasks API excludes in-progress tasks
+
+    .. _1916052: https://code.launchpad.net/bugs/1916052
+    .. _1934673: https://code.launchpad.net/bugs/1934673
+    .. _1922928: https://code.launchpad.net/bugs/1922928
