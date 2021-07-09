@@ -51,7 +51,7 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         self.db_api = glance.db.get_api()
 
     def _set_acls(self, image):
-        public = image.visibility == 'public'
+        public = image.visibility in ['public', 'community']
         member_ids = []
         if image.locations and not public:
             member_repo = _get_member_repo_for_store(image,
@@ -624,7 +624,7 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
         super(ImageMemberRepoProxy, self).__init__(repo)
 
     def _set_acls(self):
-        public = self.image.visibility == 'public'
+        public = self.image.visibility in ['public', 'community']
         if self.image.locations and not public:
             member_ids = [m.member_id for m in self.repo.list()]
             for location in self.image.locations:

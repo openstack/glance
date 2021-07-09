@@ -2307,12 +2307,13 @@ class TestImagesController(base.IsolatedUnitTest):
     @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
     @mock.patch.object(store, 'get_size_from_uri_and_backend')
     @mock.patch.object(store, 'get_size_from_backend')
-    def test_add_location_on_queued(self,
-                                    mock_get_size,
-                                    mock_get_size_uri,
-                                    mock_set_acls,
-                                    mock_check_loc,
-                                    mock_calc):
+    def _test_add_location_on_queued(self,
+                                     visibility,
+                                     mock_get_size,
+                                     mock_get_size_uri,
+                                     mock_set_acls,
+                                     mock_check_loc,
+                                     mock_calc):
         mock_calc.return_value = 1
         mock_get_size.return_value = 1
         mock_get_size_uri.return_value = 1
@@ -2323,6 +2324,7 @@ class TestImagesController(base.IsolatedUnitTest):
                         name='1',
                         disk_format='raw',
                         container_format='bare',
+                        visibility=visibility,
                         status='queued'),
         ]
         self.db.image_create(None, self.images[0])
@@ -2336,6 +2338,17 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual(1, len(output.locations))
         self.assertEqual(new_location, output.locations[0])
         self.assertEqual('active', output.status)
+        self.assertEqual(visibility, output.visibility)
+        mock_set_acls.assert_called_once()
+
+    def test_add_location_on_queued_shared(self):
+        self._test_add_location_on_queued('shared')
+
+    def test_add_location_on_queued_community(self):
+        self._test_add_location_on_queued('community')
+
+    def test_add_location_on_queued_public(self):
+        self._test_add_location_on_queued('public')
 
     @mock.patch.object(glance.quota, '_calc_required_size')
     @mock.patch.object(glance.location, '_check_image_location')
