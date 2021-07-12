@@ -248,7 +248,7 @@ class TestMetadefRepo(test_utils.BaseTestCase):
         self.assertIn(fake_namespace, encodeutils.exception_to_unicode(exc))
 
     def test_get_namespace_forbidden(self):
-        self.assertRaises(exception.NotFound,
+        self.assertRaises(exception.MetadefForbidden,
                           self.namespace_repo.get,
                           NAMESPACE3)
 
