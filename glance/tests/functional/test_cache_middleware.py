@@ -44,7 +44,7 @@ class BaseCacheMiddlewareTest(object):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': uuids.tenant,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         if extra:
             headers.update(extra)

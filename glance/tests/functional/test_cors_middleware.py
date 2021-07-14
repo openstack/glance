@@ -15,6 +15,7 @@
 """Tests cors middleware."""
 
 import httplib2
+from oslo_utils.fixture import uuidsentinel as uuids
 from six.moves import http_client
 
 from glance.tests import functional
@@ -31,18 +32,32 @@ class TestCORSMiddleware(functional.FunctionalTest):
     def setUp(self):
         super(TestCORSMiddleware, self).setUp()
         # Cleanup is handled in teardown of the parent class.
+        self.api_server.deployment_flavor = "caching"
+        self.api_server.send_identity_credentials = True
         self.start_servers(**self.__dict__.copy())
         self.http = httplib2.Http()
         self.api_path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
+
+    def _headers(self, extra=None):
+        headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': uuids.tenant,
+            'X-Roles': 'reader,member',
+        }
+        if extra:
+            headers.update(extra)
+        return headers
 
     def test_valid_cors_options_request(self):
         (r_headers, content) = self.http.request(
             self.api_path,
             'OPTIONS',
-            headers={
+            headers=self._headers({
                 'Origin': 'http://valid.example.com',
                 'Access-Control-Request-Method': 'GET'
-            })
+            }))
 
         self.assertEqual(http_client.OK, r_headers.status)
         self.assertIn('access-control-allow-origin', r_headers)
@@ -53,10 +68,10 @@ class TestCORSMiddleware(functional.FunctionalTest):
         (r_headers, content) = self.http.request(
             self.api_path,
             'OPTIONS',
-            headers={
+            headers=self._headers({
                 'Origin': 'http://invalid.example.com',
                 'Access-Control-Request-Method': 'GET'
-            })
+            }))
 
         self.assertEqual(http_client.OK, r_headers.status)
         self.assertNotIn('access-control-allow-origin', r_headers)
@@ -65,9 +80,9 @@ class TestCORSMiddleware(functional.FunctionalTest):
         (r_headers, content) = self.http.request(
             self.api_path,
             'GET',
-            headers={
+            headers=self._headers({
                 'Origin': 'http://valid.example.com'
-            })
+            }))
 
         self.assertEqual(http_client.OK, r_headers.status)
         self.assertIn('access-control-allow-origin', r_headers)
@@ -78,9 +93,9 @@ class TestCORSMiddleware(functional.FunctionalTest):
         (r_headers, content) = self.http.request(
             self.api_path,
             'GET',
-            headers={
+            headers=self._headers({
                 'Origin': 'http://invalid.example.com'
-            })
+            }))
 
         self.assertEqual(http_client.OK, r_headers.status)
         self.assertNotIn('access-control-allow-origin', r_headers)

@@ -44,7 +44,8 @@ TENANT3 = str(uuid.uuid4())
 TENANT4 = str(uuid.uuid4())
 
 
-def get_auth_header(tenant, tenant_id=None, role='', headers=None):
+def get_auth_header(tenant, tenant_id=None,
+                    role='reader,member', headers=None):
     """Return headers to authenticate as a specific tenant.
 
     :param tenant: Tenant for the auth token
@@ -93,7 +94,7 @@ class TestImages(functional.FunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -1497,7 +1498,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
@@ -1566,7 +1567,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
@@ -1638,7 +1639,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
@@ -1672,7 +1673,7 @@ class TestImages(functional.FunctionalTest):
         # Get an image should be allowed
         path = self._url('/v2/images/%s/file' % image_id)
         headers = self._headers({'Content-Type': 'application/octet-stream',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         response = requests.get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
 
@@ -1933,8 +1934,8 @@ class TestImages(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.CREATED, response.status_code)
 
-        # Remove the admin role
-        del headers['X-Roles']
+        # Replace the admin role with reader and member
+        headers['X-Roles'] = 'reader,member'
         # Get the image's ID
         image = jsonutils.loads(response.text)
         image_id = image['id']
@@ -2289,7 +2290,7 @@ class TestImages(functional.FunctionalTest):
         # Raises 403 since user is not allowed to set 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         data = jsonutils.dumps({'name': 'image-1', 'foo': 'bar',
                                 'disk_format': 'aki',
                                 'container_format': 'aki',
@@ -2300,7 +2301,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image for role member without 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki',
                                 'x_owner_foo': 'o_s_bar'})
@@ -2329,7 +2330,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image for role spl_role with extra props
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'spl_role'})
+                                 'X-Roles': 'reader,member,spl_role'})
         data = jsonutils.dumps({'name': 'image-1',
                                 'disk_format': 'aki',
                                 'container_format': 'aki',
@@ -2348,7 +2349,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'spl_role'})
+                                 'X-Roles': 'reader,member,spl_role'})
         data = jsonutils.dumps([
             {'op': 'replace', 'path': '/spl_read_prop', 'value': 'r'},
             {'op': 'replace', 'path': '/spl_update_prop', 'value': 'u'},
@@ -2360,7 +2361,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'spl_role'})
+                                 'X-Roles': 'reader,member,spl_role'})
         data = jsonutils.dumps([
             {'op': 'add', 'path': '/spl_new_prop', 'value': 'new'},
             {'op': 'remove', 'path': '/spl_create_prop'},
@@ -2373,7 +2374,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'spl_role'})
+                                 'X-Roles': 'reader,member,spl_role'})
         data = jsonutils.dumps([
             # Updating an empty property to verify bug #1332103.
             {'op': 'replace', 'path': '/spl_update_prop', 'value': ''},
@@ -2393,7 +2394,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'spl_role'})
+                                 'X-Roles': 'reader,member,spl_role'})
         data = jsonutils.dumps([
             {'op': 'remove', 'path': '/spl_delete_prop'},
             # Deleting an empty property to verify bug #1332103.
@@ -2443,7 +2444,7 @@ class TestImages(functional.FunctionalTest):
         # Raises 403 since user is not allowed to set 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         data = jsonutils.dumps({'name': 'image-1', 'foo': 'bar',
                                 'disk_format': 'aki',
                                 'container_format': 'aki',
@@ -2454,7 +2455,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image for role member without 'foo'
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'member'})
+                                 'X-Roles': 'reader,member'})
         data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
                                 'container_format': 'aki'})
         response = requests.post(path, headers=headers, data=data)
@@ -2481,7 +2482,7 @@ class TestImages(functional.FunctionalTest):
         # Create an image for role spl_role with extra props
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'spl_role, admin'})
+                                 'X-Roles': 'reader,member,spl_role, admin'})
         data = jsonutils.dumps({'name': 'image-1',
                                 'disk_format': 'aki',
                                 'container_format': 'aki',
@@ -2518,7 +2519,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'spl_role'})
+                                 'X-Roles': 'reader,member,spl_role'})
         data = jsonutils.dumps([
             {'op': 'replace', 'path': '/spl_creator_policy', 'value': 'z'},
         ])
@@ -2528,7 +2529,7 @@ class TestImages(functional.FunctionalTest):
         # Attempt to read properties
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'random_role'})
+                                 'X-Roles': 'reader,random_role'})
         response = requests.get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
 
@@ -2561,7 +2562,7 @@ class TestImages(functional.FunctionalTest):
         # Attempt to read a property that is permitted
         path = self._url('/v2/images/%s' % image_id)
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'random_role'})
+                                 'X-Roles': 'reader,random_role'})
         response = requests.get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
 
@@ -2618,7 +2619,7 @@ class TestImages(functional.FunctionalTest):
             self.assertEqual(value, image[key], key)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps({
             'name': 'image-1',
             'disk_format': 'aki',
@@ -2655,7 +2656,7 @@ class TestImages(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         self.assertEqual('1', image['x_all_permitted_joe_soap'])
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
@@ -2679,7 +2680,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'replace',
              'path': '/x_all_permitted_joe_soap', 'value': '3'}
@@ -2719,7 +2720,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'remove', 'path': '/x_all_permitted_b'}
         ])
@@ -2743,7 +2744,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(http.FORBIDDEN, response.status_code)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps({
             'name': 'image-1',
             'disk_format': 'aki',
@@ -2777,7 +2778,7 @@ class TestImages(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_none_read', image.keys())
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
@@ -2813,13 +2814,15 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'replace',
              'path': '/x_none_update', 'value': '3'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(http.CONFLICT, response.status_code, response.text)
+        # FIXME(danms): This was expecting CONFLICT, but ... should it
+        # not be the same as the admin case above?
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         # Verify neither admin nor unknown role can delete properties marked
         # with '!'
@@ -2848,12 +2851,14 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'remove', 'path': '/x_none_delete'}
         ])
         response = requests.patch(path, headers=headers, data=data)
-        self.assertEqual(http.CONFLICT, response.status_code, response.text)
+        # FIXME(danms): This was expecting CONFLICT, but ... should it
+        # not be the same as the admin case above?
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         self.stop_servers()
 
@@ -2895,7 +2900,7 @@ class TestImages(functional.FunctionalTest):
             self.assertEqual(value, image[key], key)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps({
             'name': 'image-1',
             'disk_format': 'aki',
@@ -2932,7 +2937,7 @@ class TestImages(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         self.assertEqual('1', image['x_all_permitted_joe_soap'])
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
@@ -2956,7 +2961,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'replace',
              'path': '/x_all_permitted_joe_soap', 'value': '3'}
@@ -2996,7 +3001,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'remove', 'path': '/x_all_permitted_b'}
         ])
@@ -3020,7 +3025,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(http.FORBIDDEN, response.status_code)
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps({
             'name': 'image-1',
             'disk_format': 'aki',
@@ -3054,7 +3059,7 @@ class TestImages(functional.FunctionalTest):
         image = jsonutils.loads(response.text)
         self.assertNotIn('x_none_read', image.keys())
         headers = self._headers({'content-type': 'application/json',
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         path = self._url('/v2/images/%s' % image_id)
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
@@ -3090,7 +3095,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'replace',
              'path': '/x_none_update', 'value': '3'}
@@ -3125,7 +3130,7 @@ class TestImages(functional.FunctionalTest):
         path = self._url('/v2/images/%s' % image_id)
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type,
-                                 'X-Roles': 'joe_soap'})
+                                 'X-Roles': 'reader,member,joe_soap'})
         data = jsonutils.dumps([
             {'op': 'remove', 'path': '/x_none_delete'}
         ])
@@ -3509,60 +3514,60 @@ class TestImages(functional.FunctionalTest):
             return jsonutils.loads(response.text)['images']
 
         # 1. Known user sees public and their own images
-        images = list_images('tenant1')
+        images = list_images('tenant1', role='reader')
         self.assertEqual(7, len(images))
         for image in images:
             self.assertTrue(image['visibility'] == 'public'
                             or 'tenant1' in image['name'])
 
         # 2. Known user, visibility=public, sees all public images
-        images = list_images('tenant1', visibility='public')
+        images = list_images('tenant1', role='reader', visibility='public')
         self.assertEqual(4, len(images))
         for image in images:
             self.assertEqual('public', image['visibility'])
 
         # 3. Known user, visibility=private, sees only their private image
-        images = list_images('tenant1', visibility='private')
+        images = list_images('tenant1', role='reader', visibility='private')
         self.assertEqual(1, len(images))
         image = images[0]
         self.assertEqual('private', image['visibility'])
         self.assertIn('tenant1', image['name'])
 
         # 4. Known user, visibility=shared, sees only their shared image
-        images = list_images('tenant1', visibility='shared')
+        images = list_images('tenant1', role='reader', visibility='shared')
         self.assertEqual(1, len(images))
         image = images[0]
         self.assertEqual('shared', image['visibility'])
         self.assertIn('tenant1', image['name'])
 
         # 5. Known user, visibility=community, sees all community images
-        images = list_images('tenant1', visibility='community')
+        images = list_images('tenant1', role='reader', visibility='community')
         self.assertEqual(4, len(images))
         for image in images:
             self.assertEqual('community', image['visibility'])
 
         # 6. Unknown user sees only public images
-        images = list_images('none')
+        images = list_images('none', role='reader')
         self.assertEqual(4, len(images))
         for image in images:
             self.assertEqual('public', image['visibility'])
 
         # 7. Unknown user, visibility=public, sees only public images
-        images = list_images('none', visibility='public')
+        images = list_images('none', role='reader', visibility='public')
         self.assertEqual(4, len(images))
         for image in images:
             self.assertEqual('public', image['visibility'])
 
         # 8. Unknown user, visibility=private, sees no images
-        images = list_images('none', visibility='private')
+        images = list_images('none', role='reader', visibility='private')
         self.assertEqual(0, len(images))
 
         # 9. Unknown user, visibility=shared, sees no images
-        images = list_images('none', visibility='shared')
+        images = list_images('none', role='reader', visibility='shared')
         self.assertEqual(0, len(images))
 
         # 10. Unknown user, visibility=community, sees only community images
-        images = list_images('none', visibility='community')
+        images = list_images('none', role='reader', visibility='community')
         self.assertEqual(4, len(images))
         for image in images:
             self.assertEqual('community', image['visibility'])
@@ -3739,7 +3744,7 @@ class TestImagesIPv6(functional.FunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -3747,6 +3752,8 @@ class TestImagesIPv6(functional.FunctionalTest):
     def test_image_list_ipv6(self):
         # Image list should be empty
 
+        self.api_server.deployment_flavor = "caching"
+        self.api_server.send_identity_credentials = True
         self.start_servers(**self.__dict__.copy())
 
         requests.get(self._url('/'), headers=self._headers())
@@ -3775,7 +3782,7 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -3976,7 +3983,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -4059,7 +4066,7 @@ class TestImageMembers(functional.FunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -4422,7 +4429,7 @@ class TestQuotas(functional.FunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -4511,7 +4518,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -6369,7 +6376,7 @@ class TestMultiStoreImageMembers(functional.MultipleBackendFunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
@@ -6770,7 +6777,7 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
             'X-Tenant-Id': TENANT1,
-            'X-Roles': 'member',
+            'X-Roles': 'reader,member',
         }
         base_headers.update(custom_headers or {})
         return base_headers
