@@ -47,7 +47,7 @@ def get_backend():
 # Migration-related constants
 EXPAND_BRANCH = 'expand'
 CONTRACT_BRANCH = 'contract'
-CURRENT_RELEASE = 'wallaby'
+CURRENT_RELEASE = 'xena'
 ALEMBIC_INIT_VERSION = 'liberty'
 LATEST_REVISION = 'wallaby_contract01'
 INIT_VERSION = 0
