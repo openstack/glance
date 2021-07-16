@@ -1695,6 +1695,21 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         """
         return self.api_request('DELETE', url, headers=headers)
 
+    def api_patch(self, url, *patches, headers=None):
+        """Perform a PATCH request against the API.
+
+        :param url: The *path* part of the URL to call (i.e. /v2/images)
+        :param patches: One or more patch dicts
+        :param headers: Optional updates to the default set of headers
+        :returns: A webob.Response object
+        """
+        if not headers:
+            headers = {}
+        headers['Content-Type'] = \
+            'application/openstack-images-v2.1-json-patch'
+        return self.api_request('PATCH', url, headers=headers,
+                                json=list(patches))
+
     def _import_copy(self, image_id, stores):
         """Do an import of image_id to the given stores."""
         body = {'method': {'name': 'copy-image'},
@@ -1731,6 +1746,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                              json={'name': 'foo',
                                    'container_format': 'bare',
                                    'disk_format': 'raw'})
+        self.assertEqual(201, resp.status_code, resp.text)
         image = jsonutils.loads(resp.text)
 
         if data_iter:
