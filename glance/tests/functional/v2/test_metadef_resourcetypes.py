@@ -13,253 +13,137 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo_log import log as logging
+import uuid
+
 from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
-import six
+import requests
 from six.moves import http_client as http
-import webob.exc
-from wsme.rest import json
 
-from glance.api import policy
-from glance.api.v2.model.metadef_resource_type import ResourceType
-from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociation
-from glance.api.v2.model.metadef_resource_type import ResourceTypeAssociations
-from glance.api.v2.model.metadef_resource_type import ResourceTypes
-from glance.common import exception
-from glance.common import wsgi
-import glance.db
-import glance.gateway
-from glance.i18n import _, _LE
-import glance.notifier
-import glance.schema
+from glance.tests import functional
 
-LOG = logging.getLogger(__name__)
+TENANT1 = str(uuid.uuid4())
 
 
-class ResourceTypeController(object):
-    def __init__(self, db_api=None, policy_enforcer=None):
-        self.db_api = db_api or glance.db.get_api()
-        self.policy = policy_enforcer or policy.Enforcer()
-        self.gateway = glance.gateway.Gateway(db_api=self.db_api,
-                                              policy_enforcer=self.policy)
+class TestMetadefResourceTypes(functional.FunctionalTest):
 
-    def index(self, req):
-        try:
-            filters = {'namespace': None}
-            rs_type_repo = self.gateway.get_metadef_resource_type_repo(
-                req.context)
-            db_resource_type_list = rs_type_repo.list(filters=filters)
-            resource_type_list = [ResourceType.to_wsme_model(
-                resource_type) for resource_type in db_resource_type_list]
-            resource_types = ResourceTypes()
-            resource_types.resource_types = resource_type_list
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(e)
-            raise webob.exc.HTTPInternalServerError(e)
-        return resource_types
+    def setUp(self):
+        super(TestMetadefResourceTypes, self).setUp()
+        self.cleanup()
+        self.api_server.deployment_flavor = 'noauth'
+        self.start_servers(**self.__dict__.copy())
 
-    def show(self, req, namespace):
-        try:
-            filters = {'namespace': namespace}
-            rs_type_repo = self.gateway.get_metadef_resource_type_repo(
-                req.context)
-            db_resource_type_list = rs_type_repo.list(filters=filters)
-            resource_type_list = [ResourceTypeAssociation.to_wsme_model(
-                resource_type) for resource_type in db_resource_type_list]
-            resource_types = ResourceTypeAssociations()
-            resource_types.resource_type_associations = resource_type_list
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(e)
-            raise webob.exc.HTTPInternalServerError(e)
-        return resource_types
+    def _url(self, path):
+        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
 
-    def create(self, req, resource_type, namespace):
-        rs_type_factory = self.gateway.get_metadef_resource_type_factory(
-            req.context)
-        rs_type_repo = self.gateway.get_metadef_resource_type_repo(req.context)
-        try:
-            new_resource_type = rs_type_factory.new_resource_type(
-                namespace=namespace, **resource_type.to_dict())
-            rs_type_repo.add(new_resource_type)
-
-        except exception.Forbidden as e:
-            msg = (_LE("Forbidden to create resource type. "
-                       "Reason: %(reason)s")
-                   % {'reason': encodeutils.exception_to_unicode(e)})
-            LOG.error(msg)
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except exception.Duplicate as e:
-            raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(e)
-            raise webob.exc.HTTPInternalServerError()
-        return ResourceTypeAssociation.to_wsme_model(new_resource_type)
-
-    def delete(self, req, namespace, resource_type):
-        rs_type_repo = self.gateway.get_metadef_resource_type_repo(req.context)
-        try:
-            filters = {}
-            found = False
-            filters['namespace'] = namespace
-            db_resource_type_list = rs_type_repo.list(filters=filters)
-            for db_resource_type in db_resource_type_list:
-                if db_resource_type.name == resource_type:
-                    db_resource_type.delete()
-                    rs_type_repo.remove(db_resource_type)
-                    found = True
-            if not found:
-                raise exception.NotFound()
-        except exception.Forbidden as e:
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
-        except exception.NotFound:
-            msg = (_("Failed to find resource type %(resourcetype)s to "
-                     "delete") % {'resourcetype': resource_type})
-            LOG.error(msg)
-            raise webob.exc.HTTPNotFound(explanation=msg)
-        except Exception as e:
-            LOG.error(e)
-            raise webob.exc.HTTPInternalServerError()
-
-
-class RequestDeserializer(wsgi.JSONRequestDeserializer):
-    _disallowed_properties = ['created_at', 'updated_at']
-
-    def __init__(self, schema=None):
-        super(RequestDeserializer, self).__init__()
-        self.schema = schema or get_schema()
-
-    def _get_request_body(self, request):
-        output = super(RequestDeserializer, self).default(request)
-        if 'body' not in output:
-            msg = _('Body expected in request.')
-            raise webob.exc.HTTPBadRequest(explanation=msg)
-        return output['body']
-
-    @classmethod
-    def _check_allowed(cls, image):
-        for key in cls._disallowed_properties:
-            if key in image:
-                msg = _("Attribute '%s' is read-only.") % key
-                raise webob.exc.HTTPForbidden(
-                    explanation=encodeutils.exception_to_unicode(msg))
-
-    def create(self, request):
-        body = self._get_request_body(request)
-        self._check_allowed(body)
-        try:
-            self.schema.validate(body)
-        except exception.InvalidObject as e:
-            raise webob.exc.HTTPBadRequest(explanation=e.msg)
-        resource_type = json.fromjson(ResourceTypeAssociation, body)
-        return dict(resource_type=resource_type)
-
-
-class ResponseSerializer(wsgi.JSONResponseSerializer):
-    def __init__(self, schema=None):
-        super(ResponseSerializer, self).__init__()
-        self.schema = schema
-
-    def show(self, response, result):
-        resource_type_json = json.tojson(ResourceTypeAssociations, result)
-        body = jsonutils.dumps(resource_type_json, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
-        response.content_type = 'application/json'
-
-    def index(self, response, result):
-        resource_type_json = json.tojson(ResourceTypes, result)
-        body = jsonutils.dumps(resource_type_json, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
-        response.content_type = 'application/json'
-
-    def create(self, response, result):
-        resource_type_json = json.tojson(ResourceTypeAssociation, result)
-        response.status_int = http.CREATED
-        body = jsonutils.dumps(resource_type_json, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
-        response.content_type = 'application/json'
-
-    def delete(self, response, result):
-        response.status_int = http.NO_CONTENT
-
-
-def _get_base_properties():
-    return {
-        'name': {
-            'type': 'string',
-            'description': _('Resource type names should be aligned with Heat '
-                             'resource types whenever possible: '
-                             'http://docs.openstack.org/developer/heat/'
-                             'template_guide/openstack.html'),
-            'maxLength': 80,
-        },
-        'prefix': {
-            'type': 'string',
-            'description': _('Specifies the prefix to use for the given '
-                             'resource type. Any properties in the namespace '
-                             'should be prefixed with this prefix when being '
-                             'applied to the specified resource type. Must '
-                             'include prefix separator (e.g. a colon :).'),
-            'maxLength': 80,
-        },
-        'properties_target': {
-            'type': 'string',
-            'description': _('Some resource types allow more than one key / '
-                             'value pair per instance.  For example, Cinder '
-                             'allows user and image metadata on volumes. Only '
-                             'the image properties metadata is evaluated by '
-                             'Nova (scheduling or drivers). This property '
-                             'allows a namespace target to remove the '
-                             'ambiguity.'),
-            'maxLength': 80,
-        },
-        "created_at": {
-            "type": "string",
-            "readOnly": True,
-            "description": _("Date and time of resource type association"),
-            "format": "date-time"
-        },
-        "updated_at": {
-            "type": "string",
-            "readOnly": True,
-            "description": _("Date and time of the last resource type "
-                             "association modification"),
-            "format": "date-time"
+    def _headers(self, custom_headers=None):
+        base_headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': TENANT1,
+            'X-Roles': 'admin',
         }
-    }
+        base_headers.update(custom_headers or {})
+        return base_headers
 
+    def test_metadef_resource_types_lifecycle(self):
+        # Namespace should not exist
+        path = self._url('/v2/metadefs/namespaces/MyNamespace')
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.NOT_FOUND, response.status_code)
 
-def get_schema():
-    properties = _get_base_properties()
-    mandatory_attrs = ResourceTypeAssociation.get_mandatory_attrs()
-    schema = glance.schema.Schema(
-        'resource_type_association',
-        properties,
-        required=mandatory_attrs,
-    )
-    return schema
+        # Create a namespace
+        path = self._url('/v2/metadefs/namespaces')
+        headers = self._headers({'content-type': 'application/json'})
+        namespace_name = 'MyNamespace'
+        data = jsonutils.dumps({
+            "namespace": namespace_name,
+            "display_name": "My User Friendly Namespace",
+            "description": "My description",
+            "visibility": "public",
+            "protected": False,
+            "owner": "The Test Owner"
+        })
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
 
+        # Resource type should not exist
+        path = self._url('/v2/metadefs/namespaces/%s/resource_types' %
+                         (namespace_name))
+        response = requests.get(path, headers=self._headers())
+        metadef_resource_type = jsonutils.loads(response.text)
+        self.assertEqual(
+            0, len(metadef_resource_type['resource_type_associations']))
 
-def get_collection_schema():
-    resource_type_schema = get_schema()
-    return glance.schema.CollectionSchema('resource_type_associations',
-                                          resource_type_schema)
+        # Create a resource type
+        path = self._url('/v2/metadefs/namespaces/MyNamespace/resource_types')
+        headers = self._headers({'content-type': 'application/json'})
+        metadef_resource_type_name = "resource_type1"
+        data = jsonutils.dumps(
+            {
+                "name": "resource_type1",
+                "prefix": "hw_",
+                "properties_target": "image",
+            }
+        )
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
 
+        # Attempt to insert a duplicate
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CONFLICT, response.status_code)
 
-def create_resource():
-    """ResourceTypeAssociation resource factory method"""
-    schema = get_schema()
-    deserializer = RequestDeserializer(schema)
-    serializer = ResponseSerializer(schema)
-    controller = ResourceTypeController()
-    return wsgi.Resource(controller, deserializer, serializer)
+        # Get the metadef resource type created above
+        path = self._url('/v2/metadefs/namespaces/%s/resource_types' %
+                         (namespace_name))
+        response = requests.get(path,
+                                headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        metadef_resource_type = jsonutils.loads(response.text)
+        self.assertEqual(
+            "resource_type1",
+            metadef_resource_type['resource_type_associations'][0]['name'])
+
+        # Returned resource type should match the created resource type
+        resource_type = jsonutils.loads(response.text)
+        checked_keys = set([
+            u'name',
+            u'prefix',
+            u'properties_target',
+            u'created_at',
+            u'updated_at'
+        ])
+        self.assertEqual(
+            set(resource_type['resource_type_associations'][0].keys()),
+            checked_keys)
+        expected_metadef_resource_types = {
+            "name": metadef_resource_type_name,
+            "prefix": "hw_",
+            "properties_target": "image",
+        }
+
+        # Simple key values
+        checked_values = set([
+            u'name',
+            u'prefix',
+            u'properties_target',
+        ])
+        for key, value in expected_metadef_resource_types.items():
+            if(key in checked_values):
+                self.assertEqual(
+                    resource_type['resource_type_associations'][0][key],
+                    value, key)
+
+        # Deassociate of metadef resource type resource_type1
+        path = self._url('/v2/metadefs/namespaces/%s/resource_types/%s' %
+                         (namespace_name, metadef_resource_type_name))
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # resource_type1 should not exist
+        path = self._url('/v2/metadefs/namespaces/%s/resource_types' %
+                         (namespace_name))
+        response = requests.get(path, headers=self._headers())
+        metadef_resource_type = jsonutils.loads(response.text)
+        self.assertEqual(
+            0, len(metadef_resource_type['resource_type_associations']))
