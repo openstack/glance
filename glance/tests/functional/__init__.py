@@ -1828,3 +1828,11 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                              json={'name': 'foo',
                                    'container_format': 'bare',
                                    'disk_format': 'raw'})
+
+    def _create_metadef_resource(self, path=None, data=None,
+                                 expected_code=201):
+        resp = self.api_post(path,
+                             json=data)
+        md_resource = jsonutils.loads(resp.text)
+        self.assertEqual(expected_code, resp.status_code)
+        return md_resource

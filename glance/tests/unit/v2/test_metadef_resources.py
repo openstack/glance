@@ -500,7 +500,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_delete_non_visible(self):
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPForbidden,
+        self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.delete, request,
                           NAMESPACE2)
         self.assertNotificationsLog([])
@@ -570,7 +570,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                                    [{'namespace': NAMESPACE3}])
 
     def test_namespace_non_existing_delete_properties(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.delete_properties,
                           request,
@@ -608,7 +608,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                                    [{'namespace': NAMESPACE3}])
 
     def test_namespace_non_existing_delete_objects(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.delete_objects,
                           request,
@@ -645,7 +645,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                                    [{'namespace': NAMESPACE3}])
 
     def test_namespace_non_existing_delete_tags(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.delete_tags,
                           request,
@@ -843,7 +843,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
         namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE2
-        self.assertRaises(webob.exc.HTTPForbidden,
+        self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.update, request, namespace,
                           NAMESPACE2)
         self.assertNotificationsLog([])
