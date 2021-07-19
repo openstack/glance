@@ -413,6 +413,16 @@ class TestMetadefAPIPolicy(APIPolicyBase):
                 mock.call(mock.ANY, 'modify_metadef_namespace', mock.ANY),
                 mock.call(mock.ANY, 'get_metadef_namespace', mock.ANY)])
 
+    def test_get_metadef_resource_type(self):
+        self.policy.get_metadef_resource_type()
+        self.enforcer.enforce.assert_called_once_with(
+            self.context, 'get_metadef_resource_type', mock.ANY)
+
+    def test_remove_metadef_resource_type_association(self):
+        self.policy.remove_metadef_resource_type_association()
+        self.enforcer.enforce.assert_called_once_with(
+            self.context, 'remove_metadef_resource_type_association', mock.ANY)
+
 
 class TestMemberAPIPolicy(utils.BaseTestCase):
     def setUp(self):
