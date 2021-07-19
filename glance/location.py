@@ -28,6 +28,7 @@ from oslo_utils import excutils
 
 from glance.common import exception
 from glance.common import format_inspector
+from glance.common import store_utils
 from glance.common import utils
 import glance.domain.proxy
 from glance.i18n import _, _LE, _LI, _LW
@@ -42,6 +43,7 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
     def __init__(self, image_repo, context, store_api, store_utils):
         self.context = context
         self.store_api = store_api
+        self.image_repo = image_repo
         proxy_kwargs = {'context': context, 'store_api': store_api,
                         'store_utils': store_utils}
         super(ImageRepoProxy, self).__init__(image_repo,
@@ -80,6 +82,13 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         result = super(ImageRepoProxy, self).save(image, from_state=from_state)
         self._set_acls(image)
         return result
+
+    def get(self, image_id):
+        image = super(ImageRepoProxy, self).get(image_id)
+        if CONF.enabled_backends:
+            store_utils.update_store_in_locations(
+                self.context, image, self.image_repo)
+        return image
 
 
 def _get_member_repo_for_store(image, context, db_api, store_api):
