@@ -555,16 +555,40 @@ class TestMetadefAPIPolicy(APIPolicyBase):
                                                       'add_metadef_tag',
                                                       mock.ANY)
 
+    def test_add_metadef_tags(self):
+        self.policy.add_metadef_tags()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'add_metadef_tags',
+                                                      mock.ANY)
+
     def test_get_metadef_tags(self):
         self.policy.get_metadef_tags()
         self.enforcer.enforce.assert_called_once_with(self.context,
                                                       'get_metadef_tags',
                                                       mock.ANY)
 
+    def test_get_metadef_tag(self):
+        self.policy.get_metadef_tag()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'get_metadef_tag',
+                                                      mock.ANY)
+
+    def modify_metadef_tag(self):
+        self.policy.modify_metadef_tag()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'modify_metadef_tag',
+                                                      mock.ANY)
+
     def test_delete_metadef_tags(self):
         self.policy.delete_metadef_tags()
         self.enforcer.enforce.assert_called_once_with(self.context,
                                                       'delete_metadef_tags',
+                                                      mock.ANY)
+
+    def test_delete_metadef_tag(self):
+        self.policy.delete_metadef_tag()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'delete_metadef_tag',
                                                       mock.ANY)
 
     def test_add_metadef_property(self):

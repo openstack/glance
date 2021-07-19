@@ -24,6 +24,7 @@ from wsme.rest import json
 from glance.api import policy
 from glance.api.v2.model.metadef_tag import MetadefTag
 from glance.api.v2.model.metadef_tag import MetadefTags
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import wsgi
 from glance.common import wsme_utils
@@ -48,14 +49,34 @@ class TagsController(object):
         self.tag_schema_link = '/v2/schemas/metadefs/tag'
 
     def create(self, req, namespace, tag_name):
-        tag_factory = self.gateway.get_metadef_tag_factory(req.context)
-        tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+        tag_factory = self.gateway.get_metadef_tag_factory(
+            req.context, authorization_layer=False)
+        tag_repo = self.gateway.get_metadef_tag_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
+        try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
         tag_name_as_dict = {'name': tag_name}
         try:
             self.schema.validate(tag_name_as_dict)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         try:
+            # NOTE(abhishekk): Metadef tags is created for Metadef namespaces
+            # Here we are just checking if user is authorized to create metadef
+            # tag or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).add_metadef_tag()
+
             new_meta_tag = tag_factory.new_tag(
                 namespace=namespace,
                 **tag_name_as_dict)
@@ -72,16 +93,33 @@ class TagsController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
         return MetadefTag.to_wsme_model(new_meta_tag)
 
     def create_tags(self, req, metadata_tags, namespace):
-        tag_factory = self.gateway.get_metadef_tag_factory(req.context)
-        tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+        tag_factory = self.gateway.get_metadef_tag_factory(
+            req.context, authorization_layer=False)
+        tag_repo = self.gateway.get_metadef_tag_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef tags is created for Metadef namespaces
+            # Here we are just checking if user is authorized to create metadef
+            # tag or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).add_metadef_tags()
+
             tag_list = []
             for metadata_tag in metadata_tags.tags:
                 tag_list.append(tag_factory.new_tag(
@@ -99,19 +137,35 @@ class TagsController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
         return metadef_tags
 
     def index(self, req, namespace, marker=None, limit=None,
               sort_key='created_at', sort_dir='desc', filters=None):
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): This is just a "do you have permission to
+            # list tags" check. Each object is checked against
+            # get_metadef_tag below.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).get_metadef_tags()
+
             filters = filters or dict()
             filters['namespace'] = namespace
 
-            tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+            tag_repo = self.gateway.get_metadef_tag_repo(
+                req.context, authorization_layer=False)
             if marker:
                 metadef_tag = tag_repo.get(namespace, marker)
                 marker = metadef_tag.tag_id
@@ -131,15 +185,31 @@ class TagsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
         return metadef_tags
 
     def show(self, req, namespace, tag_name):
-        meta_tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+        meta_tag_repo = self.gateway.get_metadef_tag_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef tags are associated with
+            # namespace, so made provision to pass namespace here
+            # for visibility check
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).get_metadef_tag()
+
             metadef_tag = meta_tag_repo.get(namespace, tag_name)
             return MetadefTag.to_wsme_model(metadef_tag)
         except exception.Forbidden as e:
@@ -148,13 +218,29 @@ class TagsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
     def update(self, req, metadata_tag, namespace, tag_name):
-        meta_repo = self.gateway.get_metadef_tag_repo(req.context)
+        meta_repo = self.gateway.get_metadef_tag_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef tags is created for Metadef namespaces
+            # Here we are just checking if user is authorized to update metadef
+            # tag or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).modify_metadef_tag()
+
             metadef_tag = meta_repo.get(namespace, tag_name)
             metadef_tag._old_name = metadef_tag.name
             metadef_tag.name = wsme_utils._get_value(
@@ -172,15 +258,31 @@ class TagsController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
         return MetadefTag.to_wsme_model(updated_metadata_tag)
 
     def delete(self, req, namespace, tag_name):
-        meta_repo = self.gateway.get_metadef_tag_repo(req.context)
+        meta_repo = self.gateway.get_metadef_tag_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef tags is created for Metadef namespaces
+            # Here we are just checking if user is authorized to delete metadef
+            # tag or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).delete_metadef_tag()
+
             metadef_tag = meta_repo.get(namespace, tag_name)
             metadef_tag.delete()
             meta_repo.remove(metadef_tag)
@@ -190,9 +292,6 @@ class TagsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
 
 def _get_base_definitions():
