@@ -217,6 +217,15 @@ class MetadefAPIPolicy(APIPolicyBase):
     def add_metadef_object(self):
         self._enforce('add_metadef_object')
 
+    def get_metadef_object(self):
+        self._enforce('get_metadef_object')
+
+    def modify_metadef_object(self):
+        self._enforce('modify_metadef_object')
+
+    def delete_metadef_object(self):
+        self._enforce('delete_metadef_object')
+
     def add_metadef_tag(self):
         self._enforce('add_metadef_tag')
 

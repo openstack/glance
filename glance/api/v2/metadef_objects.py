@@ -26,6 +26,7 @@ from glance.api.v2 import metadef_namespaces as namespaces
 import glance.api.v2.metadef_properties as properties
 from glance.api.v2.model.metadef_object import MetadefObject
 from glance.api.v2.model.metadef_object import MetadefObjects
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import wsgi
 from glance.common import wsme_utils
@@ -48,9 +49,31 @@ class MetadefObjectsController(object):
         self.obj_schema_link = '/v2/schemas/metadefs/object'
 
     def create(self, req, metadata_object, namespace):
-        object_factory = self.gateway.get_metadef_object_factory(req.context)
-        object_repo = self.gateway.get_metadef_object_repo(req.context)
+        object_factory = self.gateway.get_metadef_object_factory(
+            req.context, authorization_layer=False)
+        object_repo = self.gateway.get_metadef_object_repo(
+            req.context, authorization_layer=False)
         try:
+            ns_repo = self.gateway.get_metadef_namespace_repo(
+                req.context, authorization_layer=False)
+            try:
+                # NOTE(abhishekk): Verifying that namespace is visible
+                # to user
+                namespace_obj = ns_repo.get(namespace)
+            except exception.Forbidden:
+                # NOTE (abhishekk): Returning 404 Not Found as the
+                # namespace is outside of this user's project
+                msg = _("Namespace %s not found") % namespace
+                raise exception.NotFound(msg)
+
+            # NOTE(abhishekk): Metadef object is created for Metadef namespaces
+            # Here we are just checking if user is authorized to create metadef
+            # object or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).add_metadef_object()
+
             new_meta_object = object_factory.new_object(
                 namespace=namespace,
                 **metadata_object.to_dict())
@@ -68,9 +91,6 @@ class MetadefObjectsController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
         return MetadefObject.to_wsme_model(
             new_meta_object,
             get_object_href(namespace, new_meta_object),
@@ -79,16 +99,42 @@ class MetadefObjectsController(object):
     def index(self, req, namespace, marker=None, limit=None,
               sort_key='created_at', sort_dir='desc', filters=None):
         try:
+            ns_repo = self.gateway.get_metadef_namespace_repo(
+                req.context, authorization_layer=False)
+            try:
+                namespace_obj = ns_repo.get(namespace)
+            except exception.Forbidden:
+                # NOTE (abhishekk): Returning 404 Not Found as the
+                # namespace is outside of this user's project
+                msg = _("Namespace %s not found") % namespace
+                raise exception.NotFound(msg)
+
+            # NOTE(abhishekk): This is just a "do you have permission to
+            # list objects" check. Each object is checked against
+            # get_metadef_object below.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).get_metadef_objects()
+
             filters = filters or dict()
             filters['namespace'] = namespace
-            object_repo = self.gateway.get_metadef_object_repo(req.context)
+            object_repo = self.gateway.get_metadef_object_repo(
+                req.context, authorization_layer=False)
+
             db_metaobject_list = object_repo.list(
                 marker=marker, limit=limit, sort_key=sort_key,
                 sort_dir=sort_dir, filters=filters)
-            object_list = [MetadefObject.to_wsme_model(
-                db_metaobject,
-                get_object_href(namespace, db_metaobject),
-                self.obj_schema_link) for db_metaobject in db_metaobject_list]
+
+            object_list = [
+                MetadefObject.to_wsme_model(
+                    obj, get_object_href(namespace, obj),
+                    self.obj_schema_link
+                ) for obj in db_metaobject_list if api_policy.MetadefAPIPolicy(
+                    req.context, md_resource=obj.namespace,
+                    enforcer=self.policy
+                ).check('get_metadef_object')]
+
             metadef_objects = MetadefObjects()
             metadef_objects.objects = object_list
         except exception.Forbidden as e:
@@ -97,16 +143,32 @@ class MetadefObjectsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
         return metadef_objects
 
     def show(self, req, namespace, object_name):
         meta_object_repo = self.gateway.get_metadef_object_repo(
-            req.context)
+            req.context, authorization_layer=False)
         try:
-            metadef_object = meta_object_repo.get(namespace, object_name)
+            ns_repo = self.gateway.get_metadef_namespace_repo(
+                req.context, authorization_layer=False)
+            try:
+                namespace_obj = ns_repo.get(namespace)
+            except exception.Forbidden:
+                # NOTE (abhishekk): Returning 404 Not Found as the
+                # namespace is outside of this user's project
+                msg = _("Namespace %s not found") % namespace
+                raise exception.NotFound(msg)
+
+            # NOTE(abhishekk): Metadef objects are associated with
+            # namespace, so made provision to pass namespace here
+            # for visibility check
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).get_metadef_object()
+
+            metadef_object = meta_object_repo.get(namespace,
+                                                  object_name)
             return MetadefObject.to_wsme_model(
                 metadef_object,
                 get_object_href(namespace, metadef_object),
@@ -117,13 +179,31 @@ class MetadefObjectsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
     def update(self, req, metadata_object, namespace, object_name):
-        meta_repo = self.gateway.get_metadef_object_repo(req.context)
+        meta_repo = self.gateway.get_metadef_object_repo(
+            req.context, authorization_layer=False)
         try:
+            ns_repo = self.gateway.get_metadef_namespace_repo(
+                req.context, authorization_layer=False)
+            try:
+                # NOTE(abhishekk): Verifying that namespace is visible
+                # to user
+                namespace_obj = ns_repo.get(namespace)
+            except exception.Forbidden:
+                # NOTE (abhishekk): Returning 404 Not Found as the
+                # namespace is outside of this user's project
+                msg = _("Namespace %s not found") % namespace
+                raise exception.NotFound(msg)
+
+            # NOTE(abhishekk): Metadef object is created for Metadef namespaces
+            # Here we are just checking if user is authorized to modify metadef
+            # object or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).modify_metadef_object()
+
             metadef_object = meta_repo.get(namespace, object_name)
             metadef_object._old_name = metadef_object.name
             metadef_object.name = wsme_utils._get_value(
@@ -147,17 +227,35 @@ class MetadefObjectsController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
         return MetadefObject.to_wsme_model(
             updated_metadata_obj,
             get_object_href(namespace, updated_metadata_obj),
             self.obj_schema_link)
 
     def delete(self, req, namespace, object_name):
-        meta_repo = self.gateway.get_metadef_object_repo(req.context)
+        meta_repo = self.gateway.get_metadef_object_repo(
+            req.context, authorization_layer=False)
         try:
+            ns_repo = self.gateway.get_metadef_namespace_repo(
+                req.context, authorization_layer=False)
+            try:
+                # NOTE(abhishekk): Verifying that namespace is visible
+                # to user
+                namespace_obj = ns_repo.get(namespace)
+            except exception.Forbidden:
+                # NOTE (abhishekk): Returning 404 Not Found as the
+                # namespace is outside of this user's project
+                msg = _("Namespace %s not found") % namespace
+                raise exception.NotFound(msg)
+
+            # NOTE(abhishekk): Metadef object is created for Metadef namespaces
+            # Here we are just checking if user is authorized to delete metadef
+            # object or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).delete_metadef_object()
+
             metadef_object = meta_repo.get(namespace, object_name)
             metadef_object.delete()
             meta_repo.remove(metadef_object)
@@ -167,9 +265,6 @@ class MetadefObjectsController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
 
 def _get_base_definitions():

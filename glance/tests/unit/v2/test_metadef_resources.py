@@ -1378,14 +1378,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           request, NAMESPACE3, OBJECT1)
 
     def test_object_delete_non_existing(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.object_controller.delete, request, NAMESPACE5,
                           OBJECT1)
         self.assertNotificationsLog([])
 
     def test_object_delete_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.object_controller.delete, request, NAMESPACE4,
                           OBJECT1)
@@ -1519,7 +1519,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         object.required = []
         object.properties = {}
 
-        self.assertRaises(webob.exc.HTTPForbidden,
+        self.assertRaises(webob.exc.HTTPNotFound,
                           self.object_controller.create, request, object,
                           NAMESPACE1)
         self.assertNotificationsLog([])
