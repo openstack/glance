@@ -1251,12 +1251,20 @@ def _image_property_update(context, prop_ref, values, session=None):
 
 def image_property_delete(context, prop_ref, image_ref, session=None):
     """
-    Used internally by image_property_create and image_property_update.
+    Used internally by _set_properties_for_image().
     """
     session = session or get_session()
     prop = session.query(models.ImageProperty).filter_by(image_id=image_ref,
                                                          name=prop_ref).one()
-    prop.delete(session=session)
+    try:
+        prop.delete(session=session)
+    except sa_orm.exc.StaleDataError as e:
+        LOG.debug(('StaleDataError while deleting property %(prop)r '
+                   'from image %(image)r likely means we raced during delete: '
+                   '%(err)s'),
+                  {'prop': prop_ref, 'image': image_ref,
+                   'err': str(e)})
+        return
     return prop
 
 
