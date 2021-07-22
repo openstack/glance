@@ -19,7 +19,6 @@
 
 """Database setup and migration commands."""
 
-import os
 import threading
 
 from oslo_config import cfg
@@ -49,11 +48,3 @@ EXPAND_BRANCH = 'expand'
 CONTRACT_BRANCH = 'contract'
 CURRENT_RELEASE = 'xena'
 ALEMBIC_INIT_VERSION = 'liberty'
-LATEST_REVISION = 'wallaby_contract01'
-INIT_VERSION = 0
-
-MIGRATE_REPO_PATH = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    'sqlalchemy',
-    'migrate_repo',
-)

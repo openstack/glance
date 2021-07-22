@@ -258,11 +258,8 @@ class TestManage(TestManageBase):
         'glance.db.sqlalchemy.alembic_migrations.get_current_alembic_heads')
     @mock.patch(
         'glance.db.sqlalchemy.alembic_migrations.get_alembic_branch_head')
-    @mock.patch('glance.db.sqlalchemy.alembic_migrations.'
-                'place_database_under_alembic_control')
     @mock.patch('alembic.command.upgrade')
     def test_sync_db_is_already_sync(self, mock_upgrade,
-                                     mock_db_under_alembic_control,
                                      mock_get_alembic_branch_head,
                                      mock_get_current_alembic_heads):
         mock_get_current_alembic_heads.return_value = ['pike_contract01']

@@ -14,19 +14,13 @@
 #    under the License.
 
 import os
-import sys
 
-from alembic import command as alembic_command
 from alembic import config as alembic_config
 from alembic import migration as alembic_migration
 from alembic import script as alembic_script
 from sqlalchemy import MetaData, Table
-from oslo_db import exception as db_exception
-from oslo_db.sqlalchemy import migration as sqla_migration
 
-from glance.db import migration as db_migration
 from glance.db.sqlalchemy import api as db_api
-from glance.i18n import _
 
 
 def get_alembic_config(engine=None):
@@ -73,60 +67,6 @@ def get_current_alembic_heads():
 
         heads = context.get_current_heads()
         return heads
-
-
-def get_current_legacy_head():
-    try:
-        legacy_head = sqla_migration.db_version(db_api.get_engine(),
-                                                db_migration.MIGRATE_REPO_PATH,
-                                                db_migration.INIT_VERSION)
-    except db_exception.DBMigrationError:
-        legacy_head = None
-    return legacy_head
-
-
-def is_database_under_alembic_control():
-    if get_current_alembic_heads():
-        return True
-    return False
-
-
-def is_database_under_migrate_control():
-    if get_current_legacy_head():
-        return True
-    return False
-
-
-def place_database_under_alembic_control():
-    a_config = get_alembic_config()
-
-    if not is_database_under_migrate_control():
-        return
-
-    if not is_database_under_alembic_control():
-        print(_("Database is currently not under Alembic's migration "
-                "control."))
-        head = get_current_legacy_head()
-        if head == 42:
-            alembic_version = 'liberty'
-        elif head == 43:
-            alembic_version = 'mitaka01'
-        elif head == 44:
-            alembic_version = 'mitaka02'
-        elif head == 45:
-            alembic_version = 'ocata01'
-        elif head in range(1, 42):
-            print("Legacy head: ", head)
-            sys.exit(_("The current database version is not supported any "
-                       "more. Please upgrade to Liberty release first."))
-        else:
-            sys.exit(_("Unable to place database under Alembic's migration "
-                       "control. Unknown database state, can't proceed "
-                       "further."))
-
-        print(_("Placing database under Alembic's migration control at "
-                "revision:"), alembic_version)
-        alembic_command.stamp(a_config, alembic_version)
 
 
 def get_alembic_branch_head(branch):

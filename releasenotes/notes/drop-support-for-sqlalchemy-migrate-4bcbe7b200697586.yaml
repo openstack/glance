@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    The database migration engine used by Glance for database upgrades was
+    changed from *SQLAlchemy Migrate* to *Alembic* in the 14.0.0 (Ocata)
+    release. Support for *SQLAlchemy Migrate* has now been removed. This
+    means in order to upgrade from a pre-Ocata release to Xena or later,
+    you must upgrade to Wallaby or earlier first.
