@@ -16,7 +16,7 @@
 
 from sqlalchemy.schema import (Column, MetaData, Table, Index)
 
-from glance.db.sqlalchemy.migrate_repo.schema import (
+from glance.db.sqlalchemy.schema import (
     Boolean, DateTime, String, Text, create_tables)  # noqa
 
 

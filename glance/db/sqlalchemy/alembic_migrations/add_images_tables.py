@@ -18,7 +18,7 @@ from sqlalchemy import sql
 from sqlalchemy.schema import (
     Column, PrimaryKeyConstraint, ForeignKeyConstraint, UniqueConstraint)
 
-from glance.db.sqlalchemy.migrate_repo.schema import (
+from glance.db.sqlalchemy.schema import (
     Boolean, DateTime, Integer, BigInteger, String, Text)  # noqa
 from glance.db.sqlalchemy.models import JSONEncodedDict
 

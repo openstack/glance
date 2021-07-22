@@ -15,9 +15,8 @@
 
 from sqlalchemy.schema import (Column, ForeignKey, MetaData, Table)
 
-from glance.db.sqlalchemy.migrate_repo.schema import (String,
-                                                      Text,
-                                                      create_tables)  # noqa
+from glance.db.sqlalchemy.schema import (
+    String, Text, create_tables)  # noqa
 
 TASKS_MIGRATE_COLUMNS = ['input', 'message', 'result']
 

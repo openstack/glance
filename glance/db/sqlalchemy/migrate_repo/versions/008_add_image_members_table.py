@@ -16,7 +16,7 @@
 from sqlalchemy import Column, ForeignKey, Index, MetaData, Table
 from sqlalchemy import UniqueConstraint
 
-from glance.db.sqlalchemy.migrate_repo.schema import (
+from glance.db.sqlalchemy.schema import (
     Boolean, DateTime, Integer, String, create_tables,
     from_migration_import)  # noqa
 

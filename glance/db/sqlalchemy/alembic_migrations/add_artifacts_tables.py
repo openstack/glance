@@ -17,7 +17,7 @@ from alembic import op
 from sqlalchemy.schema import (
     Column, PrimaryKeyConstraint, ForeignKeyConstraint)
 
-from glance.db.sqlalchemy.migrate_repo.schema import (
+from glance.db.sqlalchemy.schema import (
     Boolean, DateTime, Integer, BigInteger, String, Text, Numeric)  # noqa
 
 
