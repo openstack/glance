@@ -451,7 +451,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_show_non_visible(self):
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPNotFound,
+        self.assertRaises(webob.exc.HTTPForbidden,
                           self.namespace_controller.show, request, NAMESPACE2)
 
     def test_namespace_delete(self):
@@ -500,7 +500,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_delete_non_visible(self):
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPNotFound,
+        self.assertRaises(webob.exc.HTTPForbidden,
                           self.namespace_controller.delete, request,
                           NAMESPACE2)
         self.assertNotificationsLog([])
@@ -843,7 +843,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
         namespace = namespaces.Namespace()
         namespace.namespace = NAMESPACE2
-        self.assertRaises(webob.exc.HTTPNotFound,
+        self.assertRaises(webob.exc.HTTPForbidden,
                           self.namespace_controller.update, request, namespace,
                           NAMESPACE2)
         self.assertNotificationsLog([])
@@ -936,7 +936,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_property_show_non_existing_resource_type(self):
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPNotFound,
+        self.assertRaises(webob.exc.HTTPForbidden,
                           self.property_controller.show, request, NAMESPACE2,
                           PROPERTY1, filters={'resource_type': 'test'})
 
@@ -1687,7 +1687,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
     def test_resource_type_show_non_visible(self):
         request = unit_test_utils.get_fake_request()
 
-        self.assertRaises(webob.exc.HTTPNotFound, self.rt_controller.show,
+        self.assertRaises(webob.exc.HTTPForbidden, self.rt_controller.show,
                           request, NAMESPACE2)
 
     def test_resource_type_show_non_visible_admin(self):
@@ -1754,7 +1754,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_resource_type_association_delete_non_visible(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT3)
-        self.assertRaises(webob.exc.HTTPNotFound, self.rt_controller.delete,
+        self.assertRaises(webob.exc.HTTPForbidden, self.rt_controller.delete,
                           request, NAMESPACE1, RESOURCE_TYPE1)
         self.assertNotificationsLog([])
 

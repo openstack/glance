@@ -464,12 +464,8 @@ class MetadefNamespaceRepo(object):
         )
 
     def get(self, namespace):
-        try:
-            db_api_namespace = self.db_api.metadef_namespace_get(
-                self.context, namespace)
-        except (exception.NotFound, exception.Forbidden):
-            msg = _('Could not find namespace %s') % namespace
-            raise exception.NotFound(msg)
+        db_api_namespace = self.db_api.metadef_namespace_get(
+            self.context, namespace)
         return self._format_namespace_from_db(db_api_namespace)
 
     def list(self, marker=None, limit=None, sort_key='created_at',
