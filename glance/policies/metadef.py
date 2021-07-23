@@ -269,20 +269,90 @@ metadef_policies = [
         ],
     ),
 
-    policy.RuleDefault(name="get_metadef_tag",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="get_metadef_tags",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="modify_metadef_tag",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="add_metadef_tag",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="add_metadef_tags",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="delete_metadef_tag",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="delete_metadef_tags",
-                       check_str="rule:metadef_admin"),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_tag",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="Get tag definition.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/tags'
+                     '/{tag_name}',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_tag", check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_tags",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="List tag definitions.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/tags',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_tags", check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="modify_metadef_tag",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Update tag definition.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/tags'
+                     '/{tag_name}',
+             'method': 'PUT'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="add_metadef_tag",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Add tag definition.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/tags'
+                     '/{tag_name}',
+             'method': 'POST'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="add_metadef_tags",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Create tag definitions.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/tags',
+             'method': 'POST'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="delete_metadef_tag",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Delete tag definition.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/tags'
+                     '/{tag_name}',
+             'method': 'DELETE'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="delete_metadef_tags",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Delete tag definitions.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/tags',
+             'method': 'DELETE'}
+        ],
+    )
 ]
 
 
