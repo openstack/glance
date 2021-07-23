@@ -66,7 +66,7 @@ class TestPasteApp(test_utils.BaseTestCase):
 
         app = config.load_paste_app('glance-api')
 
-        self.assertIsInstance(app, expected_app_type)
+        self.assertIsInstance(app['/'], expected_app_type)
 
     def test_load_paste_app(self):
         expected_middleware = oslo_middleware.CORS
@@ -78,7 +78,11 @@ class TestPasteApp(test_utils.BaseTestCase):
                           expected_middleware, make_paste_file=False)
 
     def test_load_paste_app_with_paste_flavor(self):
-        pipeline = ('[pipeline:glance-api-incomplete]\n'
+        pipeline = ('[composite:glance-api-incomplete]\n'
+                    'paste.composite_factory = glance.api:root_app_factory\n'
+                    '/: api-incomplete\n'
+                    '/healthcheck: healthcheck\n'
+                    '[pipeline:api-incomplete]\n'
                     'pipeline = context rootapp')
         expected_middleware = context.ContextMiddleware
         self._do_test_load_paste_app(expected_middleware,

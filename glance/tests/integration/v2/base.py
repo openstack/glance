@@ -31,13 +31,25 @@ from glance.tests import utils as test_utils
 
 
 TESTING_API_PASTE_CONF = """
-[pipeline:glance-api]
+[composite:glance-api]
+paste.composite_factory = glance.api:root_app_factory
+/: api
+
+[pipeline: api]
 pipeline = versionnegotiation gzip unauthenticated-context rootapp
 
-[pipeline:glance-api-caching]
+[composite:glance-api-caching]
+paste.composite_factory = glance.api:root_app_factory
+/: api-caching
+
+[pipeline: api-caching]
 pipeline = versionnegotiation gzip unauthenticated-context cache rootapp
 
-[pipeline:glance-api-cachemanagement]
+[composite:glance-api-cachemanagement]
+paste.composite_factory = glance.api:root_app_factory
+/: api-cachemanagement
+
+[pipeline: api-cachemanagement]
 pipeline =
     versionnegotiation
     gzip
@@ -46,10 +58,18 @@ pipeline =
     cache_manage
     rootapp
 
-[pipeline:glance-api-fakeauth]
+[composite:glance-api-fakeauth]
+paste.composite_factory = glance.api:root_app_factory
+/: api-fakeauth
+
+[pipeline: api-fakeauth]
 pipeline = versionnegotiation gzip fakeauth context rootapp
 
-[pipeline:glance-api-noauth]
+[composite:glance-api-noauth]
+paste.composite_factory = glance.api:root_app_factory
+/: api-noauth
+
+[pipeline: api-noauth]
 pipeline = versionnegotiation gzip context rootapp
 
 [composite:rootapp]
