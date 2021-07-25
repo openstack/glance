@@ -38,8 +38,10 @@ class TestGateway(test_utils.BaseTestCase):
         @mock.patch.object(self.gateway, 'get_image_factory')
         def _test(mock_gif, mock_gr, mock_gtr):
             self.gateway.get_task_executor_factory(self.context)
-            mock_gtr.assert_called_once_with(self.context)
-            mock_gr.assert_called_once_with(self.context)
+            mock_gtr.assert_called_once_with(
+                self.context, authorization_layer=True)
+            mock_gr.assert_called_once_with(
+                self.context, authorization_layer=True)
             mock_gif.assert_called_once_with(self.context)
             mock_factory.assert_called_once_with(
                 mock_gtr.return_value,
@@ -60,10 +62,12 @@ class TestGateway(test_utils.BaseTestCase):
             self.gateway.get_task_executor_factory(
                 self.context,
                 admin_context=mock.sentinel.admin_context)
-            mock_gtr.assert_called_once_with(self.context)
+            mock_gtr.assert_called_once_with(
+                self.context, authorization_layer=True)
             mock_gr.assert_has_calls([
-                mock.call(self.context),
-                mock.call(mock.sentinel.admin_context),
+                mock.call(self.context, authorization_layer=True),
+                mock.call(mock.sentinel.admin_context,
+                          authorization_layer=True),
             ])
             mock_gif.assert_called_once_with(self.context)
             mock_factory.assert_called_once_with(
@@ -274,7 +278,6 @@ class TestGateway(test_utils.BaseTestCase):
         repo = self.gateway.get_member_repo(
             mock.sentinel.image, self.context, authorization_layer=False)
         self.assertIsInstance(repo, notifier.ImageMemberRepoProxy)
-        mock_proxy.assert_not_called()
 
     @mock.patch('glance.api.policy.ImageMemberFactoryProxy')
     def test_get_member_factory(self, mock_proxy):
@@ -288,3 +291,66 @@ class TestGateway(test_utils.BaseTestCase):
         repo = self.gateway.get_image_member_factory(
             self.context, authorization_layer=False)
         self.assertIsInstance(repo, quota.ImageMemberFactoryProxy)
+
+    @mock.patch('glance.api.policy.TaskRepoProxy')
+    def test_get_task_repo(self, mock_proxy):
+        repo = self.gateway.get_task_repo(self.context)
+        self.assertIsInstance(repo, authorization.TaskRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.TaskRepoProxy')
+    def test_get_task_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_task_repo(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.TaskRepoProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.TaskFactoryProxy')
+    def test_get_task_factory(self, mock_proxy):
+        repo = self.gateway.get_task_factory(self.context)
+        self.assertIsInstance(repo, authorization.TaskFactoryProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.TaskFactoryProxy')
+    def test_get_task_factory_without_auth(self, mock_proxy):
+        repo = self.gateway.get_task_factory(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.TaskFactoryProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.ImageRepoProxy')
+    @mock.patch('glance.api.policy.TaskRepoProxy')
+    def test_get_task_executor_factory_with_auth(self, mock_task_proxy,
+                                                 mock_image_proxy):
+        self.gateway.get_task_executor_factory(self.context)
+        mock_task_proxy.assert_called_once_with(mock.ANY,
+                                                mock.sentinel.context,
+                                                mock.ANY)
+        mock_image_proxy.assert_called_once_with(mock.ANY,
+                                                 mock.sentinel.context,
+                                                 mock.ANY)
+
+    @mock.patch('glance.api.policy.ImageRepoProxy')
+    @mock.patch('glance.api.policy.TaskRepoProxy')
+    def test_get_task_executor_factory_without_auth(self, mock_task_proxy,
+                                                    mock_image_proxy):
+        self.gateway.get_task_executor_factory(self.context,
+                                               authorization_layer=False)
+        mock_task_proxy.assert_not_called()
+        mock_image_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.TaskStubRepoProxy')
+    def test_get_task_stub_repo(self, mock_proxy):
+        repo = self.gateway.get_task_stub_repo(self.context)
+        self.assertIsInstance(repo, authorization.TaskStubRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.TaskStubRepoProxy')
+    def test_get_task_stub_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_task_stub_repo(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.TaskStubRepoProxy)
+        mock_proxy.assert_not_called()

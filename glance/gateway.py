@@ -122,42 +122,54 @@ class Gateway(object):
 
         return repo
 
-    def get_task_factory(self, context):
-        task_factory = glance.domain.TaskFactory()
-        policy_task_factory = policy.TaskFactoryProxy(
-            task_factory, context, self.policy)
-        notifier_task_factory = glance.notifier.TaskFactoryProxy(
-            policy_task_factory, context, self.notifier)
-        authorized_task_factory = authorization.TaskFactoryProxy(
-            notifier_task_factory, context)
-        return authorized_task_factory
+    def get_task_factory(self, context, authorization_layer=True):
+        factory = glance.domain.TaskFactory()
+        if authorization_layer:
+            factory = policy.TaskFactoryProxy(
+                factory, context, self.policy)
+        factory = glance.notifier.TaskFactoryProxy(
+            factory, context, self.notifier)
+        if authorization_layer:
+            factory = authorization.TaskFactoryProxy(
+                factory, context)
+        return factory
 
-    def get_task_repo(self, context):
-        task_repo = glance.db.TaskRepo(context, self.db_api)
-        policy_task_repo = policy.TaskRepoProxy(
-            task_repo, context, self.policy)
-        notifier_task_repo = glance.notifier.TaskRepoProxy(
-            policy_task_repo, context, self.notifier)
-        authorized_task_repo = authorization.TaskRepoProxy(
-            notifier_task_repo, context)
-        return authorized_task_repo
+    def get_task_repo(self, context, authorization_layer=True):
+        repo = glance.db.TaskRepo(context, self.db_api)
+        if authorization_layer:
+            repo = policy.TaskRepoProxy(
+                repo, context, self.policy)
+        repo = glance.notifier.TaskRepoProxy(
+            repo, context, self.notifier)
+        if authorization_layer:
+            repo = authorization.TaskRepoProxy(
+                repo, context)
+        return repo
 
-    def get_task_stub_repo(self, context):
-        task_stub_repo = glance.db.TaskRepo(context, self.db_api)
-        policy_task_stub_repo = policy.TaskStubRepoProxy(
-            task_stub_repo, context, self.policy)
-        notifier_task_stub_repo = glance.notifier.TaskStubRepoProxy(
-            policy_task_stub_repo, context, self.notifier)
-        authorized_task_stub_repo = authorization.TaskStubRepoProxy(
-            notifier_task_stub_repo, context)
-        return authorized_task_stub_repo
+    def get_task_stub_repo(self, context, authorization_layer=True):
+        repo = glance.db.TaskRepo(context, self.db_api)
+        if authorization_layer:
+            repo = policy.TaskStubRepoProxy(
+                repo, context, self.policy)
+        repo = glance.notifier.TaskStubRepoProxy(
+            repo, context, self.notifier)
+        if authorization_layer:
+            repo = authorization.TaskStubRepoProxy(
+                repo, context)
+        return repo
 
-    def get_task_executor_factory(self, context, admin_context=None):
-        task_repo = self.get_task_repo(context)
-        image_repo = self.get_repo(context)
+    def get_task_executor_factory(self, context, admin_context=None,
+                                  authorization_layer=True):
+        task_repo = self.get_task_repo(
+            context, authorization_layer=authorization_layer)
+        image_repo = self.get_repo(context,
+                                   authorization_layer=authorization_layer)
+        # TODO(abhishekk): Pass authorization_layer here once provision
+        # is made in get_image_factory method.
         image_factory = self.get_image_factory(context)
         if admin_context:
-            admin_repo = self.get_repo(admin_context)
+            admin_repo = self.get_repo(admin_context,
+                                       authorization_layer=authorization_layer)
         else:
             admin_repo = None
         return glance.domain.TaskExecutorFactory(task_repo,
