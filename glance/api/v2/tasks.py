@@ -30,6 +30,7 @@ import webob.exc
 
 from glance.api import common
 from glance.api import policy
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import timeutils
 from glance.common import wsgi
@@ -70,9 +71,12 @@ class TasksController(object):
         # NOTE(rosmaita): access to this call is enforced in the deserializer
 
         ctxt = req.context
-        task_factory = self.gateway.get_task_factory(ctxt)
-        executor_factory = self.gateway.get_task_executor_factory(ctxt)
-        task_repo = self.gateway.get_task_repo(ctxt)
+        task_factory = self.gateway.get_task_factory(
+            ctxt, authorization_layer=False)
+        executor_factory = self.gateway.get_task_executor_factory(
+            ctxt, authorization_layer=False)
+        task_repo = self.gateway.get_task_repo(ctxt,
+                                               authorization_layer=False)
         try:
             new_task = task_factory.new_task(
                 task_type=task['type'],
@@ -106,7 +110,8 @@ class TasksController(object):
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)
 
-        task_repo = self.gateway.get_task_stub_repo(req.context)
+        task_repo = self.gateway.get_task_stub_repo(
+            req.context, authorization_layer=False)
         try:
             tasks = task_repo.list(marker, limit, sort_key,
                                    sort_dir, filters)
@@ -126,7 +131,8 @@ class TasksController(object):
     def get(self, req, task_id):
         _enforce_access_policy(self.policy, req)
         try:
-            task_repo = self.gateway.get_task_repo(req.context)
+            task_repo = self.gateway.get_task_repo(
+                req.context, authorization_layer=False)
             task = task_repo.get(task_id)
         except exception.NotFound as e:
             msg = (_LW("Failed to find task %(task_id)s. Reason: %(reason)s")
@@ -423,11 +429,9 @@ _TASK_SCHEMA = {
 
 
 def _enforce_access_policy(policy_engine, request):
-    try:
-        policy_engine.enforce(request.context, 'tasks_api_access', {})
-    except exception.Forbidden:
-        LOG.debug("User does not have permission to access the Tasks API")
-        raise webob.exc.HTTPForbidden()
+    api_policy.TasksAPIPolicy(
+        request.context,
+        enforcer=policy_engine).tasks_api_access()
 
 
 def get_task_schema():

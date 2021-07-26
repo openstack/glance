@@ -650,3 +650,18 @@ class TestMemberAPIPolicy(utils.BaseTestCase):
             mock_enf.assert_has_calls([
                 mock.call(mock.ANY, 'get_image', mock.ANY),
                 mock.call(mock.ANY, 'modify_member', mock.ANY)])
+
+
+class TestTasksAPIPolicy(APIPolicyBase):
+    def setUp(self):
+        super(TestTasksAPIPolicy, self).setUp()
+        self.enforcer = mock.MagicMock()
+        self.context = mock.MagicMock()
+        self.policy = policy.TasksAPIPolicy(self.context,
+                                            enforcer=self.enforcer)
+
+    def test_tasks_api_access(self):
+        self.policy.tasks_api_access()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'tasks_api_access',
+                                                      mock.ANY)

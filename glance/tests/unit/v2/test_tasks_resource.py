@@ -476,20 +476,6 @@ class TestTasksControllerPolicies(base.IsolatedUnitTest):
         self.controller = glance.api.v2.tasks.TasksController(self.db,
                                                               self.policy)
 
-    def test_index_unauthorized(self):
-        rules = {"get_tasks": False}
-        self.policy.set_rules(rules)
-        request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.index,
-                          request)
-
-    def test_get_unauthorized(self):
-        rules = {"get_task": False}
-        self.policy.set_rules(rules)
-        request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.get,
-                          request, task_id=UUID2)
-
     def test_access_get_unauthorized(self):
         rules = {"tasks_api_access": False,
                  "get_task": True}
@@ -497,14 +483,6 @@ class TestTasksControllerPolicies(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.get,
                           request, task_id=UUID2)
-
-    def test_create_task_unauthorized(self):
-        rules = {"add_task": False}
-        self.policy.set_rules(rules)
-        request = unit_test_utils.get_fake_request()
-        task = {'type': 'import', 'input': {"import_from": "fake"}}
-        self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
-                          request, task)
 
     def test_delete(self):
         request = unit_test_utils.get_fake_request()

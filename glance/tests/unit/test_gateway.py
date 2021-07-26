@@ -42,7 +42,8 @@ class TestGateway(test_utils.BaseTestCase):
                 self.context, authorization_layer=True)
             mock_gr.assert_called_once_with(
                 self.context, authorization_layer=True)
-            mock_gif.assert_called_once_with(self.context)
+            mock_gif.assert_called_once_with(
+                self.context, authorization_layer=True)
             mock_factory.assert_called_once_with(
                 mock_gtr.return_value,
                 mock_gr.return_value,
@@ -69,7 +70,8 @@ class TestGateway(test_utils.BaseTestCase):
                 mock.call(mock.sentinel.admin_context,
                           authorization_layer=True),
             ])
-            mock_gif.assert_called_once_with(self.context)
+            mock_gif.assert_called_once_with(
+                self.context, authorization_layer=True)
             mock_factory.assert_called_once_with(
                 mock_gtr.return_value,
                 mock.sentinel.image_repo,

@@ -325,3 +325,15 @@ class MemberAPIPolicy(APIPolicyBase):
 
     def add_member(self):
         self._enforce("add_member")
+
+
+class TasksAPIPolicy(APIPolicyBase):
+    def __init__(self, context, target=None, enforcer=None):
+        self._context = context
+        self._target = target or {}
+        self.enforcer = enforcer or policy.Enforcer()
+        super(TasksAPIPolicy, self).__init__(context, target=self._target,
+                                             enforcer=self.enforcer)
+
+    def tasks_api_access(self):
+        self._enforce('tasks_api_access')

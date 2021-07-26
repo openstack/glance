@@ -162,9 +162,8 @@ class Gateway(object):
             context, authorization_layer=authorization_layer)
         image_repo = self.get_repo(context,
                                    authorization_layer=authorization_layer)
-        # TODO(abhishekk): Pass authorization_layer here once provision
-        # is made in get_image_factory method.
-        image_factory = self.get_image_factory(context)
+        image_factory = self.get_image_factory(
+            context, authorization_layer=authorization_layer)
         if admin_context:
             admin_repo = self.get_repo(admin_context,
                                        authorization_layer=authorization_layer)
