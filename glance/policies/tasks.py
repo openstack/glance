@@ -34,6 +34,13 @@ granular and will not allow you to separate writable and readable task
 operations into different roles.
 """
 
+DEPRECATION_REASON = """
+From Xena we are enforcing policy checks in the API and policy layer where
+task policies were enforcing will be removed. Since task APIs are already
+deprecated and `tasks_api_access` is checked for each API at API layer,
+there will be no benefit of other having other task related policies.
+"""
+
 task_policies = [
     policy.DocumentedRuleDefault(
         name="get_task",
@@ -46,6 +53,10 @@ task_policies = [
             {'path': '/v2/tasks/{task_id}',
              'method': 'GET'}
         ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_task", check_str="rule:default",
+            deprecated_reason=DEPRECATION_REASON,
+            deprecated_since=versionutils.deprecated.XENA)
     ),
     policy.DocumentedRuleDefault(
         name="get_tasks",
@@ -56,6 +67,10 @@ task_policies = [
             {'path': '/v2/tasks',
              'method': 'GET'}
         ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_tasks", check_str="rule:default",
+            deprecated_reason=DEPRECATION_REASON,
+            deprecated_since=versionutils.deprecated.XENA)
     ),
     policy.DocumentedRuleDefault(
         name="add_task",
@@ -66,6 +81,10 @@ task_policies = [
             {'path': '/v2/tasks',
              'method': 'POST'}
         ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="add_task", check_str="rule:default",
+            deprecated_reason=DEPRECATION_REASON,
+            deprecated_since=versionutils.deprecated.XENA)
     ),
     policy.DocumentedRuleDefault(
         name="modify_task",
