@@ -20,6 +20,7 @@ from glance.api import property_protections
 from glance import context
 from glance import gateway
 from glance import notifier
+from glance import quota
 from glance.tests.unit import utils as unit_test_utils
 import glance.tests.utils as test_utils
 
@@ -256,4 +257,34 @@ class TestGateway(test_utils.BaseTestCase):
         repo = self.gateway.get_metadef_tag_factory(
             self.context, authorization_layer=False)
         self.assertIsInstance(repo, notifier.MetadefTagFactoryProxy)
+
+    @mock.patch('glance.api.policy.ImageMemberRepoProxy')
+    def test_get_member_repo(self, mock_proxy):
+        with mock.patch.object(
+                authorization, '_validate_image_accepts_members'):
+            repo = self.gateway.get_member_repo(
+                mock.Mock(), self.context)
+            self.assertIsInstance(repo, authorization.ImageMemberRepoProxy)
+            mock_proxy.assert_called_once_with(mock.ANY, mock.ANY,
+                                               mock.sentinel.context,
+                                               mock.ANY)
+
+    @mock.patch('glance.api.policy.ImageMemberRepoProxy')
+    def test_get_member_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_member_repo(
+            mock.sentinel.image, self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.ImageMemberRepoProxy)
         mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.ImageMemberFactoryProxy')
+    def test_get_member_factory(self, mock_proxy):
+        repo = self.gateway.get_image_member_factory(self.context)
+        self.assertIsInstance(repo, authorization.ImageMemberFactoryProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.ImageMemberFactoryProxy')
+    def test_get_member_factory_without_auth(self, mock_proxy):
+        repo = self.gateway.get_image_member_factory(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, quota.ImageMemberFactoryProxy)

@@ -57,15 +57,17 @@ class Gateway(object):
                 notifier_image_factory, context)
         return authorized_image_factory
 
-    def get_image_member_factory(self, context):
-        image_factory = glance.domain.ImageMemberFactory()
-        quota_image_factory = glance.quota.ImageMemberFactoryProxy(
-            image_factory, context, self.db_api, self.store_utils)
-        policy_member_factory = policy.ImageMemberFactoryProxy(
-            quota_image_factory, context, self.policy)
-        authorized_image_factory = authorization.ImageMemberFactoryProxy(
-            policy_member_factory, context)
-        return authorized_image_factory
+    def get_image_member_factory(self, context, authorization_layer=True):
+        factory = glance.domain.ImageMemberFactory()
+        factory = glance.quota.ImageMemberFactoryProxy(
+            factory, context, self.db_api, self.store_utils)
+        if authorization_layer:
+            factory = policy.ImageMemberFactoryProxy(
+                factory, context, self.policy)
+        if authorization_layer:
+            factory = authorization.ImageMemberFactoryProxy(
+                factory, context)
+        return factory
 
     def get_repo(self, context, authorization_layer=True):
         """Get the layered ImageRepo model.
@@ -104,19 +106,21 @@ class Gateway(object):
 
         return repo
 
-    def get_member_repo(self, image, context):
-        image_member_repo = glance.db.ImageMemberRepo(
+    def get_member_repo(self, image, context, authorization_layer=True):
+        repo = glance.db.ImageMemberRepo(
             context, self.db_api, image)
-        store_image_repo = glance.location.ImageMemberRepoProxy(
-            image_member_repo, image, context, self.store_api)
-        policy_member_repo = policy.ImageMemberRepoProxy(
-            store_image_repo, image, context, self.policy)
-        notifier_member_repo = glance.notifier.ImageMemberRepoProxy(
-            policy_member_repo, image, context, self.notifier)
-        authorized_member_repo = authorization.ImageMemberRepoProxy(
-            notifier_member_repo, image, context)
+        repo = glance.location.ImageMemberRepoProxy(
+            repo, image, context, self.store_api)
+        if authorization_layer:
+            repo = policy.ImageMemberRepoProxy(
+                repo, image, context, self.policy)
+        repo = glance.notifier.ImageMemberRepoProxy(
+            repo, image, context, self.notifier)
+        if authorization_layer:
+            repo = authorization.ImageMemberRepoProxy(
+                repo, image, context)
 
-        return authorized_member_repo
+        return repo
 
     def get_task_factory(self, context):
         task_factory = glance.domain.TaskFactory()
