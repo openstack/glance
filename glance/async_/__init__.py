@@ -103,9 +103,9 @@ class ThreadPoolModel(object):
 
     def spawn(self, fn, *args, **kwargs):
         """Spawn a function with args using the thread pool."""
-        LOG.debug('Spawning with %s: %s(%s, %s)' % (
-            self.get_threadpool_executor_class().__name__,
-            fn, args, kwargs))
+        LOG.debug('Spawning with %s: %s(%s, %s)',
+                  self.get_threadpool_executor_class().__name__,
+                  fn, args, kwargs)
         return self.pool.submit(fn, *args, **kwargs)
 
     def map(self, fn, iterable):

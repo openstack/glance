@@ -348,7 +348,7 @@ class Driver(base.Driver):
 
                     msg = (_LW("Fetch of cache file failed (%(e)s), rolling "
                                "back by moving '%(incomplete_path)s' to "
-                               "'%(invalid_path)s'") %
+                               "'%(invalid_path)s'"),
                            {'e': e,
                             'incomplete_path': incomplete_path,
                             'invalid_path': invalid_path})

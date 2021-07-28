@@ -371,7 +371,7 @@ class ImageCache(object):
         except Exception as e:
             LOG.exception(_LE("Exception encountered while tee'ing "
                               "image '%(image_id)s' into cache: %(error)s. "
-                              "Continuing with response.") %
+                              "Continuing with response."),
                           {'image_id': image_id,
                            'error': encodeutils.exception_to_unicode(e)})
 

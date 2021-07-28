@@ -51,10 +51,10 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
                                set_active=True):
             me = str(uuid.uuid4())
             while state['want_run'] == True:
-                LOG.info('fake_set_data running %s' % me)
+                LOG.info('fake_set_data running %s', me)
                 state['running'] = True
                 time.sleep(0.1)
-            LOG.info('fake_set_data ended %s' % me)
+            LOG.info('fake_set_data ended %s', me)
 
         # Constrain oslo timeutils time so we can manipulate it
         tf = time_fixture.TimeFixture()

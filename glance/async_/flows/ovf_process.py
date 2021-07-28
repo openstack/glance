@@ -274,7 +274,7 @@ def get_flow(**kwargs):
     task_type = kwargs.get('task_type')
     image_repo = kwargs.get('image_repo')
 
-    LOG.debug("Flow: %(task_type)s with ID %(id)s on %(repo)s" %
+    LOG.debug("Flow: %(task_type)s with ID %(id)s on %(repo)s",
               {'task_type': task_type, 'id': task_id, 'repo': image_repo})
 
     return lf.Flow(task_type).add(

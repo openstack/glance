@@ -673,14 +673,14 @@ class PosixServer(BaseServer):
             self.stale_children.remove(pid)
             LOG.info(_LI('Removed stale child %s'), pid)
         else:
-            LOG.warning(_LW('Unrecognised child %s') % pid)
+            LOG.warning(_LW('Unrecognised child %s'), pid)
 
     def _verify_and_respawn_children(self, pid, status):
         if len(self.stale_children) == 0:
             LOG.debug('No stale children')
         if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
             LOG.error(_LE('Not respawning child %d, cannot '
-                          'recover from termination') % pid)
+                          'recover from termination'), pid)
             if not self.children and not self.stale_children:
                 LOG.info(
                     _LI('All workers have terminated. Exiting'))

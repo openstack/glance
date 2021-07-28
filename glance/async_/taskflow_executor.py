@@ -150,7 +150,7 @@ class TaskExecutor(glance.async_.TaskExecutor):
         try:
             super(TaskExecutor, self).begin_processing(task_id)
         except exception.ImportTaskError as exc:
-            LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s') %
+            LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s'),
                       {'task_id': task_id, 'exc': exc.msg})
             task = self.task_repo.get(task_id)
             task.fail(exc.msg)
@@ -183,7 +183,7 @@ class TaskExecutor(glance.async_.TaskExecutor):
             self.task_repo.save(task)
         except Exception as exc:
             with excutils.save_and_reraise_exception():
-                LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s') %
+                LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s'),
                           {'task_id': task_id,
                            'exc': encodeutils.exception_to_unicode(exc)})
                 # TODO(sabari): Check for specific exceptions and update the

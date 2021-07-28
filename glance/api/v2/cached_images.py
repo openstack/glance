@@ -65,7 +65,7 @@ class CacheController(object):
                 req.context, image=image, enforcer=self.policy,
                 policy_str=new_policy).manage_image_cache()
         except exception.Forbidden:
-            LOG.debug("User not permitted by '%s' policy" % new_policy)
+            LOG.debug("User not permitted by '%s' policy", new_policy)
             raise webob.exc.HTTPForbidden()
 
         if not CONF.image_cache_dir:
