@@ -12,10 +12,11 @@
 
 import datetime
 
-from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import utils as db_utils
 
 from glance.tests.functional.db import test_migrations
+import glance.tests.utils as test_utils
 
 
 class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
@@ -169,6 +170,9 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
         self.assertEqual('public', rows[1]['visibility'])
 
 
-class TestOcataExpand01MySQL(TestOcataExpand01Mixin,
-                             test_base.MySQLOpportunisticTestCase):
-    pass
+class TestOcataExpand01MySQL(
+    TestOcataExpand01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture

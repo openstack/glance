@@ -14,11 +14,12 @@
 
 import datetime
 
-from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import utils as db_utils
 
 from glance.db.sqlalchemy.alembic_migrations import data_migrations
 from glance.tests.functional.db import test_migrations
+import glance.tests.utils as test_utils
 
 
 class TestTrainMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
@@ -94,14 +95,20 @@ class TestTrainMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
             self.assertIn('"store":', row['meta_data'])
 
 
-class TestTrainMigrate01MySQL(TestTrainMigrate01Mixin,
-                              test_base.MySQLOpportunisticTestCase):
-    pass
+class TestTrainMigrate01MySQL(
+    TestTrainMigrate01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
-class TestTrain01PostgresSQL(TestTrainMigrate01Mixin,
-                             test_base.PostgreSQLOpportunisticTestCase):
-    pass
+class TestTrain01PostgresSQL(
+    TestTrainMigrate01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.PostgresqlOpportunisticFixture
 
 
 class TestTrainMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
@@ -130,11 +137,17 @@ class TestTrainMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
         data_migrations.migrate(engine)
 
 
-class TestTrainMigrate01_EmptyDBMySQL(TestTrainMigrate01_EmptyDBMixin,
-                                      test_base.MySQLOpportunisticTestCase):
-    pass
+class TestTrainMigrate01_EmptyDBMySQL(
+    TestTrainMigrate01_EmptyDBMixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
-class TestTrainMigrate01_PySQL(TestTrainMigrate01_EmptyDBMixin,
-                               test_base.PostgreSQLOpportunisticTestCase):
-    pass
+class TestTrainMigrate01_PySQL(
+    TestTrainMigrate01_EmptyDBMixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.PostgresqlOpportunisticFixture

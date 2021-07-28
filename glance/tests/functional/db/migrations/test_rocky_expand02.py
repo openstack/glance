@@ -11,10 +11,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import utils as db_utils
 
 from glance.tests.functional.db import test_migrations
+import glance.tests.utils as test_utils
 
 
 class TestRockyExpand02Mixin(test_migrations.AlembicMigrationsMixin):
@@ -36,6 +37,9 @@ class TestRockyExpand02Mixin(test_migrations.AlembicMigrationsMixin):
         self.assertTrue(images.c.os_hash_value.nullable)
 
 
-class TestRockyExpand02MySQL(TestRockyExpand02Mixin,
-                             test_base.MySQLOpportunisticTestCase):
-    pass
+class TestRockyExpand02MySQL(
+    TestRockyExpand02Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture

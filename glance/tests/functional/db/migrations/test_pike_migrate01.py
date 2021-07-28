@@ -10,14 +10,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_fixtures
 
 import glance.tests.functional.db.migrations.test_pike_expand01 as tpe01
+import glance.tests.utils as test_utils
 
 
 # no TestPikeMigrate01Mixin class needed, can use TestPikeExpand01Mixin instead
 
 
-class TestPikeMigrate01MySQL(tpe01.TestPikeExpand01Mixin,
-                             test_base.MySQLOpportunisticTestCase):
-    pass
+class TestPikeMigrate01MySQL(
+    tpe01.TestPikeExpand01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
