@@ -1599,12 +1599,6 @@ profiling feature for glance-api service.
   in their deployment. Without HMAC key the profiling will not be triggered
   even profiling feature is enabled.
 
-  **IMPORTANT NOTE**: previously HMAC keys (as well as enabled parameter) were
-  placed at `/etc/glance/api-paste.ini`  file for Glance API service
-  respectively. Starting with osprofiler 0.3.1 release there is no need to set
-  these arguments in the `*-paste.ini` files. This functionality is still
-  supported, although the config values are having larger priority.
-
   The config value ``trace_sqlalchemy`` is used to determine whether fully
   enable sqlalchemy engine based SQL execution profiling feature for glance-api
   service.
