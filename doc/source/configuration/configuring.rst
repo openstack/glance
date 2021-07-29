@@ -183,28 +183,6 @@ the API servers, respectively.
 
   Optional. Default: ``64`` (Limited by max_header_line default: 16384)
 
-Configuring SSL Support
-~~~~~~~~~~~~~~~~~~~~~~~
-
-``cert_file=PATH``
-  Path to the certificate file the server should use when binding to an
-  SSL-wrapped socket.
-
-  Optional. Default: not enabled.
-
-``key_file=PATH``
-  Path to the private key file the server should use when binding to an
-  SSL-wrapped socket.
-
-  Optional. Default: not enabled.
-
-``ca_file=PATH``
-  Path to the CA certificate file the server should use to validate client
-  certificates provided during an SSL handshake. This is ignored if
-  ``cert_file`` and ''key_file`` are not set.
-
-  Optional. Default: not enabled.
-
 Configuring Logging in Glance
 -----------------------------
 
