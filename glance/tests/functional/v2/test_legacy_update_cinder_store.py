@@ -46,29 +46,15 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
             status='available',
             size=1,
             multiattach=False,
-            reserve=mock.MagicMock(),
-            # FIXME(danms): Remove this after glance store
-            # moves past 2.3.0
-            begin_detaching=mock.MagicMock(),
-            initialize_connection=mock.MagicMock(),
-            terminate_connection=mock.MagicMock(),
             encrypted=False,
-            unreserve=mock.MagicMock(),
             delete=mock.MagicMock(),
-            # FIXME(danms): Remove this after glance store
-            # moves past 2.3.0
-            attach=mock.MagicMock(),
             update_all_metadata=mock.MagicMock(),
             update_readonly_flag=mock.MagicMock())
         self.volume.manager = FakeObject(get=lambda id: self.volume)
         self.cinder_store_mock = FakeObject(
             attachments=mock.MagicMock(),
             client=mock.MagicMock(), volumes=FakeObject(
-                initialize_connection=mock.MagicMock(),
-                terminate_connection=mock.MagicMock(),
-                begin_detaching=mock.MagicMock(),
                 get=lambda v_id: FakeObject(volume_type='fast'),
-                detach=mock.MagicMock(),
                 create=lambda size_gb, name, metadata, volume_type:
                 self.volume))
 
