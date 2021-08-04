@@ -549,7 +549,8 @@ class TestImportCopyImageTask(test_utils.BaseTestCase):
                                               overwrite=False)
 
     @mock.patch("glance.async_.flows.api_image_import.image_import")
-    def test_init_copy_flow_as_non_owner(self, mock_import):
+    @mock.patch('glance_store.get_store_from_store_identifier')
+    def test_init_copy_flow_as_non_owner(self, mock_gs, mock_import):
         img_repo = mock.MagicMock()
         admin_repo = mock.MagicMock()
 
