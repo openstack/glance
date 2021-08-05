@@ -29,14 +29,18 @@ IMAGE_MEMBER_CHECK = 'project_id:%(member_id)s'
 COMMUNITY_VISIBILITY_CHECK = '"community":%(visibility)s'
 # Check if the visibility of the image supplied in the target matches "public"
 PUBLIC_VISIBILITY_CHECK = '"public":%(visibility)s'
+# Check if the visibility of the image supplied in the target matches "shared"
+SHARED_VISIBILITY_CHECK = '"shared":%(visibility)s'
 
-PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC = (
+PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED = (
     f'role:member and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK} '
-    f'or {COMMUNITY_VISIBILITY_CHECK} or {PUBLIC_VISIBILITY_CHECK})'
+    f'or {COMMUNITY_VISIBILITY_CHECK} or {PUBLIC_VISIBILITY_CHECK} '
+    f'or {SHARED_VISIBILITY_CHECK})'
 )
-PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC = (
+PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED = (
     f'role:reader and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK} '
-    f'or {COMMUNITY_VISIBILITY_CHECK} or {PUBLIC_VISIBILITY_CHECK})'
+    f'or {COMMUNITY_VISIBILITY_CHECK} or {PUBLIC_VISIBILITY_CHECK} '
+    f'or {SHARED_VISIBILITY_CHECK})'
 )
 
 # FIXME(lbragstad): These are composite check strings that represents glance's
@@ -58,10 +62,12 @@ PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC = (
 ADMIN_OR_PROJECT_MEMBER = f'role:admin or ({PROJECT_MEMBER})'
 ADMIN_OR_PROJECT_READER = f'role:admin or ({PROJECT_READER})'
 ADMIN_OR_PROJECT_READER_GET_IMAGE = (
-    f'role:admin or ({PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC})'
+    f'role:admin or '
+    f'({PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED})'
 )
 ADMIN_OR_PROJECT_MEMBER_DOWNLOAD_IMAGE = (
-    f'role:admin or ({PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC})'
+    f'role:admin or '
+    f'({PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED})'
 )
 
 

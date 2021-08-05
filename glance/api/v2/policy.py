@@ -107,3 +107,6 @@ class ImageAPIPolicy(APIPolicyBase):
 
     def get_image(self):
         self._enforce('get_image')
+
+    def get_images(self):
+        self._enforce('get_images')

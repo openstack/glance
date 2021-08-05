@@ -275,8 +275,9 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
     def test_policy_file_default_rules_default_location(self):
         enforcer = glance.api.policy.Enforcer()
 
-        context = glance.context.RequestContext(roles=[])
-        enforcer.enforce(context, 'get_image', {})
+        context = glance.context.RequestContext(roles=['reader'])
+        enforcer.enforce(context, 'get_image',
+                         {'project_id': context.project_id})
 
     def test_policy_file_custom_rules_default_location(self):
         rules = {"get_image": '!'}
@@ -1073,11 +1074,12 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
         expected = (
             'role:member and (project_id:%(project_id)s or '
             'project_id:%(member_id)s or "community":%(visibility)s or '
-            '"public":%(visibility)s)'
+            '"public":%(visibility)s or "shared":%(visibility)s)'
         )
         self.assertEqual(
             expected,
-            base_policy.PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC
+            base_policy.
+            PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED
         )
 
     def test_project_reader_check_string(self):
@@ -1092,11 +1094,12 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
         expected = (
             'role:reader and (project_id:%(project_id)s or '
             'project_id:%(member_id)s or "community":%(visibility)s or '
-            '"public":%(visibility)s)'
+            '"public":%(visibility)s or "shared":%(visibility)s)'
         )
         self.assertEqual(
             expected,
-            base_policy.PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC
+            base_policy.
+            PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED
         )
 
 

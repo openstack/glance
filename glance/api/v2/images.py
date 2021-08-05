@@ -514,14 +514,31 @@ class ImagesController(object):
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)
 
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         try:
+            # NOTE(danms): This is just a "do you have permission to
+            # list images" check. Each image is checked against
+            # get_image below.
+            target = {'project_id': req.context.project_id}
+            self.policy.enforce(req.context, 'get_images', target)
+
             images = image_repo.list(marker=marker, limit=limit,
                                      sort_key=sort_key,
                                      sort_dir=sort_dir,
                                      filters=filters,
                                      member_status=member_status)
-            if len(images) != 0 and len(images) == limit:
+            db_image_count = len(images)
+            images = [image for image in images
+                      if api_policy.ImageAPIPolicy(req.context, image,
+                                                   self.policy
+                                                   ).check('get_image')]
+
+            # NOTE(danms): we need to include the next marker if the DB
+            # paginated. Since we filter images based on policy, we can
+            # not determine if pagination happened from the final list,
+            # so use the original count.
+            if len(images) != 0 and db_image_count == limit:
                 result['next_marker'] = images[-1].image_id
         except (exception.NotFound, exception.InvalidSortKey,
                 exception.InvalidFilterRangeValue,
@@ -537,12 +554,13 @@ class ImagesController(object):
         return result
 
     def show(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         try:
-            return image_repo.get(image_id)
-        except exception.Forbidden as e:
-            LOG.debug("User not permitted to show image '%s'", image_id)
-            raise webob.exc.HTTPForbidden(explanation=e.msg)
+            image = image_repo.get(image_id)
+            api_policy.ImageAPIPolicy(req.context, image,
+                                      self.policy).get_image()
+            return image
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.NotAuthenticated as e:
