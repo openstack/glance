@@ -105,6 +105,18 @@ class ImageRepo(object):
             key = CONF.metadata_encryption_key
             for l in locations:
                 l['url'] = crypt.urlsafe_decrypt(key, l['url'])
+
+        # NOTE(danms): If the image is shared and we are not the
+        # owner, we must have found it because we are a member. Set
+        # our tenant on the image as 'member' for policy checks in the
+        # upper layers. For any other image stage, we found the image
+        # some other way, so leave member=None.
+        if (db_image['visibility'] == 'shared' and
+                self.context.owner != db_image['owner']):
+            member = self.context.owner
+        else:
+            member = None
+
         return glance.domain.Image(
             image_id=db_image['id'],
             name=db_image['name'],
@@ -127,6 +139,7 @@ class ImageRepo(object):
             extra_properties=properties,
             tags=db_tags,
             os_hidden=db_image['os_hidden'],
+            member=member,
         )
 
     def _format_image_to_db(self, image):

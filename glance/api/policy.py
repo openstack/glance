@@ -548,12 +548,13 @@ class ImageTarget(abc.Mapping):
             yield alias
 
     def key_transforms(self, key):
-        if key == 'id':
-            key = 'image_id'
-        elif key == 'project_id':
-            key = 'owner'
+        transforms = {
+            'id': 'image_id',
+            'project_id': 'owner',
+            'member_id': 'member',
+        }
 
-        return key
+        return transforms.get(key, key)
 
 
 # Metadef Namespace classes

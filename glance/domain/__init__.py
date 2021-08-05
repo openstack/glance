@@ -138,6 +138,7 @@ class Image(object):
         extra_properties = kwargs.pop('extra_properties', {})
         self.extra_properties = ExtraProperties(extra_properties)
         self.tags = kwargs.pop('tags', [])
+        self.member = kwargs.pop('member', None)
         if kwargs:
             message = _("__init__() got unexpected keyword argument '%s'")
             raise TypeError(message % list(kwargs.keys())[0])

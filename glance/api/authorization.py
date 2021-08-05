@@ -333,6 +333,7 @@ class ImmutableImageProxy(object):
     virtual_size = _immutable_attr('base', 'virtual_size')
     extra_properties = _immutable_attr('base', 'extra_properties',
                                        proxy=ImmutableProperties)
+    member = _immutable_attr('base', 'member')
     tags = _immutable_attr('base', 'tags', proxy=ImmutableTags)
 
     def delete(self):

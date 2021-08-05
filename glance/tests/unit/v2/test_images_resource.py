@@ -187,6 +187,7 @@ class FakeImage(object):
         self.name = 'foo'
         self.tags = []
         self.extra_properties = {}
+        self.member = self.owner
 
         # NOTE(danms): This fixture looks more like the db object than
         # the proxy model. This needs fixing all through the tests

@@ -21,6 +21,7 @@ import uuid
 from oslo_config import cfg
 from oslo_db import exception as db_exc
 from oslo_utils import encodeutils
+from oslo_utils.fixture import uuidsentinel as uuids
 from oslo_utils import timeutils
 from sqlalchemy import orm as sa_orm
 
@@ -308,6 +309,27 @@ class TestImageRepo(test_utils.BaseTestCase):
         images = self.image_repo.list(filters=filters)
         image_ids = set([i.image_id for i in images])
         self.assertEqual(set([UUID2]), image_ids)
+
+    def test_list_shared_images_other_tenant(self):
+        # Create a private image owned by TENANT3
+        image5 = _db_fixture(uuids.image5, owner=TENANT3,
+                             name='5', size=512, is_public=False)
+        self.db.image_create(None, image5)
+
+        # Get a repo as TENANT3, since it has access to public,
+        # shared, and private images
+        context = glance.context.RequestContext(user=USER1, tenant=TENANT3)
+        image_repo = glance.db.ImageRepo(context, self.db)
+        images = {i.image_id: i for i in image_repo.list()}
+
+        # No member set for public image UUID1
+        self.assertIsNone(images[UUID1].member)
+
+        # Member should be set to our tenant id for shared image UUID2
+        self.assertEqual(TENANT3, images[UUID2].member)
+
+        # No member set for private image5
+        self.assertIsNone(images[uuids.image5].member)
 
     def test_list_all_images(self):
         filters = {'visibility': 'all'}
