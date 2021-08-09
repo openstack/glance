@@ -103,6 +103,28 @@ def run_staging_cleanup():
     cleanup_thread.start()
 
 
+def cache_images(cache_prefetcher):
+    # After every 'cache_prefetcher_interval' this call will run and fetch
+    # all queued images into cache if there are any
+    cache_thread = threading.Timer(CONF.cache_prefetcher_interval,
+                                   cache_images, (cache_prefetcher,))
+    cache_thread.daemon = True
+    cache_thread.start()
+    cache_prefetcher.run()
+
+
+def run_cache_prefetcher():
+    if not CONF.paste_deploy.flavor == 'keystone+cachemanagement':
+        LOG.debug('Cache not enabled, skipping prefetching images in cache!!!')
+        return
+
+    # NOTE(abhishekk): Importing the prefetcher just in time to avoid
+    # import loop during initialization
+    from glance.image_cache import prefetcher  # noqa
+    cache_prefetcher = prefetcher.Prefetcher()
+    cache_images(cache_prefetcher)
+
+
 def init_app():
     config.set_config_defaults()
     config_files = _get_config_files()
@@ -135,6 +157,7 @@ def init_app():
         glance_store.create_stores(CONF)
         glance_store.verify_default_store()
 
+    run_cache_prefetcher()
     run_staging_cleanup()
 
     _setup_os_profiler()

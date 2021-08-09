@@ -112,3 +112,29 @@ class TestWsgiAppInit(test_utils.BaseTestCase):
             target=mock_cleaner().clean_orphaned_staging_residue,
             daemon=True)
         mock_Thread.return_value.start.assert_called_once_with()
+
+    @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
+    @mock.patch('glance.common.config.load_paste_app')
+    @mock.patch('glance.common.wsgi_app._get_config_files')
+    @mock.patch('threading.Timer')
+    @mock.patch('glance.image_cache.prefetcher.Prefetcher')
+    def test_run_cache_prefetcher(self, mock_prefetcher,
+                                  mock_Timer, mock_conf,
+                                  mock_load):
+        self.config(cache_prefetcher_interval=10)
+        self.config(flavor='keystone+cachemanagement', group='paste_deploy')
+        mock_conf.return_value = []
+        wsgi_app.init_app()
+        mock_Timer.assert_called_once_with(10, mock.ANY, (mock_prefetcher(),))
+        mock_Timer.return_value.start.assert_called_once_with()
+
+    @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
+    @mock.patch('glance.common.config.load_paste_app')
+    @mock.patch('glance.common.wsgi_app._get_config_files')
+    @mock.patch('threading.Timer')
+    @mock.patch('glance.image_cache.prefetcher.Prefetcher')
+    def test_run_cache_prefetcher_middleware_disabled(
+            self, mock_prefetcher, mock_Timer, mock_conf, mock_load):
+        mock_conf.return_value = []
+        wsgi_app.init_app()
+        mock_Timer.assert_not_called()

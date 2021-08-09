@@ -108,6 +108,24 @@ class ThreadPoolModel(object):
             fn, args, kwargs))
         return self.pool.submit(fn, *args, **kwargs)
 
+    def map(self, fn, iterable):
+        """Map a function to each value in an iterable.
+
+        This spawns a thread for each item in the provided iterable,
+        generating results in the same order. Each item will spawn a
+        thread, and each may run in parallel up to the limit of the
+        pool.
+
+        :param fn: A function to work on each item
+        :param iterable: A sequence of items to process
+        :returns: A generator of results in the same order
+        """
+        threads = []
+        for i in iterable:
+            threads.append(self.spawn(fn, i))
+        for future in threads:
+            yield future.result()
+
 
 class EventletThreadPoolModel(ThreadPoolModel):
     """A ThreadPoolModel suitable for use with evenlet/greenthreads."""
