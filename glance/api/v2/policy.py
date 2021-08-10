@@ -141,3 +141,10 @@ class ImageAPIPolicy(APIPolicyBase):
 
     def get_images(self):
         self._enforce('get_images')
+
+    def delete_image(self):
+        self._enforce('delete_image')
+        # TODO(danms): Remove this legacy fallback when secure RBAC
+        # replaces the legacy policy.
+        if not CONF.enforce_secure_rbac:
+            check_is_image_mutable(self._context, self._image)

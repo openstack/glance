@@ -39,6 +39,7 @@ from glance.common import exception
 from glance.common import store_utils
 from glance.common import timeutils
 from glance import domain
+import glance.notifier
 import glance.schema
 from glance.tests.unit import base
 from glance.tests.unit.keymgr import fake as fake_keymgr
@@ -957,7 +958,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(
             '/v2/images/%s' % UUID4, method='DELETE')
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             mock_get.return_value.extra_properties['os_glance_stage_host'] = (
                 'https://glance-worker1.openstack.org')
@@ -1013,7 +1014,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(
             '/v2/images/%s' % UUID4, method='DELETE')
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             mock_get.return_value.extra_properties['os_glance_stage_host'] = (
                 'https://glance-worker1.openstack.org')
@@ -1035,8 +1036,8 @@ class TestImagesController(base.IsolatedUnitTest):
                 json=None, timeout=60)
 
     @mock.patch('glance.context.get_ksa_client')
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'remove')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'remove')
     def test_image_delete_deletes_locally_on_error(self, mock_remove, mock_get,
                                                    mock_client):
         # Make sure that if the proxy delete fails due to a connection error
@@ -3062,6 +3063,26 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertTrue(deleted_img['deleted'])
         self.assertEqual('deleted', deleted_img['status'])
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+
+    def test_delete_not_allowed_by_policy(self):
+        request = unit_test_utils.get_fake_request()
+        with mock.patch.object(self.controller.policy, 'enforce') as mock_enf:
+            mock_enf.side_effect = webob.exc.HTTPForbidden()
+            exc = self.assertRaises(webob.exc.HTTPNotFound,
+                                    self.controller.delete, request, UUID1)
+            self.assertTrue(mock_enf.called)
+        # Make sure we did not leak details of the original Forbidden
+        # error into the NotFound returned to the client.
+        self.assertEqual('The resource could not be found.', str(exc))
+
+        # Now reject the delete_image call, but allow get_image to ensure that
+        # we properly see a Forbidden result.
+        with mock.patch.object(self.controller.policy, 'enforce') as mock_enf:
+            mock_enf.side_effect = [webob.exc.HTTPForbidden(),
+                                    lambda *a: None]
+            exc = self.assertRaises(webob.exc.HTTPForbidden,
+                                    self.controller.delete, request, UUID1)
+            self.assertTrue(mock_enf.called)
 
     @mock.patch.object(store, 'get_store_from_store_identifier')
     @mock.patch.object(store.location, 'get_location_from_uri_and_backend')

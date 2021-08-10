@@ -805,13 +805,24 @@ class ImagesController(object):
             # continue on the local worker to match the user's
             # expectations. If the image is already deleted, the caller
             # will catch this NotFound like normal.
-            return self.gateway.get_repo(req.context).get(image.image_id)
+            return self.gateway.get_repo(
+                req.context,
+                authorization_layer=False).get(image.image_id)
 
     @utils.mutating
     def delete(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         try:
             image = image_repo.get(image_id)
+
+            # NOTE(abhishekk): This is the right place to check whether user
+            # have permission to delete the image and remove the policy check
+            # later from the policy layer.
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
+            api_pol.delete_image()
+
             if self.is_proxyable(image):
                 # NOTE(danms): Image is staged on another worker; proxy the
                 # delete request to that worker with the user's token, as if
