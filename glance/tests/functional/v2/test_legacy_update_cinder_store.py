@@ -48,6 +48,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
             id=self.vol_id,
             status='available',
             size=1,
+            multiattach=False,
             reserve=mock.MagicMock(),
             # FIXME(danms): Remove this after glance store
             # moves past 2.3.0
