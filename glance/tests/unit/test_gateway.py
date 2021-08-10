@@ -113,3 +113,147 @@ class TestGateway(test_utils.BaseTestCase):
         image = repo.get(unit_test_utils.UUID1)
         # We are a member, so member is our tenant id
         self.assertEqual(unit_test_utils.TENANT2, image.member)
+
+    @mock.patch('glance.api.policy.MetadefNamespaceRepoProxy')
+    def test_get_namespace_repo(self, mock_proxy):
+        repo = self.gateway.get_metadef_namespace_repo(self.context)
+        self.assertIsInstance(repo, authorization.MetadefNamespaceRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefNamespaceFactoryProxy')
+    def test_get_namespace_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_namespace_repo(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefNamespaceRepoProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefNamespaceFactoryProxy')
+    def test_get_namespace_factory(self, mock_proxy):
+        repo = self.gateway.get_metadef_namespace_factory(self.context)
+        self.assertIsInstance(repo,
+                              authorization.MetadefNamespaceFactoryProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefNamespaceFactoryProxy')
+    def test_get_namespace_factory_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_namespace_factory(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefNamespaceFactoryProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefObjectRepoProxy')
+    def test_get_object_repo(self, mock_proxy):
+        repo = self.gateway.get_metadef_object_repo(self.context)
+        self.assertIsInstance(repo, authorization.MetadefObjectRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefObjectRepoProxy')
+    def test_get_object_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_object_repo(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefObjectRepoProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefObjectFactoryProxy')
+    def test_get_object_factory(self, mock_proxy):
+        repo = self.gateway.get_metadef_object_factory(self.context)
+        self.assertIsInstance(repo,
+                              authorization.MetadefObjectFactoryProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefObjectFactoryProxy')
+    def test_get_object_factory_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_object_factory(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefObjectFactoryProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefResourceTypeRepoProxy')
+    def test_get_resourcetype_repo(self, mock_proxy):
+        repo = self.gateway.get_metadef_resource_type_repo(self.context)
+        self.assertIsInstance(repo, authorization.MetadefResourceTypeRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefResourceTypeRepoProxy')
+    def test_get_resourcetype_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_resource_type_repo(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefResourceTypeRepoProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefResourceTypeFactoryProxy')
+    def test_get_resource_type_factory(self, mock_proxy):
+        repo = self.gateway.get_metadef_resource_type_factory(self.context)
+        self.assertIsInstance(repo,
+                              authorization.MetadefResourceTypeFactoryProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefResourceTypeFactoryProxy')
+    def test_get_resource_type_factory_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_resource_type_factory(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefResourceTypeFactoryProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefPropertyRepoProxy')
+    def test_get_property_repo(self, mock_proxy):
+        repo = self.gateway.get_metadef_property_repo(self.context)
+        self.assertIsInstance(repo,
+                              authorization.MetadefPropertyRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefPropertyRepoProxy')
+    def test_get_property_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_property_repo(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefPropertyRepoProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefPropertyFactoryProxy')
+    def test_get_property_factory(self, mock_proxy):
+        repo = self.gateway.get_metadef_property_factory(self.context)
+        self.assertIsInstance(repo, authorization.MetadefPropertyFactoryProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefPropertyFactoryProxy')
+    def test_get_property_factory_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_property_factory(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefPropertyFactoryProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefTagRepoProxy')
+    def test_get_tag_repo(self, mock_proxy):
+        repo = self.gateway.get_metadef_tag_repo(self.context)
+        self.assertIsInstance(repo, authorization.MetadefTagRepoProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefTagRepoProxy')
+    def test_get_tag_repo_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_tag_repo(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefTagRepoProxy)
+        mock_proxy.assert_not_called()
+
+    @mock.patch('glance.api.policy.MetadefTagFactoryProxy')
+    def test_get_tag_factory(self, mock_proxy):
+        repo = self.gateway.get_metadef_tag_factory(self.context)
+        self.assertIsInstance(repo, authorization.MetadefTagFactoryProxy)
+        mock_proxy.assert_called_once_with(mock.ANY, mock.sentinel.context,
+                                           mock.ANY)
+
+    @mock.patch('glance.api.policy.MetadefTagFactoryProxy')
+    def test_get_tag_factory_without_auth(self, mock_proxy):
+        repo = self.gateway.get_metadef_tag_factory(
+            self.context, authorization_layer=False)
+        self.assertIsInstance(repo, notifier.MetadefTagFactoryProxy)
+        mock_proxy.assert_not_called()
