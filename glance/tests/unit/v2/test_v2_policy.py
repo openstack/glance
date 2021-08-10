@@ -55,6 +55,40 @@ class APIPolicyBase(utils.BaseTestCase):
         self.enforcer.enforce.side_effect = exception.Forbidden
         self.assertFalse(self.policy.check('_enforce', 'fake_rule'))
 
+    def test_check_is_image_mutable(self):
+        context = mock.MagicMock()
+        image = mock.MagicMock()
+
+        # Admin always wins
+        context.is_admin = True
+        context.owner = 'someuser'
+        self.assertIsNone(policy.check_is_image_mutable(context, image))
+
+        # Image has no owner is never mutable by non-admins
+        context.is_admin = False
+        image.owner = None
+        self.assertRaises(exception.Forbidden,
+                          policy.check_is_image_mutable,
+                          context, image)
+
+        # Not owner is not mutable
+        image.owner = 'someoneelse'
+        self.assertRaises(exception.Forbidden,
+                          policy.check_is_image_mutable,
+                          context, image)
+
+        # No project in context means not mutable
+        image.owner = 'someoneelse'
+        context.owner = None
+        self.assertRaises(exception.Forbidden,
+                          policy.check_is_image_mutable,
+                          context, image)
+
+        # Context matches image owner is mutable
+        image.owner = 'someuser'
+        context.owner = 'someuser'
+        self.assertIsNone(policy.check_is_image_mutable(context, image))
+
 
 class APIImagePolicy(APIPolicyBase):
     def setUp(self):
