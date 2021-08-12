@@ -369,3 +369,93 @@ class TestMetadefAPIPolicy(APIPolicyBase):
             mock_enf.assert_has_calls([
                 mock.call(mock.ANY, 'modify_metadef_namespace', mock.ANY),
                 mock.call(mock.ANY, 'get_metadef_namespace', mock.ANY)])
+
+
+class TestMemberAPIPolicy(utils.BaseTestCase):
+    def setUp(self):
+        super(TestMemberAPIPolicy, self).setUp()
+        self.enforcer = mock.MagicMock()
+        self.image = mock.MagicMock()
+        self.context = mock.MagicMock()
+        self.policy = policy.MemberAPIPolicy(self.context, self.image,
+                                             enforcer=self.enforcer)
+
+    def test_enforce(self):
+        # Enforce passes
+        self.policy._enforce('fake_rule')
+        expected_calls = [
+            mock.call(self.context, 'get_image', mock.ANY),
+            mock.call(self.context, 'fake_rule', mock.ANY)
+        ]
+        self.enforcer.enforce.assert_has_calls(expected_calls)
+
+    def test_get_member(self):
+        self.policy.get_member()
+        expected_calls = [
+            mock.call(self.context, 'get_image', mock.ANY),
+            mock.call(self.context, 'get_member', mock.ANY)
+        ]
+        self.enforcer.enforce.assert_has_calls(expected_calls)
+
+    def test_get_members(self):
+        self.policy.get_members()
+        expected_calls = [
+            mock.call(self.context, 'get_image', mock.ANY),
+            mock.call(self.context, 'get_members', mock.ANY)
+        ]
+        self.enforcer.enforce.assert_has_calls(expected_calls)
+
+    def test_add_member(self):
+        self.policy.add_member()
+        expected_calls = [
+            mock.call(self.context, 'get_image', mock.ANY),
+            mock.call(self.context, 'add_member', mock.ANY)
+        ]
+        self.enforcer.enforce.assert_has_calls(expected_calls)
+
+    def test_modify_member(self):
+        self.policy.modify_member()
+        expected_calls = [
+            mock.call(self.context, 'get_image', mock.ANY),
+            mock.call(self.context, 'modify_member', mock.ANY)
+        ]
+        self.enforcer.enforce.assert_has_calls(expected_calls)
+
+    def test_delete_member(self):
+        self.policy.delete_member()
+        expected_calls = [
+            mock.call(self.context, 'get_image', mock.ANY),
+            mock.call(self.context, 'delete_member', mock.ANY)
+        ]
+        self.enforcer.enforce.assert_has_calls(expected_calls)
+
+    def test_enforce_exception_behavior(self):
+        with mock.patch.object(self.policy.enforcer, 'enforce') as mock_enf:
+            # First make sure we can update if allowed
+            self.policy.modify_member()
+            self.assertTrue(mock_enf.called)
+
+            # Make sure that if while checking modify_member if get_image
+            # both returns forbidden then we should get NotFound. This is
+            # because we are not allowed to fetch image details.
+            mock_enf.reset_mock()
+            mock_enf.side_effect = exception.Forbidden
+            self.assertRaises(webob.exc.HTTPNotFound,
+                              self.policy.modify_member)
+            # Make sure we checked modify_image, and then get_image.
+            mock_enf.assert_has_calls([
+                mock.call(mock.ANY, 'get_image', mock.ANY)])
+
+            # Make sure that if modify_member is disallowed, but
+            # get_image is allowed, that we get Forbidden. This is
+            # because we are allowed to see the image, but not modify
+            # it, so 403 indicates that without confusing the user and
+            # returning "not found" for an image they are able to GET.
+            mock_enf.reset_mock()
+            mock_enf.side_effect = [lambda *a: None, exception.Forbidden]
+            self.assertRaises(webob.exc.HTTPForbidden,
+                              self.policy.modify_member)
+            # Make sure we checked get_image, and then modify_member.
+            mock_enf.assert_has_calls([
+                mock.call(mock.ANY, 'get_image', mock.ANY),
+                mock.call(mock.ANY, 'modify_member', mock.ANY)])

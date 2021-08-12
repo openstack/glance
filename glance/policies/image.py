@@ -218,7 +218,7 @@ image_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="get_member",
-        check_str=base.ADMIN_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER_OR_SHARED_MEMBER,
         scope_types=['system', 'project'],
         description='Show image member details',
         operations=[
@@ -232,7 +232,7 @@ image_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="get_members",
-        check_str=base.ADMIN_OR_PROJECT_READER,
+        check_str=base.ADMIN_OR_PROJECT_READER_OR_SHARED_MEMBER,
         scope_types=['system', 'project'],
         description='List image members',
         operations=[
@@ -246,7 +246,7 @@ image_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="modify_member",
-        check_str=base.ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_SHARED_MEMBER,
         scope_types=['system', 'project'],
         description='Update image member',
         operations=[

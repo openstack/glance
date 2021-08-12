@@ -71,6 +71,15 @@ ADMIN_OR_PROJECT_MEMBER_DOWNLOAD_IMAGE = (
 )
 
 
+ADMIN_OR_SHARED_MEMBER = (
+    f'role:admin or (role:member and {IMAGE_MEMBER_CHECK})'
+)
+ADMIN_OR_PROJECT_READER_OR_SHARED_MEMBER = (
+    f'role:admin or '
+    f'role:reader and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK})'
+)
+
+
 rules = [
     policy.RuleDefault(name='default', check_str='',
                        description='Defines the default rule used for '

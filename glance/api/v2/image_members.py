@@ -16,6 +16,7 @@
 import copy
 
 import glance_store
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
@@ -24,6 +25,7 @@ from six.moves import http_client as http
 import webob
 
 from glance.api import policy
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import timeutils
 from glance.common import utils
@@ -36,6 +38,7 @@ import glance.schema
 
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class ImageMembersController(object):
@@ -50,9 +53,8 @@ class ImageMembersController(object):
 
     def _get_member_repo(self, req, image):
         try:
-            # For public, private, and community images, a forbidden exception
-            # with message "Only shared images have members." is thrown.
-            return self.gateway.get_member_repo(image, req.context)
+            return self.gateway.get_member_repo(image, req.context,
+                                                authorization_layer=False)
         except exception.Forbidden as e:
             msg = (_("Error fetching members of image %(image_id)s: "
                      "%(inner_msg)s") % {"image_id": image.image_id,
@@ -61,10 +63,11 @@ class ImageMembersController(object):
             raise webob.exc.HTTPForbidden(explanation=msg)
 
     def _lookup_image(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
         try:
             return image_repo.get(image_id)
-        except (exception.NotFound):
+        except exception.NotFound:
             msg = _("Image %s not found.") % image_id
             LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
@@ -73,9 +76,42 @@ class ImageMembersController(object):
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
 
-    def _lookup_member(self, req, image, member_id):
-        member_repo = self._get_member_repo(req, image)
+    def _check_visibility_and_ownership(self, context, image,
+                                        ownership_check=None):
+        if image.visibility != 'shared':
+            message = _("Only shared images have members.")
+            raise exception.Forbidden(message)
+
+        # NOTE(abhishekk): Ownership check only needs to performed while
+        # adding new members to image
+        owner = image.owner
+        if not CONF.enforce_secure_rbac and not context.is_admin:
+            if ownership_check == 'create':
+                if owner is None or owner != context.owner:
+                    message = _("You are not permitted to create image "
+                                "members for the image.")
+                    raise exception.Forbidden(message)
+            elif ownership_check == 'update':
+                if context.owner == owner:
+                    message = _("You are not permitted to modify 'status' "
+                                "on this image member.")
+                    raise exception.Forbidden(message)
+            elif ownership_check == 'delete':
+                if context.owner != owner:
+                    message = _("You cannot delete image member.")
+                    raise exception.Forbidden(message)
+
+    def _lookup_member(self, req, image, member_id, member_repo=None):
+        if not member_repo:
+            member_repo = self._get_member_repo(req, image)
         try:
+            # NOTE(abhishekk): This will verify whether user has permission
+            # to view image member or not.
+            api_policy.MemberAPIPolicy(
+                req.context,
+                image,
+                enforcer=self.policy).get_member()
+
             return member_repo.get(member_id)
         except (exception.NotFound):
             msg = (_("%(m_id)s not found in the member list of the image "
@@ -107,11 +143,25 @@ class ImageMembersController(object):
              'updated_at': ..}
 
         """
-        image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(req, image)
-        image_member_factory = self.gateway.get_image_member_factory(
-            req.context)
         try:
+            image = self._lookup_image(req, image_id)
+            # Check for image visibility and ownership before getting member
+            # repo
+            # NOTE(abhishekk): Once we support RBAC policies we can remove
+            # ownership check from here. This is added here just to maintain
+            # behavior with and without auth layer.
+            self._check_visibility_and_ownership(req.context, image,
+                                                 ownership_check='create')
+            member_repo = self._get_member_repo(req, image)
+            # NOTE(abhishekk): This will verify whether user has permission
+            # to accept membership or not.
+            api_policy.MemberAPIPolicy(
+                req.context,
+                image,
+                enforcer=self.policy).add_member()
+
+            image_member_factory = self.gateway.get_image_member_factory(
+                req.context, authorization_layer=False)
             new_member = image_member_factory.new_image_member(image,
                                                                member_id)
             member_repo.add(new_member)
@@ -154,10 +204,24 @@ class ImageMembersController(object):
              'updated_at': ..}
 
         """
-        image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(req, image)
-        member = self._lookup_member(req, image, member_id)
         try:
+            image = self._lookup_image(req, image_id)
+            # Check for image visibility and ownership before getting member
+            # repo.
+            # NOTE(abhishekk): Once we support RBAC policies we can remove
+            # ownership check from here. This is added here just to maintain
+            # behavior with and without auth layer.
+            self._check_visibility_and_ownership(req.context, image,
+                                                 ownership_check='update')
+            member_repo = self._get_member_repo(req, image)
+            member = self._lookup_member(req, image, member_id,
+                                         member_repo=member_repo)
+
+            api_policy.MemberAPIPolicy(
+                req.context,
+                image,
+                enforcer=self.policy).modify_member()
+
             member.status = status
             member_repo.save(member)
             return member
@@ -191,16 +255,32 @@ class ImageMembersController(object):
             ]}
 
         """
-        image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(req, image)
-        members = []
         try:
-            for member in member_repo.list():
-                members.append(member)
-        except exception.Forbidden:
-            msg = _("Not allowed to list members for image %s.") % image_id
+            image = self._lookup_image(req, image_id)
+            # Check for image visibility and ownership before getting member
+            # repo.
+            self._check_visibility_and_ownership(req.context, image)
+            member_repo = self._get_member_repo(req, image)
+
+            # NOTE(abhishekk): This will verify whether user has permission
+            # to view image members or not. Each member will be checked with
+            # get_member policy below.
+            api_policy_check = api_policy.MemberAPIPolicy(
+                req.context,
+                image,
+                enforcer=self.policy)
+            api_policy_check.get_members()
+        except exception.Forbidden as e:
+            msg = (_("Not allowed to list members for image %(image_id)s: "
+                     "%(inner_msg)s") % {"image_id": image.image_id,
+                                         "inner_msg": e.msg})
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
+
+        members = [
+            member for member in member_repo.list() if api_policy_check.check(
+                'get_member')]
+
         return dict(members=members)
 
     def show(self, req, image_id, member_id):
@@ -222,7 +302,14 @@ class ImageMembersController(object):
         """
         try:
             image = self._lookup_image(req, image_id)
+            # Check for image visibility and ownership before getting member
+            # repo.
+            self._check_visibility_and_ownership(req.context, image)
             return self._lookup_member(req, image, member_id)
+        except exception.Forbidden as e:
+            # Convert Forbidden to NotFound to prevent information
+            # leakage.
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
         except webob.exc.HTTPForbidden as e:
             # Convert Forbidden to NotFound to prevent information
             # leakage.
@@ -233,10 +320,26 @@ class ImageMembersController(object):
         """
         Removes a membership from the image.
         """
-        image = self._lookup_image(req, image_id)
-        member_repo = self._get_member_repo(req, image)
-        member = self._lookup_member(req, image, member_id)
         try:
+            image = self._lookup_image(req, image_id)
+            # Check for image visibility and ownership before getting member
+            # repo.
+            # NOTE(abhishekk): Once we support RBAC policies we can remove
+            # ownership check from here. This is added here just to maintain
+            # behavior with and without auth layer.
+            self._check_visibility_and_ownership(req.context, image,
+                                                 ownership_check='delete')
+            member_repo = self._get_member_repo(req, image)
+            member = self._lookup_member(req, image, member_id,
+                                         member_repo=member_repo)
+
+            # NOTE(abhishekk): This will verify whether user has permission
+            # to delete iamge member or not.
+            api_policy.MemberAPIPolicy(
+                req.context,
+                image,
+                enforcer=self.policy).delete_member()
+
             member_repo.remove(member)
             return webob.Response(body='', status=http.NO_CONTENT)
         except exception.Forbidden:
