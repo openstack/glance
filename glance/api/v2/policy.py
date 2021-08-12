@@ -149,6 +149,13 @@ class ImageAPIPolicy(APIPolicyBase):
         if not CONF.enforce_secure_rbac:
             check_is_image_mutable(self._context, self._image)
 
+    def upload_image(self):
+        self._enforce('upload_image')
+        # TODO(danms): Remove this legacy fallback when secure RBAC
+        # replaces the legacy policy.
+        if not CONF.enforce_secure_rbac:
+            check_is_image_mutable(self._context, self._image)
+
 
 class MetadefAPIPolicy(APIPolicyBase):
     def __init__(self, context, md_resource=None, target=None, enforcer=None):

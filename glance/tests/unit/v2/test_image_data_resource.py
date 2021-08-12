@@ -108,7 +108,7 @@ class FakeGateway(object):
         self.policy = policy
         self.repo = repo
 
-    def get_repo(self, context):
+    def get_repo(self, context, authorization_layer=True):
         return self.repo
 
 
@@ -126,6 +126,12 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.controller = glance.api.v2.image_data.ImageDataController()
         self.controller.gateway = FakeGateway(db, store, notifier, policy,
                                               self.image_repo)
+        # FIXME(abhishekk): Everything is fake in this test, so mocked the
+        # image mutable_check, Later we need to fix these tests to use
+        # some realistic data
+        patcher = mock.patch('glance.api.v2.policy.check_is_image_mutable')
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_download(self):
         request = unit_test_utils.get_fake_request()
@@ -187,6 +193,28 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('YYYY', image.data)
         self.assertEqual(4, image.size)
 
+    def test_upload_not_allowed_by_policy(self):
+        request = unit_test_utils.get_fake_request()
+        with mock.patch.object(self.controller.policy, 'enforce') as mock_enf:
+            mock_enf.side_effect = webob.exc.HTTPForbidden()
+            exc = self.assertRaises(webob.exc.HTTPNotFound,
+                                    self.controller.upload, request,
+                                    unit_test_utils.UUID1, 'YYYY', 4)
+            self.assertTrue(mock_enf.called)
+        # Make sure we did not leak details of the original Forbidden
+        # error into the NotFound returned to the client.
+        self.assertEqual('The resource could not be found.', str(exc))
+
+        # Now reject the upload_image call, but allow get_image to ensure that
+        # we properly see a Forbidden result.
+        with mock.patch.object(self.controller.policy, 'enforce') as mock_enf:
+            mock_enf.side_effect = [webob.exc.HTTPForbidden(),
+                                    lambda *a: None]
+            exc = self.assertRaises(webob.exc.HTTPForbidden,
+                                    self.controller.upload, request,
+                                    unit_test_utils.UUID1, 'YYYY', 4)
+            self.assertTrue(mock_enf.called)
+
     def test_upload_status(self):
         request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd')
@@ -217,13 +245,14 @@ class TestImagesController(base.StoreClearingUnitTest):
         request = unit_test_utils.get_fake_request()
         image = FakeImage('abcd', owner='tenant1')
         self.image_repo.result = image
-        mock_enforce.side_effect = exception.Forbidden
+        mock_enforce.side_effect = [exception.Forbidden, lambda *a: None]
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.upload,
                           request, unit_test_utils.UUID2, 'YYYY', 4)
-        expected_target = {'project_id': 'tenant1'}
-        mock_enforce.assert_called_once_with(request.context,
-                                             "upload_image",
-                                             expected_target)
+        expected_call = [
+            mock.call(mock.ANY, 'upload_image', mock.ANY),
+            mock.call(mock.ANY, 'get_image', mock.ANY)
+        ]
+        mock_enforce.has_calls(expected_call)
 
     def test_upload_invalid(self):
         request = unit_test_utils.get_fake_request()
@@ -1019,6 +1048,12 @@ class TestMultiBackendImagesController(base.MultiStoreClearingUnitTest):
         self.controller = glance.api.v2.image_data.ImageDataController()
         self.controller.gateway = FakeGateway(db, store, notifier, policy,
                                               self.image_repo)
+        # FIXME(abhishekk): Everything is fake in this test, so mocked the
+        # image muntable_check, Later we need to fix these tests to use
+        # some realistic data
+        patcher = mock.patch('glance.api.v2.policy.check_is_image_mutable')
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_upload(self):
         request = unit_test_utils.get_fake_request()
