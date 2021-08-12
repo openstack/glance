@@ -339,6 +339,10 @@ class TestMetadefNamespacesPolicy(functional.SynchronousAPIBase):
         resp = self.api_get(path)
         self.assertEqual(404, resp.status_code)
 
+        # Now try to get the same namespace by different user
+        self.set_policy_rules({'get_metadef_namespace': '@'})
+        self._verify_forbidden_converted_to_not_found(path, 'GET')
+
         # Now disable get_metadef_objects policy to ensure that you will
         # get forbidden response
         self.set_policy_rules({

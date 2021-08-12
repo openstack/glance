@@ -451,7 +451,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_namespace_show_non_visible(self):
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPForbidden,
+        self.assertRaises(webob.exc.HTTPNotFound,
                           self.namespace_controller.show, request, NAMESPACE2)
 
     def test_namespace_delete(self):
