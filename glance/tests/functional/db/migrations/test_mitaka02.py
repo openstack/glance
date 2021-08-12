@@ -21,8 +21,8 @@ from glance.tests.functional.db import test_migrations
 class TestMitaka02Mixin(test_migrations.AlembicMigrationsMixin):
 
     def _pre_upgrade_mitaka02(self, engine):
-        metadef_resource_types = db_utils.get_table(engine,
-                                                    'metadef_resource_types')
+        metadef_resource_types = db_utils.get_table(
+            engine, 'metadef_resource_types')
         now = datetime.datetime.now()
         db_rec1 = dict(id='9580',
                        name='OS::Nova::Instance',
@@ -35,20 +35,24 @@ class TestMitaka02Mixin(test_migrations.AlembicMigrationsMixin):
                        created_at=now,
                        updated_at=now,)
         db_values = (db_rec1, db_rec2)
-        metadef_resource_types.insert().values(db_values).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(metadef_resource_types.insert().values(db_values))
 
     def _check_mitaka02(self, engine, data):
-        metadef_resource_types = db_utils.get_table(engine,
-                                                    'metadef_resource_types')
-        result = (metadef_resource_types.select()
-                  .where(metadef_resource_types.c.name == 'OS::Nova::Instance')
-                  .execute().fetchall())
-        self.assertEqual(0, len(result))
+        metadef_resource_types = db_utils.get_table(
+            engine, 'metadef_resource_types')
+        with engine.connect() as conn:
+            result = conn.execute(
+                metadef_resource_types.select()
+                .where(metadef_resource_types.c.name == 'OS::Nova::Instance')
+            ).fetchall()
+            self.assertEqual(0, len(result))
 
-        result = (metadef_resource_types.select()
-                  .where(metadef_resource_types.c.name == 'OS::Nova::Server')
-                  .execute().fetchall())
-        self.assertEqual(1, len(result))
+            result = conn.execute(
+                metadef_resource_types.select()
+                .where(metadef_resource_types.c.name == 'OS::Nova::Server')
+            ).fetchall()
+            self.assertEqual(1, len(result))
 
 
 class TestMitaka02MySQL(TestMitaka02Mixin,
