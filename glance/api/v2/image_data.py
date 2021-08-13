@@ -443,13 +443,19 @@ class ImageDataController(object):
                 self._restore(image_repo, image)
 
     def download(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
         try:
             image = image_repo.get(image_id)
             if image.status == 'deactivated' and not req.context.is_admin:
                 msg = _('The requested image has been deactivated. '
                         'Image data download is forbidden.')
                 raise exception.Forbidden(message=msg)
+            # NOTE(abhishekk): This is the right place to verify whether
+            # user has permission to download the image or not.
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
+            api_pol.download_image()
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:

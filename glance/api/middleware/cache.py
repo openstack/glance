@@ -31,6 +31,7 @@ import webob
 
 from glance.api.common import size_checked_iter
 from glance.api import policy
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -95,25 +96,11 @@ class CacheFilter(wsgi.Middleware):
             if image_id != 'detail':
                 return (version, method, image_id)
 
-    def _enforce(self, req, action, target=None):
+    def _enforce(self, req, image):
         """Authorize an action against our policies"""
-        if target is None:
-            target = {}
-        if isinstance(target, policy.ImageTarget):
-            # The _get_v2_image_metadata() method returns an instance of
-            # ImageTarget(), which isn't mutable and we need to make sure we
-            # update the project_id attribute of the target to match the owner.
-            # If the target isn't of dict() type already, we should explicitly
-            # handle that here. We take a similar approach in the policy layer
-            # (glance.api.policy) to make sure we build an accurate image
-            # target.
-            target = dict(target)
-        target['project_id'] = target.get('owner', None)
-        try:
-            self.policy.enforce(req.context, action, target)
-        except exception.Forbidden as e:
-            LOG.debug("User not permitted to perform '%s' action", action)
-            raise webob.exc.HTTPForbidden(explanation=e.msg, request=req)
+        api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                            self.policy)
+        api_pol.download_image()
 
     def _get_v2_image_metadata(self, request, image_id):
         """
@@ -128,7 +115,7 @@ class CacheFilter(wsgi.Middleware):
             # _process_v2_request call.
             request.environ['api.cache.image'] = image
 
-            return policy.ImageTarget(image)
+            return (image, policy.ImageTarget(image))
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg, request=request)
 
@@ -160,23 +147,23 @@ class CacheFilter(wsgi.Middleware):
             return None
 
         method = getattr(self, '_get_%s_image_metadata' % version)
-        image_metadata = method(request, image_id)
+        image, metadata = method(request, image_id)
 
         # Deactivated images shall not be served from cache
-        if image_metadata['status'] == 'deactivated':
+        if metadata['status'] == 'deactivated':
             return None
 
-        try:
-            self._enforce(request, 'download_image', target=image_metadata)
-        except exception.Forbidden:
-            return None
+        # NOTE(abhishekk): This means image is present in cache and before
+        # request is coming to API we are enforcing this check in the
+        # middleware
+        self._enforce(request, image)
 
         LOG.debug("Cache hit for image '%s'", image_id)
         image_iterator = self.get_from_cache(image_id)
         method = getattr(self, '_process_%s_request' % version)
 
         try:
-            return method(request, image_id, image_iterator, image_metadata)
+            return method(request, image_id, image_iterator, metadata)
         except exception.ImageNotFound:
             msg = _LE("Image cache contained image file for image '%s', "
                       "however the database did not contain metadata for "
@@ -290,16 +277,20 @@ class CacheFilter(wsgi.Middleware):
             LOG.error(_LE("Checksum header is missing."))
 
         # fetch image_meta on the basis of version
-        image_metadata = None
+        image = None
         if version:
             method = getattr(self, '_get_%s_image_metadata' % version)
-            image_metadata = method(resp.request, image_id)
+            image, metadata = method(resp.request, image_id)
         # NOTE(zhiyan): image_cache return a generator object and set to
         # response.app_iter, it will be called by eventlet.wsgi later.
         # So we need enforce policy firstly but do it by application
         # since eventlet.wsgi could not catch webob.exc.HTTPForbidden and
         # return 403 error to client then.
-        self._enforce(resp.request, 'download_image', target=image_metadata)
+        # FIXME(abhishekk): This policy check here is not necessary as this
+        # will hit only during first image download i.e. while image is not
+        # present in cache. We already enforced same check in API layer and
+        # enforcing same check here again makes no sense.
+        self._enforce(resp.request, image)
 
         resp.app_iter = self.cache.get_caching_iter(image_id, image_checksum,
                                                     resp.app_iter)

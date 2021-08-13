@@ -260,6 +260,12 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.upload_image()
             self.assertFalse(m.called)
 
+    def test_download_image(self):
+        self.policy.download_image()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'download_image',
+                                                      mock.ANY)
+
 
 class TestMetadefAPIPolicy(APIPolicyBase):
     def setUp(self):

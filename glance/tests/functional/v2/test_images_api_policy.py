@@ -294,3 +294,50 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         # Make sure upload returns 204 because even though we can not
         # see the image, we can upload data to it
         self._create_and_upload(expected_code=204)
+
+    def test_image_download(self):
+        # NOTE(abhishekk): These tests are running without cache middleware
+        self.start_server()
+        image_id = self._create_and_upload()
+
+        # First make sure we can download image
+        path = '/v2/images/%s/file' % image_id
+        response = self.api_get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('IMAGEDATA', response.text)
+
+        # Now disable download permissions, but allow get_image
+        self.set_policy_rules({
+            'get_image': '',
+            'download_image': '!'
+        })
+
+        # Make sure download returns 403 because we can see the image,
+        # just not download it
+        response = self.api_get(path)
+        self.assertEqual(403, response.status_code)
+
+        # Now disable download permissions, including get_image
+        self.set_policy_rules({
+            'get_image': '!',
+            'download_image': '!',
+        })
+
+        # Make sure download returns 404 because we can not see nor
+        # download it
+        response = self.api_get(path)
+        self.assertEqual(404, response.status_code)
+
+        # Now allow download, but disallow get_image, just to prove that
+        # you do not need get_image in order to be granted download, and
+        # that we only use it for error code determination if
+        # permission is denied.
+        self.set_policy_rules({
+            'get_image': '!',
+            'download_image': ''})
+
+        # Make sure download returns 200 because even though we can not
+        # see the image, we can download it
+        response = self.api_get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('IMAGEDATA', response.text)

@@ -292,7 +292,8 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         """
 
         def fake_get_v2_image_metadata(*args, **kwargs):
-            return {'status': 'active', 'properties': {}}
+            image = ImageStub(image_id, request.context.project_id)
+            return image, {'status': 'active', 'properties': {}}
 
         image_id = 'test1'
         request = webob.Request.blank('/v2/images/%s/file' % image_id)
@@ -301,7 +302,10 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._get_v2_image_metadata = fake_get_v2_image_metadata
 
-        enforcer = self._enforcer_from_rules({'download_image': '!'})
+        enforcer = self._enforcer_from_rules({
+            'get_image': '',
+            'download_image': '!'
+        })
         cache_filter.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden,
                           cache_filter.process_request, request)
@@ -320,12 +324,13 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             image = ImageStub(image_id, request.context.project_id,
                               extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
-            return glance.api.policy.ImageTarget(image)
+            return image, glance.api.policy.ImageTarget(image)
 
         enforcer = self._enforcer_from_rules({
             "restricted":
             "not ('test_1234':%(x_test_key)s and role:_member_)",
-            "download_image": "role:admin or rule:restricted"
+            "download_image": "role:admin or rule:restricted",
+            "get_image": ""
         })
 
         request = webob.Request.blank('/v2/images/test1/file')
@@ -351,7 +356,7 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             image = ImageStub(image_id, request.context.project_id,
                               extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
-            return glance.api.policy.ImageTarget(image)
+            return image, glance.api.policy.ImageTarget(image)
 
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext(roles=['member'])
@@ -396,7 +401,7 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
             image = test_policy.ImageStub(
                 image_id, extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
-            return glance.api.policy.ImageTarget(image)
+            return image, glance.api.policy.ImageTarget(image)
 
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._fetch_request_info = fake_fetch_request_info
@@ -434,7 +439,7 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
             image = ImageStub(image_id, request.context.project_id,
                               extra_properties=extra_properties)
             request.environ['api.cache.image'] = image
-            return glance.api.policy.ImageTarget(image)
+            return image, glance.api.policy.ImageTarget(image)
 
         cache_filter = ProcessRequestTestCacheFilter()
         cache_filter._fetch_request_info = fake_fetch_request_info
