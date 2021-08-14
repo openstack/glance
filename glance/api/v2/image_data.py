@@ -329,8 +329,24 @@ class ImageDataController(object):
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
                                                       request=req)
 
-        image_repo = self.gateway.get_repo(req.context)
-        image = None
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
+        # NOTE(abhishekk): stage API call does not have its own policy but
+        # it requires get_image access, this is the right place to check
+        # whether user has access to image or not
+        try:
+            image = image_repo.get(image_id)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
+
+        api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                            enforcer=self.policy)
+        try:
+            api_pol.modify_image()
+        except exception.Forbidden as e:
+            # NOTE(abhishekk): This will throw Forbidden if S-RBAC is not
+            # enabled
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
         # NOTE(jokke): this is horrible way to do it but as long as
         # glance_store is in a shape it is, the only way. Don't hold me
@@ -368,7 +384,6 @@ class ImageDataController(object):
             staging_store = _build_staging_store()
 
         try:
-            image = image_repo.get(image_id)
             image.status = 'uploading'
             image_repo.save(image, from_state='queued')
             ks_quota.enforce_image_count_uploading(req.context,

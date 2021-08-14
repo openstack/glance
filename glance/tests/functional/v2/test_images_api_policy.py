@@ -16,6 +16,7 @@
 from unittest import mock
 
 import oslo_policy.policy
+from oslo_utils.fixture import uuidsentinel as uuids
 
 from glance.api import policy
 from glance.tests import functional
@@ -341,3 +342,83 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         response = self.api_get(path)
         self.assertEqual(200, response.status_code)
         self.assertEqual('IMAGEDATA', response.text)
+
+    def test_image_stage(self):
+        self.start_server()
+        # First make sure we can perform staging operation
+        self._create_and_stage(expected_code=204)
+
+        # Now disable get_image permissions, but allow modify_image
+        # should return 204 as well, means even if we can not see
+        # image details, we can stage data for it.
+        self.set_policy_rules({
+            'get_image': '!',
+            'modify_image': '',
+            'add_image': ''
+        })
+        self._create_and_stage(expected_code=204)
+
+        # Now allow get_image and disable modify_image should return 403
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': '!',
+            'add_image': ''
+        })
+        self._create_and_stage(expected_code=403)
+
+        # Now disabling both permissions will return 404
+        self.set_policy_rules({
+            'get_image': '!',
+            'modify_image': '!',
+            'add_image': ''
+        })
+        self._create_and_stage(expected_code=404)
+
+        # create shared visibility image and stage by 2nd project should
+        # return 404 until it is actually shared with that project.
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': '!',
+            'add_image': '',
+            'add_member': ''
+        })
+        resp = self.api_post('/v2/images',
+                             json={'name': 'foo',
+                                   'container_format': 'bare',
+                                   'disk_format': 'raw',
+                                   'visibility': 'shared'})
+        self.assertEqual(201, resp.status_code, resp.text)
+        image = resp.json
+        # Now stage data using another project details
+        headers = self._headers({
+            'X-Project-Id': 'fake-tenant-id',
+            'Content-Type': 'application/octet-stream'
+        })
+        resp = self.api_put(
+            '/v2/images/%s/stage' % image['id'],
+            headers=headers,
+            data=b'IMAGEDATA')
+        self.assertEqual(404, resp.status_code)
+
+        # Now share image with another project and then staging
+        # data by that project should return 403
+        path = '/v2/images/%s/members' % image['id']
+        data = {
+            'member': uuids.random_member
+        }
+        response = self.api_post(path, json=data)
+        member = response.json
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(image['id'], member['image_id'])
+
+        # Now stage data using another project details
+        headers = self._headers({
+            'X-Project-Id': uuids.random_member,
+            'X-Roles': 'member',
+            'Content-Type': 'application/octet-stream'
+        })
+        resp = self.api_put(
+            '/v2/images/%s/stage' % image['id'],
+            headers=headers,
+            data=b'IMAGEDATA')
+        self.assertEqual(403, resp.status_code)

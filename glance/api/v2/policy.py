@@ -128,7 +128,7 @@ class ImageAPIPolicy(APIPolicyBase):
             # so check that first, followed by the general
             # modify_image policy below.
             self._enforce_visibility(value)
-        self._enforce('modify_image')
+        self.modify_image()
 
     def update_locations(self):
         self._enforce('set_image_location')
@@ -158,6 +158,13 @@ class ImageAPIPolicy(APIPolicyBase):
 
     def download_image(self):
         self._enforce('download_image')
+
+    def modify_image(self):
+        self._enforce('modify_image')
+        # TODO(danms): Remove this legacy fallback when secure RBAC
+        # replaces the legacy policy.
+        if not CONF.enforce_secure_rbac:
+            check_is_image_mutable(self._context, self._image)
 
 
 class MetadefAPIPolicy(APIPolicyBase):
