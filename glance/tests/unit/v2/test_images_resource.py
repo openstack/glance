@@ -841,7 +841,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(container_format=None)
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -851,7 +851,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(disk_format=None)
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -861,7 +861,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='queued')
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -871,7 +871,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage()
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -881,7 +881,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage()
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -892,7 +892,7 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_image_import_raises_bad_request(self, mock_gpt, mock_spa):
         request = unit_test_utils.get_fake_request()
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             # NOTE(abhishekk): Due to
             # https://bugs.launchpad.net/glance/+bug/1712463 taskflow is not
@@ -907,7 +907,7 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_image_import_invalid_uri_filtering(self):
         request = unit_test_utils.get_fake_request()
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='queued')
             self.assertRaises(webob.exc.HTTPBadRequest,
                               self.controller.import_image, request, UUID4,
@@ -922,7 +922,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(
             '/v2/images/%s/import' % UUID4)
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             mock_get.return_value.extra_properties['os_glance_stage_host'] = (
                 'https://glance-worker1.openstack.org')
@@ -986,7 +986,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(
             '/v2/images/%s/import' % UUID4)
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             mock_get.return_value.extra_properties['os_glance_stage_host'] = (
                 'https://glance-worker1.openstack.org')
@@ -1078,7 +1078,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request(
             '/v2/images/%s/import' % UUID4)
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='queued')
             mock_get.return_value.extra_properties['os_glance_stage_host'] = (
                 'https://glance-worker1.openstack.org')
@@ -3339,7 +3339,7 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertIsNone(pos)
 
     @mock.patch('glance.db.simple.api.image_set_property_atomic')
-    @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
     @mock.patch.object(glance.domain.TaskExecutorFactory, 'new_task_executor')
     @mock.patch('glance.api.common.get_thread_pool')
     @mock.patch('glance.quota.keystone.enforce_image_size_total')
@@ -3348,7 +3348,7 @@ class TestImagesController(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         image = FakeImage(status='uploading')
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = image
             output = self.controller.import_image(
                 request, UUID4, {'method': {'name': 'glance-direct'}})
@@ -3370,7 +3370,7 @@ class TestImagesController(base.IsolatedUnitTest):
             mock_nt.return_value.run, mock_nte.return_value)
 
     @mock.patch.object(glance.domain.TaskFactory, 'new_task')
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
     def test_image_import_not_allowed(self, mock_get, mock_new_task):
         # NOTE(danms): FakeImage is owned by utils.TENANT1. Try to do the
         # import as TENANT2 and we should get an HTTPForbidden
@@ -3384,7 +3384,7 @@ class TestImagesController(base.IsolatedUnitTest):
         # a task
         mock_new_task.assert_not_called()
 
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
     @mock.patch('glance.quota.keystone.enforce_image_size_total')
     def test_image_import_quota_fail(self, mock_enforce, mock_get):
         request = unit_test_utils.get_fake_request()
@@ -3398,7 +3398,7 @@ class TestImagesController(base.IsolatedUnitTest):
     @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch('glance.context.RequestContext.elevated')
     @mock.patch.object(glance.domain.TaskFactory, 'new_task')
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
     def test_image_import_copy_allowed_by_policy(self, mock_get,
                                                  mock_new_task,
                                                  mock_elevated,
@@ -3423,7 +3423,8 @@ class TestImagesController(base.IsolatedUnitTest):
             # Make sure we passed an admin context to our task executor factory
             mock_tef.assert_called_once_with(
                 request.context,
-                admin_context=mock_elevated.return_value)
+                admin_context=mock_elevated.return_value,
+                authorization_layer=False)
 
         expected_input = {'image_id': UUID4,
                           'import_req': mock.ANY,
@@ -3442,7 +3443,7 @@ class TestImagesController(base.IsolatedUnitTest):
                           self.test_image_import_copy_allowed_by_policy,
                           allowed=False)
 
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
     def test_image_import_locked(self, mock_get):
         task = test_tasks_resource._db_fixture(test_tasks_resource.UUID1,
                                                status='pending')
@@ -3463,8 +3464,8 @@ class TestImagesController(base.IsolatedUnitTest):
 
     @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch('glance.db.simple.api.image_delete_property_atomic')
-    @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
     def test_image_import_locked_by_reaped_task(self, mock_get, mock_nt,
                                                 mock_dpi, mock_spi):
         image = FakeImage(status='uploading')
@@ -3485,11 +3486,11 @@ class TestImagesController(base.IsolatedUnitTest):
         mock_spi.assert_called_once_with(image.id, 'os_glance_import_task',
                                          'mytask')
 
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'save')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'save')
     @mock.patch('glance.db.simple.api.image_set_property_atomic')
     @mock.patch('glance.db.simple.api.image_delete_property_atomic')
-    @mock.patch.object(glance.api.authorization.TaskFactoryProxy, 'new_task')
-    @mock.patch.object(glance.api.authorization.ImageRepoProxy, 'get')
+    @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
     def test_image_import_locked_by_bustable_task(self, mock_get, mock_nt,
                                                   mock_dpi, mock_spi,
                                                   mock_save,
@@ -6057,7 +6058,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         request.headers['x-image-meta-store'] = 'dummy'
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image,
@@ -6068,7 +6069,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(disk_format=None)
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -6078,7 +6079,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='queued')
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -6088,7 +6089,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage()
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID4,
@@ -6099,7 +6100,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request.headers['x-image-meta-store'] = 'fast'
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage()
             self.assertRaises(webob.exc.HTTPBadRequest,
                               self.controller.import_image, request, UUID7,
@@ -6110,7 +6111,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.side_effect = exception.NotFound
             self.assertRaises(webob.exc.HTTPNotFound,
                               self.controller.import_image, request, UUID1,
@@ -6125,7 +6126,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                      'status': 'active'},
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             with mock.patch.object(self.store,
                                    'get_store_from_store_identifier'):
                 mock_get.return_value = FakeImage(id=UUID7, status='active',
@@ -6138,7 +6139,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
 
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(status='uploading')
             self.assertRaises(webob.exc.HTTPConflict,
                               self.controller.import_image, request, UUID1,
@@ -6159,7 +6160,7 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                      'metadata': {'store': 'fast'},
                      'status': 'active'},
         with mock.patch.object(
-                glance.api.authorization.ImageRepoProxy, 'get') as mock_get:
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
             mock_get.return_value = FakeImage(id=UUID7, status='active',
                                               locations=locations)
 

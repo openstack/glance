@@ -265,6 +265,9 @@ class ImageAPIPolicy(APIPolicyBase):
         if not CONF.enforce_secure_rbac:
             check_is_image_mutable(self._context, self._image)
 
+    def copy_image(self):
+        self._enforce('copy_image')
+
 
 class MetadefAPIPolicy(APIPolicyBase):
     def __init__(self, context, md_resource=None, target=None, enforcer=None):

@@ -471,6 +471,12 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.reactivate_image()
             self.assertFalse(m.called)
 
+    def test_copy_image(self):
+        self.policy.copy_image()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'copy_image',
+                                                      mock.ANY)
+
 
 class TestMetadefAPIPolicy(APIPolicyBase):
     def setUp(self):

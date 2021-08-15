@@ -32,7 +32,6 @@ from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
-from glance.api import authorization
 from glance.api import common
 from glance.api import policy
 from glance.api.v2 import policy as api_policy
@@ -168,8 +167,10 @@ class ImagesController(object):
 
     def _enforce_import_lock(self, req, image):
         admin_context = req.context.elevated()
-        admin_image_repo = self.gateway.get_repo(admin_context)
-        admin_task_repo = self.gateway.get_task_repo(admin_context)
+        admin_image_repo = self.gateway.get_repo(
+            admin_context, authorization_layer=False)
+        admin_task_repo = self.gateway.get_task_repo(
+            admin_context, authorization_layer=False)
         other_task = image.extra_properties['os_glance_import_task']
 
         expiry = datetime.timedelta(minutes=60)
@@ -313,9 +314,12 @@ class ImagesController(object):
     @utils.mutating
     def import_image(self, req, image_id, body):
         ctxt = req.context
-        image_repo = self.gateway.get_repo(ctxt)
-        task_factory = self.gateway.get_task_factory(ctxt)
-        task_repo = self.gateway.get_task_repo(ctxt)
+        image_repo = self.gateway.get_repo(ctxt,
+                                           authorization_layer=False)
+        task_factory = self.gateway.get_task_factory(
+            ctxt, authorization_layer=False)
+        task_repo = self.gateway.get_task_repo(
+            ctxt, authorization_layer=False)
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
         all_stores_must_succeed = body.get('all_stores_must_succeed', True)
@@ -355,12 +359,15 @@ class ImagesController(object):
             # NOTE(danms): For copy-image only, we check policy to decide
             # if the user should be able to do this. Otherwise, we forbid
             # the import if the user is not the owner.
+
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                enforcer=self.policy)
             if import_method == 'copy-image':
-                self.policy.enforce(ctxt, 'copy_image',
-                                    dict(policy.ImageTarget(image)))
-            elif not authorization.is_image_mutable(ctxt, image):
-                raise webob.exc.HTTPForbidden(
-                    explanation=_("Operation not permitted"))
+                api_pol.copy_image()
+            else:
+                # NOTE(abhishekk): We need to perform ownership check on image
+                # so that non-admin or non-owner can not import data to image
+                api_pol.modify_image()
 
             if 'os_glance_import_task' in image.extra_properties:
                 # NOTE(danms): This will raise exception.Conflict if the
@@ -433,7 +440,7 @@ class ImagesController(object):
             admin_context = None
 
         executor_factory = self.gateway.get_task_executor_factory(
-            ctxt, admin_context=admin_context)
+            ctxt, admin_context=admin_context, authorization_layer=False)
 
         if (import_method == 'web-download' and
                 not utils.validate_import_uri(uri)):

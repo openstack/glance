@@ -47,7 +47,8 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
 
         # Set up a fake data pipeline that will stall until we are ready
         # to unblock it
-        def slow_fake_set_data(data_iter, backend=None, set_active=True):
+        def slow_fake_set_data(data_iter, size=None, backend=None,
+                               set_active=True):
             me = str(uuid.uuid4())
             while state['want_run'] == True:
                 LOG.info('fake_set_data running %s' % me)
@@ -61,7 +62,7 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
 
         # Turn on the delayed data pipeline and start a copy-image
         # import which will hang out for a while
-        with mock.patch('glance.domain.proxy.Image.set_data') as mock_sd:
+        with mock.patch('glance.location.ImageProxy.set_data') as mock_sd:
             mock_sd.side_effect = slow_fake_set_data
 
             resp = self._import_copy(image_id, ['store2'])

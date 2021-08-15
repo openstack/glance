@@ -1710,7 +1710,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         return self.api_request('PATCH', url, headers=headers,
                                 json=list(patches))
 
-    def _import_copy(self, image_id, stores):
+    def _import_copy(self, image_id, stores, headers=None):
         """Do an import of image_id to the given stores."""
         body = {'method': {'name': 'copy-image'},
                 'stores': stores,
@@ -1718,9 +1718,10 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         return self.api_post(
             '/v2/images/%s/import' % image_id,
+            headers=headers,
             json=body)
 
-    def _import_direct(self, image_id, stores):
+    def _import_direct(self, image_id, stores, headers=None):
         """Do an import of image_id to the given stores."""
         body = {'method': {'name': 'glance-direct'},
                 'stores': stores,
@@ -1728,9 +1729,10 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         return self.api_post(
             '/v2/images/%s/import' % image_id,
+            headers=headers,
             json=body)
 
-    def _import_web_download(self, image_id, stores, url):
+    def _import_web_download(self, image_id, stores, url, headers=None):
         """Do an import of image_id to the given stores."""
         body = {'method': {'name': 'web-download',
                            'uri': url},
@@ -1739,6 +1741,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         return self.api_post(
             '/v2/images/%s/import' % image_id,
+            headers=headers,
             json=body)
 
     def _create_and_upload(self, data_iter=None, expected_code=204,
@@ -1770,11 +1773,18 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         return image['id']
 
-    def _create_and_stage(self, data_iter=None, expected_code=204):
+    def _create_and_stage(self, data_iter=None, expected_code=204,
+                          visibility=None):
+        data = {
+            'name': 'foo',
+            'container_format': 'bare',
+            'disk_format': 'raw',
+        }
+        if visibility:
+            data['visibility'] = visibility
+
         resp = self.api_post('/v2/images',
-                             json={'name': 'foo',
-                                   'container_format': 'bare',
-                                   'disk_format': 'raw'})
+                             json=data)
         image = jsonutils.loads(resp.text)
 
         if data_iter:
@@ -1805,12 +1815,14 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         return image
 
-    def _create_and_import(self, stores=[], data_iter=None, expected_code=202):
+    def _create_and_import(self, stores=[], data_iter=None, expected_code=202,
+                           visibility=None):
         """Create an image, stage data, and import into the given stores.
 
         :returns: image_id
         """
-        image_id = self._create_and_stage(data_iter=data_iter)
+        image_id = self._create_and_stage(data_iter=data_iter,
+                                          visibility=visibility)
 
         resp = self._import_direct(image_id, stores)
         self.assertEqual(expected_code, resp.status_code)

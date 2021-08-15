@@ -724,3 +724,124 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         path = "/v2/stores/store2/%s" % image_id
         response = self.api_delete(path, headers=headers)
         self.assertEqual(403, response.status_code)
+
+    def test_copy_image(self):
+        self.start_server()
+        # create image using import
+        image_id = self._create_and_import(
+            stores=['store1'], visibility='public')
+
+        # Make sure you can copy image to another store
+        self.set_policy_rules({
+            'copy_image': 'role:admin',
+            'get_image': '',
+            'modify_image': ''
+        })
+        store_to_copy = ["store2"]
+        response = self._import_copy(image_id, store_to_copy)
+        self.assertEqual(202, response.status_code)
+        self._wait_for_import(image_id)
+        self.assertEqual('success', self._get_latest_task(image_id)['status'])
+
+        # Now disable copy image and see you will get 403 Forbidden
+        store_to_copy = ["store3"]
+        self.set_policy_rules({
+            'copy_image': '!',
+            'get_image': '',
+            'modify_image': ''
+        })
+        response = self._import_copy(image_id, store_to_copy)
+        self.assertEqual(403, response.status_code)
+
+        # Verify that non-admin but member of same project can not copy image
+        self.set_policy_rules({
+            'copy_image': 'role:admin',
+            'get_image': '',
+            'modify_image': ''
+        })
+        headers = self._headers({'X-Roles': 'member'})
+        response = self._import_copy(image_id, store_to_copy,
+                                     headers=headers)
+        self.assertEqual(403, response.status_code)
+
+        # Verify that non-owner can not copy image
+        self.set_policy_rules({
+            'copy_image': 'role:admin',
+            'get_image': '',
+            'modify_image': ''
+        })
+        headers = self._headers({
+            'X-Roles': 'member',
+            'X-Project-Id': 'fake-project-id'
+        })
+        response = self._import_copy(image_id, store_to_copy,
+                                     headers=headers)
+        self.assertEqual(403, response.status_code)
+
+        # Now disable copy image and get_image and see you will get
+        # 404 NotFound
+        self.set_policy_rules({
+            'copy_image': '!',
+            'get_image': '!',
+            'modify_image': ''
+        })
+        store_to_copy = ["store3"]
+        print(self.policy.rules.items())
+        response = self._import_copy(image_id, store_to_copy)
+        self.assertEqual(404, response.status_code)
+
+    def test_import_glance_direct(self):
+        self.start_server()
+        # create image and stage data to it
+        image_id = self._create_and_stage(visibility='public')
+
+        # Make sure you can import using glance-direct
+        self.set_policy_rules({
+            'get_image': '',
+            'communitize_image': '',
+            'add_image': '',
+            'modify_image': ''
+        })
+        store_to_import = ['store1']
+        response = self._import_direct(image_id, store_to_import)
+        self.assertEqual(202, response.status_code)
+        self._wait_for_import(image_id)
+        self.assertEqual('success', self._get_latest_task(image_id)['status'])
+
+        # Make sure you can import data to image using non-admin role
+        image_id = self._create_and_stage(visibility='community')
+        headers = self._headers({'X-Roles': 'member'})
+        response = self._import_direct(image_id, store_to_import,
+                                       headers=headers)
+        self.assertEqual(202, response.status_code)
+        self._wait_for_import(image_id)
+        self.assertEqual('success', self._get_latest_task(image_id)['status'])
+
+        # Make sure you can not import data to image using non-admin role of
+        # different project
+        image_id = self._create_and_stage(visibility='community')
+        # Make sure you will get 403 Forbidden
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': '!'
+        })
+        headers = self._headers({
+            'X-Roles': 'member',
+            'X-Project-Id': 'fake-project-id'
+        })
+        response = self._import_direct(image_id, store_to_import,
+                                       headers=headers)
+        self.assertEqual(403, response.status_code)
+
+        # disabling both get_image and modify_image should return 404 NotFound
+        self.set_policy_rules({
+            'get_image': '!',
+            'modify_image': '!'
+        })
+        headers = self._headers({
+            'X-Roles': 'member',
+            'X-Project-Id': 'fake-project-id'
+        })
+        response = self._import_direct(image_id, store_to_import,
+                                       headers=headers)
+        self.assertEqual(404, response.status_code)
