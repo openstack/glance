@@ -135,6 +135,13 @@ class ImageAPIPolicy(APIPolicyBase):
 
     def delete_locations(self):
         self._enforce('delete_image_location')
+        # TODO(danms): Remove this legacy fallback when secure RBAC
+        # replaces the legacy policy.
+        if not CONF.enforce_secure_rbac:
+            check_is_image_mutable(self._context, self._image)
+
+    def get_image_location(self):
+        self._enforce('get_image_location')
 
     def get_image(self):
         self._enforce('get_image')

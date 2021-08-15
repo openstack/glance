@@ -141,6 +141,43 @@ class APIImagePolicy(APIPolicyBase):
                                                       'delete_image_location',
                                                       mock.ANY)
 
+    def test_delete_locations_falls_back_to_legacy(self):
+        self.config(enforce_secure_rbac=False)
+
+        # As admin, image is mutable even if owner does not match
+        self.context.is_admin = True
+        self.context.owner = 'someuser'
+        self.image.owner = 'someotheruser'
+        self.policy.delete_locations()
+
+        # As non-admin, owner matches, so we're good
+        self.context.is_admin = False
+        self.context.owner = 'someuser'
+        self.image.owner = 'someuser'
+        self.policy.delete_locations()
+
+        # If owner does not match, we fail
+        self.image.owner = 'someotheruser'
+        self.assertRaises(exception.Forbidden,
+                          self.policy.delete_locations)
+
+        # Make sure we are checking the legacy handler
+        with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
+            self.policy.delete_locations()
+            m.assert_called_once_with(self.context, self.image)
+
+        # Make sure we are not checking it if enforce_secure_rbac=True
+        self.config(enforce_secure_rbac=True)
+        with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
+            self.policy.delete_locations()
+            self.assertFalse(m.called)
+
+    def test_get_image_location(self):
+        self.policy.get_image_location()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'get_image_location',
+                                                      mock.ANY)
+
     def test_enforce_exception_behavior(self):
         with mock.patch.object(self.policy.enforcer, 'enforce') as mock_enf:
             # First make sure we can update if allowed

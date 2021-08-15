@@ -625,3 +625,72 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
             else:
                 # public and community visibility will return 403
                 self.assertEqual(403, resp.status_code)
+
+    def test_delete_from_store(self):
+        self.start_server()
+        # First create image in multiple stores
+        image_id = self._create_and_import(stores=['store1', 'store2',
+                                                   'store3'])
+
+        # Make sure we are able to delete image from the specific store
+        path = "/v2/stores/store1/%s" % image_id
+        response = self.api_delete(path)
+        self.assertEqual(204, response.status_code)
+
+        # Disable get_image_location and verify you will get 403
+        self.set_policy_rules({
+            'get_image': '',
+            'delete_image_location': '',
+            'get_image_location': '!'
+        })
+        path = "/v2/stores/store2/%s" % image_id
+        response = self.api_delete(path)
+        self.assertEqual(403, response.status_code)
+
+        # Disable delete_image_location and verify you will get 403
+        self.set_policy_rules({
+            'get_image': '',
+            'delete_image_location': '!',
+            'get_image_location': ''
+        })
+        path = "/v2/stores/store2/%s" % image_id
+        response = self.api_delete(path)
+        self.assertEqual(403, response.status_code)
+
+        # Disabling all, you will get 404
+        self.set_policy_rules({
+            'get_image': '!',
+            'delete_image_location': '!',
+            'get_image_location': '!'
+        })
+        path = "/v2/stores/store2/%s" % image_id
+        response = self.api_delete(path)
+        self.assertEqual(404, response.status_code)
+
+        # Now allow delete_image_location and get_image_location, but disallow
+        # get_image, just to prove that you do not need get_image in order
+        # to be granted delete image from particular store, and
+        # that we only use it for error code determination if
+        # permission is denied.
+        self.set_policy_rules({
+            'get_image': '!',
+            'delete_image_location': '',
+            'get_image_location': ''
+        })
+        path = "/v2/stores/store2/%s" % image_id
+        response = self.api_delete(path)
+        self.assertEqual(204, response.status_code)
+
+        # deleting image with non-admin will get 403
+        self.set_policy_rules({
+            'get_image': '',
+            'delete_image_location': '',
+            'get_image_location': ''
+        })
+        headers = self._headers({
+            'X-Roles': 'member'
+        })
+
+        path = "/v2/stores/store2/%s" % image_id
+        response = self.api_delete(path, headers=headers)
+        self.assertEqual(403, response.status_code)

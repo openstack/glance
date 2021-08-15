@@ -715,7 +715,8 @@ class ImagesController(object):
                    store_id)
             raise webob.exc.HTTPConflict(explanation=msg)
 
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
         try:
             image = image_repo.get(image_id)
         except exception.NotAuthenticated as e:
@@ -724,6 +725,18 @@ class ImagesController(object):
             msg = (_("Failed to find image %(image_id)s") %
                    {'image_id': image_id})
             raise webob.exc.HTTPNotFound(explanation=msg)
+
+        # NOTE(abhishekk): Delete from store internally checks for
+        # get_image_location and delete_image_location policies using
+        # ImageLocationProxy object, so this is the right place to
+        # check those policies
+        api_pol = api_policy.ImageAPIPolicy(req.context, image, self.policy)
+        api_pol.get_image_location()
+        # This policy will check for legacy image ownership as well
+        try:
+            api_pol.delete_locations()
+        except exception.Forbidden as e:
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
 
         if image.status != 'active':
             msg = _("It's not allowed to remove image data from store if "
