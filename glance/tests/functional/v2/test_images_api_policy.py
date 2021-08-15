@@ -845,3 +845,167 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         response = self._import_direct(image_id, store_to_import,
                                        headers=headers)
         self.assertEqual(404, response.status_code)
+
+    def _test_image_ownership(self, headers, method):
+        self.set_policy_rules({
+            'get_image': '',
+            'add_image': '',
+            'publicize_image': '',
+            'communitize_image': '',
+            'add_member': '',
+        })
+
+        for visibility in ('community', 'public', 'shared'):
+            path = "/v2/images"
+            data = {
+                'name': '%s-image' % visibility,
+                'visibility': visibility,
+            }
+            # create image
+            response = self.api_post(path, json=data)
+            image = response.json
+            self.assertEqual(201, response.status_code)
+            self.assertEqual(visibility, image['visibility'])
+
+            # share the image if visibility is shared
+            if visibility == 'shared':
+                path = '/v2/images/%s/members' % image['id']
+                data = {
+                    'member': 'fake-project-id'
+                }
+                response = self.api_post(path,
+                                         json=data)
+                self.assertEqual(200, response.status_code)
+
+            # Add/Delete tag
+            path = '/v2/images/%s/tags/Test_Tag_2' % image['id']
+            response = self.api_request(method, path, headers=headers)
+            self.assertEqual(403, response.status_code)
+
+    def test_image_tag_update(self):
+        self.start_server()
+        # Create image
+        image_id = self._create_and_upload()
+
+        # Make sure we will be able to add tags for the image
+        path = '/v2/images/%s/tags/Test_Tag' % image_id
+        response = self.api_put(path)
+        self.assertEqual(204, response.status_code)
+        # Make sure tag is added to image
+        path = '/v2/images/%s' % image_id
+        response = self.api_get(path)
+        image = response.json
+        self.assertEqual(['Test_Tag'], image['tags'])
+
+        # Disable get_image and modify_image should give us 404 Not Found
+        self.set_policy_rules({
+            'get_image': '!',
+            'modify_image': '!'
+        })
+        path = '/v2/images/%s/tags/Test_Tag_2' % image_id
+        response = self.api_put(path)
+        self.assertEqual(404, response.status_code)
+
+        # Allow get_image and disable modify_image should give us
+        # 403 Forbidden
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': '!'
+        })
+        path = '/v2/images/%s/tags/Test_Tag_2' % image_id
+        response = self.api_put(path)
+        self.assertEqual(403, response.status_code)
+
+        # Adding tag by another project (non-admin user) should return
+        # 404 Not Found for private image
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': ''
+        })
+        # Note for other reviewers, these tests runs by default using
+        # admin role, to test this scenario we need image
+        # of current project to be accessed by other projects non-admin
+        # user.
+        headers = self._headers({
+            'X-Project-Id': 'fake-project-id',
+            'X-Roles': 'member',
+        })
+        path = '/v2/images/%s/tags/Test_Tag_2' % image_id
+        response = self.api_put(path, headers=headers)
+        self.assertEqual(404, response.status_code)
+
+        # Adding tag by another project (non-admin user) should return
+        # 403 Not Found for other than private image
+        self._test_image_ownership(headers, 'PUT')
+
+    def test_image_tag_delete(self):
+        self.start_server()
+        # Create image
+        image_id = self._create_and_upload()
+
+        # Make sure we will be able to add tags for the image
+        path = '/v2/images/%s/tags/Test_Tag_1' % image_id
+        response = self.api_put(path)
+        self.assertEqual(204, response.status_code)
+        # add another tag while we can
+        path = '/v2/images/%s/tags/Test_Tag_2' % image_id
+        response = self.api_put(path)
+        self.assertEqual(204, response.status_code)
+
+        # Make sure tags are added to image
+        path = '/v2/images/%s' % image_id
+        response = self.api_get(path)
+        image = response.json
+        self.assertItemsEqual(['Test_Tag_1', 'Test_Tag_2'], image['tags'])
+
+        # Now delete tag from image
+        path = '/v2/images/%s/tags/Test_Tag_1' % image_id
+        response = self.api_delete(path)
+        self.assertEqual(204, response.status_code)
+
+        # Make sure tag is deleted
+        path = '/v2/images/%s' % image_id
+        response = self.api_get(path)
+        image = response.json
+        self.assertNotIn('Test_Tag_1', image['tags'])
+
+        # Disable get_image and modify_image should give us 404 Not Found
+        self.set_policy_rules({
+            'get_image': '!',
+            'modify_image': '!'
+        })
+        path = '/v2/images/%s/tags/Test_Tag_2' % image_id
+        response = self.api_delete(path)
+        self.assertEqual(404, response.status_code)
+
+        # Allow get_image and disable modify_image should give us
+        # 403 Forbidden
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': '!'
+        })
+        path = '/v2/images/%s/tags/Test_Tag_2' % image_id
+        response = self.api_delete(path)
+        self.assertEqual(403, response.status_code)
+
+        # Deleting tag by another project (non-admin user) should return
+        # 404 Not Found for private image
+        self.set_policy_rules({
+            'get_image': '',
+            'modify_image': ''
+        })
+        # Note for other reviewers, these tests runs by default using
+        # admin role, to test this scenario we need image
+        # of current project to be accessed by other projects non-admin
+        # user.
+        headers = self._headers({
+            'X-Project-Id': 'fake-project-id',
+            'X-Roles': 'member',
+        })
+        path = '/v2/images/%s/tags/Test_Tag_2' % image_id
+        response = self.api_delete(path, headers=headers)
+        self.assertEqual(404, response.status_code)
+
+        # Deleting tag by another project (non-admin user) should return
+        # 403 Not Found for other than private image
+        self._test_image_ownership(headers, 'DELETE')

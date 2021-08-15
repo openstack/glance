@@ -20,6 +20,7 @@ import webob.exc
 
 from glance.api import policy
 from glance.api.v2 import images as v2_api
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
@@ -44,9 +45,12 @@ class Controller(object):
 
     @utils.mutating
     def update(self, req, image_id, tag_value):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
         try:
             image = image_repo.get(image_id)
+            api_policy.ImageAPIPolicy(req.context, image,
+                                      self.policy).modify_image()
             image.tags.add(tag_value)
             image_repo.save(image)
         except exception.NotFound:
@@ -71,9 +75,13 @@ class Controller(object):
 
     @utils.mutating
     def delete(self, req, image_id, tag_value):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
         try:
             image = image_repo.get(image_id)
+            api_policy.ImageAPIPolicy(req.context, image,
+                                      self.policy).modify_image()
+
             if tag_value not in image.tags:
                 raise webob.exc.HTTPNotFound()
             image.tags.remove(tag_value)
