@@ -23,7 +23,7 @@ The image API now supports roles.
 image_policies = [
     policy.DocumentedRuleDefault(
         name="add_image",
-        check_str=base.ADMIN_OR_PROJECT_MEMBER,
+        check_str=base.ADMIN_OR_PROJECT_MEMBER_CREATE_IMAGE,
         scope_types=['system', 'project'],
         description='Create new image',
         operations=[

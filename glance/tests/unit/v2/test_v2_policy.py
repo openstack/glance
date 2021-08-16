@@ -186,6 +186,63 @@ class APIImagePolicy(APIPolicyBase):
                                                       'get_images',
                                                       mock.ANY)
 
+    def test_add_image(self):
+        generic_target = {'project_id': self.context.project_id,
+                          'owner': self.context.project_id,
+                          'visibility': 'private'}
+        self.policy = policy.ImageAPIPolicy(self.context, {},
+                                            enforcer=self.enforcer)
+        self.policy.add_image()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'add_image',
+                                                      generic_target)
+
+    def test_add_image_falls_back_to_legacy(self):
+        self.config(enforce_secure_rbac=False)
+
+        self.context.is_admin = False
+        self.policy = policy.ImageAPIPolicy(self.context, {'owner': 'else'},
+                                            enforcer=self.enforcer)
+        self.assertRaises(exception.Forbidden, self.policy.add_image)
+
+        # Make sure we're calling the legacy handler if secure_rbac is False
+        with mock.patch('glance.api.v2.policy.check_admin_or_same_owner') as m:
+            self.policy.add_image()
+            m.assert_called_once_with(self.context, {'project_id': 'else',
+                                                     'owner': 'else',
+                                                     'visibility': 'private'})
+
+        # Make sure we are not calling the legacy handler if
+        # secure_rbac is being used. We won't fail the check because
+        # our enforcer is a mock, just make sure we don't call that handler.
+        self.config(enforce_secure_rbac=True)
+        with mock.patch('glance.api.v2.policy.check_admin_or_same_owner') as m:
+            self.policy.add_image()
+            m.assert_not_called()
+
+    def test_add_image_translates_owner_failure(self):
+        self.policy = policy.ImageAPIPolicy(self.context, {'owner': 'else'},
+                                            enforcer=self.enforcer)
+        # Make sure add_image works with no exception
+        self.policy.add_image()
+
+        # Make sure we don't get in the way of any other exceptions
+        self.enforcer.enforce.side_effect = exception.Duplicate
+        self.assertRaises(exception.Duplicate, self.policy.add_image)
+
+        # If the exception is HTTPForbidden and the owner differs,
+        # make sure we get the proper message translation
+        self.enforcer.enforce.side_effect = webob.exc.HTTPForbidden('original')
+        exc = self.assertRaises(webob.exc.HTTPForbidden, self.policy.add_image)
+        self.assertIn('You are not permitted to create images owned by',
+                      str(exc))
+
+        # If the owner does not differ, make sure we get the original reason
+        self.policy = policy.ImageAPIPolicy(self.context, {},
+                                            enforcer=self.enforcer)
+        exc = self.assertRaises(webob.exc.HTTPForbidden, self.policy.add_image)
+        self.assertIn('original', str(exc))
+
     def test_delete_image(self):
         self.policy.delete_image()
         self.enforcer.enforce.assert_called_once_with(self.context,

@@ -205,6 +205,36 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         resp = self.api_get('/v2/images/%s' % image_id)
         self.assertEqual(404, resp.status_code)
 
+    def test_image_create(self):
+        self.start_server()
+
+        # Make sure we can create an image
+        self.assertEqual(201, self._create().status_code)
+
+        # Now disable add_image and make sure we get 403
+        self.set_policy_rules({'add_image': '!'})
+
+        self.assertEqual(403, self._create().status_code)
+
+    def test_image_create_by_another(self):
+        self.start_server()
+
+        # NOTE(danms): There is no policy override in this test,
+        # specifically to test that the defaults (for rbac and
+        # non-rbac) properly catch the attempt by a non-admin to
+        # create an image owned by someone else.
+
+        image = {'name': 'foo',
+                 'container_format': 'bare',
+                 'disk_format': 'raw',
+                 'owner': 'someoneelse'}
+        resp = self.api_post('/v2/images',
+                             json=image,
+                             headers={'X-Roles': 'member'})
+        # Make sure we get the expected owner-specific error message
+        self.assertIn("You are not permitted to create images "
+                      "owned by 'someoneelse'", resp.text)
+
     def test_image_delete(self):
         self.start_server()
 

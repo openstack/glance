@@ -92,9 +92,17 @@ class ImagesController(object):
 
     @utils.mutating
     def create(self, req, image, extra_properties, tags):
-        image_factory = self.gateway.get_image_factory(req.context)
-        image_repo = self.gateway.get_repo(req.context)
+        image_factory = self.gateway.get_image_factory(
+            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         try:
+            if 'owner' not in image:
+                image['owner'] = req.context.project_id
+
+            api_policy.ImageAPIPolicy(req.context, image,
+                                      self.policy).add_image()
+
             ks_quota.enforce_image_count_total(req.context, req.context.owner)
             image = image_factory.new_image(extra_properties=extra_properties,
                                             tags=tags, **image)
