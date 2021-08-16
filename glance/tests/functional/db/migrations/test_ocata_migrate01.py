@@ -38,7 +38,8 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='public_id')
-        images.insert().values(public_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(public_temp))
 
         # inserting a non-public image record for 'shared' visibility test
         shared_temp = dict(deleted=False,
@@ -48,7 +49,8 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='shared_id')
-        images.insert().values(shared_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(shared_temp))
 
         # inserting a non-public image records for 'private' visibility test
         private_temp = dict(deleted=False,
@@ -58,7 +60,8 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                             min_disk=0,
                             min_ram=0,
                             id='private_id_1')
-        images.insert().values(private_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(private_temp))
 
         private_temp = dict(deleted=False,
                             created_at=now,
@@ -67,7 +70,8 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                             min_disk=0,
                             min_ram=0,
                             id='private_id_2')
-        images.insert().values(private_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(private_temp))
 
         # adding an active as well as a deleted image member for checking
         # 'shared' visibility
@@ -77,7 +81,8 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                     member='fake_member_452',
                     can_share=True,
                     id=45)
-        image_members.insert().values(temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(image_members.insert().values(temp))
 
         temp = dict(deleted=True,
                     created_at=now,
@@ -85,7 +90,8 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                     member='fake_member_453',
                     can_share=True,
                     id=453)
-        image_members.insert().values(temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(image_members.insert().values(temp))
 
         # adding an image member, but marking it deleted,
         # for testing 'private' visibility
@@ -95,7 +101,8 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                     member='fake_member_451',
                     can_share=True,
                     id=451)
-        image_members.insert().values(temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(image_members.insert().values(temp))
 
         # adding an active image member for the 'public' image,
         # to test it remains public regardless.
@@ -105,16 +112,18 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
                     member='fake_member_450',
                     can_share=True,
                     id=450)
-        image_members.insert().values(temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(image_members.insert().values(temp))
 
     def _check_ocata_expand01(self, engine, data):
         images = db_utils.get_table(engine, 'images')
 
         # check that visibility is null for existing images
-        rows = (images.select()
-                .order_by(images.c.id)
-                .execute()
-                .fetchall())
+        with engine.connect() as conn:
+            rows = conn.execute(
+                images.select().order_by(images.c.id)
+            ).fetchall()
+
         self.assertEqual(4, len(rows))
         for row in rows:
             self.assertIsNone(row['visibility'])
@@ -123,10 +132,10 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
         data_migrations.migrate(engine)
 
         # check that visibility is set appropriately for all images
-        rows = (images.select()
-                .order_by(images.c.id)
-                .execute()
-                .fetchall())
+        with engine.connect() as conn:
+            rows = conn.execute(
+                images.select().order_by(images.c.id)
+            ).fetchall()
         self.assertEqual(4, len(rows))
         # private_id_1 has private visibility
         self.assertEqual('private_id_1', rows[0]['id'])
@@ -167,10 +176,10 @@ class TestOcataMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
         images = db_utils.get_table(engine, 'images')
 
         # check that there are no rows in the images table
-        rows = (images.select()
-                .order_by(images.c.id)
-                .execute()
-                .fetchall())
+        with engine.connect() as conn:
+            rows = conn.execute(
+                images.select().order_by(images.c.id)
+            ).fetchall()
         self.assertEqual(0, len(rows))
 
         # run data migrations

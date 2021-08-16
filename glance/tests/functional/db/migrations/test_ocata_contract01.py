@@ -41,7 +41,8 @@ class TestOcataContract01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='public_id_before_expand')
-        images.insert().values(public_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(public_temp))
 
         # inserting a private image record
         shared_temp = dict(deleted=False,
@@ -51,7 +52,8 @@ class TestOcataContract01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='private_id_before_expand')
-        images.insert().values(shared_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(shared_temp))
 
         data_migrations.migrate(engine=engine, release='ocata')
 

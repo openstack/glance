@@ -39,7 +39,8 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='public_id_before_expand')
-        images.insert().values(public_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(public_temp))
 
         # inserting a private image record
         shared_temp = dict(deleted=False,
@@ -49,7 +50,8 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='private_id_before_expand')
-        images.insert().values(shared_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(shared_temp))
 
     def _check_ocata_expand01(self, engine, data):
         # check that after migration, 'visibility' column is introduced
@@ -60,11 +62,12 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
         self.assertTrue(images.c.visibility.nullable)
 
         # tests visibility set to None for existing images
-        rows = (images.select()
-                .where(images.c.id.like('%_before_expand'))
-                .order_by(images.c.id)
-                .execute()
-                .fetchall())
+        with engine.connect() as conn:
+            rows = conn.execute(
+                images.select().where(
+                    images.c.id.like('%_before_expand')
+                ).order_by(images.c.id)
+            ).fetchall()
 
         self.assertEqual(2, len(rows))
         # private image first
@@ -76,11 +79,12 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
         self.assertEqual('public_id_before_expand', rows[1]['id'])
         self.assertIsNone(rows[1]['visibility'])
 
-        self._test_trigger_old_to_new(images)
-        self._test_trigger_new_to_old(images)
+        self._test_trigger_old_to_new(engine, images)
+        self._test_trigger_new_to_old(engine, images)
 
-    def _test_trigger_new_to_old(self, images):
+    def _test_trigger_new_to_old(self, engine, images):
         now = datetime.datetime.now()
+
         # inserting a public image record after expand
         public_temp = dict(deleted=False,
                            created_at=now,
@@ -89,7 +93,8 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='public_id_new_to_old')
-        images.insert().values(public_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(public_temp))
 
         # inserting a private image record after expand
         shared_temp = dict(deleted=False,
@@ -99,7 +104,8 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='private_id_new_to_old')
-        images.insert().values(shared_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(shared_temp))
 
         # inserting a shared image record after expand
         shared_temp = dict(deleted=False,
@@ -109,14 +115,16 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='shared_id_new_to_old')
-        images.insert().values(shared_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(shared_temp))
 
         # test visibility is set appropriately by the trigger for new images
-        rows = (images.select()
-                .where(images.c.id.like('%_new_to_old'))
-                .order_by(images.c.id)
-                .execute()
-                .fetchall())
+        with engine.connect() as conn:
+            rows = conn.execute(
+                images.select().where(
+                    images.c.id.like('%_new_to_old')
+                ).order_by(images.c.id)
+            ).fetchall()
 
         self.assertEqual(3, len(rows))
         # private image first
@@ -132,8 +140,9 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
         self.assertEqual('shared_id_new_to_old', rows[2]['id'])
         self.assertEqual('shared', rows[2]['visibility'])
 
-    def _test_trigger_old_to_new(self, images):
+    def _test_trigger_old_to_new(self, engine, images):
         now = datetime.datetime.now()
+
         # inserting a public image record after expand
         public_temp = dict(deleted=False,
                            created_at=now,
@@ -142,7 +151,9 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='public_id_old_to_new')
-        images.insert().values(public_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(public_temp))
+
         # inserting a private image record after expand
         shared_temp = dict(deleted=False,
                            created_at=now,
@@ -151,13 +162,17 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
                            min_disk=0,
                            min_ram=0,
                            id='private_id_old_to_new')
-        images.insert().values(shared_temp).execute()
+        with engine.connect() as conn, conn.begin():
+            conn.execute(images.insert().values(shared_temp))
+
         # tests visibility is set appropriately by the trigger for new images
-        rows = (images.select()
-                .where(images.c.id.like('%_old_to_new'))
-                .order_by(images.c.id)
-                .execute()
-                .fetchall())
+        with engine.connect() as conn:
+            rows = conn.execute(
+                images.select().where(
+                    images.c.id.like('%_old_to_new')
+                ).order_by(images.c.id)
+            ).fetchall()
+
         self.assertEqual(2, len(rows))
         # private image first
         self.assertEqual(0, rows[0]['is_public'])
