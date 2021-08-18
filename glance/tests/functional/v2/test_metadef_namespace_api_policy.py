@@ -69,7 +69,7 @@ NAME_SPACE2 = {
 class TestMetadefNamespacesPolicy(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestMetadefNamespacesPolicy, self).setUp()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
 
     def set_policy_rules(self, rules):
         self.policy.set_rules(

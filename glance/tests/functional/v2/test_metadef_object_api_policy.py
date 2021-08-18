@@ -54,7 +54,7 @@ NAME_SPACE1 = {
 class TestMetadefObjectsPolicy(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestMetadefObjectsPolicy, self).setUp()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
 
     def load_data(self, create_objects=False):
         path = '/v2/metadefs/namespaces'

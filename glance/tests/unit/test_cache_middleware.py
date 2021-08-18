@@ -171,7 +171,8 @@ class ProcessRequestTestCacheFilter(glance.api.middleware.cache.CacheFilter):
 class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
     def _enforcer_from_rules(self, unparsed_rules):
         rules = policy.Rules.from_dict(unparsed_rules)
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         enforcer.set_rules(rules, overwrite=True)
         return enforcer
 
@@ -363,7 +364,8 @@ class TestCacheMiddlewareProcessRequest(base.IsolatedUnitTest):
             "download_image": "role:admin or rule:restricted"
         }
         self.set_policy_rules(rules)
-        cache_filter.policy = glance.api.policy.Enforcer()
+        cache_filter.policy = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         actual = cache_filter.process_request(request)
         self.assertTrue(actual)
 
@@ -406,7 +408,8 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
             "download_image": "role:admin or rule:restricted"
         }
         self.set_policy_rules(rules)
-        cache_filter.policy = glance.api.policy.Enforcer()
+        cache_filter.policy = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext(roles=['_member_'])
@@ -443,7 +446,8 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
             "download_image": "role:admin or rule:restricted"
         }
         self.set_policy_rules(rules)
-        cache_filter.policy = glance.api.policy.Enforcer()
+        cache_filter.policy = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         request = webob.Request.blank('/v2/images/test1/file')
         request.context = context.RequestContext(roles=['member'])

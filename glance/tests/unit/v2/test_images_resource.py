@@ -1552,7 +1552,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           self.controller.update, request, UUID1, changes)
 
     def test_prop_protection_with_create_and_permitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1573,7 +1574,8 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_prop_protection_with_update_and_permitted_policy(self):
         self.set_property_protections(use_policies=True)
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1601,7 +1603,8 @@ class TestImagesController(base.IsolatedUnitTest):
 
     def test_prop_protection_with_create_with_patch_and_policy(self):
         self.set_property_protections(use_policies=True)
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1627,7 +1630,8 @@ class TestImagesController(base.IsolatedUnitTest):
                          output.extra_properties['spl_creator_policy'])
 
     def test_prop_protection_with_create_and_unpermitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1648,7 +1652,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           created_image.image_id, changes)
 
     def test_prop_protection_with_show_and_permitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1666,7 +1671,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('bar', output.extra_properties['x_owner_foo'])
 
     def test_prop_protection_with_show_and_unpermitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1685,7 +1691,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           'x_owner_foo')
 
     def test_prop_protection_with_update_and_permitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1706,7 +1713,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('baz', output.extra_properties['x_owner_foo'])
 
     def test_prop_protection_with_update_and_unpermitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1726,7 +1734,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           another_request, created_image.image_id, changes)
 
     def test_prop_protection_with_delete_and_permitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1748,7 +1757,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           'x_owner_foo')
 
     def test_prop_protection_with_delete_and_unpermitted_role(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1768,7 +1778,8 @@ class TestImagesController(base.IsolatedUnitTest):
                           another_request, created_image.image_id, changes)
 
     def test_create_protected_prop_case_insensitive(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1788,7 +1799,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('1', output.extra_properties['x_case_insensitive'])
 
     def test_read_protected_prop_case_insensitive(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1806,7 +1818,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('1', output.extra_properties['x_case_insensitive'])
 
     def test_update_protected_prop_case_insensitive(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,
@@ -1827,7 +1840,8 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertEqual('2', output.extra_properties['x_case_insensitive'])
 
     def test_delete_protected_prop_case_insensitive(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         self.controller = glance.api.v2.images.ImagesController(self.db,
                                                                 enforcer,
                                                                 self.notifier,

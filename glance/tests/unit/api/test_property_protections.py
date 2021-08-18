@@ -47,7 +47,7 @@ class TestProtectedImageRepoProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestProtectedImageRepoProxy, self).setUp()
         self.set_property_protections()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
         self.property_rules = property_utils.PropertyRules(self.policy)
         self.image_factory = glance.domain.ImageFactory()
         extra_props = {'spl_create_prop': 'c',
@@ -101,7 +101,7 @@ class TestProtectedImageProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestProtectedImageProxy, self).setUp()
         self.set_property_protections()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
         self.property_rules = property_utils.PropertyRules(self.policy)
 
     class ImageStub(object):
@@ -124,7 +124,7 @@ class TestExtraPropertiesProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestExtraPropertiesProxy, self).setUp()
         self.set_property_protections()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
         self.property_rules = property_utils.PropertyRules(self.policy)
 
     def test_read_extra_property_as_admin_role(self):
@@ -239,7 +239,7 @@ class TestProtectedImageFactoryProxy(utils.BaseTestCase):
     def setUp(self):
         super(TestProtectedImageFactoryProxy, self).setUp()
         self.set_property_protections()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
         self.property_rules = property_utils.PropertyRules(self.policy)
         self.factory = glance.domain.ImageFactory()
 

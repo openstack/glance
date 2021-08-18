@@ -45,8 +45,21 @@ opts.set_defaults(cfg.CONF, DEFAULT_POLICY_FILE)
 class Enforcer(policy.Enforcer):
     """Responsible for loading and enforcing rules"""
 
-    def __init__(self):
+    def __init__(self, suppress_deprecation_warnings=False):
+        """Init an policy Enforcer.
+           :param suppress_deprecation_warnings: Whether to suppress the
+                                                 deprecation warnings.
+        """
         super(Enforcer, self).__init__(CONF, use_conf=True, overwrite=False)
+        # NOTE(gmann): Explictly disable the warnings for policies
+        # changing their default check_str. For new RBAC, all the policy
+        # defaults have been changed and warning for each policy started
+        # filling the logs limit for various tool.
+        # Once we move to new defaults only world then we can enable these
+        # warning again.
+        self.suppress_default_change_warnings = True
+        if suppress_deprecation_warnings:
+            self.suppress_deprecation_warnings = True
         self.register_defaults(policies.list_rules())
         if CONF.enforce_secure_rbac and CONF.oslo_policy.enforce_new_defaults:
             LOG.warning(_LW(

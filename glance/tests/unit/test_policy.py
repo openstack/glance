@@ -258,7 +258,8 @@ class MdTagRepoStub(object):
 class TestPolicyEnforcer(base.IsolatedUnitTest):
 
     def test_policy_enforce_unregistered(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         context = glance.context.RequestContext(roles=[])
 
         self.assertRaises(glance.api.policy.policy.PolicyNotRegistered,
@@ -266,7 +267,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
                           context, 'wibble', {})
 
     def test_policy_check_unregistered(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         context = glance.context.RequestContext(roles=[])
 
         self.assertRaises(glance.api.policy.policy.PolicyNotRegistered,
@@ -274,7 +276,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
                           context, 'wibble', {})
 
     def test_policy_file_default_rules_default_location(self):
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=['reader'])
         enforcer.enforce(context, 'get_image',
@@ -284,7 +287,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         rules = {"get_image": '!'}
         self.set_policy_rules(rules)
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[])
         self.assertRaises(exception.Forbidden,
@@ -297,7 +301,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         rules = {"get_image": '!'}
         self.set_policy_rules(rules)
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[])
         self.assertRaises(exception.Forbidden,
@@ -310,7 +315,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         rules = {"get_image": '!'}
         self.set_policy_rules(rules)
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[])
         self.assertEqual(False, enforcer.check(context, 'get_image', {}))
@@ -319,7 +325,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         rules = {"default": ''}
         self.set_policy_rules(rules)
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[])
         self.assertEqual(True, enforcer.check(context, 'get_image', {}))
@@ -328,7 +335,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         rules = {"default": '!'}
         self.set_policy_rules(rules)
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[])
         self.assertRaises(exception.Forbidden,
@@ -339,7 +347,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         rule = common_policy.RuleDefault(
             name=policy_name, check_str='role:bar', scope_types=['system'])
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         enforcer.register_default(rule)
 
         context = glance.context.RequestContext(
@@ -368,7 +377,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         context = glance.context.RequestContext()
         mock_enforcer = self.mock_object(common_policy.Enforcer, 'enforce')
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
         enforcer.register_default(
             common_policy.RuleDefault(name='foo', check_str='role:bar')
         )
@@ -397,13 +407,15 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
             "personas, specifically for system-scope."
         )
         with mock.patch.object(glance.api.policy, 'LOG') as mock_log:
-            glance.api.policy.Enforcer()
+            glance.api.policy.Enforcer(
+                suppress_deprecation_warnings=True)
             mock_log.warning.assert_called_once_with(expected_log_string)
 
     def test_ensure_experimental_warning_is_not_logged_for_legacy_rbac(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
         with mock.patch.object(glance.api.policy, 'LOG') as mock_log:
-            glance.api.policy.Enforcer()
+            glance.api.policy.Enforcer(
+                suppress_deprecation_warnings=True)
             mock_log.warning.assert_not_called()
 
 
@@ -413,7 +425,8 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
         """Missing defined policy file should result in a default ruleset"""
         self.config(policy_file='gobble.gobble', group='oslo_policy')
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[])
         self.assertRaises(exception.Forbidden,
@@ -433,7 +446,8 @@ class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
         self.mock_object(oslo_config.cfg.ConfigOpts, 'find_file',
                          fake_find_file)
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[])
         self.assertRaises(exception.Forbidden,
@@ -1029,7 +1043,8 @@ class TestContextPolicyEnforcer(base.IsolatedUnitTest):
         rules = {'context_is_admin': 'role:%s' % policy_admin_role}
         self.set_policy_rules(rules)
 
-        enforcer = glance.api.policy.Enforcer()
+        enforcer = glance.api.policy.Enforcer(
+            suppress_deprecation_warnings=True)
 
         context = glance.context.RequestContext(roles=[context_role],
                                                 is_admin=context_is_admin,

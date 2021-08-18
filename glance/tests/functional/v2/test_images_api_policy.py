@@ -24,7 +24,7 @@ from glance.tests import functional
 class TestImagesPolicy(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestImagesPolicy, self).setUp()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
 
     def set_policy_rules(self, rules):
         self.policy.set_rules(

@@ -55,7 +55,7 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
     def setUp(self):
         super(TestPropertyRulesWithRoles, self).setUp()
         self.set_property_protections()
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
 
     def test_is_property_protections_enabled_true(self):
         self.config(property_protection_file="property-protections.conf")
@@ -329,7 +329,7 @@ class TestPropertyRulesWithPolicies(base.IsolatedUnitTest):
     def setUp(self):
         super(TestPropertyRulesWithPolicies, self).setUp()
         self.set_property_protections(use_policies=True)
-        self.policy = policy.Enforcer()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
         self.rules_checker = property_utils.PropertyRules(self.policy)
 
     def test_check_property_rules_create_permitted_specific_policy(self):
