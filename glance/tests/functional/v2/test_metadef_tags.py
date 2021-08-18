@@ -160,6 +160,36 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(3, len(tags))
 
+        # Create new tags and append to existing tags.
+        path = self._url('/v2/metadefs/namespaces/%s/tags' %
+                         (namespace_name))
+        headers = self._headers({'content-type': 'application/json',
+                                 'X-Openstack-Append': 'True'})
+        data = jsonutils.dumps(
+            {"tags": [{"name": "tag4"}, {"name": "tag5"}, {"name": "tag6"}]}
+        )
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # List out all six tags.
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        tags = jsonutils.loads(response.text)['tags']
+        self.assertEqual(6, len(tags))
+
+        # Attempt to create duplicate existing tag6
+        data = jsonutils.dumps(
+            {"tags": [{"name": "tag6"}, {"name": "tag7"}, {"name": "tag8"}]}
+        )
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CONFLICT, response.status_code)
+
+        # Verify the previous 6 still exist
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        tags = jsonutils.loads(response.text)['tags']
+        self.assertEqual(6, len(tags))
+
     def _create_tags(self, namespaces):
         tags = []
         for namespace in namespaces:

@@ -191,6 +191,7 @@ Request
 
 .. rest_parameters:: metadefs-parameters.yaml
 
+   - X-Openstack-Append: append
    - namespace_name: namespace_name
    - tags: tags
 

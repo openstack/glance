@@ -18,6 +18,7 @@ import http.client as http
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
+from oslo_utils import strutils
 import webob.exc
 from wsme.rest import json
 
@@ -120,11 +121,14 @@ class TagsController(object):
                 md_resource=namespace_obj,
                 enforcer=self.policy).add_metadef_tags()
 
+            can_append = strutils.bool_from_string(req.headers.get(
+                'X-Openstack-Append'))
+
             tag_list = []
             for metadata_tag in metadata_tags.tags:
                 tag_list.append(tag_factory.new_tag(
                     namespace=namespace, **metadata_tag.to_dict()))
-            tag_repo.add_tags(tag_list)
+            tag_repo.add_tags(tag_list, can_append)
             tag_list_out = [MetadefTag(**{'name': db_metatag.name})
                             for db_metatag in tag_list]
             metadef_tags = MetadefTags()

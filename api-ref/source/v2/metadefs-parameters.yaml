@@ -1,4 +1,11 @@
 # variables in header
+append:
+  description: |
+    If present and set to True, new metadefs tags are appended to the existing ones.
+    Otherwise, existing tags are overwritten.
+  in: header
+  required: false
+  type: string
 Content-Type-json:
   description: |
     The media type descriptor for the request body.  Use

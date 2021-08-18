@@ -2180,11 +2180,11 @@ def metadef_tag_create(context, namespace_name, tag_dict,
 
 
 def metadef_tag_create_tags(context, namespace_name, tag_list,
-                            session=None):
+                            can_append=False, session=None):
     """Create a metadata-schema tag or raise if it already exists."""
     session = get_session()
     return metadef_tag_api.create_tags(
-        context, namespace_name, tag_list, session)
+        context, namespace_name, tag_list, can_append, session)
 
 
 @utils.no_4byte_params

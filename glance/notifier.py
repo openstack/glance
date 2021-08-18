@@ -913,8 +913,9 @@ class MetadefTagRepoProxy(NotificationRepoProxy, domain_proxy.MetadefTagRepo):
         self.send_notification('metadef_tag.create', metadef_tag)
         return result
 
-    def add_tags(self, metadef_tags):
-        result = super(MetadefTagRepoProxy, self).add_tags(metadef_tags)
+    def add_tags(self, metadef_tags, can_append=False):
+        result = super(MetadefTagRepoProxy, self).add_tags(metadef_tags,
+                                                           can_append)
         for metadef_tag in metadef_tags:
             self.send_notification('metadef_tag.create', metadef_tag)
 

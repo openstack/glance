@@ -239,7 +239,7 @@ class MdTagRepoStub(object):
     def add(self, tag):
         return 'mdtag_add'
 
-    def add_tags(self, tags):
+    def add_tags(self, tags, can_append=False):
         return ['mdtag_add_tags']
 
     def get(self, ns, tag_name):

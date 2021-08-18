@@ -111,7 +111,7 @@ def create(context, namespace_name, values, session):
     return metadef_tag.to_dict()
 
 
-def create_tags(context, namespace_name, tag_list, session):
+def create_tags(context, namespace_name, tag_list, can_append, session):
 
     metadef_tags_list = []
     if tag_list:
@@ -119,10 +119,10 @@ def create_tags(context, namespace_name, tag_list, session):
 
         try:
             with session.begin():
-                query = (session.query(models.MetadefTag).filter_by(
-                    namespace_id=namespace['id']))
-                query.delete(synchronize_session='fetch')
-
+                if not can_append:
+                    query = (session.query(models.MetadefTag).filter_by(
+                             namespace_id=namespace['id']))
+                    query.delete(synchronize_session='fetch')
                 for value in tag_list:
                     value.update({'namespace_id': namespace['id']})
                     metadef_utils.drop_protected_attrs(
