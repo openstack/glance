@@ -36,26 +36,24 @@ class Gateway(object):
         self.notifier = notifier or glance.notifier.Notifier()
         self.policy = policy_enforcer or policy.Enforcer()
 
-    def get_image_factory(self, context):
-        image_factory = glance.domain.ImageFactory()
-        store_image_factory = glance.location.ImageFactoryProxy(
-            image_factory, context, self.store_api, self.store_utils)
-        quota_image_factory = glance.quota.ImageFactoryProxy(
-            store_image_factory, context, self.db_api, self.store_utils)
-        policy_image_factory = policy.ImageFactoryProxy(
-            quota_image_factory, context, self.policy)
-        notifier_image_factory = glance.notifier.ImageFactoryProxy(
-            policy_image_factory, context, self.notifier)
+    def get_image_factory(self, context, authorization_layer=True):
+        factory = glance.domain.ImageFactory()
+        factory = glance.location.ImageFactoryProxy(
+            factory, context, self.store_api, self.store_utils)
+        factory = glance.quota.ImageFactoryProxy(
+            factory, context, self.db_api, self.store_utils)
+        if authorization_layer:
+            factory = policy.ImageFactoryProxy(factory, context, self.policy)
+        factory = glance.notifier.ImageFactoryProxy(
+            factory, context, self.notifier)
         if property_utils.is_property_protection_enabled():
             property_rules = property_utils.PropertyRules(self.policy)
-            pif = property_protections.ProtectedImageFactoryProxy(
-                notifier_image_factory, context, property_rules)
-            authorized_image_factory = authorization.ImageFactoryProxy(
-                pif, context)
-        else:
-            authorized_image_factory = authorization.ImageFactoryProxy(
-                notifier_image_factory, context)
-        return authorized_image_factory
+            factory = property_protections.ProtectedImageFactoryProxy(
+                factory, context, property_rules)
+        if authorization_layer:
+            factory = authorization.ImageFactoryProxy(
+                factory, context)
+        return factory
 
     def get_image_member_factory(self, context, authorization_layer=True):
         factory = glance.domain.ImageMemberFactory()
