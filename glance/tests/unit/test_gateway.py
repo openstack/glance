@@ -94,6 +94,30 @@ class TestGateway(test_utils.BaseTestCase):
         self.assertIsInstance(repo,
                               property_protections.ProtectedImageRepoProxy)
 
+    def test_get_image_factory(self):
+        factory = self.gateway.get_image_factory(self.context)
+        self.assertIsInstance(factory, authorization.ImageFactoryProxy)
+
+    def test_get_image_factory_without_auth(self):
+        factory = self.gateway.get_image_factory(self.context,
+                                                 authorization_layer=False)
+        self.assertIsInstance(factory, notifier.ImageFactoryProxy)
+
+    @mock.patch('glance.common.property_utils.PropertyRules._load_rules')
+    def test_get_image_factory_without_auth_with_pp(self, mock_load):
+        self.config(property_protection_file='foo')
+        factory = self.gateway.get_image_factory(self.context,
+                                                 authorization_layer=False)
+        self.assertIsInstance(factory,
+                              property_protections.ProtectedImageFactoryProxy)
+
+    @mock.patch('glance.api.policy.ImageFactoryProxy')
+    def test_get_image_factory_policy_layer(self, mock_pif):
+        self.gateway.get_image_factory(self.context, authorization_layer=False)
+        mock_pif.assert_not_called()
+        self.gateway.get_image_factory(self.context)
+        self.assertTrue(mock_pif.called)
+
     def test_get_repo_member_property(self):
         """Test that the image.member property is propagated all the way from
         the DB to the top of the gateway repo stack.
