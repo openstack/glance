@@ -26,6 +26,7 @@ import six
 import webob.exc
 
 import glance.api.policy
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import trust_auth
 from glance.common import utils
@@ -140,14 +141,19 @@ class ImageDataController(object):
                                                request=req,
                                                content_type='text/plain')
 
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(req.context,
+                                           authorization_layer=False)
         image = None
         refresher = None
         cxt = req.context
         try:
             image = image_repo.get(image_id)
-            target = {'project_id': image.owner}
-            self.policy.enforce(cxt, 'upload_image', target)
+            # NOTE(abhishekk): This is the right place to check whether user
+            # have permission to upload the image and remove the policy check
+            # later from the policy layer.
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
+            api_pol.upload_image()
             image.status = 'saving'
             try:
                 # create a trust if backend is registry

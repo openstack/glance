@@ -253,3 +253,44 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         # see the image, we can delete it
         resp = self.api_delete('/v2/images/%s' % image_id)
         self.assertEqual(204, resp.status_code)
+
+    def test_image_upload(self):
+        self.start_server()
+
+        # Make sure we can upload the image
+        self._create_and_upload(expected_code=204)
+
+        # Now disable upload permissions, but allow get_image
+        self.set_policy_rules({
+            'add_image': '',
+            'get_image': '',
+            'upload_image': '!'
+        })
+
+        # Make sure upload returns 403 because we can see the image,
+        # just not upload data to it
+        self._create_and_upload(expected_code=403)
+
+        # Now disable upload permissions, including get_image
+        self.set_policy_rules({
+            'add_image': '',
+            'get_image': '!',
+            'upload_image': '!',
+        })
+
+        # Make sure upload returns 404 because we can not see nor
+        # upload data to it
+        self._create_and_upload(expected_code=404)
+
+        # Now allow upload, but disallow get_image, just to prove that
+        # you do not need get_image in order to be granted upload, and
+        # that we only use it for error code determination if
+        # permission is denied.
+        self.set_policy_rules({
+            'add_image': '',
+            'get_image': '!',
+            'upload_image': ''})
+
+        # Make sure upload returns 204 because even though we can not
+        # see the image, we can upload data to it
+        self._create_and_upload(expected_code=204)
