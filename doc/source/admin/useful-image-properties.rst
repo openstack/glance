@@ -609,7 +609,7 @@ Here is a list of useful image properties and the values they expect.
 
   The valid options depend on the configured hypervisor.
 
-  * ``KVM`` and ``QEMU``: ``e1000``, ``ne2k_pci``, ``pcnet``,
+  * ``KVM`` and ``QEMU``: ``e1000``, ``e1000e``, ``ne2k_pci``, ``pcnet``,
     ``rtl8139``, and ``virtio``.
   * VMware: ``e1000``, ``e1000e``, ``VirtualE1000``, ``VirtualE1000e``,
     ``VirtualPCNet32``, ``VirtualSriovEthernetCard``, and
