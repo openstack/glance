@@ -185,7 +185,6 @@ class ImageDataController(object):
                     if refresher is not None:
                         # request a new token to update an image in database
                         cxt.auth_token = refresher.refresh_token()
-                        image_repo = self.gateway.get_repo(req.context)
                         image_repo.save(image, from_state='saving')
                     else:
                         raise
