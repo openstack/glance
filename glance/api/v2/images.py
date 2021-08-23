@@ -582,10 +582,15 @@ class ImagesController(object):
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
     def get_task_info(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context)
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
+
         try:
             # NOTE (abhishekk): Just to check image is valid
             image = image_repo.get(image_id)
+            # Check you are authorized to fetch image details
+            api_policy.ImageAPIPolicy(req.context, image,
+                                      self.policy).get_image()
         except (exception.NotFound, exception.Forbidden):
             raise webob.exc.HTTPNotFound()
 
