@@ -104,6 +104,17 @@ class APIPolicyBase(object):
             return False
 
 
+class CacheImageAPIPolicy(APIPolicyBase):
+    def __init__(self, context, target=None, enforcer=None):
+        self._context = context
+        self._target = target or {}
+        self.enforcer = enforcer or policy.Enforcer()
+        super(CacheImageAPIPolicy, self).__init__(context, target, enforcer)
+
+    def manage_image_cache(self):
+        self._enforce('manage_image_cache')
+
+
 class ImageAPIPolicy(APIPolicyBase):
     def __init__(self, context, image, enforcer=None):
         """Image API policy module.

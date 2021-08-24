@@ -17,6 +17,7 @@ from contextlib import contextmanager
 import datetime
 import os
 import time
+from unittest import mock
 
 import fixtures
 from oslo_utils import secretutils
@@ -27,6 +28,7 @@ from six.moves import range
 
 from glance.common import exception
 from glance import image_cache
+from glance.image_cache import prefetcher
 from glance.tests import utils as test_utils
 from glance.tests.utils import skip_if_disabled
 from glance.tests.utils import xattr_writes_supported
@@ -564,3 +566,20 @@ class TestImageCacheNoDep(test_utils.BaseTestCase):
 
         caching_iter = cache.get_caching_iter('dummy_id', None, iter(data))
         self.assertEqual(data, list(caching_iter))
+
+
+class TestImagePrefetcher(test_utils.BaseTestCase):
+    def setUp(self):
+        super(TestImagePrefetcher, self).setUp()
+        self.cache_dir = self.useFixture(fixtures.TempDir()).path
+        self.config(image_cache_dir=self.cache_dir,
+                    image_cache_driver='xattr',
+                    image_cache_max_size=5 * units.Ki)
+        self.prefetcher = prefetcher.Prefetcher()
+
+    def test_fetch_image_into_cache_without_auth(self):
+        with mock.patch.object(self.prefetcher.gateway,
+                               'get_repo') as mock_get:
+            self.prefetcher.fetch_image_into_cache('fake-image-id')
+            mock_get.assert_called_once_with(mock.ANY,
+                                             authorization_layer=False)

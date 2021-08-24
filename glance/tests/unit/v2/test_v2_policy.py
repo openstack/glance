@@ -738,3 +738,18 @@ class TestTasksAPIPolicy(APIPolicyBase):
         self.enforcer.enforce.assert_called_once_with(self.context,
                                                       'tasks_api_access',
                                                       mock.ANY)
+
+
+class TestCacheImageAPIPolicy(APIPolicyBase):
+    def setUp(self):
+        super(TestCacheImageAPIPolicy, self).setUp()
+        self.enforcer = mock.MagicMock()
+        self.context = mock.MagicMock()
+        self.policy = policy.CacheImageAPIPolicy(
+            self.context, enforcer=self.enforcer)
+
+    def test_manage_image_cache(self):
+        self.policy.manage_image_cache()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'manage_image_cache',
+                                                      mock.ANY)
