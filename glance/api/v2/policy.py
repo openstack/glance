@@ -363,6 +363,12 @@ class MetadefAPIPolicy(APIPolicyBase):
     def list_metadef_resource_types(self):
         self._enforce('list_metadef_resource_types')
 
+    def get_metadef_resource_type(self):
+        self._enforce('get_metadef_resource_type')
+
+    def remove_metadef_resource_type_association(self):
+        self._enforce('remove_metadef_resource_type_association')
+
 
 class MemberAPIPolicy(APIPolicyBase):
     def __init__(self, context, image, target=None, enforcer=None):
