@@ -279,6 +279,27 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(3, mocked_save.call_count)
         mocked_delete.assert_called_once_with()
 
+    @mock.patch('glance.common.trust_auth.TokenRefresher')
+    def test_upload_with_token_refresh(self, mock_refresher):
+        mock_refresher.return_value = mock.MagicMock()
+        mocked_save = mock.Mock()
+        mocked_save.side_effect = [lambda *a: None,
+                                   exception.NotAuthenticated(),
+                                   lambda *a: None]
+        request = unit_test_utils.get_fake_request()
+        request.environ['keystone.token_info'] = {
+            'token': {
+                'roles': [{'name': 'member'}]
+            }
+        }
+        image = FakeImage('abcd', owner='tenant1')
+        self.image_repo.result = image
+        self.image_repo.save = mocked_save
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        self.assertEqual('YYYY', image.data)
+        self.assertEqual(4, image.size)
+        self.assertEqual(3, mocked_save.call_count)
+
     def test_upload_non_existent_image_during_save_initiates_deletion(self):
         def fake_save_not_found(self, from_state=None):
             raise exception.ImageNotFound()
