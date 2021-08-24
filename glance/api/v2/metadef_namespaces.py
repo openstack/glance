@@ -269,7 +269,7 @@ class NamespaceController(object):
                     md_resource=namespace_obj,
                     enforcer=self.policy)
                 policy_check.get_metadef_namespace()
-            except webob.exc.HTTPForbidden:
+            except (exception.Forbidden, webob.exc.HTTPForbidden):
                 LOG.debug("User not permitted to show namespace '%s'",
                           namespace)
                 # NOTE (abhishekk): Returning 404 Not Found as the
