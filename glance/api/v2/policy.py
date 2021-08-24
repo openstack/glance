@@ -53,6 +53,28 @@ def check_is_image_mutable(context, image):
         raise exception.Forbidden(_('You do not own this image'))
 
 
+def check_admin_or_same_owner(context, properties):
+    """Check that legacy behavior on create with owner is preserved.
+
+    Legacy behavior requires a static check that owner is not
+    inconsistent with the context, unless the caller is an
+    admin. Enforce that here, if needed.
+
+    :param context: A RequestContext
+    :param properties: The properties being used to create the image, which may
+                       contain an owner
+    :raises: exception.Forbidden if the context is not an admin and owner is
+             set to something other than the context's project
+    """
+    if context.is_admin:
+        return
+
+    if context.project_id != properties.get('owner', context.project_id):
+        msg = _("You are not permitted to create images "
+                "owned by '%s'.")
+        raise exception.Forbidden(msg % properties['owner'])
+
+
 class APIPolicyBase(object):
     def __init__(self, context, target=None, enforcer=None):
         self._context = context
@@ -84,16 +106,53 @@ class APIPolicyBase(object):
 
 class ImageAPIPolicy(APIPolicyBase):
     def __init__(self, context, image, enforcer=None):
-        super(ImageAPIPolicy, self).__init__(context,
-                                             policy.ImageTarget(image),
-                                             enforcer)
+        """Image API policy module.
+
+        :param context: The RequestContext
+        :param image: The ImageProxy object in question, or a dict of image
+                      properties if no image is yet created or needed for
+                      authorization context.
+        :param enforcer: The policy.Enforcer object to use for enforcement
+                         operations. If not provided (or None), the default
+                         enforcer will be selected.
+        """
         self._image = image
+        if not self.is_created:
+            # NOTE(danms): If we are being called with a dict of image
+            # properties then we are testing policies that involve
+            # creating an image or other image-related resources but
+            # without a specific image for context. The target is a
+            # dict of proposed image properties, similar to the
+            # dict-like interface the ImageTarget provides over
+            # a real Image object, with specific keys.
+            target = {'project_id': image.get('owner', context.project_id),
+                      'owner': image.get('owner', context.project_id),
+                      'visibility': image.get('visibility', 'private')}
+        else:
+            target = policy.ImageTarget(image)
+        super(ImageAPIPolicy, self).__init__(context, target, enforcer)
+
+    @property
+    def is_created(self):
+        """Signal whether the image actually exists or not.
+
+        False if the image is only being proposed by a create operation,
+        True if it has already been created.
+        """
+        return not isinstance(self._image, dict)
 
     def _enforce(self, rule_name):
         """Translate Forbidden->NotFound for images."""
         try:
             super(ImageAPIPolicy, self)._enforce(rule_name)
         except webob.exc.HTTPForbidden:
+            # If we are checking image policy before creating an
+            # image, or without a specific image for context, then we
+            # do not need to potentially hide the presence of anything
+            # based on visibility, so re-raise immediately.
+            if not self.is_created:
+                raise
+
             # If we are checking get_image, then Forbidden means the
             # user cannot see this image, so raise NotFound. If we are
             # checking anything else and get Forbidden, then raise
@@ -142,6 +201,25 @@ class ImageAPIPolicy(APIPolicyBase):
 
     def get_image_location(self):
         self._enforce('get_image_location')
+
+    def add_image(self):
+        try:
+            self._enforce('add_image')
+        except webob.exc.HTTPForbidden:
+            # NOTE(danms): If we fail add_image because the owner is
+            # different, alter the message to be informative and
+            # in-line with the current message users have been getting
+            # in the past.
+            if self._target['owner'] != self._context.project_id:
+                msg = _("You are not permitted to create images "
+                        "owned by '%s'" % self._target['owner'])
+                raise webob.exc.HTTPForbidden(msg)
+            else:
+                raise
+        if 'visibility' in self._target:
+            self._enforce_visibility(self._target['visibility'])
+        if not CONF.enforce_secure_rbac:
+            check_admin_or_same_owner(self._context, self._target)
 
     def get_image(self):
         self._enforce('get_image')
