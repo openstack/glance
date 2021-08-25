@@ -12,11 +12,12 @@
 
 import datetime
 
-from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import utils as db_utils
 
 from glance.db.sqlalchemy.alembic_migrations import data_migrations
 from glance.tests.functional.db import test_migrations
+import glance.tests.utils as test_utils
 
 
 class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
@@ -155,9 +156,12 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
         #  self.assertEqual('shared', rows[3]['visibility'])
 
 
-class TestOcataMigrate01MySQL(TestOcataMigrate01Mixin,
-                              test_base.MySQLOpportunisticTestCase):
-    pass
+class TestOcataMigrate01MySQL(
+    TestOcataMigrate01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
 class TestOcataMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
@@ -186,7 +190,10 @@ class TestOcataMigrate01_EmptyDBMixin(test_migrations.AlembicMigrationsMixin):
         data_migrations.migrate(engine)
 
 
-class TestOcataMigrate01_EmptyDBMySQL(TestOcataMigrate01_EmptyDBMixin,
-                                      test_base.MySQLOpportunisticTestCase):
+class TestOcataMigrate01_EmptyDBMySQL(
+    TestOcataMigrate01_EmptyDBMixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
     """This test runs the Ocata data migrations on an empty databse."""
-    pass
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture

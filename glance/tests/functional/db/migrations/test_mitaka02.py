@@ -12,10 +12,11 @@
 
 import datetime
 
-from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import utils as db_utils
 
 from glance.tests.functional.db import test_migrations
+import glance.tests.utils as test_utils
 
 
 class TestMitaka02Mixin(test_migrations.AlembicMigrationsMixin):
@@ -55,15 +56,25 @@ class TestMitaka02Mixin(test_migrations.AlembicMigrationsMixin):
             self.assertEqual(1, len(result))
 
 
-class TestMitaka02MySQL(TestMitaka02Mixin,
-                        test_base.MySQLOpportunisticTestCase):
-    pass
+class TestMitaka02MySQL(
+    TestMitaka02Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
-class TestMitaka02PostgresSQL(TestMitaka02Mixin,
-                              test_base.PostgreSQLOpportunisticTestCase):
-    pass
+class TestMitaka02PostgresSQL(
+    TestMitaka02Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.PostgresqlOpportunisticFixture
 
 
-class TestMitaka02Sqlite(TestMitaka02Mixin, test_base.DbTestCase):
+class TestMitaka02Sqlite(
+    TestMitaka02Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
     pass

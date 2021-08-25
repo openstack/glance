@@ -10,10 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_fixtures
 import sqlalchemy
 
 from glance.tests.functional.db import test_migrations
+import glance.tests.utils as test_utils
 
 
 def get_indexes(table, engine):
@@ -34,15 +35,25 @@ class TestMitaka01Mixin(test_migrations.AlembicMigrationsMixin):
         self.assertIn('updated_at_image_idx', indexes)
 
 
-class TestMitaka01MySQL(TestMitaka01Mixin,
-                        test_base.MySQLOpportunisticTestCase):
-    pass
+class TestMitaka01MySQL(
+    TestMitaka01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
-class TestMitaka01PostgresSQL(TestMitaka01Mixin,
-                              test_base.PostgreSQLOpportunisticTestCase):
-    pass
+class TestMitaka01PostgresSQL(
+    TestMitaka01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
+    FIXTURE = test_fixtures.PostgresqlOpportunisticFixture
 
 
-class TestMitaka01Sqlite(TestMitaka01Mixin, test_base.DbTestCase):
+class TestMitaka01Sqlite(
+    TestMitaka01Mixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_utils.BaseTestCase,
+):
     pass
