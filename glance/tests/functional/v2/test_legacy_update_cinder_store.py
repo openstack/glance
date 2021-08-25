@@ -30,18 +30,12 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class FakeObject(object):
-    def __init__(self, **kwargs):
-        for name, value in kwargs.items():
-            setattr(self, name, value)
-
-
 class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
 
     def setUp(self):
         super(TestLegacyUpdateCinderStore, self).setUp()
         self.vol_id = uuid.uuid4()
-        self.volume = FakeObject(
+        self.volume = mock.MagicMock(
             id=self.vol_id,
             status='available',
             size=1,
@@ -50,11 +44,11 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
             delete=mock.MagicMock(),
             update_all_metadata=mock.MagicMock(),
             update_readonly_flag=mock.MagicMock())
-        self.volume.manager = FakeObject(get=lambda id: self.volume)
-        self.cinder_store_mock = FakeObject(
+        self.volume.manager = mock.MagicMock(get=lambda id: self.volume)
+        self.cinder_store_mock = mock.MagicMock(
             attachments=mock.MagicMock(),
-            client=mock.MagicMock(), volumes=FakeObject(
-                get=lambda v_id: FakeObject(volume_type='fast'),
+            client=mock.MagicMock(), volumes=mock.MagicMock(
+                get=lambda v_id: mock.MagicMock(volume_type='fast'),
                 create=lambda size_gb, name, metadata, volume_type:
                 self.volume))
 
