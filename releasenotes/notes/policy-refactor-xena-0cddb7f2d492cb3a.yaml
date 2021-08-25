@@ -1,0 +1,14 @@
+---
+security:
+  - |
+    The Xena release of Glance is a midpoint in the process of
+    refactoring how our policies are applied to API operations. The
+    goal of applying policy enforcement in the API will ultimately
+    increase the flexibility operators have over which users can do
+    what operations to which images, and provides a path for compliant
+    Secure RBAC and scoped tokens. In Xena, some policies are more
+    flexible than they once were, allowing for more fine-grained
+    assignment of responsibilities, but not all things are possible
+    yet. If `enforce_secure_rbac` is not enabled, most things are
+    still enforcing the legacy behavior of hard and fast
+    admin-or-owner requirements.
