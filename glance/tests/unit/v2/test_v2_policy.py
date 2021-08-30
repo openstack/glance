@@ -579,6 +579,22 @@ class TestMetadefAPIPolicy(APIPolicyBase):
                                                       'get_metadef_properties',
                                                       mock.ANY)
 
+    def test_get_metadef_property(self):
+        self.policy.get_metadef_property()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'get_metadef_property',
+                                                      mock.ANY)
+
+    def test_modify_metadef_property(self):
+        self.policy.modify_metadef_property()
+        self.enforcer.enforce.assert_called_once_with(
+            self.context, 'modify_metadef_property', mock.ANY)
+
+    def test_remove_metadef_property(self):
+        self.policy.remove_metadef_property()
+        self.enforcer.enforce.assert_called_once_with(
+            self.context, 'remove_metadef_property', mock.ANY)
+
     def test_add_metadef_resource_type_association(self):
         self.policy.add_metadef_resource_type_association()
         self.enforcer.enforce.assert_called_once_with(

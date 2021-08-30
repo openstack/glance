@@ -360,6 +360,15 @@ class MetadefAPIPolicy(APIPolicyBase):
     def get_metadef_properties(self):
         self._enforce('get_metadef_properties')
 
+    def remove_metadef_property(self):
+        self._enforce('remove_metadef_property')
+
+    def get_metadef_property(self):
+        self._enforce('get_metadef_property')
+
+    def modify_metadef_property(self):
+        self._enforce('modify_metadef_property')
+
     def add_metadef_resource_type_association(self):
         self._enforce('add_metadef_resource_type_association')
 

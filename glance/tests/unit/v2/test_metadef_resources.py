@@ -936,7 +936,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_property_show_non_existing_resource_type(self):
         request = unit_test_utils.get_fake_request()
-        self.assertRaises(webob.exc.HTTPForbidden,
+        self.assertRaises(webob.exc.HTTPNotFound,
                           self.property_controller.show, request, NAMESPACE2,
                           PROPERTY1, filters={'resource_type': 'test'})
 
@@ -997,14 +997,14 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                           PROPERTY1)
 
     def test_property_delete_non_existing(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.property_controller.delete, request, NAMESPACE5,
                           PROPERTY2)
         self.assertNotificationsLog([])
 
     def test_property_delete_non_existing_namespace(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin'])
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.property_controller.delete, request, NAMESPACE4,
                           PROPERTY1)
@@ -1114,7 +1114,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         property.type = 'string'
         property.title = 'title'
 
-        self.assertRaises(webob.exc.HTTPForbidden,
+        self.assertRaises(webob.exc.HTTPNotFound,
                           self.property_controller.create, request, NAMESPACE1,
                           property)
         self.assertNotificationsLog([])

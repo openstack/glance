@@ -26,6 +26,7 @@ from glance.api.v2 import metadef_namespaces as namespaces
 from glance.api.v2.model.metadef_namespace import Namespace
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.api.v2.model.metadef_property_type import PropertyTypes
+from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import wsgi
 import glance.db
@@ -62,10 +63,29 @@ class NamespacePropertiesController(object):
         return property_type
 
     def index(self, req, namespace):
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): This is just a "do you have permission to
+            # list properties" check. Each property is checked against
+            # get_metadef_property below.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).get_metadef_properties()
+
             filters = dict()
             filters['namespace'] = namespace
-            prop_repo = self.gateway.get_metadef_property_repo(req.context)
+            prop_repo = self.gateway.get_metadef_property_repo(
+                req.context, authorization_layer=False)
             db_properties = prop_repo.list(filters=filters)
             property_list = Namespace.to_model_properties(db_properties)
             namespace_properties = PropertyTypes()
@@ -76,16 +96,35 @@ class NamespacePropertiesController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
         return namespace_properties
 
     def show(self, req, namespace, property_name, filters=None):
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef properties are associated with
+            # namespace, so made provision to pass namespace here
+            # for visibility check
+            api_pol = api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy)
+            api_pol.get_metadef_property()
+
             if filters and filters['resource_type']:
+                # Verify that you can fetch resource type details
+                api_pol.get_metadef_resource_type()
+
                 rs_repo = self.gateway.get_metadef_resource_type_repo(
-                    req.context)
+                    req.context, authorization_layer=False)
                 db_resource_type = rs_repo.get(filters['resource_type'],
                                                namespace)
                 prefix = db_resource_type.prefix
@@ -99,7 +138,8 @@ class NamespacePropertiesController(object):
                               'prefix': prefix})
                     raise exception.NotFound(msg)
 
-            prop_repo = self.gateway.get_metadef_property_repo(req.context)
+            prop_repo = self.gateway.get_metadef_property_repo(
+                req.context, authorization_layer=False)
             db_property = prop_repo.get(namespace, property_name)
             property = self._to_model(db_property)
         except exception.Forbidden as e:
@@ -108,15 +148,32 @@ class NamespacePropertiesController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
         return property
 
     def create(self, req, namespace, property_type):
-        prop_factory = self.gateway.get_metadef_property_factory(req.context)
-        prop_repo = self.gateway.get_metadef_property_repo(req.context)
+        prop_factory = self.gateway.get_metadef_property_factory(
+            req.context, authorization_layer=False)
+        prop_repo = self.gateway.get_metadef_property_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef property is created for Metadef
+            # namespaces. Here we are just checking if user is authorized
+            # to create metadef property or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).add_metadef_property()
+
             new_property_type = prop_factory.new_namespace_property(
                 namespace=namespace, **self._to_dict(property_type))
             prop_repo.add(new_property_type)
@@ -132,14 +189,30 @@ class NamespacePropertiesController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
         return self._to_model(new_property_type)
 
     def update(self, req, namespace, property_name, property_type):
-        prop_repo = self.gateway.get_metadef_property_repo(req.context)
+        prop_repo = self.gateway.get_metadef_property_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef property is created for Metadef
+            # namespaces. Here we are just checking if user is authorized
+            # to update metadef property or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).modify_metadef_property()
+
             db_property_type = prop_repo.get(namespace, property_name)
             db_property_type._old_name = db_property_type.name
             db_property_type.name = property_type.name
@@ -157,14 +230,30 @@ class NamespacePropertiesController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Duplicate as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
         return self._to_model(updated_property_type)
 
     def delete(self, req, namespace, property_name):
-        prop_repo = self.gateway.get_metadef_property_repo(req.context)
+        prop_repo = self.gateway.get_metadef_property_repo(
+            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(
+            req.context, authorization_layer=False)
         try:
+            namespace_obj = ns_repo.get(namespace)
+        except (exception.Forbidden, exception.NotFound):
+            # NOTE (abhishekk): Returning 404 Not Found as the
+            # namespace is outside of this user's project
+            msg = _("Namespace %s not found") % namespace
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        try:
+            # NOTE(abhishekk): Metadef property is created for Metadef
+            # namespaces. Here we are just checking if user is authorized
+            # to delete metadef property or not.
+            api_policy.MetadefAPIPolicy(
+                req.context,
+                md_resource=namespace_obj,
+                enforcer=self.policy).remove_metadef_property()
+
             property_type = prop_repo.get(namespace, property_name)
             property_type.delete()
             prop_repo.remove(property_type)
@@ -174,9 +263,6 @@ class NamespacePropertiesController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(encodeutils.exception_to_unicode(e))
-            raise webob.exc.HTTPInternalServerError()
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
