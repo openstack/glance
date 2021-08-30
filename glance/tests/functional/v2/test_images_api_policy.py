@@ -1009,3 +1009,19 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         # Deleting tag by another project (non-admin user) should return
         # 403 Not Found for other than private image
         self._test_image_ownership(headers, 'DELETE')
+
+    def test_get_task_info(self):
+        self.start_server()
+        image_id = self._create_and_import(
+            stores=['store1'], visibility='public')
+
+        # Make sure you can get task information of that image
+        path = '/v2/images/%s/tasks' % image_id
+        response = self.api_get(path)
+        self.assertEqual(200, response.status_code)
+
+        # Disable get_image should give us 404 Not Found
+        self.set_policy_rules({'get_image': '!'})
+        path = '/v2/images/%s/tasks' % image_id
+        response = self.api_get(path)
+        self.assertEqual(404, response.status_code)
