@@ -2064,7 +2064,7 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
 
     def test_tag_create_non_visible_namespace(self):
         request = unit_test_utils.get_fake_request(tenant=TENANT2)
-        self.assertRaises(webob.exc.HTTPForbidden,
+        self.assertRaises(webob.exc.HTTPNotFound,
                           self.tag_controller.create, request,
                           NAMESPACE1, TAG1)
         self.assertNotificationsLog([])
@@ -2141,7 +2141,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_tag_update_non_existing(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(
+            tenant=TENANT3, roles=['admin'])
 
         tag = tags.MetadefTag()
         tag.name = TAG1
@@ -2152,7 +2153,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationsLog([])
 
     def test_tag_update_namespace_non_existing(self):
-        request = unit_test_utils.get_fake_request(tenant=TENANT3)
+        request = unit_test_utils.get_fake_request(
+            tenant=TENANT3, roles=['admin'])
 
         tag = tags.MetadefTag()
         tag.name = TAG1
