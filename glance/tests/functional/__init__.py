@@ -843,6 +843,9 @@ class FunctionalTest(test_utils.BaseTestCase):
             self.addCleanup(self.cleanup)
             self._reset_database(self.api_server.sql_connection)
 
+    def _url(self, path):
+        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
+
     def set_policy_rules(self, rules):
         fap = open(self.policy_file, 'w')
         fap.write(jsonutils.dumps(rules))
@@ -1190,6 +1193,9 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
             self.addCleanup(self.cleanup)
             self._reset_database(
                 self.api_server_multiple_backend.sql_connection)
+
+    def _url(self, path):
+        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
 
     def set_policy_rules(self, rules):
         fap = open(self.policy_file, 'w')
