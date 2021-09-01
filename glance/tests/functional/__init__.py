@@ -1540,6 +1540,14 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             [filter:fakeauth]
             paste.filter_factory = glance.tests.utils:\
                 FakeAuthMiddleware.factory
+            [filter:cache]
+            paste.filter_factory = glance.api.middleware.cache:\
+            CacheFilter.factory
+            [filter:cachemanage]
+            paste.filter_factory = glance.api.middleware.cache_manage:\
+            CacheManageFilter.factory
+            [pipeline:glance-api-cachemanagement]
+            pipeline = context cache cachemanage rootapp
             [pipeline:glance-api]
             pipeline = context rootapp
             [composite:rootapp]
@@ -1588,7 +1596,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.setup_simple_paste()
         self.setup_stores()
 
-    def start_server(self):
+    def start_server(self, enable_cache=False):
         """Builds and "starts" the API server.
 
         Note that this doesn't actually "start" anything like
@@ -1596,7 +1604,12 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         to make it seem like the same sort of pattern.
         """
         config.set_config_defaults()
-        self.api = config.load_paste_app('glance-api',
+        root_app = 'glance-api'
+        if enable_cache:
+            root_app = 'glance-api-cachemanagement'
+            self.config(image_cache_dir=self._store_dir('cache'))
+
+        self.api = config.load_paste_app(root_app,
                                          conf_file=self.paste_config)
         secure_rbac = bool(os.getenv('OS_GLANCE_TEST_RBAC_DEFAULTS'))
         self.config(enforce_secure_rbac=secure_rbac)
