@@ -203,17 +203,71 @@ metadef_policies = [
         ],
     ),
 
-
-    policy.RuleDefault(name="get_metadef_property",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="get_metadef_properties",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="modify_metadef_property",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="add_metadef_property",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="remove_metadef_property",
-                       check_str="rule:metadef_admin"),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_property",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="Get a specific meta definition property.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/properties'
+                     '/{property_name}',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_property",
+            check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_properties",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="List meta definition properties.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/properties',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_properties",
+            check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="modify_metadef_property",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Update meta definition property.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/properties'
+                     '/{property_name}',
+             'method': 'GET'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="add_metadef_property",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Create meta definition property.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/properties',
+             'method': 'POST'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="remove_metadef_property",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Delete meta definition property.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/properties'
+                     '/{property_name}',
+             'method': 'DELETE'}
+        ],
+    ),
 
     policy.RuleDefault(name="get_metadef_tag",
                        check_str="rule:metadef_default"),

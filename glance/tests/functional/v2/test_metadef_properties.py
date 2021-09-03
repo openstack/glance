@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
-
 from oslo_serialization import jsonutils
+from oslo_utils.fixture import uuidsentinel as uuids
 import requests
 from six.moves import http_client as http
 
 from glance.tests import functional
 
-TENANT1 = str(uuid.uuid4())
+TENANT1 = uuids.owner1
+TENANT2 = uuids.owner2
 
 
 class TestNamespaceProperties(functional.FunctionalTest):
@@ -223,3 +223,159 @@ class TestNamespaceProperties(functional.FunctionalTest):
                          (namespace_name, property_name))
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.NOT_FOUND, response.status_code)
+
+    def _create_namespace(self, path, headers, data):
+        json_data = jsonutils.dumps(data)
+        response = requests.post(path, headers=headers, data=json_data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        return response.json()
+
+    def _create_properties(self, namespaces):
+        properties = []
+        for namespace in namespaces:
+            headers = self._headers({'X-Tenant-Id': namespace['owner']})
+            data = {
+                "name": "property_of_%s" % (namespace['namespace']),
+                "type": "integer",
+                "title": "property",
+                "description": "property description",
+            }
+            path = self._url('/v2/metadefs/namespaces/%s/properties' %
+                             namespace['namespace'])
+            response = requests.post(path, headers=headers, json=data)
+            self.assertEqual(http.CREATED, response.status_code)
+            prop_metadata = response.json()
+            metadef_property = dict()
+            metadef_property[namespace['namespace']] = prop_metadata['name']
+            properties.append(metadef_property)
+
+        return properties
+
+    def _update_property(self, path, headers, data):
+        # The property should be mutable
+        response = requests.put(path, headers=headers, json=data)
+        self.assertEqual(http.OK, response.status_code, response.text)
+
+        # Returned property should reflect the changes
+        property_object = response.json()
+        self.assertEqual('string', property_object['type'])
+        self.assertEqual(data['description'], property_object['description'])
+
+        # Updates should persist across requests
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual('string', property_object['type'])
+        self.assertEqual(data['description'], property_object['description'])
+
+    def test_role_base_metadata_properties_lifecycle(self):
+        # Create public and private namespaces for tenant1 and tenant2
+        path = self._url('/v2/metadefs/namespaces')
+        headers = self._headers({'content-type': 'application/json'})
+        tenant1_namespaces = []
+        tenant2_namespaces = []
+        for tenant in [TENANT1, TENANT2]:
+            headers['X-Tenant-Id'] = tenant
+            for visibility in ['public', 'private']:
+                data = {
+                    "namespace": "%s_%s_namespace" % (tenant, visibility),
+                    "display_name": "My User Friendly Namespace",
+                    "description": "My description",
+                    "visibility": visibility,
+                    "owner": tenant
+                }
+                namespace = self._create_namespace(path, headers, data)
+                if tenant == TENANT1:
+                    tenant1_namespaces.append(namespace)
+                else:
+                    tenant2_namespaces.append(namespace)
+
+        # Create a metadef property for each namespace created above
+        tenant1_properties = self._create_properties(tenant1_namespaces)
+        tenant2_properties = self._create_properties(tenant2_namespaces)
+
+        def _check_properties_access(properties, tenant):
+            headers = self._headers({'content-type': 'application/json',
+                                     'X-Tenant-Id': tenant,
+                                     'X-Roles': 'reader,member'})
+            for prop in properties:
+                for namespace, property_name in prop.items():
+                    path = \
+                        self._url('/v2/metadefs/namespaces/%s/properties/%s' %
+                                  (namespace, property_name))
+                    response = requests.get(path, headers=headers)
+                    if namespace.split('_')[1] == 'public':
+                        expected = http.OK
+                    else:
+                        expected = http.NOT_FOUND
+
+                    # Make sure we can see our and public properties, but not
+                    # the other tenant's
+                    self.assertEqual(expected, response.status_code)
+
+                    # Make sure the same holds for listing
+                    path = self._url(
+                        '/v2/metadefs/namespaces/%s/properties' % namespace)
+                    response = requests.get(path, headers=headers)
+                    self.assertEqual(expected, response.status_code)
+                    if expected == http.OK:
+                        resp_props = response.json()['properties'].values()
+                        self.assertEqual(
+                            sorted(prop.values()),
+                            sorted([x['name']
+                                    for x in resp_props]))
+
+        # Check Tenant 1 can access properties of all public namespace
+        # and cannot access properties of private namespace of Tenant 2
+        _check_properties_access(tenant2_properties, TENANT1)
+
+        # Check Tenant 2 can access properties of public namespace and
+        # cannot access properties of private namespace of Tenant 1
+        _check_properties_access(tenant1_properties, TENANT2)
+
+        # Update properties with admin and non admin role
+        total_properties = tenant1_properties + tenant2_properties
+        for prop in total_properties:
+            for namespace, property_name in prop.items():
+                data = {
+                    "name": property_name,
+                    "type": "string",
+                    "title": "string property",
+                    "description": "desc-UPDATED",
+                }
+                path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
+                                 (namespace, property_name))
+
+                # Update property should fail with non admin role
+                headers['X-Roles'] = "reader,member"
+                response = requests.put(path, headers=headers, json=data)
+                self.assertEqual(http.FORBIDDEN, response.status_code)
+
+                # Should work with admin role
+                headers = self._headers({
+                    'X-Tenant-Id': namespace.split('_')[0]})
+                self._update_property(path, headers, data)
+
+        # Delete property should not be allowed to non admin role
+        for prop in total_properties:
+            for namespace, property_name in prop.items():
+                path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
+                                 (namespace, property_name))
+                response = requests.delete(
+                    path, headers=self._headers({
+                        'X-Roles': 'reader,member',
+                        'X-Tenant-Id': namespace.split('_')[0]
+                    }))
+                self.assertEqual(http.FORBIDDEN, response.status_code)
+
+        # Delete all metadef properties
+        headers = self._headers()
+        for prop in total_properties:
+            for namespace, property_name in prop.items():
+                path = self._url('/v2/metadefs/namespaces/%s/properties/%s' %
+                                 (namespace, property_name))
+                response = requests.delete(path, headers=headers)
+                self.assertEqual(http.NO_CONTENT, response.status_code)
+
+                # Deleted property should not be exist
+                response = requests.get(path, headers=headers)
+                self.assertEqual(http.NOT_FOUND, response.status_code)
