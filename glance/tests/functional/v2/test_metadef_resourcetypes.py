@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
-
 from oslo_serialization import jsonutils
+from oslo_utils.fixture import uuidsentinel as uuids
 import requests
 from six.moves import http_client as http
 
 from glance.tests import functional
 
-TENANT1 = str(uuid.uuid4())
+TENANT1 = uuids.owner1
+TENANT2 = uuids.owner2
 
 
 class TestMetadefResourceTypes(functional.FunctionalTest):
@@ -147,3 +147,134 @@ class TestMetadefResourceTypes(functional.FunctionalTest):
         metadef_resource_type = jsonutils.loads(response.text)
         self.assertEqual(
             0, len(metadef_resource_type['resource_type_associations']))
+
+    def _create_namespace(self, path, headers, data):
+        response = requests.post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        return response.json()
+
+    def _create_resource_type(self, namespaces):
+        resource_types = []
+        for namespace in namespaces:
+            headers = self._headers({'X-Tenant-Id': namespace['owner']})
+            data = {
+                "name": "resource_type_of_%s" % (namespace['namespace']),
+                "prefix": "hw_",
+                "properties_target": "image"
+            }
+            path = self._url('/v2/metadefs/namespaces/%s/resource_types' %
+                             (namespace['namespace']))
+            response = requests.post(path, headers=headers, json=data)
+            self.assertEqual(http.CREATED, response.status_code)
+            rs_type = response.json()
+            resource_type = dict()
+            resource_type[namespace['namespace']] = rs_type['name']
+            resource_types.append(resource_type)
+
+        return resource_types
+
+    def test_role_base_metadef_resource_types_lifecycle(self):
+        # Create public and private namespaces for tenant1 and tenant2
+        path = self._url('/v2/metadefs/namespaces')
+        headers = self._headers({'content-type': 'application/json'})
+        tenant1_namespaces = []
+        tenant2_namespaces = []
+        for tenant in [TENANT1, TENANT2]:
+            headers['X-Tenant-Id'] = tenant
+            for visibility in ['public', 'private']:
+                data = {
+                    "namespace": "%s_%s_namespace" % (tenant, visibility),
+                    "display_name": "My User Friendly Namespace",
+                    "description": "My description",
+                    "visibility": visibility,
+                    "owner": tenant
+                }
+                namespace = self._create_namespace(path, headers, data)
+                if tenant == TENANT1:
+                    tenant1_namespaces.append(namespace)
+                else:
+                    tenant2_namespaces.append(namespace)
+
+        # Create a resource type for each namespace created above
+        tenant1_resource_types = self._create_resource_type(
+            tenant1_namespaces)
+        tenant2_resource_types = self._create_resource_type(
+            tenant2_namespaces)
+
+        def _check_resource_type_access(namespaces, tenant):
+            headers = self._headers({'X-Tenant-Id': tenant,
+                                     'X-Roles': 'reader,member'})
+            for namespace in namespaces:
+                path = self._url('/v2/metadefs/namespaces/%s/resource_types' %
+                                 (namespace['namespace']))
+                response = requests.get(path, headers=headers)
+                if namespace['visibility'] == 'public':
+                    self.assertEqual(http.OK, response.status_code)
+                else:
+                    self.assertEqual(http.NOT_FOUND, response.status_code)
+
+        def _check_resource_types(tenant, total_rs_types):
+            # Resource types are visible across tenants for all users
+            path = self._url('/v2/metadefs/resource_types')
+            headers = self._headers({'X-Tenant-Id': tenant,
+                                     'X-Roles': 'reader,member'})
+            response = requests.get(path, headers=headers)
+            self.assertEqual(http.OK, response.status_code)
+            metadef_resource_type = response.json()
+
+            # The resource types list count should be same as the total
+            # resource types created across the tenants.
+            self.assertEqual(
+                sorted(x['name']
+                       for x in metadef_resource_type['resource_types']),
+                sorted(value for x in total_rs_types
+                       for key, value in x.items()))
+
+        # Check Tenant 1 can access resource types of all public namespace
+        # and cannot access resource type of private namespace of Tenant 2
+        _check_resource_type_access(tenant2_namespaces, TENANT1)
+
+        # Check Tenant 2 can access public namespace and cannot access private
+        # namespace of Tenant 1
+        _check_resource_type_access(tenant1_namespaces, TENANT2)
+
+        # List all resource type irrespective of namespace & tenant are
+        # accessible non admin roles
+        total_resource_types = tenant1_resource_types + tenant2_resource_types
+        _check_resource_types(TENANT1, total_resource_types)
+        _check_resource_types(TENANT2, total_resource_types)
+
+        # Disassociate resource type should not be allowed to non admin role
+        for resource_type in total_resource_types:
+            for namespace, rs_type in resource_type.items():
+                path = \
+                    self._url('/v2/metadefs/namespaces/%s/resource_types/%s' %
+                              (namespace, rs_type))
+                response = requests.delete(
+                    path, headers=self._headers({
+                        'X-Roles': 'reader,member',
+                        'X-Tenant-Id': namespace.split('_')[0]
+                    }))
+                self.assertEqual(http.FORBIDDEN, response.status_code)
+
+        # Disassociate of all metadef resource types
+        headers = self._headers()
+        for resource_type in total_resource_types:
+            for namespace, rs_type in resource_type.items():
+                path = \
+                    self._url('/v2/metadefs/namespaces/%s/resource_types/%s' %
+                              (namespace, rs_type))
+                response = requests.delete(path, headers=headers)
+                self.assertEqual(http.NO_CONTENT, response.status_code)
+
+                # Disassociated resource type should not be exist
+                # When the specified resource type is not associated with given
+                # namespace then it returns empty list in response instead of
+                # raising not found error
+                path = self._url(
+                    '/v2/metadefs/namespaces/%s/resource_types' % namespace)
+                response = requests.get(path, headers=headers)
+                metadef_resource_type = response.json()
+                self.assertEqual(
+                    [], metadef_resource_type['resource_type_associations'])
