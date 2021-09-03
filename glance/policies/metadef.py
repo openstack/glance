@@ -85,16 +85,69 @@ metadef_policies = [
         ],
     ),
 
-    policy.RuleDefault(name="get_metadef_object",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="get_metadef_objects",
-                       check_str="rule:metadef_default"),
-    policy.RuleDefault(name="modify_metadef_object",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="add_metadef_object",
-                       check_str="rule:metadef_admin"),
-    policy.RuleDefault(name="delete_metadef_object",
-                       check_str="rule:metadef_admin"),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_object",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="Get a specific object from a namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/objects'
+                     '/{object_name}',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_object", check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="get_metadef_objects",
+        check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
+        scope_types=['system', 'project'],
+        description="Get objects from a namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/objects',
+             'method': 'GET'}
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="get_metadef_objects", check_str="rule:metadef_default",
+            deprecated_reason=DEPRECATED_REASON,
+            deprecated_since=versionutils.deprecated.XENA
+        ),
+    ),
+    policy.DocumentedRuleDefault(
+        name="modify_metadef_object",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Update an object within a namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/objects'
+                     '/{object_name}',
+             'method': 'PUT'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="add_metadef_object",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Create an object within a namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/objects',
+             'method': 'POST'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="delete_metadef_object",
+        check_str="rule:metadef_admin",
+        scope_types=['system', 'project'],
+        description="Delete an object within a namespace.",
+        operations=[
+            {'path': '/v2/metadefs/namespaces/{namespace_name}/objects'
+                     '/{object_name}',
+             'method': 'DELETE'}
+        ],
+    ),
 
     policy.RuleDefault(name="list_metadef_resource_types",
                        check_str="rule:metadef_default"),
