@@ -240,3 +240,210 @@ class TestNamespaces(functional.FunctionalTest):
             response = getattr(requests, method)(
                 path, headers=self._headers(), data=data)
             self.assertEqual(http.BAD_REQUEST, response.status_code)
+
+    def _create_namespace(self, path, headers, data):
+        response = requests.post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned namespace should match the created namespace with default
+        # values of visibility=private/public, protected=False and owner
+        namespace = response.json()
+        expected_namespace = {
+            "namespace": data['namespace'],
+            "display_name": data['display_name'],
+            "description": data['description'],
+            "visibility": data['visibility'],
+            "protected": False,
+            "owner": data['owner'],
+            "self": "/v2/metadefs/namespaces/%s" % data['namespace'],
+            "schema": "/v2/schemas/metadefs/namespace"
+        }
+        namespace.pop('created_at')
+        namespace.pop('updated_at')
+        self.assertEqual(namespace, expected_namespace)
+
+        return namespace
+
+    def _update_namespace(self, path, headers, data):
+        # The namespace should be mutable
+        response = requests.put(path, headers=headers, json=data)
+        self.assertEqual(http.OK, response.status_code, response.text)
+
+        # Returned namespace should reflect the changes
+        namespace = response.json()
+        expected_namespace = {
+            "namespace": data['namespace'],
+            "display_name": data['display_name'],
+            "description": data['description'],
+            "visibility": data['visibility'],
+            "protected": True,
+            "owner": data['owner'],
+            "self": "/v2/metadefs/namespaces/%s" % data['namespace'],
+            "schema": "/v2/schemas/metadefs/namespace"
+        }
+        namespace.pop('created_at')
+        namespace.pop('updated_at')
+        self.assertEqual(namespace, expected_namespace)
+
+        # Updates should persist across requests
+        path = self._url('/v2/metadefs/namespaces/%s' % namespace['namespace'])
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        namespace = response.json()
+        namespace.pop('created_at')
+        namespace.pop('updated_at')
+        self.assertEqual(namespace, expected_namespace)
+
+        return namespace
+
+    def test_role_based_namespace_lifecycle(self):
+        # Create public and private namespaces for tenant1 and tenant2
+        path = self._url('/v2/metadefs/namespaces')
+        headers = self._headers({'content-type': 'application/json'})
+        tenant_namespaces = dict()
+        for tenant in [TENANT1, TENANT2]:
+            headers['X-Tenant-Id'] = tenant
+            for visibility in ['public', 'private']:
+                data = {
+                    "namespace": "%s_%s_namespace" % (tenant, visibility),
+                    "display_name": "My User Friendly Namespace",
+                    "description": "My description",
+                    "visibility": visibility,
+                    "owner": tenant
+                }
+                namespace = self._create_namespace(path, headers, data)
+                tenant_namespaces.setdefault(tenant, list())
+                tenant_namespaces[tenant].append(namespace)
+
+        # Check Tenant 1 and Tenant 2 will be able to see total 3 namespaces
+        # (two of own and 1 public of other tenant)
+        def _get_expected_namespaces(tenant):
+            expected_namespaces = []
+            for x in tenant_namespaces[tenant]:
+                expected_namespaces.append(x['namespace'])
+            if tenant == TENANT1:
+                expected_namespaces.append(
+                    tenant_namespaces[TENANT2][0]['namespace'])
+            else:
+                expected_namespaces.append(
+                    tenant_namespaces[TENANT1][0]['namespace'])
+
+            return expected_namespaces
+
+        for tenant in [TENANT1, TENANT2]:
+            path = self._url('/v2/metadefs/namespaces')
+            headers = self._headers({'X-Tenant-Id': tenant,
+                                     'X-Roles': 'reader,member'})
+            response = requests.get(path, headers=headers)
+            self.assertEqual(http.OK, response.status_code)
+            namespaces = response.json()['namespaces']
+            expected_namespaces = _get_expected_namespaces(tenant)
+            self.assertEqual(sorted(x['namespace'] for x in namespaces),
+                             sorted(expected_namespaces))
+
+        def _check_namespace_access(namespaces, tenant):
+            headers = self._headers({'X-Tenant-Id': tenant,
+                                     'X-Roles': 'reader,member'})
+            for namespace in namespaces:
+                path = self._url(
+                    '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+                headers = headers
+                response = requests.get(path, headers=headers)
+                if namespace['visibility'] == 'public':
+                    self.assertEqual(http.OK, response.status_code)
+                else:
+                    self.assertEqual(http.NOT_FOUND, response.status_code)
+
+        # Check Tenant 1 can access public namespace and cannot access private
+        # namespace of Tenant 2
+        _check_namespace_access(tenant_namespaces[TENANT2], TENANT1)
+
+        # Check Tenant 2 can access public namespace and cannot access private
+        # namespace of Tenant 1
+        _check_namespace_access(tenant_namespaces[TENANT1], TENANT2)
+
+        total_ns = tenant_namespaces[TENANT1] + tenant_namespaces[TENANT2]
+        for namespace in total_ns:
+            data = {
+                "namespace": namespace['namespace'],
+                "display_name": "display_name-UPDATED",
+                "description": "description-UPDATED",
+                "visibility": namespace['visibility'],  # Not changed
+                "protected": True,  # changed
+                "owner": namespace["owner"]  # Not changed
+            }
+            path = self._url(
+                '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+            headers = self._headers({
+                'X-Tenant-Id': namespace['owner'],
+            })
+            # Update namespace should fail with non admin role
+            headers['X-Roles'] = "reader,member"
+            response = requests.put(path, headers=headers, json=data)
+            self.assertEqual(http.FORBIDDEN, response.status_code)
+
+            # Should work with admin role
+            headers['X-Roles'] = "admin"
+            namespace = self._update_namespace(path, headers, data)
+
+            # Deletion should fail as namespaces are protected now
+            path = self._url(
+                '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+            headers['X-Roles'] = "admin"
+            response = requests.delete(path, headers=headers)
+            self.assertEqual(http.FORBIDDEN, response.status_code)
+
+            # Deletion should not be allowed for non admin roles
+            path = self._url(
+                '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+            response = requests.delete(
+                path, headers=self._headers({
+                    'X-Roles': 'reader,member',
+                    'X-Tenant-Id': namespace['owner']
+                }))
+            self.assertEqual(http.FORBIDDEN, response.status_code)
+
+        # Unprotect the namespaces before deletion
+        headers = self._headers()
+        for namespace in total_ns:
+            path = self._url(
+                '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+            headers = headers
+            data = {
+                "namespace": namespace['namespace'],
+                "protected": False,
+            }
+            response = requests.put(path, headers=headers, json=data)
+            self.assertEqual(http.OK, response.status_code)
+
+        # Get updated namespace set again
+        path = self._url('/v2/metadefs/namespaces')
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.OK, response.status_code)
+        self.assertFalse(namespace['protected'])
+        namespaces = response.json()['namespaces']
+
+        # Verify that deletion is not allowed for unprotected namespaces with
+        # non admin role
+        for namespace in namespaces:
+            path = self._url(
+                '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+            response = requests.delete(
+                path, headers=self._headers({
+                    'X-Roles': 'reader,member',
+                    'X-Tenant-Id': namespace['owner']
+                }))
+            self.assertEqual(http.FORBIDDEN, response.status_code)
+
+        # Delete namespaces of all tenants
+        for namespace in total_ns:
+            path = self._url(
+                '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+            response = requests.delete(path, headers=headers)
+            self.assertEqual(http.NO_CONTENT, response.status_code)
+
+            # Deleted namespace should not be returned
+            path = self._url(
+                '/v2/metadefs/namespaces/%s' % namespace['namespace'])
+            response = requests.get(path, headers=headers)
+            self.assertEqual(http.NOT_FOUND, response.status_code)

@@ -27,7 +27,8 @@ IMAGE_MEMBER_CHECK = 'project_id:%(member_id)s'
 # Check if the visibility of the image supplied in the target matches
 # "community"
 COMMUNITY_VISIBILITY_CHECK = '"community":%(visibility)s'
-# Check if the visibility of the image supplied in the target matches "public"
+# Check if the visibility of the resource supplied in the target matches
+# "public"
 PUBLIC_VISIBILITY_CHECK = '"public":%(visibility)s'
 # Check if the visibility of the image supplied in the target matches "shared"
 SHARED_VISIBILITY_CHECK = '"shared":%(visibility)s'
@@ -42,6 +43,10 @@ PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED = (
     f'or {COMMUNITY_VISIBILITY_CHECK} or {PUBLIC_VISIBILITY_CHECK} '
     f'or {SHARED_VISIBILITY_CHECK})'
 )
+PROJECT_READER_OR_PUBLIC_NAMESPACE = (
+    f'role:reader and (project_id:%(project_id)s or {PUBLIC_VISIBILITY_CHECK})'
+)
+
 
 # FIXME(lbragstad): These are composite check strings that represents glance's
 # authorization code, some of which is implemented in the authorization wrapper
@@ -71,6 +76,9 @@ ADMIN_OR_PROJECT_MEMBER_DOWNLOAD_IMAGE = (
 )
 ADMIN_OR_PROJECT_MEMBER_CREATE_IMAGE = (
     f'role:admin or ({PROJECT_MEMBER} and project_id:%(owner)s)'
+)
+ADMIN_OR_PROJECT_READER_GET_NAMESPACE = (
+    f'role:admin or ({PROJECT_READER_OR_PUBLIC_NAMESPACE})'
 )
 
 
