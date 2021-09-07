@@ -104,6 +104,12 @@ member_id-in-path:
   in: path
   required: true
   type: string
+store-in-path:
+  description: |
+    The ID of the store from which image is to be deleted.
+  in: path
+  required: true
+  type: string
 tag-in-path:
   description: |
     The image tag.  A tag is limited to 255 chars in length.  You may wish
