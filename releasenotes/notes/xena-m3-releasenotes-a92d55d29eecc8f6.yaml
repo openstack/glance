@@ -1,0 +1,23 @@
+---
+features:
+  - |
+    Glance's default policies for metadef APIs now support member and reader
+    roles for Secure RBAC project persona. Administrative operations like
+    create, delete and update are still protected using the `admin` role
+    on a project. Administrative actions will be updated in the future to
+    consume system-scope.
+
+fixes:
+  - |
+    Bug 1936665_: Functional tests not available for metadef resource types
+  - |
+    Bug 1895173_: Caught error: UPDATE statement on table 'image_properties'. expected to update 1 row(s); 0 were matched
+  - |
+    Bug 1940090_: options of the castellan library are missing from glance-api.conf
+  - |
+    Bug 1885928_: Unable to spawn VM from community image
+
+    .. _1936665: https://code.launchpad.net/bugs/1936665
+    .. _1895173: https://code.launchpad.net/bugs/1895173
+    .. _1940090: https://code.launchpad.net/bugs/1940090
+    .. _1885928: https://code.launchpad.net/bugs/1885928
