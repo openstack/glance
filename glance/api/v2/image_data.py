@@ -105,22 +105,6 @@ class ImageDataController(object):
 
         self._restore(image_repo, image)
 
-    def _delete(self, image_repo, image):
-        """Delete the image.
-
-        :param image_repo: The instance of ImageRepo
-        :param image: The image that will be deleted
-        """
-        try:
-            if image_repo and image:
-                image.status = 'killed'
-                image_repo.save(image)
-        except Exception as e:
-            msg = (_LE("Unable to delete image %(image_id)s: %(e)s") %
-                   {'image_id': image.image_id,
-                    'e': encodeutils.exception_to_unicode(e)})
-            LOG.exception(msg)
-
     @utils.mutating
     def upload(self, req, image_id, data, size):
         try:
@@ -301,7 +285,7 @@ class ImageDataController(object):
                    % {'id': image_id,
                       'e': encodeutils.exception_to_unicode(e)})
             LOG.error(msg)
-            self._delete(image_repo, image)
+            self._restore(image_repo, image)
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
         except webob.exc.HTTPGone:
