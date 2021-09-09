@@ -249,8 +249,8 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         for output_log, event in zip(output_logs, expected_events):
             self.assertEqual('INFO', output_log['notification_type'])
             self.assertEqual(event['type'], output_log['event_type'])
-            self.assertDictContainsSubset(event['payload'],
-                                          output_log['payload'])
+            self.assertLessEqual(event['payload'].items(),
+                                 output_log['payload'].items())
         self.notifier.log = []
 
     def test_namespace_index(self):
