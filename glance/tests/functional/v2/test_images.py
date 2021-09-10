@@ -85,9 +85,6 @@ class TestImages(functional.FunctionalTest):
 
         super(TestImages, self).tearDown()
 
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
-
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
@@ -3735,9 +3732,6 @@ class TestImagesIPv6(functional.FunctionalTest):
         test_utils.get_unused_port_and_socket = (
             test_utils.get_unused_port_and_socket_ipv4)
 
-    def _url(self, path):
-        return "http://[::1]:%d%s" % (self.api_port, path)
-
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
@@ -3756,10 +3750,12 @@ class TestImagesIPv6(functional.FunctionalTest):
         self.api_server.send_identity_credentials = True
         self.start_servers(**self.__dict__.copy())
 
-        requests.get(self._url('/'), headers=self._headers())
+        url = f'http://[::1]:{self.api_port}'
+        path = '/'
+        requests.get(url + path, headers=self._headers())
 
-        path = self._url('/v2/images')
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/images'
+        response = requests.get(url + path, headers=self._headers())
         self.assertEqual(200, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
@@ -3772,9 +3768,6 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
-
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
 
     def _headers(self, custom_headers=None):
         base_headers = {
@@ -3974,9 +3967,6 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
 
         super(TestImageLocationSelectionStrategy, self).tearDown()
 
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
-
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
@@ -4056,9 +4046,6 @@ class TestImageMembers(functional.FunctionalTest):
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'fakeauth'
         self.start_servers(**self.__dict__.copy())
-
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
 
     def _headers(self, custom_headers=None):
         base_headers = {
@@ -4420,9 +4407,6 @@ class TestQuotas(functional.FunctionalTest):
         self.user_storage_quota = 100
         self.start_servers(**self.__dict__.copy())
 
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
-
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
@@ -4508,9 +4492,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
                 httpd.server_close()
 
         super(TestImagesMultipleBackend, self).tearDown()
-
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
 
     def _headers(self, custom_headers=None):
         base_headers = {
@@ -6367,9 +6348,6 @@ class TestMultiStoreImageMembers(functional.MultipleBackendFunctionalTest):
 
         super(TestMultiStoreImageMembers, self).tearDown()
 
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
-
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
@@ -6767,9 +6745,6 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server_multiple_backend.deployment_flavor = 'noauth'
-
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
 
     def _headers(self, custom_headers=None):
         base_headers = {

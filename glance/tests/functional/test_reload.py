@@ -99,9 +99,6 @@ class TestReload(functional.FunctionalTest):
         conf_filepath = os.path.join(conf_dir, '%s.conf' % service)
         return conf_filepath
 
-    def _url(self, protocol, path):
-        return '%s://127.0.0.1:%d%s' % (protocol, self.api_port, path)
-
     def test_reload(self):
         """Test SIGHUP picks up new config values"""
         def check_pids(pre, post=None, workers=2):
@@ -121,7 +118,7 @@ class TestReload(functional.FunctionalTest):
         pre_pids = {}
         post_pids = {}
 
-        path = self._url('http', '/')
+        path = self._url('/')
         response = requests.get(path)
         self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response  # close socket so that process audit is reliable
@@ -159,7 +156,7 @@ class TestReload(functional.FunctionalTest):
             if check_pids(pre_pids['api'], post_pids['api']):
                 break
 
-        path = self._url('http', '/')
+        path = self._url('/')
         response = requests.get(path)
         self.assertEqual(http.MULTIPLE_CHOICES, response.status_code)
         del response

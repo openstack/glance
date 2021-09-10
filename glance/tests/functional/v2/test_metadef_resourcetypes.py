@@ -28,9 +28,6 @@ class TestMetadefResourceTypes(metadef_base.MetadefFunctionalTestBase):
         self.api_server.deployment_flavor = 'noauth'
         self.start_servers(**self.__dict__.copy())
 
-    def _url(self, path):
-        return 'http://127.0.0.1:%d%s' % (self.api_port, path)
-
     def _headers(self, custom_headers=None):
         base_headers = {
             'X-Identity-Status': 'Confirmed',
