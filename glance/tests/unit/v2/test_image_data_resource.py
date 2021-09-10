@@ -379,7 +379,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.image_repo.result = image
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)
-        self.assertEqual('killed', self.image_repo.saved_image.status)
+        self.assertEqual('queued', self.image_repo.saved_image.status)
 
     def test_image_size_limit_exceeded(self):
         request = unit_test_utils.get_fake_request()
