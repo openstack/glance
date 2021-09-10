@@ -14,14 +14,10 @@
 # limitations under the License.
 
 from oslo_serialization import jsonutils
-from oslo_utils.fixture import uuidsentinel as uuids
 import requests
 from six.moves import http_client as http
 
 from glance.tests.functional.v2 import metadef_base
-
-TENANT1 = uuids.owner1
-TENANT2 = uuids.owner2
 
 
 class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
@@ -40,7 +36,7 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
             'X-Identity-Status': 'Confirmed',
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': TENANT1,
+            'X-Tenant-Id': self.tenant1,
             'X-Roles': 'admin',
         }
         base_headers.update(custom_headers or {})
@@ -212,7 +208,7 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
         headers = self._headers({'content-type': 'application/json'})
         tenant1_namespaces = []
         tenant2_namespaces = []
-        for tenant in [TENANT1, TENANT2]:
+        for tenant in [self.tenant1, self.tenant2]:
             headers['X-Tenant-Id'] = tenant
             for visibility in ['public', 'private']:
                 namespace_data = {
@@ -225,7 +221,7 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
                 namespace = self.create_namespace(path, headers,
                                                   namespace_data)
                 self.assertNamespacesEqual(namespace, namespace_data)
-                if tenant == TENANT1:
+                if tenant == self.tenant1:
                     tenant1_namespaces.append(namespace)
                 else:
                     tenant2_namespaces.append(namespace)
@@ -266,11 +262,11 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
 
         # Check Tenant 1 can access tags of all public namespace
         # and cannot access tags of private namespace of Tenant 2
-        _check_tag_access(tenant2_tags, TENANT1)
+        _check_tag_access(tenant2_tags, self.tenant1)
 
         # Check Tenant 2 can access tags of public namespace and
         # cannot access tags of private namespace of Tenant 1
-        _check_tag_access(tenant1_tags, TENANT2)
+        _check_tag_access(tenant1_tags, self.tenant2)
 
         # Update tags with admin and non admin role
         total_tags = tenant1_tags + tenant2_tags

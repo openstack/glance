@@ -13,16 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
-
 from oslo_serialization import jsonutils
 import requests
 from six.moves import http_client as http
 
 from glance.tests.functional.v2 import metadef_base
-
-TENANT1 = str(uuid.uuid4())
-TENANT2 = str(uuid.uuid4())
 
 
 class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
@@ -41,7 +36,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
             'X-Identity-Status': 'Confirmed',
             'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
             'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': TENANT1,
+            'X-Tenant-Id': self.tenant1,
             'X-Roles': 'admin',
         }
         base_headers.update(custom_headers or {})
@@ -90,7 +85,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
             "description": "My description",
             "visibility": "private",
             "protected": False,
-            "owner": TENANT1,
+            "owner": self.tenant1,
             "self": "/v2/metadefs/namespaces/%s" % namespace_name,
             "schema": "/v2/schemas/metadefs/namespace"
         }
@@ -107,7 +102,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
         namespace = jsonutils.loads(response.text)
         self.assertEqual(namespace_name, namespace['namespace'])
         self.assertNotIn('object', namespace)
-        self.assertEqual(TENANT1, namespace['owner'])
+        self.assertEqual(self.tenant1, namespace['owner'])
         self.assertEqual('private', namespace['visibility'])
         self.assertFalse(namespace['protected'])
 
@@ -123,7 +118,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
                 "description": "description-UPDATED",
                 "visibility": "private",  # Not changed
                 "protected": True,
-                "owner": TENANT2
+                "owner": self.tenant2
             }
         )
         response = requests.put(path, headers=headers, data=data)
@@ -136,7 +131,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
         self.assertEqual('description-UPDATED', namespace['description'])
         self.assertEqual('private', namespace['visibility'])
         self.assertTrue(namespace['protected'])
-        self.assertEqual(TENANT2, namespace['owner'])
+        self.assertEqual(self.tenant2, namespace['owner'])
 
         # Updates should persist across requests
         path = self._url('/v2/metadefs/namespaces/%s' % namespace_name)
@@ -148,7 +143,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
         self.assertEqual('description-UPDATED', namespace['description'])
         self.assertEqual('private', namespace['visibility'])
         self.assertTrue(namespace['protected'])
-        self.assertEqual(TENANT2, namespace['owner'])
+        self.assertEqual(self.tenant2, namespace['owner'])
 
         # Deletion should not work on protected namespaces
         path = self._url('/v2/metadefs/namespaces/%s' % namespace_name)
@@ -165,7 +160,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
             "description": "My description",
             "visibility": "public",
             "protected": False,
-            "owner": TENANT2
+            "owner": self.tenant2
         }
         data = jsonutils.dumps(doc)
         response = requests.put(path, headers=headers, data=data)
@@ -278,7 +273,7 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
         path = self._url('/v2/metadefs/namespaces')
         headers = self._headers({'content-type': 'application/json'})
         tenant_namespaces = dict()
-        for tenant in [TENANT1, TENANT2]:
+        for tenant in [self.tenant1, self.tenant2]:
             headers['X-Tenant-Id'] = tenant
             for visibility in ['public', 'private']:
                 namespace_data = {
@@ -300,16 +295,18 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
             expected_namespaces = []
             for x in tenant_namespaces[tenant]:
                 expected_namespaces.append(x['namespace'])
-            if tenant == TENANT1:
+            if tenant == self.tenant1:
                 expected_namespaces.append(
-                    tenant_namespaces[TENANT2][0]['namespace'])
+                    tenant_namespaces[self.tenant2][0]['namespace'])
             else:
                 expected_namespaces.append(
-                    tenant_namespaces[TENANT1][0]['namespace'])
+                    tenant_namespaces[self.tenant1][0]['namespace'])
 
             return expected_namespaces
 
-        for tenant in [TENANT1, TENANT2]:
+        # Check Tenant 1 and Tenant 2 will be able to see total 3 namespaces
+        # (two of own and 1 public of other tenant)
+        for tenant in [self.tenant1, self.tenant2]:
             path = self._url('/v2/metadefs/namespaces')
             headers = self._headers({'X-Tenant-Id': tenant,
                                      'X-Roles': 'reader,member'})
@@ -335,13 +332,16 @@ class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
 
         # Check Tenant 1 can access public namespace and cannot access private
         # namespace of Tenant 2
-        _check_namespace_access(tenant_namespaces[TENANT2], TENANT1)
+        _check_namespace_access(tenant_namespaces[self.tenant2],
+                                self.tenant1)
 
         # Check Tenant 2 can access public namespace and cannot access private
         # namespace of Tenant 1
-        _check_namespace_access(tenant_namespaces[TENANT1], TENANT2)
+        _check_namespace_access(tenant_namespaces[self.tenant1],
+                                self.tenant2)
 
-        total_ns = tenant_namespaces[TENANT1] + tenant_namespaces[TENANT2]
+        total_ns = tenant_namespaces[self.tenant1] \
+            + tenant_namespaces[self.tenant2]
         for namespace in total_ns:
             data = {
                 "namespace": namespace['namespace'],

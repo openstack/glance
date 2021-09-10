@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo_utils.fixture import uuidsentinel as uuids
 import requests
 
 from glance.tests import functional
@@ -18,6 +19,11 @@ from glance.tests import functional
 
 class MetadefFunctionalTestBase(functional.FunctionalTest):
     """A basic set of assertions and utilities for testing the metadef API."""
+
+    def setUp(self):
+        super().setUp()
+        self.tenant1 = uuids.owner1
+        self.tenant2 = uuids.owner2
 
     def assertNamespacesEqual(self, actual, expected):
         """Assert two namespace dictionaries are the same."""
