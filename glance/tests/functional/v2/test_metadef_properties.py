@@ -28,17 +28,6 @@ class TestNamespaceProperties(metadef_base.MetadefFunctionalTestBase):
         self.api_server.deployment_flavor = 'noauth'
         self.start_servers(**self.__dict__.copy())
 
-    def _headers(self, custom_headers=None):
-        base_headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': self.tenant1,
-            'X-Roles': 'admin',
-        }
-        base_headers.update(custom_headers or {})
-        return base_headers
-
     def test_properties_lifecycle(self):
         # Namespace should not exist
         path = self._url('/v2/metadefs/namespaces/MyNamespace')
