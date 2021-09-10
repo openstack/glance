@@ -18,13 +18,13 @@ from oslo_utils.fixture import uuidsentinel as uuids
 import requests
 from six.moves import http_client as http
 
-from glance.tests import functional
+from glance.tests.functional.v2 import metadef_base
 
 TENANT1 = uuids.owner1
 TENANT2 = uuids.owner2
 
 
-class TestNamespaceProperties(functional.FunctionalTest):
+class TestNamespaceProperties(metadef_base.MetadefFunctionalTestBase):
 
     def setUp(self):
         super(TestNamespaceProperties, self).setUp()
@@ -224,13 +224,6 @@ class TestNamespaceProperties(functional.FunctionalTest):
         response = requests.get(path, headers=self._headers())
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
-    def _create_namespace(self, path, headers, data):
-        json_data = jsonutils.dumps(data)
-        response = requests.post(path, headers=headers, data=json_data)
-        self.assertEqual(http.CREATED, response.status_code)
-
-        return response.json()
-
     def _create_properties(self, namespaces):
         properties = []
         for namespace in namespaces:
@@ -276,14 +269,16 @@ class TestNamespaceProperties(functional.FunctionalTest):
         for tenant in [TENANT1, TENANT2]:
             headers['X-Tenant-Id'] = tenant
             for visibility in ['public', 'private']:
-                data = {
+                namespace_data = {
                     "namespace": "%s_%s_namespace" % (tenant, visibility),
                     "display_name": "My User Friendly Namespace",
                     "description": "My description",
                     "visibility": visibility,
                     "owner": tenant
                 }
-                namespace = self._create_namespace(path, headers, data)
+                namespace = self.create_namespace(path, headers,
+                                                  namespace_data)
+                self.assertNamespacesEqual(namespace, namespace_data)
                 if tenant == TENANT1:
                     tenant1_namespaces.append(namespace)
                 else:

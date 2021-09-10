@@ -19,13 +19,13 @@ from oslo_serialization import jsonutils
 import requests
 from six.moves import http_client as http
 
-from glance.tests import functional
+from glance.tests.functional.v2 import metadef_base
 
 TENANT1 = str(uuid.uuid4())
 TENANT2 = str(uuid.uuid4())
 
 
-class TestNamespaces(functional.FunctionalTest):
+class TestNamespaces(metadef_base.MetadefFunctionalTestBase):
 
     def setUp(self):
         super(TestNamespaces, self).setUp()
@@ -241,29 +241,6 @@ class TestNamespaces(functional.FunctionalTest):
                 path, headers=self._headers(), data=data)
             self.assertEqual(http.BAD_REQUEST, response.status_code)
 
-    def _create_namespace(self, path, headers, data):
-        response = requests.post(path, headers=headers, json=data)
-        self.assertEqual(http.CREATED, response.status_code)
-
-        # Returned namespace should match the created namespace with default
-        # values of visibility=private/public, protected=False and owner
-        namespace = response.json()
-        expected_namespace = {
-            "namespace": data['namespace'],
-            "display_name": data['display_name'],
-            "description": data['description'],
-            "visibility": data['visibility'],
-            "protected": False,
-            "owner": data['owner'],
-            "self": "/v2/metadefs/namespaces/%s" % data['namespace'],
-            "schema": "/v2/schemas/metadefs/namespace"
-        }
-        namespace.pop('created_at')
-        namespace.pop('updated_at')
-        self.assertEqual(namespace, expected_namespace)
-
-        return namespace
-
     def _update_namespace(self, path, headers, data):
         # The namespace should be mutable
         response = requests.put(path, headers=headers, json=data)
@@ -304,14 +281,16 @@ class TestNamespaces(functional.FunctionalTest):
         for tenant in [TENANT1, TENANT2]:
             headers['X-Tenant-Id'] = tenant
             for visibility in ['public', 'private']:
-                data = {
+                namespace_data = {
                     "namespace": "%s_%s_namespace" % (tenant, visibility),
                     "display_name": "My User Friendly Namespace",
                     "description": "My description",
                     "visibility": visibility,
                     "owner": tenant
                 }
-                namespace = self._create_namespace(path, headers, data)
+                namespace = self.create_namespace(path, headers,
+                                                  namespace_data)
+                self.assertNamespacesEqual(namespace, namespace_data)
                 tenant_namespaces.setdefault(tenant, list())
                 tenant_namespaces[tenant].append(namespace)
 
