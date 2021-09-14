@@ -86,8 +86,17 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
     def get(self, image_id):
         image = super(ImageRepoProxy, self).get(image_id)
         if CONF.enabled_backends:
-            store_utils.update_store_in_locations(
-                self.context, image, self.image_repo)
+            try:
+                store_utils.update_store_in_locations(
+                    self.context, image, self.image_repo)
+            except exception.Forbidden:
+                # NOTE(danms): We may not be able to complete a store
+                # update if we do not own the image. That should not
+                # break us, so avoid raising Forbidden in that
+                # case. Note that modifications to @image here will
+                # still be returned to the user, just not saved in the
+                # DB. That is probably what we want anyway.
+                pass
         return image
 
 

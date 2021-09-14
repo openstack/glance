@@ -257,14 +257,6 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         resp = self.api_get('/v2/images/%s' % image_id,
                             headers={'X-Roles': 'reader'})
 
-        # FIXME(danms): This is broken behavior: the first user to GET
-        # an image after upgrade may not be an admin or the owner. As
-        # such, we should not return an error to that user for a valid image.
-        self.assertEqual(500, resp.status_code)
-        self.skipTest('Bug 1932337 is not fixed')
-
-        # FIXME(danms): Continue the test below when bug 1932337 is
-        # fixed.
         image = resp.json
         # verify the image is updated to new format
         self.assertEqual('cinder://store1/%s' % self.vol_id,
