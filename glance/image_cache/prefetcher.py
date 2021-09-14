@@ -17,11 +17,12 @@
 Prefetches images into the Image Cache
 """
 
-import eventlet
 import glance_store
+from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from glance.api import common as api_common
 from glance.common import exception
 from glance import context
 from glance.i18n import _LI, _LW
@@ -40,8 +41,8 @@ class Prefetcher(base.CacheApp):
         self.gateway = glance.gateway.Gateway()
 
     def fetch_image_into_cache(self, image_id):
-        ctx = context.RequestContext(is_admin=True, show_deleted=True)
-
+        ctx = context.RequestContext(is_admin=True, show_deleted=True,
+                                     roles=['admin'])
         try:
             image_repo = self.gateway.get_repo(ctx, authorization_layer=False)
             image = image_repo.get(image_id)
@@ -70,6 +71,7 @@ class Prefetcher(base.CacheApp):
             list(cache_tee_iter)
             return True
 
+    @lockutils.lock('glance-cache', external=True)
     def run(self):
         images = self.cache.get_queued_images()
         if not images:
@@ -79,8 +81,8 @@ class Prefetcher(base.CacheApp):
         num_images = len(images)
         LOG.debug("Found %d images to prefetch", num_images)
 
-        pool = eventlet.GreenPool(num_images)
-        results = pool.imap(self.fetch_image_into_cache, images)
+        pool = api_common.get_thread_pool('prefetcher', size=num_images)
+        results = pool.map(self.fetch_image_into_cache, images)
         successes = sum([1 for r in results if r is True])
         if successes != num_images:
             LOG.warn(_LW("Failed to successfully cache all "

@@ -245,6 +245,11 @@ class TestSystemThreadPoolModel(test_utils.BaseTestCase):
         # This isn't used anywhere, but make sure we get the future
         self.assertEqual(pool.submit.return_value, result)
 
+    def test_model_map(self):
+        model = glance.async_.EventletThreadPoolModel()
+        results = model.map(lambda s: s.upper(), ['a', 'b', 'c'])
+        self.assertEqual(['A', 'B', 'C'], list(results))
+
     @mock.patch('glance.async_.ThreadPoolModel.get_threadpool_executor_class')
     def test_base_model_init_with_size(self, mock_gte):
         mock_gte.return_value.__name__ = 'TestModel'
