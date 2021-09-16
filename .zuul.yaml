@@ -298,7 +298,7 @@
     templates:
       - check-requirements
       - integrated-gate-storage
-      - openstack-python3-xena-jobs
+      - openstack-python3-yoga-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
