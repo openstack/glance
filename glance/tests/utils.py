@@ -700,12 +700,6 @@ def db_sync(version='heads', engine=None):
     alembic_command.upgrade(alembic_config, version)
 
 
-def is_sqlite_version_prior_to(major, minor):
-    import sqlite3
-    tup = sqlite3.sqlite_version_info
-    return tup[0] < major or (tup[0] == major and tup[1] < minor)
-
-
 def start_standalone_http_server():
     def _get_http_handler_class():
         class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
