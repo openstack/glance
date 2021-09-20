@@ -258,7 +258,6 @@
 - job:
     name: glance-multistore-cinder-import
     parent: tempest-integrated-storage-import
-    voting: false
     description: |
       The regular import workflow job to test with multiple cinder stores
     vars:
