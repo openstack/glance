@@ -26,12 +26,12 @@ PROJECT_READER = 'role:reader and project_id:%(project_id)s'
 IMAGE_MEMBER_CHECK = 'project_id:%(member_id)s'
 # Check if the visibility of the image supplied in the target matches
 # "community"
-COMMUNITY_VISIBILITY_CHECK = '"community":%(visibility)s'
+COMMUNITY_VISIBILITY_CHECK = "'community':%(visibility)s"
 # Check if the visibility of the resource supplied in the target matches
 # "public"
-PUBLIC_VISIBILITY_CHECK = '"public":%(visibility)s'
+PUBLIC_VISIBILITY_CHECK = "'public':%(visibility)s"
 # Check if the visibility of the image supplied in the target matches "shared"
-SHARED_VISIBILITY_CHECK = '"shared":%(visibility)s'
+SHARED_VISIBILITY_CHECK = "'shared':%(visibility)s"
 
 PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED = (
     f'role:member and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK} '

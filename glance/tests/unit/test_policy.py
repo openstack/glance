@@ -1088,9 +1088,9 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
 
     def test_project_member_download_image_check_string(self):
         expected = (
-            'role:member and (project_id:%(project_id)s or '
-            'project_id:%(member_id)s or "community":%(visibility)s or '
-            '"public":%(visibility)s or "shared":%(visibility)s)'
+            "role:member and (project_id:%(project_id)s or "
+            "project_id:%(member_id)s or 'community':%(visibility)s or "
+            "'public':%(visibility)s or 'shared':%(visibility)s)"
         )
         self.assertEqual(
             expected,
@@ -1108,9 +1108,9 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
 
     def test_project_reader_get_image_check_string(self):
         expected = (
-            'role:reader and (project_id:%(project_id)s or '
-            'project_id:%(member_id)s or "community":%(visibility)s or '
-            '"public":%(visibility)s or "shared":%(visibility)s)'
+            "role:reader and (project_id:%(project_id)s or "
+            "project_id:%(member_id)s or \'community\':%(visibility)s or "
+            "'public':%(visibility)s or 'shared':%(visibility)s)"
         )
         self.assertEqual(
             expected,
