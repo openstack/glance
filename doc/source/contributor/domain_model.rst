@@ -25,7 +25,7 @@ thus realizing a design pattern called "Decorator." The main feature
 of domain model is to use a composition instead of inheritance or
 basic decoration while building an architecture. This provides
 flexibility and transparency of an internal organization for a developer,
-because he does not know what layers are used and works with a domain
+because they do not know what layers are used and works with a domain
 model object as with a common object.
 
 Inner architecture
