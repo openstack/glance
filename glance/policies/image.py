@@ -147,7 +147,7 @@ image_policies = [
 
     policy.DocumentedRuleDefault(
         name="delete_image_location",
-        check_str='role:admin',
+        check_str="role:admin",
         scope_types=['system', 'project'],
         description='Deletes the location of given image',
         operations=[
