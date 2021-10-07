@@ -133,7 +133,7 @@ def get_image_data_iter(uri):
         # we are returning it as is.
         # The file descriptor will be eventually cleaned up by the garbage
         # collector once its ref-count is dropped to 0. That is, when there
-        # wont be any references pointing to this file.
+        # won't be any references pointing to this file.
         #
         # We're not using StringIO or other tools to avoid reading everything
         # into memory. Some images may be quite heavy.

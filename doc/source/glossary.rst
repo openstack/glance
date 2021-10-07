@@ -3766,7 +3766,7 @@ T
 
    token
 
-      An alpha-numeric string of text used to access OpenStack APIs
+      An alphanumeric string of text used to access OpenStack APIs
       and resources.
 
    token services

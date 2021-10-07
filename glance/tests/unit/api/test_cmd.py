@@ -161,7 +161,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
     def test_fail_with_unknown_exception(self):
         with mock.patch('sys.stderr.write') as mock_stderr:
             with mock.patch('sys.exit') as mock_exit:
-                exc_msg = 'A Crazy Unkown Error.'
+                exc_msg = 'A Crazy Unknown Error.'
                 exc = CrayCray(exc_msg)
                 glance.cmd.api.fail(exc)
                 mock_stderr.assert_called_once_with('ERROR: %s\n' % exc_msg)

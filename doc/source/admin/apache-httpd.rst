@@ -8,7 +8,7 @@ This exercise failed without ever having proper interest or resources to fix
 the underlying issues.
 
 None of the models deploying Glance as bare wsgi app under some httpd are
-currently adviced.
+currently advised.
 
 Since the Pike release Glance has packaged a wsgi script entrypoint that
 enables you to run it with a real web server like Apache HTTPD or nginx. To

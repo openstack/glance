@@ -553,7 +553,7 @@ class _ImportToStore(task.Task):
         """
         # NOTE(flaper87): Let's dance... and fall
         #
-        # Unfortunatelly, because of the way our domain layers work and
+        # Unfortunately, because of the way our domain layers work and
         # the checks done in the FS store, we can't simply rename the file
         # and set the location. To do that, we'd have to duplicate the logic
         # of every and each of the domain factories (quota, location, etc)
@@ -607,7 +607,7 @@ class _ImportToStore(task.Task):
                                   set_active=self.set_active,
                                   callback=self._status_callback)
         # NOTE(yebinama): set_image_data catches Exception and raises from
-        # them. Can't be more specific on exceptions catched.
+        # them. Can't be more specific on exceptions caught.
         except Exception:
             if self.all_stores_must_succeed:
                 raise

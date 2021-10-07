@@ -195,5 +195,5 @@ class TestOcataMigrate01_EmptyDBMySQL(
     test_fixtures.OpportunisticDBTestMixin,
     test_utils.BaseTestCase,
 ):
-    """This test runs the Ocata data migrations on an empty databse."""
+    """This test runs the Ocata data migrations on an empty database."""
     FIXTURE = test_fixtures.MySQLOpportunisticFixture

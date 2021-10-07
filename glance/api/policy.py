@@ -51,7 +51,7 @@ class Enforcer(policy.Enforcer):
                                                  deprecation warnings.
         """
         super(Enforcer, self).__init__(CONF, use_conf=True, overwrite=False)
-        # NOTE(gmann): Explictly disable the warnings for policies
+        # NOTE(gmann): Explicitly disable the warnings for policies
         # changing their default check_str. For new RBAC, all the policy
         # defaults have been changed and warning for each policy started
         # filling the logs limit for various tool.

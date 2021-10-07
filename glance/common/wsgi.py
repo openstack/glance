@@ -1154,7 +1154,7 @@ class Request(webob.Request):
         if not self.accept_language:
             return None
         langs = i18n.get_available_languages('glance')
-        # NOTE(rosmaita): give the webob lookup() function a sentinal value
+        # NOTE(rosmaita): give the webob lookup() function a sentinel value
         # for default so we can preserve the behavior of this function as
         # indicated by the current unit tests.  See Launchpad bug #1765748.
         best_match = self.accept_language.lookup(langs, default='fake_LANG')

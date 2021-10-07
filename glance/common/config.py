@@ -37,7 +37,7 @@ paste_deploy_opts = [
 Deployment flavor to use in the server application pipeline.
 
 Provide a string value representing the appropriate deployment
-flavor used in the server application pipleline. This is typically
+flavor used in the server application pipeline. This is typically
 the partial name of a pipeline in the paste configuration file with
 the service name removed.
 
@@ -58,7 +58,7 @@ Related Options:
 Name of the paste configuration file.
 
 Provide a string value representing the name of the paste
-configuration file to use for configuring piplelines for
+configuration file to use for configuring pipelines for
 server application deployments.
 
 NOTES:
@@ -350,7 +350,7 @@ Related options:
     * location_strategy
 
 """)),
-    # NOTE(flaper87): The policy.yaml file should be updated and the locaiton
+    # NOTE(flaper87): The policy.yaml file should be updated and the location
     # related rules set to admin only once this option is finally removed.
     # NOTE(rosmaita): Unfortunately, this option is used to gate some code
     # paths; if the location related policies are set admin-only, then no

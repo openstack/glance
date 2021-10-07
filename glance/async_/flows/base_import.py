@@ -289,7 +289,7 @@ class _ImportToStore(task.Task):
 
         # NOTE(flaper87): Let's dance... and fall
         #
-        # Unfortunatelly, because of the way our domain layers work and
+        # Unfortunately, because of the way our domain layers work and
         # the checks done in the FS store, we can't simply rename the file
         # and set the location. To do that, we'd have to duplicate the logic
         # of every and each of the domain factories (quota, location, etc)

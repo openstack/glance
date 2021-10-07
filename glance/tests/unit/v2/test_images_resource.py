@@ -3670,7 +3670,7 @@ class TestImagesController(base.IsolatedUnitTest):
             created_at=DATETIME, updated_at=DATETIME, size=1024,
             virtual_size=3072, extra_properties={})
         self.controller._delete_encryption_key(request.context, image)
-        # Make sure the encrytion key is still there
+        # Make sure the encryption key is still there
         key = self.controller._key_manager.get(request.context,
                                                fake_encryption_key)
         self.assertEqual(fake_encryption_key, key._id)
@@ -3689,7 +3689,7 @@ class TestImagesController(base.IsolatedUnitTest):
             created_at=DATETIME, updated_at=DATETIME, size=1024,
             virtual_size=3072, extra_properties=props)
         self.controller._delete_encryption_key(request.context, image)
-        # Make sure the encrytion key is still there
+        # Make sure the encryption key is still there
         key = self.controller._key_manager.get(request.context,
                                                fake_encryption_key)
         self.assertEqual(fake_encryption_key, key._id)
@@ -3709,7 +3709,7 @@ class TestImagesController(base.IsolatedUnitTest):
             created_at=DATETIME, updated_at=DATETIME, size=1024,
             virtual_size=3072, extra_properties=props)
         self.controller._delete_encryption_key(request.context, image)
-        # Make sure the encrytion key is still there
+        # Make sure the encryption key is still there
         key = self.controller._key_manager.get(request.context,
                                                fake_encryption_key)
         self.assertEqual(fake_encryption_key, key._id)
@@ -3731,7 +3731,7 @@ class TestImagesController(base.IsolatedUnitTest):
         with mock.patch.object(self.controller._key_manager, 'delete',
                                side_effect=castellan_exception.Forbidden):
             self.controller._delete_encryption_key(request.context, image)
-        # Make sure the encrytion key is still there
+        # Make sure the encryption key is still there
         key = self.controller._key_manager.get(request.context,
                                                fake_encryption_key)
         self.assertEqual(fake_encryption_key, key._id)
@@ -3753,7 +3753,7 @@ class TestImagesController(base.IsolatedUnitTest):
         with mock.patch.object(self.controller._key_manager, 'delete',
                                side_effect=castellan_exception.ManagedObjectNotFoundError):  # noqa
             self.controller._delete_encryption_key(request.context, image)
-        # Make sure the encrytion key is still there
+        # Make sure the encryption key is still there
         key = self.controller._key_manager.get(request.context,
                                                fake_encryption_key)
         self.assertEqual(fake_encryption_key, key._id)
@@ -3775,7 +3775,7 @@ class TestImagesController(base.IsolatedUnitTest):
         with mock.patch.object(self.controller._key_manager, 'delete',
                                side_effect=castellan_exception.KeyManagerError):  # noqa
             self.controller._delete_encryption_key(request.context, image)
-        # Make sure the encrytion key is still there
+        # Make sure the encryption key is still there
         key = self.controller._key_manager.get(request.context,
                                                fake_encryption_key)
         self.assertEqual(fake_encryption_key, key._id)
@@ -3795,7 +3795,7 @@ class TestImagesController(base.IsolatedUnitTest):
             created_at=DATETIME, updated_at=DATETIME, size=1024,
             virtual_size=3072, extra_properties=props)
         self.controller._delete_encryption_key(request.context, image)
-        # Make sure the encrytion key is gone
+        # Make sure the encryption key is gone
         self.assertRaises(KeyError,
                           self.controller._key_manager.get,
                           request.context, fake_encryption_key)
@@ -5147,7 +5147,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
     def test_index_forbidden_get_image_location(self):
         """Make sure the serializer works fine.
 
-        No mater if current user is authorized to get image location if the
+        No matter if current user is authorized to get image location if the
         show_multiple_locations is False.
 
         """
