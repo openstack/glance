@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-10-02 06:38+0000\n"
+"POT-Creation-Date: 2021-10-06 23:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -194,17 +194,6 @@ msgstr "Kullanılabilir kategoriler:"
 msgid "Bad header: %(header_name)s"
 msgstr "Kötü başlık: %(header_name)s"
 
-#, python-format
-msgid "Badly formed S3 URI: %(uri)s"
-msgstr "Hatalı oluşturulmuş S3 URI: %(uri)s"
-
-#, python-format
-msgid "Badly formed credentials '%(creds)s' in Swift URI"
-msgstr "Swift URI içinde hatalı oluşturulmuş kimlik bilgileri '%(creds)s'"
-
-msgid "Badly formed credentials in Swift URI."
-msgstr "Swift URI içinde hatalı oluşturulmuş kimlik bilgileri."
-
 msgid "Body expected in request."
 msgstr "İstekte beklenen vücut."
 
@@ -252,10 +241,6 @@ msgstr "Metadata nesnesi %s bulunamadı"
 #, python-format
 msgid "Could not find metadata tag %s"
 msgstr "%s metadata etiketi bulunamadı"
-
-#, python-format
-msgid "Could not find namespace %s"
-msgstr "%s ad alanı bulunamadı"
 
 #, python-format
 msgid "Could not find property %s"
@@ -694,10 +679,6 @@ msgstr "%s imajı için üyelerin silinmesine izin verilmedi."
 #, python-format
 msgid "Not allowed to delete tags for image %s."
 msgstr "%s imajı için etiketlerin silinmesine izin verilmedi."
-
-#, python-format
-msgid "Not allowed to list members for image %s."
-msgstr "%s imajı için üyelerin listelenmesine izin verilmedi."
 
 #, python-format
 msgid "Not allowed to reactivate image in status '%s'"
@@ -1263,17 +1244,6 @@ msgstr ""
 
 msgid "Too few arguments."
 msgstr "Çok fazla değişken."
-
-msgid ""
-"URI cannot contain more than one occurrence of a scheme.If you have "
-"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
-"you need to change it to use the swift+http:// scheme, like so: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
-msgstr ""
-"URI bir şemanın birden fazla olayını içeremez. Eğer URI'yi swift://user:"
-"pass@http://authurl.com/v1/container/obj gibi belirttiyseniz, swift+http:// "
-"şemasını kullanmak için onu değiştirmeniz gerekir, şu şekilde: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
 
 #, python-format
 msgid ""

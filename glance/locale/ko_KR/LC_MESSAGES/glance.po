@@ -5,16 +5,17 @@
 # Translators:
 # HyunWoo Jo <showaid@gmail.com>, 2014
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+# Jinseok Kim <wlstjr112@naver.com>, 2021. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-10-02 06:38+0000\n"
+"POT-Creation-Date: 2021-10-06 23:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-04-12 05:21+0000\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
+"PO-Revision-Date: 2021-10-10 12:48+0000\n"
+"Last-Translator: Jinseok Kim <wlstjr112@naver.com>\n"
 "Language: ko_KR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.0\n"
@@ -224,17 +225,6 @@ msgstr ""
 msgid "Bad header: %(header_name)s"
 msgstr "잘못된 헤더: %(header_name)s"
 
-#, python-format
-msgid "Badly formed S3 URI: %(uri)s"
-msgstr "양식이 잘못된 S3 URI: %(uri)s"
-
-#, python-format
-msgid "Badly formed credentials '%(creds)s' in Swift URI"
-msgstr "Swift URI에 양식이 잘못된 신임 정보 '%(creds)s'"
-
-msgid "Badly formed credentials in Swift URI."
-msgstr "Swift URI에 양식이 잘못된 신임 정보가 있습니다."
-
 msgid "Body expected in request."
 msgstr "요청에 본문이 있어야 합니다."
 
@@ -288,10 +278,6 @@ msgstr "메타데이터 오브젝트 %s을(를) 찾을 수 없음"
 #, python-format
 msgid "Could not find metadata tag %s"
 msgstr "메타데이터 태그 %s을(를) 찾을 수 없음"
-
-#, python-format
-msgid "Could not find namespace %s"
-msgstr "%s 네임스페이스를 찾을 수 없음"
 
 #, python-format
 msgid "Could not find property %s"
@@ -810,10 +796,6 @@ msgstr "이미지 %s의 멤버를 삭제할 수 없습니다."
 #, python-format
 msgid "Not allowed to delete tags for image %s."
 msgstr "이미지 %s의 태그를 삭제할 수 없습니다."
-
-#, python-format
-msgid "Not allowed to list members for image %s."
-msgstr "이미지 %s의 멤버를 나열할 수 없습니다."
 
 #, python-format
 msgid "Not allowed to reactivate image in status '%s'"
@@ -1387,17 +1369,6 @@ msgstr "이후에 태스크가 활성이 되는 시간(시), 성공 또는 실�
 msgid "Too few arguments."
 msgstr "인수가 너무 적습니다."
 
-msgid ""
-"URI cannot contain more than one occurrence of a scheme.If you have "
-"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
-"you need to change it to use the swift+http:// scheme, like so: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
-msgstr ""
-"URI는 스킴의 둘 이상의 발생을 포함할 수 없습니다. 다음과 유사한 URI를 지정한 "
-"경우 swift://user:pass@http://authurl.com/v1/container/obj, 다음과 같이 swift"
-"+http:// 스킴을 사용하도록 변경해야 합니다. swift+http://user:pass@authurl."
-"com/v1/container/obj"
-
 msgid "URL to access the image file kept in external store"
 msgstr "외부 저장소에 보관된 이미지 파일에 액세스하기 위한 URL"
 
@@ -1459,6 +1430,11 @@ msgstr "스키마를 로드할 수 없음: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "%s에 대한 붙여넣기 구성 파일을 찾을 수 없습니다."
+
+#, python-format
+msgid "Unable to upload duplicate image data for image %(image_id)s: %(error)s"
+msgstr ""
+"이미지 %(image_id)s에 대한 중복된 이미지 데이터를 업로드할 수 없음: %(error)s"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "예기치않은 본문 타입. list/dict를 예상합니다."

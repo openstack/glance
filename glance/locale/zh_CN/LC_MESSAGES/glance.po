@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-10-02 06:38+0000\n"
+"POT-Creation-Date: 2021-10-06 23:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -221,17 +221,6 @@ msgstr "无效“%s”查询过滤器格式。请使用 ISO 8601 日期时间注
 msgid "Bad header: %(header_name)s"
 msgstr "头 %(header_name)s 不正确"
 
-#, python-format
-msgid "Badly formed S3 URI: %(uri)s"
-msgstr "S3 URI %(uri)s 的格式不正确"
-
-#, python-format
-msgid "Badly formed credentials '%(creds)s' in Swift URI"
-msgstr "Swift URI 中凭证“%(creds)s”的格式不正确"
-
-msgid "Badly formed credentials in Swift URI."
-msgstr "Swift URI 中凭证的格式不正确。"
-
 msgid "Body expected in request."
 msgstr "请求中需要主体。"
 
@@ -285,10 +274,6 @@ msgstr "找不到元数据对象 %s"
 #, python-format
 msgid "Could not find metadata tag %s"
 msgstr "找不到元数据标记 %s"
-
-#, python-format
-msgid "Could not find namespace %s"
-msgstr "找不到名称空间 %s"
 
 #, python-format
 msgid "Could not find property %s"
@@ -827,10 +812,6 @@ msgstr "不允许为映像 %s 删除成员。"
 #, python-format
 msgid "Not allowed to delete tags for image %s."
 msgstr "不允许为映像 %s 删除标记。"
-
-#, python-format
-msgid "Not allowed to list members for image %s."
-msgstr "不允许为映像 %s 列示成员。"
 
 #, python-format
 msgid "Not allowed to reactivate image in status '%s'"
@@ -1382,16 +1363,6 @@ msgstr "太少参数"
 msgid ""
 "Total size is %(size)d bytes (%(human_size)s) across %(img_count)d images"
 msgstr "总大小为 %(size)d 字节（%(human_size)s）（在 %(img_count)d 个映像上）"
-
-msgid ""
-"URI cannot contain more than one occurrence of a scheme.If you have "
-"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
-"you need to change it to use the swift+http:// scheme, like so: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
-msgstr ""
-"URI 不能包含方案的多个实例。如果已指定类似于 swift://user:pass@http://"
-"authurl.com/v1/container/obj 的 URI，那么需要将它更改为使用 swift+http:// 方"
-"案，类似于以下：swift+http://user:pass@authurl.com/v1/container/obj"
 
 msgid "URL to access the image file kept in external store"
 msgstr "用于访问外部存储器中保留的映像文件的 URL"

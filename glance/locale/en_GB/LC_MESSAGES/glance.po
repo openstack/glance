@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-03-24 06:17+0000\n"
+"POT-Creation-Date: 2021-10-06 23:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -755,53 +755,6 @@ msgstr ""
 "\n"
 "    The values must be specified as: <group_name>.<event_name>\n"
 "    For example: image.create,task.success,metadef_tag\n"
-"\n"
-"Related options:\n"
-"    * None\n"
-"\n"
-
-msgid ""
-"\n"
-"Maximum amount of image storage per tenant.\n"
-"\n"
-"This enforces an upper limit on the cumulative storage consumed by all "
-"images\n"
-"of a tenant across all stores. This is a per-tenant limit.\n"
-"\n"
-"The default unit for this configuration option is Bytes. However, storage\n"
-"units can be specified using case-sensitive literals ``B``, ``KB``, ``MB``,\n"
-"``GB`` and ``TB`` representing Bytes, KiloBytes, MegaBytes, GigaBytes and\n"
-"TeraBytes respectively. Note that there should not be any space between the\n"
-"value and unit. Value ``0`` signifies no quota enforcement. Negative values\n"
-"are invalid and result in errors.\n"
-"\n"
-"Possible values:\n"
-"    * A string that is a valid concatenation of a non-negative integer\n"
-"      representing the storage value and an optional string literal\n"
-"      representing storage units as mentioned above.\n"
-"\n"
-"Related options:\n"
-"    * None\n"
-"\n"
-msgstr ""
-"\n"
-"Maximum amount of image storage per tenant.\n"
-"\n"
-"This enforces an upper limit on the cumulative storage consumed by all "
-"images\n"
-"of a tenant across all stores. This is a per-tenant limit.\n"
-"\n"
-"The default unit for this configuration option is Bytes. However, storage\n"
-"units can be specified using case-sensitive literals ``B``, ``KB``, ``MB``,\n"
-"``GB`` and ``TB`` representing Bytes, KiloBytes, MegaBytes, GigaBytes and\n"
-"TeraBytes respectively. Note that there should not be any space between the\n"
-"value and unit. Value ``0`` signifies no quota enforcement. Negative values\n"
-"are invalid and result in errors.\n"
-"\n"
-"Possible values:\n"
-"    * A string that is a valid concatenation of a non-negative integer\n"
-"      representing the storage value and an optional string literal\n"
-"      representing storage units as mentioned above.\n"
 "\n"
 "Related options:\n"
 "    * None\n"
@@ -2927,17 +2880,6 @@ msgstr "Bad \"%s\" query filter format. Use ISO 8601 DateTime notation."
 msgid "Bad header: %(header_name)s"
 msgstr "Bad header: %(header_name)s"
 
-#, python-format
-msgid "Badly formed S3 URI: %(uri)s"
-msgstr "Badly formed S3 URI: %(uri)s"
-
-#, python-format
-msgid "Badly formed credentials '%(creds)s' in Swift URI"
-msgstr "Badly formed credentials '%(creds)s' in Swift URI"
-
-msgid "Badly formed credentials in Swift URI."
-msgstr "Badly formed credentials in Swift URI."
-
 msgid "Body expected in request."
 msgstr "Body expected in request."
 
@@ -3017,10 +2959,6 @@ msgstr "Could not find metadata object %s"
 #, python-format
 msgid "Could not find metadata tag %s"
 msgstr "Could not find metadata tag %s"
-
-#, python-format
-msgid "Could not find namespace %s"
-msgstr "Could not find namespace %s"
 
 #, python-format
 msgid "Could not find property %s"
@@ -3132,9 +3070,6 @@ msgstr ""
 
 msgid "Database expansion is up to date. No expansion needed."
 msgstr "Database expansion is up to date. No expansion needed."
-
-msgid "Database is currently not under Alembic's migration control."
-msgstr "Database is currently not under Alembic's migration control."
 
 msgid ""
 "Database is either not under migration control or under legacy migration "
@@ -3821,10 +3756,6 @@ msgid "Not allowed to delete tags for image %s."
 msgstr "Not allowed to delete tags for image %s."
 
 #, python-format
-msgid "Not allowed to list members for image %s."
-msgstr "Not allowed to list members for image %s."
-
-#, python-format
 msgid "Not allowed to reactivate image in status '%s'"
 msgstr "Not allowed to reactivate image in status '%s'"
 
@@ -3858,9 +3789,6 @@ msgstr "Only shared images have members."
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
 msgstr "Operation \"%s\" requires a member named \"value\"."
-
-msgid "Operation not permitted"
-msgstr "Operation not permitted"
 
 msgid ""
 "Operation objects must contain exactly one member named \"add\", \"remove\", "
@@ -3900,9 +3828,6 @@ msgstr "Param values can't contain 4 byte Unicode."
 
 msgid "Placed database under migration control at revision:"
 msgstr "Placed database under migration control at revision:"
-
-msgid "Placing database under Alembic's migration control at revision:"
-msgstr "Placing database under Alembic's migration control at revision:"
 
 #, python-format
 msgid "Pointer `%s` contains \"~\" not part of a recognized escape sequence."
@@ -4172,13 +4097,6 @@ msgstr "The address where the Swift authentication service is listening."
 #, python-format
 msgid "The cert file you specified %s does not exist"
 msgstr "The cert file you specified %s does not exist"
-
-msgid ""
-"The current database version is not supported any more. Please upgrade to "
-"Liberty release first."
-msgstr ""
-"The current database version is not supported any more. Please upgrade to "
-"Liberty release first."
 
 msgid "The current status of this task"
 msgstr "The current status of this task"
@@ -4489,17 +4407,6 @@ msgid ""
 msgstr ""
 "Total size is %(size)d bytes (%(human_size)s) across %(img_count)d images"
 
-msgid ""
-"URI cannot contain more than one occurrence of a scheme.If you have "
-"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
-"you need to change it to use the swift+http:// scheme, like so: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
-msgstr ""
-"URI cannot contain more than one occurrence of a scheme.If you have "
-"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
-"you need to change it to use the swift+http:// scheme, like so: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
-
 #, python-format
 msgid "URI for web-download does not pass filtering: %s"
 msgstr "URI for web-download does not pass filtering: %s"
@@ -4563,13 +4470,6 @@ msgstr "Unable to load schema: %(reason)s"
 #, python-format
 msgid "Unable to locate paste config file for %s."
 msgstr "Unable to locate paste config file for %s."
-
-msgid ""
-"Unable to place database under Alembic's migration control. Unknown database "
-"state, can't proceed further."
-msgstr ""
-"Unable to place database under Alembic's migration control. Unknown database "
-"state, can't proceed further."
 
 #, python-format
 msgid "Unable to upload duplicate image data for image %(image_id)s: %(error)s"

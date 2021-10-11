@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-10-02 06:38+0000\n"
+"POT-Creation-Date: 2021-10-06 23:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -235,17 +235,6 @@ msgstr ""
 msgid "Bad header: %(header_name)s"
 msgstr "Cabecera incorrecta: %(header_name)s"
 
-#, python-format
-msgid "Badly formed S3 URI: %(uri)s"
-msgstr "La URI S3 se realizó de manera incorrecta: %(uri)s"
-
-#, python-format
-msgid "Badly formed credentials '%(creds)s' in Swift URI"
-msgstr "Credenciales formadas incorrectamente '%(creds)s' en URI de Swift"
-
-msgid "Badly formed credentials in Swift URI."
-msgstr "Credenciales con formato incorrecto en URI de Swift."
-
 msgid "Body expected in request."
 msgstr "Se esperaba un cuerpo en la solicitud."
 
@@ -305,10 +294,6 @@ msgstr "No se pudo encontrar el objeto de metadatos %s"
 #, python-format
 msgid "Could not find metadata tag %s"
 msgstr "No se pudo encontrar la etiqueta de metadatos %s"
-
-#, python-format
-msgid "Could not find namespace %s"
-msgstr "No se ha podido encontrar el espacio de nombre %s"
 
 #, python-format
 msgid "Could not find property %s"
@@ -854,10 +839,6 @@ msgstr "No se permite eliminar miembros para imagen %s."
 #, python-format
 msgid "Not allowed to delete tags for image %s."
 msgstr "No se permite eliminar etiquetas para imagen %s."
-
-#, python-format
-msgid "Not allowed to list members for image %s."
-msgstr "No se permite listar miembros para imagen %s."
 
 #, python-format
 msgid "Not allowed to reactivate image in status '%s'"
@@ -1452,17 +1433,6 @@ msgstr "Tiempo de vida en horas para la tarea, así tenga éxito o fracase"
 
 msgid "Too few arguments."
 msgstr "Muy pocos argumentos."
-
-msgid ""
-"URI cannot contain more than one occurrence of a scheme.If you have "
-"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
-"you need to change it to use the swift+http:// scheme, like so: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
-msgstr ""
-"El URI no puede contener más de una aparición de un esquema. Si ha "
-"especificado un URI como swift://user:pass@http://authurl.com/v1/container/"
-"obj, tiene que cambiarlo para que utilice el esquema swift+http://, como: "
-"swift+http://user:pass@authurl.com/v1/container/obj"
 
 msgid "URL to access the image file kept in external store"
 msgstr ""

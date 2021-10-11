@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2020-10-02 06:38+0000\n"
+"POT-Creation-Date: 2021-10-06 23:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -239,17 +239,6 @@ msgstr ""
 msgid "Bad header: %(header_name)s"
 msgstr "Fehlerhafter Header: %(header_name)s"
 
-#, python-format
-msgid "Badly formed S3 URI: %(uri)s"
-msgstr "Falsches Format der S3 URI: %(uri)s"
-
-#, python-format
-msgid "Badly formed credentials '%(creds)s' in Swift URI"
-msgstr "Fehlerhafter Berechtigungsnachweis '%(creds)s' in Swift-URI"
-
-msgid "Badly formed credentials in Swift URI."
-msgstr "Fehlerhafter Berechtigungsnachweis in Swift-URI."
-
 msgid "Body expected in request."
 msgstr "Text in Anforderung erwartet."
 
@@ -310,10 +299,6 @@ msgstr "Metadatenobjekt %s konnte nicht gefunden werden"
 #, python-format
 msgid "Could not find metadata tag %s"
 msgstr "Metadatenschlagwort %s konnte nicht gefunden werden"
-
-#, python-format
-msgid "Could not find namespace %s"
-msgstr "Namensbereich %s konnte nicht gefunden werden"
 
 #, python-format
 msgid "Could not find property %s"
@@ -872,10 +857,6 @@ msgstr "Es ist nicht zulässig, Mitglieder für Abbild %s zu löschen."
 #, python-format
 msgid "Not allowed to delete tags for image %s."
 msgstr "Es ist nicht zulässig, Schlagwörter für Abbild %s zu löschen."
-
-#, python-format
-msgid "Not allowed to list members for image %s."
-msgstr "Es ist nicht zulässig, Mitglieder für Abbild %s aufzulisten."
 
 #, python-format
 msgid "Not allowed to reactivate image in status '%s'"
@@ -1500,17 +1481,6 @@ msgstr "Zu wenig Argumente"
 msgid ""
 "Total size is %(size)d bytes (%(human_size)s) across %(img_count)d images"
 msgstr "Gesamtgröße ist %(size)d Byte (%(human_size)s) in %(img_count)d Images"
-
-msgid ""
-"URI cannot contain more than one occurrence of a scheme.If you have "
-"specified a URI like swift://user:pass@http://authurl.com/v1/container/obj, "
-"you need to change it to use the swift+http:// scheme, like so: swift+http://"
-"user:pass@authurl.com/v1/container/obj"
-msgstr ""
-"URI kann nicht mehrere Vorkommen eines Schemas enthalten. Wenn Sie einen URI "
-"wie swift://user:pass@http://authurl.com/v1/container/obj angegeben haben, "
-"müssen Sie ihn ändern, um das swift+http://-Schema verwenden zu können. "
-"Beispiel: swift+http://user:pass@authurl.com/v1/container/obj"
 
 msgid "URL to access the image file kept in external store"
 msgstr "URL für den Zugriff auf Abbilddatei in externem Speicher"
