@@ -905,9 +905,9 @@ class TestImages(functional.FunctionalTest):
 
     def _create_qcow(self, size):
         fn = tempfile.mktemp(prefix='glance-unittest-images-',
-                             suffix='.qcow')
+                             suffix='.qcow2')
         subprocess.check_output(
-            'qemu-img create -f qcow %s %i' % (fn, size),
+            'qemu-img create -f qcow2 %s %i' % (fn, size),
             shell=True)
         return fn
 
