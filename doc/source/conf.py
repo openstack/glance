@@ -33,6 +33,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'oslo_config.sphinxext',
     'oslo_config.sphinxconfiggen',
+    'oslo_policy.sphinxext',
     'oslo_policy.sphinxpolicygen',
     'openstackdocstheme',
     'sphinxcontrib.apidoc',
