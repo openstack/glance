@@ -166,7 +166,7 @@ Currently, there are two reserved stores:
 
 .. note::
    If end user wants to retrieve all the available stores using
-   ``CONF.enabled_backeds`` then he needs to remove reserved
+   ``CONF.enabled_backeds`` then they need to remove reserved
    stores from that list explicitly.
 
 Configuration

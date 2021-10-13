@@ -956,7 +956,7 @@ glance where `cinder_volume_type` is same as the old glance configuration::
 
     # cinder.conf
     The glance administrator has to find out what the default volume-type is
-    in the cinder installation, so he/she needs to discuss with either cinder
+    in the cinder installation, so they need to discuss with either cinder
     admin or cloud admin to identify default volume-type from cinder and then
     explicitly configure that as the value of ``cinder_volume_type``.
 
@@ -1009,7 +1009,7 @@ glance to replicate exact old configuration::
 
     # cinder.conf
     The glance administrator has to find out what the default volume-type is
-    in the cinder installation, so he/she needs to discuss with either cinder
+    in the cinder installation, so they need to discuss with either cinder
     admin or cloud admin to identify default volume-type from cinder and then
     explicitly configure that as the value of ``cinder_volume_type``.
 
@@ -1062,7 +1062,7 @@ one of the store::
 
     # cinder.conf
     The glance administrator has to find out what the default volume-type is
-    in the cinder installation, so he/she needs to discuss with either cinder
+    in the cinder installation, so they need to discuss with either cinder
     admin or cloud admin to identify default volume-type from cinder and then
     explicitly configure that as the value of ``cinder_volume_type``.
 

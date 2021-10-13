@@ -926,7 +926,7 @@ C
    credentials
 
       Data that is only known to or accessible by a user and
-      used to verify that the user is who he says he is.
+      used to verify that the user is who they say they are.
       Credentials are presented to the server during
       authentication. Examples include a password, secret key,
       digital certificate, and fingerprint.
