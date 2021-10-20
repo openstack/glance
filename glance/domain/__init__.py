@@ -259,7 +259,7 @@ class Image(object):
         if self.status == 'active':
             self.status = 'deactivated'
         elif self.status == 'deactivated':
-            # Noop if already deactive
+            # Noop if already deactivate
             pass
         else:
             LOG.debug("Not allowed to deactivate image in status '%s'",

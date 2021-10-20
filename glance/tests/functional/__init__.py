@@ -797,7 +797,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
         # NOTE: Scrubber is enabled by default for the functional tests.
-        # Please disbale it by explicitly setting 'self.include_scrubber' to
+        # Please disable it by explicitly setting 'self.include_scrubber' to
         # False in the test SetUps that do not require Scrubber to run.
         self.include_scrubber = True
 
@@ -1152,7 +1152,7 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
         # NOTE: Scrubber is enabled by default for the functional tests.
-        # Please disbale it by explicitly setting 'self.include_scrubber' to
+        # Please disable it by explicitly setting 'self.include_scrubber' to
         # False in the test SetUps that do not require Scrubber to run.
         self.include_scrubber = True
 

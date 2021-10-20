@@ -313,8 +313,8 @@ class ImageCacheTestCase(object):
         """
         Test to see if open_for_write works in a failure case for each driver
         This case is where an exception is raised while the file is being
-        written. The image is partially filled in cache and filling wont resume
-        so verify the image is moved to invalid/ directory
+        written. The image is partially filled in cache and filling won't
+        resume so verify the image is moved to invalid/ directory
         """
         # test a case where an exception is raised while the file is open
         image_id = '1'
@@ -390,7 +390,7 @@ class ImageCacheTestCase(object):
         """
         Test to see if the caching iterator interacts properly with the driver
         in a case where the iterator is only partially consumed. In this case
-        the image is only partially filled in cache and filling wont resume.
+        the image is only partially filled in cache and filling won't resume.
         When the iterator goes out of scope the driver should have closed the
         image and moved it from incomplete/ to invalid/
         """

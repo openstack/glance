@@ -27,7 +27,7 @@ class HackingTestCase(utils.BaseTestCase):
 
     def test_assert_equal_type(self):
         self.assertEqual(1, len(list(checks.assert_equal_type(
-            "self.assertEqual(type(als['QuicAssist']), list)"))))
+            "self.assertEqual(type(also['QuicAssist']), list)"))))
 
         self.assertEqual(
             0, len(list(checks.assert_equal_type("self.assertTrue()"))))

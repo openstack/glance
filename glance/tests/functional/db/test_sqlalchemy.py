@@ -274,7 +274,7 @@ class TestImageAtomicOps(base.TestDriver,
         """Create and delete properties on two images, then set on one.
 
         This tests that the resurrect-from-deleted mode of the method only
-        matchs deleted properties from our image.
+        matches deleted properties from our image.
         """
 
         images = self.db_api.image_get_all(self.adm_context)

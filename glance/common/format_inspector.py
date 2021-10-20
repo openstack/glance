@@ -241,7 +241,7 @@ class QcowInspector(FileInspector):
 
 
 # The VHD (or VPC as QEMU calls it) format consists of a big-endian
-# 512-byte "footer" at the beginning fo the file with various
+# 512-byte "footer" at the beginning of the file with various
 # information, most of which does not matter to us:
 #
 # Dec   Hex   Name

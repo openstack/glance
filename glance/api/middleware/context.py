@@ -29,7 +29,7 @@ context_opts = [
                 help=_("""
 Allow limited access to unauthenticated users.
 
-Assign a boolean to determine API access for unathenticated
+Assign a boolean to determine API access for unauthenticated
 users. When set to False, the API cannot be accessed by
 unauthenticated users. When set to True, unauthenticated users can
 access the API with read-only privileges. This however only applies

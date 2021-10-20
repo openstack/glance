@@ -22,7 +22,7 @@ This is meant to be run as a periodic task from cron.
 
 If something goes wrong while we're caching an image (for example the fetch
 times out, or an exception is raised), we create an 'invalid' entry. These
-entires are left around for debugging purposes. However, after some period of
+entries are left around for debugging purposes. However, after some period of
 time, we want to clean these up.
 
 Also, if an incomplete image hangs around past the image_cache_stall_time

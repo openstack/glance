@@ -35,7 +35,7 @@ def get_alembic_config(engine=None):
     # because that uses ConfigParser.set, which (by design) uses
     # *python* interpolation to write the string out ... where "%" is
     # the special python interpolation character!  Avoid this
-    # mis-match by quoting all %'s for the set below.
+    # mismatch by quoting all %'s for the set below.
     quoted_engine_url = str(engine.url).replace('%', '%%')
     config.set_main_option('sqlalchemy.url', quoted_engine_url)
     return config

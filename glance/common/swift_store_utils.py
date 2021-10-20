@@ -65,7 +65,7 @@ File containing the swift account(s) configurations.
 Include a string value representing the path to a configuration
 file that has references for each of the configured Swift
 account(s)/backing stores. By default, no file path is specified
-and customized Swift referencing is diabled. Configuring this option
+and customized Swift referencing is disabled. Configuring this option
 is highly recommended while using Swift storage backend for image
 storage as it helps avoid storage of credentials in the
 database.

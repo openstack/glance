@@ -142,7 +142,7 @@ class BaseTestCase(testtools.TestCase):
         self._config_fixture.config(**kw)
 
     def mock_object(self, obj, attr_name, *args, **kwargs):
-        """"Use python mock to mock an object attirbute
+        """"Use python mock to mock an object attribute
 
         Mocks the specified objects attribute with the given value.
         Automatically performs 'addCleanup' for the mock.

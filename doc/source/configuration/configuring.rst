@@ -855,7 +855,7 @@ documentation for more information.
   ``cinder_store_auth_address`` are set.
   These options are useful to put image volumes into the internal service
   project in order to hide the volume from users, and to make the image
-  sharable among projects.
+  shareable among projects.
 
 ``cinder_store_password=PASSWORD``
   Optional. Default: ``None``

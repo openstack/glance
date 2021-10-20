@@ -1079,7 +1079,7 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(1, len(images))
         self.assertEqual(image_id, images[0]['id'])
 
-        # Create another image wiht hidden true
+        # Create another image with hidden true
         path = self._url('/v2/images')
         headers = self._headers({'content-type': 'application/json'})
         data = jsonutils.dumps({'name': 'image-2', 'type': 'kernel',

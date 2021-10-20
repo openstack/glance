@@ -334,7 +334,7 @@ class ImageMembersController(object):
                                          member_repo=member_repo)
 
             # NOTE(abhishekk): This will verify whether user has permission
-            # to delete iamge member or not.
+            # to delete image member or not.
             api_policy.MemberAPIPolicy(
                 req.context,
                 image,
