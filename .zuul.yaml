@@ -364,8 +364,6 @@
         - grenade-multinode
         - tempest-pg-full:
             irrelevant-files: *tempest-irrelevant-files
-        - tempest-full-py3-opensuse15:
-            irrelevant-files: *tempest-irrelevant-files
     periodic:
       jobs:
         # NOTE(rosmaita): we only want the "tips" jobs to be run against
