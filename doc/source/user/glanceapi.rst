@@ -30,20 +30,21 @@ independent definition of a REST API.  In practice, however, the only way
 to participate in the evolution of the Images API is to work with the Glance
 community to define the new functionality and provide its reference
 implementation. Further, Glance falls under the "designated sections" provision
-of the OpenStack DefCore Guidelines, which basically means that in order to
-qualify as "OpenStack", a cloud exposing an OpenStack Images API must include
-the Glance Images API implementation code.  Thus, although conceptually
-independent, the OpenStack Images APIs are intimately associated with Glance.
+of the OpenStack Interop (formerly known as DefCore) Guidelines, which
+basically means that in order to qualify as "OpenStack", a cloud exposing an
+OpenStack Images API must include the Glance Images API implementation code.
+Thus, although conceptually independent, the OpenStack Images APIs are
+intimately associated with Glance.
 
 **References**
 
-* `Designated sections (definition) <https://github.com/openstack/interop/blob/master/doc/source/process/Lexicon.rst>`_
+* `Designated sections (definition) <https://docs.opendev.org/openinfra/interop/latest/process/Lexicon.html>`_
 
 * `2014-04-02 DefCore Designated Sections Guidelines <https://governance.openstack.org/resolutions/20140402-defcore-designated-sections-guidelines.html>`_
 
-* `OpenStack Core Definition <https://github.com/openstack/interop/blob/master/doc/source/process/CoreDefinition.rst>`_
+* `OpenStack Core Definition <https://docs.opendev.org/openinfra/interop/latest/process/CoreDefinition.html>`_
 
-* `DefCore Guidelines Repository <https://github.com/openstack/interop>`_
+* `Interop Guidelines Repository <https://opendev.org/openinfra/interop>`_
 
 Glance and the Images APIs: Past, Present, and Future
 -----------------------------------------------------
