@@ -80,7 +80,8 @@
                 "qxl",
                 "virtio",
                 "gop",
-                "none"
+                "none",
+                "bochs"
             ]
         },
         "hw_video_ram": {
