@@ -558,6 +558,7 @@ Here is a list of useful image properties and the values they expect.
   * ``virtio``
   * ``gop``
   * ``none``
+  * ``bochs``
 
   Only supported by the libvirt driver.
 
