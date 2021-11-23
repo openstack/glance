@@ -21,6 +21,7 @@ import glance_store
 from glance_store._drivers import cinder
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import strutils
 
 from glance.common import wsgi
 from glance.tests import functional
@@ -156,8 +157,9 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(cinder, 'connector')
     @mock.patch.object(cinder, 'open')
     @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
-    def test_create_image(self, mock_wait, mock_open, mock_connector,
-                          mock_chown, mocked_cc):
+    @mock.patch.object(strutils, 'mask_dict_password')
+    def test_create_image(self, mock_mask_pass, mock_wait, mock_open,
+                          mock_connector, mock_chown, mocked_cc):
         # setup multiple cinder stores
         self.setup_multiple_stores()
         self.start_server()
@@ -183,9 +185,10 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(cinder, 'connector')
     @mock.patch.object(cinder, 'open')
     @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
-    def test_migrate_image_after_upgrade(self, mock_wait, mock_open,
-                                         mock_connector, mock_chown,
-                                         mocked_cc):
+    @mock.patch.object(strutils, 'mask_dict_password')
+    def test_migrate_image_after_upgrade(self, mock_mask_pass, mock_wait,
+                                         mock_open, mock_connector,
+                                         mock_chown, mocked_cc):
         """Test to check if an image is successfully migrated when we
 
         upgrade from a single cinder store to multiple cinder stores.
@@ -228,9 +231,11 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(cinder, 'connector')
     @mock.patch.object(cinder, 'open')
     @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
-    def test_migrate_image_after_upgrade_not_owner(self, mock_wait, mock_open,
-                                                   mock_connector, mock_chown,
-                                                   mocked_cc):
+    @mock.patch.object(strutils, 'mask_dict_password')
+    def test_migrate_image_after_upgrade_not_owner(self, mock_mask_pass,
+                                                   mock_wait, mock_open,
+                                                   mock_connector,
+                                                   mock_chown, mocked_cc):
         """Test to check if an image is successfully migrated when we upgrade
         from a single cinder store to multiple cinder stores, and that
         GETs from non-owners in the meantime are not interrupted.
