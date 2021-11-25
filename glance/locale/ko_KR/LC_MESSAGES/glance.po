@@ -10,11 +10,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-10-06 23:29+0000\n"
+"POT-Creation-Date: 2021-11-24 12:20+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2021-10-10 12:48+0000\n"
+"PO-Revision-Date: 2021-10-11 01:50+0000\n"
 "Last-Translator: Jinseok Kim <wlstjr112@naver.com>\n"
 "Language: ko_KR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -94,6 +94,10 @@ msgstr "%s이(가) 이미 중지되었습니다."
 #, python-format
 msgid "%s is stopped"
 msgstr "%s이(가) 중지됨"
+
+#, python-format
+msgid "'%(param)s' value out of range, must not exceed %(max)d."
+msgstr "'%(param)s' 값이 범위를 벗어났습니다. %(max)d를 초과하면 안 됩니다."
 
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
@@ -297,6 +301,9 @@ msgstr "여러 디스크를 포함하는 OVA 패키지는 현재 지원되지 �
 msgid "Data supplied was not valid."
 msgstr "제공된 데이터가 올바르지 않습니다."
 
+msgid "Database is synced successfully."
+msgstr "데이터베이스가 성공적으로 동기화됐습니다."
+
 msgid "Date and time of image member creation"
 msgstr "이미지 멤버 작성 날짜 및 시간"
 
@@ -390,6 +397,10 @@ msgstr "이미지 캐시 데이터베이스를 초기화하지 못했습니다. 
 #, python-format
 msgid "Failed to read %s from config"
 msgstr "구성에서 %s을(를) 읽지 못했음"
+
+#, python-format
+msgid "Failed to sync database: ERROR: %s"
+msgstr "데이터베이스 동기화를 실패했습니다. ERROR: %s"
 
 #, python-format
 msgid ""
@@ -488,6 +499,10 @@ msgid "Image id is required."
 msgstr "이미지 ID가 필요합니다."
 
 #, python-format
+msgid "Image is already present at store '%s'"
+msgstr "이미지가 스토어 '%s'에 이미 있습니다."
+
+#, python-format
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr "이미지 %(id)s에 대한 이미지 멤버 한계 초과: %(e)s:"
 
@@ -528,6 +543,9 @@ msgstr "올바르지 않은 요청: %s"
 msgid "Input does not contain '%(key)s' field"
 msgstr "입력에 '%(key)s' 필드가 포함되어 있지 않음"
 
+msgid "Input to api_image_import task is empty."
+msgstr "api_image_import 작업에 대한 입력이 비어있습니다."
+
 #, python-format
 msgid "Insufficient permissions on image storage media: %s"
 msgstr "이미지 스토리지 미디어 권한 부족 : %s"
@@ -559,6 +577,10 @@ msgstr "올바르지 않은 필터 값 %s입니다. 닫기 따옴표 전에 쉼�
 msgid ""
 "Invalid filter value %s. There is no comma before opening quotation mark."
 msgstr "올바르지 않은 필터 값 %s입니다. 열기 따옴표 전에 쉼표가 없습니다."
+
+#, python-format
+msgid "Invalid int value for max_rows: %(max_rows)s"
+msgstr "max_rows: %(max_rows)s에 대한 int 값이 잘못됐습니다."
 
 msgid "Invalid location"
 msgstr "잘못된 위치"
@@ -760,6 +782,9 @@ msgstr "id=%s에 대한 메타데이터 정의 태그를 찾을 수 없음"
 
 msgid "Minimal rows limit is 1."
 msgstr "최소 행 제한은 1입니다."
+
+msgid "Missing required 'image_id' field"
+msgstr "필수인 'image_id' 필드가 없습니다."
 
 #, python-format
 msgid "Missing required credential: %(required)s"
@@ -982,6 +1007,9 @@ msgstr "이미지 접근성의 범위"
 msgid "Scope of namespace accessibility."
 msgstr "네임스페이스 접근성의 범위입니다."
 
+msgid "Scrubber encountered an error while trying to fetch scrub jobs."
+msgstr "Scrubber에서 scrub jobs를 가져오다 오류가 발생했습다."
+
 #, python-format
 msgid "Server %(serv)s is stopped"
 msgstr "서버 %(serv)s이(가) 중지됨"
@@ -1022,6 +1050,9 @@ msgstr ""
 "우 네임스페이스의 모든 특성은 이 접두부로 시작해야 합니다. 접두부 구분 기호"
 "(예: 콜론 :)를 포함해야 합니다."
 
+msgid "Specifying both 'visibility' and 'is_public' is not permiitted."
+msgstr "'visibility'와 'is_public'을 모두 지정하는 건 허용되지 않습니다."
+
 msgid "Status must be \"pending\", \"accepted\" or \"rejected\"."
 msgstr "상태는 \"보류 중\", \"수락됨\" 또는 \"거부됨\"이어야 합니다."
 
@@ -1038,6 +1069,9 @@ msgstr "%(cur_status)s에서 %(new_status)s(으)로의 상태 전이가 허용�
 #, python-format
 msgid "Stopping %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "신호(%(sig)s)와 함께 %(serv)s(pid %(pid)s) 중지 중"
+
+msgid "Stores parameter and x-image-meta-store header can't be both specified"
+msgstr "저장소 매개 변수와 x-image-meta-store 헤더를 둘 다 지정할 수 없습니다."
 
 msgid "Supported values for the 'container_format' image attribute"
 msgstr "'container_format' 이미지 속성에 대해 지원되는 값"
@@ -1061,6 +1095,9 @@ msgstr "태스크가 존재하지 않음"
 
 msgid "Task failed due to Internal Error"
 msgstr "내부 오류로 인해 태스크 실패"
+
+msgid "Task was aborted externally"
+msgstr "작업이 외부에서 중단됐습니다."
 
 msgid "Task was not configured properly"
 msgstr "태스크가 제대로 구성되지 않음"
@@ -1457,8 +1494,18 @@ msgstr "알 수 없는 정렬 방향입니다. 'desc' 또는 'asc'여야 함"
 msgid "Unrecognized JSON Schema draft version"
 msgstr "인식되지 않는 JSON 스키마 드래프트 버전"
 
+msgid "Use the http_proxy_to_wsgi middleware instead."
+msgstr "대신 http_proxy_to_wsgi 미들웨어를 사용합니다."
+
 msgid "Virtual size of image in bytes"
 msgstr "이미지의 가상 크기(바이트)"
+
+msgid ""
+"Visibility must be one of \"community\", \"public\", \"private\", or \"shared"
+"\""
+msgstr ""
+"가시성은  \"community\", \"public\", \"private\" 또는 \"shared\" 중 하나여야 "
+"합니다."
 
 #, python-format
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
@@ -1466,6 +1513,10 @@ msgstr "pid %(pid)s(%(file)s)이 종료될 때까지 15초 대기함, 포기하�
 
 msgid "You are not authenticated."
 msgstr "인증되지 않은 사용자입니다."
+
+#, python-format
+msgid "You are not authorized to complete %(action)s action."
+msgstr "%(action)s 작업을 완료할 수 있는 권한이 없습니다."
 
 msgid "You are not authorized to complete this action."
 msgstr "이 조치를 완료할 권한이 없습니다."
