@@ -301,6 +301,19 @@ class ResourceTest(test_utils.BaseTestCase):
         self.assertRaises(AttributeError, resource.dispatch, Controller(),
                           'index', 'on', pants='off')
 
+    def test_dispatch_raises_bad_request(self):
+        class FakeController(object):
+            def index(self, shirt, pants=None):
+                return (shirt, pants)
+        resource = wsgi.Resource(FakeController(), None, None)
+
+        def dispatch(self, obj, action, *args, **kwargs):
+            raise exception.InvalidPropertyProtectionConfiguration()
+        self.mock_object(wsgi.Resource, 'dispatch', dispatch)
+        request = wsgi.Request.blank('/')
+        self.assertRaises(webob.exc.HTTPBadRequest, resource.__call__,
+                          request)
+
     def test_call(self):
         class FakeController(object):
             def index(self, shirt, pants=None):

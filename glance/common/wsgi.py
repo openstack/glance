@@ -1293,6 +1293,10 @@ class Resource(object):
                     "request body contained characters that could not be "
                     "decoded by Glance")
             raise webob.exc.HTTPBadRequest(explanation=msg)
+        except exception.InvalidPropertyProtectionConfiguration as e:
+            LOG.exception(_LE("Caught error: %s"),
+                          encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except Exception as e:
             LOG.exception(_LE("Caught error: %s"),
                           encodeutils.exception_to_unicode(e))
