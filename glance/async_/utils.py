@@ -75,5 +75,5 @@ class OptionalTask(task.Task):
                 msg = (_LW("An optional task has failed, "
                            "the failure was: %s") %
                        encodeutils.exception_to_unicode(exc))
-                LOG.warn(msg)
+                LOG.warning(msg)
         return wrapper

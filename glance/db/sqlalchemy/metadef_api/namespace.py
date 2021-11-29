@@ -87,7 +87,7 @@ def _get(context, namespace_id, session):
     except sa_orm.exc.NoResultFound:
         msg = (_("Metadata definition namespace not found for id=%s")
                % namespace_id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exc.MetadefNamespaceNotFound(msg)
 
     # Make sure they are allowed to view it.

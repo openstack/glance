@@ -20,3 +20,4 @@ glance Specific Commandments
 - [G328] Must use a dict comprehension instead of a dict constructor with
   a sequence of key-value pairs
 - [G329] Python 3: Do not use xrange.
+- [G330] Log.warn is deprecated. Enforce use of LOG.warning.

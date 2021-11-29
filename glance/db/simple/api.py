@@ -432,7 +432,7 @@ def image_set_property_atomic(image_id, name, value):
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        LOG.warn(_LW('Could not find image %s'), image_id)
+        LOG.warning(_LW('Could not find image %s'), image_id)
         raise exception.ImageNotFound()
 
     prop = _image_property_format(image_id,
@@ -445,7 +445,7 @@ def image_delete_property_atomic(image_id, name, value):
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        LOG.warn(_LW('Could not find image %s'), image_id)
+        LOG.warning(_LW('Could not find image %s'), image_id)
         raise exception.ImageNotFound()
 
     for i, prop in enumerate(image['properties']):
@@ -460,16 +460,16 @@ def _image_get(context, image_id, force_show_deleted=False, status=None):
     try:
         image = DATA['images'][image_id]
     except KeyError:
-        LOG.warn(_LW('Could not find image %s'), image_id)
+        LOG.warning(_LW('Could not find image %s'), image_id)
         raise exception.ImageNotFound()
 
     if image['deleted'] and not (force_show_deleted
                                  or context.can_see_deleted):
-        LOG.warn(_LW('Unable to get deleted image'))
+        LOG.warning(_LW('Unable to get deleted image'))
         raise exception.ImageNotFound()
 
     if not is_image_visible(context, image):
-        LOG.warn(_LW('Unable to get unowned image'))
+        LOG.warning(_LW('Unable to get unowned image'))
         raise exception.Forbidden("Image not visible to you")
 
     return image
@@ -676,7 +676,7 @@ def image_location_update(context, image_id, location):
     if not updated:
         msg = (_("No location found with ID %(loc)s from image %(img)s") %
                dict(loc=loc_id, img=image_id))
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.NotFound(msg)
 
 
@@ -702,7 +702,7 @@ def image_location_delete(context, image_id, location_id, status,
     if not deleted:
         msg = (_("No location found with ID %(loc)s from image %(img)s") %
                dict(loc=location_id, img=image_id))
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.NotFound(msg)
 
 
@@ -990,12 +990,12 @@ def _task_get(context, task_id, force_show_deleted=False):
         task = DATA['tasks'][task_id]
     except KeyError:
         msg = _LW('Could not find task %s') % task_id
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
     if task['deleted'] and not (force_show_deleted or context.can_see_deleted):
         msg = _LW('Unable to get deleted task %s') % task_id
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
     if not _is_task_visible(context, task):
@@ -1171,7 +1171,7 @@ def _task_info_get(task_id):
         task_info = DATA['task_info'][task_id]
     except KeyError:
         msg = _LW('Could not find task info %s') % task_id
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.TaskNotFound(task_id=task_id)
 
     return task_info
@@ -1257,7 +1257,7 @@ def metadef_namespace_get_by_id(context, namespace_id):
     except StopIteration:
         msg = (_("Metadata definition namespace not found for id=%s")
                % namespace_id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.MetadefNamespaceNotFound(msg)
 
     if not _is_namespace_visible(context, namespace):
@@ -1388,7 +1388,7 @@ def metadef_object_get_by_id(context, namespace_name, object_id):
     else:
         msg = (_("Metadata definition object not found for id=%s")
                % object_id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.MetadefObjectNotFound(msg)
 
 
@@ -1644,7 +1644,7 @@ def metadef_property_get_by_id(context, namespace_name, property_id):
     else:
         msg = (_("Metadata definition property not found for id=%s")
                % property_id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.MetadefPropertyNotFound(msg)
 
 
@@ -1849,7 +1849,7 @@ def metadef_tag_get_by_id(context, namespace_name, id):
             return tag
     else:
         msg = (_("Metadata definition tag not found for id=%s") % id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.MetadefTagNotFound(msg)
 
 

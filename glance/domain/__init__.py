@@ -522,7 +522,7 @@ class TaskExecutorFactory(object):
                 if not TaskExecutorFactory.eventlet_deprecation_warned:
                     msg = _LW("The `eventlet` executor has been deprecated. "
                               "Use `taskflow` instead.")
-                    LOG.warn(msg)
+                    LOG.warning(msg)
                     TaskExecutorFactory.eventlet_deprecation_warned = True
                 task_executor = 'taskflow'
 

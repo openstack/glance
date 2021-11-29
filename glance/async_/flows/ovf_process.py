@@ -252,14 +252,15 @@ class OVAImageExtractor(object):
                 self.interested_properties = properties.get(
                     'cim_pasd', [])
                 if not self.interested_properties:
-                    LOG.warn(_LW('OVF metadata of interest was not specified '
-                                 'in ovf-metadata.json config file. Please '
-                                 'set "cim_pasd" to a list of interested '
-                                 'CIM_ProcessorAllocationSettingData '
-                                 'properties.'))
+                    msg = _LW('OVF metadata of interest was not specified '
+                              'in ovf-metadata.json config file. Please '
+                              'set "cim_pasd" to a list of interested '
+                              'CIM_ProcessorAllocationSettingData '
+                              'properties.')
+                    LOG.warning(msg)
         else:
-            LOG.warn(_LW('OVF properties config file "ovf-metadata.json" was '
-                         'not found.'))
+            LOG.warning(_LW('OVF properties config file "ovf-metadata.json" '
+                            'was not found.'))
 
 
 def get_flow(**kwargs):

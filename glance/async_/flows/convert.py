@@ -98,7 +98,7 @@ class _Convert(task.Task):
                 msg = _LW('The conversion format is None, please add a value '
                           'for it in the config file for this task to '
                           'work: %s')
-                LOG.warn(msg, self.task_id)
+                LOG.warning(msg, self.task_id)
                 _Convert.conversion_missing_warned = True
             return
 
