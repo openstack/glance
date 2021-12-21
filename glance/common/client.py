@@ -44,8 +44,6 @@ from oslo_utils import encodeutils
 from oslo_utils import netutils
 import six
 from six.moves import http_client
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 import six.moves.urllib.parse as urlparse
 
 from glance.common import auth

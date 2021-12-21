@@ -16,9 +16,7 @@ from unittest.mock import patch
 
 from oslo_policy import policy
 from oslo_utils.fixture import uuidsentinel as uuids
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import http_client as http
-from six.moves import range
 import testtools
 import webob
 

@@ -22,8 +22,6 @@ from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils.fixture import uuidsentinel as uuids
 from six.moves import http_client
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 from glance import context
 import glance.db as db_api

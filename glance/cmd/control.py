@@ -38,8 +38,6 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 
 from oslo_config import cfg
 from oslo_utils import units
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 from glance.common import config
 from glance.i18n import _

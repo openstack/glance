@@ -27,8 +27,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers import modes
 from oslo_utils import encodeutils
 import six
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 
 def urlsafe_encrypt(key, plaintext, blocksize=16):

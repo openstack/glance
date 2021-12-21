@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import copy
 import fixtures
 from unittest import mock
@@ -21,9 +22,6 @@ import uuid
 from oslo_limit import exception as ol_exc
 from oslo_utils import encodeutils
 from oslo_utils import units
-
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 from glance.common import exception
 from glance.common import store_utils

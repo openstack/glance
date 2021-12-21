@@ -19,8 +19,6 @@ import uuid
 
 import glance_store
 from oslo_config import cfg
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 from glance.common import exception
 from glance.db.sqlalchemy import api as db_api
