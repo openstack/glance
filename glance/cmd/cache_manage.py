@@ -31,8 +31,6 @@ import uuid
 from oslo_utils import encodeutils
 import prettytable
 
-from six.moves import input
-
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
 possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),

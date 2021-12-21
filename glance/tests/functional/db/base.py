@@ -17,12 +17,12 @@
 
 import copy
 import datetime
+import functools
 from unittest import mock
 import uuid
 
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
-from six.moves import reduce
 from sqlalchemy.dialects import sqlite
 
 from glance.common import exception
@@ -1508,14 +1508,18 @@ class DriverQuotaTests(test_utils.BaseTestCase):
             self.db_api.image_create(self.context1, fixture)
 
     def test_storage_quota(self):
-        total = reduce(lambda x, y: x + y,
-                       [f['size'] for f in self.owner1_fixtures])
+        total = functools.reduce(
+            lambda x, y: x + y,
+            [f['size'] for f in self.owner1_fixtures],
+        )
         x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
         self.assertEqual(total, x)
 
     def test_storage_quota_without_image_id(self):
-        total = reduce(lambda x, y: x + y,
-                       [f['size'] for f in self.owner1_fixtures])
+        total = functools.reduce(
+            lambda x, y: x + y,
+            [f['size'] for f in self.owner1_fixtures],
+        )
         total = total - self.owner1_fixtures[0]['size']
         x = self.db_api.user_get_storage_usage(
             self.context1, self.owner_id1,
@@ -1534,8 +1538,10 @@ class DriverQuotaTests(test_utils.BaseTestCase):
                                          'status': 'active'})
         self.db_api.image_create(self.context1, new_fixture)
 
-        total = reduce(lambda x, y: x + y,
-                       [f['size'] for f in self.owner1_fixtures]) + (sz * 2)
+        total = functools.reduce(
+            lambda x, y: x + y,
+            [f['size'] for f in self.owner1_fixtures],
+        ) + (sz * 2)
         x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
         self.assertEqual(total, x)
 
@@ -1555,8 +1561,10 @@ class DriverQuotaTests(test_utils.BaseTestCase):
                                          'status': 'active'})
         self.db_api.image_create(self.context1, new_fixture)
 
-        total = reduce(lambda x, y: x + y,
-                       [f['size'] for f in self.owner1_fixtures])
+        total = functools.reduce(
+            lambda x, y: x + y,
+            [f['size'] for f in self.owner1_fixtures],
+        )
         x = self.db_api.user_get_storage_usage(self.context1, self.owner_id1)
         self.assertEqual(total + (sz * 2), x)
 
