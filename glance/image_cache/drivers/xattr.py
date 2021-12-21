@@ -61,7 +61,6 @@ from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import fileutils
-import six
 import xattr
 
 from glance.common import exception
@@ -477,9 +476,7 @@ def set_xattr(path, key, value):
     """
     namespaced_key = _make_namespaced_xattr_key(key)
     if not isinstance(value, bytes):
-        value = str(value)
-        if six.PY3:
-            value = value.encode('utf-8')
+        value = str(value).encode('utf-8')
     xattr.setxattr(path, namespaced_key, value)
 
 

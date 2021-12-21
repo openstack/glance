@@ -25,7 +25,6 @@ from oslo_log import log as logging
 import oslo_serialization.jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
-import six
 import webob.exc
 
 from glance.api import common
@@ -270,8 +269,6 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def _inject_location_header(self, response, task):
         location = self._get_task_location(task)
-        if six.PY2:
-            location = location.encode('utf-8')
         response.headers['Location'] = location
 
     def _get_task_location(self, task):

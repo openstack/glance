@@ -24,7 +24,6 @@ the local cached copy of the image file is returned.
 
 import http.client as http
 import re
-import six
 
 from oslo_log import log as logging
 import webob
@@ -220,8 +219,7 @@ class CacheFilter(wsgi.Middleware):
         # https://github.com/Pylons/webob/issues/86
         response.headers['Content-Type'] = 'application/octet-stream'
         if image.checksum:
-            response.headers['Content-MD5'] = (image.checksum.encode('utf-8')
-                                               if six.PY2 else image.checksum)
+            response.headers['Content-MD5'] = image.checksum
         response.headers['Content-Length'] = str(image.size)
         return response
 

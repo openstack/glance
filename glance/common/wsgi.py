@@ -45,7 +45,6 @@ from oslo_utils import encodeutils
 from oslo_utils import strutils
 from osprofiler import opts as profiler_opts
 import routes.middleware
-import six
 import webob.dec
 import webob.exc
 from webob import multidict
@@ -1104,26 +1103,6 @@ class Request(webob.Request):
         # not be inherited.
         webob.Request.body_file.fset(self, value)
 
-    @property
-    def params(self):
-        """Override params property of webob.request.BaseRequest.
-
-        Added an 'encoded_params' attribute in case of PY2 to avoid
-        encoding values in next subsequent calls to the params property.
-        """
-        if six.PY2:
-            encoded_params = getattr(self, 'encoded_params', None)
-            if encoded_params is None:
-                params = super(Request, self).params
-                params_dict = multidict.MultiDict()
-                for key, value in params.items():
-                    params_dict.add(key, encodeutils.safe_encode(value))
-
-                setattr(self, 'encoded_params',
-                        multidict.NestedMultiDict(params_dict))
-            return self.encoded_params
-        return super(Request, self).params
-
     def best_match_content_type(self):
         """Determine the requested response content-type."""
         supported = ('application/json',)
@@ -1352,9 +1331,8 @@ class Resource(object):
             action_result = self.dispatch(self.controller, action,
                                           request, **action_args)
         except webob.exc.WSGIHTTPException as e:
-            exc_info = sys.exc_info()
             e = translate_exception(request, e)
-            six.reraise(type(e), e, exc_info[2])
+            raise e.with_traceback(sys.exc_info()[2])
         except UnicodeDecodeError:
             msg = _("Error decoding your request. Either the URL or the "
                     "request body contained characters that could not be "
@@ -1373,10 +1351,6 @@ class Resource(object):
         try:
             response = webob.Response(request=request)
             self.dispatch(self.serializer, action, response, action_result)
-            # encode all headers in response to utf-8 to prevent unicode errors
-            for name, value in list(response.headers.items()):
-                if six.PY2 and isinstance(value, str):
-                    response.headers[name] = encodeutils.safe_encode(value)
             return response
         except webob.exc.WSGIHTTPException as e:
             return translate_exception(request, e)
