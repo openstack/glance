@@ -17,11 +17,11 @@ import io
 import json
 import os
 from unittest import mock
+import urllib
 
 import glance_store
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
-from six.moves import urllib
 from taskflow import task
 from taskflow.types import failure
 

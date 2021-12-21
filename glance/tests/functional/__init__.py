@@ -37,6 +37,7 @@ from testtools import content as ttc
 import textwrap
 import time
 from unittest import mock
+import urllib.parse as urlparse
 import uuid
 
 import fixtures
@@ -44,7 +45,6 @@ import glance_store
 from os_win import utilsfactory as os_win_utilsfactory
 from oslo_config import cfg
 from oslo_serialization import jsonutils
-import six.moves.urllib.parse as urlparse
 import testtools
 import webob
 

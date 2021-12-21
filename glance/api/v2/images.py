@@ -17,6 +17,7 @@ import hashlib
 import http.client as http
 import os
 import re
+import urllib.parse as urlparse
 
 from castellan.common import exception as castellan_exception
 from castellan import key_manager
@@ -28,7 +29,6 @@ from oslo_serialization import jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import timeutils as oslo_timeutils
 import requests
-import six.moves.urllib.parse as urlparse
 import webob.exc
 
 from glance.api import common

@@ -29,17 +29,17 @@ except ImportError:
 from eventlet.green import socket
 
 import functools
-import glance_store
 import os
 import re
+import urllib
 
+import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import netutils
 from oslo_utils import strutils
 import six
-from six.moves import urllib
 from webob import exc
 
 from glance.common import exception

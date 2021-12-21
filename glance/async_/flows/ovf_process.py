@@ -17,6 +17,7 @@ import os
 import re
 import shutil
 import tarfile
+import urllib
 
 try:
     from defusedxml import cElementTree as ET
@@ -26,7 +27,6 @@ except ImportError:
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
-from six.moves import urllib
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 

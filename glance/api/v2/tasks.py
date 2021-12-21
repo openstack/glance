@@ -16,6 +16,7 @@
 
 import copy
 import http.client as http
+import urllib.parse as urlparse
 
 import debtcollector
 import glance_store
@@ -25,7 +26,6 @@ import oslo_serialization.jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 import six
-import six.moves.urllib.parse as urlparse
 import webob.exc
 
 from glance.api import common
