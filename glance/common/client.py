@@ -390,7 +390,7 @@ class BaseClient(object):
                 if value is None:
                     del params[key]
                     continue
-                if not isinstance(value, six.string_types):
+                if not isinstance(value, str):
                     value = str(value)
                 params[key] = encodeutils.safe_encode(value)
             query = urlparse.urlencode(params)

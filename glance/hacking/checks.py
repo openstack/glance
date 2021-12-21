@@ -99,16 +99,6 @@ def no_translate_debug_logs(logical_line, filename):
 
 
 @core.flake8ext
-def no_direct_use_of_unicode_function(logical_line):
-    """Check for use of unicode() builtin
-
-    G320
-    """
-    if unicode_func_re.match(logical_line):
-        yield(0, "G320: Use six.text_type() instead of unicode()")
-
-
-@core.flake8ext
 def check_no_contextlib_nested(logical_line):
     msg = ("G327: contextlib.nested is deprecated since Python 2.7. See "
            "https://docs.python.org/2/library/contextlib.html#contextlib."

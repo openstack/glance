@@ -21,7 +21,6 @@ from oslo_concurrency import lockutils
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
-import six
 
 from glance.api.v2 import images as v2_api
 from glance.common import exception
@@ -65,7 +64,7 @@ def _execute(t_id, task_repo, image_repo, image_factory):
 
         # TODO(nikhil): need to bring back save_and_reraise_exception when
         # necessary
-        err_msg = ("Error: " + six.text_type(type(e)) + ': ' +
+        err_msg = ("Error: " + str(type(e)) + ': ' +
                    encodeutils.exception_to_unicode(e))
         log_msg = _LE(err_msg + ("Task ID %s" % task.task_id))  # noqa
         LOG.exception(log_msg)

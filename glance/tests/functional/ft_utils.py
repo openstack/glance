@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 import time
 
 from oslo_serialization import jsonutils
@@ -43,8 +42,7 @@ def verify_image_hashes_and_status(
     test_obj.assertEqual(checksum, image['checksum'])
     if os_hash_value:
         # make sure we're using the hashing_algorithm we expect
-        test_obj.assertEqual(six.text_type(os_hash_algo),
-                             image['os_hash_algo'])
+        test_obj.assertEqual(str(os_hash_algo), image['os_hash_algo'])
     test_obj.assertEqual(os_hash_value, image['os_hash_value'])
     test_obj.assertEqual(status, image['status'])
     test_obj.assertEqual(size, image['size'])

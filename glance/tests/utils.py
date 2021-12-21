@@ -551,7 +551,7 @@ def start_http_server(image_id, image_data):
                 self.send_response(http.OK)
                 self.send_header('Content-Length', str(len(fixture)))
                 self.end_headers()
-                self.wfile.write(six.b(fixture))
+                self.wfile.write(fixture.encode('latin-1'))
                 return
 
             def do_HEAD(self):

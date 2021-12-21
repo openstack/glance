@@ -476,7 +476,7 @@ def set_xattr(path, key, value):
     If xattrs aren't supported by the file-system, we skip setting the value.
     """
     namespaced_key = _make_namespaced_xattr_key(key)
-    if not isinstance(value, six.binary_type):
+    if not isinstance(value, bytes):
         value = str(value)
         if six.PY3:
             value = value.encode('utf-8')

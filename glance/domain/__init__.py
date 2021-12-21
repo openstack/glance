@@ -22,7 +22,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import importutils
-import six
 
 from glance.common import exception
 from glance.common import timeutils
@@ -396,9 +395,9 @@ class Task(object):
     @message.setter
     def message(self, message):
         if message:
-            self._message = six.text_type(message)
+            self._message = str(message)
         else:
-            self._message = six.text_type('')
+            self._message = ''
 
     def _validate_task_status_transition(self, cur_status, new_status):
         valid_transitions = {

@@ -23,7 +23,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
-import six
 from stevedore import named
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
@@ -388,12 +387,12 @@ class _CompleteTask(task.Task):
             # necessary
             log_msg = _LE("Task ID %(task_id)s failed. Error: %(exc_type)s: "
                           "%(e)s")
-            LOG.exception(log_msg, {'exc_type': six.text_type(type(e)),
+            LOG.exception(log_msg, {'exc_type': str(type(e)),
                                     'e': encodeutils.exception_to_unicode(e),
                                     'task_id': task.task_id})
 
             err_msg = _("Error: %(exc_type)s: %(e)s")
-            task.fail(err_msg % {'exc_type': six.text_type(type(e)),
+            task.fail(err_msg % {'exc_type': str(type(e)),
                                  'e': encodeutils.exception_to_unicode(e)})
         finally:
             self.task_repo.save(task)

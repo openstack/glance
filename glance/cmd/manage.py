@@ -43,7 +43,6 @@ from oslo_config import cfg
 from oslo_db import exception as db_exc
 from oslo_log import log as logging
 from oslo_utils import encodeutils
-import six
 
 from glance.common import config
 from glance.common import exception
@@ -561,7 +560,7 @@ def main():
                 v = getattr(CONF.command, 'action_kwarg_' + k)
                 if v is None:
                     continue
-                if isinstance(v, six.string_types):
+                if isinstance(v, str):
                     v = encodeutils.safe_decode(v)
                 func_kwargs[k] = v
             func_args = [encodeutils.safe_decode(arg)

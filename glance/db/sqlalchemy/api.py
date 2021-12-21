@@ -32,7 +32,6 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 import osprofiler.sqlalchemy
 from retrying import retry
-import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import sqlalchemy
@@ -1527,7 +1526,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     except (db_exception.DBError, db_exception.DBReferenceError) as ex:
         LOG.exception(_LE('DBError detected when force purging '
                           'table=%(table)s: %(error)s'),
-                      {'table': ti, 'error': six.text_type(ex)})
+                      {'table': ti, 'error': str(ex)})
         raise
 
     rows = result.rowcount
@@ -1572,7 +1571,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE('DBError detected when purging from '
                           "%(tablename)s: %(error)s"),
-                          {'tablename': tbl, 'error': six.text_type(ex)})
+                          {'tablename': tbl, 'error': str(ex)})
 
         rows = result.rowcount
         LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),
@@ -1616,7 +1615,7 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows,
         with excutils.save_and_reraise_exception():
             LOG.error(_LE('DBError detected when purging from '
                       "%(tablename)s: %(error)s"),
-                      {'tablename': tbl, 'error': six.text_type(ex)})
+                      {'tablename': tbl, 'error': str(ex)})
 
     rows = result.rowcount
     LOG.info(_LI('Deleted %(rows)d row(s) from table %(tbl)s'),

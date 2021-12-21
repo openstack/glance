@@ -1375,7 +1375,7 @@ class Resource(object):
             self.dispatch(self.serializer, action, response, action_result)
             # encode all headers in response to utf-8 to prevent unicode errors
             for name, value in list(response.headers.items()):
-                if six.PY2 and isinstance(value, six.text_type):
+                if six.PY2 and isinstance(value, str):
                     response.headers[name] = encodeutils.safe_encode(value)
             return response
         except webob.exc.WSGIHTTPException as e:

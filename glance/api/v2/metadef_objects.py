@@ -16,7 +16,6 @@
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-import six
 from six.moves import http_client as http
 import webob.exc
 from wsme.rest import json
@@ -434,7 +433,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def show(self, response, metadata_object):
         metadata_object_json = json.tojson(MetadefObject, metadata_object)
         body = jsonutils.dumps(metadata_object_json, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = body
         response.content_type = 'application/json'
 
     def update(self, response, metadata_object):
@@ -445,7 +444,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         result.schema = "v2/schemas/metadefs/objects"
         metadata_objects_json = json.tojson(MetadefObjects, result)
         body = jsonutils.dumps(metadata_objects_json, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = body
         response.content_type = 'application/json'
 
     def delete(self, response, result):
