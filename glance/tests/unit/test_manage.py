@@ -12,10 +12,11 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import io
 from unittest import mock
 
 import fixtures
-from six.moves import StringIO
 
 from glance.cmd import manage
 from glance.common import exception
@@ -163,7 +164,7 @@ class TestManage(TestManageBase):
     def setUp(self):
         super(TestManage, self).setUp()
         self.db = manage.DbCommands()
-        self.output = StringIO()
+        self.output = io.StringIO()
         self.useFixture(fixtures.MonkeyPatch('sys.stdout', self.output))
 
     def test_db_complex_password(self):

@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import io
 import json
 import os
 from unittest import mock
@@ -20,7 +21,6 @@ from unittest import mock
 import glance_store
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
-import six
 from six.moves import urllib
 from taskflow import task
 from taskflow.types import failure
@@ -123,7 +123,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -166,7 +166,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(import_flow._ImportToFS, 'execute') as emk:
                 executor.begin_processing(self.task.task_id)
@@ -237,7 +237,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -287,7 +287,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -340,7 +340,7 @@ class TestImportTask(test_utils.BaseTestCase):
 
         with mock.patch.object(urllib.request, 'urlopen') as umock:
             content = b"TEST_IMAGE"
-            umock.return_value = six.BytesIO(content)
+            umock.return_value = io.BytesIO(content)
 
             with mock.patch.object(import_flow, "_get_import_flows") as imock:
                 imock.return_value = (x for x in [])

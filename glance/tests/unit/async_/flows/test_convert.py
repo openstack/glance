@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import io
 import json
 import os
 from unittest import mock
@@ -20,7 +21,6 @@ from unittest import mock
 import glance_store
 from oslo_concurrency import processutils
 from oslo_config import cfg
-import six
 
 from glance.async_.flows import convert
 from glance.async_ import taskflow_executor
@@ -173,7 +173,7 @@ class TestImportTask(test_utils.BaseTestCase):
             return ("", None)
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = six.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
 
             with mock.patch.object(processutils, 'execute') as exc_mock:
                 exc_mock.side_effect = fake_execute

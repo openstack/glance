@@ -9,13 +9,14 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import io
 import sys
 from unittest import mock
 
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 
 import glance.cmd.api
 import glance.cmd.cache_cleaner
@@ -48,7 +49,7 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         super(TestGlanceApiCmd, self).setUp()
         self.__argv_backup = sys.argv
         sys.argv = ['glance-api']
-        self.stderr = six.StringIO()
+        self.stderr = io.StringIO()
         sys.stderr = self.stderr
 
         store.register_opts(CONF)

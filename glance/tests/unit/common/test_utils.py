@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import io
 import tempfile
 from unittest import mock
 
@@ -21,7 +22,6 @@ import glance_store as store
 from glance_store._drivers import cinder
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 import webob
 
 from glance.common import exception
@@ -29,7 +29,6 @@ from glance.common import store_utils
 from glance.common import utils
 from glance.tests.unit import base
 from glance.tests import utils as test_utils
-
 
 CONF = cfg.CONF
 
@@ -276,14 +275,14 @@ class TestUtils(test_utils.BaseTestCase):
         """Ensure limiting reader class accesses all bytes of file"""
         BYTES = 1024
         bytes_read = 0
-        data = six.StringIO("*" * BYTES)
+        data = io.StringIO("*" * BYTES)
         for chunk in utils.LimitingReader(data, BYTES):
             bytes_read += len(chunk)
 
         self.assertEqual(BYTES, bytes_read)
 
         bytes_read = 0
-        data = six.StringIO("*" * BYTES)
+        data = io.StringIO("*" * BYTES)
         reader = utils.LimitingReader(data, BYTES)
         byte = reader.read(1)
         while len(byte) != 0:
@@ -298,7 +297,7 @@ class TestUtils(test_utils.BaseTestCase):
 
         def _consume_all_iter():
             bytes_read = 0
-            data = six.StringIO("*" * BYTES)
+            data = io.StringIO("*" * BYTES)
             for chunk in utils.LimitingReader(data, BYTES - 1):
                 bytes_read += len(chunk)
 
@@ -306,7 +305,7 @@ class TestUtils(test_utils.BaseTestCase):
 
         def _consume_all_read():
             bytes_read = 0
-            data = six.StringIO("*" * BYTES)
+            data = io.StringIO("*" * BYTES)
             reader = utils.LimitingReader(data, BYTES - 1)
             byte = reader.read(1)
             while len(byte) != 0:
