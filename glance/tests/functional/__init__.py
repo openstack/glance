@@ -29,7 +29,6 @@ import os
 import platform
 import shutil
 import signal
-import six
 import socket
 import subprocess
 import sys
@@ -78,8 +77,7 @@ except RuntimeError:
     pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseServer(object):
+class BaseServer(metaclass=abc.ABCMeta):
     """
     Class used to easily manage starting and stopping
     a server during functional test runs.

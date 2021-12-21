@@ -429,8 +429,7 @@ def get_asynchronous_eventlet_pool(size=1000):
     return pool
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseServer(object):
+class BaseServer(metaclass=abc.ABCMeta):
     """Server class to manage multiple WSGI sockets and applications.
 
     This class requires initialize_glance_store set to True if
