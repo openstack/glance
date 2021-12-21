@@ -26,7 +26,6 @@ import re
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
-import six
 import sqlalchemy
 from sqlalchemy import and_
 from sqlalchemy.schema import MetaData
@@ -309,15 +308,15 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
                 _update_rt_association(namespace_rt_table, values,
                                        rt_id, namespace_id)
 
-        for property, schema in six.iteritems(metadata.get('properties',
-                                                           {})):
+        for name, schema in metadata.get('properties', {}).items():
             values = {
-                'name': property,
+                'name': name,
                 'namespace_id': namespace_id,
                 'json_schema': json.dumps(schema)
             }
-            property_id = _get_resource_id(properties_table,
-                                           namespace_id, property)
+            property_id = _get_resource_id(
+                properties_table, namespace_id, name,
+            )
             if not property_id:
                 values.update({'created_at': timeutils.utcnow()})
                 _insert_data_to_db(properties_table, values)

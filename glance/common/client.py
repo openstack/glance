@@ -417,7 +417,7 @@ class BaseClient(object):
             to_str = str
         else:
             to_str = encodeutils.safe_encode
-        return {to_str(h): to_str(v) for h, v in six.iteritems(headers)}
+        return {to_str(h): to_str(v) for h, v in headers.items()}
 
     @handle_redirects
     def _do_request(self, method, url, body, headers):

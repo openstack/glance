@@ -1516,7 +1516,7 @@ class TestImages(functional.FunctionalTest):
             'min_ram': 0,
             'schema': '/v2/schemas/image',
         }
-        for key, value in six.iteritems(expected_image):
+        for key, value in expected_image.items():
             self.assertEqual(value, image[key], key)
 
         # Upload data to image
@@ -1586,7 +1586,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
 
-        for key, value in six.iteritems(expected_image):
+        for key, value in expected_image.items():
             self.assertEqual(value, image[key], key)
 
         # Upload data to image
@@ -1658,7 +1658,7 @@ class TestImages(functional.FunctionalTest):
             'schema': '/v2/schemas/image',
         }
 
-        for key, value in six.iteritems(expected_image):
+        for key, value in expected_image.items():
             self.assertEqual(value, image[key], key)
 
         # Upload data to image

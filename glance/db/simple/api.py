@@ -20,7 +20,6 @@ import uuid
 
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 
 from glance.common import exception
 from glance.common import timeutils
@@ -312,7 +311,7 @@ def _filter_images(images, filters, context,
                 continue
 
         to_add = True
-        for k, value in six.iteritems(filters):
+        for k, value in filters.items():
             key = k
             if k.endswith('_min') or k.endswith('_max'):
                 key = key[0:-4]
@@ -1092,7 +1091,7 @@ def _filter_tasks(tasks, filters, context, admin_as_user=False):
             continue
 
         add = True
-        for k, value in six.iteritems(filters):
+        for k, value in filters.items():
             add = task[k] == value and task['deleted'] is False
             if not add:
                 break

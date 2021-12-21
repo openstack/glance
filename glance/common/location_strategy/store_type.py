@@ -16,7 +16,6 @@
 """Storage preference based location strategy module"""
 
 from oslo_config import cfg
-import six
 import six.moves.urllib.parse as urlparse
 
 from glance.i18n import _
@@ -116,7 +115,7 @@ def get_ordered_locations(locations, uri_key='url', **kwargs):
         pieces = urlparse.urlparse(uri.strip())
 
         store_name = None
-        for store, schemes in six.iteritems(_STORE_TO_SCHEME_MAP):
+        for store, schemes in _STORE_TO_SCHEME_MAP.items():
             if pieces.scheme.strip() in schemes:
                 store_name = store
                 break

@@ -131,27 +131,3 @@ def check_python3_xrange(logical_line):
     if re.search(r"\bxrange\s*\(", logical_line):
         yield(0, "G329: Do not use xrange. Use range, or six.moves.range for "
                  "large loops.")
-
-
-@core.flake8ext
-def check_python3_no_iteritems(logical_line):
-    msg = ("G330: Use six.iteritems() or dict.items() instead of "
-           "dict.iteritems().")
-    if re.search(r".*\.iteritems\(\)", logical_line):
-        yield(0, msg)
-
-
-@core.flake8ext
-def check_python3_no_iterkeys(logical_line):
-    msg = ("G331: Use six.iterkeys() or dict.keys() instead of "
-           "dict.iterkeys().")
-    if re.search(r".*\.iterkeys\(\)", logical_line):
-        yield(0, msg)
-
-
-@core.flake8ext
-def check_python3_no_itervalues(logical_line):
-    msg = ("G332: Use six.itervalues() or dict.values instead of "
-           "dict.itervalues().")
-    if re.search(r".*\.itervalues\(\)", logical_line):
-        yield(0, msg)

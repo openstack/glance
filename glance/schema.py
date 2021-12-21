@@ -15,7 +15,6 @@
 
 import jsonschema
 from oslo_utils import encodeutils
-import six
 
 from glance.common import exception
 from glance.i18n import _
@@ -42,7 +41,7 @@ class Schema(object):
 
     def filter(self, obj):
         filtered = {}
-        for key, value in six.iteritems(obj):
+        for key, value in obj.items():
             if self._filter_func(self.properties, key):
                 filtered[key] = value
 

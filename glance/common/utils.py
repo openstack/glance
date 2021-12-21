@@ -384,10 +384,9 @@ def create_mashup_dict(image_meta):
     """
 
     d = {}
-    for key, value in six.iteritems(image_meta):
+    for key, value in image_meta.items():
         if isinstance(value, dict):
-            for subkey, subvalue in six.iteritems(
-                    create_mashup_dict(value)):
+            for subkey, subvalue in create_mashup_dict(value).items():
                 if subkey not in image_meta:
                     d[subkey] = subvalue
         else:
@@ -522,7 +521,7 @@ def no_4byte_params(f):
 
         def _check_dict(data_dict):
             # a dict of dicts has to be checked recursively
-            for key, value in six.iteritems(data_dict):
+            for key, value in data_dict.items():
                 if isinstance(value, dict):
                     _check_dict(value)
                 else:

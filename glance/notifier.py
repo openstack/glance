@@ -22,7 +22,6 @@ from oslo_log import log as logging
 import oslo_messaging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
-import six
 import webob
 
 from glance.common import exception
@@ -219,7 +218,7 @@ def format_metadef_namespace_notification(metadef_namespace):
 def format_metadef_object_notification(metadef_object):
     object_properties = metadef_object.properties or {}
     properties = []
-    for name, prop in six.iteritems(object_properties):
+    for name, prop in object_properties.items():
         object_property = _format_metadef_object_property(name, prop)
         properties.append(object_property)
 
