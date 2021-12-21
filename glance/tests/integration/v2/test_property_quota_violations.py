@@ -13,9 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client
+
 from oslo_config import cfg
 from oslo_serialization import jsonutils
-from six.moves import http_client
 
 from glance.tests.integration.v2 import base
 
@@ -41,7 +42,7 @@ class TestPropertyQuotaViolations(base.ApiTest):
     def _get(self, image_id=""):
         path = ('/v2/images/%s' % image_id).rstrip('/')
         rsp, content = self.http.request(path, 'GET', headers=self._headers())
-        self.assertEqual(http_client.OK, rsp.status)
+        self.assertEqual(http.client.OK, rsp.status)
         content = jsonutils.loads(content)
         return content
 
@@ -50,7 +51,7 @@ class TestPropertyQuotaViolations(base.ApiTest):
         headers = self._headers({'content-type': 'application/json'})
         rsp, content = self.http.request(path, 'POST', headers=headers,
                                          body=jsonutils.dumps(body))
-        self.assertEqual(http_client.CREATED, rsp.status)
+        self.assertEqual(http.client.CREATED, rsp.status)
         return jsonutils.loads(content)
 
     def _patch(self, image_id, body, expected_status):
@@ -89,16 +90,16 @@ class TestPropertyQuotaViolations(base.ApiTest):
 
         patch_body = [{'op': 'replace', 'path': '/k_4', 'value': 'v_4.new'}]
         image = jsonutils.loads(self._patch(image_id, patch_body,
-                                            http_client.OK))
+                                            http.client.OK))
         self.assertEqual('v_4.new', image['k_4'])
 
         patch_body = [{'op': 'remove', 'path': '/k_7'}]
         image = jsonutils.loads(self._patch(image_id, patch_body,
-                                            http_client.OK))
+                                            http.client.OK))
         self.assertNotIn('k_7', image)
 
         patch_body = [{'op': 'add', 'path': '/k_100', 'value': 'v_100'}]
-        self._patch(image_id, patch_body, http_client.REQUEST_ENTITY_TOO_LARGE)
+        self._patch(image_id, patch_body, http.client.REQUEST_ENTITY_TOO_LARGE)
         image = self._get(image_id)
         self.assertNotIn('k_100', image)
 
@@ -106,7 +107,7 @@ class TestPropertyQuotaViolations(base.ApiTest):
             {'op': 'remove', 'path': '/k_5'},
             {'op': 'add', 'path': '/k_100', 'value': 'v_100'},
         ]
-        self._patch(image_id, patch_body, http_client.REQUEST_ENTITY_TOO_LARGE)
+        self._patch(image_id, patch_body, http.client.REQUEST_ENTITY_TOO_LARGE)
         image = self._get(image_id)
         self.assertNotIn('k_100', image)
         self.assertIn('k_5', image)
@@ -119,7 +120,7 @@ class TestPropertyQuotaViolations(base.ApiTest):
         to_rm = ['k_%d' % i for i in range(orig_property_quota) if i != 7]
         patch_body.extend([{'op': 'remove', 'path': '/%s' % k} for k in to_rm])
         image = jsonutils.loads(self._patch(image_id, patch_body,
-                                            http_client.OK))
+                                            http.client.OK))
         self.assertEqual('v_99', image['k_99'])
         self.assertEqual('v_100', image['k_100'])
         for k in to_rm:

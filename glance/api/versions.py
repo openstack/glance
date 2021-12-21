@@ -13,10 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from six.moves import http_client
 from six.moves import urllib
 import webob.dec
 
@@ -99,7 +100,7 @@ class Controller(object):
             build_version_object(2.0, 'v2', 'SUPPORTED'),
         ])
 
-        status = explicit and http_client.OK or http_client.MULTIPLE_CHOICES
+        status = explicit and http.client.OK or http.client.MULTIPLE_CHOICES
         response = webob.Response(request=req,
                                   status=status,
                                   content_type='application/json')

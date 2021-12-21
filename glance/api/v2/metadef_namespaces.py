@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import http.client as http
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 from wsme.rest import json

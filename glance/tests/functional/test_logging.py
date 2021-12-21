@@ -15,11 +15,11 @@
 
 """Functional test case that tests logging output"""
 
+import http.client as http
 import os
 import stat
 
 import httplib2
-from six.moves import http_client as http
 
 from glance.tests import functional
 

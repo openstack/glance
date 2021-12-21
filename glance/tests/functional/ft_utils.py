@@ -13,12 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client as http
 import time
 
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import requests
-from six.moves import http_client as http
 
 
 def verify_image_hashes_and_status(

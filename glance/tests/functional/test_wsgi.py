@@ -15,8 +15,8 @@
 
 """Tests for `glance.wsgi`."""
 
+import http.client as http
 import os
-from six.moves import http_client as http
 import socket
 import time
 

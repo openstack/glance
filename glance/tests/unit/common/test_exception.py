@@ -13,8 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client as http
+
 from oslo_utils import encodeutils
-from six.moves import http_client as http
 
 from glance.common import exception
 from glance.tests import utils as test_utils

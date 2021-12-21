@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client as http
 import io
 from unittest import mock
 import uuid
@@ -21,7 +22,6 @@ from cursive import exception as cursive_exception
 import glance_store
 from glance_store._drivers import filesystem
 from oslo_config import cfg
-from six.moves import http_client as http
 import webob
 
 import glance.api.policy

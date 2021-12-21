@@ -15,10 +15,10 @@
 
 """Tests healthcheck middleware."""
 
+import http.client
 import tempfile
 
 import httplib2
-from six.moves import http_client
 
 from glance.tests import functional
 from glance.tests import utils
@@ -38,7 +38,7 @@ class HealthcheckMiddlewareTest(functional.FunctionalTest):
 
         response, content = self.request()
         self.assertEqual(b'OK', content)
-        self.assertEqual(http_client.OK, response.status)
+        self.assertEqual(http.client.OK, response.status)
 
         self.stop_servers()
 
@@ -50,6 +50,6 @@ class HealthcheckMiddlewareTest(functional.FunctionalTest):
 
             response, content = self.request()
             self.assertEqual(b'DISABLED BY FILE', content)
-            self.assertEqual(http_client.SERVICE_UNAVAILABLE, response.status)
+            self.assertEqual(http.client.SERVICE_UNAVAILABLE, response.status)
 
             self.stop_servers()

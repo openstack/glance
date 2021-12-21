@@ -14,11 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client as http
 import uuid
 
 from oslo_serialization import jsonutils
 import requests
-from six.moves import http_client as http
 
 from glance.tests import functional
 

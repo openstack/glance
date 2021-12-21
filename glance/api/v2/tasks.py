@@ -15,6 +15,7 @@
 # under the License.
 
 import copy
+import http.client as http
 
 import debtcollector
 import glance_store
@@ -24,7 +25,6 @@ import oslo_serialization.jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 import six
-from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 

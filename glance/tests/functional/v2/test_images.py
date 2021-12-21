@@ -14,6 +14,7 @@
 #    under the License.
 
 import hashlib
+import http.client as http
 import os
 import subprocess
 import tempfile
@@ -26,7 +27,6 @@ from oslo_serialization import jsonutils
 from oslo_utils.secretutils import md5
 from oslo_utils import units
 import requests
-from six.moves import http_client as http
 from six.moves import urllib
 
 from glance.quota import keystone as ks_quota

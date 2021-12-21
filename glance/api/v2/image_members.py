@@ -14,13 +14,13 @@
 #    under the License.
 
 import copy
+import http.client as http
 
 import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-from six.moves import http_client as http
 import webob
 
 from glance.api import policy

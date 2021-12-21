@@ -17,6 +17,7 @@
 
 import datetime
 import gettext
+import http.client as http
 import os
 import socket
 from unittest import mock
@@ -28,7 +29,6 @@ from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 import routes
 import six
-from six.moves import http_client as http
 import webob
 
 from glance.api.v2 import router as router_v2

@@ -13,7 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from six.moves import http_client as http
+import http.client as http
+
 import webob
 
 import glance.api.v2.image_tags

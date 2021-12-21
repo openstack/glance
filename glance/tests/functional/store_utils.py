@@ -18,29 +18,30 @@
 Utility methods to set testcases up for Swift tests.
 """
 
+import http.client
+import http.server
 import threading
 
 from oslo_utils import units
-from six.moves import BaseHTTPServer
-from six.moves import http_client as http
-
 
 FIVE_KB = 5 * units.Ki
 
 
-class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class RemoteImageHandler(http.server.BaseHTTPRequestHandler):
     def do_HEAD(self):
         """
         Respond to an image HEAD request fake metadata
         """
         if 'images' in self.path:
-            self.send_response(http.OK)
+            self.send_response(http.client.OK)
             self.send_header('Content-Type', 'application/octet-stream')
             self.send_header('Content-Length', FIVE_KB)
             self.end_headers()
             return
         else:
-            self.send_error(http.NOT_FOUND, 'File Not Found: %s' % self.path)
+            self.send_error(
+                http.client.NOT_FOUND, 'File Not Found: %s' % self.path,
+            )
             return
 
     def do_GET(self):
@@ -48,7 +49,7 @@ class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         Respond to an image GET request with fake image content.
         """
         if 'images' in self.path:
-            self.send_response(http.OK)
+            self.send_response(http.client.OK)
             self.send_header('Content-Type', 'application/octet-stream')
             self.send_header('Content-Length', FIVE_KB)
             self.end_headers()
@@ -57,7 +58,9 @@ class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.wfile.close()
             return
         else:
-            self.send_error(http.NOT_FOUND, 'File Not Found: %s' % self.path)
+            self.send_error(
+                http.client.NOT_FOUND, 'File Not Found: %s' % self.path,
+            )
             return
 
     def log_message(self, format, *args):
@@ -68,7 +71,7 @@ class RemoteImageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 def setup_http(test):
-    server_class = BaseHTTPServer.HTTPServer
+    server_class = http.server.HTTPServer
     remote_server = server_class(('127.0.0.1', 0), RemoteImageHandler)
     remote_ip, remote_port = remote_server.server_address
 

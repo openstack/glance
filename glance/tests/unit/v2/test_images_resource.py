@@ -15,6 +15,7 @@
 
 import datetime
 import hashlib
+import http.client as http
 import os
 import requests
 from unittest import mock
@@ -26,7 +27,6 @@ from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import fixture
 import six
-from six.moves import http_client as http
 import testtools
 import webob
 import webob.exc

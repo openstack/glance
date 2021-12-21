@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client
 import os
 import sys
 import time
@@ -21,7 +22,6 @@ import httplib2
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils.fixture import uuidsentinel as uuids
-from six.moves import http_client
 
 from glance import context
 import glance.db as db_api
@@ -99,14 +99,14 @@ class TestScrubber(functional.FunctionalTest):
                            metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
-        self.assertEqual(http_client.CREATED, response.status)
+        self.assertEqual(http.client.CREATED, response.status)
         image = jsonutils.loads(content)
         self.assertEqual('queued', image['status'])
 
         file_path = "%s/%s/file" % (path, image['id'])
         response, content = self._send_upload_image_http_request(file_path,
                                                                  body='XXX')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         path = "%s/%s" % (path, image['id'])
         response, content = self._send_http_request(path, 'GET')
@@ -114,7 +114,7 @@ class TestScrubber(functional.FunctionalTest):
         self.assertEqual('active', image['status'])
 
         response, content = self._send_http_request(path, 'DELETE')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         image = self._get_pending_delete_image(image['id'])
         self.assertEqual('pending_delete', image['status'])
@@ -134,14 +134,14 @@ class TestScrubber(functional.FunctionalTest):
                            metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
-        self.assertEqual(http_client.CREATED, response.status)
+        self.assertEqual(http.client.CREATED, response.status)
         image = jsonutils.loads(content)
         self.assertEqual('queued', image['status'])
 
         file_path = "%s/%s/file" % (path, image['id'])
         response, content = self._send_upload_image_http_request(file_path,
                                                                  body='XXX')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         path = "%s/%s" % (path, image['id'])
         response, content = self._send_http_request(path, 'GET')
@@ -149,7 +149,7 @@ class TestScrubber(functional.FunctionalTest):
         self.assertEqual('active', image['status'])
 
         response, content = self._send_http_request(path, 'DELETE')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         image = self._get_pending_delete_image(image['id'])
         self.assertEqual('pending_delete', image['status'])
@@ -187,14 +187,14 @@ class TestScrubber(functional.FunctionalTest):
         # add an image
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
-        self.assertEqual(http_client.CREATED, response.status)
+        self.assertEqual(http.client.CREATED, response.status)
         image = jsonutils.loads(content)
         self.assertEqual('queued', image['status'])
 
         file_path = "%s/%s/file" % (path, image['id'])
         response, content = self._send_upload_image_http_request(file_path,
                                                                  body='XXX')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         path = "%s/%s" % (path, image['id'])
         response, content = self._send_http_request(path, 'GET')
@@ -202,7 +202,7 @@ class TestScrubber(functional.FunctionalTest):
         self.assertEqual('active', image['status'])
         # delete the image
         response, content = self._send_http_request(path, 'DELETE')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
         # ensure the image is marked pending delete.
         image = self._get_pending_delete_image(image['id'])
         self.assertEqual('pending_delete', image['status'])
@@ -259,14 +259,14 @@ class TestScrubber(functional.FunctionalTest):
                            metadata_encryption_key='', **kwargs)
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
-        self.assertEqual(http_client.CREATED, response.status)
+        self.assertEqual(http.client.CREATED, response.status)
         image = jsonutils.loads(content)
         self.assertEqual('queued', image['status'])
 
         file_path = "%s/%s/file" % (path, image['id'])
         response, content = self._send_upload_image_http_request(file_path,
                                                                  body='XXX')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         path = "%s/%s" % (path, image['id'])
         response, content = self._send_http_request(path, 'GET')
@@ -274,7 +274,7 @@ class TestScrubber(functional.FunctionalTest):
         self.assertEqual('active', image['status'])
 
         response, content = self._send_http_request(path, 'DELETE')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         image = self._get_pending_delete_image(image['id'])
         self.assertEqual('pending_delete', image['status'])
@@ -301,14 +301,14 @@ class TestScrubber(functional.FunctionalTest):
 
         path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
         response, content = self._send_create_image_http_request(path)
-        self.assertEqual(http_client.CREATED, response.status)
+        self.assertEqual(http.client.CREATED, response.status)
         image = jsonutils.loads(content)
         self.assertEqual('queued', image['status'])
 
         file_path = "%s/%s/file" % (path, image['id'])
         response, content = self._send_upload_image_http_request(file_path,
                                                                  body='XXX')
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        self.assertEqual(http.client.NO_CONTENT, response.status)
 
         path = "%s/%s" % (path, image['id'])
         response, content = self._send_http_request(path, 'GET')
