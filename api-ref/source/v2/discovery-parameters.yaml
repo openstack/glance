@@ -18,3 +18,28 @@ stores:
   in: body
   required: true
   type: array
+stores-detail:
+  description: |
+    A list of store objects, where each store object may contain the
+    following fields:
+
+    ``id``
+        Operator-defined identifier for the store.
+    ``type``
+        Specify the type of store.
+    ``description``
+        Operator-supplied description of this store.
+    ``default`` (optional)
+        Only present on the default store.  This is the store where image
+        data is placed if you do not indicate a specific store when supplying
+        data to the Image Service.  (See the :ref:`Image data <image-data>`
+        and :ref:`Interoperable image import <image-import-process>` sections
+        for more information.)
+    ``read-only`` (optional)
+        Included only when the store is read only.
+    ``properties``
+        Contains store specific properties
+  in: body
+  required: true
+  type: array
+

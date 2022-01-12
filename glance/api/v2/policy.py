@@ -122,6 +122,17 @@ class CacheImageAPIPolicy(APIPolicyBase):
         self._enforce(self.policy_str)
 
 
+class DiscoveryAPIPolicy(APIPolicyBase):
+    def __init__(self, context, target=None, enforcer=None):
+        self._context = context
+        self._target = target or {}
+        self.enforcer = enforcer or policy.Enforcer()
+        super(DiscoveryAPIPolicy, self).__init__(context, target, enforcer)
+
+    def stores_info_detail(self):
+        self._enforce('stores_info_detail')
+
+
 class ImageAPIPolicy(APIPolicyBase):
     def __init__(self, context, image, enforcer=None):
         """Image API policy module.
