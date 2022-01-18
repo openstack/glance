@@ -912,7 +912,7 @@ C
    core service
 
       An official OpenStack service defined as core by
-      DefCore Committee. Currently, consists of
+      Interop Working Group. Currently, consists of
       Block Storage service (cinder), Compute service (nova),
       Identity service (keystone), Image service (glance),
       Networking service (neutron), and Object Storage service (swift).
@@ -2762,7 +2762,7 @@ O
    optional service
 
       An official OpenStack service defined as optional by
-      DefCore Committee. Currently, consists of
+      Interop Working Group. Currently, consists of
       Dashboard (horizon), Telemetry service (Telemetry),
       Orchestration service (heat), Database service (trove),
       Bare Metal service (ironic), and so on.
