@@ -34,7 +34,7 @@ def _get(context, object_id, session):
     except sa_orm.exc.NoResultFound:
         msg = (_("Metadata definition object not found for id=%s")
                % object_id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exc.MetadefObjectNotFound(msg)
 
     return metadef_object

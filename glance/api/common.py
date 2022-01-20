@@ -170,19 +170,19 @@ def check_quota(context, image_size, db_api, image_id=None):
         # exception is when there is no room left at all, thus we know
         # it will not fit
         if remaining <= 0:
-            LOG.warn(_LW("User %(user)s attempted to upload an image of"
-                         " unknown size that will exceed the quota."
-                         " %(remaining)d bytes remaining."),
-                     {'user': user, 'remaining': remaining})
+            LOG.warning(_LW("User %(user)s attempted to upload an image of"
+                            " unknown size that will exceed the quota."
+                            " %(remaining)d bytes remaining."),
+                        {'user': user, 'remaining': remaining})
             raise exception.StorageQuotaFull(image_size=image_size,
                                              remaining=remaining)
         return
 
     if image_size > remaining:
-        LOG.warn(_LW("User %(user)s attempted to upload an image of size"
-                     " %(size)d that will exceed the quota. %(remaining)d"
-                     " bytes remaining."),
-                 {'user': user, 'size': image_size, 'remaining': remaining})
+        LOG.warning(_LW("User %(user)s attempted to upload an image of size"
+                        " %(size)d that will exceed the quota. %(remaining)d"
+                        " bytes remaining."),
+                    {'user': user, 'size': image_size, 'remaining': remaining})
         raise exception.StorageQuotaFull(image_size=image_size,
                                          remaining=remaining)
 

@@ -164,7 +164,7 @@ class PropertyRules(object):
                     property_dict[operation] = permissions
                 else:
                     property_dict[operation] = []
-                    LOG.warn(
+                    LOG.warning(
                         _LW('Property protection on operation %(operation)s'
                             ' for rule %(rule)s is not found. No role will be'
                             ' allowed to perform this operation.') %

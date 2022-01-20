@@ -116,7 +116,7 @@ class ImagesController(object):
             LOG.debug("User not permitted to create image")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.LimitExceeded as e:
-            LOG.warn(encodeutils.exception_to_unicode(e))
+            LOG.warning(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
         except exception.Duplicate as e:
@@ -379,7 +379,7 @@ class ImagesController(object):
                 try:
                     stores = utils.get_stores_from_request(req, body)
                 except glance_store.UnknownScheme as exc:
-                    LOG.warn(exc.msg)
+                    LOG.warning(exc.msg)
                     raise exception.Conflict(exc.msg)
 
             # NOTE(abhishekk): If all_stores is specified and import_method is
@@ -625,7 +625,7 @@ class ImagesController(object):
         except exception.StorageQuotaFull as e:
             msg = (_("Denying attempt to upload image because it exceeds the"
                      " quota: %s") % encodeutils.exception_to_unicode(e))
-            LOG.warn(msg)
+            LOG.warning(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')
         except exception.LimitExceeded as e:
@@ -717,14 +717,14 @@ class ImagesController(object):
         except castellan_exception.Forbidden:
             msg = ('Not allowed to delete encryption key %s' %
                    cinder_encryption_key_id)
-            LOG.warn(msg)
+            LOG.warning(msg)
         except (castellan_exception.ManagedObjectNotFoundError, KeyError):
             msg = 'Could not find encryption key %s' % cinder_encryption_key_id
-            LOG.warn(msg)
+            LOG.warning(msg)
         except castellan_exception.KeyManagerError:
             msg = ('Failed to delete cinder encryption key %s' %
                    cinder_encryption_key_id)
-            LOG.warn(msg)
+            LOG.warning(msg)
 
     @utils.mutating
     def delete_from_store(self, req, store_id, image_id):
@@ -910,14 +910,14 @@ class ImagesController(object):
         except (glance_store.NotFound, exception.NotFound):
             msg = (_("Failed to find image %(image_id)s to delete") %
                    {'image_id': image_id})
-            LOG.warn(msg)
+            LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=msg)
         except glance_store.exceptions.InUseByStore as e:
             msg = (_("Image %(id)s could not be deleted "
                      "because it is in use: %(exc)s") %
                    {"id": image_id,
                     "exc": e.msg})
-            LOG.warn(msg)
+            LOG.warning(msg)
             raise webob.exc.HTTPConflict(explanation=msg)
         except glance_store.exceptions.HasSnapshot as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
@@ -1926,7 +1926,7 @@ def load_custom_properties():
     else:
         msg = (_LW('Could not find schema properties file %s. Continuing '
                    'without custom properties') % filename)
-        LOG.warn(msg)
+        LOG.warning(msg)
         return {}
 
 

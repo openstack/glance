@@ -346,12 +346,13 @@ class Driver(base.Driver):
                 if os.path.exists(incomplete_path):
                     invalid_path = self.get_image_filepath(image_id, 'invalid')
 
-                    LOG.warn(_LW("Fetch of cache file failed (%(e)s), rolling "
-                                 "back by moving '%(incomplete_path)s' to "
-                                 "'%(invalid_path)s'") %
-                             {'e': e,
-                              'incomplete_path': incomplete_path,
-                              'invalid_path': invalid_path})
+                    msg = (_LW("Fetch of cache file failed (%(e)s), rolling "
+                               "back by moving '%(incomplete_path)s' to "
+                               "'%(invalid_path)s'") %
+                           {'e': e,
+                            'incomplete_path': incomplete_path,
+                            'invalid_path': invalid_path})
+                    LOG.warning(msg)
                     os.rename(incomplete_path, invalid_path)
 
                 db.execute("""DELETE FROM cached_images
@@ -472,7 +473,7 @@ class Driver(base.Driver):
                     msg = (_LW("Failed to delete file %(path)s. "
                                "Got error: %(e)s"),
                            dict(path=path, e=e))
-                    LOG.warn(msg)
+                    LOG.warning(msg)
 
     def get_queued_images(self):
         """

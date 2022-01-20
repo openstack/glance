@@ -92,7 +92,7 @@ class TasksController(object):
         except exception.Forbidden as e:
             msg = (_LW("Forbidden to create task. Reason: %(reason)s")
                    % {'reason': encodeutils.exception_to_unicode(e)})
-            LOG.warn(msg)
+            LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return new_task
 
@@ -119,10 +119,10 @@ class TasksController(object):
                 result['next_marker'] = tasks[-1].task_id
         except (exception.NotFound, exception.InvalidSortKey,
                 exception.InvalidFilterRangeValue) as e:
-            LOG.warn(encodeutils.exception_to_unicode(e))
+            LOG.warning(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.Forbidden as e:
-            LOG.warn(encodeutils.exception_to_unicode(e))
+            LOG.warning(encodeutils.exception_to_unicode(e))
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         result['tasks'] = tasks
         return result
@@ -138,14 +138,14 @@ class TasksController(object):
             msg = (_LW("Failed to find task %(task_id)s. Reason: %(reason)s")
                    % {'task_id': task_id,
                       'reason': encodeutils.exception_to_unicode(e)})
-            LOG.warn(msg)
+            LOG.warning(msg)
             raise webob.exc.HTTPNotFound(explanation=e.msg)
         except exception.Forbidden as e:
             msg = (_LW("Forbidden to get task %(task_id)s. Reason:"
                        " %(reason)s")
                    % {'task_id': task_id,
                       'reason': encodeutils.exception_to_unicode(e)})
-            LOG.warn(msg)
+            LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         return task
 

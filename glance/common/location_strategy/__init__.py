@@ -75,7 +75,7 @@ def _load_strategies():
                 msg = (_('%(strategy)s is registered as a module twice. '
                          '%(module)s is not being used.') %
                        {'strategy': strategy_name, 'module': module_name})
-                LOG.warn(msg)
+                LOG.warning(msg)
             else:
                 # Initialize strategy module
                 mgr.driver.init()

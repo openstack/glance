@@ -70,9 +70,9 @@ def safe_delete_from_backend(context, image_id, location):
         msg = ("The image data for %(iid)s was not found in the store. "
                "The image record has been updated to reflect "
                "this." % {'iid': image_id})
-        LOG.warn(msg)
+        LOG.warning(msg)
     except store_api.StoreDeleteNotSupported as e:
-        LOG.warn(encodeutils.exception_to_unicode(e))
+        LOG.warning(encodeutils.exception_to_unicode(e))
     except store_api.UnsupportedBackend:
         exc_type = sys.exc_info()[0].__name__
         msg = (_LE('Failed to delete image %(image_id)s from store: %(exc)s') %

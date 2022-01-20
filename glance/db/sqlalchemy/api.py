@@ -75,7 +75,7 @@ def _retry_on_deadlock(exc):
     """Decorator to retry a DB API call if Deadlock was received."""
 
     if isinstance(exc, db_exception.DBDeadlock):
-        LOG.warn(_LW("Deadlock detected. Retrying..."))
+        LOG.warning(_LW("Deadlock detected. Retrying..."))
         return True
     return False
 
@@ -132,7 +132,7 @@ def clear_db_env():
 
 def _check_mutate_authorization(context, image_ref):
     if not is_image_mutable(context, image_ref):
-        LOG.warn(_LW("Attempted to modify image user did not own."))
+        LOG.warning(_LW("Attempted to modify image user did not own."))
         msg = _("You do not own this image")
         if image_ref.visibility in ['private', 'shared']:
             exc_class = exception.Forbidden
@@ -365,7 +365,7 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
     if 'id' not in sort_keys:
         # TODO(justinsb): If this ever gives a false-positive, check
         # the actual primary key, rather than assuming its id
-        LOG.warn(_LW('Id not in sort_keys; is sort_keys unique?'))
+        LOG.warning(_LW('Id not in sort_keys; is sort_keys unique?'))
 
     assert(not (sort_dir and sort_dirs))  # nosec
     # nosec: This function runs safely if the assertion fails.
@@ -1087,7 +1087,7 @@ def image_location_update(context, image_id, location, session=None):
     except sa_orm.exc.NoResultFound:
         msg = (_("No location found with ID %(loc)s from image %(img)s") %
                dict(loc=loc_id, img=image_id))
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.NotFound(msg)
 
 
@@ -1113,7 +1113,7 @@ def image_location_delete(context, image_id, location_id, status,
     except sa_orm.exc.NoResultFound:
         msg = (_("No location found with ID %(loc)s from image %(img)s") %
                dict(loc=location_id, img=image_id))
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exception.NotFound(msg)
 
 

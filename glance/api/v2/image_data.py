@@ -189,7 +189,7 @@ class ImageDataController(object):
                          "The image may have been deleted during the "
                          "upload, cleaning up the chunks uploaded.") %
                        image_id)
-                LOG.warn(msg)
+                LOG.warning(msg)
                 # NOTE(sridevi): Cleaning up the uploaded chunks.
                 try:
                     image.delete()

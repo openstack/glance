@@ -34,7 +34,7 @@ def _get(context, id, session):
         metadef_tag = query.one()
     except sa_orm.exc.NoResultFound:
         msg = (_LW("Metadata tag not found for id %s") % id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exc.MetadefTagNotFound(message=msg)
     return metadef_tag
 

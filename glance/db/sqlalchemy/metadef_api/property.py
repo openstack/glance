@@ -36,7 +36,7 @@ def _get(context, property_id, session):
     except sa_orm.exc.NoResultFound:
         msg = (_("Metadata definition property not found for id=%s")
                % property_id)
-        LOG.warn(msg)
+        LOG.warning(msg)
         raise exc.MetadefPropertyNotFound(msg)
 
     return property_rec

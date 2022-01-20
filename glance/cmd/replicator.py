@@ -636,24 +636,24 @@ def replication_compare(options, args):
 
             for key in image:
                 if image[key] != headers.get(key):
-                    LOG.warn(_LW('%(image_id)s: field %(key)s differs '
-                                 '(source is %(source_value)s, destination '
-                                 'is %(target_value)s)')
-                             % {'image_id': image['id'],
-                                'key': key,
-                                'source_value': image[key],
-                                'target_value': headers.get(key,
-                                                            'undefined')})
+                    LOG.warning(_LW('%(image_id)s: field %(key)s differs '
+                                    '(source is %(source_value)s, destination '
+                                    'is %(target_value)s)')
+                                % {'image_id': image['id'],
+                                   'key': key,
+                                   'source_value': image[key],
+                                   'target_value': headers.get(key,
+                                                               'undefined')})
                     differences[image['id']] = 'diff'
                 else:
                     LOG.debug('%(image_id)s is identical',
                               {'image_id': image['id']})
 
         elif image['status'] == 'active':
-            LOG.warn(_LW('Image %(image_id)s ("%(image_name)s") '
-                     'entirely missing from the destination')
-                     % {'image_id': image['id'],
-                        'image_name': image.get('name', '--unnamed')})
+            LOG.warning(_LW('Image %(image_id)s ("%(image_name)s") '
+                            'entirely missing from the destination')
+                        % {'image_id': image['id'],
+                           'image_name': image.get('name', '--unnamed')})
             differences[image['id']] = 'missing'
 
     return differences

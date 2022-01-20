@@ -674,7 +674,7 @@ class PosixServer(BaseServer):
             self.stale_children.remove(pid)
             LOG.info(_LI('Removed stale child %s'), pid)
         else:
-            LOG.warn(_LW('Unrecognised child %s') % pid)
+            LOG.warning(_LW('Unrecognised child %s') % pid)
 
     def _verify_and_respawn_children(self, pid, status):
         if len(self.stale_children) == 0:
