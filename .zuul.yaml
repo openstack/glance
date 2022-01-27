@@ -329,6 +329,11 @@
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
+        - openstacksdk-functional-devstack:
+            required-projects:
+            - name: opendev.org/openstack/openstacksdk
+              override-branch: stable/wallaby
+            irrelevant-files: *tempest-irrelevant-files
 
     gate:
       jobs:
@@ -347,6 +352,11 @@
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
+        - openstacksdk-functional-devstack:
+            required-projects:
+            - name: opendev.org/openstack/openstacksdk
+              override-branch: stable/wallaby
+            irrelevant-files: *tempest-irrelevant-files
     experimental:
       jobs:
         - glance-tox-py38-glance_store-tips
