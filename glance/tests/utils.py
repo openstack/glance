@@ -269,10 +269,7 @@ def fork_exec(cmd,
                         os.dup2(fptr.fileno(), desc)
                     except OSError:
                         pass
-        if pass_fds and hasattr(os, 'set_inheritable'):
-            # os.set_inheritable() is only available and needed
-            # since Python 3.4. On Python 3.3 and older, file descriptors are
-            # inheritable by default.
+        if pass_fds:
             for fd in pass_fds:
                 os.set_inheritable(fd, True)
 
