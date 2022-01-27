@@ -134,7 +134,10 @@ class PropertyRules(object):
             compiled_rule = self._compile_rule(property_exp)
 
             for operation in operations:
-                permissions = CONFIG.get(property_exp, operation)
+                try:
+                    permissions = CONFIG.get(property_exp, operation)
+                except configparser.NoOptionError:
+                    raise InvalidPropProtectConf()
                 if permissions:
                     if self.prop_prot_rule_format == 'policies':
                         if ',' in permissions:
