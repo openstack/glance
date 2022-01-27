@@ -53,12 +53,6 @@ class GlanceException(Exception):
         self.msg = message
         super(GlanceException, self).__init__(message)
 
-    def __unicode__(self):
-        # NOTE(flwang): By default, self.msg is an instance of Message, which
-        # can't be converted by str(). Based on the definition of
-        # __unicode__, it should return unicode always.
-        return str(self.msg)
-
 
 class MissingCredentialError(GlanceException):
     message = _("Missing required credential: %(required)s")
