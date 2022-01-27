@@ -13,6 +13,9 @@ the behavior of those other services.  For example:
 * Image properties can be used to affect the behavior of particular Nova
   hypervisors
 
+* Image properties can be used to provide additional information to Ironic
+  (even when Nova is not used)
+
 Using image properties
 ----------------------
 
@@ -155,6 +158,22 @@ Here is a list of useful image properties and the values they expect.
   - ``mandatory``
   - ``optional`` (default if property is not used)
 
+``img_type``
+  :Type: str
+
+  Specifies the partitioning type of the image. The default value is
+  ``partition`` if the ``kernel_id``/``ramdisk_id`` properties are present,
+  otherwise ``whole-disk``.
+
+  One of:
+
+  - ``whole-disk`` - an image with a partition table embedded.
+  - ``partition`` - an image with only the root partition without a partition
+    table.
+
+  .. note::
+     This property is currently only recognized by Ironic.
+
 ``kernel_id``
   :Type: str
 
@@ -250,6 +269,12 @@ Here is a list of useful image properties and the values they expect.
   ramdisk when booting an AMI-style image.
 
   The value must be a valid image ID.
+
+``rootfs_uuid``
+  For whole-disk images (see ``img_type`` above), the UUID of the root
+  partition.
+
+  This property is used by Ironic when configuring software RAID.
 
 ``trait:<trait_name>``
   :Type: str
