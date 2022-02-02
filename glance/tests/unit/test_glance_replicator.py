@@ -11,6 +11,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import io
 from unittest import mock
 
 import copy
@@ -20,7 +22,6 @@ import uuid
 
 import fixtures
 from oslo_serialization import jsonutils
-import six
 from six import moves
 from six.moves import http_client as http
 import webob
@@ -110,7 +111,7 @@ class FakeHTTPConnection(object):
         class FakeResponse(object):
             def __init__(self, args):
                 (code, body, headers) = args
-                self.body = six.StringIO(body)
+                self.body = io.StringIO(body)
                 self.headers = headers
                 self.status = code
 
@@ -246,7 +247,7 @@ class ImageServiceTestCase(test_utils.BaseTestCase):
 class FakeHttpResponse(object):
     def __init__(self, headers, data):
         self.headers = headers
-        self.data = six.BytesIO(data)
+        self.data = io.BytesIO(data)
 
     def getheaders(self):
         return self.headers
@@ -356,7 +357,7 @@ class ReplicationCommandsTestCase(test_utils.BaseTestCase):
 
         stdout = sys.stdout
         orig_img_service = glance_replicator.get_image_service
-        sys.stdout = six.StringIO()
+        sys.stdout = io.StringIO()
         try:
             glance_replicator.get_image_service = get_image_service
             glance_replicator.replication_size(options, args)

@@ -15,6 +15,7 @@
 
 from contextlib import contextmanager
 import datetime
+import io
 import os
 import tempfile
 import time
@@ -25,7 +26,6 @@ import glance_store as store
 from oslo_config import cfg
 from oslo_utils import secretutils
 from oslo_utils import units
-import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
@@ -48,7 +48,7 @@ CONF = cfg.CONF
 class ImageCacheTestCase(object):
 
     def _setup_fixture_file(self):
-        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
+        FIXTURE_FILE = io.BytesIO(FIXTURE_DATA)
 
         self.assertFalse(self.cache.is_cached(1))
 
@@ -71,7 +71,7 @@ class ImageCacheTestCase(object):
         """
         self._setup_fixture_file()
 
-        buff = six.BytesIO()
+        buff = io.BytesIO()
         with self.cache.open_for_read(1) as cache_file:
             for chunk in cache_file:
                 buff.write(chunk)
@@ -85,7 +85,7 @@ class ImageCacheTestCase(object):
         """
         self._setup_fixture_file()
 
-        buff = six.BytesIO()
+        buff = io.BytesIO()
         with self.cache.open_for_read(1) as cache_file:
             for chunk in cache_file:
                 buff.write(chunk)
@@ -119,7 +119,7 @@ class ImageCacheTestCase(object):
             self.assertFalse(self.cache.is_cached(image_id))
 
         for image_id in (1, 2):
-            FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
+            FIXTURE_FILE = io.BytesIO(FIXTURE_DATA)
             self.assertTrue(self.cache.cache_image_file(image_id,
                                                         FIXTURE_FILE))
 
@@ -189,21 +189,21 @@ class ImageCacheTestCase(object):
         # prune. We should see only 5 images left after pruning, and the
         # images that are least recently accessed should be the ones pruned...
         for x in range(10):
-            FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
+            FIXTURE_FILE = io.BytesIO(FIXTURE_DATA)
             self.assertTrue(self.cache.cache_image_file(x, FIXTURE_FILE))
 
         self.assertEqual(10 * units.Ki, self.cache.get_cache_size())
 
         # OK, hit the images that are now cached...
         for x in range(10):
-            buff = six.BytesIO()
+            buff = io.BytesIO()
             with self.cache.open_for_read(x) as cache_file:
                 for chunk in cache_file:
                     buff.write(chunk)
 
         # Add a new image to cache.
         # This is specifically to test the bug: 1438564
-        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
+        FIXTURE_FILE = io.BytesIO(FIXTURE_DATA)
         self.assertTrue(self.cache.cache_image_file(99, FIXTURE_FILE))
 
         self.cache.prune()
@@ -231,13 +231,13 @@ class ImageCacheTestCase(object):
         """
         self.assertEqual(0, self.cache.get_cache_size())
 
-        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
+        FIXTURE_FILE = io.BytesIO(FIXTURE_DATA)
         self.assertTrue(self.cache.cache_image_file('xxx', FIXTURE_FILE))
 
         self.assertEqual(1024, self.cache.get_cache_size())
 
         # OK, hit the image that is now cached...
-        buff = six.BytesIO()
+        buff = io.BytesIO()
         with self.cache.open_for_read('xxx') as cache_file:
             for chunk in cache_file:
                 buff.write(chunk)
@@ -257,7 +257,7 @@ class ImageCacheTestCase(object):
         self.assertFalse(self.cache.is_cached(1))
         self.assertFalse(self.cache.is_queued(1))
 
-        FIXTURE_FILE = six.BytesIO(FIXTURE_DATA)
+        FIXTURE_FILE = io.BytesIO(FIXTURE_DATA)
 
         self.assertTrue(self.cache.queue_image(1))
 

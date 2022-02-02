@@ -17,6 +17,7 @@
 
 import errno
 import functools
+import io
 import os
 import shlex
 import shutil
@@ -35,7 +36,6 @@ from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
 from oslo_utils import timeutils
 from oslo_utils import units
-import six
 from six.moves import BaseHTTPServer
 from six.moves import http_client as http
 import testtools
@@ -619,7 +619,7 @@ class FakeHTTPResponse(object):
     def __init__(self, status=http.OK, headers=None, data=None,
                  *args, **kwargs):
         data = data or b'I am a teapot, short and stout\n'
-        self.data = six.BytesIO(data)
+        self.data = io.BytesIO(data)
         self.read = self.data.read
         self.status = status
         self.headers = headers or {'content-length': len(data)}

@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import io
 from unittest import mock
 import uuid
 
@@ -19,7 +21,6 @@ from cursive import exception as cursive_exception
 import glance_store
 from glance_store._drivers import filesystem
 from oslo_config import cfg
-import six
 from six.moves import http_client as http
 import webob
 
@@ -683,7 +684,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request.headers['Content-Type'] = 'application/octet-stream'
         # If we use body_file, webob assumes we want to do a chunked upload,
         # ignoring the Content-Length header
-        request.body_file = six.StringIO('YYY')
+        request.body_file = io.StringIO('YYY')
         output = self.deserializer.upload(request)
         data = output.pop('data')
         self.assertEqual('YYY', data.read())
@@ -693,7 +694,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
     def test_upload_chunked_with_content_length(self):
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-stream'
-        request.body_file = six.BytesIO(b'YYY')
+        request.body_file = io.BytesIO(b'YYY')
         # The deserializer shouldn't care if the Content-Length is
         # set when the user is attempting to send chunked data.
         request.headers['Content-Length'] = 3
@@ -734,7 +735,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         req = unit_test_utils.get_fake_request()
         req.headers['Content-Type'] = 'application/octet-stream'
         req.headers['Content-Length'] = 4
-        req.body_file = six.BytesIO(b'YYYY')
+        req.body_file = io.BytesIO(b'YYYY')
         output = self.deserializer.stage(req)
         data = output.pop('data')
         self.assertEqual(b'YYYY', data.read())
