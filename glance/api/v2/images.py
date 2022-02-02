@@ -27,7 +27,6 @@ from oslo_serialization import jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import timeutils as oslo_timeutils
 import requests
-import six
 from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
@@ -1148,8 +1147,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         for key in cls._disallowed_properties:
             if key in image:
                 msg = _("Attribute '%s' is read-only.") % key
-                raise webob.exc.HTTPForbidden(
-                    explanation=six.text_type(msg))
+                raise webob.exc.HTTPForbidden(explanation=msg)
 
     def create(self, request):
         body = self._get_request_body(request)
@@ -1278,10 +1276,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         path_root = change['path'][0]
         if path_root in self._readonly_properties:
             msg = _("Attribute '%s' is read-only.") % path_root
-            raise webob.exc.HTTPForbidden(explanation=six.text_type(msg))
+            raise webob.exc.HTTPForbidden(explanation=msg)
         if path_root in self._reserved_properties:
             msg = _("Attribute '%s' is reserved.") % path_root
-            raise webob.exc.HTTPForbidden(explanation=six.text_type(msg))
+            raise webob.exc.HTTPForbidden(explanation=msg)
         if any(path_root.startswith(ns) for ns in self._reserved_namespaces):
             msg = _("Attribute '%s' is reserved.") % path_root
             raise webob.exc.HTTPForbidden(explanation=msg)
@@ -1315,7 +1313,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if len(path) != limits.get(op, 1):
             msg = _("Invalid JSON pointer for this resource: "
                     "'/%s'") % '/'.join(path)
-            raise webob.exc.HTTPBadRequest(explanation=six.text_type(msg))
+            raise webob.exc.HTTPBadRequest(explanation=msg)
 
     def _parse_json_schema_change(self, raw_change, draft_version):
         if draft_version == 10:
@@ -1656,14 +1654,12 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def show(self, response, image):
         image_view = self._format_image(image)
-        body = json.dumps(image_view, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = json.dumps(image_view, ensure_ascii=False)
         response.content_type = 'application/json'
 
     def update(self, response, image):
         image_view = self._format_image(image)
-        body = json.dumps(image_view, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = json.dumps(image_view, ensure_ascii=False)
         response.content_type = 'application/json'
 
     def index(self, response, result):
@@ -1681,8 +1677,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             params['marker'] = result['next_marker']
             next_query = urlparse.urlencode(params)
             body['next'] = '/v2/images?%s' % next_query
-        response.unicode_body = six.text_type(json.dumps(body,
-                                                         ensure_ascii=False))
+        response.unicode_body = json.dumps(body, ensure_ascii=False)
         response.content_type = 'application/json'
 
     def delete_from_store(self, response, result):

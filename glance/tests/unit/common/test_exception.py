@@ -14,7 +14,6 @@
 #    under the License.
 
 from oslo_utils import encodeutils
-import six
 from six.moves import http_client as http
 
 from glance.common import exception
@@ -49,6 +48,5 @@ class GlanceExceptionTestCase(test_utils.BaseTestCase):
         self.assertIn('test: 500', encodeutils.exception_to_unicode(msg))
 
     def test_non_unicode_error_msg(self):
-        exc = exception.GlanceException(str('test'))
-        self.assertIsInstance(encodeutils.exception_to_unicode(exc),
-                              six.text_type)
+        exc = exception.GlanceException('test')
+        self.assertIsInstance(encodeutils.exception_to_unicode(exc), str)

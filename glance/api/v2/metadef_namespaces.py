@@ -17,7 +17,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-import six
 from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
@@ -686,7 +685,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def __render(self, json_data, response, response_status=None):
         body = jsonutils.dumps(json_data, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = body
         response.content_type = 'application/json'
         if response_status:
             response.status_int = response_status

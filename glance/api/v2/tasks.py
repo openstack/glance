@@ -325,8 +325,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
 
     def get(self, response, task):
         task_view = self._format_task(self.task_schema, task)
-        body = json.dumps(task_view, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = json.dumps(task_view, ensure_ascii=False)
         response.content_type = 'application/json'
 
     def index(self, response, result):
@@ -345,8 +344,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             params['marker'] = result['next_marker']
             next_query = urlparse.urlencode(params)
             body['next'] = '/v2/tasks?%s' % next_query
-        response.unicode_body = six.text_type(json.dumps(body,
-                                                         ensure_ascii=False))
+        response.unicode_body = json.dumps(body, ensure_ascii=False)
         response.content_type = 'application/json'
 
 

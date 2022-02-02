@@ -659,7 +659,7 @@ class TestHelpers(test_utils.BaseTestCase):
                    'properties': {'distro': 'Ubuntu 10.04 LTS'}}
         headers = utils.image_meta_to_http_headers(fixture)
         for k, v in headers.items():
-            self.assertIsInstance(v, six.text_type)
+            self.assertIsInstance(v, str)
 
     def test_data_passed_properly_through_headers(self):
         """

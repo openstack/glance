@@ -63,8 +63,7 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
     cypher = Cipher(algorithms.AES(key), modes.CBC(init_vector),
                     backend=backend)
     encryptor = cypher.encryptor()
-    padded = encryptor.update(
-        pad(six.binary_type(plaintext))) + encryptor.finalize()
+    padded = encryptor.update(pad(plaintext)) + encryptor.finalize()
     encoded = base64.urlsafe_b64encode(init_vector + padded)
     if six.PY3:
         encoded = encoded.decode('ascii')

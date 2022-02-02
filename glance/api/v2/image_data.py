@@ -22,7 +22,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
-import six
 import webob.exc
 
 import glance.api.policy
@@ -573,7 +572,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             response.headers['Content-MD5'] = image.checksum
         # NOTE(markwash): "response.app_iter = ..." also erroneously resets the
         # content-length
-        response.headers['Content-Length'] = six.text_type(chunk_size)
+        response.headers['Content-Length'] = str(chunk_size)
 
     def upload(self, response, result):
         response.status_int = 204

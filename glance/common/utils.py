@@ -313,9 +313,9 @@ def image_meta_to_http_headers(image_meta):
                 for pk, pv in v.items():
                     if pv is not None:
                         headers["x-image-meta-property-%s"
-                                % pk.lower()] = six.text_type(pv)
+                                % pk.lower()] = str(pv)
             else:
-                headers["x-image-meta-%s" % k.lower()] = six.text_type(v)
+                headers["x-image-meta-%s" % k.lower()] = str(v)
     return headers
 
 
@@ -516,8 +516,10 @@ def no_4byte_params(f):
     def wrapper(*args, **kwargs):
 
         def _is_match(some_str):
-            return (isinstance(some_str, six.text_type) and
-                    REGEX_4BYTE_UNICODE.findall(some_str) != [])
+            return (
+                isinstance(some_str, str) and
+                REGEX_4BYTE_UNICODE.findall(some_str) != []
+            )
 
         def _check_dict(data_dict):
             # a dict of dicts has to be checked recursively

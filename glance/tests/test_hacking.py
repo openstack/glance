@@ -52,17 +52,6 @@ class HackingTestCase(utils.BaseTestCase):
         self.assertEqual(0, len(list(checks.no_translate_debug_logs(
             "LOG.info(_('foo'))", "glance/store/foo.py"))))
 
-    def test_no_direct_use_of_unicode_function(self):
-        self.assertEqual(1, len(list(checks.no_direct_use_of_unicode_function(
-            "unicode('the party dont start til the unicode walks in')"))))
-        self.assertEqual(1, len(list(checks.no_direct_use_of_unicode_function(
-            """unicode('something '
-                       'something else"""))))
-        self.assertEqual(0, len(list(checks.no_direct_use_of_unicode_function(
-            "six.text_type('party over')"))))
-        self.assertEqual(0, len(list(checks.no_direct_use_of_unicode_function(
-            "not_actually_unicode('something completely different')"))))
-
     def test_no_contextlib_nested(self):
         self.assertEqual(1, len(list(checks.check_no_contextlib_nested(
             "with contextlib.nested("))))

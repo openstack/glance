@@ -20,7 +20,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-import six
 from six.moves import http_client as http
 import webob
 
@@ -411,13 +410,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     def create(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
         body = jsonutils.dumps(image_member_view, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = body
         response.content_type = 'application/json'
 
     def update(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
         body = jsonutils.dumps(image_member_view, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = body
         response.content_type = 'application/json'
 
     def index(self, response, image_members):
@@ -429,13 +428,13 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         totalview = dict(members=image_members_view)
         totalview['schema'] = '/v2/schemas/members'
         body = jsonutils.dumps(totalview, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = body
         response.content_type = 'application/json'
 
     def show(self, response, image_member):
         image_member_view = self._format_image_member(image_member)
         body = jsonutils.dumps(image_member_view, ensure_ascii=False)
-        response.unicode_body = six.text_type(body)
+        response.unicode_body = body
         response.content_type = 'application/json'
 
 

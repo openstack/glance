@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 import testtools
 
 from glance.db.migration import CURRENT_RELEASE
@@ -29,8 +28,7 @@ class TestDataMigrationVersion(testtools.TestCase):
 
         # by rule, release names must be composed of the 26 letters of the
         # ISO Latin alphabet (ord('A')==65, ord('Z')==90)
-        release_letter = six.text_type(CURRENT_RELEASE[:1].upper()).encode(
-            'ascii')
+        release_letter = str(CURRENT_RELEASE[:1].upper()).encode('ascii')
 
         # Convert release letter into an int in [1:26].  The first
         # glance release was 'Bexar'.
